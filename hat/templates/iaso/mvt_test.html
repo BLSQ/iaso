@@ -431,6 +431,39 @@
             opacity: 0.5;
         }
 
+        .off-map-panel {
+            margin-top: 15px;
+        }
+
+        .off-map-panel.hidden {
+            display: none;
+        }
+
+        .off-map-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .off-map-item {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .off-map-item:hover {
+            background: rgba(0, 173, 181, 0.12);
+        }
+
+        .off-map-item .hint {
+            display: block;
+            font-size: 0.7rem;
+            opacity: 0.65;
+        }
+
         .map-style-control {
             position: absolute;
             bottom: 30px;
@@ -510,6 +543,11 @@
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
                             <button id="btnDrillUp" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;">&uarr; Up</button>
                             <button id="btnDrillTop" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;">Top</button>
+                        </div>
+                        <!-- Children that can't be drawn: navigable from here instead of the map -->
+                        <div id="offMapPanel" class="off-map-panel hidden">
+                            <div class="legend-title" id="offMapTitle">Not on map</div>
+                            <ul id="offMapList" class="off-map-list"></ul>
                         </div>
                     </div>
                 </div>
@@ -675,13 +713,18 @@
             return drillStack.length > 0 ? drillStack[drillStack.length - 1] : null;
         }
 
+        // Bump when the tile attributes change meaning: browsers may still hold tiles cached under
+        // the old URLs (they used to be served with max-age=3600, e.g. has_children only counted
+        // children with geometry), and would keep serving them without asking the server.
+        const TILES_VERSION = 2;
+
         // Helper to get active query parameters
         function getMvtQueryParams() {
             const versionId = document.getElementById('versionSelect').value;
             const status = document.getElementById('statusSelect').value;
             const typeId = document.getElementById('typeSelect').value;
 
-            const params = [];
+            const params = [`tiles_v=${TILES_VERSION}`];
             if (versionId) params.push(`version_id=${versionId}`);
             if (status) params.push(`validation_status=${status}`);
             if (isDrillDownMode()) {
@@ -706,7 +749,7 @@
             const parent = currentDrillParent();
             const versionId = document.getElementById('versionSelect').value;
             // id=-1 matches nothing: keeps the source valid when nothing is opened
-            const params = [`id=${isDrillDownMode() && parent ? parent.id : -1}`];
+            const params = [`tiles_v=${TILES_VERSION}`, `id=${isDrillDownMode() && parent ? parent.id : -1}`];
             if (versionId) params.push(`version_id=${versionId}`);
             return window.location.origin + `/api/v3/orgunits/tiles/{z}/{x}/{y}/?` + params.join('&');
         }
@@ -719,6 +762,8 @@
             map.addSource('org_units_source', {
                 type: 'vector',
                 tiles: [tileUrl],
+                // Use the org unit id as feature id, needed for the hover feature-state
+                promoteId: 'id',
                 minzoom: 0,
                 maxzoom: 14 // PostGIS tile generation optimizes up to zoom level 14-18
             });
@@ -852,81 +897,165 @@
                     'text-halo-width': 1.5
                 }
             });
+        }
 
-            // Register interactivity events
-            setupInteractivity();
+        // Points are only a few pixels wide at low zoom: accept hits within this distance of them
+        const POINT_HIT_TOLERANCE_PX = 10;
+
+        // Feature under the cursor: the nearest point within tolerance first (points sit on top
+        // of polygons), otherwise the polygon under the cursor.
+        function pickFeature(point) {
+            const t = POINT_HIT_TOLERANCE_PX;
+            const points = map.queryRenderedFeatures(
+                [[point.x - t, point.y - t], [point.x + t, point.y + t]],
+                { layers: ['org-units-circle'] }
+            );
+            if (points.length > 0) {
+                const dist = f => {
+                    const p = map.project(f.geometry.coordinates);
+                    return Math.hypot(p.x - point.x, p.y - point.y);
+                };
+                return points.reduce((best, f) => (dist(f) < dist(best) ? f : best));
+            }
+            const polygons = map.queryRenderedFeatures(point, { layers: ['org-units-fill'] });
+            return polygons.length > 0 ? polygons[0] : null;
+        }
+
+        function setHovered(feat) {
+            if (hoveredFeature && hoveredFeature.id !== undefined) {
+                map.setFeatureState(
+                    { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
+                    { hover: false }
+                );
+            }
+            hoveredFeature = feat;
+            if (feat && feat.id !== undefined) {
+                map.setFeatureState(
+                    { source: 'org_units_source', sourceLayer: 'org_units', id: feat.id },
+                    { hover: true }
+                );
+            }
         }
 
         function setupInteractivity() {
-            const targetLayers = ['org-units-circle', 'org-units-fill'];
-
-            targetLayers.forEach(layerId => {
-                // Change cursor on hover
-                map.on('mouseenter', layerId, (e) => {
-                    map.getCanvas().style.cursor = 'pointer';
-                });
-
-                map.on('mousemove', layerId, (e) => {
-                    if (e.features.length > 0) {
-                        const feat = e.features[0];
-
-                        // Handle Hover state styling
-                        if (hoveredFeature) {
-                            map.setFeatureState(
-                                { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
-                                { hover: false }
-                            );
-                        }
-                        hoveredFeature = feat;
-                        map.setFeatureState(
-                            { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
-                            { hover: true }
-                        );
-
-                        // Show Tooltip Popup
-                        const name = feat.properties.name || 'Unnamed Org Unit';
-                        const status = feat.properties.validation_status || 'UNKNOWN';
-                        const popupContent = `<strong>${name}</strong><br/><span style="font-size: 0.8rem; opacity: 0.8;">Status: ${status}</span>`;
-
-                        popup.setLngLat(e.lngLat)
-                            .setHTML(popupContent)
-                            .addTo(map);
-                    }
-                });
-
-                map.on('mouseleave', layerId, () => {
+            map.on('mousemove', (e) => {
+                const feat = pickFeature(e.point);
+                if (!feat) {
                     map.getCanvas().style.cursor = '';
                     popup.remove();
+                    setHovered(null);
+                    return;
+                }
+                map.getCanvas().style.cursor = 'pointer';
+                setHovered(feat);
 
-                    if (hoveredFeature) {
-                        map.setFeatureState(
-                            { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
-                            { hover: false }
-                        );
-                        hoveredFeature = null;
-                    }
-                });
+                // Show Tooltip Popup
+                const name = feat.properties.name || 'Unnamed Org Unit';
+                const status = feat.properties.validation_status || 'UNKNOWN';
+                // Tunneled past a shapeless level: say which child of the opened unit this belongs to
+                const via = feat.properties.via_name ? `<br/><span style="font-size: 0.8rem; opacity: 0.8;">In: ${feat.properties.via_name}</span>` : '';
+                const popupContent = `<strong>${name}</strong><br/><span style="font-size: 0.8rem; opacity: 0.8;">Status: ${status}</span>${via}`;
 
+                popup.setLngLat(e.lngLat)
+                    .setHTML(popupContent)
+                    .addTo(map);
             });
 
-            // Single click handler across layers, so overlapping circle/fill hits don't drill twice.
-            // Points are listed first: they sit on top of polygons.
+            map.getCanvas().addEventListener('mouseleave', () => {
+                popup.remove();
+                setHovered(null);
+            });
+
+            // Single click handler across layers, so overlapping circle/fill hits don't drill twice
             map.on('click', (e) => {
-                const feats = map.queryRenderedFeatures(e.point, { layers: ['org-units-circle', 'org-units-fill'] });
-                if (feats.length === 0) return;
-                const feat = feats[0];
+                const feat = pickFeature(e.point);
+                if (!feat) return;
                 inspectFeature(feat, e.lngLat);
                 if (isDrillDownMode()) {
                     if (feat.properties.has_children) {
                         drillInto(feat);
                     } else {
-                        logPerfEvent(`"${feat.properties.name}" has no children with geometry: end of pyramid`);
+                        logPerfEvent(`"${feat.properties.name}" has no children: end of pyramid`);
                     }
                 }
             });
         }
 
         // ---- Drill-down navigation ----
+
+        function drillInto(feature) {
+            const p = feature.properties;
+            if (currentDrillParent() && currentDrillParent().id === p.id) return;
+            // Tunneled feature: record the shapeless level we skipped, so the breadcrumbs keep it
+            if (p.via_id) {
+                drillStack.push({ id: p.via_id, name: p.via_name || `#${p.via_id}`, bbox: null });
+            }
+            drillStack.push({ id: p.id, name: p.name || `#${p.id}`, bbox: featureBbox(feature) });
+            onDrillChanged();
+        }
+
+        // Children listed in the sidebar (no geometry): bbox is the extent of their located descendants
+        function drillIntoListItem(item) {
+            drillStack.push({ id: item.id, name: item.name || `#${item.id}`, bbox: item.bbox });
+            onDrillChanged();
+        }
+
+        // Children that can't be drawn on the map, fetched for the currently opened level
+        let offMapRequestSeq = 0;
+        async function loadOffMapChildren() {
+            const panel = document.getElementById('offMapPanel');
+            const seq = ++offMapRequestSeq;
+            if (!isDrillDownMode()) {
+                panel.classList.add('hidden');
+                return;
+            }
+            const parent = currentDrillParent();
+            const params = new URLSearchParams({ parent_id: parent ? parent.id : 'root' });
+            const versionId = document.getElementById('versionSelect').value;
+            const status = document.getElementById('statusSelect').value;
+            if (versionId) params.set('version_id', versionId);
+            if (status) params.set('validation_status', status);
+
+            let data;
+            try {
+                const res = await fetch(`/api/v3/orgunits/drill-down/?${params}`, { credentials: 'same-origin' });
+                data = await res.json();
+            } catch (err) {
+                logPerfEvent(`Failed to list children: ${err.message}`);
+                return;
+            }
+            if (seq !== offMapRequestSeq) return; // a newer level was opened meanwhile
+
+            const offMap = (data.results || []).filter(c => !c.has_geometry);
+            const located = (data.results || []).length - offMap.length;
+            panel.classList.toggle('hidden', offMap.length === 0);
+            document.getElementById('offMapTitle').textContent =
+                `Not on map (${offMap.length}/${data.results.length})`;
+
+            const list = document.getElementById('offMapList');
+            list.innerHTML = '';
+            offMap.forEach(child => {
+                const li = document.createElement('li');
+                li.className = 'off-map-item';
+                li.textContent = child.name;
+                const hint = document.createElement('span');
+                hint.className = 'hint';
+                const detail = child.located_descendants
+                    ? `${child.located_descendants} located below (shown on map)`
+                    : 'nothing located below';
+                hint.textContent = `${child.org_unit_type_name || 'No type'} · ${child.has_children ? detail : 'no children'}`;
+                li.appendChild(hint);
+                li.addEventListener('click', () => {
+                    inspectFeature({ id: child.id, properties: child, geometry: null });
+                    if (child.has_children) drillIntoListItem(child);
+                });
+                list.appendChild(li);
+            });
+
+            if (offMap.length > 0) {
+                logPerfEvent(`${offMap.length} children without geometry listed in the sidebar (${located} on map)`);
+            }
+        }
 
         function featureBbox(feature) {
             const p = feature.properties;
@@ -944,13 +1073,6 @@
             }
         }
 
-        function drillInto(feature) {
-            const id = feature.properties.id;
-            if (currentDrillParent() && currentDrillParent().id === id) return;
-            drillStack.push({ id, name: feature.properties.name || `#${id}`, bbox: featureBbox(feature) });
-            onDrillChanged();
-        }
-
         // Go back to the given depth (0 = top of the pyramid)
         function drillTo(depth) {
             drillStack.length = depth;
@@ -962,7 +1084,8 @@
             renderBreadcrumbs();
             const parent = currentDrillParent();
             if (parent) {
-                fitToBbox(parent.bbox);
+                // Shapeless unit with nothing located below: fall back to the closest opened ancestor's extent
+                fitToBbox(parent.bbox || [...drillStack].reverse().find(p => p.bbox)?.bbox);
                 logPerfEvent(`Drilled into "${parent.name}" (level ${drillStack.length})`);
             } else {
                 zoomToSelectedVersionExtent();
@@ -1063,6 +1186,7 @@
                 source.setTiles([newTilesUrl]);
                 const parentSource = map.getSource('parent_source');
                 if (parentSource) parentSource.setTiles([buildParentTileUrl()]);
+                loadOffMapChildren();
 
                 // Clear inspector & popups when dataset changes
                 document.getElementById('inspector').classList.add('hidden');
@@ -1151,8 +1275,14 @@
 
         // Initial Map Setup once loaded
         map.on('load', () => {
-            initMvtLayers();
+            // style.load fires first and usually added the layers already: adding them again throws
+            if (!map.getSource('org_units_source')) {
+                initMvtLayers();
+            }
+            // Registered once: layers are re-added on style changes, map listeners survive them
+            setupInteractivity();
             zoomToSelectedVersionExtent();
+            loadOffMapChildren();
             logPerfEvent('Map initialized and ready.');
         });
 

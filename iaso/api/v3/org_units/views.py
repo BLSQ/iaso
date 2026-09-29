@@ -224,6 +224,43 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         return CleaningFileResponse(tmp.name, as_attachment=True, filename=filename)
 
 
+def _has_geom_sql(alias):
+    return f"({alias}.location IS NOT NULL OR {alias}.simplified_geom IS NOT NULL OR {alias}.geom IS NOT NULL)"
+
+
+def _user_access_scope(request, profile, alias="u"):
+    """
+    Restrict org units to the user's assigned sub-pyramids.
+    Returns (user_org_units, clauses, params), or None when the user can't see anything.
+    """
+    if request.user.is_superuser:
+        return [], [], []
+    user_org_units = list(profile.org_units.all())
+    if not user_org_units:
+        return [], [], []
+    ltree_clauses = []
+    params = []
+    for ou in user_org_units:
+        if ou.path is None:
+            continue
+        # ou.path is a django_ltree PathValue, which psycopg2 cannot adapt
+        ltree_clauses.append(f"{alias}.path <@ %s::ltree")
+        params.append(str(ou.path))
+    if not ltree_clauses:
+        return None
+    return user_org_units, [f"({' OR '.join(ltree_clauses)})"], params
+
+
+def _root_clause(user_org_units, alias="u"):
+    """
+    Drill-down entry point: the top of the pyramid the user can see, i.e. their
+    assigned org units, or the real roots of the version when unrestricted.
+    """
+    if user_org_units:
+        return f"{alias}.id IN ({', '.join(['%s' for _ in user_org_units])})", [ou.id for ou in user_org_units]
+    return f"{alias}.parent_id IS NULL", []
+
+
 class OrgUnitMVTTilesView(APIView):
     """
     Dynamic Vector Tiles POC Endpoint.
@@ -233,6 +270,9 @@ class OrgUnitMVTTilesView(APIView):
     - Query parameters: validation_status, version_id, parent_id, id, org_unit_type_id(__in)
     - Drill-down: parent_id=root returns the top of the user's pyramid; each feature
       carries has_children and its full bbox (bbox_xmin/ymin/xmax/ymax).
+      parent_id=<id> returns the children of that org unit; children without geometry are
+      skipped and replaced by their closest descendants that have one (via_id/via_name
+      tell which child they stand in for).
     - Dynamic Level of Detail (LoD) based on Zoom level z.
     - Tenant access control restrictions from the user's Profile.
     """
@@ -261,8 +301,16 @@ class OrgUnitMVTTilesView(APIView):
         org_unit_type_id = request.query_params.get("org_unit_type_id")
         org_unit_type_id_in = request.query_params.get("org_unit_type_id__in")
 
-        # 3. Build query filters and parameters
-        params = [z, x, y, z, x, y]
+        # Drilling into an org unit: its path bounds the descendants we may show
+        drill_path = None
+        if parent_id and parent_id != "root":
+            parent_path = OrgUnit.objects.filter(id=parent_id).values_list("path", flat=True).first()
+            if parent_path is None:
+                return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
+            drill_path = str(parent_path)
+
+        # 3. Build query filters and parameters (the first ones feed the CTEs)
+        params = [z, x, y, z, x, y, drill_path]
         where_clauses = []
 
         if version_id:
@@ -279,9 +327,22 @@ class OrgUnitMVTTilesView(APIView):
             params.append(org_unit_id)
 
         # parent_id=root is handled below, once we know the user's access roots
-        if parent_id and parent_id != "root":
-            where_clauses.append("u.parent_id = %s")
-            params.append(parent_id)
+        if drill_path:
+            # Descendants of the parent with a geometry, and no geometry-bearing org unit
+            # between them and the parent: direct children when they have a shape, otherwise
+            # we "tunnel" down to the closest located descendants.
+            # Path labels are org unit ids, so the in-between ancestors are the labels of
+            # subpath(u.path, <parent depth>, <depth gap - 1>).
+            where_clauses.append(
+                f"""u.path <@ d.path AND u.path <> d.path
+                AND NOT EXISTS (
+                    SELECT 1 FROM iaso_orgunit a
+                    WHERE a.id = ANY(string_to_array(ltree2text(
+                        subpath(u.path, nlevel(d.path), nlevel(u.path) - nlevel(d.path) - 1)
+                    ), '.')::int[])
+                    AND {_has_geom_sql("a")}
+                )"""
+            )
 
         if org_unit_type_id:
             where_clauses.append("u.org_unit_type_id = %s")
@@ -294,31 +355,18 @@ class OrgUnitMVTTilesView(APIView):
                 params.extend(type_ids)
 
         # 4. Hierarchical user access (Multi-tenancy / Account scoping)
-        user_org_units = [] if request.user.is_superuser else list(profile.org_units.all())
+        scope = _user_access_scope(request, profile)
+        if scope is None:
+            return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
+        user_org_units, scope_clauses, scope_params = scope
 
-        # Drill-down entry point: the top of the pyramid the user can see, i.e. their
-        # assigned org units, or the real roots of the version when unrestricted.
         if parent_id == "root":
-            if user_org_units:
-                where_clauses.append(f"u.id IN ({', '.join(['%s' for _ in user_org_units])})")
-                params.extend(ou.id for ou in user_org_units)
-            else:
-                where_clauses.append("u.parent_id IS NULL")
+            root_clause, root_params = _root_clause(user_org_units)
+            where_clauses.append(root_clause)
+            params.extend(root_params)
 
-        if not request.user.is_superuser:
-            if user_org_units:
-                ltree_clauses = []
-                for ou in user_org_units:
-                    if ou.path is None:
-                        continue
-                    # ou.path is a django_ltree PathValue, which psycopg2 cannot adapt
-                    ltree_clauses.append("u.path <@ %s::ltree")
-                    params.append(str(ou.path))
-                if not ltree_clauses:
-                    return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
-                where_clauses.append(f"({' OR '.join(ltree_clauses)})")
-            elif profile.org_units.exists():
-                return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
+        where_clauses.extend(scope_clauses)
+        params.extend(scope_params)
 
         # 5. Zoom-Level Level of Detail (LoD) filtering:
         # - Low zooms (0-5): show high-level areas (provinces, districts), hide villages
@@ -342,6 +390,9 @@ class OrgUnitMVTTilesView(APIView):
                 SELECT ST_TileEnvelope(%s, %s, %s) AS geom_3857,
                        ST_Transform(ST_TileEnvelope(%s, %s, %s), 4326) AS geom_4326
             ),
+            drill AS (
+                SELECT %s::ltree AS path
+            ),
             mvt_features AS (
                 SELECT
                     ST_AsMVTGeom(
@@ -361,19 +412,25 @@ class OrgUnitMVTTilesView(APIView):
                     ST_YMin(ext.bbox) AS bbox_ymin,
                     ST_XMax(ext.bbox) AS bbox_xmax,
                     ST_YMax(ext.bbox) AS bbox_ymax,
+                    -- Any child, even without geometry: those are listed next to the map
                     EXISTS (
                         SELECT 1 FROM iaso_orgunit c
-                        WHERE c.parent_id = u.id
-                          AND c.version_id = u.version_id
-                          AND (c.location IS NOT NULL OR c.simplified_geom IS NOT NULL OR c.geom IS NOT NULL)
-                    ) AS has_children
+                        WHERE c.parent_id = u.id AND c.version_id = u.version_id
+                    ) AS has_children,
+                    -- When tunneling past children without geometry: the child this unit belongs to
+                    via.id AS via_id,
+                    via.name AS via_name
                 FROM iaso_orgunit u
                 CROSS JOIN tile_bounds tb
+                CROSS JOIN drill d
+                LEFT JOIN iaso_orgunit via
+                    ON nlevel(u.path) > nlevel(d.path) + 1
+                    AND via.id = ltree2text(subpath(u.path, nlevel(d.path), 1))::int
                 CROSS JOIN LATERAL (
                     SELECT Box2D(COALESCE(u.geom::geometry, u.simplified_geom::geometry, u.location::geometry)) AS bbox
                 ) ext
                 WHERE
-                    (u.location IS NOT NULL OR u.simplified_geom IS NOT NULL OR u.geom IS NOT NULL)
+                    {_has_geom_sql("u")}
                     AND (
                         (u.location::geometry && tb.geom_4326) OR
                         (u.simplified_geom::geometry && tb.geom_4326) OR
@@ -390,5 +447,105 @@ class OrgUnitMVTTilesView(APIView):
             mvt_data = row[0] if row else b""
 
         response = HttpResponse(mvt_data, content_type="application/vnd.mapbox-vector-tile")
-        response["Cache-Control"] = "public, max-age=3600"
+        # Tiles depend on the user's access scope: never let shared caches keep them. And don't
+        # let the browser reuse them either, stale tiles break drill-down after data/format changes.
+        # MapLibre still keeps loaded tiles in memory while panning.
+        response["Cache-Control"] = "private, no-cache"
         return response
+
+
+class OrgUnitDrillDownView(APIView):
+    """
+    Drill-down POC companion to the MVT tiles: lists the direct children of an org unit
+    (parent_id=<id>, or parent_id=root for the top of the user's pyramid), so children
+    that can't be drawn on the map can still be navigated to.
+    Each child carries has_geometry, has_children, the number of located descendants and a
+    bbox: its own extent, or the extent of its located descendants when it has no geometry.
+    Query parameters: parent_id (required), version_id, validation_status.
+    """
+
+    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticated]
+
+    MAX_RESULTS = 500
+
+    def get(self, request):
+        profile = getattr(request.user, "iaso_profile", None)
+        if not profile:
+            return Response({"results": []}, status=403)
+
+        parent_id = request.query_params.get("parent_id")
+        if not parent_id:
+            raise ValidationError({"parent_id": "This parameter is required (an org unit id, or 'root')."})
+        version_id = request.query_params.get("version_id") or profile.account.default_version_id
+        validation_status = request.query_params.get("validation_status")
+
+        scope = _user_access_scope(request, profile, alias="c")
+        if scope is None:
+            return Response({"results": []})
+        user_org_units, scope_clauses, scope_params = scope
+
+        where_clauses = []
+        params = []
+        if parent_id == "root":
+            root_clause, root_params = _root_clause(user_org_units, alias="c")
+            where_clauses.append(root_clause)
+            params.extend(root_params)
+        else:
+            where_clauses.append("c.parent_id = %s")
+            params.append(parent_id)
+        if version_id:
+            where_clauses.append("c.version_id = %s")
+            params.append(version_id)
+        if validation_status:
+            where_clauses.append("c.validation_status = %s")
+            params.append(validation_status)
+        where_clauses.extend(scope_clauses)
+        params.extend(scope_params)
+        params.append(self.MAX_RESULTS)
+
+        query = f"""
+            SELECT
+                c.id,
+                c.name,
+                c.validation_status,
+                c.org_unit_type_id,
+                t.name AS org_unit_type_name,
+                {_has_geom_sql("c")} AS has_geometry,
+                EXISTS (
+                    SELECT 1 FROM iaso_orgunit k WHERE k.parent_id = c.id AND k.version_id = c.version_id
+                ) AS has_children,
+                located.n AS located_descendants,
+                ST_XMin(located.bbox), ST_YMin(located.bbox), ST_XMax(located.bbox), ST_YMax(located.bbox)
+            FROM iaso_orgunit c
+            LEFT JOIN iaso_orgunittype t ON t.id = c.org_unit_type_id
+            CROSS JOIN LATERAL (
+                SELECT
+                    COUNT(*) FILTER (WHERE s.id <> c.id) AS n,
+                    ST_Extent(COALESCE(s.geom::geometry, s.simplified_geom::geometry, s.location::geometry)) AS bbox
+                FROM iaso_orgunit s
+                WHERE s.path <@ c.path AND {_has_geom_sql("s")}
+            ) located
+            WHERE {" AND ".join(where_clauses)}
+            ORDER BY c.name
+            LIMIT %s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+        results = [
+            {
+                "id": row[0],
+                "name": row[1],
+                "validation_status": row[2],
+                "org_unit_type_id": row[3],
+                "org_unit_type_name": row[4],
+                "has_geometry": row[5],
+                "has_children": row[6],
+                "located_descendants": row[7],
+                "bbox": list(row[8:12]) if row[8] is not None else None,
+            }
+            for row in rows
+        ]
+        return Response({"results": results})

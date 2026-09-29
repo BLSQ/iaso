@@ -291,8 +291,13 @@ class OrgUnitMVTTilesView(APIView):
             if user_org_units:
                 ltree_clauses = []
                 for ou in user_org_units:
-                    ltree_clauses.append("u.path <@ %s")
-                    params.append(ou.path)
+                    if ou.path is None:
+                        continue
+                    # ou.path is a django_ltree PathValue, which psycopg2 cannot adapt
+                    ltree_clauses.append("u.path <@ %s::ltree")
+                    params.append(str(ou.path))
+                if not ltree_clauses:
+                    return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
                 where_clauses.append(f"({' OR '.join(ltree_clauses)})")
             elif profile.org_units.exists():
                 return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")

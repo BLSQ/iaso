@@ -74,27 +74,24 @@ class SyncImportQueryCountTest(APITestCase):
         # single batch query in process_mobile_bulk_upload() doesn't apply here). `iaso_formversion`
         # is a single lookup, also from xml_file_to_json - get_and_save_json_of_xml reuses the
         # FormVersion it already found there instead of looking it up again separately.
-        profiler.assertLessEqualQueryCount(
-            {
-                "iaso_orgunit": 0,
-                "iaso_entity": 0,
-                "iaso_entitytype": 0,
-                "iaso_form": 2,
-                "iaso_formversion": 1,
-                "iaso_instance": 8,
-                "iaso_project": 2,
-                "vector_control_apiimport": 1,
-                "iaso_featureflag": 1,
-                "audit_modification": 1,
-            },
-            exclude=["django_content_type"],
-        )
-        # 20 observed as part of the full suite, 21 in isolation - `iaso_content_type`'s one-time
-        # cache warm depends on test run order; +1 of headroom for that only.
-        self.assertLessEqual(profiler.total_queries(), 21)
-
-        profiler.print_report()
-        path = profiler.write_markdown_report(
+        # `django_content_type` is excluded from both assertions: its one-time cache warm depends
+        # on test run order (0 as part of the full suite, 1 in isolation).
+        with profiler.report_on_failure(
             "sync_import_form_version.md", title="One-by-one sync import — FormVersion/Form query report"
-        )
-        print(f"Markdown report written to {path}")
+        ):
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_orgunit": 0,
+                    "iaso_entity": 0,
+                    "iaso_entitytype": 0,
+                    "iaso_form": 2,
+                    "iaso_formversion": 1,
+                    "iaso_instance": 8,
+                    "iaso_project": 2,
+                    "vector_control_apiimport": 1,
+                    "iaso_featureflag": 1,
+                    "audit_modification": 1,
+                },
+                exclude=["django_content_type"],
+            )
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 20)

@@ -4,6 +4,7 @@ import traceback
 import typing
 
 from collections import Counter
+from contextlib import contextmanager
 
 from django.conf import settings
 from django.db import connection
@@ -20,7 +21,8 @@ class QueryProfiler:
     Usage:
         with QueryProfiler(trace_tables=["iaso_formversion", "iaso_form"]) as profiler:
             do_something()
-        profiler.print_report()
+        with profiler.report_on_failure("my_report.md"):
+            profiler.assertLessEqualQueryCount({...})
 
         # or drill into one table:
         profiler.queries_for_table("iaso_formversion")
@@ -79,8 +81,12 @@ class QueryProfiler:
         self.queries = self._capture.captured_queries
         return False
 
-    def total_queries(self) -> int:
-        return self._total_queries
+    def total_queries(self, exclude: typing.Sequence[str] = ()) -> int:
+        """
+        `exclude` subtracts the queries hitting those tables - same meaning as in
+        `assertLessEqualQueryCount`, so both assertions ignore the same run-order-dependent noise.
+        """
+        return self._total_queries - sum(self._table_counts[table] for table in exclude)
 
     def table_counts(self) -> Counter:
         return self._table_counts
@@ -239,6 +245,29 @@ class QueryProfiler:
                     lines += ["```sql", self._format_sql(sql), "```", ""]
 
         return "\n".join(lines)
+
+    @contextmanager
+    def report_on_failure(self, markdown_filename: typing.Optional[str] = None, title: str = "Query report"):
+        """
+        Wrap query-count assertions: the report is only printed if one of them fails, so the
+        normal test run stays quiet. Set the `QUERY_PROFILER_REPORTS` env var to always print it
+        and write the markdown report, e.g. when investigating locally:
+        `docker compose run --rm -e QUERY_PROFILER_REPORTS=1 iaso manage test ...`
+        (`print_report()`/`write_markdown_report()` can also still be called directly.)
+        """
+        always_report = bool(os.environ.get("QUERY_PROFILER_REPORTS"))
+        try:
+            yield
+        except AssertionError:
+            if not always_report:
+                self.print_report()
+            raise
+        finally:
+            if always_report:
+                self.print_report()
+                if markdown_filename:
+                    path = self.write_markdown_report(markdown_filename, title=title)
+                    print(f"Markdown report written to {path}")
 
     def write_markdown_report(self, filename: str, title: str = "Query report") -> str:
         """

@@ -403,3 +403,52 @@ class QueryProfilerTest(TestCase):
 
                 with open(path) as f:
                     self.assertEqual(f.read(), profiler.to_markdown(title="Fresh report"))
+
+    def test_total_queries_exclude_subtracts_excluded_tables(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Project.objects.filter(pk=MISSING_PK).exists()
+
+        self.assertEqual(profiler.total_queries(exclude=["iaso_project"]), 1)
+        self.assertEqual(profiler.total_queries(exclude=["iaso_featureflag"]), 2)
+
+    def test_report_on_failure_is_silent_when_assertions_pass(self):
+        with tempfile.TemporaryDirectory() as tmp_media_root:
+            with override_settings(MEDIA_ROOT=tmp_media_root), mock.patch.dict(os.environ, clear=True):
+                with QueryProfiler() as profiler:
+                    m.Account.objects.filter(pk=MISSING_PK).exists()
+
+                out = io.StringIO()
+                with redirect_stdout(out), profiler.report_on_failure("report.md"):
+                    profiler.assertLessEqualQueryCount({"iaso_account": 1})
+
+                self.assertEqual(out.getvalue(), "")
+                self.assertFalse(os.path.exists(os.path.join(tmp_media_root, "query_reports")))
+
+    def test_report_on_failure_prints_report_and_reraises_on_failure(self):
+        with mock.patch.dict(os.environ, clear=True):
+            with QueryProfiler() as profiler:
+                m.Account.objects.filter(pk=MISSING_PK).exists()
+
+            out = io.StringIO()
+            with self.assertRaises(AssertionError), redirect_stdout(out), profiler.report_on_failure():
+                profiler.assertLessEqualQueryCount({"iaso_account": 0})
+
+        self.assertEqual(out.getvalue().count("Total queries: 1"), 1)
+
+    def test_report_on_failure_always_reports_when_env_var_is_set(self):
+        with tempfile.TemporaryDirectory() as tmp_media_root:
+            with (
+                override_settings(MEDIA_ROOT=tmp_media_root),
+                mock.patch.dict(os.environ, {"QUERY_PROFILER_REPORTS": "1"}),
+            ):
+                with QueryProfiler() as profiler:
+                    m.Account.objects.filter(pk=MISSING_PK).exists()
+
+                out = io.StringIO()
+                with redirect_stdout(out), profiler.report_on_failure("report.md", title="Forced report"):
+                    profiler.assertLessEqualQueryCount({"iaso_account": 1})
+
+                self.assertEqual(out.getvalue().count("Total queries: 1"), 1)
+                with open(os.path.join(tmp_media_root, "query_reports", "report.md")) as f:
+                    self.assertEqual(f.read(), profiler.to_markdown(title="Forced report"))

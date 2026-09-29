@@ -193,7 +193,7 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
             charset="utf-8",
         )
         instance.file = file
-        instance.resolve_form_version()
+        instance.form_version = cvs_stat_mapping_version.form_version
         instance.save()
 
 

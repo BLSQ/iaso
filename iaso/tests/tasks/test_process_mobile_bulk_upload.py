@@ -518,7 +518,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # `get_and_save_json_of_xml()` can fetch the file back on S3 storage) + one merged save (1,
         # covers json/form_version and the location/device/correlation conversions together) -
         # down from 8/instance, since the previous separate uuid re-fetch and the previous 3rd
-        # save are both gone. `iaso_instance`/`audit_modification` scale 1:1 with the batch (6 and
+        # save are both gone - plus 1 per batch for `process_mobile_bulk_upload()`'s pre-existing
+        # uuids lookup. `iaso_instance`/`audit_modification` scale 1:1 with the batch (6 and
         # 1 per instance) - a regression would push these to a multiple of the bounds below, not a
         # small overshoot. The rest (`iaso_task`/`iaso_tasklog`/`iaso_project`/
         # `vector_control_apiimport`/`auth_user`/`iaso_profile`/`iaso_account`/`iaso_datasource`/
@@ -527,36 +528,38 @@ class ProcessMobileBulkUploadTest(TestCase):
         # caught. `django_content_type` is excluded rather than bounded: it's a one-time framework
         # cache warm that only fires the very first time `ContentType` is touched in the whole test
         # process, so it's 0 here but can be 1 if this test runs in isolation instead of as part of
-        # the full suite.
-        profiler.assertLessEqualQueryCount(
-            {
-                "iaso_orgunit": 9,
-                "iaso_form": 16,
-                "iaso_entity": 8,
-                "iaso_formversion": 4,
-                "iaso_instance": 25,
-                "audit_modification": 4,
-                "iaso_entitytype": 4,
-                "iaso_task": 7,
-                "iaso_tasklog": 4,
-                "iaso_project": 3,
-                "vector_control_apiimport": 2,
-                "auth_user": 2,
-                "iaso_profile": 2,
-                "iaso_account": 2,
-                "iaso_datasource": 1,
-                "iaso_instancefile": 1,
-            },
-            exclude=["django_content_type"],
-        )
-        # 114 observed, stable whether run alone or as part of the full suite.
-        self.assertLessEqual(profiler.total_queries(), 114)
-
-        profiler.print_report()
-        path = profiler.write_markdown_report(
+        # the full suite - excluded from the total below too, for the same reason.
+        with profiler.report_on_failure(
             "mobile_bulk_upload_form_version.md", title="Mobile bulk upload — FormVersion/Form query report"
-        )
-        print(f"Markdown report written to {path}")
+        ):
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_orgunit": 9,
+                    "iaso_form": 16,
+                    "iaso_entity": 8,
+                    "iaso_formversion": 4,
+                    "iaso_instance": 26,
+                    "audit_modification": 4,
+                    "iaso_entitytype": 4,
+                    "iaso_task": 7,
+                    "iaso_tasklog": 4,
+                    "iaso_project": 3,
+                    "vector_control_apiimport": 2,
+                    "auth_user": 2,
+                    "iaso_profile": 2,
+                    "iaso_account": 2,
+                    "iaso_datasource": 1,
+                    "iaso_instancefile": 1,
+                },
+                exclude=["django_content_type"],
+            )
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 115)
+
+        # form_version is no longer resolved on every save() - make sure the bulk upload path
+        # still sets it on every instance it creates.
+        expected_versions = {self.form_registration.id: "2024032701", self.form_catt.id: "2024031801"}
+        for instance in m.Instance.objects.select_related("form_version"):
+            self.assertEqual(instance.form_version.version_id, expected_versions[instance.form_id])
 
     def test_form_version_query_count_at_scale(self):
         """
@@ -597,41 +600,35 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Same per-instance import_data() lookups as the baseline test (see comment there), at
         # 12.5x the instance count (50 vs 4): `iaso_orgunit`/`iaso_form`/`iaso_entity`/
         # `iaso_entitytype` all scale with the batch. `iaso_formversion`: same 1 query/instance as the baseline test, at scale: 50.
-        # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300.
+        # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300, + 1 per batch.
         # `audit_modification` scales 1:1 with the batch, at scale: 50. The rest is the same fixed
         # per-run bookkeeping overhead as the baseline test (see comment there), still O(1) rather
         # than scaling with the 12.5x larger batch - this zip has no attachments so
         # `iaso_instancefile` never fires, unlike the baseline test.
-        profiler.assertLessEqualQueryCount(
-            {
-                "iaso_orgunit": 55,
-                "iaso_form": 200,
-                "iaso_entity": 100,
-                "iaso_formversion": 50,
-                "iaso_instance": 300,
-                "audit_modification": 50,
-                "iaso_entitytype": 50,
-                "iaso_task": 7,
-                "iaso_tasklog": 4,
-                "iaso_project": 3,
-                "vector_control_apiimport": 2,
-                "auth_user": 1,
-                "iaso_profile": 1,
-                "iaso_account": 1,
-                "iaso_datasource": 1,
-            },
-            exclude=["django_content_type"],
-        )
-        # 936 observed as part of the full suite, 937 in isolation - `iaso_content_type`'s
-        # one-time cache warm depends on test run order (see the `exclude` note above); +1 of
-        # headroom for that only.
-        self.assertLessEqual(profiler.total_queries(), 937)
-
-        profiler.print_report()
-        path = profiler.write_markdown_report(
+        with profiler.report_on_failure(
             "mobile_bulk_upload_at_scale.md", title="Mobile bulk upload at scale — FormVersion/Form query report"
-        )
-        print(f"Markdown report written to {path}")
+        ):
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_orgunit": 55,
+                    "iaso_form": 200,
+                    "iaso_entity": 100,
+                    "iaso_formversion": 50,
+                    "iaso_instance": 301,
+                    "audit_modification": 50,
+                    "iaso_entitytype": 50,
+                    "iaso_task": 7,
+                    "iaso_tasklog": 4,
+                    "iaso_project": 3,
+                    "vector_control_apiimport": 2,
+                    "auth_user": 1,
+                    "iaso_profile": 1,
+                    "iaso_account": 1,
+                    "iaso_datasource": 1,
+                },
+                exclude=["django_content_type"],
+            )
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 938)
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()
@@ -1181,6 +1178,31 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent1.instances.count() + ent2.instances.count(), 3)
         err_msg = f"Multiple non-deleted entities for UUID {ent1.uuid}, entity_type_id {self.default_entity_type.id}"
         mock_logger.exception.assert_called_once_with(err_msg)
+
+    def test_duplicate_instance_uuids_fail_the_import(self):
+        # Two existing instances with the same uuid as one in the zip: the import fails
+        # (MultipleObjectsReturned) rather than silently updating one of them.
+        ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)
+        ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4())
+        m.Instance.objects.filter(id=ent2.attributes_id).update(uuid=DISASI_MAKULO_REGISTRATION)
+
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.ERRORED)
+        self.api_import.refresh_from_db()
+        self.assertTrue(self.api_import.has_problem)
+        self.assertIn("MultipleObjectsReturned", self.api_import.exception)
+
+        # The instances transaction was rolled back
+        self.assertEqual(ent1.instances.count() + ent2.instances.count(), 2)
 
     def test_storage_logs(self):
         entity_uuid = "5475bfcf-5a3f-4170-9d88-245d89352362"

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IASO - Leaflet Vector Tiles (MVT) POC</title>
+    <!-- Same Leaflet version as the dashboard (package.json) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- MVT support for Leaflet: decodes the protobuf tiles and draws them on canvas -->
+    <script src="https://unpkg.com/leaflet.vectorgrid@1.3.0/dist/Leaflet.VectorGrid.bundled.min.js"></script>
+    <style>
+        :root {
+            --sidebar-bg: #222831;
+            --sidebar-text: #eeeeee;
+            --input-bg: #393e46;
+            --border-color: #4a5059;
+            --status-valid: #4CAF50;
+            --status-new: #FF9800;
+            --status-rejected: #F44336;
+            --status-unknown: #2196F3;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--sidebar-bg);
+        }
+
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            padding: 20px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            overflow-y: auto;
+        }
+
+        .sidebar h1 { font-size: 1.2rem; margin: 0 0 4px; }
+        .sidebar p { margin: 0 0 20px; font-size: 0.85rem; opacity: 0.7; }
+
+        .control-group { margin-bottom: 16px; }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.8;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--sidebar-text);
+            font-size: 0.9rem;
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin-bottom: 6px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+
+        #map { flex: 1; }
+
+        @media (max-width: 700px) {
+            body { flex-direction: column; }
+            .sidebar { width: auto; max-height: 40vh; padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>IASO Map MVT · Leaflet</h1>
+        <p>Vector tiles prototype</p>
+
+        <div class="control-group">
+            <label for="versionSelect">Data Source Version</label>
+            <select id="versionSelect">
+                {% for v in versions %}
+                    <option value="{{ v.id }}" {% if v.id == default_version_id %}selected{% endif %}>
+                        {{ v.data_source_name }} (v{{ v.number }})
+                    </option>
+                {% empty %}
+                    <option value="">No versions available</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="typeSelect">Org Unit Type</label>
+            <select id="typeSelect">
+                <option value="">All Types</option>
+                <!-- Types of the selected version, filled by loadOrgUnitTypes() -->
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Legend</label>
+            <div class="legend-item"><div class="legend-color" style="background: var(--status-valid)"></div>Valid</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--status-new)"></div>New</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--status-rejected)"></div>Rejected</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--status-unknown)"></div>Other</div>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+        // Precalculated extents of the versions, {version_id: [xmin, ymin, xmax, ymax]}
+        const extents = {{ extents_json|safe }};
+
+        // Leaflet.VectorGrid 1.3.0 still calls L.DomEvent.fakeStop on clicks, removed in Leaflet 1.8
+        if (!L.DomEvent.fakeStop) {
+            L.DomEvent.fakeStop = e => { e._stopped = true; };
+        }
+
+        const STATUS_COLORS = {
+            VALID: '#4CAF50',
+            NEW: '#FF9800',
+            REJECTED: '#F44336',
+        };
+        const DEFAULT_COLOR = '#2196F3';
+
+        const map = L.map('map').setView([0, 20], 3);
+        // Same OSM basemap as the dashboard
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // MVT geometry types
+        const POINT = 1, POLYGON = 3;
+
+        // VectorGrid 1.3.0 only gives the properties and zoom to style functions, not the
+        // geometry type: copy it into the properties, points and polygons need different styles.
+        const OrgUnitVectorGrid = L.VectorGrid.Protobuf.extend({
+            _getVectorTilePromise(...args) {
+                return L.VectorGrid.Protobuf.prototype._getVectorTilePromise.apply(this, args).then(json => {
+                    Object.values(json.layers).forEach(layer => {
+                        (layer.features || []).forEach(f => { f.properties.geometry_type = f.type; });
+                    });
+                    return json;
+                });
+            },
+
+            // Points are drawn as CircleMarkers without a latlng. Leaflet 1.9 locates events on
+            // small circle markers with getLatLng(), which then throws: make it use the mouse position.
+            _createLayer(feat, ...args) {
+                const layer = L.VectorGrid.Protobuf.prototype._createLayer.call(this, feat, ...args);
+                if (feat.type === POINT) layer.getLatLng = undefined;
+                return layer;
+            },
+        });
+
+        function orgUnitStyle(properties, zoom) {
+            const color = STATUS_COLORS[properties.validation_status] || DEFAULT_COLOR;
+            if (properties.geometry_type === POINT) {
+                return {
+                    radius: zoom < 8 ? 3 : 5,
+                    fill: true,
+                    fillColor: color,
+                    fillOpacity: 0.95,
+                    color: '#ffffff',
+                    weight: 1,
+                };
+            }
+            return {
+                fill: properties.geometry_type === POLYGON,
+                fillColor: color,
+                fillOpacity: 0.25,
+                color: color,
+                weight: 1.2,
+            };
+        }
+
+        function buildTileUrl() {
+            const params = new URLSearchParams();
+            const versionId = document.getElementById('versionSelect').value;
+            const typeId = document.getElementById('typeSelect').value;
+            if (versionId) params.set('version_id', versionId);
+            if (typeId) params.set('org_unit_type_id', typeId);
+            return `/api/v3/orgunits/tiles/{z}/{x}/{y}/?${params}`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        let orgUnitLayer = null;
+
+        // VectorGrid has no way to change the url of a loaded layer: replace the layer instead
+        function refreshTiles() {
+            if (orgUnitLayer) map.removeLayer(orgUnitLayer);
+            orgUnitLayer = new OrgUnitVectorGrid(buildTileUrl(), {
+                rendererFactory: L.canvas.tile,
+                vectorTileLayerStyles: { org_units: orgUnitStyle },
+                interactive: true,
+                getFeatureId: f => f.properties.id,
+                maxNativeZoom: 14,
+                fetchOptions: { credentials: 'same-origin' },
+            });
+            orgUnitLayer.on('click', e => {
+                const p = e.layer.properties;
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(
+                        `<strong>${escapeHtml(p.name || 'Unnamed Org Unit')}</strong><br/>` +
+                        `Id: ${p.id}<br/>Status: ${escapeHtml(p.validation_status || 'UNKNOWN')}`
+                    )
+                    .openOn(map);
+            });
+            orgUnitLayer.addTo(map);
+        }
+
+        function zoomToSelectedVersionExtent() {
+            const bbox = extents[document.getElementById('versionSelect').value];
+            if (bbox) map.fitBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]], { padding: [50, 50], maxZoom: 13 });
+        }
+
+        // Org unit types used in the selected version, for the type filter
+        let typesRequestSeq = 0;
+        async function loadOrgUnitTypes() {
+            const select = document.getElementById('typeSelect');
+            const seq = ++typesRequestSeq;
+            const versionId = document.getElementById('versionSelect').value;
+            const params = versionId ? `?source_version_id=${versionId}` : '';
+
+            let types;
+            try {
+                const res = await fetch(`/api/v2/orgunittypes/dropdown/${params}`, { credentials: 'same-origin' });
+                types = await res.json();
+            } catch (err) {
+                console.error('Failed to list org unit types', err);
+                return;
+            }
+            if (seq !== typesRequestSeq) return; // another version was selected meanwhile
+
+            const previous = select.value;
+            select.length = 1; // keep "All Types"
+            types.forEach(t => select.add(new Option(t.name, t.id)));
+            // The selected type may not exist in this version
+            select.value = types.some(t => String(t.id) === previous) ? previous : '';
+            if (select.value !== previous) refreshTiles();
+        }
+
+        document.getElementById('versionSelect').addEventListener('change', () => {
+            refreshTiles();
+            zoomToSelectedVersionExtent();
+            loadOrgUnitTypes();
+        });
+        document.getElementById('typeSelect').addEventListener('change', refreshTiles);
+
+        refreshTiles();
+        zoomToSelectedVersionExtent();
+        loadOrgUnitTypes();
+    </script>
+</body>
+</html>

@@ -259,6 +259,8 @@ class ModelDataView(View):
 
 
 class MvtTestPageView(View):
+    template_name = "iaso/mvt_test.html"
+
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return HttpResponseForbidden("authentication required")
@@ -318,4 +320,10 @@ class MvtTestPageView(View):
             "default_version_id": default_version_id,
             "extents_json": json.dumps(extents),
         }
-        return render(request, "iaso/mvt_test.html", context)
+        return render(request, self.template_name, context)
+
+
+class MvtLeafletTestPageView(MvtTestPageView):
+    """Barebones Leaflet version of the MVT test page: same tiles, version and type filters only."""
+
+    template_name = "iaso/mvt_leaflet_test.html"

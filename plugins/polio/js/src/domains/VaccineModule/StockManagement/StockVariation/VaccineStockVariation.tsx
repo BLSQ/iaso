@@ -21,26 +21,18 @@ import {
 import { baseUrls } from '../../../../constants/urls';
 import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
 import {
-    useGetDestructionList,
     useGetDosesOptions,
-    useGetEarmarkedList,
-    useGetFormAList,
-    useGetIncidentList,
     useGetStockManagementSummary,
 } from '../hooks/api';
 import MESSAGES from '../messages';
 import { StockVariationParams, StockVariationTab } from '../types';
 
+import { useStockVariationTabConfig } from './config';
 import { CreateDestruction } from './Modals/CreateEditDestruction';
 import { CreateEarmarked } from './Modals/CreateEditEarmarked';
 import { CreateFormA } from './Modals/CreateEditFormA';
 import { CreateIncident } from './Modals/CreateEditIncident';
-import {
-    useDestructionTableColumns,
-    useEarmarkedTableColumns,
-    useFormATableColumns,
-    useIncidentTableColumns,
-} from './Table/columns';
+import { StockVariationSearch } from './Modals/StockVariationSearch';
 import { VaccineStockVariationTable } from './Table/VaccineStockVariationTable';
 
 const useStyles = makeStyles(theme => {
@@ -81,37 +73,17 @@ export const VaccineStockVariation: FunctionComponent = () => {
     const defaultDosesPerVial =
         //@ts-ignore
         (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
-    const { data: formA, isFetching: isFetchingFormA } = useGetFormAList(
-        params,
-        tab === FORM_A,
-    );
-    const { data: destructions, isFetching: isFetchingDestructions } =
-        useGetDestructionList(params, tab === DESTRUCTION);
-    const { data: incidents, isFetching: isFetchingIncidents } =
-        useGetIncidentList(params, tab === INCIDENT);
-    const { data: earmarked, isFetching: isFetchingEarmarked } =
-        useGetEarmarkedList(params, tab === EARMARKED);
     const { data: summary } = useGetStockManagementSummary(params.id);
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
 
-    const formAColumns = useFormATableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
-    const destructionsColumns = useDestructionTableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
-    const incidentsColumns = useIncidentTableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
-    const earmarkedColumns = useEarmarkedTableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
+    const currentTabConfig = useStockVariationTabConfig({
+        params,
+        tab,
+        countryName: summary?.country_name,
+        vaccineType: summary?.vaccine_type,
+    });
 
     return (
         <>
@@ -240,63 +212,21 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 )}
                             </DisplayIfUserHasPerm>
                         </Grid>
-                        {tab === FORM_A && (
-                            <VaccineStockVariationTable
-                                data={formA}
-                                columns={formAColumns}
+                        {currentTabConfig.search && (
+                            <StockVariationSearch
                                 params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingFormA}
-                                defaultSorted={[
-                                    { id: 'form_a_reception_date', desc: true },
-                                ]}
+                                searchKey={currentTabConfig.search.searchKey}
+                                pageKey={currentTabConfig.search.pageKey}
                             />
                         )}
-                        {tab === DESTRUCTION && (
-                            <VaccineStockVariationTable
-                                data={destructions}
-                                columns={destructionsColumns}
-                                params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingDestructions}
-                                defaultSorted={[
-                                    {
-                                        id: 'rrt_destruction_report_reception_date',
-                                        desc: true,
-                                    },
-                                ]}
-                            />
-                        )}
-                        {tab === INCIDENT && (
-                            <VaccineStockVariationTable
-                                data={incidents}
-                                columns={incidentsColumns}
-                                params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingIncidents}
-                                defaultSorted={[
-                                    {
-                                        id: 'incident_report_received_by_rrt',
-                                        desc: true,
-                                    },
-                                ]}
-                            />
-                        )}
-                        {tab === EARMARKED && (
-                            <VaccineStockVariationTable
-                                data={earmarked}
-                                columns={earmarkedColumns}
-                                params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingEarmarked}
-                                defaultSorted={[
-                                    {
-                                        id: 'created_at',
-                                        desc: true,
-                                    },
-                                ]}
-                            />
-                        )}
+                        <VaccineStockVariationTable
+                            data={currentTabConfig.data}
+                            columns={currentTabConfig.columns}
+                            params={params}
+                            paramsPrefix={tab}
+                            isFetching={currentTabConfig.isFetching}
+                            defaultSorted={currentTabConfig.defaultSorted}
+                        />
                     </Box>
                 </Paper>
             </Box>

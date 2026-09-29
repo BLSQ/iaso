@@ -1,4 +1,5 @@
 import datetime
+import io
 import json
 import os
 import uuid
@@ -12,7 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
@@ -22,7 +23,11 @@ from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
-from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
+from iaso.tasks.process_mobile_bulk_upload import (
+    get_directory_handlers,
+    process_instance_attachments,
+    process_mobile_bulk_upload,
+)
 from iaso.tests.utils.query_profiler import QueryProfiler
 
 
@@ -1399,3 +1404,104 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Verify the instance was actually updated with the newer timestamp
         self.assertEqual(instance.source_updated_at, updated_timestamp)
         self.assertEqual(instance.last_modified_by, self.user)
+
+
+def in_memory_zip(entries):
+    """`entries`: {zip entry name: bytes}, written in the given order - a name ending with "/" is a directory entry."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zipf:
+        for name, content in entries.items():
+            zipf.writestr(name, content)
+    return zipfile.ZipFile(buffer)
+
+
+class GetDirectoryHandlersTest(SimpleTestCase):
+    def test_maps_each_top_level_directory_to_its_files_in_zip_order(self):
+        zip_ref = in_memory_zip(
+            {
+                "instances.json": b"[]",
+                "orgUnits.json": b"[]",
+                "uuid-1/": b"",
+                "uuid-1/form.xml": b"<x/>",
+                "uuid-1/photo.webp": b"img",
+                "uuid-1/scan.pdf": b"pdf",
+                "uuid-2/": b"",
+                "uuid-2/form.xml": b"<x/>",
+            }
+        )
+
+        self.assertEqual(
+            get_directory_handlers(zip_ref),
+            {
+                "uuid-1": ["uuid-1/form.xml", "uuid-1/photo.webp", "uuid-1/scan.pdf"],
+                "uuid-2": ["uuid-2/form.xml"],
+            },
+        )
+
+    def test_directory_without_explicit_directory_entry(self):
+        # Zips aren't required to contain "<uuid>/" entries (the mobile app writes them, other
+        # zip tools may not) - the directory is then only implied by its files' paths.
+        zip_ref = in_memory_zip({"uuid-1/form.xml": b"<x/>", "uuid-1/photo.webp": b"img"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": ["uuid-1/form.xml", "uuid-1/photo.webp"]})
+
+    def test_empty_directory_is_still_listed(self):
+        zip_ref = in_memory_zip({"uuid-1/": b""})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": []})
+
+    def test_nested_paths_are_ignored(self):
+        # Only direct children of "<uuid>/" are attachments - like `zipfile.Path.iterdir()` used to list.
+        zip_ref = in_memory_zip({"uuid-1/form.xml": b"<x/>", "uuid-1/nested/": b"", "uuid-1/nested/photo.webp": b"img"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": ["uuid-1/form.xml"]})
+
+    def test_no_directories(self):
+        zip_ref = in_memory_zip({"instances.json": b"[]", "orgUnits.json": b"[]"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {})
+
+    def test_reads_the_zip_index_once_regardless_of_instance_count(self):
+        # Regression guard: listing each instance's directory with `zipfile.Path.iterdir()` scanned
+        # every entry of the zip per instance (O(instances²) - ~16s for a 5000-instance zip).
+        zip_ref = in_memory_zip({f"uuid-{i}/form.xml": b"<x/>" for i in range(100)})
+
+        with mock.patch.object(zip_ref, "namelist", wraps=zip_ref.namelist) as namelist:
+            handlers = get_directory_handlers(zip_ref)
+
+        self.assertEqual(len(handlers), 100)
+        namelist.assert_called_once()
+
+
+class ProcessInstanceAttachmentsTest(TestCase):
+    def test_creates_an_instance_file_per_non_xml_file(self):
+        instance = m.Instance.objects.create(file_name="form.xml")
+        zip_ref = in_memory_zip(
+            {
+                "uuid-1/": b"",
+                "uuid-1/form.xml": b"<x/>",
+                "uuid-1/photo.webp": b"img-content",
+                "uuid-1/scan.pdf": b"pdf-content",
+                "uuid-2/other.webp": b"not-mine",
+            }
+        )
+
+        instance_files = process_instance_attachments(zip_ref, get_directory_handlers(zip_ref)["uuid-1"], instance)
+
+        self.assertEqual([instance_file.name for instance_file in instance_files], ["photo.webp", "scan.pdf"])
+        self.assertEqual(
+            sorted(m.InstanceFile.objects.filter(instance=instance).values_list("name", flat=True)),
+            ["photo.webp", "scan.pdf"],
+        )
+        contents = {}
+        for instance_file in instance_files:
+            with instance_file.file.open("rb") as f:
+                contents[instance_file.name] = f.read()
+        self.assertEqual(contents, {"photo.webp": b"img-content", "scan.pdf": b"pdf-content"})
+
+    def test_no_attachments(self):
+        instance = m.Instance.objects.create(file_name="form.xml")
+        zip_ref = in_memory_zip({"uuid-1/": b"", "uuid-1/form.xml": b"<x/>"})
+
+        self.assertEqual(process_instance_attachments(zip_ref, get_directory_handlers(zip_ref)["uuid-1"], instance), [])
+        self.assertFalse(m.InstanceFile.objects.filter(instance=instance).exists())

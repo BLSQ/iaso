@@ -231,7 +231,6 @@ const Filters = ({
             <Grid item xs={12} md={3}>
                 <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
                     <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
                         titleMessage={MESSAGES.location}
                         onConfirm={orgUnit =>
                             handleChange(

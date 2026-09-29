@@ -229,7 +229,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     id="ou-tree-input"
                 >
                     <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
                         titleMessage={MESSAGES.selectParentOrgUnit}
                         onConfirm={treeviewOrgUnit => {
                             if (

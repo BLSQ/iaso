@@ -194,14 +194,13 @@ const Filters: FunctionComponent<Props> = ({
                             keyValue="groups"
                             onChange={handleChange}
                             value={!isFetchingGroups && filters?.groups}
-                            label={MESSAGES.groups}
+                            label={MESSAGES.groupsCustom}
                             options={groups}
                             loading={isFetchingGroups}
                         />
                     )}
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
                             titleMessage={MESSAGES.location}
                             onConfirm={orgUnit =>
                                 handleChange(
@@ -245,7 +244,7 @@ const Filters: FunctionComponent<Props> = ({
                             keyValue="groups"
                             onChange={handleChange}
                             value={!isFetchingGroups && filters?.groups}
-                            label={MESSAGES.groups}
+                            label={MESSAGES.groupsCustom}
                             options={groups}
                             loading={isFetchingGroups}
                         />

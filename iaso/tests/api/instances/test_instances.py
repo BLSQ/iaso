@@ -765,6 +765,29 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.assertValidInstanceListData(response.json(), 4)
 
+    def test_instance_list_by_form_version_ids_ok(self):
+        """GET /instances/?form_version_ids=fv1,fv2"""
+
+        self.client.force_authenticate(self.yoda)
+
+        fv1 = FormVersion.objects.create(form=self.form_1, version_id="version_1")
+        fv2 = FormVersion.objects.create(form=self.form_1, version_id="version_2")
+
+        self.instance_1.form_version = fv1
+        self.instance_1.save()
+
+        self.instance_2.form_version = fv2
+        self.instance_2.save()
+
+        response = self.client.get(f"/api/instances/?{query.FORM_VERSION_IDS}={fv1.pk}")
+        self.assertInstanceListContainsStrictly(response, [self.instance_1])
+
+        response = self.client.get(f"/api/instances/?{query.FORM_VERSION_IDS}={fv1.pk},{fv2.pk}")
+        self.assertInstanceListContainsStrictly(response, [self.instance_1, self.instance_2])
+
+        response = self.client.get(f"/api/instances/?{query.FORM_VERSION_IDS}=999999")
+        self.assertInstanceListContainsStrictly(response, [])
+
     def test_instance_list_filter_by_reference_instances(self):
         """GET /instances/?referenceInstances=… filters like Instance.is_reference_instance."""
         self.client.force_authenticate(self.yoda)

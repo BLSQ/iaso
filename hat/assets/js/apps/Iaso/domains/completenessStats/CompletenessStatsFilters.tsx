@@ -223,7 +223,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
                         <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
                             titleMessage={MESSAGES.parent}
                             onConfirm={handleParentChange}
                             initialSelection={initialParent}

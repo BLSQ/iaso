@@ -45,7 +45,6 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
         <Box position="relative">
             <OrgUnitTreeviewModal
                 titleMessage={label}
-                toggleOnLabelClick={false}
                 onConfirm={orgUnit => {
                     setFieldTouched(name, true);
                     setFieldValue(name, orgUnit?.id);

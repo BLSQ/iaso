@@ -103,7 +103,7 @@ class _TaskServiceBase:
         method = getattr(module, method_name)
         assert method._is_task
 
-        blocked = self._start(task, method, kwargs)
+        started, blocked = self._start(task, method, kwargs)
         if blocked:
             if not blocked.paused and timezone.now() - task.created_at > MAX_THROTTLE_WAIT:
                 self._end_queued(
@@ -112,7 +112,7 @@ class _TaskServiceBase:
                 return
             self._defer(task, module_name, method_name, args, kwargs, throttle_attempt + 1, blocked)
             return
-        if task.status != RUNNING:  # another worker started it first
+        if not started:  # another delivery of the same task started it first
             return
 
         heartbeat = Heartbeat(self.get_queryset().db, task.id)
@@ -127,11 +127,12 @@ class _TaskServiceBase:
         if task.status == RUNNING:
             logger.warning(f"Task {task} still in status RUNNING after execution")
 
-    def _start(self, task, method, kwargs) -> Optional["Blocked"]:
+    def _start(self, task, method, kwargs) -> Tuple[bool, Optional["Blocked"]]:
         """Mark the task RUNNING and give it a lease, unless a throttle limit is reached: then return why.
 
-        Throttle checks are serialized per task name with an advisory lock, so that two workers can't both take the
-        last free slot. The conditional update ensures that a task delivered twice by the queue only runs once."""
+        Returns (started, blocked). Throttle checks are serialized per task name with an advisory lock, so that two
+        workers can't both take the last free slot. The conditional update ensures that a task delivered twice by the
+        queue only runs once: only the delivery whose update matched the QUEUED task gets started=True."""
         qs = self.get_queryset()
         task_name = method._task_name or task.name
         with transaction.atomic(using=qs.db):
@@ -145,16 +146,17 @@ class _TaskServiceBase:
                 reap_lost_tasks(qs.db)
                 blocked = check_throttle(task, task_name, slots, config, kwargs, qs.db)
                 if blocked:
-                    return blocked
+                    return False, blocked
             throttle_keys = [key_name for _, _, key_name in slots]
 
             now = timezone.now()
-            if qs.filter(id=task.id, status=QUEUED).update(status=RUNNING, started_at=now):
+            started = bool(qs.filter(id=task.id, status=QUEUED).update(status=RUNNING, started_at=now))
+            if started:
                 TaskLease.objects.using(qs.db).update_or_create(
                     task_id=task.id, defaults={"throttle_keys": throttle_keys, "heartbeat_at": now}
                 )
         task.refresh_from_db()
-        return None
+        return started, None
 
     def _end_queued(self, task, status, message):
         """End a task that never started. The conditional update leaves it alone if another worker started it."""

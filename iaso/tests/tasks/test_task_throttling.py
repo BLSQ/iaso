@@ -7,7 +7,7 @@ from django.db import OperationalError
 from django.test import override_settings
 from django.utils import timezone
 
-from beanstalk_worker import task_decorator
+from beanstalk_worker import services, task_decorator
 from beanstalk_worker.services import (
     LOST_AFTER,
     MAX_BACKOFF_DELAY,
@@ -267,6 +267,23 @@ class TaskThrottlingTestCase(TestCase):
 
         self.assertEqual(task.status, m.RUNNING)
         self.assertEqual(leases_seen_during_run, [])
+
+    def test_duplicate_delivery_losing_the_race_does_not_run_nor_drop_the_lease(self, boto_client):
+        task = self.queued_task(self.account_a)
+        original_throttle_slots = services.throttle_slots
+
+        def other_delivery_starts_first(*args, **kwargs):
+            # the other delivery switches the task to RUNNING after this one checked that it was QUEUED
+            m.Task.objects.filter(id=task.id).update(status=m.RUNNING, started_at=timezone.now())
+            m.TaskLease.objects.create(task=task, throttle_keys=[], heartbeat_at=timezone.now())
+            return original_throttle_slots(*args, **kwargs)
+
+        with mock.patch("beanstalk_worker.services.throttle_slots", side_effect=other_delivery_starts_first):
+            self.run_now(task)
+
+        self.assertEqual(task.status, m.RUNNING)
+        self.assertEqual(leases_seen_during_run, [])
+        self.assertTrue(m.TaskLease.objects.filter(task=task).exists())
 
     def test_run_task_reads_the_attempt_from_the_message(self, boto_client):
         self.running_task(self.account_a)

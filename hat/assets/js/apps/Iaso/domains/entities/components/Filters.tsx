@@ -201,7 +201,6 @@ const Filters: FunctionComponent<Props> = ({
                     )}
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
                             titleMessage={MESSAGES.location}
                             onConfirm={orgUnit =>
                                 handleChange(

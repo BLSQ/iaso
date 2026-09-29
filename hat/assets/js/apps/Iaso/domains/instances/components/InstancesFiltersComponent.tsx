@@ -396,7 +396,6 @@ const InstancesFiltersComponent = ({
                 <Grid item xs={12} sm={6} md={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
                             titleMessage={MESSAGES.org_unit}
                             onConfirm={orgUnit =>
                                 handleFormChange(

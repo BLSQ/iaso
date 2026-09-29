@@ -78,7 +78,6 @@ export const PotentialPaymentsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.forms)}
                 />
                 <OrgUnitTreeviewModal
-                    toggleOnLabelClick={false}
                     titleMessage={MESSAGES.parent}
                     onConfirm={orgUnit => {
                         handleChange('parent_id', orgUnit?.id);

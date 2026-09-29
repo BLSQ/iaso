@@ -267,7 +267,6 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                 />
 
                 <OrgUnitTreeviewModal
-                    toggleOnLabelClick={false}
                     titleMessage={MESSAGES.addLocations}
                     onConfirm={orgUnitsList => {
                         if (!orgUnitsList) {
@@ -280,7 +279,6 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                     initialSelection={bulkState.addLocations}
                 />
                 <OrgUnitTreeviewModal
-                    toggleOnLabelClick={false}
                     titleMessage={MESSAGES.removeLocations}
                     onConfirm={orgUnitsList => {
                         if (!orgUnitsList) {

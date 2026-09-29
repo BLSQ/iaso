@@ -476,7 +476,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 </InputWithInfos>
                 <Box id="ou-tree-input">
                     <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
                         titleMessage={MESSAGES.parent}
                         source={
                             dataSource

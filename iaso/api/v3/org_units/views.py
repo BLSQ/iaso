@@ -230,7 +230,9 @@ class OrgUnitMVTTilesView(APIView):
     Returns binary Mapbox Vector Tiles (MVT) directly from PostGIS.
     Supports:
     - z/x/y path parameters
-    - Query parameters: validation_status, version_id, parent_id
+    - Query parameters: validation_status, version_id, parent_id, id, org_unit_type_id(__in)
+    - Drill-down: parent_id=root returns the top of the user's pyramid; each feature
+      carries has_children and its full bbox (bbox_xmin/ymin/xmax/ymax).
     - Dynamic Level of Detail (LoD) based on Zoom level z.
     - Tenant access control restrictions from the user's Profile.
     """
@@ -271,7 +273,13 @@ class OrgUnitMVTTilesView(APIView):
             where_clauses.append("u.validation_status = %s")
             params.append(validation_status)
 
-        if parent_id:
+        org_unit_id = request.query_params.get("id")
+        if org_unit_id:
+            where_clauses.append("u.id = %s")
+            params.append(org_unit_id)
+
+        # parent_id=root is handled below, once we know the user's access roots
+        if parent_id and parent_id != "root":
             where_clauses.append("u.parent_id = %s")
             params.append(parent_id)
 
@@ -286,8 +294,18 @@ class OrgUnitMVTTilesView(APIView):
                 params.extend(type_ids)
 
         # 4. Hierarchical user access (Multi-tenancy / Account scoping)
+        user_org_units = [] if request.user.is_superuser else list(profile.org_units.all())
+
+        # Drill-down entry point: the top of the pyramid the user can see, i.e. their
+        # assigned org units, or the real roots of the version when unrestricted.
+        if parent_id == "root":
+            if user_org_units:
+                where_clauses.append(f"u.id IN ({', '.join(['%s' for _ in user_org_units])})")
+                params.extend(ou.id for ou in user_org_units)
+            else:
+                where_clauses.append("u.parent_id IS NULL")
+
         if not request.user.is_superuser:
-            user_org_units = list(profile.org_units.all())
             if user_org_units:
                 ltree_clauses = []
                 for ou in user_org_units:
@@ -306,8 +324,9 @@ class OrgUnitMVTTilesView(APIView):
         # - Low zooms (0-5): show high-level areas (provinces, districts), hide villages
         # - Mid zooms (6-9): show down to sub-districts/health areas
         # - High zooms (10+): show all org units, including villages/points
-        # Bypass LoD level checks if the user is filtering by a specific Org Unit Type
-        if not org_unit_type_id and not org_unit_type_id_in:
+        # Bypass LoD level checks if the user is filtering by a specific Org Unit Type,
+        # or is drilling down the pyramid (the parent filter already bounds the result).
+        if not org_unit_type_id and not org_unit_type_id_in and not parent_id and not org_unit_id:
             if z < 6:
                 where_clauses.append("nlevel(u.path) <= 3")
             elif z < 10:
@@ -336,8 +355,23 @@ class OrgUnitMVTTilesView(APIView):
                     u.name,
                     u.validation_status,
                     u.org_unit_type_id,
-                    u.parent_id
-                FROM iaso_orgunit u, tile_bounds tb
+                    u.parent_id,
+                    -- Full (unclipped) extent, so the client can fit the map to the org unit
+                    ST_XMin(ext.bbox) AS bbox_xmin,
+                    ST_YMin(ext.bbox) AS bbox_ymin,
+                    ST_XMax(ext.bbox) AS bbox_xmax,
+                    ST_YMax(ext.bbox) AS bbox_ymax,
+                    EXISTS (
+                        SELECT 1 FROM iaso_orgunit c
+                        WHERE c.parent_id = u.id
+                          AND c.version_id = u.version_id
+                          AND (c.location IS NOT NULL OR c.simplified_geom IS NOT NULL OR c.geom IS NOT NULL)
+                    ) AS has_children
+                FROM iaso_orgunit u
+                CROSS JOIN tile_bounds tb
+                CROSS JOIN LATERAL (
+                    SELECT Box2D(COALESCE(u.geom::geometry, u.simplified_geom::geometry, u.location::geometry)) AS bbox
+                ) ext
                 WHERE
                     (u.location IS NOT NULL OR u.simplified_geom IS NOT NULL OR u.geom IS NOT NULL)
                     AND (

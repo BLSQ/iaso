@@ -399,6 +399,38 @@
         }
 
         /* Map Type Switcher overlay */
+        .drill-panel.hidden {
+            display: none;
+        }
+
+        .breadcrumbs {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+        }
+
+        .crumb {
+            cursor: pointer;
+            color: #00adb5;
+        }
+
+        .crumb:hover {
+            text-decoration: underline;
+        }
+
+        .crumb.current {
+            cursor: default;
+            color: inherit;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .crumb-sep {
+            opacity: 0.5;
+        }
+
         .map-style-control {
             position: absolute;
             bottom: 30px;
@@ -466,8 +498,24 @@
                     </select>
                 </div>
 
-                <!-- Org Unit Type Filter -->
+                <!-- Drill-down Navigation -->
                 <div class="control-group">
+                    <label>Navigation</label>
+                    <label class="layer-toggle-item" style="margin-bottom: 10px;">
+                        <input type="checkbox" id="toggleDrillDown" checked>
+                        <span>Click to open children</span>
+                    </label>
+                    <div id="drillPanel" class="drill-panel">
+                        <div id="breadcrumbs" class="breadcrumbs"></div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button id="btnDrillUp" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;">&uarr; Up</button>
+                            <button id="btnDrillTop" class="btn btn-secondary" style="flex: 1; margin-bottom: 0;">Top</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Org Unit Type Filter -->
+                <div class="control-group" id="typeFilterGroup">
                     <label for="typeSelect">Org Unit Type</label>
                     <select id="typeSelect" class="select-input">
                         <option value="">All Types</option>
@@ -615,6 +663,18 @@
         // Add standard navigation controls
         map.addControl(new maplibregl.NavigationControl(), 'top-left');
 
+        // Drill-down state: stack of opened org units, from the top of the pyramid down.
+        // Each entry is { id, name, bbox: [xmin, ymin, xmax, ymax] }. Empty = top level.
+        const drillStack = [];
+
+        function isDrillDownMode() {
+            return document.getElementById('toggleDrillDown').checked;
+        }
+
+        function currentDrillParent() {
+            return drillStack.length > 0 ? drillStack[drillStack.length - 1] : null;
+        }
+
         // Helper to get active query parameters
         function getMvtQueryParams() {
             const versionId = document.getElementById('versionSelect').value;
@@ -624,7 +684,13 @@
             const params = [];
             if (versionId) params.push(`version_id=${versionId}`);
             if (status) params.push(`validation_status=${status}`);
-            if (typeId) params.push(`org_unit_type_id=${typeId}`);
+            if (isDrillDownMode()) {
+                // Only show one level of the pyramid at a time, the type filter doesn't apply
+                const parent = currentDrillParent();
+                params.push(`parent_id=${parent ? parent.id : 'root'}`);
+            } else if (typeId) {
+                params.push(`org_unit_type_id=${typeId}`);
+            }
 
             return params.length > 0 ? '?' + params.join('&') : '';
         }
@@ -633,6 +699,16 @@
         function buildTileUrl() {
             const queryParams = getMvtQueryParams();
             return window.location.origin + `/api/v3/orgunits/tiles/{z}/{x}/{y}/` + queryParams;
+        }
+
+        // Tiles containing only the currently opened org unit, drawn as context around its children
+        function buildParentTileUrl() {
+            const parent = currentDrillParent();
+            const versionId = document.getElementById('versionSelect').value;
+            // id=-1 matches nothing: keeps the source valid when nothing is opened
+            const params = [`id=${isDrillDownMode() && parent ? parent.id : -1}`];
+            if (versionId) params.push(`version_id=${versionId}`);
+            return window.location.origin + `/api/v3/orgunits/tiles/{z}/{x}/{y}/?` + params.join('&');
         }
 
         // Add MVT source and layers to the map
@@ -645,6 +721,27 @@
                 tiles: [tileUrl],
                 minzoom: 0,
                 maxzoom: 14 // PostGIS tile generation optimizes up to zoom level 14-18
+            });
+
+            map.addSource('parent_source', {
+                type: 'vector',
+                tiles: [buildParentTileUrl()],
+                minzoom: 0,
+                maxzoom: 14
+            });
+
+            // 1b. Outline of the opened parent org unit (drill-down context)
+            map.addLayer({
+                id: 'parent-outline',
+                type: 'line',
+                source: 'parent_source',
+                'source-layer': 'org_units',
+                filter: ['==', '$type', 'Polygon'],
+                paint: {
+                    'line-color': currentStyleKey === 'dark' ? '#ffffff' : '#222222',
+                    'line-width': 2.5,
+                    'line-dasharray': [2, 1.5]
+                }
             });
 
             // 2. Add Polygon Fill Layer
@@ -810,15 +907,108 @@
                     }
                 });
 
-                // Click to inspect feature properties
-                map.on('click', layerId, (e) => {
-                    if (e.features.length > 0) {
-                        const feat = e.features[0];
-                        inspectFeature(feat, e.lngLat);
+            });
+
+            // Single click handler across layers, so overlapping circle/fill hits don't drill twice.
+            // Points are listed first: they sit on top of polygons.
+            map.on('click', (e) => {
+                const feats = map.queryRenderedFeatures(e.point, { layers: ['org-units-circle', 'org-units-fill'] });
+                if (feats.length === 0) return;
+                const feat = feats[0];
+                inspectFeature(feat, e.lngLat);
+                if (isDrillDownMode()) {
+                    if (feat.properties.has_children) {
+                        drillInto(feat);
+                    } else {
+                        logPerfEvent(`"${feat.properties.name}" has no children with geometry: end of pyramid`);
                     }
-                });
+                }
             });
         }
+
+        // ---- Drill-down navigation ----
+
+        function featureBbox(feature) {
+            const p = feature.properties;
+            if (p.bbox_xmin === undefined) return null;
+            return [p.bbox_xmin, p.bbox_ymin, p.bbox_xmax, p.bbox_ymax];
+        }
+
+        function fitToBbox(bbox) {
+            if (!bbox) return;
+            if (bbox[0] === bbox[2] && bbox[1] === bbox[3]) {
+                // Point geometry: no extent to fit, just center on it
+                map.flyTo({ center: [bbox[0], bbox[1]], zoom: Math.max(map.getZoom(), 13), duration: 1000 });
+            } else {
+                map.fitBounds([[bbox[0], bbox[1]], [bbox[2], bbox[3]]], { padding: 50, maxZoom: 15, duration: 1000 });
+            }
+        }
+
+        function drillInto(feature) {
+            const id = feature.properties.id;
+            if (currentDrillParent() && currentDrillParent().id === id) return;
+            drillStack.push({ id, name: feature.properties.name || `#${id}`, bbox: featureBbox(feature) });
+            onDrillChanged();
+        }
+
+        // Go back to the given depth (0 = top of the pyramid)
+        function drillTo(depth) {
+            drillStack.length = depth;
+            onDrillChanged();
+        }
+
+        function onDrillChanged() {
+            refreshTileSource();
+            renderBreadcrumbs();
+            const parent = currentDrillParent();
+            if (parent) {
+                fitToBbox(parent.bbox);
+                logPerfEvent(`Drilled into "${parent.name}" (level ${drillStack.length})`);
+            } else {
+                zoomToSelectedVersionExtent();
+            }
+        }
+
+        function renderBreadcrumbs() {
+            const el = document.getElementById('breadcrumbs');
+            el.innerHTML = '';
+            const crumbs = [{ name: 'Top' }, ...drillStack];
+            crumbs.forEach((crumb, depth) => {
+                if (depth > 0) {
+                    const sep = document.createElement('span');
+                    sep.className = 'crumb-sep';
+                    sep.textContent = '›';
+                    el.appendChild(sep);
+                }
+                const span = document.createElement('span');
+                span.textContent = crumb.name;
+                if (depth === drillStack.length) {
+                    span.className = 'crumb current';
+                } else {
+                    span.className = 'crumb';
+                    span.addEventListener('click', () => drillTo(depth));
+                }
+                el.appendChild(span);
+            });
+            document.getElementById('btnDrillUp').disabled = drillStack.length === 0;
+            document.getElementById('btnDrillTop').disabled = drillStack.length === 0;
+        }
+
+        function updateDrillModeUi() {
+            const on = isDrillDownMode();
+            document.getElementById('drillPanel').classList.toggle('hidden', !on);
+            document.getElementById('typeSelect').disabled = on;
+            document.getElementById('typeFilterGroup').style.opacity = on ? 0.5 : 1;
+        }
+
+        document.getElementById('btnDrillUp').addEventListener('click', () => drillTo(Math.max(drillStack.length - 1, 0)));
+        document.getElementById('btnDrillTop').addEventListener('click', () => drillTo(0));
+        document.getElementById('toggleDrillDown').addEventListener('change', () => {
+            updateDrillModeUi();
+            refreshTileSource();
+        });
+        updateDrillModeUi();
+        renderBreadcrumbs();
 
         // Render selected properties into the right inspector
         function inspectFeature(feature, clickLngLat) {
@@ -871,6 +1061,8 @@
             if (source) {
                 const newTilesUrl = buildTileUrl();
                 source.setTiles([newTilesUrl]);
+                const parentSource = map.getSource('parent_source');
+                if (parentSource) parentSource.setTiles([buildParentTileUrl()]);
 
                 // Clear inspector & popups when dataset changes
                 document.getElementById('inspector').classList.add('hidden');
@@ -882,6 +1074,9 @@
 
         // Attach event listeners for inputs
         document.getElementById('versionSelect').addEventListener('change', () => {
+            // Opened org units belong to the previous version
+            drillStack.length = 0;
+            renderBreadcrumbs();
             refreshTileSource();
             zoomToSelectedVersionExtent();
         });

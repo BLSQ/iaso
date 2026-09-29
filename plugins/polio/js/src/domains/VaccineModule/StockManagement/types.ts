@@ -32,6 +32,16 @@ export type StockVariationTab =
     | 'incident'
     | 'earmarked';
 
+export type StockVariationSearchKey =
+    | 'formaSearch'
+    | 'destructionSearch'
+    | 'incidentSearch';
+
+export type StockVariationPageKey =
+    | 'formaPage'
+    | 'destructionPage'
+    | 'incidentPage';
+
 export type StockVariationParams = {
     id: string; // number as string
     tab: StockVariationTab;

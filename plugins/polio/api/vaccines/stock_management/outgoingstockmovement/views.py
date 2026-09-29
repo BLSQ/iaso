@@ -29,8 +29,10 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     ]
     filter_backends = [
         filters.OrderingFilter,
+        filters.SearchFilter,
     ]
     ordering_fields = ["report_date", "form_a_reception_date", "doses_per_vial"]
+    search_fields = ["campaign__obr_name", "non_obr_name"]
 
     def get_serializer_class(self):
         if self.action == "partial_update":

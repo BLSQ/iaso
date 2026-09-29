@@ -99,12 +99,14 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     }
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
+                    # The batch's instances share a few (form, version) pairs: look each up once.
+                    form_versions_cache = {}
 
                     for instance_data in instances_data:
                         uuid = instance_data["id"]
                         instance = instances_by_uuid.get(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
-                        instance = process_instance_xml(instance, instance_data, zip_ref, user)
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user, form_versions_cache)
                         stats["new_instances"] += 1
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
                         log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
@@ -178,25 +180,26 @@ def get_directory_handlers(zip_ref):
     return result
 
 
-def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
+def process_instance_xml(instance: Instance, instance_data, zip_ref, user, form_versions_cache=None):
     uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
     with zip_ref.open(os.path.join(uuid, filename), "r") as f:
         if not instance.file or not instance.json:  # new instance
-            instance = process_instance_file(instance, File(f), user)
+            instance = process_instance_file(instance, File(f), user, form_versions_cache)
         else:
             instance = update_instance_file_if_needed(
                 instance,
                 instance_data.get("updated_at", None),
                 File(f),
                 user,
+                form_versions_cache,
             )
 
     return instance
 
 
-def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
+def update_instance_file_if_needed(instance, incoming_updated_at, file, user, form_versions_cache=None):
     incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(int(incoming_updated_at))
     if incoming_updated_at and incoming_updated_at > instance.source_updated_at:
         logger.info(
@@ -209,8 +212,8 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
         instance.last_modified_by = user
         instance.source_updated_at = incoming_updated_at
         instance.save()
-        instance.get_and_save_json_of_xml(force=True, tries=8)
-        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user)
+        instance.get_and_save_json_of_xml(force=True, tries=8, form_versions_cache=form_versions_cache)
+        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user, form_versions_cache)
     else:
         logger.info(
             "\tSkipping instance %s (current timestamp %s, incoming %s)",
@@ -222,7 +225,7 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
     return instance
 
 
-def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user):
+def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user, form_versions_cache=None):
     """
     If the form being updated is attached to an entity that's soft deleted because
     of a merge, then we also update the ref form on the "final" merged entity
@@ -253,7 +256,7 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
         instance_to_update.last_modified_by = user
         instance_to_update.source_updated_at = incoming_updated_at
         instance_to_update.save()
-        instance_to_update.get_and_save_json_of_xml(force=True, tries=8)
+        instance_to_update.get_and_save_json_of_xml(force=True, tries=8, form_versions_cache=form_versions_cache)
 
 
 # Create form attachments for all non-XML files in the form's directory

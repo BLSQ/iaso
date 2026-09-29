@@ -1080,6 +1080,13 @@ def import_data(instances, user, app_id, api_import):
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     rtn_instances = []
 
+    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at
+    # the same few forms - fetch those once up front instead of lazily once per instance.
+    form_ids = {int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None}
+    forms_by_id = {form.id: form for form in Form.objects.filter(id__in=form_ids)}
+    # Same for entity types (typically a single one per batch): only their reference form is needed.
+    reference_form_ids_by_entity_type_id = {}
+
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
@@ -1119,7 +1126,13 @@ def import_data(instances, user, app_id, api_import):
             org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id, version_id=project.account.default_version_id)
             instance.org_unit = org_unit
 
-        instance.form_id = instance_data.get("formId")
+        raw_form_id = instance_data.get("formId")
+        # Normalize to int: the mobile app sends this as a JSON string (e.g. "1"), which would make
+        # id comparisons (e.g. against `entity_type.reference_form_id`) silently fail ("1" != 1).
+        instance.form_id = int(raw_form_id) if raw_form_id is not None else None
+        if instance.form_id in forms_by_id:
+            # Share the prefetched Form across instances, so `instance.form` doesn't re-query it.
+            instance.form = forms_by_id[instance.form_id]
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
@@ -1152,7 +1165,11 @@ def import_data(instances, user, app_id, api_import):
             instance.entity = entity
 
             # If instance's form is the same as the type reference form, set the instance as reference_instance
-            if entity.entity_type.reference_form == instance.form:
+            # int(): entities created above by `find_entity()` keep the payload's string entityTypeId.
+            entity_type_id = int(entity.entity_type_id)
+            if entity_type_id not in reference_form_ids_by_entity_type_id:
+                reference_form_ids_by_entity_type_id[entity_type_id] = entity.entity_type.reference_form_id
+            if reference_form_ids_by_entity_type_id[entity_type_id] == instance.form_id:
                 entity.attributes = instance
                 entity.save()
 

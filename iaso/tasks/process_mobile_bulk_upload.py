@@ -81,13 +81,28 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 if INSTANCES_JSON in zip_ref.namelist():
                     log_progress(the_task, 20, "Processing forms and files")
                     instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
-                    import_instances(instances_data, user, project.app_id, api_import=api_import)
+                    existing_uuids = set(
+                        Instance.objects.filter(uuid__in=[d["id"] for d in instances_data]).values_list(
+                            "uuid", flat=True
+                        )
+                    )
+                    imported_instances = import_instances(instances_data, user, project.app_id, api_import=api_import)
+                    # `import_instances` already built and saved the new instances in memory - reuse them
+                    # instead of re-querying by uuid below. Instances that already existed still go
+                    # through `.get()`: `import_data` returns (or skips) them without checking for
+                    # duplicate uuids, and `.get()` fails the import on duplicates instead of silently
+                    # picking one.
+                    instances_by_uuid = {
+                        instance.uuid: instance
+                        for instance in imported_instances
+                        if instance.uuid not in existing_uuids
+                    }
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
 
                     for instance_data in instances_data:
                         uuid = instance_data["id"]
-                        instance = Instance.objects.get(uuid=uuid)
+                        instance = instances_by_uuid.get(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
                         instance = process_instance_xml(instance, instance_data, zip_ref, user)
                         stats["new_instances"] += 1

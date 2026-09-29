@@ -271,7 +271,7 @@ class MvtTestPageView(View):
         # Import models inside the get method to avoid circular imports
         from django.db import connection
 
-        from iaso.models import OrgUnitType, SourceVersion
+        from iaso.models import SourceVersion
 
         versions = SourceVersion.objects.filter_for_user(request.user).select_related("data_source")
 
@@ -313,22 +313,9 @@ class MvtTestPageView(View):
                 }
             )
 
-        # Fetch org unit types
-        types = OrgUnitType.objects.filter_for_user_and_app_id(request.user).distinct()
-        type_list = []
-        for t in types:
-            type_list.append(
-                {
-                    "id": t.id,
-                    "name": t.name,
-                    "short_name": t.short_name or "",
-                }
-            )
-
         context = {
             "versions": version_list,
             "default_version_id": default_version_id,
-            "org_unit_types": type_list,
             "extents_json": json.dumps(extents),
         }
         return render(request, "iaso/mvt_test.html", context)

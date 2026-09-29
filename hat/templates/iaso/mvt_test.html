@@ -372,32 +372,6 @@
             border-left-color: var(--sidebar-bg) !important;
         }
 
-        /* Performance panel / Log panel */
-        .perf-panel {
-            margin-top: 20px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 12px;
-        }
-
-        .perf-log-list {
-            margin-top: 8px;
-            max-height: 100px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: #88c0d0;
-            padding-left: 0;
-            list-style: none;
-        }
-
-        .perf-log-item {
-            margin-bottom: 4px;
-            border-bottom: 1px dashed rgba(255,255,255,0.05);
-            padding-bottom: 2px;
-        }
-
         /* Map Type Switcher overlay */
         .drill-panel.hidden {
             display: none;
@@ -557,9 +531,7 @@
                     <label for="typeSelect">Org Unit Type</label>
                     <select id="typeSelect" class="select-input">
                         <option value="">All Types</option>
-                        {% for t in org_unit_types %}
-                            <option value="{{ t.id }}">{{ t.name }} ({{ t.short_name }})</option>
-                        {% endfor %}
+                        <!-- Types of the selected version, filled by loadOrgUnitTypes() -->
                     </select>
                 </div>
 
@@ -611,17 +583,6 @@
                         <div class="legend-color" style="background-color: var(--status-unknown)"></div>
                         <span>Other / Default</span>
                     </div>
-                </div>
-
-                <!-- Tile Performance Monitor -->
-                <div class="perf-panel">
-                    <div class="legend-title" style="display: flex; justify-content: space-between;">
-                        <span>Tile Network Speed</span>
-                        <span id="loadTimeAvg" style="color: #00adb5; font-weight: bold;">-- ms</span>
-                    </div>
-                    <ul id="perfLog" class="perf-log-list">
-                        <li class="perf-log-item" style="color: #888;">No tiles loaded yet...</li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -678,7 +639,6 @@
         };
 
         let currentStyleKey = 'voyager';
-        const loadTimes = [];
 
         // Setup Hover, Tooltip and Clicking mechanisms
         let hoveredFeature = null;
@@ -972,11 +932,7 @@
                 if (!feat) return;
                 inspectFeature(feat, e.lngLat);
                 if (isDrillDownMode()) {
-                    if (feat.properties.has_children) {
-                        drillInto(feat);
-                    } else {
-                        logPerfEvent(`"${feat.properties.name}" has no children: end of pyramid`);
-                    }
+                    if (feat.properties.has_children) drillInto(feat);
                 }
             });
         }
@@ -1021,13 +977,12 @@
                 const res = await fetch(`/api/v3/orgunits/drill-down/?${params}`, { credentials: 'same-origin' });
                 data = await res.json();
             } catch (err) {
-                logPerfEvent(`Failed to list children: ${err.message}`);
+                console.error('Failed to list children', err);
                 return;
             }
             if (seq !== offMapRequestSeq) return; // a newer level was opened meanwhile
 
             const offMap = (data.results || []).filter(c => !c.has_geometry);
-            const located = (data.results || []).length - offMap.length;
             panel.classList.toggle('hidden', offMap.length === 0);
             document.getElementById('offMapTitle').textContent =
                 `Not on map (${offMap.length}/${data.results.length})`;
@@ -1051,10 +1006,6 @@
                 });
                 list.appendChild(li);
             });
-
-            if (offMap.length > 0) {
-                logPerfEvent(`${offMap.length} children without geometry listed in the sidebar (${located} on map)`);
-            }
         }
 
         function featureBbox(feature) {
@@ -1086,7 +1037,6 @@
             if (parent) {
                 // Shapeless unit with nothing located below: fall back to the closest opened ancestor's extent
                 fitToBbox(parent.bbox || [...drillStack].reverse().find(p => p.bbox)?.bbox);
-                logPerfEvent(`Drilled into "${parent.name}" (level ${drillStack.length})`);
             } else {
                 zoomToSelectedVersionExtent();
             }
@@ -1191,8 +1141,6 @@
                 // Clear inspector & popups when dataset changes
                 document.getElementById('inspector').classList.add('hidden');
                 popup.remove();
-
-                logPerfEvent('Config updated: Requesting new tiles...');
             }
         }
 
@@ -1203,6 +1151,7 @@
             renderBreadcrumbs();
             refreshTileSource();
             zoomToSelectedVersionExtent();
+            loadOrgUnitTypes();
         });
         document.getElementById('statusSelect').addEventListener('change', refreshTileSource);
         document.getElementById('typeSelect').addEventListener('change', refreshTileSource);
@@ -1221,9 +1170,6 @@
                     maxZoom: 13,
                     duration: 1200
                 });
-                logPerfEvent(`Map centered to bounds of Version ID: ${versionId}`);
-            } else {
-                logPerfEvent(`No precalculated bounds found for Version ID: ${versionId}`);
             }
         }
 
@@ -1283,62 +1229,34 @@
             setupInteractivity();
             zoomToSelectedVersionExtent();
             loadOffMapChildren();
-            logPerfEvent('Map initialized and ready.');
         });
 
-        // Performance Log utilities
-        function logPerfEvent(message) {
-            const logEl = document.getElementById('perfLog');
-            const items = logEl.querySelectorAll('li');
-            if (items.length > 0 && items[0].style.color === 'rgb(136, 136, 136)' || items[0].textContent.includes('No tiles loaded yet...')) {
-                logEl.innerHTML = ''; // Clear placeholder
-            }
+        // Org unit types used in the selected version, for the type filter
+        let typesRequestSeq = 0;
+        async function loadOrgUnitTypes() {
+            const select = document.getElementById('typeSelect');
+            const seq = ++typesRequestSeq;
+            const versionId = document.getElementById('versionSelect').value;
+            const params = versionId ? `?source_version_id=${versionId}` : '';
 
-            const timestamp = new Date().toTimeString().split(' ')[0];
-            const li = document.createElement('li');
-            li.className = 'perf-log-item';
-            li.textContent = `[${timestamp}] ${message}`;
-            logEl.insertBefore(li, logEl.firstChild);
-
-            // Limit to 20 items to keep display lean
-            while (logEl.children.length > 20) {
-                logEl.removeChild(logEl.lastChild);
-            }
-        }
-
-        // Hook into browser window.fetch to time performance
-        const originalFetch = window.fetch;
-        window.fetch = async function(...args) {
-            const fetchUrl = args[0];
-            const isMvtTile = typeof fetchUrl === 'string' && fetchUrl.includes('/api/v3/orgunits/tiles/');
-            let startTime;
-            if (isMvtTile) {
-                startTime = performance.now();
-            }
+            let types;
             try {
-                const res = await originalFetch(...args);
-                if (isMvtTile) {
-                    const duration = performance.now() - startTime;
-                    // Extract coordinates from url
-                    const match = fetchUrl.match(/\/tiles\/(\d+)\/(\d+)\/(\d+)\//);
-                    const coords = match ? `${match[1]}/${match[2]}/${match[3]}` : 'Tile';
-
-                    loadTimes.push(duration);
-                    if (loadTimes.length > 30) loadTimes.shift(); // rolling average
-
-                    const avg = Math.round(loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length);
-                    document.getElementById('loadTimeAvg').textContent = `${avg} ms`;
-
-                    logPerfEvent(`Tile ${coords} loaded in ${Math.round(duration)}ms`);
-                }
-                return res;
+                const res = await fetch(`/api/v2/orgunittypes/dropdown/${params}`, { credentials: 'same-origin' });
+                types = await res.json();
             } catch (err) {
-                if (isMvtTile) {
-                    logPerfEvent(`Tile fetch failed: ${err.message}`);
-                }
-                throw err;
+                console.error('Failed to list org unit types', err);
+                return;
             }
-        };
+            if (seq !== typesRequestSeq) return; // another version was selected meanwhile
+
+            const previous = select.value;
+            select.length = 1; // keep "All Types"
+            types.forEach(t => select.add(new Option(t.name, t.id)));
+            // The selected type may not exist in this version
+            select.value = types.some(t => String(t.id) === previous) ? previous : '';
+            if (select.value !== previous) refreshTileSource();
+        }
+        loadOrgUnitTypes();
     </script>
 </body>
 </html>

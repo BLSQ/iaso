@@ -493,6 +493,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
         for out in response_json:
             self.assertValidOrgUnitTypeDropdownData(out)
         self.assertEqual(len(response_json), 5)  # The 5 types created in setUpTestData
+        types_by_id = {org_unit_type["id"]: org_unit_type for org_unit_type in response_json}
+        self.assertEqual(types_by_id[self.org_unit_type_1.id]["short_name"], "Pl")
 
     def test_org_unit_type_dropdown_with_source_version(self):
         # Let's make sure that some OUTs from the setup account are actually used
@@ -625,7 +627,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
     def assertValidOrgUnitTypeDropdownData(self, data):
         self.assertHasField(data, "id", int)
         self.assertHasField(data, "name", str)
+        self.assertHasField(data, "short_name", str)
         self.assertHasField(data, "depth", int, optional=True)
+        self.assertHasField(data, "sub_unit_types", list)
 
     def test_org_unit_type_hierarchy_success(self):
         """Test GET /orgunittypes/{id}/hierarchy/ returns complete hierarchy"""

@@ -8,10 +8,19 @@ from django.contrib.auth.views import redirect_to_login
 from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
+from django.template.loader import render_to_string
+from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.http import require_GET, require_POST
 
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
+from iaso.utils.page_pipeline import (
+    PagePipelineError,
+    account_has_openhexa_config,
+    page_pipeline_is_ongoing,
+    start_page_pipeline,
+)
 from iaso.utils.powerbi import get_powerbi_report_token
 
 
@@ -19,7 +28,7 @@ def load_powerbi_config_for_page(page: Page):
     group_id = page.powerbi_group_id
     report_id = page.powerbi_report_id
     filters = page.powerbi_filters
-    language = page.powerbi_language
+    language = page.language
 
     report_access_token = get_powerbi_report_token(group_id, report_id)
     config = {
@@ -52,6 +61,8 @@ def page(request, page_slug):
 
         if not user_can_access_page(request.user, page):
             return redirect_to_login(path, resolved_login_url, "next")
+    content["launch_pipeline"] = build_launch_pipeline_context(request, page)
+
     if page.type == IFRAME:
         content.update({"src": page.content, "title": page.name, "page": page})
         response = render(
@@ -107,7 +118,7 @@ def page(request, page_slug):
         raw_html = page.content
         if analytics_script and raw_html is not None:
             raw_html = addTag(raw_html, analytics_script)
-        response = HttpResponse(raw_html)
+        response = HttpResponse(append_launch_pipeline_snippet(request, raw_html, content.get("launch_pipeline")))
     return response
 
 
@@ -124,6 +135,79 @@ def user_can_access_page(user, page):
 
     # Check role-based assignment
     return page.user_roles.filter(group__in=user.groups.all()).exists()
+
+
+def user_may_launch_page_pipeline(user, page) -> bool:
+    """Authenticated account members who can open the page, when a pipeline and OpenHEXA are configured."""
+    if not page.pipeline_id or not page.account_id:
+        return False
+    if not user.is_authenticated:
+        return False
+    profile = getattr(user, "iaso_profile", None)
+    if profile is None or profile.account_id != page.account_id:
+        return False
+    if not user_can_access_page(user, page):
+        return False
+    return account_has_openhexa_config(page.account)
+
+
+def build_launch_pipeline_context(request, page):
+    if not user_may_launch_page_pipeline(request.user, page):
+        return None
+    messages = page.pipeline_status_messages()
+    return {
+        "button_text": page.pipeline_button_text(),
+        "in_progress": messages["in_progress"],
+        "finished": messages["finished"],
+        "error": messages["error"],
+        "ongoing": page_pipeline_is_ongoing(page),
+        "launch_url": reverse("page_launch_pipeline", kwargs={"page_slug": page.slug}),
+        "status_url": reverse("page_pipeline_status", kwargs={"page_slug": page.slug}),
+    }
+
+
+def append_launch_pipeline_snippet(request, raw_html, launch_pipeline):
+    html = "" if raw_html is None else str(raw_html)
+    if not launch_pipeline:
+        return html
+    snippet = render_to_string(
+        "iaso/pages/launch_pipeline_snippet.html",
+        {"launch_pipeline": launch_pipeline},
+        request=request,
+    )
+    closing = html.lower().rfind("</body>")
+    if closing == -1:
+        return html + snippet
+    return html[:closing] + snippet + html[closing:]
+
+
+def _pipeline_page_or_error(request, page_slug):
+    page = get_object_or_404(Page.objects.select_related("account"), slug=page_slug)
+    if not user_may_launch_page_pipeline(request.user, page):
+        return None, JsonResponse({"error": "forbidden"}, status=403)
+    return page, None
+
+
+@require_GET
+def page_pipeline_status(request, page_slug):
+    page, error = _pipeline_page_or_error(request, page_slug)
+    if error:
+        return error
+    return JsonResponse({"ongoing": page_pipeline_is_ongoing(page)})
+
+
+@require_POST
+def launch_page_pipeline(request, page_slug):
+    page, error = _pipeline_page_or_error(request, page_slug)
+    if error:
+        return error
+    if page_pipeline_is_ongoing(page):
+        return JsonResponse({"error": "A refresh is already running", "ongoing": True}, status=409)
+    try:
+        task = start_page_pipeline(request.user, page)
+    except PagePipelineError as exc:
+        return JsonResponse({"error": str(exc)}, status=exc.status_code)
+    return JsonResponse({"task": {"id": task.id, "status": task.status}, "ongoing": True}, status=201)
 
 
 # Function to append analytics script in the head tag

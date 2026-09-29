@@ -1,0 +1,96 @@
+{% if launch_pipeline %}
+    <div id="launchPipeline" data-ongoing="{{ launch_pipeline.ongoing|yesno:'true,false' }}">
+        {% csrf_token %}
+        <input id="launchPipelineButton" type="submit" value="{{ launch_pipeline.button_text }}"
+               onclick="launchPagePipeline()" {% if launch_pipeline.ongoing %}disabled="disabled"{% endif %}/>
+        <p id="launchPipelineLabel" {% if not launch_pipeline.ongoing %}style="display:none;"{% endif %}>
+            {{ launch_pipeline.in_progress }}
+        </p>
+    </div>
+    <script>
+      (function () {
+        var root = document.getElementById('launchPipeline');
+        var button = document.getElementById('launchPipelineButton');
+        var label = document.getElementById('launchPipelineLabel');
+        var wasOngoing = {{ launch_pipeline.ongoing|yesno:"true,false" }};
+        var messages = {
+          inProgress: '{{ launch_pipeline.in_progress|escapejs }}',
+          finished: '{{ launch_pipeline.finished|escapejs }}',
+          error: '{{ launch_pipeline.error|escapejs }}'
+        };
+        var pollTimer = null;
+
+        function csrfToken() {
+          var input = root.querySelector('input[name=csrfmiddlewaretoken]');
+          return input ? input.value : '';
+        }
+
+        function applyState(ongoing) {
+          button.disabled = ongoing;
+          if (ongoing) {
+            label.style.display = 'block';
+            label.textContent = messages.inProgress;
+            wasOngoing = true;
+            schedulePoll();
+            return;
+          }
+          if (wasOngoing) {
+            label.style.display = 'block';
+            label.textContent = messages.finished;
+          } else {
+            label.style.display = 'none';
+          }
+          if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+          }
+        }
+
+        function refreshStatus() {
+          fetch('{{ launch_pipeline.status_url }}', {credentials: 'same-origin'})
+            .then(function (response) { return response.json(); })
+            .then(function (data) { applyState(Boolean(data.ongoing)); })
+            .catch(function () {});
+        }
+
+        function schedulePoll() {
+          if (pollTimer) {
+            return;
+          }
+          pollTimer = setInterval(refreshStatus, 10000);
+        }
+
+        window.launchPagePipeline = function () {
+          if (button.disabled) {
+            return;
+          }
+          button.disabled = true;
+          fetch('{{ launch_pipeline.launch_url }}', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken()
+            },
+            body: '{}'
+          }).then(function (response) {
+            if (response.status === 409 || response.ok) {
+              applyState(true);
+              return;
+            }
+            button.disabled = false;
+            label.style.display = 'block';
+            label.textContent = messages.error;
+          }).catch(function () {
+            button.disabled = false;
+            label.style.display = 'block';
+            label.textContent = messages.error;
+          });
+        };
+
+        if (wasOngoing) {
+          schedulePoll();
+        }
+      })();
+    </script>
+{% endif %}

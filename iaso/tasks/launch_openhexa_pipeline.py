@@ -64,7 +64,14 @@ def _create_pipeline_config(pipeline_id: str, version: str, openhexa_url: str, o
     )
 
 
-def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, pipeline_config: MockConfig) -> bool:
+def _launch_pipeline(
+    task: Task,
+    pipeline_id: str,
+    version: str,
+    config: dict,
+    pipeline_config: MockConfig,
+    include_task_id: bool = True,
+) -> bool:
     """Launch the OpenHEXA pipeline and update task status. Returns False if launch failed."""
     task.status = QUEUED
     task.external = True
@@ -80,6 +87,7 @@ def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, p
         config=sanitize_openhexa_pipeline_config(config),
         task_id=task.pk,
         pipeline_config=pipeline_config,
+        include_task_id=include_task_id,
     )
 
     if launch_status == ERRORED:
@@ -222,6 +230,7 @@ def launch_openhexa_pipeline(
     delay: int = 2,
     task: Optional[Task] = None,
     max_polling_duration_minutes: int = 200,
+    include_task_id: bool = True,
     _immediate: bool = False,
     user: Any = None,
 ):
@@ -243,7 +252,7 @@ def launch_openhexa_pipeline(
 
     # Launch pipeline
     pipeline_config = _create_pipeline_config(pipeline_id, version, openhexa_url, openhexa_token)
-    if not _launch_pipeline(task, pipeline_id, version, config, pipeline_config):
+    if not _launch_pipeline(task, pipeline_id, version, config, pipeline_config, include_task_id=include_task_id):
         return
 
     # Set up polling

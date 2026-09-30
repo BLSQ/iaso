@@ -5,6 +5,7 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { toNumber } from '../utils';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -64,12 +65,13 @@ export const PreAlert: FunctionComponent<Props> = ({
     const handleVialsShippedUpdate = useCallback(
         (value: number) => {
             if (vialsRef.current) {
-                const dosesShipped = value * (doses_per_vial ?? 0);
                 setFieldValue(`pre_alerts[${index}].vials_shipped`, value);
-                setFieldValue(
-                    `pre_alerts[${index}].doses_shipped`,
-                    dosesShipped,
-                );
+                if (doses_per_vial) {
+                    setFieldValue(
+                        `pre_alerts[${index}].doses_shipped`,
+                        toNumber(value) * doses_per_vial,
+                    );
+                }
             }
         },
         [doses_per_vial, index, setFieldValue],
@@ -77,14 +79,13 @@ export const PreAlert: FunctionComponent<Props> = ({
     const handleDosesShippedUpdate = useCallback(
         (value: number) => {
             if (dosesRef.current) {
-                const vialsShipped = doses_per_vial
-                    ? Math.ceil((value ?? 0) / doses_per_vial)
-                    : 0;
                 setFieldValue(`pre_alerts[${index}].doses_shipped`, value);
-                setFieldValue(
-                    `pre_alerts[${index}].vials_shipped`,
-                    vialsShipped,
-                );
+                if (doses_per_vial) {
+                    setFieldValue(
+                        `pre_alerts[${index}].vials_shipped`,
+                        Math.ceil(toNumber(value) / doses_per_vial),
+                    );
+                }
             }
         },
         [doses_per_vial, index, setFieldValue],
@@ -92,15 +93,23 @@ export const PreAlert: FunctionComponent<Props> = ({
 
     const handleDosesPerVialUpdate = useCallback(
         (_, value: number) => {
-            const vialsShipped = Math.ceil(
-                parseInt(
-                    (pre_alerts?.[index].doses_shipped ?? '0') as string,
-                    10,
-                ) / value,
-            );
-
             setFieldValue(`pre_alerts[${index}].doses_per_vial`, value);
-            setFieldValue(`pre_alerts[${index}].vials_shipped`, vialsShipped);
+            if (!value) {
+                return;
+            }
+            const dosesShipped = toNumber(pre_alerts?.[index].doses_shipped);
+            const vialsShipped = toNumber(pre_alerts?.[index].vials_shipped);
+            if (vialsShipped) {
+                setFieldValue(
+                    `pre_alerts[${index}].doses_shipped`,
+                    vialsShipped * value,
+                );
+            } else if (dosesShipped) {
+                setFieldValue(
+                    `pre_alerts[${index}].vials_shipped`,
+                    Math.ceil(dosesShipped / value),
+                );
+            }
         },
         [index, setFieldValue, pre_alerts],
     );

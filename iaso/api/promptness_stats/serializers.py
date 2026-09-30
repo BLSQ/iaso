@@ -1,7 +1,16 @@
+from collections.abc import Mapping
+from decimal import ROUND_HALF_UP, Decimal
+from typing import Optional
+
 from rest_framework import serializers
 
 from iaso.api.common.serializer_fields import CommaSeparatedMultipleChoiceField, CommaSeparatedPrimaryKeysField
-from iaso.api.promptness_stats.constants import PROMPTNESS_STATUSES
+from iaso.api.promptness_stats.constants import (
+    PROMPTNESS_STATUSES,
+    STATUS_LATE,
+    STATUS_MISSING,
+    STATUS_ON_TIME,
+)
 from iaso.models import Form, OrgUnit, OrgUnitType
 from iaso.periods import Period, detect
 
@@ -88,8 +97,24 @@ class PromptnessStatsQueryParamsSerializer(serializers.Serializer):
 class PromptnessPeriodSerializer(serializers.Serializer):
     """Serializes a `PromptnessPeriod` into the `period` block of the response."""
 
-    def to_representation(self, instance):
-        raise NotImplementedError
+    value = serializers.CharField()
+    start = serializers.DateField()
+    end = serializers.DateField()
+    grace_period_days = serializers.IntegerField()
+    deadline = serializers.DateField()
+    is_current = serializers.BooleanField()
+    is_provisional = serializers.BooleanField()
+
+
+def percentage_of_expected(count: int, expected: int) -> Optional[float]:
+    """`count` / `expected` * 100, rounded to 1 decimal. `None` when nothing is expected.
+
+    Rounds half up like Postgres `round()`, so that the values match the ones used to order the rows.
+    """
+    if expected == 0:
+        return None
+    percentage = Decimal(count) * 100 / Decimal(expected)
+    return float(percentage.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
 
 class PromptnessStatsCountsSerializer(serializers.Serializer):
@@ -101,14 +126,60 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
     - Percentages are computed against `expected`, rounded to 1 decimal, `None` when `expected` is 0.
     - Statuses missing from `context["status"]` have their count and percentage set to `None`
       (`expected`, `received` and `completeness_percent` are not affected).
+
+    The fields are declared for the API schema, the values are computed in `to_representation()`.
     """
 
-    def to_representation(self, instance):
-        raise NotImplementedError
+    STATUS_TO_FIELD = {STATUS_ON_TIME: "on_time", STATUS_LATE: "late", STATUS_MISSING: "missing"}
+
+    expected = serializers.IntegerField()
+    received = serializers.IntegerField()
+    completeness_percent = serializers.FloatField(allow_null=True)
+    on_time = serializers.IntegerField(allow_null=True)
+    on_time_percent = serializers.FloatField(allow_null=True)
+    late = serializers.IntegerField(allow_null=True)
+    late_percent = serializers.FloatField(allow_null=True)
+    missing = serializers.IntegerField(allow_null=True)
+    missing_percent = serializers.FloatField(allow_null=True)
+
+    @staticmethod
+    def get_count(instance, field_name: str) -> int:
+        if isinstance(instance, Mapping):
+            return instance[field_name]
+        return getattr(instance, field_name)
+
+    def to_representation(self, instance) -> dict:
+        expected = self.get_count(instance, "expected")
+        on_time = self.get_count(instance, "on_time")
+        late = self.get_count(instance, "late")
+        received = on_time + late
+
+        counts = {
+            "expected": expected,
+            "received": received,
+            "completeness_percent": percentage_of_expected(received, expected),
+        }
+
+        selected_statuses = self.context["status"]
+        for status, field_name in self.STATUS_TO_FIELD.items():
+            if status in selected_statuses:
+                count = self.get_count(instance, field_name)
+                counts[field_name] = count
+                counts[f"{field_name}_percent"] = percentage_of_expected(count, expected)
+            else:
+                counts[field_name] = None
+                counts[f"{field_name}_percent"] = None
+
+        return counts
 
 
 class PromptnessStatsTotalsSerializer(PromptnessStatsCountsSerializer):
     """Serializes the `totals` block of the response (computed for the parent org unit)."""
+
+
+class ParentOrgUnitSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
 
 
 class PromptnessStatsRowSerializer(PromptnessStatsCountsSerializer):
@@ -117,3 +188,20 @@ class PromptnessStatsRowSerializer(PromptnessStatsCountsSerializer):
     Input: an OrgUnit annotated with `expected`, `on_time`, `late`, `missing` and `has_children`.
     Output: `id`, `name`, `org_unit_type_id`, `parent_org_unit` (`{id, name}` or `None`), `has_children` and the counts.
     """
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    org_unit_type_id = serializers.IntegerField(allow_null=True)
+    parent_org_unit = ParentOrgUnitSerializer(allow_null=True)
+    has_children = serializers.BooleanField()
+
+    def to_representation(self, org_unit: OrgUnit) -> dict:
+        parent = org_unit.parent
+        return {
+            "id": org_unit.id,
+            "name": org_unit.name,
+            "org_unit_type_id": org_unit.org_unit_type_id,
+            "parent_org_unit": {"id": parent.id, "name": parent.name} if parent else None,
+            "has_children": org_unit.has_children,
+            **super().to_representation(org_unit),
+        }

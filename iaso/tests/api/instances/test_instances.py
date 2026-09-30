@@ -28,6 +28,7 @@ from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
 from iaso.api.common import CONTENT_TYPE_XLSX
+from iaso.api.instances.views import import_data
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
@@ -40,6 +41,7 @@ from iaso.permissions.core_permissions import (
     CORE_SUBMISSIONS_PERMISSION,
     CORE_SUBMISSIONS_UPDATE_PERMISSION,
 )
+from iaso.test import TestCase
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -3974,3 +3976,42 @@ class InstancesAPITestCase(TaskAPITestCase):
             print("instance_7", self.instance_7.id)
             print("instance_8", self.instance_8.id)
             raise e
+
+
+class ImportDataTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = m.Account.objects.create(name="Import data account")
+        cls.project = m.Project.objects.create(name="Import data project", app_id="import.data", account=cls.account)
+        cls.user = cls.create_user_with_profile(username="importer", account=cls.account)
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Health facility", short_name="HF")
+        cls.org_unit = m.OrgUnit.objects.create(name="Facility A", org_unit_type=cls.org_unit_type)
+        cls.form = m.Form.objects.create(name="Basic form", form_id="basic_form")
+
+    def test_import_data_without_api_import(self):
+        instance_uuid = str(uuid4())
+
+        instances = import_data(
+            instances=[
+                {
+                    "id": instance_uuid,
+                    "file": "/storage/emulated/0/odk/instances/basic.xml",
+                    "name": "Basic instance",
+                    "formId": self.form.id,
+                    "orgUnitId": self.org_unit.id,
+                }
+            ],
+            user=self.user,
+            app_id=self.project.app_id,
+        )
+
+        self.assertEqual(len(instances), 1)
+        instance = Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(instance, instances[0])
+        self.assertEqual(instance.file_name, "basic.xml")
+        self.assertEqual(instance.name, "Basic instance")
+        self.assertEqual(instance.project, self.project)
+        self.assertEqual(instance.form, self.form)
+        self.assertEqual(instance.org_unit, self.org_unit)
+        self.assertIsNone(instance.api_import)
+        self.assertIsNone(instance.app_version)

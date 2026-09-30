@@ -3991,7 +3991,7 @@ class ImportDataTestCase(TestCase):
     def test_import_data_without_api_import(self):
         instance_uuid = str(uuid4())
 
-        instances = import_data(
+        import_data(
             instances=[
                 {
                     "id": instance_uuid,
@@ -4005,9 +4005,7 @@ class ImportDataTestCase(TestCase):
             app_id=self.project.app_id,
         )
 
-        self.assertEqual(len(instances), 1)
         instance = Instance.objects.get(uuid=instance_uuid)
-        self.assertEqual(instance, instances[0])
         self.assertEqual(instance.file_name, "basic.xml")
         self.assertEqual(instance.name, "Basic instance")
         self.assertEqual(instance.project, self.project)

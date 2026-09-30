@@ -123,16 +123,15 @@ class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
         serializer = self.get_serializer(self.get_serializer_params(form_id=self.form_without_grace_period.id))
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
-    def test_invalid_period(self):
-        """this checks only the period format: if it doesn't look like a period, it is rejected"""
+    def test_invalid_period_format(self):
         serializer = self.get_serializer(self.get_serializer_params(period="not a period"))
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors, {"period": ["Invalid period"]})
 
-    def test_invalid_month(self):
-        """IASO does not validate period values: the period is accepted even if it does not exist in the calendar"""
+    def test_invalid_period_value(self):
         serializer = self.get_serializer(self.get_serializer_params(period="202613"))
-        self.assertTrue(serializer.is_valid())
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors, {"period": ["Invalid period"]})
 
     def test_quarter_period_for_monthly_form(self):
         serializer = self.get_serializer(self.get_serializer_params(period="2026Q1"))

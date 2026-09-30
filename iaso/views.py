@@ -1,4 +1,5 @@
 import json
+import logging
 
 import clamav_client
 
@@ -23,6 +24,9 @@ from iaso.utils.page_pipeline import (
     start_page_pipeline,
 )
 from iaso.utils.powerbi import get_powerbi_report_token
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_powerbi_config_for_page(page: Page):
@@ -209,11 +213,13 @@ def launch_page_pipeline(request, page_slug):
     if error:
         return error
     if page_pipeline_is_ongoing(page):
-        return JsonResponse({"error": "A refresh is already running", "ongoing": True}, status=409)
+        logger.info("Refresh already running for page %s", page_slug)
+        return JsonResponse({"error": "The refresh could not be started.", "ongoing": True}, status=409)
     try:
         task = start_page_pipeline(request.user, page)
     except PagePipelineError as exc:
-        return JsonResponse({"error": str(exc)}, status=exc.status_code)
+        logger.exception("Could not start the pipeline for page %s", page_slug)
+        return JsonResponse({"error": "The refresh could not be started."}, status=exc.status_code)
     return JsonResponse({"task": {"id": task.id, "status": task.status}, "ongoing": True}, status=201)
 
 

@@ -8,6 +8,14 @@ from iaso.models.base import ERRORED, KILLED, QUEUED, RUNNING, SUCCESS
 from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from iaso.models.task import Task
 from iaso.test import TestCase
+from iaso.utils.page_pipeline import (
+    PagePipelineError,
+    account_has_openhexa_config,
+    fetch_current_pipeline_version,
+    page_pipeline_has_failed,
+    page_pipeline_is_ongoing,
+    start_page_pipeline,
+)
 
 
 PIPELINE_ID = "720120b3-d82d-4ea4-a465-30ce7ad58443"
@@ -237,6 +245,9 @@ class PagePipelineButtonTestCase(TestCase):
         with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
             response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertTrue(response.json()["ongoing"])
+        self.assertEqual(response.json()["error"], "The refresh could not be started.")
+        self.assertNotIn("already running", response.content.decode())
         launch.assert_not_called()
 
     def test_launch_forbidden_for_another_account(self):
@@ -268,3 +279,146 @@ class PagePipelineButtonTestCase(TestCase):
         response = self.client.get(f"/pages/{page.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotContains(response, "launchPipelineButton")
+
+    def test_account_has_openhexa_config(self):
+        self.assertTrue(account_has_openhexa_config(self.account))
+        self.assertFalse(account_has_openhexa_config(self.other_account))
+        self.assertFalse(account_has_openhexa_config(None))
+
+    def test_ongoing_ignores_other_pipelines_and_accounts(self):
+        page = self._page(slug="helpers-ongoing")
+        self.assertFalse(page_pipeline_is_ongoing(page))
+        Task.objects.create(
+            account=self.other_account,
+            created_by=self.other_user,
+            launcher=self.other_user,
+            name="launch_openhexa_pipeline",
+            status=RUNNING,
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            params={"args": [], "kwargs": {"pipeline_id": "other-pipeline"}},
+        )
+        self.assertFalse(page_pipeline_is_ongoing(page))
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        self.assertTrue(page_pipeline_is_ongoing(page))
+
+    def test_ongoing_and_failed_are_false_without_pipeline_or_account(self):
+        page = self._page(slug="helpers-empty", additional_config={}, account=None)
+        self.assertFalse(page_pipeline_is_ongoing(page))
+        self.assertFalse(page_pipeline_has_failed(page))
+
+    def test_failed_uses_the_latest_task_for_this_pipeline(self):
+        page = self._page(slug="helpers-failed")
+        self.assertFalse(page_pipeline_has_failed(page))
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=ERRORED,
+            params={"args": [], "kwargs": {"pipeline_id": "other-pipeline"}},
+        )
+        self.assertFalse(page_pipeline_has_failed(page))
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=KILLED,
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        self.assertTrue(page_pipeline_has_failed(page))
+
+    def test_fetch_current_pipeline_version_returns_the_id(self):
+        client = Mock()
+        client.execute.return_value = {"pipeline": {"currentVersion": {"id": VERSION_ID}}}
+        with patch("iaso.utils.page_pipeline.Client", return_value=client) as client_cls:
+            version = fetch_current_pipeline_version(
+                "https://test.openhexa.org/graphql/",
+                "test-token",
+                PIPELINE_ID,
+            )
+        self.assertEqual(version, VERSION_ID)
+        self.assertEqual(client.execute.call_args.kwargs["variable_values"], {"pipelineId": PIPELINE_ID})
+        transport = client_cls.call_args.kwargs["transport"]
+        self.assertEqual(transport.headers["Authorization"], "Bearer test-token")
+        self.assertEqual(transport.url, "https://test.openhexa.org/graphql/")
+
+    def test_fetch_current_pipeline_version_reports_transport_failure(self):
+        client = Mock()
+        client.execute.side_effect = RuntimeError("down")
+        with patch("iaso.utils.page_pipeline.Client", return_value=client):
+            with self.assertRaises(PagePipelineError) as raised:
+                fetch_current_pipeline_version("https://test.openhexa.org/graphql/", "test-token", PIPELINE_ID)
+        self.assertEqual(raised.exception.status_code, status.HTTP_502_BAD_GATEWAY)
+
+    def test_fetch_current_pipeline_version_requires_a_current_version(self):
+        client = Mock()
+        client.execute.return_value = {"pipeline": {}}
+        with patch("iaso.utils.page_pipeline.Client", return_value=client):
+            with self.assertRaises(PagePipelineError) as raised:
+                fetch_current_pipeline_version("https://test.openhexa.org/graphql/", "test-token", PIPELINE_ID)
+        self.assertEqual(raised.exception.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_start_page_pipeline_passes_the_account_openhexa_config(self):
+        page = self._page(slug="helpers-start")
+        launched = Mock(id=7, status=QUEUED)
+        with (
+            patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID) as fetch_version,
+            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=launched) as launch,
+        ):
+            task = start_page_pipeline(self.user, page)
+        self.assertEqual(task, launched)
+        fetch_version.assert_called_once_with("https://test.openhexa.org/graphql/", "test-token", PIPELINE_ID)
+        self.assertEqual(launch.call_args.kwargs["openhexa_url"], "https://test.openhexa.org/graphql/")
+        self.assertEqual(launch.call_args.kwargs["openhexa_token"], "test-token")
+        self.assertEqual(launch.call_args.kwargs["pipeline_id"], PIPELINE_ID)
+        self.assertEqual(launch.call_args.kwargs["version"], VERSION_ID)
+        self.assertEqual(launch.call_args.kwargs["user"], self.user)
+
+    def test_start_page_pipeline_stops_when_openhexa_is_missing(self):
+        OpenHEXAWorkspace.objects.filter(account=self.account).delete()
+        page = self._page(slug="helpers-no-openhexa")
+        with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
+            with self.assertRaises(PagePipelineError) as raised:
+                start_page_pipeline(self.user, page)
+        self.assertEqual(raised.exception.status_code, status.HTTP_400_BAD_REQUEST)
+        launch.assert_not_called()
+
+    def test_start_page_pipeline_does_not_launch_when_version_lookup_fails(self):
+        page = self._page(slug="helpers-version-fails")
+        with (
+            patch(
+                "iaso.utils.page_pipeline.fetch_current_pipeline_version",
+                side_effect=PagePipelineError("Failed to fetch pipeline version", status_code=502),
+            ),
+            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch,
+        ):
+            with self.assertRaises(PagePipelineError) as raised:
+                start_page_pipeline(self.user, page)
+        self.assertEqual(raised.exception.status_code, status.HTTP_502_BAD_GATEWAY)
+        launch.assert_not_called()
+
+    def test_launch_view_returns_the_pipeline_error_status(self):
+        page = self._page(slug="helpers-launch-error")
+        with patch(
+            "iaso.utils.page_pipeline.fetch_current_pipeline_version",
+            side_effect=PagePipelineError("Failed to fetch pipeline version", status_code=502),
+        ):
+            response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
+        self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
+        self.assertEqual(response.json()["error"], "The refresh could not be started.")
+        self.assertNotIn("Failed to fetch pipeline version", response.content.decode())

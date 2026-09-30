@@ -15,6 +15,7 @@ import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
+import { formatLabel } from 'Iaso/domains/instances/utils';
 import { useGetImpacts } from 'Iaso/domains/stock/hooks/useGetImpacts';
 import { useGetSkusDropdownOptions } from 'Iaso/domains/stock/hooks/useGetSkusDropdownOptions';
 import MESSAGES from 'Iaso/domains/stock/messages';
@@ -122,7 +123,7 @@ const RuleDialog: FunctionComponent<Props> = ({
     const possibleFieldsOptions = useMemo(() => {
         return possibleFields.map(field => {
             return {
-                label: field.label,
+                label: formatLabel(field),
                 value: field.name,
             } as DropdownOptions<string>;
         });

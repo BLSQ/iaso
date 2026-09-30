@@ -1,10 +1,10 @@
 from rest_framework import status
 
-from iaso.tests.api.promptness_stats.common import EXPORT_CSV_URL, URL, PromptnessStatsTestCase
+from iaso.tests.api.promptness_stats.common import PromptnessStatsTestCase
 
 
 class PromptnessStatsPermissionsTestCase(PromptnessStatsTestCase):
-    URLS = [URL, EXPORT_CSV_URL]
+    URLS = [PromptnessStatsTestCase.URL, PromptnessStatsTestCase.EXPORT_CSV_URL]
 
     def test_anonymous_user(self):
         for url in self.URLS:
@@ -37,5 +37,5 @@ class PromptnessStatsPermissionsTestCase(PromptnessStatsTestCase):
 
     def test_detail_route_does_not_exist(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"{URL}{self.ethiopia.id}/", self.get_serializer_params())
+        response = self.client.get(f"{self.URL}{self.ethiopia.id}/", self.get_serializer_params())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

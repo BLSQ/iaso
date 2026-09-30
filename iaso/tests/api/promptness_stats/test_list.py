@@ -4,18 +4,15 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.tests.api.promptness_stats.common import (
-    PERIOD,
     PERIOD_KEYS,
     RESPONSE_KEYS,
     ROW_KEYS,
-    TODAY,
-    URL,
     PromptnessStatsTestCase,
     aware,
 )
 
 
-@time_machine.travel(TODAY, tick=False)
+@time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
 class PromptnessStatsListTestCase(PromptnessStatsTestCase):
     def setUp(self):
         super().setUp()
@@ -24,7 +21,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
     def get_json(self, expected_status=status.HTTP_200_OK, user=None, **params):
         if user:
             self.client.force_authenticate(user)
-        response = self.client.get(URL, self.get_serializer_params(**params))
+        response = self.client.get(self.URL, self.get_serializer_params(**params))
         return self.assertJSONResponse(response, expected_status)
 
     def result_names(self, data):
@@ -50,7 +47,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(
             data["period"],
             {
-                "value": PERIOD,
+                "value": self.PERIOD,
                 "start": "2026-01-01",
                 "end": "2026-01-31",
                 "grace_period_days": 10,

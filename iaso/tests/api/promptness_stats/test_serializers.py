@@ -10,7 +10,7 @@ from iaso.api.promptness_stats.serializers import (
     PromptnessStatsRowSerializer,
     PromptnessStatsTotalsSerializer,
 )
-from iaso.tests.api.promptness_stats.common import PERIOD, PERIOD_KEYS, ROW_KEYS, TOTALS_KEYS, PromptnessStatsTestCase
+from iaso.tests.api.promptness_stats.common import PERIOD_KEYS, ROW_KEYS, TOTALS_KEYS, PromptnessStatsTestCase
 
 
 class PromptnessPeriodTestCase(PromptnessStatsTestCase):
@@ -82,7 +82,7 @@ class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
 
         # mandatory params
         self.assertEqual(serializer.validated_data["form"], self.form)
-        self.assertEqual(serializer.validated_data["period"], PERIOD)
+        self.assertEqual(serializer.validated_data["period"], self.PERIOD)
         self.assertEqual(serializer.validated_data["parent_org_unit"], self.ethiopia)
 
         # optional params
@@ -142,7 +142,7 @@ class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
         )
 
     def test_month_period_for_quarterly_form(self):
-        serializer = self.get_serializer(self.get_serializer_params(form_id=self.form_quarterly.id, period=PERIOD))
+        serializer = self.get_serializer(self.get_serializer_params(form_id=self.form_quarterly.id, period=self.PERIOD))
         self.assertFalse(serializer.is_valid())
         self.assertEqual(
             serializer.errors, {"period": ["Period type MONTH does not match the form period type QUARTER"]}

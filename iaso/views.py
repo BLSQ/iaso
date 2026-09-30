@@ -17,6 +17,7 @@ from django.views.decorators.http import require_GET, require_POST
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
 from iaso.utils.page_pipeline import (
+    PAGE_PIPELINE_ERROR_MESSAGES,
     PagePipelineError,
     account_has_openhexa_config,
     page_pipeline_has_failed,
@@ -142,16 +143,12 @@ def user_can_access_page(user, page):
     return page.user_roles.filter(group__in=user.groups.all()).exists()
 
 
-def user_may_launch_page_pipeline(user, page) -> bool:
-    """Authenticated account members who can open the page, when a pipeline and OpenHEXA are configured."""
+def user_may_launch_page_pipeline(_user, page) -> bool:
+    """True when the page has a pipeline and the account has an OpenHEXA workspace.
+
+    There is no user check. Whoever can open the page sees the button.
+    """
     if not page.pipeline_id or not page.account_id:
-        return False
-    if not user.is_authenticated:
-        return False
-    profile = getattr(user, "iaso_profile", None)
-    if profile is None or profile.account_id != page.account_id:
-        return False
-    if not user_can_access_page(user, page):
         return False
     return account_has_openhexa_config(page.account)
 
@@ -219,7 +216,10 @@ def launch_page_pipeline(request, page_slug):
         task = start_page_pipeline(request.user, page)
     except PagePipelineError as exc:
         logger.exception("Could not start the pipeline for page %s", page_slug)
-        return JsonResponse({"error": "The refresh could not be started."}, status=exc.status_code)
+        return JsonResponse(
+            {"error": PAGE_PIPELINE_ERROR_MESSAGES.get(exc.code, "The refresh could not be started.")},
+            status=exc.status_code,
+        )
     return JsonResponse({"task": {"id": task.id, "status": task.status}, "ongoing": True}, status=201)
 
 

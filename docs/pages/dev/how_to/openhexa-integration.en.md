@@ -666,7 +666,7 @@ Users need the **Pipeline management** permission to use the pipelines screens a
 
 ## Launch button on a page
 
-Embedded pages (raw HTML, text, iframe, Power BI, Superset) can show a bar at the bottom with a button that launches one OpenHexa pipeline. The pipeline runs with an empty config and the workspace's current version. Use this for pipelines that take no parameters, such as a dashboard refresh. The page button does not send `task_id`, `connection_token`, or `connection_host`. A pipeline that requires those parameters will be rejected by OpenHexa.
+Embedded pages (raw HTML, text, iframe, Power BI, Superset) can show a bar at the bottom with a button that launches one OpenHexa pipeline. The pipeline runs with an empty config and the workspace's current version. Use this for pipelines that take no parameters, such as a dashboard refresh. The page button does not send `task_id`, `connection_token`, or `connection_host`.
 
 The button is not the pipelines screen at `/dashboard/pipelines/`. It does not use the workspace `config.pipelines` defaults, and it does not require the **Pipeline management** permission.
 
@@ -679,9 +679,8 @@ The bar is rendered only when every condition below is true. Otherwise the page 
 | The page has a pipeline id in `additional_config` | Page admin, field **Additional config** |
 | The page belongs to an account | Page admin, field **Account** |
 | That account has an OpenHexa workspace (instance URL, token, and slug) | See [Configuration Setup](#configuration-setup) |
-| The visitor is logged in | Public pages (`needs_authentication` off) still hide the button for anonymous visitors |
-| The visitor's profile belongs to the same account as the page | User profile |
-| The visitor can open the page | Page write permission, a direct user on the page, or a user role linked to the page |
+
+There is no login check for the button. Anyone who can open the page sees it, including anonymous visitors. The launch is recorded on the page account. Opening the page itself still follows **Needs authentication**.
 
 ### Page configuration
 
@@ -738,16 +737,13 @@ The bar stays fixed at the bottom. The status message is on the left and the but
 
 #### 1. The refresh button does not appear on a page
 
-**Cause**: One of the [visibility conditions](#when-the-button-is-visible) is missing. The usual ones are an empty `additional_config`, no OpenHexa workspace on the page account, or a visitor who is logged out or belongs to another account.
+**Cause**: One of the [visibility conditions](#when-the-button-is-visible) is missing. The usual ones are an empty `additional_config` or no OpenHexa workspace on the page account.
 
 **Solution**:
 
 - Set `additional_config.pipeline_config.pipeline_id` to the pipeline UUID.
 - Confirm the page **Account** has an OpenHexa workspace with a URL, token, and slug.
-- Open the page while logged in as a user of that account who can already see the page.
 - Set **Language** (`en`, `fr`, `fr-be`, …). Leave it empty for English. Status messages are translated for `en` and `fr` only.
-
-Anonymous visitors never see the button, including on pages that do not require authentication.
 
 #### 2. 403 Forbidden on `/api/openhexa/pipelines/` or the pipelines dashboard
 

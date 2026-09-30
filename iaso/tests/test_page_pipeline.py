@@ -202,6 +202,7 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertEqual(launch.call_args.kwargs["pipeline_id"], PIPELINE_ID)
         self.assertEqual(launch.call_args.kwargs["version"], VERSION_ID)
         self.assertEqual(launch.call_args.kwargs["user"], self.user)
+        self.assertEqual(launch.call_args.kwargs["account_id"], self.account.id)
         self.assertNotIn("include_task_id", launch.call_args.kwargs)
 
     def test_page_launch_does_not_send_task_id(self):
@@ -250,11 +251,18 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertNotIn("already running", response.content.decode())
         launch.assert_not_called()
 
-    def test_launch_forbidden_for_another_account(self):
-        page = self._page(slug="foreign-page")
+    def test_user_from_another_account_can_launch(self):
+        page = self._page(slug="foreign-page", needs_authentication=False)
         self.client.force_login(self.other_user)
-        response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        task = Mock(id=11, status=QUEUED)
+        with (
+            patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID),
+            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=task) as launch,
+        ):
+            response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
+        self.assertEqual(launch.call_args.kwargs["user"], self.other_user)
 
     def test_messages_follow_page_language(self):
         self.user.iaso_profile.language = "en"
@@ -273,12 +281,36 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertNotContains(response, "Refresh in progress.")
         self.assertNotContains(response, "The refresh failed.")
 
-    def test_anonymous_user_does_not_see_button_on_public_page(self):
+    def test_anonymous_visitor_sees_and_can_launch_on_a_public_page(self):
         page = self._page(slug="public-page", needs_authentication=False)
         self.client.logout()
         response = self.client.get(f"/pages/{page.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertNotContains(response, "launchPipelineButton")
+        self.assertContains(response, 'id="launchPipelineButton"')
+        status_response = self.client.get(f"/pages/{page.slug}/pipeline-status/")
+        self.assertEqual(status_response.status_code, status.HTTP_200_OK)
+        task = Mock(id=9, status=QUEUED)
+        with (
+            patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID),
+            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=task) as launch,
+        ):
+            launch_response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
+        self.assertEqual(launch_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
+        self.assertNotIn("user", launch.call_args.kwargs)
+
+    def test_anonymous_visitor_can_launch_a_private_page(self):
+        page = self._page(slug="private-page", needs_authentication=True)
+        self.client.logout()
+        task = Mock(id=12, status=QUEUED)
+        with (
+            patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID),
+            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=task) as launch,
+        ):
+            response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
+        self.assertNotIn("user", launch.call_args.kwargs)
 
     def test_account_has_openhexa_config(self):
         self.assertTrue(account_has_openhexa_config(self.account))
@@ -388,6 +420,7 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertEqual(launch.call_args.kwargs["pipeline_id"], PIPELINE_ID)
         self.assertEqual(launch.call_args.kwargs["version"], VERSION_ID)
         self.assertEqual(launch.call_args.kwargs["user"], self.user)
+        self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
 
     def test_start_page_pipeline_stops_when_openhexa_is_missing(self):
         OpenHEXAWorkspace.objects.filter(account=self.account).delete()
@@ -403,7 +436,7 @@ class PagePipelineButtonTestCase(TestCase):
         with (
             patch(
                 "iaso.utils.page_pipeline.fetch_current_pipeline_version",
-                side_effect=PagePipelineError("Failed to fetch pipeline version", status_code=502),
+                side_effect=PagePipelineError("version_lookup_failed", status_code=502),
             ),
             patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch,
         ):
@@ -416,9 +449,9 @@ class PagePipelineButtonTestCase(TestCase):
         page = self._page(slug="helpers-launch-error")
         with patch(
             "iaso.utils.page_pipeline.fetch_current_pipeline_version",
-            side_effect=PagePipelineError("Failed to fetch pipeline version", status_code=502),
+            side_effect=PagePipelineError("version_lookup_failed", status_code=502),
         ):
             response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
-        self.assertEqual(response.json()["error"], "The refresh could not be started.")
-        self.assertNotIn("Failed to fetch pipeline version", response.content.decode())
+        self.assertEqual(response.json()["error"], "Failed to fetch pipeline version")
+        self.assertNotIn("version_lookup_failed", response.content.decode())

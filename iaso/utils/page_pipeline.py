@@ -16,9 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class PagePipelineError(Exception):
-    def __init__(self, message: str, status_code: int = 400):
-        super().__init__(message)
+    def __init__(self, code: str, status_code: int = 400):
+        super().__init__(code)
+        self.code = code
         self.status_code = status_code
+
+
+PAGE_PIPELINE_ERROR_MESSAGES = {
+    "version_lookup_failed": "Failed to fetch pipeline version",
+    "no_current_version": "Pipeline has no current version",
+    "not_configured": "OpenHEXA is not configured for this account",
+}
 
 
 def account_has_openhexa_config(account) -> bool:
@@ -87,12 +95,12 @@ def fetch_current_pipeline_version(openhexa_url: str, openhexa_token: str, pipel
         result = client.execute(query, variable_values={"pipelineId": pipeline_id})
     except Exception as exc:
         logger.exception("Could not fetch OpenHEXA pipeline %s", pipeline_id)
-        raise PagePipelineError("Failed to fetch pipeline version", status_code=502) from exc
+        raise PagePipelineError("version_lookup_failed", status_code=502) from exc
 
     version = ((result or {}).get("pipeline") or {}).get("currentVersion") or {}
     version_id = version.get("id")
     if not version_id:
-        raise PagePipelineError("Pipeline has no current version")
+        raise PagePipelineError("no_current_version")
     return str(version_id)
 
 
@@ -101,13 +109,16 @@ def start_page_pipeline(user, page):
     try:
         openhexa_url, openhexa_token, _, _ = get_openhexa_config(page.account)
     except ValidationError as exc:
-        raise PagePipelineError("OpenHEXA is not configured for this account") from exc
+        raise PagePipelineError("not_configured") from exc
 
     version = fetch_current_pipeline_version(openhexa_url, openhexa_token, str(page.pipeline_id))
-    return launch_page_openhexa_pipeline(
-        user=user,
-        pipeline_id=str(page.pipeline_id),
-        openhexa_url=openhexa_url,
-        openhexa_token=openhexa_token,
-        version=version,
-    )
+    launch_kwargs = {
+        "pipeline_id": str(page.pipeline_id),
+        "openhexa_url": openhexa_url,
+        "openhexa_token": openhexa_token,
+        "version": version,
+        "account_id": page.account_id,
+    }
+    if getattr(user, "is_authenticated", False):
+        launch_kwargs["user"] = user
+    return launch_page_openhexa_pipeline(**launch_kwargs)

@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
@@ -459,6 +461,69 @@ class InstanceModelTestCase(TestCase, InstanceBase):
 
         self.assertEqual(json_instance["pmns_qlte_cs_rdc_14_total_max"], "26")
         self.assertEqual(json_instance["pmns_qlte_cs_rdc_14_total_point"], "26")
+
+    def test_xml_to_json_from_xml_content_matches_parsing_the_stored_file(self):
+        """Parsing the raw bytes passed as `xml_content` gives the same json as parsing the stored file."""
+        for fixture in [
+            "iaso/tests/fixtures/submission_with_emoji.xml",
+            "iaso/tests/fixtures/hydroponics_test_upload_with_encoding.xml",
+            "iaso/tests/fixtures/odk_instance_repeat_group.xml",
+        ]:
+            with self.subTest(fixture=fixture):
+                with open(fixture, "rb") as f:
+                    xml_content = f.read()
+                instance = m.Instance.objects.create(
+                    form=self.form_1,
+                    period="202001",
+                    org_unit=self.org_unit_1,
+                    file=UploadedFile(open(fixture)),
+                )
+                json_from_file = instance.get_and_save_json_of_xml()
+
+                json_from_content = instance.get_and_save_json_of_xml(force=True, xml_content=xml_content)
+
+                self.assertEqual(json_from_content, json_from_file)
+
+    def test_xml_to_json_parses_xml_content_instead_of_the_stored_file(self):
+        """
+        `xml_content` is parsed as-is: the stored file is never read back, not even downloaded
+        from S3.
+        """
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.org_unit_1,
+            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
+        )
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml", "rb") as f:
+            xml_content = f.read()
+        s3_url = "https://iaso-test.s3.amazonaws.com/instances/hydroponics_test_upload.xml"
+
+        with mock.patch.object(type(instance.file), "url", new_callable=mock.PropertyMock, return_value=s3_url):
+            with mock.patch("iaso.models.instances.urlopen") as urlopen:
+                with mock.patch.object(instance.file.storage, "open") as storage_open:
+                    json_instance = instance.get_and_save_json_of_xml(xml_content=xml_content)
+
+        urlopen.assert_not_called()
+        storage_open.assert_not_called()
+        # Values only found in the modified submission
+        self.assertEqual(json_instance["Ident_type_serv_medical"], "1")
+        self.assertEqual(json_instance["instanceID"], "uuid:7ff9b3b4-9404-4702-bbe4-efe240666new")
+        instance.refresh_from_db()
+        self.assertEqual(instance.json, json_instance)
+
+    def test_xml_to_json_ignores_xml_content_when_json_already_exists(self):
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.org_unit_1,
+            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
+            json={"some": "thing"},
+        )
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml", "rb") as f:
+            xml_content = f.read()
+
+        self.assertEqual(instance.get_and_save_json_of_xml(xml_content=xml_content), {"some": "thing"})
 
     def test_instances_for_org_unit_hierarchy(self):
         """Test the querying instances within a specific org unit hierarchy"""

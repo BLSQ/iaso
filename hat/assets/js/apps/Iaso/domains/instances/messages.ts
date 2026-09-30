@@ -934,6 +934,11 @@ const MESSAGES = defineMessages({
         defaultMessage: '{count, plural, one {# field} other {# fields}}',
         id: 'iaso.instance.fieldsCount',
     },
+    repeatedCount: {
+        defaultMessage:
+            'Repeat · {count, plural, one {# entry} other {# entries}}',
+        id: 'iaso.instance.repeatedCount',
+    },
     matchingFieldsCount: {
         defaultMessage: '{count} of {total}',
         id: 'iaso.instance.matchingFieldsCount',

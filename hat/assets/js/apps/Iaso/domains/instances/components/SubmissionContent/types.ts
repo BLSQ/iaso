@@ -32,11 +32,22 @@ export type SubmissionField = {
     tooltip?: string;
 };
 
+export type SubmissionSectionItem =
+    | { type: 'field'; field: SubmissionField }
+    | { type: 'section'; section: SubmissionSection };
+
 export type SubmissionSection = {
-    /** Group id, or `null` for the lead fields that precede any group */
+    /** Path from the root, unique across the tree (repeat iterations included) */
+    key: string;
+    /** Group id, or `null` for the root holding the top level questions */
     id: string | null;
     label: string | null;
     /** Nesting depth: 0 for top level groups, >0 for groups within groups */
     depth: number;
-    fields: SubmissionField[];
+    /** Questions and sub sections, in document order */
+    items: SubmissionSectionItem[];
+    /** Only set on filtered sections: number of direct questions before filtering */
+    totalFields?: number;
+    /** Only set on the parent section of a repeat, holds its iteration count */
+    repeatCount?: number;
 };

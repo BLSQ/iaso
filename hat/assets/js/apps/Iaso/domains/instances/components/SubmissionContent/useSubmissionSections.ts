@@ -3,7 +3,12 @@ import { textPlaceholder } from 'bluesquare-components';
 import { useLocale } from '../../../app/contexts/LocaleContext';
 import { translateLabel } from '../../utils/questions';
 import { Descriptor, getDisplayedValue } from '../InstanceFileContentRich';
-import { FieldKind, SubmissionField, SubmissionSection } from './types';
+import {
+    FieldKind,
+    SubmissionField,
+    SubmissionSection,
+    SubmissionSectionItem,
+} from './types';
 
 type Data = Record<string, any>;
 
@@ -66,6 +71,8 @@ export const getFieldKind = (descriptor: Descriptor): FieldKind => {
  */
 export const spansFullWidth = (kind: FieldKind): boolean => kind === 'gps';
 
+export const getSectionIndent = (depth: number): number => depth * 2;
+
 const isEmptyValue = (raw: unknown, displayed: string): boolean =>
     raw === undefined ||
     raw === null ||
@@ -104,38 +111,47 @@ const buildField = (
     };
 };
 
+const isField = (
+    item: SubmissionSectionItem,
+): item is { type: 'field'; field: SubmissionField } => item.type === 'field';
+
+export const getSectionFields = (
+    section: SubmissionSection,
+): SubmissionField[] => section.items.filter(isField).map(item => item.field);
+
 /**
- * Walk the (nested) form descriptor and flatten it into a list of sections.
- *
- * Questions are assigned to the most recently opened section, so a section runs
- * until the next group header — the same document order the form is filled in.
- * Top level questions appearing before any group land in a leading section with
- * a `null` id, which the panel renders without a header. Nested groups get a
- * bigger `depth` so the panel can indent their header, and repeats yield one
- * section per iteration.
+ * Walk the (nested) form descriptor into a tree of sections mirroring its
+ * groups, keeping questions and sub groups in document order. The root section
+ * holds the top level questions and is rendered without a header. Repeats yield
+ * a parent section holding the iteration count, with one child section per
+ * iteration.
  */
-export const buildSubmissionSections = (
+export const buildSubmissionTree = (
     descriptor: Descriptor,
     data: Data,
     activeLocale: string,
     showNote = true,
-): SubmissionSection[] => {
-    const sections: SubmissionSection[] = [
-        { id: null, label: null, depth: 0, fields: [] },
-    ];
-
-    const walk = (node: Descriptor, nodeData: Data, depth: number): void => {
+): SubmissionSection => {
+    const walk = (
+        node: Descriptor,
+        nodeData: Data,
+        section: SubmissionSection,
+        depth: number,
+    ): void => {
         node.children
             ?.filter(child => child.name !== 'meta')
             .forEach(child => {
+                const key = `${section.key}/${child.name}`;
                 if (child.type === 'group') {
-                    sections.push({
+                    const group: SubmissionSection = {
+                        key,
                         id: child.name,
                         label: labelOf(child, activeLocale),
                         depth,
-                        fields: [],
-                    });
-                    walk(child, nodeData, depth + 1);
+                        items: [],
+                    };
+                    walk(child, nodeData, group, depth + 1);
+                    section.items.push({ type: 'section', section: group });
                     return;
                 }
                 if (child.type === 'repeat') {
@@ -144,45 +160,63 @@ export const buildSubmissionSections = (
                     )
                         ? nodeData[child.name]
                         : [];
-                    const baseLabel = labelOf(child, activeLocale);
+                    const repeatLabel = labelOf(child, activeLocale);
+                    const repeat: SubmissionSection = {
+                        key,
+                        id: child.name,
+                        label: repeatLabel,
+                        depth,
+                        items: [],
+                        repeatCount: iterations.length,
+                    };
                     iterations.forEach((iterationData, index) => {
-                        sections.push({
-                            id: `${child.name}-${index}`,
-                            label: `${baseLabel} (${index + 1})`,
-                            depth,
-                            fields: [],
+                        const iteration: SubmissionSection = {
+                            key: `${key}[${index}]`,
+                            id: child.name,
+                            label: `${repeatLabel} (${index + 1})`,
+                            depth: depth + 1,
+                            items: [],
+                        };
+                        walk(child, iterationData, iteration, depth + 2);
+                        repeat.items.push({
+                            type: 'section',
+                            section: iteration,
                         });
-                        walk(child, iterationData, depth + 1);
                     });
+                    section.items.push({ type: 'section', section: repeat });
                     return;
                 }
                 if (child.type === 'note' && !showNote) return;
-                sections[sections.length - 1].fields.push(
-                    buildField(child, nodeData, activeLocale),
-                );
+                section.items.push({
+                    type: 'field',
+                    field: buildField(child, nodeData, activeLocale),
+                });
             });
     };
 
-    walk(descriptor, data, 0);
-
-    // drop the leading section when the form opens directly on a group
-    return sections.filter(
-        section => section.id !== null || section.fields.length > 0,
-    );
+    const root: SubmissionSection = {
+        key: '',
+        id: null,
+        label: null,
+        depth: 0,
+        items: [],
+    };
+    walk(descriptor, data, root, 0);
+    return root;
 };
 
-export const useSubmissionSections = (
+export const useSubmissionTree = (
     formDescriptor: Descriptor | undefined,
     instanceData: Data | undefined,
     showNote = true,
     // the form language chosen in the toolbar; falls back to the UI locale
     language?: string,
-): SubmissionSection[] => {
+): SubmissionSection | undefined => {
     const { locale: uiLocale } = useLocale();
     const activeLocale = language ?? uiLocale;
     return useMemo(() => {
-        if (!formDescriptor) return [];
-        return buildSubmissionSections(
+        if (!formDescriptor) return undefined;
+        return buildSubmissionTree(
             formDescriptor,
             instanceData ?? {},
             activeLocale,
@@ -191,14 +225,10 @@ export const useSubmissionSections = (
     }, [formDescriptor, instanceData, activeLocale, showNote]);
 };
 
-export type FilteredSection = SubmissionSection & {
-    /** How many fields the section holds when no search is active */
-    totalFields: number;
-};
-
-export type FilteredSubmission = {
-    sections: FilteredSection[];
-    /** Number of fields matching the current query across all sections */
+type FilteredSubmission = {
+    /** Undefined when nothing matches the query */
+    tree: SubmissionSection | undefined;
+    /** Number of fields matching the current query across the whole tree */
     matchCount: number;
 };
 
@@ -209,48 +239,56 @@ const matchesQuery = (
     field.label.toLowerCase().includes(lowerCaseQuery) ||
     field.id.toLowerCase().includes(lowerCaseQuery);
 
+const countFields = (section: SubmissionSection): number =>
+    section.items.reduce(
+        (count, item) =>
+            count + (isField(item) ? 1 : countFields(item.section)),
+        0,
+    );
+
+const filterSection = (
+    section: SubmissionSection,
+    lowerCaseQuery: string,
+): SubmissionSection | undefined => {
+    const items: SubmissionSectionItem[] = [];
+    section.items.forEach(item => {
+        if (isField(item)) {
+            if (matchesQuery(item.field, lowerCaseQuery)) items.push(item);
+            return;
+        }
+        const filtered = filterSection(item.section, lowerCaseQuery);
+        if (filtered) items.push({ type: 'section', section: filtered });
+    });
+    return items.length > 0
+        ? {
+              ...section,
+              items,
+              totalFields: getSectionFields(section).length,
+          }
+        : undefined;
+};
+
 /**
- * Filter sections down to the fields matching `query`, matched against both the
- * question label and the question id. Sections left without any match are
- * dropped, but survivors keep their original field count so the section header
+ * Filter the tree down to the fields matching `query`, matched against both the
+ * question label and the question id. Sections are kept as long as something
+ * below them matches, and record their unfiltered `totalFields` so the header
  * can show "3 of 12".
  */
-export const filterSubmissionSections = (
-    sections: SubmissionSection[],
+export const filterSubmissionTree = (
+    tree: SubmissionSection | undefined,
     query: string,
 ): FilteredSubmission => {
+    if (!tree) return { tree: undefined, matchCount: 0 };
     const trimmed = query.trim().toLowerCase();
-    if (!trimmed) {
-        const all = sections.map(section => ({
-            ...section,
-            totalFields: section.fields.length,
-        }));
-        return {
-            sections: all,
-            matchCount: all.reduce((n, s) => n + s.fields.length, 0),
-        };
-    }
-    const filtered: FilteredSection[] = [];
-    sections.forEach(section => {
-        const fields = section.fields.filter(field =>
-            matchesQuery(field, trimmed),
-        );
-        if (fields.length > 0) {
-            filtered.push({
-                ...section,
-                fields,
-                totalFields: section.fields.length,
-            });
-        }
-    });
+    const filtered = trimmed ? filterSection(tree, trimmed) : tree;
     return {
-        sections: filtered,
-        matchCount: filtered.reduce((n, s) => n + s.fields.length, 0),
+        tree: filtered,
+        matchCount: filtered ? countFields(filtered) : 0,
     };
 };
 
-export const useFilteredSubmission = (
-    sections: SubmissionSection[],
+export const useFilteredSubmissionTree = (
+    tree: SubmissionSection | undefined,
     query: string,
 ): FilteredSubmission =>
-    useMemo(() => filterSubmissionSections(sections, query), [sections, query]);
+    useMemo(() => filterSubmissionTree(tree, query), [tree, query]);

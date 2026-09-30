@@ -1,12 +1,15 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Chip, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import { Box, ButtonBase, Chip, Theme, Typography, alpha } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
-import { FilteredSection } from './useSubmissionSections';
+import { SubmissionSection } from './types';
+import { getSectionFields, getSectionIndent } from './useSubmissionSections';
 
-const styles: SxStyles = {
+const styles = {
     root: {
         display: 'flex',
         alignItems: 'center',
@@ -17,6 +20,26 @@ const styles: SxStyles = {
         borderTop: 1,
         borderBottom: 1,
         borderColor: 'divider',
+    },
+    clickableRoot: {
+        width: '100%',
+        justifyContent: 'flex-start',
+        textAlign: 'left',
+        '&:hover': { backgroundColor: 'grey.200' },
+        '&.Mui-focusVisible': { backgroundColor: 'grey.200' },
+    },
+    trailing: {
+        ml: 'auto',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.4,
+    },
+    toggleIcon: {
+        color: 'primary.main',
+        transition: 'transform 150ms',
+    },
+    toggleIconCollapsed: {
+        transform: 'rotate(-90deg)',
     },
     sectionIndicator: {
         width: 4,
@@ -31,7 +54,6 @@ const styles: SxStyles = {
         letterSpacing: '0.03em',
     },
     sectionId: {
-        ml: 'auto',
         fontFamily: 'monospace',
         fontSize: 11.5,
         color: 'text.disabled',
@@ -46,40 +68,93 @@ const styles: SxStyles = {
         borderColor: 'divider',
         '& .MuiChip-label': { px: 1 },
     },
-};
+    repeatCount: {
+        color: 'primary.main',
+        backgroundColor: (theme: Theme) =>
+            alpha(theme.palette.primary.main, 0.08),
+        borderColor: (theme: Theme) => alpha(theme.palette.primary.main, 0.3),
+        '& .MuiChip-icon': {
+            fontSize: 14,
+            color: 'primary.main',
+            ml: 0.75,
+            mr: -0.25,
+        },
+    },
+} satisfies SxStyles;
 
 export const SubmissionContentHeader: FunctionComponent<{
-    section: FilteredSection;
+    section: SubmissionSection;
     isSearching: boolean;
     showQuestionIds: boolean;
-}> = ({ section, isSearching, showQuestionIds }) => {
+    expanded?: boolean;
+    onToggle?: () => void;
+}> = ({ section, isSearching, showQuestionIds, expanded = true, onToggle }) => {
     const { formatMessage } = useSafeIntl();
-    return (
-        <Box sx={{ ...styles.root, pl: 2.75 + section.depth * 2 }}>
+    const isRepeat = section.repeatCount !== undefined;
+    const fieldCount = getSectionFields(section).length;
+    const countLabel = isRepeat
+        ? formatMessage(
+              MESSAGES.repeatedCount,
+              numericValues({ count: section.repeatCount ?? 0 }),
+          )
+        : formatMessage(
+              isSearching ? MESSAGES.matchingFieldsCount : MESSAGES.fieldsCount,
+              numericValues({
+                  count: fieldCount,
+                  total: section.totalFields ?? fieldCount,
+              }),
+          );
+    const rootSx = {
+        ...styles.root,
+        pl: 2.75 + getSectionIndent(section.depth),
+        ...(onToggle && styles.clickableRoot),
+    };
+    const content = (
+        <>
             <Box sx={styles.sectionIndicator} />
             <Typography variant="subtitle2" sx={styles.sectionLabel}>
                 {section.label}
             </Typography>
             <Chip
                 size="small"
-                sx={styles.sectionCount}
-                label={
-                    isSearching
-                        ? formatMessage(MESSAGES.matchingFieldsCount, {
-                              count: `${section.fields.length}`,
-                              total: `${section.totalFields}`,
-                          })
-                        : formatMessage(
-                              MESSAGES.fieldsCount,
-                              numericValues({ count: section.fields.length }),
-                          )
-                }
+                icon={isRepeat ? <RepeatIcon /> : undefined}
+                sx={{
+                    ...styles.sectionCount,
+                    ...(isRepeat && styles.repeatCount),
+                }}
+                label={countLabel}
             />
-            {showQuestionIds && section.id && (
-                <Typography component="code" sx={styles.sectionId}>
-                    {section.id}
-                </Typography>
-            )}
-        </Box>
+            <Box sx={styles.trailing}>
+                {showQuestionIds && section.id && (
+                    <Typography component="code" sx={styles.sectionId}>
+                        {section.id}
+                    </Typography>
+                )}
+                {onToggle && (
+                    <ExpandMoreIcon
+                        fontSize="small"
+                        sx={{
+                            ...styles.toggleIcon,
+                            ...(!expanded && styles.toggleIconCollapsed),
+                        }}
+                    />
+                )}
+            </Box>
+        </>
+    );
+
+    if (!onToggle) return <Box sx={rootSx}>{content}</Box>;
+
+    // a div rather than a native button: the Chip inside renders a div,
+    // which is invalid content for <button>
+    return (
+        <ButtonBase
+            component="div"
+            onClick={onToggle}
+            aria-expanded={expanded}
+            sx={rootSx}
+        >
+            {content}
+        </ButtonBase>
     );
 };

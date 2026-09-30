@@ -613,6 +613,7 @@
     "iaso.instance.questionLanguage": "Langue des questions",
     "iaso.instance.referenceSubmission": "Référence",
     "iaso.instance.removeLockAction": "Déverrouiller la soumission",
+    "iaso.instance.repeatedCount": "Répétition · {count, plural, one {# entrée} other {# entrées}}",
     "iaso.instance.restricted": "Accès restreint",
     "iaso.instance.searchQuestions": "Rechercher",
     "iaso.instance.searchResultsCount": "{count, plural, one {# résultat} other {# résultats}} pour \"{query}\"",

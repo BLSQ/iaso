@@ -28,7 +28,7 @@ def detect_user_request(request):
         return None
 
 
-def process_instance_file(instance, file, user, xml_content=None):
+def process_instance_file(instance, file, user, xml_content=None, form_versions_cache=None):
     """
     `xml_content`: the raw bytes of `file`, when the caller already has them in memory - see
     `Instance.get_and_save_json_of_xml()`.
@@ -41,7 +41,7 @@ def process_instance_file(instance, file, user, xml_content=None):
     # uploaded, which only happens here, in the FileField's own save.
     instance.save()
 
-    instance.get_and_save_json_of_xml(save=False, xml_content=xml_content)
+    instance.get_and_save_json_of_xml(save=False, xml_content=xml_content, form_versions_cache=form_versions_cache)
     try:
         instance.convert_location_from_field(save=False)
         instance.convert_device(save=False)

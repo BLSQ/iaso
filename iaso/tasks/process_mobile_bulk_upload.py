@@ -100,14 +100,16 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     }
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
+                    # The batch's instances share a few (form, version) pairs: look each up once.
+                    form_versions_cache = {}
 
                     for instance_data in instances_data:
                         uuid = instance_data["id"]
                         instance = instances_by_uuid.get(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
-                        instance = process_instance_xml(instance, instance_data, zip_ref, user)
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user, form_versions_cache)
                         stats["new_instances"] += 1
-                        new_instance_files += process_instance_attachments(dirs[uuid], instance)
+                        new_instance_files += process_instance_attachments(zip_ref, dirs[uuid], instance)
                         log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
 
                     duplicated_count = duplicate_instance_files(new_instance_files)
@@ -172,14 +174,23 @@ def read_json_file_from_zip(zip_ref, filename):
 
 
 def get_directory_handlers(zip_ref):
+    """
+    Map each top-level directory of the zip (one per instance uuid) to the names of the files
+    directly inside it. Built from a single pass over `namelist()`: listing each directory with
+    `zipfile.Path.iterdir()` instead scans every entry of the zip, i.e. O(instances²) per upload.
+    """
     result = {}
-    for directory in zipfile.Path(zip_ref).iterdir():
-        if directory.is_dir():
-            result[directory.name] = directory
+    for name in zip_ref.namelist():
+        directory, separator, rest = name.partition("/")
+        if not separator:  # top-level file, e.g. instances.json
+            continue
+        entry_names = result.setdefault(directory, [])
+        if rest and "/" not in rest:  # skip the directory entry itself ("<uuid>/") and nested paths
+            entry_names.append(name)
     return result
 
 
-def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
+def process_instance_xml(instance: Instance, instance_data, zip_ref, user, form_versions_cache=None):
     uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
@@ -192,7 +203,9 @@ def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
     xml_content = zip_ref.read(entry_name)
     file = ContentFile(xml_content, name=entry_name)
     if not instance.file or not instance.json:  # new instance
-        instance = process_instance_file(instance, file, user, xml_content=xml_content)
+        instance = process_instance_file(
+            instance, file, user, xml_content=xml_content, form_versions_cache=form_versions_cache
+        )
     else:
         instance = update_instance_file_if_needed(
             instance,
@@ -200,12 +213,15 @@ def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
             file,
             user,
             xml_content=xml_content,
+            form_versions_cache=form_versions_cache,
         )
 
     return instance
 
 
-def update_instance_file_if_needed(instance, incoming_updated_at, file, user, xml_content=None):
+def update_instance_file_if_needed(
+    instance, incoming_updated_at, file, user, xml_content=None, form_versions_cache=None
+):
     incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(int(incoming_updated_at))
     if incoming_updated_at and incoming_updated_at > instance.source_updated_at:
         logger.info(
@@ -218,8 +234,12 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user, xm
         instance.last_modified_by = user
         instance.source_updated_at = incoming_updated_at
         instance.save()
-        instance.get_and_save_json_of_xml(force=True, tries=8, xml_content=xml_content)
-        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user, xml_content=xml_content)
+        instance.get_and_save_json_of_xml(
+            force=True, tries=8, xml_content=xml_content, form_versions_cache=form_versions_cache
+        )
+        update_merged_entity_ref_form_if_needed(
+            instance, incoming_updated_at, file, user, xml_content=xml_content, form_versions_cache=form_versions_cache
+        )
     else:
         logger.info(
             "\tSkipping instance %s (current timestamp %s, incoming %s)",
@@ -231,7 +251,9 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user, xm
     return instance
 
 
-def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user, xml_content=None):
+def update_merged_entity_ref_form_if_needed(
+    instance, incoming_updated_at, file, user, xml_content=None, form_versions_cache=None
+):
     """
     If the form being updated is attached to an entity that's soft deleted because
     of a merge, then we also update the ref form on the "final" merged entity
@@ -262,17 +284,20 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
         instance_to_update.last_modified_by = user
         instance_to_update.source_updated_at = incoming_updated_at
         instance_to_update.save()
-        instance_to_update.get_and_save_json_of_xml(force=True, tries=8, xml_content=xml_content)
+        instance_to_update.get_and_save_json_of_xml(
+            force=True, tries=8, xml_content=xml_content, form_versions_cache=form_versions_cache
+        )
 
 
 # Create form attachments for all non-XML files in the form's directory
-def process_instance_attachments(directory, instance):
+def process_instance_attachments(zip_ref, entry_names, instance):
     instance_files = []
-    for instance_file in directory.iterdir():
-        if not instance_file.name.endswith(".xml"):
-            with instance_file.open("rb") as f:
-                logger.info(f"\tProcessing attachment {instance_file.name}")
-                fi = create_instance_file(instance, instance_file.name, File(f))
+    for entry_name in entry_names:
+        file_name = entry_name.rpartition("/")[2]
+        if not file_name.endswith(".xml"):
+            with zip_ref.open(entry_name, "r") as f:
+                logger.info(f"\tProcessing attachment {file_name}")
+                fi = create_instance_file(instance, file_name, File(f))
                 instance_files.append(fi)
 
     return instance_files

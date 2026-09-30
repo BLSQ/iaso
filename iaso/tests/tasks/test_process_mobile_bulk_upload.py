@@ -1,4 +1,5 @@
 import datetime
+import io
 import json
 import os
 import uuid
@@ -12,7 +13,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
@@ -22,7 +23,11 @@ from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
-from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
+from iaso.tasks.process_mobile_bulk_upload import (
+    get_directory_handlers,
+    process_instance_attachments,
+    process_mobile_bulk_upload,
+)
 from iaso.tests.utils.query_profiler import QueryProfiler
 
 
@@ -469,9 +474,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         the zip contains 4 instances for 2 distinct entities, sharing only 2 distinct (form,
         version) pairs and 1 org unit - a well-optimized import should hit `iaso_orgunit`/
         `iaso_form`/`iaso_entitytype` O(distinct org units/forms/entity types) via import_data()'s
-        batch caching, not O(instances). `iaso_formversion`/`iaso_form` also get one query per
-        instance from `xml_file_to_json` while processing each instance's attached XML file -
-        that part is unrelated to import_data() and expected to scale with instance count.
+        batch caching, not O(instances). Same for `iaso_formversion`: `xml_file_to_json` looks up
+        each distinct (form, version) pair once per batch, via the bulk upload's shared
+        `form_versions_cache`.
         """
         m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
         m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
@@ -507,12 +512,16 @@ class ProcessMobileBulkUploadTest(TestCase):
         # (keyed on a "serie_id" json field) fires - hence 1 here instead of test_success's 2.
         self.assertEqual(m.InstanceFile.objects.count(), 1)
 
-        # import_data()'s own org-unit/form/entity/entity-type lookups are still done once per
-        # instance (no batch prefetch/caching yet), so `iaso_orgunit`/`iaso_form`/`iaso_entity`/
-        # `iaso_entitytype` are O(instances) - bounded at their exact observed value, to be
-        # tightened once those lookups get cached. `iaso_formversion`: 1 query/instance, from
-        # `xml_file_to_json` - `get_and_save_json_of_xml` reuses the FormVersion it already found
-        # there instead of looking it up again via `resolve_form_version()`. `iaso_instance`: 6/instance -
+        # `iaso_form`: a single batch prefetch in import_data(), whose Form objects are then shared
+        # by every instance of the batch (so the later `instance.form` accesses in import_data(),
+        # xml_file_to_json and the conversions don't re-query it). `iaso_entitytype`: 1 query per
+        # distinct entity type, whose reference form import_data() caches for the batch.
+        # import_data()'s own org-unit/entity lookups are still done once per instance (no batch
+        # prefetch/caching yet), so `iaso_orgunit`/`iaso_entity` are O(instances) - bounded at
+        # their exact observed value, to be tightened once those lookups get cached. `iaso_formversion`: 1 query per distinct (form, version) pair (2
+        # here), from `xml_file_to_json` via the batch's `form_versions_cache` -
+        # `get_and_save_json_of_xml` reuses the FormVersion it already found there instead of
+        # looking it up again via `resolve_form_version()`. `iaso_instance`: 6/instance -
         # `import_data()`'s dedup filter (1) + get_or_create (2) + final save (1), then
         # `process_instance_file()`'s file-persisting save (1, required before
         # `get_and_save_json_of_xml()` can fetch the file back on S3 storage) + one merged save (1,
@@ -535,12 +544,12 @@ class ProcessMobileBulkUploadTest(TestCase):
             profiler.assertLessEqualQueryCount(
                 {
                     "iaso_orgunit": 9,
-                    "iaso_form": 16,
+                    "iaso_form": 1,
                     "iaso_entity": 8,
-                    "iaso_formversion": 4,
+                    "iaso_formversion": 2,
                     "iaso_instance": 26,
                     "audit_modification": 4,
-                    "iaso_entitytype": 4,
+                    "iaso_entitytype": 1,
                     "iaso_task": 7,
                     "iaso_tasklog": 4,
                     "iaso_project": 3,
@@ -553,7 +562,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 115)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 95)
 
         # form_version is no longer resolved on every save() - make sure the bulk upload path
         # still sets it on every instance it creates.
@@ -598,8 +607,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Entity.objects.count(), 25)
 
         # Same per-instance import_data() lookups as the baseline test (see comment there), at
-        # 12.5x the instance count (50 vs 4): `iaso_orgunit`/`iaso_form`/`iaso_entity`/
-        # `iaso_entitytype` all scale with the batch. `iaso_formversion`: same 1 query/instance as the baseline test, at scale: 50.
+        # 12.5x the instance count (50 vs 4): `iaso_orgunit`/`iaso_entity` scale with the batch.
+        # `iaso_form`/`iaso_entitytype` stay at 1 query per distinct form/entity type, as in the baseline. `iaso_formversion`: same 2 distinct (form, version) pairs as the baseline, so still 2.
         # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300, + 1 per batch.
         # `audit_modification` scales 1:1 with the batch, at scale: 50. The rest is the same fixed
         # per-run bookkeeping overhead as the baseline test (see comment there), still O(1) rather
@@ -611,12 +620,12 @@ class ProcessMobileBulkUploadTest(TestCase):
             profiler.assertLessEqualQueryCount(
                 {
                     "iaso_orgunit": 55,
-                    "iaso_form": 200,
+                    "iaso_form": 1,
                     "iaso_entity": 100,
-                    "iaso_formversion": 50,
+                    "iaso_formversion": 2,
                     "iaso_instance": 301,
                     "audit_modification": 50,
-                    "iaso_entitytype": 50,
+                    "iaso_entitytype": 1,
                     "iaso_task": 7,
                     "iaso_tasklog": 4,
                     "iaso_project": 3,
@@ -628,7 +637,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 938)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 642)
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()
@@ -1457,3 +1466,104 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Verify the instance was actually updated with the newer timestamp
         self.assertEqual(instance.source_updated_at, updated_timestamp)
         self.assertEqual(instance.last_modified_by, self.user)
+
+
+def in_memory_zip(entries):
+    """`entries`: {zip entry name: bytes}, written in the given order - a name ending with "/" is a directory entry."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zipf:
+        for name, content in entries.items():
+            zipf.writestr(name, content)
+    return zipfile.ZipFile(buffer)
+
+
+class GetDirectoryHandlersTest(SimpleTestCase):
+    def test_maps_each_top_level_directory_to_its_files_in_zip_order(self):
+        zip_ref = in_memory_zip(
+            {
+                "instances.json": b"[]",
+                "orgUnits.json": b"[]",
+                "uuid-1/": b"",
+                "uuid-1/form.xml": b"<x/>",
+                "uuid-1/photo.webp": b"img",
+                "uuid-1/scan.pdf": b"pdf",
+                "uuid-2/": b"",
+                "uuid-2/form.xml": b"<x/>",
+            }
+        )
+
+        self.assertEqual(
+            get_directory_handlers(zip_ref),
+            {
+                "uuid-1": ["uuid-1/form.xml", "uuid-1/photo.webp", "uuid-1/scan.pdf"],
+                "uuid-2": ["uuid-2/form.xml"],
+            },
+        )
+
+    def test_directory_without_explicit_directory_entry(self):
+        # Zips aren't required to contain "<uuid>/" entries (the mobile app writes them, other
+        # zip tools may not) - the directory is then only implied by its files' paths.
+        zip_ref = in_memory_zip({"uuid-1/form.xml": b"<x/>", "uuid-1/photo.webp": b"img"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": ["uuid-1/form.xml", "uuid-1/photo.webp"]})
+
+    def test_empty_directory_is_still_listed(self):
+        zip_ref = in_memory_zip({"uuid-1/": b""})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": []})
+
+    def test_nested_paths_are_ignored(self):
+        # Only direct children of "<uuid>/" are attachments - like `zipfile.Path.iterdir()` used to list.
+        zip_ref = in_memory_zip({"uuid-1/form.xml": b"<x/>", "uuid-1/nested/": b"", "uuid-1/nested/photo.webp": b"img"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": ["uuid-1/form.xml"]})
+
+    def test_no_directories(self):
+        zip_ref = in_memory_zip({"instances.json": b"[]", "orgUnits.json": b"[]"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {})
+
+    def test_reads_the_zip_index_once_regardless_of_instance_count(self):
+        # Regression guard: listing each instance's directory with `zipfile.Path.iterdir()` scanned
+        # every entry of the zip per instance (O(instances²) - ~16s for a 5000-instance zip).
+        zip_ref = in_memory_zip({f"uuid-{i}/form.xml": b"<x/>" for i in range(100)})
+
+        with mock.patch.object(zip_ref, "namelist", wraps=zip_ref.namelist) as namelist:
+            handlers = get_directory_handlers(zip_ref)
+
+        self.assertEqual(len(handlers), 100)
+        namelist.assert_called_once()
+
+
+class ProcessInstanceAttachmentsTest(TestCase):
+    def test_creates_an_instance_file_per_non_xml_file(self):
+        instance = m.Instance.objects.create(file_name="form.xml")
+        zip_ref = in_memory_zip(
+            {
+                "uuid-1/": b"",
+                "uuid-1/form.xml": b"<x/>",
+                "uuid-1/photo.webp": b"img-content",
+                "uuid-1/scan.pdf": b"pdf-content",
+                "uuid-2/other.webp": b"not-mine",
+            }
+        )
+
+        instance_files = process_instance_attachments(zip_ref, get_directory_handlers(zip_ref)["uuid-1"], instance)
+
+        self.assertEqual([instance_file.name for instance_file in instance_files], ["photo.webp", "scan.pdf"])
+        self.assertEqual(
+            sorted(m.InstanceFile.objects.filter(instance=instance).values_list("name", flat=True)),
+            ["photo.webp", "scan.pdf"],
+        )
+        contents = {}
+        for instance_file in instance_files:
+            with instance_file.file.open("rb") as f:
+                contents[instance_file.name] = f.read()
+        self.assertEqual(contents, {"photo.webp": b"img-content", "scan.pdf": b"pdf-content"})
+
+    def test_no_attachments(self):
+        instance = m.Instance.objects.create(file_name="form.xml")
+        zip_ref = in_memory_zip({"uuid-1/": b"", "uuid-1/form.xml": b"<x/>"})
+
+        self.assertEqual(process_instance_attachments(zip_ref, get_directory_handlers(zip_ref)["uuid-1"], instance), [])
+        self.assertFalse(m.InstanceFile.objects.filter(instance=instance).exists())

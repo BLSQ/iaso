@@ -13,6 +13,19 @@ _FORMULA_SAFE = True  # cells are written as values, not formulas
 RESERVED_ENTITY = frozenset({"name", "entity_type", "org_unit"})
 RESERVED_INSTANCE = frozenset({"entity", "form", "org_unit"})
 
+# Exact column names. Substring rules and numeric sniffing stay below.
+_EXACT_FIELD_TYPES = {
+    "sex": "select_one sex",
+    "gender": "select_one sex",
+    "age": "integer",
+    "muac": "integer",
+    "muac_mm": "integer",
+}
+_SUBSTRING_FIELD_TYPES = (
+    ("date", "date"),
+    ("weight", "decimal"),
+)
+
 
 def xlsform_version_today() -> str:
     return datetime.now().strftime("%Y%m%d") + "01"
@@ -20,14 +33,12 @@ def xlsform_version_today() -> str:
 
 def infer_field_type(name: str, values: list[str]) -> str:
     lowered = name.lower()
-    if lowered in {"sex", "gender"}:
-        return "select_one sex"
-    if "date" in lowered:
-        return "date"
-    if lowered in {"age", "muac", "muac_mm"}:
-        return "integer"
-    if "weight" in lowered:
-        return "decimal"
+    exact = _EXACT_FIELD_TYPES.get(lowered)
+    if exact:
+        return exact
+    for needle, field_type in _SUBSTRING_FIELD_TYPES:
+        if needle in lowered:
+            return field_type
     sample = [value for value in values if value]
     if sample and all(value.replace(".", "", 1).isdigit() for value in sample):
         if any("." in value for value in sample):
@@ -68,16 +79,16 @@ def build_xlsform_bytes(
     survey.append(["type", "name", "label", "required"])
     survey.append(["start", "start", "Start", ""])
     survey.append(["end", "end", "End", ""])
-    needs_sex = False
+    include_sex_choices = False
     for field in fields:
         required = "yes" if field["name"] in {"first_name", "last_name"} else ""
         survey.append([field["type"], field["name"], field["label"], required])
         if field["type"].startswith("select_one sex"):
-            needs_sex = True
+            include_sex_choices = True
 
     choices = workbook.create_sheet("choices")
     choices.append(["list_name", "name", "label"])
-    if needs_sex:
+    if include_sex_choices:
         choices.append(["sex", "F", "Female"])
         choices.append(["sex", "M", "Male"])
 

@@ -1,3 +1,4 @@
+/** Catalog copy for this standalone Vite app. Not the IASO react-intl bundles. */
 import {
   createContext,
   createElement,

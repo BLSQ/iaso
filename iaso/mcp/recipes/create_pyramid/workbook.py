@@ -1,4 +1,9 @@
-"""Packaged Org_Units.xlsx: a generic list of org units."""
+"""Readable source for the packaged Org_Units.xlsx sample.
+
+The xlsx is committed so the pyramid recipe can run without regenerating it.
+This module keeps the fake hierarchy (Demo Republic), sheet layout, and
+styling in reviewable text. Call write_sample_workbook() to refresh the file.
+"""
 
 from __future__ import annotations
 

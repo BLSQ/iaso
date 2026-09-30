@@ -1,3 +1,16 @@
+"""Reattach form instances onto a destination org unit.
+
+The MCP tools read two packaged CSVs next to this module:
+
+- ``instances-test.csv`` — one sample row (instance id, current org unit id).
+- ``org_unit_mapping.csv`` — source org unit id to destination org unit id.
+
+Those ids come from one account export used while building the recipe.
+They are not a generic fixture. Replace both files for another account.
+Do not commit a full production dump (the unused ``instances.csv`` export
+was removed for that reason).
+"""
+
 from __future__ import annotations
 
 import csv
@@ -5,7 +18,7 @@ import logging
 
 from pathlib import Path
 
-from iaso.mcp.client import IasoClient, IasoHTTPError
+from iaso.mcp.client import IasoClient, IasoHTTPError, http_error_message as _error_message
 from iaso.mcp.session import build_client
 
 
@@ -42,18 +55,6 @@ def patch_instance_org_unit(
         f"instances/{instance_id}/",
         json={"org_unit": org_unit_id},
     )
-
-
-def _error_message(exc: IasoHTTPError) -> str:
-    payload = exc.payload
-    if isinstance(payload, dict):
-        message = payload.get("error") or payload.get("detail")
-        if message:
-            return str(message)
-        return str(payload)
-    if payload:
-        return str(payload)
-    return str(exc)
 
 
 def main() -> None:

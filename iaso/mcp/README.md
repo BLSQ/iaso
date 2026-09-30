@@ -11,8 +11,8 @@ MCP (Model Context Protocol) is a Django app on this IASO process, following
 
 This is a **core** app (`iaso.mcp`), not a plugin. Do not add `mcp` to
 `PLUGINS=`. `docker-compose.yml` sets `MCP_ENABLED=true` on the iaso
-service so `/mcp` is on with `docker compose up`. Production must set
-`MCP_ENABLED=true` explicitly (default is off when `DEBUG=false`).
+service so `/mcp` is on with `docker compose up`. The default is off.
+`DEBUG=true` does not enable it. Production must set `MCP_ENABLED=true`.
 
 ## Run
 
@@ -38,7 +38,7 @@ The production image (`docker/prod/Dockerfile`, used by GitHub deploy/build work
 - **Writes still need `confirm=true`.** Tools use the user's existing IASO permissions.
 - **Pyramid apply uses the session account.** Source, version, and project come
   from `profiles/me/`, not hardcoded QA IDs.
-- **Production:** set `MCP_ENABLED=true` explicitly. Default is off when `DEBUG=false`.
+- **Production:** set `MCP_ENABLED=true` explicitly. Default is off, including when `DEBUG=true`.
 - **Do not log secrets.** `ToolCall` stores tool names and sanitized args
   (`xlsx_base64`, tokens, passwords, and `json_body` are redacted).
 

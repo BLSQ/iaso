@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from typing import Any
 from urllib.parse import urlencode
 
@@ -19,6 +21,19 @@ class IasoHTTPError(IasoError):
         super().__init__(message)
         self.status_code = status_code
         self.payload = payload
+
+
+def http_error_message(exc: IasoHTTPError) -> str:
+    """Readable text from an IASO API error. Shared by the recipe modules."""
+    payload = exc.payload
+    if isinstance(payload, dict):
+        message = payload.get("error") or payload.get("detail")
+        if message:
+            return str(message)
+        return json.dumps(payload, default=str)
+    if payload:
+        return str(payload)
+    return str(exc)
 
 
 def _api_url(path: str) -> str:

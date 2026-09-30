@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
-import mark from "./assets/iaso-mark.png";
 import { useI18n } from "./i18n";
+
+/** Same file Django serves at /iaso-mark.png (iaso/mcp/static/mcp/iaso-mark.png). */
+const IASO_MARK_SRC = "/iaso-mark.png";
 
 export const primaryButtonClass =
   "inline-flex items-center gap-2 rounded-lg bg-amber-400 px-4 py-2 text-sm font-medium text-slate-900 shadow-sm hover:bg-amber-500 disabled:opacity-60";
@@ -54,7 +56,7 @@ export function IasoWordmark() {
   return (
     <span className="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-slate-900">
       <img
-        src={mark}
+        src={IASO_MARK_SRC}
         alt=""
         width={36}
         height={36}

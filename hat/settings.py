@@ -85,9 +85,12 @@ ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 USE_S3 = env.bool("USE_S3", default=False)
-# MCP is a core app (iaso.mcp), not a plugin. On in local/dev/tests.
-# Production must set MCP_ENABLED=true explicitly.
-MCP_ENABLED = env.bool("MCP_ENABLED", default=DEBUG or IN_TESTS)
+# MCP is a core app (iaso.mcp), not a plugin. Off unless MCP_ENABLED=true.
+# DEBUG must not turn it on: DEBUG is sometimes enabled in production to
+# collect SQL, and local runs should opt in explicitly (compose and
+# .env.example set MCP_ENABLED=true). Tests opt in so `manage test` still
+# mounts /mcp.
+MCP_ENABLED = env.bool("MCP_ENABLED", default=IN_TESTS)
 USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
 # Storage provider configuration
 STORAGE_PROVIDER = env.str("STORAGE_PROVIDER", default="local")  # local, s3, azure

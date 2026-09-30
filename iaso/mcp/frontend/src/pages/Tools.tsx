@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import { getTools, type Tool, type ToolsResponse } from "../api";
 import { useI18n } from "../i18n";
@@ -11,7 +11,7 @@ function schemaType(prop: { type?: string; items?: { type?: string } }): string 
   return prop.type || "any";
 }
 
-function ToolCard({ tool }: { tool: Tool }) {
+const ToolCard: FunctionComponent<{ tool: Tool }> = ({ tool }) => {
   const { t } = useI18n();
   const properties = tool.inputSchema?.properties ?? {};
   const required = new Set(tool.inputSchema?.required ?? []);
@@ -71,9 +71,9 @@ function ToolCard({ tool }: { tool: Tool }) {
       ) : null}
     </article>
   );
-}
+};
 
-export function Tools() {
+export const Tools: FunctionComponent = () => {
   const { t } = useI18n();
   const [data, setData] = useState<ToolsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -144,4 +144,4 @@ export function Tools() {
       </div>
     </PageShell>
   );
-}
+};

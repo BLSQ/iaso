@@ -22,6 +22,7 @@ export default defineConfig({
       "/register": { target: django, changeOrigin: false },
       "/static": { target: django, changeOrigin: false },
       "/mcp": { target: django, changeOrigin: false },
+      "/iaso-mark.png": { target: django, changeOrigin: false },
     },
   },
 });

@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from iaso.mcp.client import IasoClient, IasoHTTPError
+from iaso.mcp.client import IasoClient, IasoHTTPError, http_error_message as _error_message
 from iaso.mcp.session import build_client
 
 
@@ -64,18 +64,6 @@ _META_SHEETS = frozenset({"readme", "org_unit_types", "types"})
 
 _NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 _REL_NS = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
-
-
-def _error_message(exc: IasoHTTPError) -> str:
-    payload = exc.payload
-    if isinstance(payload, dict):
-        message = payload.get("error") or payload.get("detail")
-        if message:
-            return str(message)
-        return str(payload)
-    if payload:
-        return str(payload)
-    return str(exc)
 
 
 def _col_row(cell_ref: str) -> tuple[int, int]:

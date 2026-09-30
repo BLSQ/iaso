@@ -4,21 +4,24 @@ import { mcpUrl } from "../api";
 import { useI18n, type MsgKey } from "../i18n";
 import { CodeBlock, PageShell, primaryButtonClass } from "../ui";
 
-type TabId =
-  | "cursor"
-  | "vscode"
-  | "gemini"
-  | "claudeCode"
-  | "claude"
-  | "claudeDesktop";
+const INSTALL_TAB = {
+  cursor: "cursor",
+  vscode: "vscode",
+  gemini: "gemini",
+  claudeCode: "claudeCode",
+  claude: "claude",
+  claudeDesktop: "claudeDesktop",
+} as const;
+
+type TabId = (typeof INSTALL_TAB)[keyof typeof INSTALL_TAB];
 
 const TABS: { id: TabId; label: MsgKey }[] = [
-  { id: "cursor", label: "tabCursor" },
-  { id: "vscode", label: "tabVscode" },
-  { id: "gemini", label: "tabGemini" },
-  { id: "claudeCode", label: "tabClaudeCode" },
-  { id: "claude", label: "tabClaude" },
-  { id: "claudeDesktop", label: "tabClaudeDesktop" },
+  { id: INSTALL_TAB.cursor, label: "tabCursor" },
+  { id: INSTALL_TAB.vscode, label: "tabVscode" },
+  { id: INSTALL_TAB.gemini, label: "tabGemini" },
+  { id: INSTALL_TAB.claudeCode, label: "tabClaudeCode" },
+  { id: INSTALL_TAB.claude, label: "tabClaude" },
+  { id: INSTALL_TAB.claudeDesktop, label: "tabClaudeDesktop" },
 ];
 
 function cursorInstallHref(url: string): string {
@@ -47,7 +50,7 @@ function Steps({ items }: { items: ReactNode[] }) {
 
 export function Install() {
   const { t } = useI18n();
-  const [tab, setTab] = useState<TabId>("cursor");
+  const [tab, setTab] = useState<TabId>(INSTALL_TAB.cursor);
   const url = useMemo(() => mcpUrl(), []);
   const cursorHref = useMemo(() => cursorInstallHref(url), [url]);
   const claudeCodeCmd = `claude mcp add iaso --transport http ${url}`;
@@ -89,7 +92,7 @@ export function Install() {
       </div>
 
       <div className="mt-8 space-y-8">
-        {tab === "cursor" ? (
+        {tab === INSTALL_TAB.cursor ? (
           <>
             <Section title={t("setupTitle")}>
               <p className="text-sm leading-relaxed text-slate-600">
@@ -119,7 +122,7 @@ export function Install() {
           </>
         ) : null}
 
-        {tab === "vscode" ? (
+        {tab === INSTALL_TAB.vscode ? (
           <>
             <Section title={t("setupTitle")}>
               <p className="text-sm font-medium text-slate-800">
@@ -151,7 +154,7 @@ export function Install() {
           </>
         ) : null}
 
-        {tab === "gemini" ? (
+        {tab === INSTALL_TAB.gemini ? (
           <>
             <Section title={t("setupTitle")}>
               <p className="text-sm leading-relaxed text-slate-600">
@@ -172,7 +175,7 @@ export function Install() {
           </>
         ) : null}
 
-        {tab === "claudeCode" ? (
+        {tab === INSTALL_TAB.claudeCode ? (
           <>
             <Section title={t("setupTitle")}>
               <p className="text-sm leading-relaxed text-slate-600">
@@ -196,7 +199,7 @@ export function Install() {
           </>
         ) : null}
 
-        {tab === "claude" ? (
+        {tab === INSTALL_TAB.claude ? (
           <Section title={t("setupTitle")}>
             <Steps
               items={[
@@ -218,7 +221,7 @@ export function Install() {
           </Section>
         ) : null}
 
-        {tab === "claudeDesktop" ? (
+        {tab === INSTALL_TAB.claudeDesktop ? (
           <Section title={t("setupTitle")}>
             <Steps
               items={[

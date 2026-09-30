@@ -5,23 +5,11 @@ import logging
 
 from typing import Any
 
-from iaso.mcp.client import IasoClient, IasoHTTPError
+from iaso.mcp.client import IasoClient, IasoHTTPError, http_error_message as _error_message
 from iaso.mcp.recipes.fill_account.workbook import unique_nodes
 
 
 logger = logging.getLogger(__name__)
-
-
-def _error_message(exc: IasoHTTPError) -> str:
-    payload = exc.payload
-    if isinstance(payload, dict):
-        message = payload.get("error") or payload.get("detail")
-        if message:
-            return str(message)
-        return json.dumps(payload, default=str)
-    if payload:
-        return str(payload)
-    return str(exc)
 
 
 def _get(client: IasoClient, path: str, params: dict[str, Any] | None = None) -> Any:

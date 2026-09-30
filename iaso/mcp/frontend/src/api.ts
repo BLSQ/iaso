@@ -49,8 +49,8 @@ async function parseError(res: Response): Promise<string> {
     if (typeof data.detail === "string") return data.detail;
     if (typeof data.error === "string") return data.error;
     if (typeof data.message === "string") return data.message;
-  } catch {
-    /* not JSON */
+  } catch (err) {
+    console.warn("MCP error response was not JSON", err);
   }
   return res.statusText || `HTTP ${res.status}`;
 }

@@ -4,7 +4,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models.base import QUEUED, RUNNING, SUCCESS
+from iaso.models.base import ERRORED, KILLED, QUEUED, RUNNING, SUCCESS
 from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from iaso.models.task import Task
 from iaso.test import TestCase
@@ -110,6 +110,63 @@ class PagePipelineButtonTestCase(TestCase):
         )
         response = self.client.get(f"/pages/{page.slug}/pipeline-status/")
         self.assertFalse(response.json()["ongoing"])
+        self.assertFalse(response.json()["failed"])
+
+    def test_failed_task_is_reported_as_failed(self):
+        page = self._page(slug="failed-page")
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=SUCCESS,
+            external=True,
+            ended_at=timezone.now(),
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=ERRORED,
+            external=True,
+            ended_at=timezone.now(),
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        response = self.client.get(f"/pages/{page.slug}/")
+        self.assertContains(response, "The refresh failed.")
+        self.assertContains(response, 'data-ongoing="false"')
+        self.assertNotContains(response, 'disabled="disabled"')
+        status_response = self.client.get(f"/pages/{page.slug}/pipeline-status/")
+        self.assertEqual(status_response.status_code, status.HTTP_200_OK)
+        self.assertFalse(status_response.json()["ongoing"])
+        self.assertTrue(status_response.json()["failed"])
+
+    def test_ongoing_task_hides_an_older_failure(self):
+        page = self._page(slug="failed-then-running")
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=KILLED,
+            external=True,
+            ended_at=timezone.now(),
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=RUNNING,
+            external=True,
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        status_response = self.client.get(f"/pages/{page.slug}/pipeline-status/")
+        self.assertTrue(status_response.json()["ongoing"])
+        self.assertFalse(status_response.json()["failed"])
 
     def test_raw_page_includes_button(self):
         page = self._page(
@@ -175,7 +232,9 @@ class PagePipelineButtonTestCase(TestCase):
         response = self.client.get(f"/pages/{page.slug}/")
         self.assertContains(response, "Actualiser le tableau")
         self.assertContains(response, "Actualisation en cours.")
+        self.assertContains(response, "L\\u0027actualisation a échoué.")
         self.assertNotContains(response, "Refresh in progress.")
+        self.assertNotContains(response, "The refresh failed.")
 
     def test_anonymous_user_does_not_see_button_on_public_page(self):
         page = self._page(slug="public-page", needs_authentication=False)

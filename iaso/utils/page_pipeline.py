@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 
-from iaso.models.base import ALIVE_STATUSES
+from iaso.models.base import ALIVE_STATUSES, ERRORED, KILLED
 from iaso.models.task import Task
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.utils.openhexa import get_openhexa_config
@@ -45,6 +45,25 @@ def page_pipeline_is_ongoing(page) -> bool:
         status__in=ALIVE_STATUSES,
         params__kwargs__pipeline_id=str(page.pipeline_id),
     ).exists()
+
+
+def page_pipeline_has_failed(page) -> bool:
+    """True when the latest launch for this page's pipeline ended in error or was killed.
+
+    Ignored while another launch is still queued or running.
+    """
+    if page_pipeline_is_ongoing(page) or not page.pipeline_id or not page.account_id:
+        return False
+    task = (
+        Task.objects.filter(
+            account_id=page.account_id,
+            name="launch_openhexa_pipeline",
+            params__kwargs__pipeline_id=str(page.pipeline_id),
+        )
+        .order_by("-created_at", "-id")
+        .first()
+    )
+    return task is not None and task.status in (ERRORED, KILLED)
 
 
 def fetch_current_pipeline_version(openhexa_url: str, openhexa_token: str, pipeline_id: str) -> str:

@@ -24,12 +24,14 @@ PIPELINE_STATUS_MESSAGES = {
         "default_button": "Launch refresh",
         "in_progress": "Refresh in progress. This can take a few minutes. Reload the page when it is done.",
         "finished": "Refresh finished. Reload the page to see the latest data.",
+        "failed": "The refresh failed. Try again.",
         "error": "The refresh could not be started. Try again.",
     },
     "fr": {
         "default_button": "Lancer l'actualisation",
         "in_progress": "Actualisation en cours. Cela peut prendre quelques minutes. Rechargez la page une fois terminée.",
         "finished": "Actualisation terminée. Rechargez la page pour voir les dernières données.",
+        "failed": "L'actualisation a échoué. Réessayez.",
         "error": "L'actualisation n'a pas pu démarrer. Réessayez.",
     },
 }

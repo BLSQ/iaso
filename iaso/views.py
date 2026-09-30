@@ -18,6 +18,7 @@ from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
 from iaso.utils.page_pipeline import (
     PagePipelineError,
     account_has_openhexa_config,
+    page_pipeline_has_failed,
     page_pipeline_is_ongoing,
     start_page_pipeline,
 )
@@ -159,6 +160,7 @@ def build_launch_pipeline_context(request, page):
         "button_text": page.pipeline_button_text(),
         "in_progress": messages["in_progress"],
         "finished": messages["finished"],
+        "failed": messages["failed"],
         "error": messages["error"],
         "ongoing": page_pipeline_is_ongoing(page),
         "launch_url": reverse("page_launch_pipeline", kwargs={"page_slug": page.slug}),
@@ -193,7 +195,12 @@ def page_pipeline_status(request, page_slug):
     page, error = _pipeline_page_or_error(request, page_slug)
     if error:
         return error
-    return JsonResponse({"ongoing": page_pipeline_is_ongoing(page)})
+    return JsonResponse(
+        {
+            "ongoing": page_pipeline_is_ongoing(page),
+            "failed": page_pipeline_has_failed(page),
+        }
+    )
 
 
 @require_POST

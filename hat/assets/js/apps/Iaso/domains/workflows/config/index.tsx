@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
+import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { StatusCell } from '../components/StatusCell';
 import { VersionsActionCell } from '../components/versions/ActionCell';
@@ -22,6 +23,22 @@ export const useGetColumns = (entityTypeId: string): Array<Column> => {
             Header: formatMessage(MESSAGES.name),
             id: 'name',
             accessor: 'name',
+        },
+        {
+            Header: formatMessage(MESSAGES.autoFirstStep),
+            id: 'auto_first_step',
+            sortable: false,
+            Cell: settings => {
+                const { auto_first_step } = settings.row.original;
+                return (
+                    <InputComponent
+                        value={auto_first_step}
+                        type={'checkbox'}
+                        keyValue={''}
+                        disabled
+                    />
+                );
+            },
         },
         {
             Header: formatMessage(MESSAGES.status),

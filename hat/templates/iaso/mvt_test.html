@@ -7,6 +7,8 @@
     <!-- Maplibre GL JS and CSS -->
     <script src="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@^4.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <!-- PMTiles: single-file tile archives read with range requests, used by the static data layers -->
+    <script src="https://unpkg.com/pmtiles@^3.0.0/dist/pmtiles.js"></script>
     <style>
         /* Modern UI Reset & Fonts */
         :root {
@@ -438,6 +440,37 @@
             opacity: 0.65;
         }
 
+        .static-layer-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .static-layer-item .layer-toggle-item {
+            flex: 1;
+            align-items: flex-start;
+        }
+
+        .static-layer-item .hint {
+            display: block;
+            font-size: 0.7rem;
+            opacity: 0.65;
+        }
+
+        .static-layer-zoom {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        .static-layer-zoom:hover {
+            border-color: var(--accent-color);
+        }
+
         .map-style-control {
             position: absolute;
             bottom: 30px;
@@ -564,6 +597,14 @@
                     </div>
                 </div>
 
+                <!-- Pre-generated point layers (tippecanoe → PMTiles), drawn above the live tiles -->
+                <div class="control-group">
+                    <label>Static Data Layers</label>
+                    <div id="staticLayerList" class="layer-toggle-list">
+                        <span class="hint" style="font-size: 0.8rem; opacity: 0.65;">No static layers yet</span>
+                    </div>
+                </div>
+
                 <!-- Validation Status Colors (Legend) -->
                 <div class="legend-card">
                     <div class="legend-title">Legend</div>
@@ -628,9 +669,18 @@
         {{ extents_json|safe }}
     </script>
 
+    <script id="static-layers-data" type="application/json">
+        {{ static_layers_json|safe }}
+    </script>
+
     <script>
         // Load extents & map configs
         const extents = JSON.parse(document.getElementById('extents-data').textContent);
+        const staticLayers = JSON.parse(document.getElementById('static-layers-data').textContent);
+
+        // Static layers are PMTiles archives: MapLibre fetches their tiles through this protocol
+        const pmtilesProtocol = new pmtiles.Protocol();
+        maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 
         const mapStyles = {
             voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
@@ -866,9 +916,10 @@
         // of polygons), otherwise the polygon under the cursor.
         function pickFeature(point) {
             const t = POINT_HIT_TOLERANCE_PX;
+            const pointLayers = ['org-units-circle', ...activeStaticCircleLayers()];
             const points = map.queryRenderedFeatures(
                 [[point.x - t, point.y - t], [point.x + t, point.y + t]],
-                { layers: ['org-units-circle'] }
+                { layers: pointLayers.filter(id => map.getLayer(id)) }
             );
             if (points.length > 0) {
                 const dist = f => {
@@ -882,6 +933,8 @@
         }
 
         function setHovered(feat) {
+            // Only the live tiles have hover styling
+            if (feat && feat.source !== 'org_units_source') feat = null;
             if (hoveredFeature && hoveredFeature.id !== undefined) {
                 map.setFeatureState(
                     { source: 'org_units_source', sourceLayer: 'org_units', id: hoveredFeature.id },
@@ -908,6 +961,11 @@
                 }
                 map.getCanvas().style.cursor = 'pointer';
                 setHovered(feat);
+
+                if (feat.layer.id.startsWith('static-')) {
+                    popup.setLngLat(e.lngLat).setHTML(staticFeaturePopup(feat)).addTo(map);
+                    return;
+                }
 
                 // Show Tooltip Popup
                 const name = feat.properties.name || 'Unnamed Org Unit';
@@ -1083,9 +1141,151 @@
         updateDrillModeUi();
         renderBreadcrumbs();
 
+        // ---- Static data layers ----
+
+        const STATIC_LAYER_COLORS = ['#d7263d', '#8e44ad', '#f39c12', '#1abc9c', '#e84393', '#34495e'];
+        const enabledStaticLayers = new Set();
+
+        function staticLayerById(id) {
+            return staticLayers.find(l => l.id === id);
+        }
+
+        function staticLayerColor(layer) {
+            return STATIC_LAYER_COLORS[staticLayers.indexOf(layer) % STATIC_LAYER_COLORS.length];
+        }
+
+        function activeStaticCircleLayers() {
+            return [...enabledStaticLayers].map(id => `static-${id}-circle`);
+        }
+
+        function addStaticLayer(layer) {
+            const sourceId = `static-${layer.id}`;
+            if (map.getSource(sourceId)) return;
+            // Relative locally (/media/...), absolute on S3
+            const url = new URL(layer.url, window.location.origin).href;
+            map.addSource(sourceId, { type: 'vector', url: `pmtiles://${url}` });
+
+            // tippecanoe merges nearby points below the max zoom and counts them in point_count
+            const count = ['coalesce', ['get', 'point_count'], 1];
+            map.addLayer({
+                id: `${sourceId}-circle`,
+                type: 'circle',
+                source: sourceId,
+                'source-layer': layer.source_layer,
+                paint: {
+                    'circle-color': staticLayerColor(layer),
+                    'circle-radius': ['interpolate', ['linear'], count, 1, 5, 10, 10, 100, 18],
+                    'circle-opacity': 0.75,
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 1.2
+                }
+            });
+            map.addLayer({
+                id: `${sourceId}-count`,
+                type: 'symbol',
+                source: sourceId,
+                'source-layer': layer.source_layer,
+                filter: ['>', count, 1],
+                layout: {
+                    'text-field': ['to-string', count],
+                    'text-size': 11,
+                    'text-allow-overlap': true
+                },
+                paint: { 'text-color': '#ffffff' }
+            });
+        }
+
+        function removeStaticLayer(layer) {
+            const sourceId = `static-${layer.id}`;
+            [`${sourceId}-count`, `${sourceId}-circle`].forEach(id => {
+                if (map.getLayer(id)) map.removeLayer(id);
+            });
+            if (map.getSource(sourceId)) map.removeSource(sourceId);
+        }
+
+        // setStyle() drops every source: put the enabled layers back, above the live tiles
+        function restoreStaticLayers() {
+            enabledStaticLayers.forEach(id => addStaticLayer(staticLayerById(id)));
+        }
+
+        function staticFeaturePopup(feat) {
+            const layer = staticLayerById(feat.source.replace(/^static-/, ''));
+            const p = feat.properties;
+            const title = layer ? layer.title : 'Static layer';
+            if (p.point_count > 1) {
+                return `<strong>${p.point_count} points</strong><br/><span style="font-size: 0.8rem; opacity: 0.8;">${title} · zoom in to separate them</span>`;
+            }
+            const place = [p.org_unit_name, p.parent2].filter(Boolean).join(', ');
+            return `<strong>${place || title}</strong><br/><span style="font-size: 0.8rem; opacity: 0.8;">${title}${p.date ? ' · ' + p.date : ''}</span>`;
+        }
+
+        function renderStaticLayerList() {
+            const list = document.getElementById('staticLayerList');
+            if (staticLayers.length === 0) return;
+            list.innerHTML = '';
+            staticLayers.forEach(layer => {
+                const row = document.createElement('div');
+                row.className = 'static-layer-item';
+
+                const label = document.createElement('label');
+                label.className = 'layer-toggle-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        enabledStaticLayers.add(layer.id);
+                        addStaticLayer(layer);
+                    } else {
+                        enabledStaticLayers.delete(layer.id);
+                        removeStaticLayer(layer);
+                    }
+                });
+                const swatch = document.createElement('div');
+                swatch.className = 'legend-color';
+                swatch.style.backgroundColor = staticLayerColor(layer);
+                swatch.style.marginTop = '3px';
+                const text = document.createElement('span');
+                text.textContent = layer.title;
+                const hint = document.createElement('span');
+                hint.className = 'hint';
+                hint.textContent = `${layer.feature_count} points · ${layer.created_at.slice(0, 10)}`;
+                text.appendChild(hint);
+                label.append(checkbox, swatch, text);
+
+                const zoom = document.createElement('button');
+                zoom.className = 'static-layer-zoom';
+                zoom.textContent = 'Zoom';
+                zoom.title = 'Zoom to layer';
+                zoom.addEventListener('click', () => fitToBbox(layer.bounds));
+
+                row.append(label, zoom);
+                list.appendChild(row);
+            });
+        }
+        renderStaticLayerList();
+
         // Render selected properties into the right inspector
         function inspectFeature(feature, clickLngLat) {
             selectedFeatureId = feature.id || feature.properties.id;
+            const staticLayer = feature.source && feature.source.startsWith('static-')
+                ? staticLayerById(feature.source.replace(/^static-/, ''))
+                : null;
+            document.getElementById('inspectorTitle').textContent = staticLayer ? staticLayer.title : 'Org Unit Details';
+            if (staticLayer) {
+                // Static points aren't org units: show what the layer carries instead
+                selectedFeatureId = feature.properties.instance_id;
+                // Plain copy: the geometry of MapLibre features is a getter, lost when spreading them
+                feature = {
+                    id: feature.id,
+                    source: feature.source,
+                    geometry: feature.geometry,
+                    properties: {
+                        ...feature.properties,
+                        name: feature.properties.org_unit_name,
+                        parent_id: feature.properties.parent1
+                    }
+                };
+            }
 
             document.getElementById('inspector').classList.remove('hidden');
 
@@ -1216,6 +1416,7 @@
         map.on('style.load', () => {
             if (!map.getSource('org_units_source')) {
                 initMvtLayers();
+                restoreStaticLayers();
             }
         });
 

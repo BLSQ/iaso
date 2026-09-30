@@ -315,10 +315,15 @@ class MvtTestPageView(View):
                 }
             )
 
+        from iaso.static_data_layers import list_static_data_layers
+
+        static_layers = list_static_data_layers(profile.account_id) if profile else []
+
         context = {
             "versions": version_list,
             "default_version_id": default_version_id,
             "extents_json": json.dumps(extents),
+            "static_layers_json": json.dumps(static_layers),
         }
         return render(request, self.template_name, context)
 
@@ -327,3 +332,46 @@ class MvtLeafletTestPageView(MvtTestPageView):
     """Barebones Leaflet version of the MVT test page: same tiles, version and type filters only."""
 
     template_name = "iaso/mvt_leaflet_test.html"
+
+
+def serve_static_data_layer(request, path):
+    """Local stand-in for S3 serving static data layer archives: MapLibre reads PMTiles with range requests,
+    which `django.views.static.serve` ignores. Only used when files are in MEDIA_ROOT."""
+    import os
+    import re
+
+    from django.http import FileResponse, Http404
+    from django.utils._os import safe_join
+
+    from iaso.static_data_layers import STORAGE_PREFIX
+
+    try:
+        full_path = safe_join(settings.MEDIA_ROOT, STORAGE_PREFIX, path)
+    except Exception:
+        raise Http404()
+    if not os.path.isfile(full_path):
+        raise Http404()
+
+    size = os.path.getsize(full_path)
+    match = re.fullmatch(r"bytes=(\d*)-(\d*)", request.headers.get("Range", ""))
+    if not match or match.groups() == ("", ""):
+        response = FileResponse(open(full_path, "rb"), content_type="application/octet-stream")
+        response["Accept-Ranges"] = "bytes"
+        return response
+
+    first, last = match.groups()
+    if first:
+        start, end = int(first), min(int(last), size - 1) if last else size - 1
+    else:  # suffix range: the last N bytes
+        start, end = max(size - int(last), 0), size - 1
+    if start >= size or start > end:
+        response = HttpResponse(status=416)
+        response["Content-Range"] = f"bytes */{size}"
+        return response
+    with open(full_path, "rb") as f:
+        f.seek(start)
+        data = f.read(end - start + 1)
+    response = HttpResponse(data, status=206, content_type="application/octet-stream")
+    response["Content-Range"] = f"bytes {start}-{end}/{size}"
+    response["Accept-Ranges"] = "bytes"
+    return response

@@ -15,7 +15,16 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 from hat.sso_views import SSOCallbackView, SSOLoginView, get_adapter_class, make_token_view
 from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
-from iaso.views import ModelDataView, MvtLeafletTestPageView, MvtTestPageView, health, health_clamav, page, robots_txt
+from iaso.views import (
+    ModelDataView,
+    MvtLeafletTestPageView,
+    MvtTestPageView,
+    health,
+    health_clamav,
+    page,
+    robots_txt,
+    serve_static_data_layer,
+)
 
 
 def _sso_providers():
@@ -216,6 +225,9 @@ else:
 
     urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 
+    if settings.DEBUG and settings.MEDIA_ROOT:
+        # Before the generic media route: PMTiles archives need range requests
+        urlpatterns.append(path("media/static_data_layers/<path:path>", serve_static_data_layer))
     urlpatterns += static(settings.MEDIA_URL_PREFIX, document_root=settings.MEDIA_ROOT)
 
     if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:

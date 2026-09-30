@@ -1803,7 +1803,7 @@ wheels = [
 
 [[package]]
 name = "iaso"
-version = "2026.9.22"
+version = "2026.9.22b0"
 source = { virtual = "." }
 dependencies = [
     { name = "anthropic" },

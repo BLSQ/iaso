@@ -64,14 +64,7 @@ def _create_pipeline_config(pipeline_id: str, version: str, openhexa_url: str, o
     )
 
 
-def _launch_pipeline(
-    task: Task,
-    pipeline_id: str,
-    version: str,
-    config: dict,
-    pipeline_config: MockConfig,
-    include_task_id: bool = True,
-) -> bool:
+def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, pipeline_config: MockConfig) -> bool:
     """Launch the OpenHEXA pipeline and update task status. Returns False if launch failed."""
     task.status = QUEUED
     task.external = True
@@ -87,7 +80,6 @@ def _launch_pipeline(
         config=sanitize_openhexa_pipeline_config(config),
         task_id=task.pk,
         pipeline_config=pipeline_config,
-        include_task_id=include_task_id,
     )
 
     if launch_status == ERRORED:
@@ -230,7 +222,6 @@ def launch_openhexa_pipeline(
     delay: int = 2,
     task: Optional[Task] = None,
     max_polling_duration_minutes: int = 200,
-    include_task_id: bool = True,
     _immediate: bool = False,
     user: Any = None,
 ):
@@ -252,10 +243,28 @@ def launch_openhexa_pipeline(
 
     # Launch pipeline
     pipeline_config = _create_pipeline_config(pipeline_id, version, openhexa_url, openhexa_token)
-    if not _launch_pipeline(task, pipeline_id, version, config, pipeline_config, include_task_id=include_task_id):
+    if not _launch_pipeline(task, pipeline_id, version, config, pipeline_config):
         return
 
-    # Set up polling
+    _monitor_pipeline(
+        task,
+        pipeline_id,
+        openhexa_url,
+        openhexa_token,
+        delay,
+        max_polling_duration_minutes,
+    )
+
+
+def _monitor_pipeline(
+    task: Task,
+    pipeline_id: str,
+    openhexa_url: str,
+    openhexa_token: str,
+    delay: int,
+    max_polling_duration_minutes: int,
+) -> None:
+    """Poll OpenHEXA until the latest run succeeds, fails, or times out."""
     logger.info(f"Started OpenHexa polling task for task {task.pk}")
     polling_start_time = timezone.now()
     max_polling_duration_seconds = max_polling_duration_minutes * 60
@@ -325,3 +334,56 @@ def launch_openhexa_pipeline(
             logger.error(f"Error polling OpenHEXA for task {task.pk}: {str(e)}")
             task.report_progress_and_stop_if_killed(progress_message=f"Error polling OpenHEXA: {str(e)}")
             return
+
+
+@task_decorator(task_name="launch_openhexa_pipeline")
+def launch_page_openhexa_pipeline(
+    pipeline_id: str,
+    openhexa_url: str,
+    openhexa_token: str,
+    version: str,
+    delay: int = 2,
+    task: Optional[Task] = None,
+    max_polling_duration_minutes: int = 200,
+    _immediate: bool = False,
+    user: Any = None,
+):
+    """Launch a page pipeline that declares no parameters, then monitor it.
+
+    ``task_id`` is left unset so OpenHEXA does not receive a config key the pipeline did not declare.
+    The task name stays ``launch_openhexa_pipeline`` so the page button can track it.
+    """
+    logger.info(f"Starting page OpenHEXA pipeline launch for pipeline {pipeline_id}")
+    pipeline_config = _create_pipeline_config(pipeline_id, version, openhexa_url, openhexa_token)
+    task.status = QUEUED
+    task.external = True
+    task.params = {
+        "args": [],
+        "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": {}},
+    }
+    task.save(update_fields=["status", "external", "params"])
+
+    launch_status = ExternalTaskModelViewSet.launch_task(
+        slug=None,
+        config={},
+        task_id=None,
+        pipeline_config=pipeline_config,
+    )
+    if launch_status == ERRORED:
+        logger.error(f"OpenHEXA rejected launch of pipeline {pipeline_id} for task {task.pk}")
+        task.report_failure(Exception(f"OpenHEXA rejected launch of pipeline {pipeline_id}"))
+        return
+
+    logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
+    task.refresh_from_db()
+    task.report_progress_and_stop_if_killed(
+        progress_message=f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}"
+    )
+    _monitor_pipeline(
+        task,
+        pipeline_id,
+        openhexa_url,
+        openhexa_token,
+        delay,
+        max_polling_duration_minutes,
+    )

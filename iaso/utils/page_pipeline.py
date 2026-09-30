@@ -8,7 +8,7 @@ from gql.transport.requests import RequestsHTTPTransport
 
 from iaso.models.base import ALIVE_STATUSES, ERRORED, KILLED
 from iaso.models.task import Task
-from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
+from iaso.tasks.launch_openhexa_pipeline import launch_page_openhexa_pipeline
 from iaso.utils.openhexa import get_openhexa_config
 
 
@@ -104,14 +104,10 @@ def start_page_pipeline(user, page):
         raise PagePipelineError("OpenHEXA is not configured for this account") from exc
 
     version = fetch_current_pipeline_version(openhexa_url, openhexa_token, str(page.pipeline_id))
-    return launch_openhexa_pipeline(
+    return launch_page_openhexa_pipeline(
         user=user,
         pipeline_id=str(page.pipeline_id),
         openhexa_url=openhexa_url,
         openhexa_token=openhexa_token,
         version=version,
-        config={},
-        # Page pipelines such as refresh-preparedness-dashboard-on-demand declare no parameters.
-        # Planning pipelines accept task_id; sending it here makes OpenHEXA reject the run.
-        include_task_id=False,
     )

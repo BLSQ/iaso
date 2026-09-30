@@ -184,7 +184,7 @@ class PagePipelineButtonTestCase(TestCase):
         task = Mock(id=42, status=QUEUED)
         with (
             patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID) as fetch_version,
-            patch("iaso.utils.page_pipeline.launch_openhexa_pipeline", return_value=task) as launch,
+            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=task) as launch,
         ):
             response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
 
@@ -193,9 +193,35 @@ class PagePipelineButtonTestCase(TestCase):
         fetch_version.assert_called_once()
         self.assertEqual(launch.call_args.kwargs["pipeline_id"], PIPELINE_ID)
         self.assertEqual(launch.call_args.kwargs["version"], VERSION_ID)
-        self.assertEqual(launch.call_args.kwargs["config"], {})
-        self.assertEqual(launch.call_args.kwargs["include_task_id"], False)
         self.assertEqual(launch.call_args.kwargs["user"], self.user)
+        self.assertNotIn("include_task_id", launch.call_args.kwargs)
+
+    def test_page_launch_does_not_send_task_id(self):
+        task = Task.objects.create(
+            account=self.account,
+            created_by=self.user,
+            launcher=self.user,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
+        )
+        with patch(
+            "iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task",
+            return_value=ERRORED,
+        ) as launch:
+            from iaso.tasks.launch_openhexa_pipeline import launch_page_openhexa_pipeline
+
+            launch_page_openhexa_pipeline(
+                pipeline_id=PIPELINE_ID,
+                openhexa_url="https://test.openhexa.org/graphql/",
+                openhexa_token="token",
+                version=VERSION_ID,
+                task=task,
+                _immediate=True,
+                user=self.user,
+            )
+        self.assertIsNone(launch.call_args.kwargs["task_id"])
+        self.assertEqual(launch.call_args.kwargs["config"], {})
 
     def test_launch_rejected_when_task_is_ongoing(self):
         page = self._page(slug="busy-page")
@@ -208,7 +234,7 @@ class PagePipelineButtonTestCase(TestCase):
             external=False,
             params={"args": [], "kwargs": {"pipeline_id": PIPELINE_ID}},
         )
-        with patch("iaso.utils.page_pipeline.launch_openhexa_pipeline") as launch:
+        with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
             response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         launch.assert_not_called()

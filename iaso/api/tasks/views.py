@@ -230,7 +230,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
     # task_id will be passed by the task decorator
     # id_field is a field to filter from to find the relevant active run, eg: a country id for lqas refresh
     @staticmethod
-    def launch_task(slug, config={}, task_id=None, id_field=None, pipeline_config=None, include_task_id=True):
+    def launch_task(slug, config={}, task_id=None, id_field=None, pipeline_config=None):
         try:
             # Use provided pipeline_config if available, otherwise fetch from database
             if pipeline_config is None:
@@ -305,7 +305,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         if pipeline_target is not None:
             oh_config["target"] = pipeline_target
 
-        if include_task_id and task_id is not None and task_id != 0:
+        if task_id is not None and task_id != 0:
             # task_id will be added by the task decorator
             oh_config["task_id"] = task_id
         # We can specify a version in case the latest version gets bugged

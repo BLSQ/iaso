@@ -8,7 +8,7 @@ import time_machine
 
 from rest_framework import status
 
-from iaso.tests.api.promptness_stats.common import EXPORT_CSV_URL, PERIOD, TODAY, PromptnessStatsTestCase
+from iaso.tests.api.promptness_stats.common import PromptnessStatsTestCase
 
 
 HEADER = [
@@ -31,22 +31,22 @@ HEADER = [
 ]
 
 
-@time_machine.travel(TODAY, tick=False)
+@time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
 class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
     def setUp(self):
         super().setUp()
         self.client.force_authenticate(self.user)
 
     def get_csv(self, **params):
-        response = self.client.get(EXPORT_CSV_URL, self.get_serializer_params(**params))
+        response = self.client.get(self.EXPORT_CSV_URL, self.get_serializer_params(**params))
         return self.assertCsvFileResponse(
-            response, expected_name=f"promptness_{self.form.id}_{PERIOD}.csv", return_as_lists=True
+            response, expected_name=f"promptness_{self.form.id}_{self.PERIOD}.csv", return_as_lists=True
         )
 
     def csv_line(self, org_unit, *counts):
         return [
             str(self.form.id),
-            PERIOD,
+            self.PERIOD,
             "2026-02-10",
             str(org_unit.id),
             org_unit.name,
@@ -92,12 +92,12 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         self.assertEqual(len(lines[1]), len(HEADER) - 2)
 
     def test_export_bad_request(self):
-        response = self.client.get(EXPORT_CSV_URL, self.get_serializer_params(period="2026Q1"))
+        response = self.client.get(self.EXPORT_CSV_URL, self.get_serializer_params(period="2026Q1"))
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("period", data)
 
     def test_export_user_restricted_to_org_units(self):
         self.client.force_authenticate(self.user_restricted)
-        response = self.client.get(EXPORT_CSV_URL, self.get_serializer_params())
+        response = self.client.get(self.EXPORT_CSV_URL, self.get_serializer_params())
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("parent_org_unit_id", data)

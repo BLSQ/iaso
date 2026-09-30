@@ -42,13 +42,6 @@ from iaso.permissions.core_permissions import (
 from iaso.test import APITestCase
 
 
-URL = "/api/promptness_stats/"
-EXPORT_CSV_URL = "/api/promptness_stats/export_csv/"
-
-PERIOD = "202601"
-# Date at which the tests run by default: long after the deadline, so figures are final
-TODAY = datetime.datetime(2026, 9, 28, 12, 0, tzinfo=datetime.timezone.utc)
-
 ROW_KEYS = {
     "id",
     "name",
@@ -89,6 +82,13 @@ def aware(*args) -> datetime.datetime:
 
 class PromptnessStatsTestCase(APITestCase):
     maxDiff = None
+
+    URL = "/api/promptness_stats/"
+    EXPORT_CSV_URL = "/api/promptness_stats/export_csv/"
+
+    PERIOD = "202601"
+    # Date at which the tests run by default: long after the deadline, so figures are final
+    TODAY = datetime.datetime(2026, 9, 28, 12, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -227,11 +227,11 @@ class PromptnessStatsTestCase(APITestCase):
         )
 
     @classmethod
-    def create_submission(cls, org_unit, submitted_at, form=None, period=PERIOD, file=None, **kwargs):
+    def create_submission(cls, org_unit, submitted_at, form=None, period=None, file=None, **kwargs):
         instance = m.Instance.objects.create(
             form=form or cls.form,
             org_unit=org_unit,
-            period=period,
+            period=period or cls.PERIOD,
             project=cls.project,
             file=cls.create_file_mock(name="test.xml") if file is None else file,
             source_created_at=submitted_at,
@@ -243,7 +243,7 @@ class PromptnessStatsTestCase(APITestCase):
         return instance
 
     def get_serializer_params(self, **kwargs):
-        params = {"form_id": self.form.id, "period": PERIOD, "parent_org_unit_id": self.ethiopia.id}
+        params = {"form_id": self.form.id, "period": self.PERIOD, "parent_org_unit_id": self.ethiopia.id}
         params.update(kwargs)
         return {key: value for key, value in params.items() if value is not None}
 

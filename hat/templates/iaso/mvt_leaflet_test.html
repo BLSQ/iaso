@@ -182,7 +182,7 @@
         }
 
         function buildTileUrl() {
-            const params = new URLSearchParams();
+            const params = new URLSearchParams({ fields: 'id,name,validation_status' });
             const versionId = document.getElementById('versionSelect').value;
             const typeId = document.getElementById('typeSelect').value;
             if (versionId) params.set('version_id', versionId);

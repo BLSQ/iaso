@@ -723,10 +723,8 @@
             return drillStack.length > 0 ? drillStack[drillStack.length - 1] : null;
         }
 
-        // Bump when the tile attributes change meaning: browsers may still hold tiles cached under
-        // the old URLs (they used to be served with max-age=3600, e.g. has_children only counted
-        // children with geometry), and would keep serving them without asking the server.
-        const TILES_VERSION = 2;
+        // Feature properties used by the page (the org unit id is the MVT feature id, not a property)
+        const TILE_FIELDS = 'name,validation_status,org_unit_type_id,parent_id,has_children,bbox';
 
         // Helper to get active query parameters
         function getMvtQueryParams() {
@@ -734,18 +732,25 @@
             const status = document.getElementById('statusSelect').value;
             const typeId = document.getElementById('typeSelect').value;
 
-            const params = [`tiles_v=${TILES_VERSION}`];
-            if (versionId) params.push(`version_id=${versionId}`);
-            if (status) params.push(`validation_status=${status}`);
+            const params = new URLSearchParams({ fields: TILE_FIELDS });
+            if (versionId) params.set('version_id', versionId);
+            if (status) params.set('validation_status', status);
             if (isDrillDownMode()) {
                 // Only show one level of the pyramid at a time, the type filter doesn't apply
                 const parent = currentDrillParent();
-                params.push(`parent_id=${parent ? parent.id : 'root'}`);
+                if (parent) {
+                    // Children of the opened org unit, tunneling past the ones without geometry
+                    params.set('ancestor_id__closest_located', parent.id);
+                    params.set('fields', `${TILE_FIELDS},via_id,via_name`);
+                } else {
+                    params.set('roots_for_user', 'true');
+                }
             } else if (typeId) {
-                params.push(`org_unit_type_id=${typeId}`);
+                params.set('org_unit_type_id', typeId);
             }
 
-            return params.length > 0 ? '?' + params.join('&') : '';
+            // URLSearchParams escapes the commas of `fields`, which is fine but harder to read in the network tab
+            return '?' + params.toString().replaceAll('%2C', ',');
         }
 
         // Generate absolute URL for tiles source
@@ -759,7 +764,7 @@
             const parent = currentDrillParent();
             const versionId = document.getElementById('versionSelect').value;
             // id=-1 matches nothing: keeps the source valid when nothing is opened
-            const params = [`tiles_v=${TILES_VERSION}`, `id=${isDrillDownMode() && parent ? parent.id : -1}`];
+            const params = [`fields=name`, `id=${isDrillDownMode() && parent ? parent.id : -1}`];
             if (versionId) params.push(`version_id=${versionId}`);
             return window.location.origin + `/api/v3/orgunits/tiles/{z}/{x}/{y}/?` + params.join('&');
         }
@@ -771,9 +776,8 @@
             // 1. Add Source
             map.addSource('org_units_source', {
                 type: 'vector',
+                // The MVT feature id is the org unit id: feature.id and the hover feature-state use it
                 tiles: [tileUrl],
-                // Use the org unit id as feature id, needed for the hover feature-state
-                promoteId: 'id',
                 minzoom: 0,
                 maxzoom: 14 // PostGIS tile generation optimizes up to zoom level 14-18
             });
@@ -999,12 +1003,12 @@
 
         function drillInto(feature) {
             const p = feature.properties;
-            if (currentDrillParent() && currentDrillParent().id === p.id) return;
+            if (currentDrillParent() && currentDrillParent().id === feature.id) return;
             // Tunneled feature: record the shapeless level we skipped, so the breadcrumbs keep it
             if (p.via_id) {
                 drillStack.push({ id: p.via_id, name: p.via_name || `#${p.via_id}`, bbox: null });
             }
-            drillStack.push({ id: p.id, name: p.name || `#${p.id}`, bbox: featureBbox(feature) });
+            drillStack.push({ id: feature.id, name: p.name || `#${feature.id}`, bbox: featureBbox(feature) });
             onDrillChanged();
         }
 
@@ -1024,7 +1028,13 @@
                 return;
             }
             const parent = currentDrillParent();
-            const params = new URLSearchParams({ parent_id: parent ? parent.id : 'root' });
+            const params = new URLSearchParams({
+                fields: 'id,name,validation_status,org_unit_type_id,parent_id,org_unit_type,has_geometry,has_children,located_descendants,located_bbox',
+                order: 'name',
+                page_size: 500,
+            });
+            if (parent) params.set('parent_id', parent.id);
+            else params.set('roots_for_user', 'true');
             const versionId = document.getElementById('versionSelect').value;
             const status = document.getElementById('statusSelect').value;
             if (versionId) params.set('version_id', versionId);
@@ -1032,7 +1042,7 @@
 
             let data;
             try {
-                const res = await fetch(`/api/v3/orgunits/drill-down/?${params}`, { credentials: 'same-origin' });
+                const res = await fetch(`/api/v3/orgunits/?${params}`, { credentials: 'same-origin' });
                 data = await res.json();
             } catch (err) {
                 console.error('Failed to list children', err);
@@ -1040,7 +1050,14 @@
             }
             if (seq !== offMapRequestSeq) return; // a newer level was opened meanwhile
 
-            const offMap = (data.results || []).filter(c => !c.has_geometry);
+            const children = (data.results || []).map(c => ({
+                ...c,
+                org_unit_type_name: c.org_unit_type ? c.org_unit_type.name : null,
+                // Extent of the child and its located descendants: where to zoom when opening it
+                bbox: c.located_bbox,
+            }));
+            data.results = children;
+            const offMap = children.filter(c => !c.has_geometry);
             panel.classList.toggle('hidden', offMap.length === 0);
             document.getElementById('offMapTitle').textContent =
                 `Not on map (${offMap.length}/${data.results.length})`;

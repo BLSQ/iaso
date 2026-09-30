@@ -36,6 +36,17 @@ class BaseV3FilterSet(django_filters.FilterSet):
             self.check_params(data)
         super().__init__(data, *args, **kwargs)
 
+    def get_form_class(self):
+        """Built once per FilterSet class instead of once per request: django-filter creates a form field for each
+        of the (many) filters every time, which is a noticeable share of a fast request (a vector tile). The
+        fields only depend on the class's declared filters and model, and a form instance copies them anyway."""
+        cls = type(self)
+        form_class = cls.__dict__.get("_v3_form_class")
+        if form_class is None:
+            form_class = super().get_form_class()
+            cls._v3_form_class = form_class
+        return form_class
+
     @classmethod
     def known_params(cls):
         return set(cls.base_filters) | CORE_EXTRA_ALLOWED_PARAMS | cls.extra_allowed_params

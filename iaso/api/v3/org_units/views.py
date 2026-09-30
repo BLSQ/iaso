@@ -4,17 +4,14 @@ import tempfile
 from time import gmtime, strftime
 
 from django.conf import settings
-from django.db import connection
 from django.db.models import F, Func, IntegerField, Max, Q
 from django.http import HttpResponse, StreamingHttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions
+from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
-from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -22,14 +19,24 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.v3.common.dynamic_fields import KeyedColumns, PositionalColumns, tabular_columns, tabular_values
 from iaso.api.v3.common.errors import bad_request
+from iaso.api.v3.common.mvt import (
+    MVT_MEDIA_TYPE,
+    FirstRendererNegotiation,
+    MVTRenderer,
+    Tile,
+    render_tile,
+    tile_properties,
+    tile_queryset,
+)
 from iaso.api.v3.common.pagination import V3PagePagination
 from iaso.api.v3.common.renderers import ParquetRenderer, XLSXRenderer
 from iaso.api.v3.common.views import BaseV3ReadOnlyViewSet
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import Group, OrgUnit
 
+from .expressions import GEOGRAPHY_COLUMNS, drawn_geometry
 from .filters import OrgUnitFilterSetV3
-from .serializers import OrgUnitSerializerV3
+from .serializers import OrgUnitSerializerV3, OrgUnitTileFeatureSerializerV3
 
 
 logger = logging.getLogger(__name__)
@@ -80,6 +87,16 @@ EXTRA_PARAMETERS = [
 ]
 
 
+#: the view-level params that also apply to tiles (`extra_fields` is parquet only)
+TILE_EXTRA_PARAMETERS = [parameter for parameter in EXTRA_PARAMETERS if parameter.name != "extra_fields"]
+TILE_PATH_PARAMETERS = [
+    OpenApiParameter(name=name, type=OpenApiTypes.INT, location=OpenApiParameter.PATH, description=description)
+    for name, description in (("z", "Zoom level, 0-24"), ("x", "Tile column, 0..2^z-1"), ("y", "Tile row, 0..2^z-1"))
+]
+#: name of the tile layer, the `source-layer` of a MapLibre style
+TILE_LAYER = "org_units"
+
+
 def _values_as_row(values, **kwargs):
     """`get_row` for `hat.api.export_utils`: rows are already flattened by `tabular_values`."""
     return values
@@ -95,6 +112,7 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
 
     GET /api/v3/orgunits/
     GET /api/v3/orgunits/<id>/
+    GET /api/v3/orgunits/tiles/<z>/<x>/<y>/
     """
 
     permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticated]
@@ -114,6 +132,13 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer, CSVRenderer, XLSXRenderer, ParquetRenderer]
     http_method_names = ["get", "options", "head", "trace"]
     documented_formats = frozenset({"json", "csv", "xlsx", "parquet"})
+    #: actions whose `fields=` is documented by `V3AutoSchema` (on top of list/retrieve)
+    field_selector_actions = frozenset({"tiles"})
+
+    def get_serializer_class(self):
+        if self.action == "tiles":
+            return OrgUnitTileFeatureSerializerV3
+        return super().get_serializer_class()
 
     def get_queryset(self):
         # No `select_related`/`defer` here: `optimize_for()` only joins, prefetches and loads what `fields=`
@@ -151,6 +176,52 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         if export_format == "parquet":
             return self._export_parquet(request, queryset)
         return self.paginated_list(queryset, field_tree)
+
+    @extend_schema(
+        summary="Org units as Mapbox Vector Tiles",
+        description=(
+            "One `org_units` layer: the org units overlapping tile `z/x/y`, drawn as their location, else their "
+            "simplified shape, else their shape. Takes every filter of the list endpoint (e.g. "
+            "`version_id`, `org_unit_type_id`, `parent_id`, `roots_for_user=true`, "
+            "`ancestor_id__closest_located`) and `fields=` for the feature properties. The MVT feature id is "
+            "the org unit id. An empty body is an empty tile. Errors are JSON."
+        ),
+        parameters=[*TILE_PATH_PARAMETERS, *TILE_EXTRA_PARAMETERS],
+        filters=True,
+        responses={(200, MVT_MEDIA_TYPE): OpenApiTypes.BINARY},
+    )
+    @action(
+        detail=False,
+        url_path=r"tiles/(?P<z>[0-9]+)/(?P<x>[0-9]+)/(?P<y>[0-9]+)",
+        renderer_classes=[MVTRenderer],
+        content_negotiation_class=FirstRendererNegotiation,
+        documented_formats=frozenset({"mvt"}),
+    )
+    def tiles(self, request, z, x, y):
+        """Built like `list()` - same scoping, same FilterSet - then encoded by postgres (see
+        `iaso.api.v3.common.mvt`): nothing but the tile bytes goes through python."""
+        tile = Tile.validated(z, x, y)
+        queryset = self.filter_queryset(self.get_queryset())
+        if "order" not in request.query_params:
+            # the default `id` ordering is only for pagination: a tile would pay a sort for nothing
+            queryset = queryset.order_by()
+        serializer = self.get_serializer(field_tree=self.get_field_tree(request))
+        properties = tile_properties(serializer)
+
+        missing_filter = [
+            name for name in serializer.requires_closest_located if name in serializer.fields
+        ] and "closest_located_via_id" not in queryset.query.annotations
+        if missing_filter:
+            raise bad_request(
+                "via_id/via_name need the ancestor_id__closest_located filter",
+                "They tell which child of that org unit a feature stands in for.",
+            )
+
+        values = tile_queryset(queryset, drawn_geometry(), properties, tile, geography_columns=GEOGRAPHY_COLUMNS)
+        response = HttpResponse(render_tile(values, TILE_LAYER), content_type=MVT_MEDIA_TYPE)
+        # depends on the user's access scope: no shared cache may keep it
+        response["Cache-Control"] = "private, no-cache"
+        return response
 
     def _export_filename(self, extension: str) -> str:
         profile = getattr(self.request.user, "iaso_profile", None)
@@ -222,330 +293,3 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
         filename = self._export_filename("parquet")
         return CleaningFileResponse(tmp.name, as_attachment=True, filename=filename)
-
-
-def _has_geom_sql(alias):
-    return f"({alias}.location IS NOT NULL OR {alias}.simplified_geom IS NOT NULL OR {alias}.geom IS NOT NULL)"
-
-
-def _user_access_scope(request, profile, alias="u"):
-    """
-    Restrict org units to the user's assigned sub-pyramids.
-    Returns (user_org_units, clauses, params), or None when the user can't see anything.
-    """
-    if request.user.is_superuser:
-        return [], [], []
-    user_org_units = list(profile.org_units.all())
-    if not user_org_units:
-        return [], [], []
-    ltree_clauses = []
-    params = []
-    for ou in user_org_units:
-        if ou.path is None:
-            continue
-        # ou.path is a django_ltree PathValue, which psycopg2 cannot adapt
-        ltree_clauses.append(f"{alias}.path <@ %s::ltree")
-        params.append(str(ou.path))
-    if not ltree_clauses:
-        return None
-    return user_org_units, [f"({' OR '.join(ltree_clauses)})"], params
-
-
-def _root_clause(user_org_units, alias="u"):
-    """
-    Drill-down entry point: the top of the pyramid the user can see, i.e. their
-    assigned org units, or the real roots of the version when unrestricted.
-    """
-    if user_org_units:
-        return f"{alias}.id IN ({', '.join(['%s' for _ in user_org_units])})", [ou.id for ou in user_org_units]
-    return f"{alias}.parent_id IS NULL", []
-
-
-class OrgUnitMVTTilesView(APIView):
-    """
-    Dynamic Vector Tiles POC Endpoint.
-    Returns binary Mapbox Vector Tiles (MVT) directly from PostGIS.
-    Supports:
-    - z/x/y path parameters
-    - Query parameters: validation_status, version_id, parent_id, id, org_unit_type_id(__in)
-    - Drill-down: parent_id=root returns the top of the user's pyramid; each feature
-      carries has_children and its full bbox (bbox_xmin/ymin/xmax/ymax).
-      parent_id=<id> returns the children of that org unit; children without geometry are
-      skipped and replaced by their closest descendants that have one (via_id/via_name
-      tell which child they stand in for).
-    - Dynamic Level of Detail (LoD) based on Zoom level z.
-    - Tenant access control restrictions from the user's Profile.
-    """
-
-    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticated]
-
-    def get(self, request, z, x, y):
-        # 1. Enforce profile restrictions
-        profile = getattr(request.user, "iaso_profile", None)
-        if not profile:
-            return HttpResponse(b"", status=403, content_type="application/vnd.mapbox-vector-tile")
-
-        # 2. Extract and sanitize parameters
-        try:
-            z, x, y = int(z), int(x), int(y)
-        except ValueError:
-            raise ValidationError("z, x, and y must be integers.")
-
-        version_id = request.query_params.get("version_id")
-        if not version_id:
-            # Fallback to the default version of the user's account
-            version_id = profile.account.default_version_id
-
-        validation_status = request.query_params.get("validation_status")
-        parent_id = request.query_params.get("parent_id")
-        org_unit_type_id = request.query_params.get("org_unit_type_id")
-        org_unit_type_id_in = request.query_params.get("org_unit_type_id__in")
-
-        # Drilling into an org unit: its path bounds the descendants we may show
-        drill_path = None
-        if parent_id and parent_id != "root":
-            parent_path = OrgUnit.objects.filter(id=parent_id).values_list("path", flat=True).first()
-            if parent_path is None:
-                return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
-            drill_path = str(parent_path)
-
-        # 3. Build query filters and parameters (the first ones feed the CTEs)
-        params = [z, x, y, z, x, y, drill_path]
-        where_clauses = []
-
-        if version_id:
-            where_clauses.append("u.version_id = %s")
-            params.append(version_id)
-
-        if validation_status:
-            where_clauses.append("u.validation_status = %s")
-            params.append(validation_status)
-
-        org_unit_id = request.query_params.get("id")
-        if org_unit_id:
-            where_clauses.append("u.id = %s")
-            params.append(org_unit_id)
-
-        # parent_id=root is handled below, once we know the user's access roots
-        if drill_path:
-            # Descendants of the parent with a geometry, and no geometry-bearing org unit
-            # between them and the parent: direct children when they have a shape, otherwise
-            # we "tunnel" down to the closest located descendants.
-            # Path labels are org unit ids, so the in-between ancestors are the labels of
-            # subpath(u.path, <parent depth>, <depth gap - 1>).
-            where_clauses.append(
-                f"""u.path <@ d.path AND u.path <> d.path
-                AND NOT EXISTS (
-                    SELECT 1 FROM iaso_orgunit a
-                    WHERE a.id = ANY(string_to_array(ltree2text(
-                        subpath(u.path, nlevel(d.path), nlevel(u.path) - nlevel(d.path) - 1)
-                    ), '.')::int[])
-                    AND {_has_geom_sql("a")}
-                )"""
-            )
-
-        if org_unit_type_id:
-            where_clauses.append("u.org_unit_type_id = %s")
-            params.append(org_unit_type_id)
-
-        if org_unit_type_id_in:
-            type_ids = [int(i.strip()) for i in org_unit_type_id_in.split(",") if i.strip()]
-            if type_ids:
-                where_clauses.append(f"u.org_unit_type_id IN ({', '.join(['%s' for _ in type_ids])})")
-                params.extend(type_ids)
-
-        # 4. Hierarchical user access (Multi-tenancy / Account scoping)
-        scope = _user_access_scope(request, profile)
-        if scope is None:
-            return HttpResponse(b"", content_type="application/vnd.mapbox-vector-tile")
-        user_org_units, scope_clauses, scope_params = scope
-
-        if parent_id == "root":
-            root_clause, root_params = _root_clause(user_org_units)
-            where_clauses.append(root_clause)
-            params.extend(root_params)
-
-        where_clauses.extend(scope_clauses)
-        params.extend(scope_params)
-
-        # 5. Zoom-Level Level of Detail (LoD) filtering:
-        # - Low zooms (0-5): show high-level areas (provinces, districts), hide villages
-        # - Mid zooms (6-9): show down to sub-districts/health areas
-        # - High zooms (10+): show all org units, including villages/points
-        # Bypass LoD level checks if the user is filtering by a specific Org Unit Type,
-        # or is drilling down the pyramid (the parent filter already bounds the result).
-        if not org_unit_type_id and not org_unit_type_id_in and not parent_id and not org_unit_id:
-            if z < 6:
-                where_clauses.append("nlevel(u.path) <= 3")
-            elif z < 10:
-                where_clauses.append("nlevel(u.path) <= 4")
-
-        where_str = ""
-        if where_clauses:
-            where_str = "AND " + " AND ".join(where_clauses)
-
-        # 6. Execute PostGIS query
-        query = f"""
-            WITH tile_bounds AS (
-                SELECT ST_TileEnvelope(%s, %s, %s) AS geom_3857,
-                       ST_Transform(ST_TileEnvelope(%s, %s, %s), 4326) AS geom_4326
-            ),
-            drill AS (
-                SELECT %s::ltree AS path
-            ),
-            mvt_features AS (
-                SELECT
-                    ST_AsMVTGeom(
-                        ST_Transform(COALESCE(u.location::geometry, u.simplified_geom::geometry, u.geom::geometry), 3857),
-                        tb.geom_3857,
-                        4096,
-                        64,
-                        true
-                    ) AS geom,
-                    u.id,
-                    u.name,
-                    u.validation_status,
-                    u.org_unit_type_id,
-                    u.parent_id,
-                    -- Full (unclipped) extent, so the client can fit the map to the org unit
-                    ST_XMin(ext.bbox) AS bbox_xmin,
-                    ST_YMin(ext.bbox) AS bbox_ymin,
-                    ST_XMax(ext.bbox) AS bbox_xmax,
-                    ST_YMax(ext.bbox) AS bbox_ymax,
-                    -- Any child, even without geometry: those are listed next to the map
-                    EXISTS (
-                        SELECT 1 FROM iaso_orgunit c
-                        WHERE c.parent_id = u.id AND c.version_id = u.version_id
-                    ) AS has_children,
-                    -- When tunneling past children without geometry: the child this unit belongs to
-                    via.id AS via_id,
-                    via.name AS via_name
-                FROM iaso_orgunit u
-                CROSS JOIN tile_bounds tb
-                CROSS JOIN drill d
-                LEFT JOIN iaso_orgunit via
-                    ON nlevel(u.path) > nlevel(d.path) + 1
-                    AND via.id = ltree2text(subpath(u.path, nlevel(d.path), 1))::int
-                CROSS JOIN LATERAL (
-                    SELECT Box2D(COALESCE(u.geom::geometry, u.simplified_geom::geometry, u.location::geometry)) AS bbox
-                ) ext
-                WHERE
-                    {_has_geom_sql("u")}
-                    AND (
-                        (u.location::geometry && tb.geom_4326) OR
-                        (u.simplified_geom::geometry && tb.geom_4326) OR
-                        (u.geom::geometry && tb.geom_4326)
-                    )
-                    {where_str}
-            )
-            SELECT ST_AsMVT(mvt_features.*, 'org_units') FROM mvt_features;
-        """
-
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            row = cursor.fetchone()
-            mvt_data = row[0] if row else b""
-
-        response = HttpResponse(mvt_data, content_type="application/vnd.mapbox-vector-tile")
-        # Tiles depend on the user's access scope: never let shared caches keep them. And don't
-        # let the browser reuse them either, stale tiles break drill-down after data/format changes.
-        # MapLibre still keeps loaded tiles in memory while panning.
-        response["Cache-Control"] = "private, no-cache"
-        return response
-
-
-class OrgUnitDrillDownView(APIView):
-    """
-    Drill-down POC companion to the MVT tiles: lists the direct children of an org unit
-    (parent_id=<id>, or parent_id=root for the top of the user's pyramid), so children
-    that can't be drawn on the map can still be navigated to.
-    Each child carries has_geometry, has_children, the number of located descendants and a
-    bbox: its own extent, or the extent of its located descendants when it has no geometry.
-    Query parameters: parent_id (required), version_id, validation_status.
-    """
-
-    permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticated]
-
-    MAX_RESULTS = 500
-
-    def get(self, request):
-        profile = getattr(request.user, "iaso_profile", None)
-        if not profile:
-            return Response({"results": []}, status=403)
-
-        parent_id = request.query_params.get("parent_id")
-        if not parent_id:
-            raise ValidationError({"parent_id": "This parameter is required (an org unit id, or 'root')."})
-        version_id = request.query_params.get("version_id") or profile.account.default_version_id
-        validation_status = request.query_params.get("validation_status")
-
-        scope = _user_access_scope(request, profile, alias="c")
-        if scope is None:
-            return Response({"results": []})
-        user_org_units, scope_clauses, scope_params = scope
-
-        where_clauses = []
-        params = []
-        if parent_id == "root":
-            root_clause, root_params = _root_clause(user_org_units, alias="c")
-            where_clauses.append(root_clause)
-            params.extend(root_params)
-        else:
-            where_clauses.append("c.parent_id = %s")
-            params.append(parent_id)
-        if version_id:
-            where_clauses.append("c.version_id = %s")
-            params.append(version_id)
-        if validation_status:
-            where_clauses.append("c.validation_status = %s")
-            params.append(validation_status)
-        where_clauses.extend(scope_clauses)
-        params.extend(scope_params)
-        params.append(self.MAX_RESULTS)
-
-        query = f"""
-            SELECT
-                c.id,
-                c.name,
-                c.validation_status,
-                c.org_unit_type_id,
-                t.name AS org_unit_type_name,
-                {_has_geom_sql("c")} AS has_geometry,
-                EXISTS (
-                    SELECT 1 FROM iaso_orgunit k WHERE k.parent_id = c.id AND k.version_id = c.version_id
-                ) AS has_children,
-                located.n AS located_descendants,
-                ST_XMin(located.bbox), ST_YMin(located.bbox), ST_XMax(located.bbox), ST_YMax(located.bbox)
-            FROM iaso_orgunit c
-            LEFT JOIN iaso_orgunittype t ON t.id = c.org_unit_type_id
-            CROSS JOIN LATERAL (
-                SELECT
-                    COUNT(*) FILTER (WHERE s.id <> c.id) AS n,
-                    ST_Extent(COALESCE(s.geom::geometry, s.simplified_geom::geometry, s.location::geometry)) AS bbox
-                FROM iaso_orgunit s
-                WHERE s.path <@ c.path AND {_has_geom_sql("s")}
-            ) located
-            WHERE {" AND ".join(where_clauses)}
-            ORDER BY c.name
-            LIMIT %s
-        """
-
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            rows = cursor.fetchall()
-
-        results = [
-            {
-                "id": row[0],
-                "name": row[1],
-                "validation_status": row[2],
-                "org_unit_type_id": row[3],
-                "org_unit_type_name": row[4],
-                "has_geometry": row[5],
-                "has_children": row[6],
-                "located_descendants": row[7],
-                "bbox": list(row[8:12]) if row[8] is not None else None,
-            }
-            for row in rows
-        ]
-        return Response({"results": results})

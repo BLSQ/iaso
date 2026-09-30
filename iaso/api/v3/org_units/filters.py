@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import Q
+from django.db.models import Case, IntegerField, OuterRef, Q, Subquery, When
 from django_filters import rest_framework as django_filters
 
 from iaso.api.common.filters import NumberInFilter
@@ -13,6 +13,8 @@ from iaso.api.v3.common.spatial_filters import (
     WithinOrIntersectsBboxFilter,
 )
 from iaso.models import OrgUnit, OrgUnitType
+
+from .expressions import LOCATED, PathLabelAt, located_descendants_between
 
 
 #: Postgres' `timestamptz` rejects a UTC offset displacement of 16 hours or more ("time zone displacement
@@ -201,6 +203,10 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
         field_name="parent_id",
         help_text="Only the direct children (one level down) of this org unit id. Equivalent to `parent_id`.",
     )
+    ancestor_id__closest_located = IntegerFilter(
+        method="filter_ancestor_id_closest_located",
+        help_text="The closest located descendants of this org unit id (with a location or a shape): its direct children that are located, and below each child that isn't, the closest located org units - no located org unit between them and the given one. What a map draws when opening an org unit whose children may have no geometry.",
+    )
     depth = IntegerFilter(field_name="path", lookup_expr="depth", help_text="Exact ltree path depth (1 = root)")
 
     # -- spatial (core subset) --
@@ -255,16 +261,39 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     def filter_has_location(self, queryset, name, value):
         return queryset.filter(location__isnull=not value)
 
-    def filter_ancestor_id(self, queryset, name, value):
-        """Keep only the descendants of the given org unit (excluding itself).
-
-        Scoped to the requesting user (`filter_for_user`), same as `within_org_unit`/`outside_org_unit`:
-        a nonexistent id and one belonging to another account both get the same "does not exist" 400,
-        instead of one silently returning an empty result set and the other raising."""
+    def _ancestor(self, org_unit_id):
+        """The referenced org unit, scoped to the requesting user (`filter_for_user`), same as
+        `within_org_unit`/`outside_org_unit`: a nonexistent id and one belonging to another account both get the
+        same "does not exist" 400, instead of one silently returning an empty result set and the other raising."""
         try:
-            ancestor = OrgUnit.objects.filter_for_user(self.request.user).only("id", "path").get(pk=value)
+            return OrgUnit.objects.filter_for_user(self.request.user).only("id", "path").get(pk=org_unit_id)
         except OrgUnit.DoesNotExist:
-            raise bad_request(f"Org unit {value} does not exist")
+            raise bad_request(f"Org unit {org_unit_id} does not exist")
+
+    def filter_ancestor_id(self, queryset, name, value):
+        """Keep only the descendants of the given org unit (excluding itself)."""
+        ancestor = self._ancestor(value)
         if ancestor.path is None:
             return queryset.none()
         return queryset.filter(path__descendants=str(ancestor.path), path__depth__gt=len(ancestor.path))
+
+    def filter_ancestor_id_closest_located(self, queryset, name, value):
+        """Located descendants of the given org unit with no located org unit in between.
+
+        Also aliases, for the rows that aren't direct children, which child of the given org unit they stand
+        in for (`closest_located_via_id`/`closest_located_via_name`, read by the tile `via` field)."""
+        ancestor = self._ancestor(value)
+        if ancestor.path is None:
+            return queryset.none()
+        depth = len(ancestor.path)
+        via_id = Case(When(path__depth__gt=depth + 1, then=PathLabelAt("path", depth)), output_field=IntegerField())
+        return (
+            queryset.filter(LOCATED, path__descendants=str(ancestor.path), path__depth__gt=depth)
+            .filter(~located_descendants_between(depth))
+            .alias(closest_located_via_id=via_id)
+            .alias(
+                closest_located_via_name=Subquery(
+                    OrgUnit.objects.filter(pk=OuterRef("closest_located_via_id")).values("name")[:1]
+                )
+            )
+        )

@@ -10,13 +10,15 @@ import json
 from typing import List
 
 from django.contrib.gis.db.models.functions import AsGeoJSON
-from django.db.models import BooleanField, ExpressionWrapper, Q
+from django.db.models import BooleanField, ExpressionWrapper, F, Func, IntegerField, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.v3.common.dynamic_fields import BatchLoader, DynamicFieldsMixin, only_columns
 from iaso.models import OrgUnit
+
+from .expressions import LOCATED, LocatedExtent, bbox_properties, has_children, located_descendants_count
 
 
 @extend_schema_field(OpenApiTypes.OBJECT)
@@ -125,6 +127,10 @@ def attach_ancestors(org_units: List[OrgUnit], summary_serializer) -> None:
         unit.v3_ancestors = [by_id[ancestor_id] for ancestor_id in ancestor_ids(unit) if ancestor_id in by_id]
 
 
+def has_geo_json():
+    return ExpressionWrapper(Q(geom__isnull=False) | Q(simplified_geom__isnull=False), output_field=BooleanField())
+
+
 class OrgUnitSerializerV3(DynamicFieldsMixin, serializers.Serializer):
     default_fields = (
         "id",
@@ -148,11 +154,11 @@ class OrgUnitSerializerV3(DynamicFieldsMixin, serializers.Serializer):
         "depth",
     )
     annotations = {
-        "has_geo_json": {
-            "has_geo_json": ExpressionWrapper(
-                Q(geom__isnull=False) | Q(simplified_geom__isnull=False), output_field=BooleanField()
-            )
-        },
+        "has_geo_json": {"has_geo_json": has_geo_json()},
+        "has_geometry": {"has_geometry": ExpressionWrapper(LOCATED, output_field=BooleanField())},
+        "has_children": {"has_children": has_children()},
+        "located_descendants": {"located_descendants": located_descendants_count()},
+        "located_bbox": {"located_bbox": LocatedExtent()},
         "geom": {"geom_geojson": AsGeoJSON("geom")},
         "simplified_geom": {"simplified_geom_geojson": AsGeoJSON("simplified_geom")},
         "catchment": {"catchment_geojson": AsGeoJSON("catchment")},
@@ -173,6 +179,14 @@ class OrgUnitSerializerV3(DynamicFieldsMixin, serializers.Serializer):
     updated_at = serializers.DateTimeField()
     source_created_at = serializers.DateTimeField(allow_null=True, help_text="Creation time on the client device")
     has_geo_json = serializers.BooleanField()
+    has_geometry = serializers.BooleanField(help_text="Has a location or a shape: something to draw on a map")
+    has_children = serializers.BooleanField(help_text="Has at least one child, located or not")
+    located_descendants = serializers.IntegerField(help_text="Number of located org units below this one")
+    located_bbox = serializers.ListField(
+        child=serializers.FloatField(),
+        allow_null=True,
+        help_text="`[xmin, ymin, xmax, ymax]` of this org unit and its located descendants, null if none is located",
+    )
     latitude = serializers.FloatField(source="location.y", allow_null=True)
     longitude = serializers.FloatField(source="location.x", allow_null=True)
     altitude = serializers.FloatField(source="location.z", allow_null=True)
@@ -188,3 +202,53 @@ class OrgUnitSerializerV3(DynamicFieldsMixin, serializers.Serializer):
     org_unit_type = OrgUnitTypeSummarySerializerV3(allow_null=True)
     creator = CreatorSummarySerializerV3(allow_null=True)
     version = VersionSummarySerializerV3(allow_null=True)
+
+
+class BboxPropertiesField(serializers.Field):
+    """Spread over 4 tile properties (see `bbox_properties`)."""
+
+    shape = "4 properties: bbox_xmin, bbox_ymin, bbox_xmax, bbox_ymax"
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("read_only", True)
+        super().__init__(**kwargs)
+
+
+class OrgUnitTileFeatureSerializerV3(DynamicFieldsMixin, serializers.Serializer):
+    """The properties of an org unit feature in `/api/v3/orgunits/tiles/{z}/{x}/{y}/`: what `fields=` accepts
+    there. Never used to serialize rows - the tile is encoded by postgres (see `iaso.api.v3.common.mvt`) - so
+    every field is a model column (its `source`) or an entry of `annotations`, and none can be nested: a vector
+    tile only holds scalar properties. Keep the defaults small, every property is repeated in every feature: `id`
+    isn't one of them, the MVT feature id already is the org unit id (MapLibre's `feature.id`)."""
+
+    default_fields = ("name", "validation_status", "org_unit_type_id", "parent_id")
+    annotations = {
+        "has_geo_json": {"has_geo_json": has_geo_json()},
+        "has_children": {"has_children": has_children()},
+        "depth": {"depth": Func(F("path"), function="nlevel", output_field=IntegerField())},
+        "bbox": bbox_properties(),
+        # aliased by the `ancestor_id__closest_located` filter (see `OrgUnitViewSetV3.tiles`)
+        "via_id": {"via_id": F("closest_located_via_id")},
+        "via_name": {"via_name": F("closest_located_via_name")},
+    }
+    #: fields only available with that filter
+    requires_closest_located = ("via_id", "via_name")
+
+    id = serializers.IntegerField(help_text="Also the MVT feature id: only needed by clients that ignore it")
+    name = serializers.CharField()
+    uuid = serializers.CharField(allow_null=True)
+    validation_status = serializers.CharField()
+    org_unit_type_id = serializers.IntegerField(allow_null=True)
+    parent_id = serializers.IntegerField(allow_null=True)
+    source_ref = serializers.CharField(allow_null=True)
+    code = serializers.CharField(allow_blank=True)
+    depth = serializers.IntegerField(help_text="ltree path depth, root = 1")
+    has_geo_json = serializers.BooleanField()
+    has_children = serializers.BooleanField(help_text="Has at least one child, located or not")
+    bbox = BboxPropertiesField(help_text="Full (unclipped) extent of the org unit, to fit the map to it")
+    via_id = serializers.IntegerField(
+        allow_null=True,
+        help_text="With `ancestor_id__closest_located`: the child of that org unit this feature stands in for, "
+        "null for its direct children",
+    )
+    via_name = serializers.CharField(allow_null=True, help_text="Name of `via_id`")

@@ -28,6 +28,8 @@ class V3AutoSchema(AutoSchema):
                     description="Response format - exports (csv/xlsx/parquet) are only on the list endpoint.",
                 ),
             ]
+        elif view.action in getattr(view, "field_selector_actions", ()):
+            generated = [fields_parameter(view)]
         else:
             generated = []
         # anything declared with `@extend_schema(parameters=...)` wins over the generated docs

@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
@@ -636,7 +636,9 @@ class Instance(ValidationWorkflowArtefact):
             if save:
                 self.save()
 
-    def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
+    def xml_file_to_json(
+        self, file: typing.IO, form_versions_cache: typing.Optional[dict] = None
+    ) -> typing.Dict[str, typing.Any]:
         raw_content = file.read().decode("utf-8")
         fixed_content = fix_emoji(raw_content).decode("utf-8")
         copy_io_utf8 = StringIO(fixed_content)
@@ -645,8 +647,7 @@ class Instance(ValidationWorkflowArtefact):
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
             # TODO: investigate: can self.form be None here? What's the expected behavior?
-            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
-            form_version = form_versions.first()
+            form_version = FormVersion.objects.find_for_form(self.form.id, form_version_id, form_versions_cache)  # type: ignore
             if form_version:
                 # Same (version_id, form) pair `resolve_form_version()` would otherwise look up
                 # again right after this method returns (see `get_and_save_json_of_xml`) - set
@@ -668,7 +669,7 @@ class Instance(ValidationWorkflowArtefact):
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
         return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False, tries=3, save=True):
+    def get_and_save_json_of_xml(self, force=False, tries=3, save=True, form_versions_cache=None):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
@@ -678,6 +679,8 @@ class Instance(ValidationWorkflowArtefact):
 
         `save=False` skips the save, for callers that will save `self` themselves right after
         (e.g. together with other in-memory changes, to avoid a separate round-trip).
+
+        `form_versions_cache`: see `FormVersionManager.find_for_form()`.
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -700,7 +703,7 @@ class Instance(ValidationWorkflowArtefact):
             else:
                 file = self.file
 
-            self.json = self.xml_file_to_json(file)
+            self.json = self.xml_file_to_json(file, form_versions_cache)
             if save:
                 self.save()
             return self.json
@@ -953,7 +956,7 @@ class Instance(ValidationWorkflowArtefact):
     def has_org_unit(self):
         return self.org_unit if self.org_unit else None
 
-    def resolve_form_version(self):
+    def resolve_form_version(self, form_versions_cache=None):
         """
         Set `form_version` from `self.json["_version"]` + `form_id`, if a matching FormVersion
         exists. Call this explicitly right after `self.json` is (re)computed from a submission's
@@ -961,12 +964,13 @@ class Instance(ValidationWorkflowArtefact):
         changed, which meant a `FormVersion` lookup on every save in a save-heavy chain (location/
         device/correlation conversions, etc.) even when nothing about the version could have
         changed since the previous save.
+
+        `form_versions_cache`: see `FormVersionManager.find_for_form()`.
         """
         if self.json is not None and self.json.get("_version"):
-            try:
-                self.form_version = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id)
-            except ObjectDoesNotExist:
-                pass
+            form_version = FormVersion.objects.find_for_form(self.form.id, self.json["_version"], form_versions_cache)
+            if form_version is not None:
+                self.form_version = form_version
 
 
 class InstanceFileExtensionQuerySet(models.QuerySet):

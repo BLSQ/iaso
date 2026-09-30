@@ -28,7 +28,7 @@ def detect_user_request(request):
         return None
 
 
-def process_instance_file(instance, file, user):
+def process_instance_file(instance, file, user, form_versions_cache=None):
     instance.file = file
     instance.created_by = user
     instance.last_modified_by = user
@@ -37,7 +37,7 @@ def process_instance_file(instance, file, user):
     # here, in the FileField's own save.
     instance.save()
 
-    instance.get_and_save_json_of_xml(save=False)
+    instance.get_and_save_json_of_xml(save=False, form_versions_cache=form_versions_cache)
     try:
         instance.convert_location_from_field(save=False)
         instance.convert_device(save=False)

@@ -20,7 +20,6 @@ const UsersLocations: FunctionComponent<Props> = ({
 
     return (
         <OrgUnitTreeviewModal
-            toggleOnLabelClick={false}
             titleMessage={MESSAGES.chooseLocation}
             onConfirm={onConfirm}
             multiselect

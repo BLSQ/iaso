@@ -56,6 +56,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
     filters = {
         "form_id": req.get(query.FORM_ID, None),
         "form_ids": req.get(query.FORM_IDS, None),
+        "form_version_ids": req.get(query.FORM_VERSION_IDS, None),
         "with_location": req.get(query.WITH_LOCATION, None),
         "org_unit_type_id": req.get(query.ORG_UNIT_TYPE_ID, None),
         "device_id": req.get(query.DEVICE_ID, None),

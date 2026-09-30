@@ -276,8 +276,12 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
         org_unit_type_1.projects.set([project_1, project_2])
         cls.org_unit_type_2 = org_unit_type_2 = m.OrgUnitType.objects.create(name="Org unit type 2")
         cls.org_unit_type_3 = m.OrgUnitType.objects.create(name="Org unit type 3")
-        cls.org_unit_1 = org_unit_1 = m.OrgUnit.objects.create(name="OrgUnit 1", org_unit_type=org_unit_type_1)
-        cls.org_unit_2 = org_unit_2 = m.OrgUnit.objects.create(name="OrgUnit 2", org_unit_type=org_unit_type_1)
+        cls.org_unit_1 = org_unit_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 1", org_unit_type=org_unit_type_1, uuid=str(uuid.uuid4())
+        )
+        cls.org_unit_2 = org_unit_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 2", org_unit_type=org_unit_type_1, uuid=str(uuid.uuid4())
+        )
 
         cls.sku_1 = sku_1 = m.StockKeepingUnit.objects.create(
             name="SKU 1",
@@ -403,6 +407,29 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
                     "id": uuid.uuid4().hex,
                     "sku": self.sku_2.id,
                     "org_unit": self.org_unit_1.id,
+                    "rule": self.rule.id,
+                    "submission_id": self.instance.id,
+                    "question": "question_name",
+                    "value": 20,
+                    "impact": m.StockImpacts.SUBTRACT,
+                }
+            ],
+        )
+        self.assertJSONResponse(response, rest_framework.status.HTTP_201_CREATED)
+        # We already have one ledger item doing +40
+        self.assertEqual(20, m.StockItem.objects.filter(sku=self.sku_2, org_unit=self.org_unit_1).get().value)
+        self.assertEqual(m.StockLedgerItem.objects.count(), 5)
+
+    def test_create_with_authorization_and_ou_uuid(self):
+        self.assertEqual(m.StockLedgerItem.objects.count(), 4)
+        self.client.force_authenticate(self.user_with_rights)
+        response = self.client.post(
+            f"{LEDGER_ITEM_URL}?app_id={self.project_1.app_id}",
+            data=[
+                {
+                    "id": uuid.uuid4().hex,
+                    "sku": self.sku_2.id,
+                    "org_unit": self.org_unit_1.uuid,
                     "rule": self.rule.id,
                     "submission_id": self.instance.id,
                     "question": "question_name",

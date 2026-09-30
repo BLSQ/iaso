@@ -196,7 +196,6 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
 
             <Grid item xs={12} md={6}>
                 <OrgUnitTreeviewModal
-                    toggleOnLabelClick={false}
                     titleMessage={MESSAGES.selectedOrgUnits}
                     onConfirm={orgUnitsList => {
                         setSelectedOrgUnits(orgUnitsList || []);

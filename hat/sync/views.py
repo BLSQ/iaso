@@ -32,15 +32,23 @@ def process_instance_file(instance, file, user):
     instance.file = file
     instance.created_by = user
     instance.last_modified_by = user
+    # This save must happen before get_and_save_json_of_xml(): on S3 storage, that method fetches
+    # the file back via its .url (urlopen) - it has to already be uploaded, which only happens
+    # here, in the FileField's own save.
     instance.save()
 
-    instance.get_and_save_json_of_xml()
+    instance.get_and_save_json_of_xml(save=False)
     try:
-        instance.convert_location_from_field()
-        instance.convert_device()
-        instance.convert_correlation()
+        instance.convert_location_from_field(save=False)
+        instance.convert_device(save=False)
+        instance.convert_correlation(save=False)
     except ValueError as error:
         logger.exception(error)
+    finally:
+        # Whatever succeeded before a conversion raised should still be persisted, exactly
+        # like when each convert_* method saved itself individually. Also covers the json/
+        # form_version set by get_and_save_json_of_xml(save=False) above - one save for both.
+        instance.save()
 
     return instance
 

@@ -28,6 +28,7 @@ from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
 from iaso.api.common import CONTENT_TYPE_XLSX
+from iaso.api.instances.views import import_data
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
@@ -40,6 +41,7 @@ from iaso.permissions.core_permissions import (
     CORE_SUBMISSIONS_PERMISSION,
     CORE_SUBMISSIONS_UPDATE_PERMISSION,
 )
+from iaso.test import TestCase
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -764,6 +766,29 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_list_by_form_version_ids_ok(self):
+        """GET /instances/?form_version_ids=fv1,fv2"""
+
+        self.client.force_authenticate(self.yoda)
+
+        fv1 = FormVersion.objects.create(form=self.form_1, version_id="version_1")
+        fv2 = FormVersion.objects.create(form=self.form_1, version_id="version_2")
+
+        self.instance_1.form_version = fv1
+        self.instance_1.save()
+
+        self.instance_2.form_version = fv2
+        self.instance_2.save()
+
+        response = self.client.get(f"/api/instances/?{query.FORM_VERSION_IDS}={fv1.pk}")
+        self.assertInstanceListContainsStrictly(response, [self.instance_1])
+
+        response = self.client.get(f"/api/instances/?{query.FORM_VERSION_IDS}={fv1.pk},{fv2.pk}")
+        self.assertInstanceListContainsStrictly(response, [self.instance_1, self.instance_2])
+
+        response = self.client.get(f"/api/instances/?{query.FORM_VERSION_IDS}=999999")
+        self.assertInstanceListContainsStrictly(response, [])
 
     def test_instance_list_filter_by_reference_instances(self):
         """GET /instances/?referenceInstances=… filters like Instance.is_reference_instance."""
@@ -3951,3 +3976,40 @@ class InstancesAPITestCase(TaskAPITestCase):
             print("instance_7", self.instance_7.id)
             print("instance_8", self.instance_8.id)
             raise e
+
+
+class ImportDataTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = m.Account.objects.create(name="Import data account")
+        cls.project = m.Project.objects.create(name="Import data project", app_id="import.data", account=cls.account)
+        cls.user = cls.create_user_with_profile(username="importer", account=cls.account)
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Health facility", short_name="HF")
+        cls.org_unit = m.OrgUnit.objects.create(name="Facility A", org_unit_type=cls.org_unit_type)
+        cls.form = m.Form.objects.create(name="Basic form", form_id="basic_form")
+
+    def test_import_data_without_api_import(self):
+        instance_uuid = str(uuid4())
+
+        import_data(
+            instances=[
+                {
+                    "id": instance_uuid,
+                    "file": "/storage/emulated/0/odk/instances/basic.xml",
+                    "name": "Basic instance",
+                    "formId": self.form.id,
+                    "orgUnitId": self.org_unit.id,
+                }
+            ],
+            user=self.user,
+            app_id=self.project.app_id,
+        )
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(instance.file_name, "basic.xml")
+        self.assertEqual(instance.name, "Basic instance")
+        self.assertEqual(instance.project, self.project)
+        self.assertEqual(instance.form, self.form)
+        self.assertEqual(instance.org_unit, self.org_unit)
+        self.assertIsNone(instance.api_import)
+        self.assertIsNone(instance.app_version)

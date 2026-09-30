@@ -137,7 +137,6 @@ export const CreateReAssignDialogComponent: FunctionComponent<
                 required
                 clearable={false}
                 titleMessage={MESSAGES.selectedOrgUnit}
-                toggleOnLabelClick={false}
                 onConfirm={orgUnit => {
                     setFieldValue({
                         ...fieldValue,

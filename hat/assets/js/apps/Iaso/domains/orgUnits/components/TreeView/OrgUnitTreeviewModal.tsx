@@ -56,7 +56,7 @@ type Props = {
 
 const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     titleMessage,
-    toggleOnLabelClick = true,
+    toggleOnLabelClick = false,
     onConfirm = () => undefined,
     multiselect = false,
     initialSelection = undefined,

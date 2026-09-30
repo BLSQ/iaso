@@ -263,6 +263,7 @@ class DerivedInstancesTests(APITestCase):
                 "satisfaction_score_sum_with_default": 0,
             },
         )
+        self.assertEqual(derived_instance.form_version, self.derived_form_mapping_version.form_version)
 
     def setup_5_instances(self):
         self.build_instance(self.survey_form, 10)

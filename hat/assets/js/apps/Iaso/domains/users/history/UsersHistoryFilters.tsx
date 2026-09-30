@@ -33,7 +33,6 @@ export const UsersHistoryFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
                 <Grid item xs={12} md={4} lg={3}>
                     <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
                         titleMessage={MESSAGES.location}
                         onConfirm={orgUnit => {
                             handleChange('org_unit_id', orgUnit?.id);

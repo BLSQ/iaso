@@ -1056,7 +1056,7 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id, api_import):
+def import_data(instances, user, app_id, api_import=None):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by
@@ -1087,8 +1087,6 @@ def import_data(instances, user, app_id, api_import):
 
         instance.uuid = uuid
         instance.project = project
-        instance.api_import = api_import
-        instance.app_version = api_import.app_version
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
         accuracy_raw = instance_data.get("accuracy", None)
@@ -1096,6 +1094,9 @@ def import_data(instances, user, app_id, api_import):
             accuracy_serializer = InstanceImportAccuracySerializer(data={"accuracy": accuracy_raw})
             accuracy_serializer.is_valid(raise_exception=True)
             instance.accuracy = accuracy_serializer.validated_data.get("accuracy")
+        if api_import is not None:
+            instance.api_import = api_import
+            instance.app_version = api_import.app_version
 
         tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():

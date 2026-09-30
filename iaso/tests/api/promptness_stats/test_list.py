@@ -24,7 +24,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
     def get_json(self, expected_status=status.HTTP_200_OK, user=None, **params):
         if user:
             self.client.force_authenticate(user)
-        response = self.client.get(URL, self.get_params(**params))
+        response = self.client.get(URL, self.get_serializer_params(**params))
         return self.assertJSONResponse(response, expected_status)
 
     def result_names(self, data):

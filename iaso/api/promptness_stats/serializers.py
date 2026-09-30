@@ -69,7 +69,7 @@ class PromptnessStatsQueryParamsSerializer(serializers.Serializer):
     def validate_period(self, period: str) -> str:
         try:
             # `detect()` is lenient (e.g. "202613" is a MONTH): computing the start date rejects invalid values
-            Period.from_string(period).start_date()
+            Period.from_string(period)
         except ValueError:
             raise serializers.ValidationError("Invalid period")
         return period

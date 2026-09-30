@@ -38,7 +38,7 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
 
     def get_csv(self, **params):
-        response = self.client.get(EXPORT_CSV_URL, self.get_params(**params))
+        response = self.client.get(EXPORT_CSV_URL, self.get_serializer_params(**params))
         return self.assertCsvFileResponse(
             response, expected_name=f"promptness_{self.form.id}_{PERIOD}.csv", return_as_lists=True
         )
@@ -92,12 +92,12 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         self.assertEqual(len(lines[1]), len(HEADER) - 2)
 
     def test_export_bad_request(self):
-        response = self.client.get(EXPORT_CSV_URL, self.get_params(period="2026Q1"))
+        response = self.client.get(EXPORT_CSV_URL, self.get_serializer_params(period="2026Q1"))
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("period", data)
 
     def test_export_user_restricted_to_org_units(self):
         self.client.force_authenticate(self.user_restricted)
-        response = self.client.get(EXPORT_CSV_URL, self.get_params())
+        response = self.client.get(EXPORT_CSV_URL, self.get_serializer_params())
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("parent_org_unit_id", data)

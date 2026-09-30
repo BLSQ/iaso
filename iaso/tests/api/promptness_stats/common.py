@@ -242,7 +242,7 @@ class PromptnessStatsTestCase(APITestCase):
         m.Instance.objects.filter(pk=instance.pk).update(created_at=submitted_at)
         return instance
 
-    def get_params(self, **kwargs):
+    def get_serializer_params(self, **kwargs):
         params = {"form_id": self.form.id, "period": PERIOD, "parent_org_unit_id": self.ethiopia.id}
         params.update(kwargs)
         return {key: value for key, value in params.items() if value is not None}

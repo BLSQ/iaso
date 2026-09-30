@@ -224,6 +224,21 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
 
     @time_machine.travel(DT, tick=False)
+    def test_create_ok_new_code(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "uuid": "e05933f4-8370-4329-8cf5-197941785a25",
+            "org_unit_id": self.org_unit.id,
+            "new_code": "NEW-CODE-1",
+        }
+        response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        self.assertEqual(change_request.new_code, data["new_code"])
+        self.assertEqual(change_request.old_code, self.org_unit.code)
+        self.assertEqual(change_request.requested_fields, ["new_code"])
+
+    @time_machine.travel(DT, tick=False)
     def test_create_ok_erase_fields(self):
         self.client.force_authenticate(self.user)
         data = {

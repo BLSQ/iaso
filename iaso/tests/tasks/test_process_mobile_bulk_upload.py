@@ -873,6 +873,49 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-17")
 
+    def test_xml_is_parsed_from_the_zip_not_read_back_from_storage(self):
+        """
+        Each submission's XML is uploaded to storage but parsed from the bytes already read from the
+        zip, never downloaded back from storage (on S3, a full extra HTTP round-trip per instance) -
+        for new instances (CATT tablet) as for updated ones (LABO tablet updates Disasi Makulo).
+        The zips themselves are the only files the task reads from storage.
+        """
+        storage = m.Instance._meta.get_field("file").storage
+        self._create_zip_file()
+        labo_task = m.Task.objects.create(
+            name="process_mobile_bulk_upload", launcher=self.user, account=m.Account.objects.first()
+        )
+        labo_api_import = APIImport.objects.create(
+            user=self.user, import_type="bulk", json_body={"file": LABO_TABLET_DIR}
+        )
+        labo_zip_path = f"/tmp/{LABO_TABLET_DIR}.zip"
+        with zipfile.ZipFile(labo_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        save_file_to_api_import(labo_api_import, labo_zip_path)
+
+        with mock.patch.object(storage, "open", wraps=storage.open) as storage_open:
+            for api_import, task in [(self.api_import, self.task), (labo_api_import, labo_task)]:
+                process_mobile_bulk_upload(
+                    api_import_id=api_import.id, project_id=self.project.id, task=task, _immediate=True
+                )
+                task.refresh_from_db()
+                self.assertEqual(task.status, m.SUCCESS)
+
+        opened_names = [call.args[0] for call in storage_open.call_args_list]
+        self.assertEqual(opened_names, [self.api_import.file.name, labo_api_import.file.name])
+
+        # Parsed from the right content - Disasi Makulo was updated by the LABO tablet ...
+        instance_disasi = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        self.assertEqual(instance_disasi.source_updated_at.date().isoformat(), "2024-04-17")
+        self.assertEqual(instance_disasi.json["is_confirmed_positive"], "1")
+        # ... and the stored file is those same bytes, with its size recorded.
+        with zipfile.ZipFile(labo_zip_path) as zipf:
+            [disasi_data] = [d for d in json.load(zipf.open("instances.json")) if d["id"] == DISASI_MAKULO_REGISTRATION]
+            expected_xml = zipf.read(f"{DISASI_MAKULO_REGISTRATION}/{os.path.basename(disasi_data['file'])}")
+        with instance_disasi.file.open("rb") as f:
+            self.assertEqual(f.read(), expected_xml)
+        self.assertEqual(instance_disasi.file_size, len(expected_xml))
+
     def test_soft_deleted_entity(self):
         # Create soft-deleted entity Disasi with only registration form
         ent_disasi = create_entity_with_registration(
@@ -946,12 +989,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
             self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
 
-        process_mobile_bulk_upload(
-            api_import_id=self.api_import.id,
-            project_id=self.project.id,
-            task=self.task,
-            _immediate=True,
-        )
+        storage = m.Instance._meta.get_field("file").storage
+        with mock.patch.object(storage, "open", wraps=storage.open) as storage_open:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -979,6 +1024,19 @@ class ProcessMobileBulkUploadTest(TestCase):
         catt_disasi_C = ent_disasi_C.instances.get(form=self.form_catt)
         self.assertEqual(catt_disasi_C.uuid, DISASI_MAKULO_CATT)
         self.assertFalse(catt_disasi_C.deleted)
+
+        # Both the uploaded instance and the merged entity's registration get the full incoming
+        # XML - the same in-memory file is saved twice - and are parsed from the zip's bytes, not
+        # read back from storage: the zip is the only file the task reads from storage.
+        self.assertEqual([call.args[0] for call in storage_open.call_args_list], [self.api_import.file.name])
+        with zipfile.ZipFile(zip_path) as zipf:
+            [disasi_data] = [d for d in json.load(zipf.open("instances.json")) if d["id"] == DISASI_MAKULO_REGISTRATION]
+            expected_xml = zipf.read(f"{DISASI_MAKULO_REGISTRATION}/{os.path.basename(disasi_data['file'])}")
+        for reg in [ent_disasi_A.attributes, reg_disasi_C]:
+            with reg.file.open("rb") as f:
+                self.assertEqual(f.read(), expected_xml)
+            self.assertEqual(reg.file_size, len(expected_xml))
+            self.assertEqual(reg.json["_full_name"], "Disasi Makulo")
 
         # Audit trail is logged on the uploaded instance (soft-deleted merged source)
         content_type = ContentType.objects.get_by_natural_key("iaso", "instance")

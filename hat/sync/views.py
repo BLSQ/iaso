@@ -28,16 +28,20 @@ def detect_user_request(request):
         return None
 
 
-def process_instance_file(instance, file, user):
+def process_instance_file(instance, file, user, xml_content=None):
+    """
+    `xml_content`: the raw bytes of `file`, when the caller already has them in memory - see
+    `Instance.get_and_save_json_of_xml()`.
+    """
     instance.file = file
     instance.created_by = user
     instance.last_modified_by = user
-    # This save must happen before get_and_save_json_of_xml(): on S3 storage, that method fetches
-    # the file back via its .url (urlopen) - it has to already be uploaded, which only happens
-    # here, in the FileField's own save.
+    # This save must happen before get_and_save_json_of_xml(): without `xml_content`, on S3
+    # storage, that method fetches the file back via its .url (urlopen) - it has to already be
+    # uploaded, which only happens here, in the FileField's own save.
     instance.save()
 
-    instance.get_and_save_json_of_xml(save=False)
+    instance.get_and_save_json_of_xml(save=False, xml_content=xml_content)
     try:
         instance.convert_location_from_field(save=False)
         instance.convert_device(save=False)

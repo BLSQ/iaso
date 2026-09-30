@@ -5,7 +5,7 @@ import time
 import typing
 
 from functools import reduce
-from io import StringIO
+from io import BytesIO, StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -668,7 +668,7 @@ class Instance(ValidationWorkflowArtefact):
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
         return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False, tries=3, save=True):
+    def get_and_save_json_of_xml(self, force=False, tries=3, save=True, xml_content: typing.Optional[bytes] = None):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
@@ -679,6 +679,10 @@ class Instance(ValidationWorkflowArtefact):
         `save=False` skips the save, for callers that will save `self` themselves right after
         (e.g. together with other in-memory changes, to avoid a separate round-trip).
 
+        `xml_content`: the raw bytes of `self.file`, for callers that already hold them in memory
+        (e.g. just read from a bulk upload zip). They're parsed directly instead of downloading
+        `self.file` back from storage - on S3 that's a full extra HTTP round-trip per instance.
+
         :return: in all cases, return the JSON representation of the instance
         """
         if self.json and not force:
@@ -686,7 +690,9 @@ class Instance(ValidationWorkflowArtefact):
             return self.json
         if self.file:
             # not converted yet, but we have a file, so we can convert it
-            if "amazonaws" in self.file.url:
+            if xml_content is not None:
+                file = BytesIO(xml_content)
+            elif "amazonaws" in self.file.url:
                 for i in range(tries):
                     try:
                         file = urlopen(self.file.url)

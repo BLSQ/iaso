@@ -20,6 +20,7 @@ from datetime import datetime
 from traceback import format_exc
 
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.translation import gettext as _
 
@@ -182,21 +183,29 @@ def process_instance_xml(instance: Instance, instance_data, zip_ref, user):
     uuid = instance.uuid
     filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
-    with zip_ref.open(os.path.join(uuid, filename), "r") as f:
-        if not instance.file or not instance.json:  # new instance
-            instance = process_instance_file(instance, File(f), user)
-        else:
-            instance = update_instance_file_if_needed(
-                instance,
-                instance_data.get("updated_at", None),
-                File(f),
-                user,
-            )
+    entry_name = os.path.join(uuid, filename)
+    # Read once and reuse the bytes for both the storage upload and the xml -> json parsing, instead
+    # of parsing a copy downloaded back from storage right after uploading it. As a `ContentFile`,
+    # the file's size is also known upfront: `SizedFileField` doesn't have to decompress the whole
+    # entry a first time just to measure it. Same name as the zip entry, as `File(zip_ext_file)`
+    # had, so the stored path doesn't change.
+    xml_content = zip_ref.read(entry_name)
+    file = ContentFile(xml_content, name=entry_name)
+    if not instance.file or not instance.json:  # new instance
+        instance = process_instance_file(instance, file, user, xml_content=xml_content)
+    else:
+        instance = update_instance_file_if_needed(
+            instance,
+            instance_data.get("updated_at", None),
+            file,
+            user,
+            xml_content=xml_content,
+        )
 
     return instance
 
 
-def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
+def update_instance_file_if_needed(instance, incoming_updated_at, file, user, xml_content=None):
     incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(int(incoming_updated_at))
     if incoming_updated_at and incoming_updated_at > instance.source_updated_at:
         logger.info(
@@ -209,8 +218,8 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
         instance.last_modified_by = user
         instance.source_updated_at = incoming_updated_at
         instance.save()
-        instance.get_and_save_json_of_xml(force=True, tries=8)
-        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user)
+        instance.get_and_save_json_of_xml(force=True, tries=8, xml_content=xml_content)
+        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user, xml_content=xml_content)
     else:
         logger.info(
             "\tSkipping instance %s (current timestamp %s, incoming %s)",
@@ -222,7 +231,7 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
     return instance
 
 
-def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user):
+def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user, xml_content=None):
     """
     If the form being updated is attached to an entity that's soft deleted because
     of a merge, then we also update the ref form on the "final" merged entity
@@ -253,7 +262,7 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
         instance_to_update.last_modified_by = user
         instance_to_update.source_updated_at = incoming_updated_at
         instance_to_update.save()
-        instance_to_update.get_and_save_json_of_xml(force=True, tries=8)
+        instance_to_update.get_and_save_json_of_xml(force=True, tries=8, xml_content=xml_content)
 
 
 # Create form attachments for all non-XML files in the form's directory

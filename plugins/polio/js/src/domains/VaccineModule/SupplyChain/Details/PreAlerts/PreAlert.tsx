@@ -5,7 +5,6 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import { DropdownOptions } from 'Iaso/types/utils';
-import { toNumber } from '../utils';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -15,6 +14,7 @@ import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { usePaperStyles } from '../shared';
+import { toNumber } from '../utils';
 
 type Props = {
     index: number;

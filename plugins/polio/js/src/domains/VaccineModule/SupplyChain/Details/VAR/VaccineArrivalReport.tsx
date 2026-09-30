@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { toNumber } from '../utils';
 import { NumberInput, Select } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
@@ -14,6 +13,7 @@ import { VAR } from '../../constants';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { usePaperStyles } from '../shared';
+import { toNumber } from '../utils';
 
 type Props = {
     index: number;

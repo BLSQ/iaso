@@ -37,6 +37,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflowVersion',
         defaultMessage: 'Workflow version',
     },
+
     workflows: {
         id: 'iaso.label.workflows',
         defaultMessage: 'Workflows',
@@ -44,6 +45,10 @@ const MESSAGES = defineMessages({
     name: {
         defaultMessage: 'Name',
         id: 'iaso.label.name',
+    },
+    autoFirstStep: {
+        defaultMessage: 'Auto first step',
+        id: 'iaso.label.workflowVersion.exposeAutoFirstStep',
     },
     search: {
         defaultMessage: 'Search',

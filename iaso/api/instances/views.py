@@ -4,6 +4,7 @@ import ntpath
 import os
 import tempfile
 
+from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
 from typing import Any, Dict, Optional, Union
@@ -1088,6 +1089,14 @@ def import_data(instances, user, app_id, api_import=None):
     # Same for entity types (typically a single one per batch): only their reference form is needed.
     reference_form_ids_by_entity_type_id = {}
 
+    file_names = {ntpath.basename(instance_data["file"]) for instance_data in instances if instance_data.get("file")}
+    uuids_by_file_name = defaultdict(set)
+    for existing_file_name, existing_uuid in Instance.objects.filter(file_name__in=file_names).values_list(
+        "file_name", "uuid"
+    ):
+        if existing_uuid:
+            uuids_by_file_name[existing_file_name].add(existing_uuid)
+
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
@@ -1109,16 +1118,15 @@ def import_data(instances, user, app_id, api_import=None):
 
         # Workaround for mobile uploads containing multiple instances that reference the same file.
         # The overlapping names caused a single reference Instance to be created that two entities tried to
-        # reference simultaneoulsy as their attributes, causing an IntegrityError.
+        # reference simultaneously as their attributes, causing an IntegrityError.
         # refs: SLEEP-1634
-        existing_instances = Instance.objects.filter(file_name=file_name)
-        for existing_instance in existing_instances:
-            if existing_instance.uuid and existing_instance.uuid != uuid:
-                base, ext = os.path.splitext(file_name)
-                file_name = f"{base}_dup_{uuid}{ext}"
-                break
+        if uuids_by_file_name[file_name] - {uuid}:
+            base, ext = os.path.splitext(file_name)
+            file_name = f"{base}_dup_{uuid}{ext}"
 
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
+        if uuid:
+            uuids_by_file_name[file_name].add(uuid)
 
         instance.uuid = uuid
         instance.project = project

@@ -547,7 +547,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                     "iaso_form": 1,
                     "iaso_entity": 8,
                     "iaso_formversion": 2,
-                    "iaso_instance": 26,
+                    "iaso_instance": 27,
                     "audit_modification": 4,
                     "iaso_entitytype": 1,
                     "iaso_task": 7,
@@ -562,7 +562,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 95)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 96)
 
         # form_version is no longer resolved on every save() - make sure the bulk upload path
         # still sets it on every instance it creates.
@@ -623,7 +623,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                     "iaso_form": 1,
                     "iaso_entity": 100,
                     "iaso_formversion": 2,
-                    "iaso_instance": 301,
+                    "iaso_instance": 302,
                     "audit_modification": 50,
                     "iaso_entitytype": 1,
                     "iaso_task": 7,
@@ -637,7 +637,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 642)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 643)
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()
@@ -1536,6 +1536,56 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Verify physical files are attached to both
         self.assertTrue(instance1.file)
         self.assertTrue(instance2.file)
+
+    def test_bulk_upload_file_name_collision_with_previous_upload(self):
+        """
+        Same as test_bulk_upload_duplicate_file_name_collision, but the file name is already used by
+        an instance from a previous upload rather than by another instance of the same zip.
+        refs: SLEEP-1634
+        """
+        previous_instance = m.Instance.objects.create(
+            file_name="same_name.xml", uuid="11111111-2222-3333-4444-555555555555", project=self.project
+        )
+
+        zip_path = "/tmp/bulk_upload_file_name_collision_with_previous_upload.zip"
+        uuid = "77777777-8888-9999-aaaa-bbbbbbbbbbbb"
+        instances_data = [
+            {
+                "id": uuid,
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/same_name.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": uuid,
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                zipf.writestr(f"{uuid}/same_name.xml", xml_file.read())
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.assertEqual(m.Instance.objects.count(), 2)
+        previous_instance.refresh_from_db()
+        self.assertEqual(previous_instance.file_name, "same_name.xml")
+        new_instance = m.Instance.objects.get(uuid=uuid)
+        self.assertEqual(new_instance.file_name, f"same_name_dup_{uuid}.xml")
+        self.assertEqual(m.Entity.objects.get(uuid=uuid).attributes, new_instance)
 
 
 def in_memory_zip(entries):

@@ -1168,8 +1168,6 @@
     "iaso.mappings.import.skipAll": "Skip all",
     "iaso.mappings.import.summary": "{added} to add, {overwritten} to overwrite, {ignored} not imported",
     "iaso.mappings.import.title": "Import mappings",
-    "iaso.mappings.import.undo": "Undo import",
-    "iaso.mappings.import.undone": "Import undone",
     "iaso.mappings.import.versionTitle": "Version {versionId}",
     "iaso.mappings.label.atLeastAMapping": "at least a mapping",
     "iaso.mappings.label.dataset": "Dataset",

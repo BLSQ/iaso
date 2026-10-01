@@ -331,9 +331,9 @@ class FormsVersionAPITestCase(APITestCase):
         resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id},{self.project.id}")
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
-    def test_mappingversions_bulk_patch_and_undo(self):
-        """PATCH /mappingversions/<id>: several question mappings at once, as the import wizard does, then the
-        payload the wizard sends to undo that import"""
+    def test_mappingversions_bulk_patch(self):
+        """PATCH /mappingversions/<id>: several question mappings at once, as the import wizard does, then
+        restoring and unmapping some of them"""
 
         self.client.force_authenticate(self.yoda)
         form_version = self.create_form_version()
@@ -359,16 +359,16 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.get_question_mappings(mapping_version_id), {**original, **imported})
 
-        undo = {
+        restore = {
             "question_2": original["question_2"],
             "question_6": {"type": "neverMapped"},
             "question_3": {"action": "unmap"},
         }
-        response = self.patch_question_mappings(mapping_version_id, undo)
+        response = self.patch_question_mappings(mapping_version_id, restore)
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.get_question_mappings(mapping_version_id), original)
 
-    def test_mappingversions_bulk_patch_and_undo_event_tracker(self):
+    def test_mappingversions_bulk_patch_event_tracker(self):
         """PATCH /mappingversions/<id>: event tracker mappings are lists, repeat groups included"""
 
         self.client.force_authenticate(self.yoda)

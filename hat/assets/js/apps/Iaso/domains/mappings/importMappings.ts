@@ -281,7 +281,6 @@ export const buildImportPlan = (
 ): ImportPlan => {
     const plan: ImportPlan = {
         changes: {},
-        undo: {},
         added: 0,
         overwritten: 0,
         kept: 0,
@@ -294,13 +293,11 @@ export const buildImportPlan = (
             plan.dropped += 1;
         } else if (row.kind === 'conflict' && decision === 'overwrite') {
             plan.changes[row.questionKey] = row.incoming;
-            plan.undo[row.questionKey] = row.current as QuestionMapping;
             plan.overwritten += 1;
         } else if (row.kind === 'conflict') {
             plan.kept += 1;
         } else if (row.kind === 'add' && decision === 'apply') {
             plan.changes[row.questionKey] = row.incoming;
-            plan.undo[row.questionKey] = { action: 'unmap' };
             plan.added += 1;
         } else if (row.kind === 'add') {
             plan.skipped += 1;

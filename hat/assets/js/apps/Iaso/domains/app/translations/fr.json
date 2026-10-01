@@ -1169,8 +1169,6 @@
     "iaso.mappings.import.skipAll": "Tout ignorer",
     "iaso.mappings.import.summary": "{added} à ajouter, {overwritten} à écraser, {ignored} non importés",
     "iaso.mappings.import.title": "Importer des mappings",
-    "iaso.mappings.import.undo": "Annuler l'import",
-    "iaso.mappings.import.undone": "Import annulé",
     "iaso.mappings.import.versionTitle": "Version {versionId}",
     "iaso.mappings.label.atLeastAMapping": "au moins une correspondance",
     "iaso.mappings.label.dataset": "Dataset",

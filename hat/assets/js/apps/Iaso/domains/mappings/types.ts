@@ -22,8 +22,6 @@ export type DiffRow = {
 export type ImportPlan = {
     // payload for PATCH question_mappings
     changes: QuestionMappings;
-    // payload restoring the state before the import
-    undo: Record<string, QuestionMapping | { action: 'unmap' }>;
     added: number;
     overwritten: number;
     kept: number;

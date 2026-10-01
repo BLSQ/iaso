@@ -102,7 +102,6 @@ describe('ImportMappingsDialog', () => {
         expect(onApply).toHaveBeenCalledWith(
             expect.objectContaining({
                 changes: { q2: de('c'), q3: de('d') },
-                undo: { q2: de('b'), q3: { action: 'unmap' } },
             }),
         );
     });

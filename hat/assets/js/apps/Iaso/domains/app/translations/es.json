@@ -971,8 +971,6 @@
     "iaso.mappings.import.skipAll": "Omitir todo",
     "iaso.mappings.import.summary": "{added} para añadir, {overwritten} para sobrescribir, {ignored} no importados",
     "iaso.mappings.import.title": "Importar mapeos",
-    "iaso.mappings.import.undo": "Deshacer importación",
-    "iaso.mappings.import.undone": "Importación deshecha",
     "iaso.mappings.import.versionTitle": "Versión {versionId}",
     "iaso.mappings.label.atLeastAMapping": "al menos un mapeo",
     "iaso.mappings.label.dataset": "Conjunto de datos",

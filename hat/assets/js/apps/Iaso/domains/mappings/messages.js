@@ -241,14 +241,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.export',
         defaultMessage: 'Export mappings',
     },
-    undoImport: {
-        id: 'iaso.mappings.import.undo',
-        defaultMessage: 'Undo import',
-    },
-    importUndone: {
-        id: 'iaso.mappings.import.undone',
-        defaultMessage: 'Import undone',
-    },
     importPickSource: {
         id: 'iaso.mappings.import.pickSource',
         defaultMessage:

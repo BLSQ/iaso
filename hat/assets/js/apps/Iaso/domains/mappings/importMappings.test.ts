@@ -302,7 +302,7 @@ describe('computeMappingsDiff', () => {
         ).toEqual({ symptoms__fever: 'add', sex__male: 'dropped' });
     });
 
-    it('builds the patch and undo payloads', () => {
+    it('builds the patch payload', () => {
         const decisions = Object.fromEntries(
             rows.map(r => [r.questionKey, getDefaultDecision(r, true)]),
         );
@@ -311,12 +311,6 @@ describe('computeMappingsDiff', () => {
             q2: de('c'),
             q3: de('d'),
             q4: de('e'),
-        });
-        expect(plan.undo).toEqual({
-            q2: de('b'),
-            q3: { action: 'unmap' },
-            // undo puts the never mapped marker back
-            q4: { type: 'neverMapped' },
         });
         expect(plan).toMatchObject({
             added: 1,

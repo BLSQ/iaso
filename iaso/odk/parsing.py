@@ -122,7 +122,11 @@ def visit_mappable(node, form_descriptor, mappable_questions):
 
 def to_mappable_questions_by_name(form_descriptor):
     """Keys a question_mappings entry can use: like to_questions_by_name, plus the questions inside repeat
-    groups and the `question__choice` keys of the select all that apply questions."""
+    groups (EVENT_TRACKER mappings) and the `question__choice` keys of the select all that apply questions
+    (one boolean data element per choice).
+
+    Kept apart from to_questions_by_name on purpose: its callers (repeat_groups, the form possible fields,
+    the DHIS2 exporter, ...) rely on repeats being a single entry and on choices not being questions."""
     mappable_questions = {}
     if not form_descriptor:
         return mappable_questions

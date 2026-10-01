@@ -332,8 +332,8 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
     def test_mappingversions_bulk_patch_and_undo(self):
-        """PATCH /mappingversions/<id>: several question mappings of every shape at once, as the import wizard
-        does, then the payload the wizard sends to undo that import"""
+        """PATCH /mappingversions/<id>: several question mappings at once, as the import wizard does, then the
+        payload the wizard sends to undo that import"""
 
         self.client.force_authenticate(self.yoda)
         form_version = self.create_form_version()
@@ -354,6 +354,30 @@ class FormsVersionAPITestCase(APITestCase):
             "question_6": {"id": "de6", "valueType": "NUMBER"},
             # select all that apply, no data element id at the top level
             "question_3": {"type": "multiple", "values": {"a": {"id": "de3a", "valueType": "BOOLEAN"}}},
+        }
+        response = self.patch_question_mappings(mapping_version_id, imported)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(mapping_version_id), {**original, **imported})
+
+        undo = {
+            "question_2": original["question_2"],
+            "question_6": {"type": "neverMapped"},
+            "question_3": {"action": "unmap"},
+        }
+        response = self.patch_question_mappings(mapping_version_id, undo)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(mapping_version_id), original)
+
+    def test_mappingversions_bulk_patch_and_undo_event_tracker(self):
+        """PATCH /mappingversions/<id>: event tracker mappings are lists, repeat groups included"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version_id = self.create_tracker_mapping_version(form_version, self.sw_source)
+        original = {"question_1": [{"trackedEntityAttribute": {"id": "tea1"}, "iaso_field": "instance.uuid"}]}
+        self.patch_question_mappings(mapping_version_id, original)
+
+        imported = {
             # event tracker question inside a repeat group
             "question_4": [{"dataElement": {"id": "de4"}, "programStage": "stage1", "parent": "question_5"}],
             # event tracker repeat group
@@ -371,16 +395,52 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.get_question_mappings(mapping_version_id), {**original, **imported})
 
-        undo = {
-            "question_2": original["question_2"],
-            "question_6": {"type": "neverMapped"},
-            "question_3": {"action": "unmap"},
-            "question_4": {"action": "unmap"},
-            "question_5": {"action": "unmap"},
-        }
-        response = self.patch_question_mappings(mapping_version_id, undo)
+        response = self.patch_question_mappings(
+            mapping_version_id, {"question_4": {"action": "unmap"}, "question_5": {"action": "unmap"}}
+        )
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.get_question_mappings(mapping_version_id), original)
+
+    def test_mappingversions_patch_checks_shape_for_mapping_type(self):
+        """PATCH /mappingversions/<id>: a question mapping must have the shape the exporter of its type reads"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        aggregate_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+        tracker_id = self.create_tracker_mapping_version(form_version, self.sw_source)
+        data_element = {"id": "de1", "valueType": "NUMBER"}
+
+        cases = [
+            (aggregate_id, [{"dataElement": {"id": "de1"}}], "should not be a list for AGGREGATE mappings"),
+            (
+                aggregate_id,
+                {"type": "multiple", "values": {"a": {"name": "no id"}}},
+                "should map each choice to a data element id",
+            ),
+            (aggregate_id, {"type": "multiple"}, "should map each choice to a data element id"),
+            (tracker_id, data_element, "should be a list for EVENT_TRACKER mappings"),
+            (tracker_id, [], "should be a list for EVENT_TRACKER mappings"),
+            (tracker_id, ["de1"], "should only contain objects"),
+            (tracker_id, [{"foo": 1}], "should map a data element, a tracked entity attribute or a repeat group"),
+            (
+                tracker_id,
+                [{"type": "repeat"}],
+                "should map a data element, a tracked entity attribute or a repeat group",
+            ),
+        ]
+        for mapping_version_id, question_mapping, error in cases:
+            with self.subTest(question_mapping=question_mapping):
+                response = self.patch_question_mappings(mapping_version_id, {"question_1": question_mapping})
+                self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+                self.assertEqual(response.json(), {"question_mappings.question_1": error})
+
+        # never mapped markers and unmapping are valid for every mapping type
+        for mapping_version_id in (aggregate_id, tracker_id):
+            response = self.patch_question_mappings(mapping_version_id, {"question_1": {"type": "neverMapped"}})
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+            response = self.patch_question_mappings(mapping_version_id, {"question_1": {"action": "unmap"}})
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+            self.assertEqual(self.get_question_mappings(mapping_version_id), {})
 
     def test_mappingversions_bulk_patch_invalid_entry_saves_nothing(self):
         """PATCH /mappingversions/<id>: one invalid question mapping rejects the whole import"""
@@ -469,15 +529,22 @@ class FormsVersionAPITestCase(APITestCase):
 
         valid = {
             "weight": data_element,
-            "household": [{"type": "repeat", "program_id": "p1"}],
-            # inside the repeat group
-            "age": [{"dataElement": {"id": "de2"}, "programStage": "s1", "parent": "household"}],
             "symptoms": {"type": "multiple", "values": {"fever": data_element}},
             "symptoms__fever": data_element,
         }
         response = self.patch_question_mappings(mapping_version_id, valid)
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.get_question_mappings(mapping_version_id), valid)
+
+        tracker_id = self.create_tracker_mapping_version(form_version, self.sw_source)
+        valid_tracker = {
+            "household": [{"type": "repeat", "program_id": "p1"}],
+            # inside the repeat group
+            "age": [{"dataElement": {"id": "de2"}, "programStage": "s1", "parent": "household"}],
+        }
+        response = self.patch_question_mappings(tracker_id, valid_tracker)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(tracker_id), valid_tracker)
 
         # a mapping left over for a question removed from the form can still be unmapped
         mapping_version = m.MappingVersion.objects.get(id=mapping_version_id)
@@ -508,6 +575,18 @@ class FormsVersionAPITestCase(APITestCase):
             )
 
         return m.FormVersion.objects.all()[0]
+
+    def create_tracker_mapping_version(self, form_version, source):
+        # created directly: the API names every mapping version "", and (form_version, name) is unique
+        mapping, _ = m.Mapping.objects.get_or_create(
+            form=form_version.form, data_source=source, mapping_type=m.EVENT_TRACKER
+        )
+        return m.MappingVersion.objects.create(
+            mapping=mapping,
+            form_version=form_version,
+            name="tracker",
+            json={"question_mappings": {}, "program_id": "PRGRM"},
+        ).id
 
     def create_mapping_version(self, form_version, source):
         resp = self.client.post(

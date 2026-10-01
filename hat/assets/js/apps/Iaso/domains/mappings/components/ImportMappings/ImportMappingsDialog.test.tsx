@@ -107,7 +107,7 @@ describe('ImportMappingsDialog', () => {
         );
     });
 
-    it('rejects a file of another mapping type', async () => {
+    const renderAndChooseFile = (content: unknown) => {
         renderWithThemeAndIntlProvider(
             <ImportMappingsDialog
                 open
@@ -117,24 +117,48 @@ describe('ImportMappingsDialog', () => {
                 onApply={vi.fn()}
             />,
         );
-        const content = JSON.stringify({
-            mapping_type: 'EVENT',
-            question_mappings: {},
-        });
-        const file = new File([content], 'export.json', {
+        const text = JSON.stringify(content);
+        const file = new File([text], 'export.json', {
             type: 'application/json',
         });
         // jsdom does not implement Blob.text()
         Object.defineProperty(file, 'text', {
-            value: () => Promise.resolve(content),
+            value: () => Promise.resolve(text),
         });
         fireEvent.change(
             document.querySelector('input[type="file"]') as HTMLInputElement,
             { target: { files: [file] } },
         );
+    };
+
+    it('rejects a file of another mapping type', async () => {
+        renderAndChooseFile({ mapping_type: 'EVENT', question_mappings: {} });
         expect(
             await screen.findByText(
                 'This export was made for another mapping type.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('rejects a file without any valid mapping', async () => {
+        renderAndChooseFile({ compilerOptions: { strict: true } });
+        expect(
+            await screen.findByText(
+                'This file contains no mapping valid for a AGGREGATE mapping.',
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('warns about a file made for another dataset', async () => {
+        renderAndChooseFile({
+            mapping_type: 'AGGREGATE',
+            dataset: { id: 'ds2', name: 'Other dataset' },
+            question_mappings: { q1: de('x') },
+        });
+        expect(await screen.findByText('export.json')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'This export was made for another DHIS2 dataset (Other dataset). Check that its data elements belong to this one.',
             ),
         ).toBeInTheDocument();
     });

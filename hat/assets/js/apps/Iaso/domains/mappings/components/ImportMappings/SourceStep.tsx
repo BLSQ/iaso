@@ -13,6 +13,8 @@ type Props = {
     onSelect: (id: string) => void;
     onFileChosen: (file: File) => void;
     fileError?: string;
+    // the file targets another DHIS2 dataset or program
+    fileWarning?: string;
     isLoading: boolean;
 };
 
@@ -20,7 +22,7 @@ const styles: SxStyles = {
     divider: { mt: 2 },
     fileRow: { display: 'flex', alignItems: 'center', gap: 1.5, pt: 2 },
     fileText: { flex: '1 1 auto' },
-    fileError: { mt: 1.5 },
+    fileAlert: { mt: 1.5 },
 };
 
 export const SourceStep: FunctionComponent<Props> = ({
@@ -29,6 +31,7 @@ export const SourceStep: FunctionComponent<Props> = ({
     onSelect,
     onFileChosen,
     fileError,
+    fileWarning,
     isLoading,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -87,8 +90,13 @@ export const SourceStep: FunctionComponent<Props> = ({
                 </Button>
             </Box>
             {fileError && (
-                <Alert severity="error" sx={styles.fileError}>
+                <Alert severity="error" sx={styles.fileAlert}>
                     {fileError}
+                </Alert>
+            )}
+            {fileWarning && (
+                <Alert severity="warning" sx={styles.fileAlert}>
+                    {fileWarning}
                 </Alert>
             )}
         </Box>

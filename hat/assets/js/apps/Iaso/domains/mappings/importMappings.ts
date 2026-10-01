@@ -159,10 +159,55 @@ export const isSameMapping = (a: QuestionMapping, b: QuestionMapping) => {
     );
 };
 
+const isObject = (value: unknown): value is Record<string, any> =>
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const isTrackerItem = (item: unknown): boolean =>
+    isObject(item) &&
+    Boolean(
+        item.dataElement?.id ||
+        item.trackedEntityAttribute?.id ||
+        (item.type === 'repeat' && item.program_id),
+    );
+
+/**
+ * Whether a question mapping has the shape the exporter of the mapping type
+ * reads. Same rules as get_question_mapping_shape_error on the backend.
+ */
+export const isValidForMappingType = (
+    mapping: QuestionMapping,
+    mappingType: string,
+): boolean => {
+    if (isNeverMapped(mapping)) {
+        return true;
+    }
+    if (mappingType === 'EVENT_TRACKER') {
+        return (
+            Array.isArray(mapping) &&
+            mapping.length > 0 &&
+            mapping.every(isTrackerItem)
+        );
+    }
+    if (Array.isArray(mapping) || !isObject(mapping)) {
+        return false;
+    }
+    const { type, values, id, valueType } = mapping;
+    if (type === 'multiple') {
+        return (
+            isObject(values) &&
+            Object.values(values).every(
+                value => isObject(value) && Boolean(value.id),
+            )
+        );
+    }
+    return Boolean(id && valueType);
+};
+
 export const computeMappingsDiff = (
     currentMappings: QuestionMappings,
     incomingMappings: QuestionMappings,
     questions: Record<string, any>,
+    mappingType: string,
 ): DiffRow[] =>
     Object.entries(getImportableMappings(incomingMappings)).map(
         ([questionKey, incoming]) => {
@@ -183,6 +228,9 @@ export const computeMappingsDiff = (
             };
             if (!question) {
                 row.kind = 'dropped';
+            } else if (!isValidForMappingType(incoming, mappingType)) {
+                row.kind = 'dropped';
+                row.invalid = true;
             } else if (row.current) {
                 row.kind = isSameMapping(row.current, incoming)
                     ? 'identical'
@@ -192,10 +240,24 @@ export const computeMappingsDiff = (
         },
     );
 
+/** Mappings of a question of this version, valid for the mapping type. */
 export const countMatchingMappings = (
     questionMappings: QuestionMappings,
     questions: Record<string, any>,
-): number => Object.keys(questionMappings).filter(key => questions[key]).length;
+    mappingType: string,
+): number =>
+    Object.entries(questionMappings).filter(
+        ([key, mapping]) =>
+            questions[key] && isValidForMappingType(mapping, mappingType),
+    ).length;
+
+export const countValidMappings = (
+    questionMappings: QuestionMappings,
+    mappingType: string,
+): number =>
+    Object.values(questionMappings).filter(mapping =>
+        isValidForMappingType(mapping, mappingType),
+    ).length;
 
 export const getDefaultDecision = (
     row: DiffRow,
@@ -293,15 +355,16 @@ export const getExportFileName = (mappingVersion: Record<string, any>) => {
     return `mapping-${slug}.json`;
 };
 
-const isObject = (value: unknown): boolean =>
-    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-
 const isValidMapping = (mapping: unknown): boolean =>
     Array.isArray(mapping) ? mapping.every(isObject) : isObject(mapping);
 
 export class MappingImportError extends Error {
     constructor(
-        public reason: 'invalidJson' | 'invalidFormat' | 'mappingTypeMismatch',
+        public reason:
+            | 'invalidJson'
+            | 'invalidFormat'
+            | 'mappingTypeMismatch'
+            | 'noValidMapping',
     ) {
         super(reason);
     }
@@ -338,5 +401,45 @@ export const parseMappingExport = (
     if (content.mapping_type && content.mapping_type !== expectedMappingType) {
         throw new MappingImportError('mappingTypeMismatch');
     }
+    if (
+        countValidMappings(
+            getImportableMappings(questionMappings),
+            expectedMappingType,
+        ) === 0
+    ) {
+        throw new MappingImportError('noValidMapping');
+    }
     return content;
+};
+
+/**
+ * The DHIS2 dataset or program an export was made for, when it is not the
+ * one of the mapping version it is imported in.
+ */
+export const getOtherTarget = (
+    content: Partial<MappingExport>,
+    mappingVersion: Record<string, any>,
+): { kind: 'dataset' | 'program'; name: string } | undefined => {
+    const settings = mappingVersion.derivate_settings ?? {};
+    if (
+        content.dataset?.id &&
+        settings.data_set_id &&
+        content.dataset.id !== settings.data_set_id
+    ) {
+        return {
+            kind: 'dataset',
+            name: content.dataset.name ?? content.dataset.id,
+        };
+    }
+    if (
+        content.program?.id &&
+        settings.program_id &&
+        content.program.id !== settings.program_id
+    ) {
+        return {
+            kind: 'program',
+            name: content.program.name ?? content.program.id,
+        };
+    }
+    return undefined;
 };

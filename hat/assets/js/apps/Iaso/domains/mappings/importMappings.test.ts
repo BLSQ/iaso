@@ -7,6 +7,8 @@ import {
     getExportFileName,
     getMappableQuestions,
     getMappingLabel,
+    getOtherTarget,
+    isValidForMappingType,
     MappingImportError,
     parseMappingExport,
 } from './importMappings';
@@ -133,39 +135,93 @@ describe('mapping shapes', () => {
         empty: { name: 'empty', type: 'integer' },
     };
 
+    const kindsOf = (rows: { questionKey: string; kind: string }[]) =>
+        Object.fromEntries(rows.map(r => [r.questionKey, r.kind]));
+
     it('compares each shape on its DHIS2 target', () => {
-        const rows = computeMappingsDiff(
-            {
-                symptoms: multiple('a'),
-                age: tracker('s1'),
-                household: repeat('r1'),
-                empty: [],
-            },
-            {
-                symptoms: multiple('b'),
-                age: [{ ...tracker('s1')[0], dataElement: { id: 'de1' } }],
-                household: repeat('r2'),
-                empty: de('x'),
-            },
-            questions,
-        );
         expect(
-            Object.fromEntries(rows.map(r => [r.questionKey, r.kind])),
+            kindsOf(
+                computeMappingsDiff(
+                    { symptoms: multiple('a'), empty: [] },
+                    { symptoms: multiple('b'), empty: de('x') },
+                    questions,
+                    'AGGREGATE',
+                ),
+            ),
         ).toEqual({
             // a "multiple" mapping has no id but is a real mapping
             symptoms: 'conflict',
-            age: 'identical',
-            household: 'conflict',
             // an empty list is not a mapping
             empty: 'add',
         });
+        expect(
+            kindsOf(
+                computeMappingsDiff(
+                    { age: tracker('s1'), household: repeat('r1') },
+                    {
+                        age: [
+                            { ...tracker('s1')[0], dataElement: { id: 'de1' } },
+                        ],
+                        household: repeat('r2'),
+                    },
+                    questions,
+                    'EVENT_TRACKER',
+                ),
+            ),
+        ).toEqual({ age: 'identical', household: 'conflict' });
         expect(
             computeMappingsDiff(
                 { age: tracker('s1') },
                 { age: tracker('s2') },
                 questions,
+                'EVENT_TRACKER',
             )[0].kind,
         ).toBe('conflict');
+    });
+
+    it.each([
+        ['a data element', de('a'), 'AGGREGATE', true],
+        ['a data element without valueType', { id: 'a' }, 'AGGREGATE', false],
+        ['a select all that apply', multiple('a'), 'EVENT', true],
+        [
+            'a select all that apply choice without id',
+            { type: 'multiple', values: { fever: { name: 'Fever' } } },
+            'AGGREGATE',
+            false,
+        ],
+        ['a tracker list', tracker('s1'), 'AGGREGATE', false],
+        ['a tracker list', tracker('s1'), 'EVENT_TRACKER', true],
+        ['a repeat group', repeat('r1'), 'EVENT_TRACKER', true],
+        [
+            'a tracked entity attribute',
+            [{ trackedEntityAttribute: { id: 'tea' } }],
+            'EVENT_TRACKER',
+            true,
+        ],
+        ['a data element', de('a'), 'EVENT_TRACKER', false],
+        ['an empty list', [], 'EVENT_TRACKER', false],
+        ['a list of junk', [{ foo: 1 }], 'EVENT_TRACKER', false],
+        [
+            'a never mapped marker',
+            { type: 'neverMapped' },
+            'EVENT_TRACKER',
+            true,
+        ],
+    ])('%s in a %s mapping is valid: %s', (_, mapping, mappingType, valid) => {
+        expect(isValidForMappingType(mapping as any, mappingType)).toBe(valid);
+    });
+
+    it('drops mappings that do not fit the mapping type', () => {
+        const rows = computeMappingsDiff(
+            {},
+            { symptoms: tracker('s1'), age: de('a') },
+            questions,
+            'AGGREGATE',
+        );
+        expect(kindsOf(rows)).toEqual({ symptoms: 'dropped', age: 'add' });
+        expect(rows.find(r => r.questionKey === 'symptoms')?.invalid).toBe(
+            true,
+        );
     });
 
     it('labels each shape', () => {
@@ -203,6 +259,7 @@ describe('computeMappingsDiff', () => {
         current,
         incoming,
         getMappableQuestions(descriptor),
+        'AGGREGATE',
     );
     const kinds = Object.fromEntries(rows.map(r => [r.questionKey, r.kind]));
 
@@ -238,6 +295,7 @@ describe('computeMappingsDiff', () => {
             {},
             { symptoms__fever: de('a'), sex__male: de('b') },
             choiceQuestions,
+            'AGGREGATE',
         );
         expect(
             Object.fromEntries(choiceRows.map(r => [r.questionKey, r.kind])),
@@ -331,10 +389,36 @@ describe('export / import', () => {
             '{"mapping_type": "EVENT", "question_mappings": {}}',
             'mappingTypeMismatch',
         ],
+        // any JSON object whose values are objects, e.g. a tsconfig.json
+        ['{"compilerOptions": {"strict": true}}', 'noValidMapping'],
+        ['{"q1": [{"dataElement": {"id": "x"}}]}', 'noValidMapping'],
+        ['{"question_mappings": {}}', 'noValidMapping'],
     ])('rejects %s', (text, reason) => {
         // the error message is the reason
         expect(() => parseMappingExport(text, 'AGGREGATE')).toThrow(
             new MappingImportError(reason as any),
         );
+    });
+});
+
+describe('getOtherTarget', () => {
+    const aggregate = { derivate_settings: { data_set_id: 'ds1' } };
+    const tracker = { derivate_settings: { program_id: 'p1' } };
+
+    it('flags an export made for another dataset or program', () => {
+        expect(
+            getOtherTarget({ dataset: { id: 'ds2', name: 'DS 2' } }, aggregate),
+        ).toEqual({ kind: 'dataset', name: 'DS 2' });
+        expect(getOtherTarget({ program: { id: 'p2' } }, tracker)).toEqual({
+            kind: 'program',
+            name: 'p2',
+        });
+    });
+
+    it('accepts the same target, or an export without one', () => {
+        expect(getOtherTarget({ dataset: { id: 'ds1' } }, aggregate)).toBe(
+            undefined,
+        );
+        expect(getOtherTarget({}, aggregate)).toBe(undefined);
     });
 });

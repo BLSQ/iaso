@@ -15,6 +15,8 @@ export type DiffRow = {
     // a mapping or a never mapped marker
     current?: QuestionMapping;
     incoming: QuestionMapping;
+    // dropped because its shape does not fit the mapping type
+    invalid?: boolean;
 };
 
 export type ImportPlan = {

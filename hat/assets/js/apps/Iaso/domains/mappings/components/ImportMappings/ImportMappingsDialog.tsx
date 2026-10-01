@@ -15,6 +15,7 @@ import {
     countMatchingMappings,
     getDefaultDecision,
     getImportableMappings,
+    getOtherTarget,
     MappingImportError,
     parseMappingExport,
 } from '../../importMappings';
@@ -43,6 +44,12 @@ const IMPORT_ERROR_MESSAGES = {
     invalidJson: MESSAGES.importInvalidJson,
     invalidFormat: MESSAGES.importInvalidFormat,
     mappingTypeMismatch: MESSAGES.importMappingTypeMismatch,
+    noValidMapping: MESSAGES.importNoValidMapping,
+};
+
+const OTHER_TARGET_MESSAGES = {
+    dataset: MESSAGES.importOtherDataset,
+    program: MESSAGES.importOtherProgram,
 };
 
 const styles: SxStyles = {
@@ -61,12 +68,14 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
     const [selectedId, setSelectedId] = useState<string | undefined>();
     const [fileSource, setFileSource] = useState<ImportSource | undefined>();
     const [fileError, setFileError] = useState<string | undefined>();
+    const [fileWarning, setFileWarning] = useState<string | undefined>();
     const [bucket, setBucket] = useState<DiffKind>('conflict');
     const [decisions, setDecisions] = useState<
         Record<string, Decision | undefined>
     >({});
     const [isApplying, setIsApplying] = useState(false);
 
+    const mappingType = mappingVersion.mapping.mapping_type;
     const { sources: versionSources, isLoading } = useImportSources(
         mappingVersion,
         questions,
@@ -84,9 +93,16 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                       mappingVersion.question_mappings,
                       selectedSource.questionMappings,
                       questions,
+                      mappingType,
                   )
                 : [],
-        [selectedSource, step, mappingVersion.question_mappings, questions],
+        [
+            selectedSource,
+            step,
+            mappingVersion.question_mappings,
+            questions,
+            mappingType,
+        ],
     );
     const plan = useMemo(
         () => buildImportPlan(rows, decisions),
@@ -99,6 +115,7 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
         setSelectedId(undefined);
         setFileSource(undefined);
         setFileError(undefined);
+        setFileWarning(undefined);
         setDecisions({});
     };
     const handleClose = () => {
@@ -108,11 +125,17 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
 
     const onFileChosen = async (file: File) => {
         setFileError(undefined);
+        setFileWarning(undefined);
         try {
-            const content = parseMappingExport(
-                await file.text(),
-                mappingVersion.mapping.mapping_type,
-            );
+            const content = parseMappingExport(await file.text(), mappingType);
+            const otherTarget = getOtherTarget(content, mappingVersion);
+            if (otherTarget) {
+                setFileWarning(
+                    formatMessage(OTHER_TARGET_MESSAGES[otherTarget.kind], {
+                        name: otherTarget.name,
+                    }),
+                );
+            }
             const questionMappings = getImportableMappings(
                 content.question_mappings,
             );
@@ -129,13 +152,18 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                 matchingCount: countMatchingMappings(
                     questionMappings,
                     questions,
+                    mappingType,
                 ),
                 questionMappings,
             });
             setSelectedId(FILE_SOURCE_ID);
         } catch (e) {
             if (e instanceof MappingImportError) {
-                setFileError(formatMessage(IMPORT_ERROR_MESSAGES[e.reason]));
+                setFileError(
+                    formatMessage(IMPORT_ERROR_MESSAGES[e.reason], {
+                        type: mappingType,
+                    }),
+                );
             } else {
                 throw e;
             }
@@ -147,6 +175,7 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
             mappingVersion.question_mappings,
             selectedSource.questionMappings,
             questions,
+            mappingType,
         );
         setDecisions(
             Object.fromEntries(
@@ -198,6 +227,11 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                         onSelect={setSelectedId}
                         onFileChosen={onFileChosen}
                         fileError={fileError}
+                        fileWarning={
+                            selectedSource?.id === FILE_SOURCE_ID
+                                ? fileWarning
+                                : undefined
+                        }
                         isLoading={isLoading}
                     />
                 )}
@@ -205,6 +239,7 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                     <CompareStep
                         sourceTitle={selectedSource.title}
                         versionId={mappingVersion.form_version.version_id}
+                        mappingType={mappingType}
                         rows={rows}
                         bucket={bucket}
                         setBucket={setBucket}

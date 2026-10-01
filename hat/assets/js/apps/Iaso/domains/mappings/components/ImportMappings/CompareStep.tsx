@@ -23,6 +23,7 @@ import { Decision, DiffKind, DiffRow, ImportPlan } from '../../types';
 type Props = {
     sourceTitle: string;
     versionId: string;
+    mappingType: string;
     rows: DiffRow[];
     bucket: DiffKind;
     setBucket: (bucket: DiffKind) => void;
@@ -86,6 +87,7 @@ const styles: SxStyles = {
 export const CompareStep: FunctionComponent<Props> = ({
     sourceTitle,
     versionId,
+    mappingType,
     rows,
     bucket,
     setBucket,
@@ -112,7 +114,11 @@ export const CompareStep: FunctionComponent<Props> = ({
         if (row.kind !== 'dropped') {
             return getMappingLabel(row.current) || textPlaceholder;
         }
-        return formatMessage(MESSAGES.questionAbsent, { versionId });
+        return row.invalid
+            ? formatMessage(MESSAGES.importInvalidMapping, {
+                  type: mappingType,
+              })
+            : formatMessage(MESSAGES.questionAbsent, { versionId });
     };
 
     return (

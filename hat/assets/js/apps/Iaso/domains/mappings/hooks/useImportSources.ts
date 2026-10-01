@@ -81,6 +81,7 @@ export const useImportSources = (
                 matchingCount: countMatchingMappings(
                     questionMappings,
                     questions,
+                    mappingVersion.mapping.mapping_type,
                 ),
                 questionMappings,
             };

@@ -376,7 +376,7 @@ const MESSAGES = defineMessages({
     droppedHint: {
         id: 'iaso.mappings.import.droppedHint',
         defaultMessage:
-            'These mappings cannot be imported: the question does not exist in this version.',
+            'These mappings cannot be imported: the question does not exist in this version, or the mapping is not valid for this mapping type.',
     },
     question: {
         id: 'iaso.label.question',
@@ -427,6 +427,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.import.done',
         defaultMessage:
             '{added} mappings added, {overwritten} overwritten, {kept} kept, {ignored} not imported',
+    },
+    importInvalidMapping: {
+        id: 'iaso.mappings.import.invalidMapping',
+        defaultMessage: 'Not valid for a {type} mapping',
+    },
+    importNoValidMapping: {
+        id: 'iaso.mappings.import.noValidMapping',
+        defaultMessage:
+            'This file contains no mapping valid for a {type} mapping.',
+    },
+    importOtherDataset: {
+        id: 'iaso.mappings.import.otherDataset',
+        defaultMessage:
+            'This export was made for another DHIS2 dataset ({name}). Check that its data elements belong to this one.',
+    },
+    importOtherProgram: {
+        id: 'iaso.mappings.import.otherProgram',
+        defaultMessage:
+            'This export was made for another DHIS2 program ({name}). Check that its data elements belong to this one.',
     },
 });
 

@@ -107,9 +107,6 @@ GET /api/promptness_stats/?form_id=42&period=202609&parent_org_unit_id=1
 
 ```json
 {
-  "form_id": "Int - echo of the form_id param",
-  "parent_org_unit_id": "Int - echo of the parent_org_unit_id param",
-  "status": ["String - echo of the status param: ON_TIME, LATE and/or MISSING"],
   "period": {
     "value": "String - echo of the period param",
     "start": "Date - 'YYYY-MM-DD' - first day of the period",
@@ -165,9 +162,6 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
 
 ```json
 {
-  "form_id": 42,
-  "parent_org_unit_id": 1,
-  "status": ["ON_TIME", "LATE", "MISSING"],
   "period": {
     "value": "202609",
     "start": "2026-09-01",

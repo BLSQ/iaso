@@ -83,7 +83,7 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
 
     def test_export_drill_down(self):
         lines = self.get_csv(parent_org_unit_id=self.oromia.id)
-        self.assertEqual([line[4] for line in lines[1:]], ["East Shewa", "Jimma"])
+        self.assertEqual([line[4] for line in lines[1:]], ["Borena", "East Shewa", "Jimma"])
         self.assertEqual({line[6] for line in lines[1:]}, {"Oromia"})
 
     def test_export_excluded_statuses(self):

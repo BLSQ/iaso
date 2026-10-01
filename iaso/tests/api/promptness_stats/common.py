@@ -16,6 +16,8 @@ Timestamps are set on both `created_at` and `source_created_at`, since the times
     │       ├── HF F (Facility) ................................. MISSING
     │       └── HF G (Facility, REJECTED) ....................... ignored  (on time submission)
     ├── Oromia (Region)
+    │   ├── Borena (Zone, same level as districts) ............... NA
+    │   │   └── HP J (Health post, not in any group) ............. NA       (on time submission, ignored)
     │   ├── Jimma (District)
     │   │   ├── HF A (Facility) ................................. ON_TIME  (2026-01-15, and a later one 2026-02-20)
     │   │   ├── HF B (Facility) ................................. LATE     (2026-02-11 00:30)
@@ -25,8 +27,8 @@ Timestamps are set on both `created_at` and `source_created_at`, since the times
     │       └── HF D (Facility) ................................. ON_TIME  (2026-02-10 23:30, deadline day)
     └── Somali (Region, no children) ............................ NA
 
-Org units with nothing expected in their hierarchy (HP I, Somali) are not applicable ("NA"): `is_applicable` is
-`False` and all their counts and percentages are `None`.
+Org units with nothing expected in their hierarchy (HP I, Somali, the whole Borena branch) are not applicable ("NA"):
+`is_applicable` is `False` and all their counts and percentages are `None`.
 
 Expected figures (expected / on_time / late / missing):
     Ethiopia 7/2/2/3 - Afar 1/0/0/1 - Amhara 2/0/1/1 - Oromia 4/2/1/1 - Somali NA
@@ -122,6 +124,8 @@ class PromptnessStatsTestCase(APITestCase):
         cls.type_district = cls.create_org_unit_type("District", category="test", projects=[cls.project])
         cls.type_facility = cls.create_org_unit_type("Facility", category="test", projects=[cls.project])
         cls.type_health_post = cls.create_org_unit_type("Health post", category="test", projects=[cls.project])
+        # Same level as districts, for a part of the pyramid where the form doesn't apply
+        cls.type_zone = cls.create_org_unit_type("Zone", category="test", projects=[cls.project])
         cls.type_other_account = cls.create_org_unit_type(
             "Other account type", category="test", projects=[cls.other_project]
         )
@@ -137,6 +141,7 @@ class PromptnessStatsTestCase(APITestCase):
         cls.north_gondar = cls.create_ou("North Gondar", cls.type_district, cls.amhara)
         cls.jimma = cls.create_ou("Jimma", cls.type_district, cls.oromia)
         cls.east_shewa = cls.create_ou("East Shewa", cls.type_district, cls.oromia)
+        cls.borena = cls.create_ou("Borena", cls.type_zone, cls.oromia)
 
         cls.hf_a = cls.create_ou("HF A", cls.type_facility, cls.jimma)
         cls.hf_b = cls.create_ou("HF B", cls.type_facility, cls.jimma)
@@ -149,6 +154,7 @@ class PromptnessStatsTestCase(APITestCase):
         )
         cls.hp_h = cls.create_ou("HP H", cls.type_health_post, cls.awsi)
         cls.hp_i = cls.create_ou("HP I", cls.type_health_post, cls.awsi)
+        cls.hp_j = cls.create_ou("HP J", cls.type_health_post, cls.borena)
 
         cls.other_account_ou = m.OrgUnit.objects.create(
             name="Other account OU",
@@ -219,6 +225,7 @@ class PromptnessStatsTestCase(APITestCase):
         cls.create_submission(cls.hf_e, aware(2026, 3, 1, 10, 0))  # late
         cls.create_submission(cls.hf_g, aware(2026, 1, 5, 10, 0))  # rejected org unit: ignored
         cls.create_submission(cls.hp_i, aware(2026, 1, 20, 10, 0))  # org unit not expected to submit: ignored
+        cls.create_submission(cls.hp_j, aware(2026, 1, 20, 10, 0))  # org unit not expected to submit: ignored
 
     @classmethod
     def create_ou(cls, name, org_unit_type, parent=None, validation_status=m.OrgUnit.VALIDATION_VALID):
@@ -323,3 +330,6 @@ class PromptnessStatsTestCase(APITestCase):
 
     def expected_east_shewa_row(self):
         return self.row(self.east_shewa, True, 1, 1, 0, 0, 1, 100.0, 100.0, 0.0, 0.0)
+
+    def expected_borena_row(self):
+        return self.not_applicable_row(self.borena, True)

@@ -357,6 +357,9 @@ class FormVersion(models.Model):
     def questions_by_name(self):
         return parsing.to_questions_by_name(self.get_or_save_form_descriptor())
 
+    def mappable_questions_by_name(self):
+        return parsing.to_mappable_questions_by_name(self.get_or_save_form_descriptor())
+
     def repeat_groups(self):
         questions = self.questions_by_name()
         repeats = []

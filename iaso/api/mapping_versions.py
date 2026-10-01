@@ -143,8 +143,15 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     def update(self, instance, validated_data):
         # partial update only question mappings
         if "question_mappings" in validated_data:
+            # empty when the form version has no descriptor: nothing to check against
+            mappable_questions = instance.form_version.mappable_questions_by_name()
             for question_name, data_element in validated_data["question_mappings"].items():
                 path = "question_mappings." + question_name
+
+                # unmapping stays allowed, to clean up mappings of questions removed from the form
+                is_unmap = isinstance(data_element, dict) and data_element.get("action") == "unmap"
+                if mappable_questions and not is_unmap and question_name not in mappable_questions:
+                    raise serializers.ValidationError({path: "question does not exist in this form version"})
 
                 if type(data_element) is list:
                     instance.json["question_mappings"][question_name] = data_element

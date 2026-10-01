@@ -233,6 +233,201 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.startTypingFormVersion',
         defaultMessage: "Start typing to search by form's name or version id",
     },
+    importMappings: {
+        id: 'iaso.mappings.import.title',
+        defaultMessage: 'Import mappings',
+    },
+    exportMappings: {
+        id: 'iaso.mappings.export',
+        defaultMessage: 'Export mappings',
+    },
+    undoImport: {
+        id: 'iaso.mappings.import.undo',
+        defaultMessage: 'Undo import',
+    },
+    importUndone: {
+        id: 'iaso.mappings.import.undone',
+        defaultMessage: 'Import undone',
+    },
+    importPickSource: {
+        id: 'iaso.mappings.import.pickSource',
+        defaultMessage:
+            'Pick the mappings to reuse. Nothing is applied until you confirm.',
+    },
+    importVersionTitle: {
+        id: 'iaso.mappings.import.versionTitle',
+        defaultMessage: 'Version {versionId}',
+    },
+    importOtherFormTitle: {
+        id: 'iaso.mappings.import.otherFormTitle',
+        defaultMessage: '{formName} - {versionId}',
+    },
+    importSameFormMeta: {
+        id: 'iaso.mappings.import.sameFormMeta',
+        defaultMessage: 'Same form, last updated {date}',
+    },
+    importOtherFormDatasetMeta: {
+        id: 'iaso.mappings.import.otherFormDatasetMeta',
+        defaultMessage: 'Another form, same DHIS2 dataset, last updated {date}',
+    },
+    importOtherFormProgramMeta: {
+        id: 'iaso.mappings.import.otherFormProgramMeta',
+        defaultMessage: 'Another form, same DHIS2 program, last updated {date}',
+    },
+    importFileMeta: {
+        id: 'iaso.mappings.import.fileMeta',
+        defaultMessage: 'Exported from {formName} - {versionId}',
+    },
+    importMappingsCount: {
+        id: 'iaso.mappings.import.mappingsCount',
+        defaultMessage: '{count} mappings',
+    },
+    importMatchCount: {
+        id: 'iaso.mappings.import.matchCount',
+        defaultMessage: '{matching} / {total} match this version',
+    },
+    importNoSource: {
+        id: 'iaso.mappings.import.noSource',
+        defaultMessage:
+            'No other mapping version uses this data source with the same DHIS2 dataset or program.',
+    },
+    importFromFile: {
+        id: 'iaso.mappings.import.fromFile',
+        defaultMessage:
+            'Or import a mapping export (.json), for example from another account.',
+    },
+    chooseFile: {
+        id: 'iaso.mappings.import.chooseFile',
+        defaultMessage: 'Choose a file',
+    },
+    importInvalidJson: {
+        id: 'iaso.mappings.import.invalidJson',
+        defaultMessage: 'This file is not valid JSON.',
+    },
+    importInvalidFormat: {
+        id: 'iaso.mappings.import.invalidFormat',
+        defaultMessage: 'This file is not a mapping export.',
+    },
+    importMappingTypeMismatch: {
+        id: 'iaso.mappings.import.mappingTypeMismatch',
+        defaultMessage: 'This export was made for another mapping type.',
+    },
+    compare: {
+        id: 'iaso.label.compare',
+        defaultMessage: 'Compare',
+    },
+    back: {
+        id: 'iaso.label.back',
+        defaultMessage: 'Back',
+    },
+    applyChanges: {
+        id: 'iaso.mappings.import.applyChanges',
+        defaultMessage: 'Apply {count} changes',
+    },
+    compareLabel: {
+        id: 'iaso.mappings.import.compareLabel',
+        defaultMessage:
+            'Comparing {source} with version {versionId}. Nothing is applied until you confirm.',
+    },
+    bucketConflict: {
+        id: 'iaso.mappings.import.bucket.conflict',
+        defaultMessage: 'Conflicts ({count})',
+    },
+    bucketAdd: {
+        id: 'iaso.mappings.import.bucket.add',
+        defaultMessage: 'To add ({count})',
+    },
+    bucketIdentical: {
+        id: 'iaso.mappings.import.bucket.identical',
+        defaultMessage: 'Identical ({count})',
+    },
+    bucketDropped: {
+        id: 'iaso.mappings.import.bucket.dropped',
+        defaultMessage: 'Dropped ({count})',
+    },
+    resolveAllConflicts: {
+        id: 'iaso.mappings.import.resolveAllConflicts',
+        defaultMessage: 'Resolve all conflicts:',
+    },
+    keepEverywhere: {
+        id: 'iaso.mappings.import.keepEverywhere',
+        defaultMessage: 'Keep current everywhere',
+    },
+    overwriteEverywhere: {
+        id: 'iaso.mappings.import.overwriteEverywhere',
+        defaultMessage: 'Overwrite everywhere',
+    },
+    allAdditions: {
+        id: 'iaso.mappings.import.allAdditions',
+        defaultMessage: 'All additions:',
+    },
+    addAll: {
+        id: 'iaso.mappings.import.addAll',
+        defaultMessage: 'Add all',
+    },
+    skipAll: {
+        id: 'iaso.mappings.import.skipAll',
+        defaultMessage: 'Skip all',
+    },
+    identicalHint: {
+        id: 'iaso.mappings.import.identicalHint',
+        defaultMessage: 'Same DHIS2 target on both sides. Nothing to resolve.',
+    },
+    droppedHint: {
+        id: 'iaso.mappings.import.droppedHint',
+        defaultMessage:
+            'These mappings cannot be imported: the question does not exist in this version or is marked as never mapped.',
+    },
+    question: {
+        id: 'iaso.label.question',
+        defaultMessage: 'Question',
+    },
+    incomingMapping: {
+        id: 'iaso.mappings.import.incomingMapping',
+        defaultMessage: 'Incoming mapping',
+    },
+    decision: {
+        id: 'iaso.mappings.import.decision',
+        defaultMessage: 'Decision',
+    },
+    keep: {
+        id: 'iaso.mappings.import.keep',
+        defaultMessage: 'Keep',
+    },
+    overwrite: {
+        id: 'iaso.mappings.import.overwrite',
+        defaultMessage: 'Overwrite',
+    },
+    skip: {
+        id: 'iaso.mappings.import.skip',
+        defaultMessage: 'Skip',
+    },
+    noChange: {
+        id: 'iaso.mappings.import.noChange',
+        defaultMessage: 'No change',
+    },
+    notImportable: {
+        id: 'iaso.mappings.import.notImportable',
+        defaultMessage: 'Not importable',
+    },
+    questionAbsent: {
+        id: 'iaso.mappings.import.questionAbsent',
+        defaultMessage: 'Question absent from version {versionId}',
+    },
+    markedNeverMapped: {
+        id: 'iaso.mappings.import.markedNeverMapped',
+        defaultMessage: 'Marked as never mapped',
+    },
+    importSummary: {
+        id: 'iaso.mappings.import.summary',
+        defaultMessage:
+            '{added} to add, {overwritten} to overwrite, {ignored} not imported',
+    },
+    importDone: {
+        id: 'iaso.mappings.import.done',
+        defaultMessage:
+            '{added} mappings added, {overwritten} overwritten, {kept} kept, {ignored} not imported',
+    },
 });
 
 export default MESSAGES;

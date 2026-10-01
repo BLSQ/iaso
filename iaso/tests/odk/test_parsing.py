@@ -5,7 +5,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
 
-from iaso.odk import ParsingError, Survey, parse_xls_form, to_questions_by_name
+from iaso.odk import ParsingError, Survey, parse_xls_form, to_mappable_questions_by_name, to_questions_by_name
 
 
 class ParsingTestCase(SimpleTestCase):
@@ -174,3 +174,45 @@ class ParsingTestCase(SimpleTestCase):
             {"name": "parent", "type": "survey", "children": [{"name": "group_without_children", "type": "group"}]}
         )
         self.assertEqual({}, flattened)
+
+    def test_to_mappable_questions_by_name(self):
+        descriptor = {
+            "name": "data",
+            "type": "survey",
+            "choices": {"yes_no": [{"name": "yes"}, {"name": "no"}]},
+            "children": [
+                {"name": "weight", "type": "decimal"},
+                {"name": "grp", "type": "group", "children": [{"name": "in_group", "type": "text"}]},
+                {"name": "household", "type": "repeat", "children": [{"name": "age", "type": "integer"}]},
+                {"name": "symptoms", "type": "select all that apply", "children": [{"name": "fever"}]},
+                # recent pyxform: choices only referenced through the itemset
+                {"name": "answers", "type": "select all that apply", "itemset": "yes_no"},
+                {"name": "sex", "type": "select one", "children": [{"name": "male"}]},
+                {"name": "meta", "type": "group", "children": [{"name": "instanceID", "type": "calculate"}]},
+            ],
+        }
+
+        mappable = to_mappable_questions_by_name(descriptor)
+
+        self.assertEqual(
+            sorted(mappable.keys()),
+            [
+                "age",
+                "answers",
+                "answers__no",
+                "answers__yes",
+                "household",
+                "in_group",
+                "instanceID",
+                "sex",
+                "symptoms",
+                "symptoms__fever",
+                "weight",
+            ],
+        )
+        # to_questions_by_name is unchanged: no repeat children nor choices
+        self.assertNotIn("age", to_questions_by_name(descriptor))
+
+    def test_to_mappable_questions_by_name_with_empty_descriptor(self):
+        self.assertEqual(to_mappable_questions_by_name({}), {})
+        self.assertEqual(to_mappable_questions_by_name(None), {})

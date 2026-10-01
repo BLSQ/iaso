@@ -331,6 +331,170 @@ class FormsVersionAPITestCase(APITestCase):
         resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id},{self.project.id}")
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
+    def test_mappingversions_bulk_patch_and_undo(self):
+        """PATCH /mappingversions/<id>: several question mappings of every shape at once, as the import wizard
+        does, then the payload the wizard sends to undo that import"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+
+        original = {
+            "question_1": {"id": "de1", "valueType": "NUMBER", "categoryOptionCombo": "coc1"},
+            "question_2": {"id": "de2", "valueType": "NUMBER", "categoryOptionCombo": "coc1"},
+            "question_6": {"type": "neverMapped"},
+        }
+        response = self.patch_question_mappings(mapping_version_id, original)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        imported = {
+            # overwrite
+            "question_2": {"id": "de2bis", "valueType": "INTEGER", "categoryOptionCombo": "coc2"},
+            # select all that apply, no data element id at the top level
+            "question_3": {"type": "multiple", "values": {"a": {"id": "de3a", "valueType": "BOOLEAN"}}},
+            # event tracker question inside a repeat group
+            "question_4": [{"dataElement": {"id": "de4"}, "programStage": "stage1", "parent": "question_5"}],
+            # event tracker repeat group
+            "question_5": [
+                {
+                    "type": "repeat",
+                    "program_id": "program1",
+                    "tracked_entity_type": "tet1",
+                    "tracked_entity_identifier": "uid",
+                    "relationship_type": "rel1",
+                }
+            ],
+        }
+        response = self.patch_question_mappings(mapping_version_id, imported)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(mapping_version_id), {**original, **imported})
+
+        undo = {
+            "question_2": original["question_2"],
+            "question_3": {"action": "unmap"},
+            "question_4": {"action": "unmap"},
+            "question_5": {"action": "unmap"},
+        }
+        response = self.patch_question_mappings(mapping_version_id, undo)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(mapping_version_id), original)
+
+    def test_mappingversions_bulk_patch_invalid_entry_saves_nothing(self):
+        """PATCH /mappingversions/<id>: one invalid question mapping rejects the whole import"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+        original = {"question_1": {"id": "de1", "valueType": "NUMBER"}}
+        self.patch_question_mappings(mapping_version_id, original)
+
+        response = self.patch_question_mappings(
+            mapping_version_id,
+            {
+                "question_1": {"action": "unmap"},
+                "question_2": {"id": "de2", "valueType": "NUMBER"},
+                "question_3": {"id": "de3"},
+            },
+        )
+
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {"question_mappings.question_3": "should have a valueType"})
+        self.assertEqual(self.get_question_mappings(mapping_version_id), original)
+
+    def test_mappingversions_list_import_sources_fields(self):
+        """GET /mappingversions/ with the fields the import wizard needs to list its sources"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+        question_mappings = {"question_1": {"id": "de1", "valueType": "NUMBER"}}
+        self.patch_question_mappings(mapping_version_id, question_mappings)
+
+        response = self.client.get(
+            "/api/mappingversions/",
+            {
+                "mappingTypes": "AGGREGATE",
+                "fields": "id,form_version,mapping,question_mappings,derivate_settings,updated_at",
+            },
+        )
+
+        mapping_versions = self.assertJSONResponse(response, status.HTTP_200_OK)["mapping_versions"]
+        self.assertEqual(len(mapping_versions), 1)
+        mapping_version = mapping_versions[0]
+        self.assertEqual(
+            set(mapping_version.keys()),
+            {"id", "form_version", "mapping", "question_mappings", "derivate_settings", "updated_at"},
+        )
+        self.assertEqual(mapping_version["question_mappings"], question_mappings)
+        self.assertEqual(mapping_version["derivate_settings"]["data_set_id"], "ERTFDG")
+        self.assertEqual(mapping_version["mapping"]["data_source"]["id"], self.sw_source.id)
+        self.assertEqual(mapping_version["form_version"]["form"]["id"], form_version.form_id)
+
+    def test_mappingversions_patch_checks_questions_exist(self):
+        """PATCH /mappingversions/<id>: question mappings must target a question of the form version"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        form_version.form_descriptor = {
+            "name": "data",
+            "type": "survey",
+            "children": [
+                {"name": "weight", "type": "decimal"},
+                {"name": "household", "type": "repeat", "children": [{"name": "age", "type": "integer"}]},
+                {"name": "symptoms", "type": "select all that apply", "children": [{"name": "fever"}]},
+                {"name": "sex", "type": "select one", "children": [{"name": "male"}]},
+            ],
+        }
+        form_version.save()
+        mapping_version_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+        data_element = {"id": "de1", "valueType": "NUMBER"}
+
+        response = self.patch_question_mappings(mapping_version_id, {"unknown": data_element})
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {"question_mappings.unknown": "question does not exist in this form version"})
+
+        response = self.patch_question_mappings(mapping_version_id, {"unknown": {"type": "neverMapped"}})
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        # choice keys only exist for select all that apply questions (one boolean data element per choice),
+        # even though copy_mappings_from_previous_version still copies the select one ones
+        response = self.patch_question_mappings(mapping_version_id, {"sex__male": data_element})
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(), {"question_mappings.sex__male": "question does not exist in this form version"}
+        )
+
+        valid = {
+            "weight": data_element,
+            "household": [{"type": "repeat", "program_id": "p1"}],
+            # inside the repeat group
+            "age": [{"dataElement": {"id": "de2"}, "programStage": "s1", "parent": "household"}],
+            "symptoms": {"type": "multiple", "values": {"fever": data_element}},
+            "symptoms__fever": data_element,
+        }
+        response = self.patch_question_mappings(mapping_version_id, valid)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(mapping_version_id), valid)
+
+        # a mapping left over for a question removed from the form can still be unmapped
+        mapping_version = m.MappingVersion.objects.get(id=mapping_version_id)
+        mapping_version.json["question_mappings"]["removed_question"] = data_element
+        mapping_version.save()
+        response = self.patch_question_mappings(mapping_version_id, {"removed_question": {"action": "unmap"}})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.get_question_mappings(mapping_version_id), valid)
+
+    def patch_question_mappings(self, mapping_version_id, question_mappings):
+        return self.client.patch(
+            f"/api/mappingversions/{mapping_version_id}/",
+            data={"question_mappings": question_mappings},
+            format="json",
+            headers={"accept": "application/json"},
+        )
+
+    def get_question_mappings(self, mapping_version_id):
+        return self.client.get(f"/api/mappingversions/{mapping_version_id}/?fields=:all").json()["question_mappings"]
+
     def create_form_version(self):
         with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             self.client.post(

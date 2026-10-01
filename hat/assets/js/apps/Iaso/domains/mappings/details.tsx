@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Grid, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -14,6 +14,7 @@ import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
+import { MappingImportActions } from './components/ImportMappings/MappingImportActions';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import RecursiveTreeView from './components/RecursiveTreeView';
@@ -23,6 +24,7 @@ import {
     useApplyUpdate,
     useGetMappingVersionDetail,
 } from './hooks';
+import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.mappingDetail;
@@ -72,6 +74,11 @@ const MappingDetails = () => {
     const indexedQuestions = currentFormVersion
         ? Descriptor.indexQuestions(currentFormVersion.descriptor)
         : {};
+
+    const mappableQuestions = useMemo(
+        () => getMappableQuestions(currentFormVersion?.descriptor),
+        [currentFormVersion],
+    );
 
     const [currentQuestion, setCurrentQuestion] = useState(
         indexedQuestions[params.questionName],
@@ -158,6 +165,12 @@ const MappingDetails = () => {
 
             {currentMappingVersion && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    {currentFormVersion && isDataElementMappable && (
+                        <MappingImportActions
+                            mappingVersion={currentMappingVersion}
+                            questions={mappableQuestions}
+                        />
+                    )}
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
                             <Grid item xs={4} md={3}>

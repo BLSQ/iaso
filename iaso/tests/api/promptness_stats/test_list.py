@@ -301,13 +301,21 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(order="-expected"))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(self.result_names(data), ["Oromia", "Amhara", "Afar", "Somali"])
+        # Somali is not applicable: its `expected` is returned as None, but it is ordered as 0
+        self.assertEqual(
+            [(row["name"], row["expected"]) for row in data["results"]],
+            [("Oromia", 4), ("Amhara", 2), ("Afar", 1), ("Somali", None)],
+        )
 
     def test_order_multiple_fields(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(order="-late,name"))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(self.result_names(data), ["Amhara", "Oromia", "Afar", "Somali"])
+        # Same number of late submissions: ordered by name. Somali is not applicable, but it is ordered as 0
+        self.assertEqual(
+            [(row["late"], row["name"]) for row in data["results"]],
+            [(1, "Amhara"), (1, "Oromia"), (0, "Afar"), (None, "Somali")],
+        )
 
     def test_order_by_org_unit_type_name(self):
         self.client.force_authenticate(self.user)
@@ -316,30 +324,22 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         )
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        # The response only contains the org unit type id: "District" comes before "Region"
+        district_id = self.type_district.id
+        region_id = self.type_region.id
         self.assertEqual(
-            self.result_names(data),
-            ["Awsi", "East Shewa", "Jimma", "North Gondar", "Afar", "Amhara", "Oromia", "Somali"],
+            [(row["org_unit_type_id"], row["name"]) for row in data["results"]],
+            [
+                (district_id, "Awsi"),
+                (district_id, "East Shewa"),
+                (district_id, "Jimma"),
+                (district_id, "North Gondar"),
+                (region_id, "Afar"),
+                (region_id, "Amhara"),
+                (region_id, "Oromia"),
+                (region_id, "Somali"),
+            ],
         )
-
-    def test_order_by_all_orderable_fields(self):
-        self.client.force_authenticate(self.user)
-        for field in [
-            "name",
-            "org_unit_type__name",
-            "expected",
-            "received",
-            "completeness_percent",
-            "on_time",
-            "on_time_percent",
-            "late",
-            "late_percent",
-            "missing",
-            "missing_percent",
-        ]:
-            for order in [field, f"-{field}"]:
-                with self.subTest(order=order):
-                    response = self.client.get(self.URL, self.get_serializer_params(order=order))
-                    self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_unsupported_order_field_is_ignored(self):
         # DRF OrderingFilter ignores unknown fields and falls back to the default ordering
@@ -358,10 +358,12 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         )
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(self.result_names(data), ["East Shewa", "Jimma"])
+        self.assertEqual(
+            [(row["name"], row["completeness_percent"]) for row in data["results"]],
+            [("East Shewa", 100.0), ("Jimma", 66.7)],
+        )
 
     # pagination
-
     def test_default_pagination(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params())

@@ -1,0 +1,342 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls %}
+
+{% block extrahead %}{{ block.super }}
+{% if refresh %}<meta http-equiv="refresh" content="{{ refresh }}">{% endif %}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .monitor table { width: 100%; margin-bottom: 24px; }
+  .monitor td.number, .monitor th.number { text-align: right; }
+  .monitor .zero { color: var(--body-quiet-color); }
+  .monitor .warning { color: var(--error-fg); font-weight: bold; }
+  .monitor .toolbar { margin-bottom: 16px; }
+  .monitor .toolbar a.selected { font-weight: bold; text-decoration: underline; }
+  .monitor form.toolbar label { font-weight: bold; margin-right: 4px; }
+
+  /* activity chart colors, read by the script: status green / blue / status red, stepped for light and dark */
+  .viz-root {
+    --viz-success: #0ca30c; --viz-running: #2a78d6; --viz-waiting: #eda100; --viz-stopped: #4a3aa7;
+    --viz-errored: #d03b3b; --viz-grid: #e1e0d9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .viz-root {
+      --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a;
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a;
+  }
+  .viz-root { position: relative; height: 220px; margin-bottom: 8px; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">Home</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  &rsaquo; Monitor
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="monitor">
+  <div class="toolbar">
+    Finished tasks created in the last:
+    {% for w, url in window_links %}
+      <a href="{{ url }}" {% if w == window %}class="selected"{% endif %}>{{ w }}</a>
+    {% endfor %}
+    &nbsp;|&nbsp;
+    {% if refresh %}
+      Refreshing every {{ refresh }}s, <a href="{{ stop_refresh_url }}">stop</a>
+    {% else %}
+      <a href="{{ refresh_url }}">Refresh every 10s</a>
+    {% endif %}
+    &nbsp;|&nbsp; <a href="{% url 'admin:iaso_config_task_throttles' %}">Edit the task throttles</a>
+  </div>
+  <form method="get" class="toolbar">
+    <input type="hidden" name="window" value="{{ window }}">
+    {% if refresh %}<input type="hidden" name="refresh" value="{{ refresh }}">{% endif %}
+    <label for="filter-account">Account</label>
+    <select name="account" id="filter-account" onchange="this.form.submit()">
+      <option value="">all the accounts</option>
+      {% for id, name in account_choices %}<option value="{{ id }}" {% if account and id == account.id %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <label for="filter-task" style="margin-left: 16px">Task</label>
+    <select name="task" id="filter-task" onchange="this.form.submit()">
+      <option value="">all the tasks</option>
+      {% for name in chart_tasks %}<option value="{{ name }}" {% if name == chart_task %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <span class="help">
+      The account filters the whole page, the task filters the chart and the accounts.
+      {% if account %}<a href="{{ clear_account_url }}">Show all the accounts</a>{% endif %}
+    </span>
+  </form>
+
+  <h2>Tasks created per {% if bucket_minutes < 60 %}{{ bucket_minutes }} minutes{% elif bucket_minutes == 1440 %}day (UTC){% else %}{% widthratio bucket_minutes 60 1 %} hour{% if bucket_minutes > 60 %}s{% endif %}{% endif %}, last {{ window }}{% if chart_task %}: {{ chart_task }}{% endif %}{% if account %}, {{ account.name }}{% endif %}</h2>
+  <div class="viz-root" data-window="{{ window }}" data-bucket-minutes="{{ bucket_minutes }}">
+    <canvas id="activity-chart" role="img" aria-label="Tasks created per period, by status"></canvas>
+  </div>
+  <p class="help">Each task counts in the period it was created, with its current status.</p>
+  <details style="margin-bottom: 24px">
+    <summary>Data table</summary>
+    <table>
+      <thead>
+        <tr>
+          <th>From</th><th class="number">Success</th><th class="number">Running</th><th class="number">Waiting</th>
+          <th class="number">of which throttled</th><th class="number">Killed / skipped</th><th class="number">Errored</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bucket in activity %}
+          <tr>
+            <td class="bucket-start" data-start="{{ bucket.start }}">{{ bucket.start }}</td>
+            <td class="number">{{ bucket.success }}</td><td class="number">{{ bucket.running }}</td>
+            <td class="number">{{ bucket.waiting }}</td><td class="number">{{ bucket.throttled }}</td>
+            <td class="number">{{ bucket.stopped }}</td><td class="number">{{ bucket.errored }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+  {{ activity|json_script:"activity-data" }}
+
+  <h2>Tasks{% if account %} of {{ account.name }}{% endif %}</h2>
+  <p class="help">
+    Queued and running: now. Throttled: queued, waiting for a throttle slot. No heartbeat: running but not refreshed
+    by a worker (external task, killed worker, or started before the heartbeats existed). p50, p90, p99 and max:
+    execution time (from start to end, queue and throttle wait excluded) of the successful tasks.
+    Success, errored, killed and skipped: created in the last {{ window }}. Click a count to list its tasks.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th>
+        <th class="number">Queued</th><th class="number">Throttled</th><th>Waiting since</th>
+        <th class="number">Running</th><th class="number">No heartbeat</th>
+        <th class="number">Success</th><th class="number">Errored</th><th class="number">Killed</th>
+        <th class="number">Skipped</th>
+        {% for label in duration_labels %}<th class="number" title="Execution time of the successful tasks: {{ label }}">{{ label }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td><a href="{{ row.links.all }}">{{ row.name }}</a></td>
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.queued url=row.links.queued title="Queued tasks, the throttled ones included" only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.throttled url=row.links.throttled only %}
+          <td>{{ row.waiting_since }}</td>
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.running url=row.links.running only %}
+          <td class="number{% if row.no_heartbeat %} warning{% else %} zero{% endif %}">{{ row.no_heartbeat }}</td>
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SUCCESS url=row.links.SUCCESS only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.ERRORED url=row.links.ERRORED warning=True only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.KILLED url=row.links.KILLED only %}
+          {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SKIPPED url=row.links.SKIPPED only %}
+          {% for duration in row.durations %}<td class="number">{{ duration }}</td>{% endfor %}
+        </tr>
+      {% empty %}
+        <tr><td colspan="14">No task.</td></tr>
+      {% endfor %}
+    </tbody>
+    {% if rows %}
+      <tfoot>
+        <tr>
+          <th>Total</th>
+          <th class="number">{{ totals.queued }}</th><th class="number">{{ totals.throttled }}</th><th></th>
+          <th class="number">{{ totals.running }}</th><th class="number">{{ totals.no_heartbeat }}</th>
+          <th class="number">{{ totals.SUCCESS }}</th><th class="number">{{ totals.ERRORED }}</th>
+          <th class="number">{{ totals.KILLED }}</th><th class="number">{{ totals.SKIPPED }}</th>
+          {% for label in duration_labels %}<th></th>{% endfor %}
+        </tr>
+      </tfoot>
+    {% endif %}
+  </table>
+
+  <h2>Throttles</h2>
+  <p class="help">
+    Runs using each limit now. Full: no new run can start for that limit, the next ones wait. Only the limits that
+    are set are shown.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Task</th><th>Limit</th><th>Key</th>
+        <th class="number">Running</th><th class="number">Waiting</th><th class="number">Limit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in throttles %}
+        {% for limit in task.limits %}
+          {% for row in limit.rows %}
+            <tr>
+              <td>{% if forloop.first and forloop.parentloop.first %}<strong>{{ task.name }}</strong>{% if task.paused %} <span class="warning">paused</span>{% endif %}{% endif %}</td>
+              <td>{% if forloop.first %}{{ limit.name }}{% if limit.keyed %} <span class="help">(default: {{ limit.default_limit }})</span>{% endif %}{% endif %}</td>
+              <td>{% if row.key is None %}all{% else %}{{ row.key }}{% if row.key_label %} <span class="help">{{ row.key_label }}</span>{% endif %}{% endif %}</td>
+              <td class="number{% if row.full %} warning{% elif not row.running %} zero{% endif %}">{{ row.running }}</td>
+              <td class="number{% if not row.waiting %} zero{% endif %}">{{ row.waiting }}</td>
+              <td class="number">{{ row.limit }}{% if row.full %} <span class="warning">full</span>{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td>{% if forloop.parentloop.first %}<strong>{{ task.name }}</strong>{% endif %}</td>
+              <td>{{ limit.name }} <span class="help">(default: {{ limit.default_limit }})</span></td>
+              <td colspan="4" class="zero">nothing running or waiting</td>
+            </tr>
+          {% endfor %}
+          {% if limit.hidden_keys %}
+            <tr><td></td><td></td><td colspan="4" class="help">and {{ limit.hidden_keys }} other keys</td></tr>
+          {% endif %}
+        {% empty %}
+          <tr>
+            <td><strong>{{ task.name }}</strong>{% if task.paused %} <span class="warning">paused</span>{% endif %}</td>
+            <td colspan="5" class="zero">no limit set</td>
+          </tr>
+        {% endfor %}
+      {% empty %}
+        <tr><td colspan="6">No throttled task.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not account %}
+    <h2 id="by-account">By account{% if chart_task %}: {{ chart_task }}{% endif %}</h2>
+    <p class="help">
+      The accounts with tasks queued or running now, or created in the last {{ window }}, the busiest first.
+      Click an account to filter the page.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Account</th>
+          <th class="number">Queued</th><th class="number">Throttled</th><th>Waiting since</th>
+          <th class="number">Running</th><th class="number">No heartbeat</th>
+          <th class="number">Success</th><th class="number">Errored</th><th class="number">Killed</th>
+          <th class="number">Skipped</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in shown_accounts %}
+          <tr>
+            <td><a href="{{ row.url }}">{{ row.name }}</a></td>
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.queued url=row.links.queued title="Queued tasks, the throttled ones included" only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.throttled url=row.links.throttled only %}
+            <td>{{ row.waiting_since }}</td>
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.running url=row.links.running only %}
+            <td class="number{% if row.no_heartbeat %} warning{% else %} zero{% endif %}">{{ row.no_heartbeat }}</td>
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SUCCESS url=row.links.SUCCESS only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.ERRORED url=row.links.ERRORED warning=True only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.KILLED url=row.links.KILLED only %}
+            {% include "admin/iaso/task/monitor_count_cell.html" with count=row.SKIPPED url=row.links.SKIPPED only %}
+          </tr>
+        {% empty %}
+          <tr><td colspan="10">No task.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if hidden_accounts %}
+      <p><a href="{{ all_accounts_url }}">Show the {{ hidden_accounts }} other accounts</a></p>
+    {% endif %}
+  {% endif %}
+</div>
+<script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js"
+  integrity="sha384-zYPBGXwO4633CABX/5Spf6emCKUJCfoOkhOMYyxMsatqQZPnDblmmOewfjsIVWCM"
+  crossorigin="anonymous"
+></script>
+<script>
+(function () {
+  "use strict";
+  const SERIES = [
+    ["success", "Success"],
+    ["running", "Running"],
+    ["waiting", "Waiting (queued or throttled)"],
+    ["stopped", "Killed / skipped"],
+    ["errored", "Errored"],
+  ];
+  const data = JSON.parse(document.getElementById("activity-data").textContent);
+  const canvas = document.getElementById("activity-chart");
+  const root = canvas.parentElement;
+  const bucketMinutes = Number(root.dataset.bucketMinutes);
+  const window_ = root.dataset.window;
+  const daily = bucketMinutes >= 1440;  // the days are UTC days: shown in UTC, else they'd straddle two local dates
+
+  const pad = (n) => String(n).padStart(2, "0");
+  function formatTime(date, withDay) {
+    const time = pad(date.getHours()) + ":" + pad(date.getMinutes());
+    if (!withDay) return time;
+    return date.toLocaleDateString(undefined, { weekday: "short", day: "numeric" }) + " " + time;
+  }
+  function formatDay(date, withWeekday) {
+    const options = { day: "numeric", month: "short", timeZone: "UTC" };
+    return date.toLocaleDateString(undefined, withWeekday ? { weekday: "short", ...options } : options);
+  }
+  function bucketLabel(d, i) {
+    const date = new Date(d.start);
+    return daily ? formatDay(date, false) : formatTime(date, window_ === "7d" || (i === 0 && window_ === "24h"));
+  }
+  function bucketTitle(d) {
+    const from = new Date(d.start), to = new Date(from.getTime() + bucketMinutes * 60000);
+    return daily ? `${formatDay(from, true)} (UTC)` : `${formatTime(from, window_ !== "1h")} – ${formatTime(to, false)}`;
+  }
+
+  // the data table shows local times too
+  document.querySelectorAll(".bucket-start").forEach((cell) => {
+    const start = new Date(cell.dataset.start);
+    cell.textContent = daily ? formatDay(start, true) : formatTime(start, true);
+  });
+
+  // the colors follow the admin theme, see the --viz-* variables
+  const style = getComputedStyle(root);
+  const color = (name) => style.getPropertyValue(name).trim();
+  const totalOf = (d) => SERIES.reduce((sum, [key]) => sum + d[key], 0);
+
+  new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: data.map(bucketLabel),
+      datasets: SERIES.map(([key, label]) => ({
+        // the legend shows the totals of the window
+        label: `${label}: ${data.reduce((sum, d) => sum + d[key], 0).toLocaleString()}`,
+        data: data.map((d) => d[key]),
+        backgroundColor: color(`--viz-${key}`),
+        maxBarThickness: 24,
+      })),
+    },
+    options: {
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { color: color("--body-quiet-color"), maxRotation: 0, autoSkipPadding: 16 },
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          grid: { color: color("--viz-grid") },
+          ticks: { color: color("--body-quiet-color"), precision: 0 },
+        },
+      },
+      plugins: {
+        legend: { position: "top", align: "start", labels: { color: color("--body-fg"), boxWidth: 10, boxHeight: 10 } },
+        tooltip: {
+          itemSort: (a, b) => b.datasetIndex - a.datasetIndex,  // in the order of the stack, top first
+          callbacks: {
+            title: (items) => bucketTitle(data[items[0].dataIndex]),
+            label: (item) => `${SERIES[item.datasetIndex][1].split(" (")[0]}: ${item.raw.toLocaleString()}`,
+            afterLabel: (item) => {
+              const d = data[item.dataIndex];
+              return SERIES[item.datasetIndex][0] === "waiting" && d.throttled ? `  of which throttled: ${d.throttled}` : "";
+            },
+            footer: (items) => `Total: ${totalOf(data[items[0].dataIndex]).toLocaleString()}`,
+          },
+        },
+      },
+    },
+  });
+})();
+</script>
+{% endblock %}

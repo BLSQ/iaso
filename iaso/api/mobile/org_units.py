@@ -109,6 +109,7 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
             "altitude",
             "uuid",
             "aliases",
+            "code",
             "geo_json",
             "groups",
             "opening_date",

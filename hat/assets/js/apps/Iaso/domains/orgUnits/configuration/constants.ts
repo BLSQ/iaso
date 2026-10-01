@@ -10,6 +10,7 @@ export const editableFields = [
     'possibleParentTypeIds',
     'editableReferenceFormIds',
     'otherGroupIds',
+    'code',
 ];
 export const mappingEditableFieldsForBackend = {
     name: 'name',
@@ -21,6 +22,7 @@ export const mappingEditableFieldsForBackend = {
     possibleParentTypeIds: 'parent_type',
     editableReferenceFormIds: 'editable_reference_forms',
     otherGroupIds: 'other_groups',
+    code: 'code',
 };
 export const editableFieldsManyToManyFields = [
     'possibleTypeIds',

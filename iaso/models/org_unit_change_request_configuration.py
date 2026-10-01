@@ -98,6 +98,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "parent_type",
         "editable_reference_forms",
         "other_groups",
+        "code",
     ]
 
     # Used to easily create/update objects in serializers

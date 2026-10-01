@@ -297,6 +297,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_opening_date",
             "new_closed_date",
             "new_reference_instances",
+            "new_code",
         ]
         extra_kwargs = {
             "new_groups": {"write_only": True},

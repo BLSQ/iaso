@@ -153,6 +153,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
+    def test_orgunits_list_includes_code(self):
+        self.bardock.code = "BARDOCK-01"
+        self.bardock.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        org_units_by_id = {org_unit["id"]: org_unit for org_unit in response.json()["orgUnits"]}
+        self.assertEqual(org_units_by_id[self.bardock.id]["code"], "BARDOCK-01")
+        self.assertEqual(org_units_by_id[self.raditz.id]["code"], "")
+
     def test_org_unit_with_shapes_limited(self):
         self.client.force_authenticate(self.user)
 

@@ -6,6 +6,7 @@ from django.core.files import File
 from django.test import override_settings
 from rest_framework import status
 
+from hat.audit.models import MAPPING_VERSION_API, Modification
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 from iaso.test import APITestCase
@@ -463,6 +464,32 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {"question_mappings.question_3": "should have a valueType"})
         self.assertEqual(self.get_question_mappings(mapping_version_id), original)
+        self.assertEqual(Modification.objects.filter(object_id=mapping_version_id).count(), 1)
+
+    def test_mappingversions_patch_logs_modification(self):
+        """PATCH /mappingversions/<id>: each patch is audited with the question mappings before and after"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+        original = {"question_1": {"id": "de1", "valueType": "NUMBER"}}
+        self.patch_question_mappings(mapping_version_id, original)
+
+        imported = {
+            "question_1": {"id": "de1bis", "valueType": "INTEGER"},
+            "question_2": {"type": "neverMapped"},
+        }
+        response = self.patch_question_mappings(mapping_version_id, imported)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        modifications = Modification.objects.filter(object_id=mapping_version_id).order_by("id")
+        self.assertEqual(modifications.count(), 2)
+        modification = modifications.last()
+        self.assertEqual(modification.source, MAPPING_VERSION_API)
+        self.assertEqual(modification.user, self.yoda)
+        self.assertEqual(modification.content_object, m.MappingVersion.objects.get(id=mapping_version_id))
+        self.assertEqual(modification.past_value[0]["fields"]["json"]["question_mappings"], original)
+        self.assertEqual(modification.new_value[0]["fields"]["json"]["question_mappings"], imported)
 
     def test_mappingversions_list_import_sources_fields(self):
         """GET /mappingversions/ with the fields the import wizard needs to list its sources"""

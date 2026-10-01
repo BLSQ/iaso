@@ -921,6 +921,7 @@
     "iaso.map.shape.editLocationDisabled": "La edición de ubicación está deshabilitada en esta cuenta",
     "iaso.map.title.markerClustering": "Agrupación",
     "iaso.mapping.mappingType": "Tipo de mapeo",
+    "iaso.mappings.changeLog": "Enlace al registro de cambios",
     "iaso.mappings.changeMapping": "Cambiar el mapeo a uno existente:",
     "iaso.mappings.confirm": "Confirmar",
     "iaso.mappings.coverage": "Cobertura",

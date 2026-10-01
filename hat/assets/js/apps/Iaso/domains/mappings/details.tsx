@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Grid, Box } from '@mui/material';
+import { History } from '@mui/icons-material';
+import { Grid, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
+    ExternalLink,
     LoadingSpinner,
     useRedirectToReplace,
     useSafeIntl,
@@ -36,6 +38,18 @@ const useStyles = makeStyles(theme => ({
         height: 'auto',
         display: 'block',
         cursor: 'pointer',
+    },
+    actions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+    },
+    linkWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5em',
     },
 }));
 
@@ -165,12 +179,22 @@ const MappingDetails = () => {
 
             {currentMappingVersion && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    {currentFormVersion && isDataElementMappable && (
-                        <MappingImportActions
-                            mappingVersion={currentMappingVersion}
-                            questions={mappableQuestions}
-                        />
-                    )}
+                    <Box className={classes.actions}>
+                        <ExternalLink
+                            url={`/${baseUrls.apiLogs}/?objectId=${currentMappingVersion.id}&contentType=iaso.mappingversion&fields=field_diffs`}
+                        >
+                            <Typography className={classes.linkWithIcon}>
+                                <History />
+                                {formatMessage(MESSAGES.changeLog)}
+                            </Typography>
+                        </ExternalLink>
+                        {currentFormVersion && isDataElementMappable && (
+                            <MappingImportActions
+                                mappingVersion={currentMappingVersion}
+                                questions={mappableQuestions}
+                            />
+                        )}
+                    </Box>
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
                             <Grid item xs={4} md={3}>

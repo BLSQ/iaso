@@ -10,6 +10,7 @@ import iaso.models as m
 
 from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
+from hat.audit.models import MAPPING_VERSION_API, log_modification, serialize_instance
 from iaso.models import FormVersion, MappingVersion
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 
@@ -172,6 +173,9 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
         return m.MappingVersion.objects.create(mapping=mapping, form_version=form_version, json=validated_data["json"])
 
     def update(self, instance, validated_data):
+        # serialized before any change: question mappings are edited in place in instance.json
+        past_value = serialize_instance(instance)
+
         # partial update only question mappings
         if "question_mappings" in validated_data:
             # empty when the form version has no descriptor: nothing to check against
@@ -212,6 +216,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             instance.json["event_date_source"] = validated_data["event_date_source"]
 
         instance.save()
+        log_modification(past_value, instance, source=MAPPING_VERSION_API, user=self.context["request"].user)
 
         return instance
 

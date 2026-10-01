@@ -1118,6 +1118,7 @@
     "iaso.map.shape.editLocationDisabled": "Location edition is disabled on this account",
     "iaso.map.title.markerClustering": "Clustering",
     "iaso.mapping.mappingType": "Mapping type",
+    "iaso.mappings.changeLog": "Link to changes log",
     "iaso.mappings.changeMapping": "Change the mapping to existing one :",
     "iaso.mappings.confirm": "Confirm",
     "iaso.mappings.coverage": "Coverage",

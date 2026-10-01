@@ -439,6 +439,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'This export was made for another DHIS2 program ({name}). Check that its data elements belong to this one.',
     },
+    changeLog: {
+        id: 'iaso.mappings.changeLog',
+        defaultMessage: 'Link to changes log',
+    },
 });
 
 export default MESSAGES;

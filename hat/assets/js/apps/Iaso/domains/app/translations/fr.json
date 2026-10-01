@@ -1119,6 +1119,7 @@
     "iaso.map.shape.editLocationDisabled": "L'édition de la localisation est désactivée sur ce compte",
     "iaso.map.title.markerClustering": "Regroupement",
     "iaso.mapping.mappingType": "Type de correspondance",
+    "iaso.mappings.changeLog": "Lien vers le Journal des modifications",
     "iaso.mappings.changeMapping": "Changer pour une correspondance existante :",
     "iaso.mappings.confirm": "Confirmer",
     "iaso.mappings.coverage": "Couverture",

@@ -18,7 +18,7 @@ type Props = {
 };
 
 const styles: SxStyles = {
-    actions: { display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 },
+    actions: { display: 'flex', justifyContent: 'flex-end', gap: 1 },
 };
 
 const downloadJson = (content: unknown, fileName: string) => {

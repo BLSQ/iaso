@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
+    AddButton,
+    ConfirmCancelModal,
     IntlFormatMessage,
     IntlMessage,
-    useSafeIntl,
-    ConfirmCancelModal,
     makeFullModal,
-    AddButton,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
@@ -75,6 +75,7 @@ const RuleDialog: FunctionComponent<Props> = ({
     },
     saveRule,
 }) => {
+    const isEditing = initialData?.id;
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
@@ -159,6 +160,7 @@ const RuleDialog: FunctionComponent<Props> = ({
                                 errors={getErrors('sku')}
                                 label={MESSAGES.sku}
                                 options={skusList ?? []}
+                                disabled={isEditing}
                             />
                             <InputComponent
                                 type="select"
@@ -172,6 +174,7 @@ const RuleDialog: FunctionComponent<Props> = ({
                                 value={values.form}
                                 label={MESSAGES.form}
                                 options={formsList ?? []}
+                                disabled={isEditing}
                             />
                             <InputComponent
                                 type="select"

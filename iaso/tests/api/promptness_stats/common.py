@@ -245,11 +245,11 @@ class PromptnessStatsTestCase(APITestCase):
         return {key: value for key, value in params.items() if value is not None}
 
     @staticmethod
-    def counts(expected, on_time, late, missing, received, completeness, on_time_pct, late_pct, missing_pct):
+    def counts(expected, on_time, late, missing, received, completeness_pct, on_time_pct, late_pct, missing_pct):
         return {
             "expected": expected,
             "received": received,
-            "completeness_percent": completeness,
+            "completeness_percent": completeness_pct,
             "on_time": on_time,
             "on_time_percent": on_time_pct,
             "late": late,

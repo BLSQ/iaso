@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from iaso.models.base import KILLED, QUEUED, RUNNING
 from iaso.models.task import Task
+from iaso.perf_stats.tasks import measure_task
 
 
 logger = getLogger(__name__)
@@ -72,9 +73,9 @@ class _TaskServiceBase:
             method = getattr(module, method_name)
             assert method._is_task
 
-            method(*args, task=task, **kwargs)
-
-            task.refresh_from_db()
+            with measure_task(task, f"{module_name}.{method_name}"):
+                method(*args, task=task, **kwargs)
+                task.refresh_from_db()
             if task.status == RUNNING:
                 logger.warning(f"Task {task} still in status RUNNING after execution")
 

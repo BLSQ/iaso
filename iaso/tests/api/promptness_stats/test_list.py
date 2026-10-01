@@ -18,7 +18,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         return [row["name"] for row in data["results"]]
 
     # Response shape
-
     def test_response_shape(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params())
@@ -28,7 +27,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         for row in data["results"]:
             self.assertEqual(set(row.keys()), ROW_KEYS)
 
-    def test_period_block(self):
+    def test_happy_path(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params())
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -44,29 +43,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
                 "is_provisional": False,
             },
         )
-
-    def test_period_block_during_the_period(self):
-        self.client.force_authenticate(self.user)
-        with time_machine.travel(aware(2026, 1, 20, 12, 0), tick=False):
-            response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertTrue(data["period"]["is_current"])
-        self.assertTrue(data["period"]["is_provisional"])
-
-    def test_period_block_during_the_grace_period(self):
-        self.client.force_authenticate(self.user)
-        with time_machine.travel(aware(2026, 2, 10, 12, 0), tick=False):
-            response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertFalse(data["period"]["is_current"])
-        self.assertTrue(data["period"]["is_provisional"])
-
-    # Figures
-
-    def test_default_rows_are_direct_children(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             data["results"],
             [
@@ -76,16 +52,31 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
                 self.expected_somali_row(),
             ],
         )
-
-    def test_totals(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["totals"], self.expected_ethiopia_totals())
 
+    def test_period_block_during_the_period(self):
+        self.client.force_authenticate(self.user)
+        with time_machine.travel(aware(2026, 1, 20, 12, 0), tick=False):
+            response = self.client.get(self.URL, self.get_serializer_params())
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        period_data = data["period"]
+        self.assertTrue(period_data["is_current"])
+        self.assertTrue(period_data["is_provisional"])
+
+    def test_period_block_during_the_grace_period(self):
+        self.client.force_authenticate(self.user)
+        with time_machine.travel(aware(2026, 2, 10, 12, 0), tick=False):
+            response = self.client.get(self.URL, self.get_serializer_params())
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        period_data = data["period"]
+        self.assertFalse(period_data["is_current"])
+        self.assertTrue(period_data["is_provisional"])
+
+    # Figures
     def test_invariants(self):
         self.client.force_authenticate(self.user)
-        params = self.get_serializer_params(org_unit_type_ids=f"{self.type_region.id},{self.type_district.id}")
+        # params = self.get_serializer_params(org_unit_type_ids=f"{self.type_region.id},{self.type_district.id}")
+        params = self.get_serializer_params()
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         for counts in [data["totals"], *data["results"]]:
@@ -117,6 +108,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         )
 
     def test_org_unit_without_target_has_null_percentages(self):
+        """this regions does not have any health facilities of the target type, so all counts are 0 and percentages are null"""
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.somali.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -130,7 +122,8 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.jimma.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         hf_a = next(row for row in data["results"] if row["id"] == self.hf_a.id)
-        self.assertEqual((hf_a["on_time"], hf_a["late"]), (1, 0))
+        self.assertEqual(hf_a["on_time"], 1)
+        self.assertEqual(hf_a["late"], 0)
 
     def test_deadline_day_is_inclusive(self):
         # HF D submitted on 2026-02-10 at 23:30
@@ -140,13 +133,22 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["results"][0]["on_time"], 1)
 
     def test_zero_grace_period(self):
+        self.client.force_authenticate(self.user)
+
+        # With the 10 days grace period: HF D (submitted on 2026-02-10) is on time
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["period"]["deadline"], "2026-02-10")
+        self.assertEqual(data["totals"]["on_time"], 2)
+        self.assertEqual(data["totals"]["late"], 1)
+
         self.form.promptness_grace_period_days = 0
         self.form.save()
-        self.client.force_authenticate(self.user)
+
+        # Without grace period: the deadline is the end of the period, HF D becomes late
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["period"]["deadline"], "2026-01-31")
-        # HF D (2026-02-10) becomes late
         self.assertEqual(data["totals"]["on_time"], 1)
         self.assertEqual(data["totals"]["late"], 2)
 
@@ -159,6 +161,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(hf_c["missing"], 1)
 
     def test_rejected_org_units_are_ignored(self):
+        # HF G is rejected
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.north_gondar.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)

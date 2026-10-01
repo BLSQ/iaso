@@ -61,9 +61,6 @@ ROW_KEYS = {
 TOTALS_KEYS = ROW_KEYS - {"id", "name", "org_unit_type_id", "parent_org_unit", "has_children"}
 PERIOD_KEYS = {"value", "start", "end", "grace_period_days", "deadline", "is_current", "is_provisional"}
 RESPONSE_KEYS = {
-    "form_id",
-    "parent_org_unit_id",
-    "status",
     "period",
     "totals",
     "count",

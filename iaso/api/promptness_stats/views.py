@@ -7,7 +7,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from iaso.api.common import HasPermission
-from iaso.api.promptness_stats.constants import PROMPTNESS_STATUSES
 from iaso.api.promptness_stats.pagination import PromptnessStatsPagination
 from iaso.api.promptness_stats.period import PromptnessPeriod
 from iaso.api.promptness_stats.queries import get_rows_queryset, get_target_org_units, get_totals
@@ -86,9 +85,6 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
 
         return Response(
             {
-                "form_id": form.id,
-                "parent_org_unit_id": parent_org_unit.id,
-                "status": [status for status in PROMPTNESS_STATUSES if status in statuses],
                 "period": PromptnessPeriodSerializer(period).data,
                 "totals": PromptnessStatsTotalsSerializer(totals, context=output_context).data,
                 **paginated_response.data,

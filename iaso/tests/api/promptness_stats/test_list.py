@@ -28,14 +28,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         for row in data["results"]:
             self.assertEqual(set(row.keys()), ROW_KEYS)
 
-    def test_echo_of_params(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["form_id"], self.form.id)
-        self.assertEqual(data["parent_org_unit_id"], self.ethiopia.id)
-        self.assertEqual(data["status"], ["ON_TIME", "LATE", "MISSING"])
-
     def test_period_block(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params())
@@ -104,9 +96,12 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["parent_org_unit_id"], self.oromia.id)
-        self.assertEqual(data["totals"], {k: v for k, v in self.expected_oromia_row().items() if k in data["totals"]})
+        # totals are computed for the requested parent org unit: Oromia (4 expected, 2 on time, 1 late, 1 missing)
+        self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
+        # rows are the direct children of the requested parent org unit
         self.assertEqual(data["results"], [self.expected_east_shewa_row(), self.expected_jimma_row()])
+        for row in data["results"]:
+            self.assertEqual(row["parent_org_unit"], {"id": self.oromia.id, "name": self.oromia.name})
 
     def test_drill_down_to_target_org_units(self):
         self.client.force_authenticate(self.user)
@@ -239,9 +234,16 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(status="LATE,MISSING"))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["status"], ["LATE", "MISSING"])
+        # ON_TIME is hidden from the totals, the other values are unchanged (expected, received and
+        # completeness_percent still include the on time submissions)
         self.assertEqual(data["totals"], {**self.expected_ethiopia_totals(), "on_time": None, "on_time_percent": None})
         self.assertEqual(data["results"][2], {**self.expected_oromia_row(), "on_time": None, "on_time_percent": None})
+        # ON_TIME is hidden from every row, LATE and MISSING are still returned
+        for row in data["results"]:
+            self.assertIsNone(row["on_time"])
+            self.assertIsNone(row["on_time_percent"])
+            self.assertIsNotNone(row["late"])
+            self.assertIsNotNone(row["missing"])
 
     # order
 

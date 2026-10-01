@@ -80,6 +80,8 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         for counts in [data["totals"], *data["results"]]:
+            if not counts["is_applicable"]:
+                continue  # not applicable org units (e.g. Somali) have no counts
             self.assertEqual(counts["on_time"] + counts["late"] + counts["missing"], counts["expected"])
             self.assertEqual(counts["on_time"] + counts["late"], counts["received"])
 
@@ -107,12 +109,12 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
             ],
         )
 
-    def test_org_unit_without_target_has_null_percentages(self):
-        """this regions does not have any health facilities of the target type, so all counts are 0 and percentages are null"""
+    def test_org_unit_without_target_is_not_applicable(self):
+        """Somali has no org unit expected to submit the form: its totals are not applicable"""
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.somali.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(0, 0, 0, 0, 0, None, None, None, None))
+        self.assertEqual(data["totals"], self.not_applicable_counts())
         self.assertEqual(data["results"], [])
         self.assertEqual(data["count"], 0)
 
@@ -178,11 +180,28 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["totals"]["expected"], 2)
 
     def test_target_by_org_unit_group(self):
-        # HP H is a health post (not a target type) but belongs to a target group
+        # HP H is a health post (not a target type) but belongs to a target group: it is expected to submit the form
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.awsi.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["results"], [self.row(self.hp_h, False, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0)])
+        hp_h = next(row for row in data["results"] if row["id"] == self.hp_h.id)
+        self.assertEqual(hp_h, self.row(self.hp_h, False, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0))
+
+    def test_org_unit_not_expected_to_submit_is_not_applicable(self):
+        # HP I is a health post (not a target type) and doesn't belong to any target group:
+        # it is not applicable, and its (on time) submission is ignored
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.awsi.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            data["results"],
+            [
+                self.row(self.hp_h, False, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0),
+                self.not_applicable_row(self.hp_i, False),
+            ],
+        )
+        # Awsi totals only count HP H
+        self.assertEqual(data["totals"], self.counts(1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0))
 
     def test_target_by_type_and_group_is_counted_once(self):
         # HF E is a facility and belongs to a target group
@@ -241,12 +260,15 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         # completeness_percent still include the on time submissions)
         self.assertEqual(data["totals"], {**self.expected_ethiopia_totals(), "on_time": None, "on_time_percent": None})
         self.assertEqual(data["results"][2], {**self.expected_oromia_row(), "on_time": None, "on_time_percent": None})
-        # ON_TIME is hidden from every row, LATE and MISSING are still returned
+        # ON_TIME is hidden from every row, LATE and MISSING are still returned for applicable rows
         for row in data["results"]:
             self.assertIsNone(row["on_time"])
             self.assertIsNone(row["on_time_percent"])
-            self.assertIsNotNone(row["late"])
-            self.assertIsNotNone(row["missing"])
+            if row["is_applicable"]:
+                self.assertIsNotNone(row["late"])
+                self.assertIsNotNone(row["missing"])
+        # Somali is not applicable whatever the statuses
+        self.assertEqual(data["results"][3], self.expected_somali_row())
 
     # order
 

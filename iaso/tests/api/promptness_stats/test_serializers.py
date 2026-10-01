@@ -269,9 +269,13 @@ class PromptnessStatsTotalsSerializerTestCase(PromptnessStatsTestCase):
         for key in ["completeness_percent", "on_time_percent", "late_percent", "missing_percent"]:
             self.assertIsInstance(data[key], float, key)
 
-    def test_nothing_expected(self):
+    def test_nothing_expected_is_not_applicable(self):
         data = self.serialize({"expected": 0, "on_time": 0, "late": 0, "missing": 0})
-        self.assertEqual(data, self.counts(0, 0, 0, 0, 0, None, None, None, None))
+        self.assertEqual(data, self.not_applicable_counts())
+
+    def test_nothing_expected_is_not_applicable_whatever_the_statuses(self):
+        data = self.serialize({"expected": 0, "on_time": 0, "late": 0, "missing": 0}, status=["LATE"])
+        self.assertEqual(data, self.not_applicable_counts())
 
     def test_excluded_statuses(self):
         data = self.serialize({"expected": 7, "on_time": 2, "late": 2, "missing": 3}, status=["LATE", "MISSING"])

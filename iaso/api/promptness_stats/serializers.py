@@ -121,9 +121,12 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
     """Base serializer for the counts of a row or of the totals.
 
     Input: an object (or dict) with `expected`, `on_time`, `late` and `missing`.
-    Output: the counts plus `received`, `completeness_percent` and a `<status>_percent` for each status.
+    Output: `is_applicable`, the counts plus `received`, `completeness_percent` and a `<status>_percent` for each
+    status.
 
-    - Percentages are computed against `expected`, rounded to 1 decimal, `None` when `expected` is 0.
+    - An org unit with nothing expected in its hierarchy (itself included) is not applicable ("NA"):
+      `is_applicable` is `False` and all the counts and percentages are `None`.
+    - Percentages are computed against `expected`, rounded to 1 decimal.
     - Statuses missing from `context["status"]` have their count and percentage set to `None`
       (`expected`, `received` and `completeness_percent` are not affected).
 
@@ -131,9 +134,21 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
     """
 
     STATUS_TO_FIELD = {STATUS_ON_TIME: "on_time", STATUS_LATE: "late", STATUS_MISSING: "missing"}
+    COUNT_FIELDS = [
+        "expected",
+        "received",
+        "completeness_percent",
+        "on_time",
+        "on_time_percent",
+        "late",
+        "late_percent",
+        "missing",
+        "missing_percent",
+    ]
 
-    expected = serializers.IntegerField()
-    received = serializers.IntegerField()
+    is_applicable = serializers.BooleanField()
+    expected = serializers.IntegerField(allow_null=True)
+    received = serializers.IntegerField(allow_null=True)
     completeness_percent = serializers.FloatField(allow_null=True)
     on_time = serializers.IntegerField(allow_null=True)
     on_time_percent = serializers.FloatField(allow_null=True)
@@ -150,11 +165,16 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
 
     def to_representation(self, instance) -> dict:
         expected = self.get_count(instance, "expected")
+        if expected == 0:
+            not_applicable_counts = {field_name: None for field_name in self.COUNT_FIELDS}
+            return {"is_applicable": False, **not_applicable_counts}
+
         on_time = self.get_count(instance, "on_time")
         late = self.get_count(instance, "late")
         received = on_time + late
 
         counts = {
+            "is_applicable": True,
             "expected": expected,
             "received": received,
             "completeness_percent": percentage_of_expected(received, expected),

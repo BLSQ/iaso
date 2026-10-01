@@ -64,8 +64,8 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
                 self.csv_line(self.afar, "1", "0", "0.0", "0", "0.0", "0", "0.0", "1", "100.0"),
                 self.csv_line(self.amhara, "2", "1", "50.0", "0", "0.0", "1", "50.0", "1", "50.0"),
                 self.csv_line(self.oromia, "4", "3", "75.0", "2", "50.0", "1", "25.0", "1", "25.0"),
-                # null percentages are exported as empty cells
-                self.csv_line(self.somali, "0", "0", "", "0", "", "0", "", "0", ""),
+                # Somali is not applicable: its counts are exported as empty cells
+                self.csv_line(self.somali, "", "", "", "", "", "", "", "", ""),
             ],
         )
 

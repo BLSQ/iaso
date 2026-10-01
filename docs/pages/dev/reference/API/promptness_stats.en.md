@@ -30,8 +30,11 @@ conventions (comma-separated id lists, pagination envelope, row shape, drill-dow
   device). **To be decided** — see [open questions](#dependencies-and-open-questions). The contract is the same in both cases.
 - **Received**: `on_time + late`.
 - **Completeness**: `received / expected`.
+- **Not applicable ("NA")**: an org unit with nothing expected in its hierarchy (itself included), e.g. an org unit
+  that is not a target and has no target below it, or a region without any target. It has `is_applicable: false` and
+  all its counts and percentages are `null`, whatever the `status` param.
 
-Invariants, for every row and for the totals:
+Invariants, for every applicable row and for the totals when applicable:
 
 ```
 on_time + late + missing = expected
@@ -39,7 +42,6 @@ received = on_time + late
 ```
 
 Percentages are floats between `0` and `100` rounded to 1 decimal, always computed against `expected`.
-They are `null` when `expected = 0`.
 
 # Get promptness statistics
 
@@ -117,8 +119,9 @@ GET /api/promptness_stats/?form_id=42&period=202609&parent_org_unit_id=1
     "is_provisional": "Boolean - true if today <= deadline (figures may still change)"
   },
   "totals": {
-    "expected": "Int - target org units in the hierarchy of parent_org_unit_id (for all rows, not only the current page)",
-    "received": "Int - on_time + late",
+    "is_applicable": "Boolean - false if nothing is expected in the hierarchy of parent_org_unit_id (all counts are then null)",
+    "expected": "Int|null - target org units in the hierarchy of parent_org_unit_id (for all rows, not only the current page)",
+    "received": "Int|null - on_time + late",
     "completeness_percent": "Float|null - received / expected * 100",
     "on_time": "Int|null - null if ON_TIME is excluded by the status param",
     "on_time_percent": "Float|null",
@@ -143,8 +146,9 @@ GET /api/promptness_stats/?form_id=42&period=202609&parent_org_unit_id=1
         "name": "String"
       },
       "has_children": "Boolean - true if the row can be drilled down (call again with parent_org_unit_id=<id>)",
-      "expected": "Int",
-      "received": "Int",
+      "is_applicable": "Boolean - false if nothing is expected in the hierarchy of the row (all counts are then null)",
+      "expected": "Int|null",
+      "received": "Int|null",
       "completeness_percent": "Float|null",
       "on_time": "Int|null",
       "on_time_percent": "Float|null",
@@ -172,6 +176,7 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
     "is_provisional": true
   },
   "totals": {
+    "is_applicable": true,
     "expected": 1240,
     "received": 670,
     "completeness_percent": 54.0,
@@ -195,6 +200,7 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
       "org_unit_type_id": 3,
       "parent_org_unit": {"id": 1, "name": "Ethiopia"},
       "has_children": true,
+      "is_applicable": true,
       "expected": 320,
       "received": 178,
       "completeness_percent": 55.6,
@@ -211,6 +217,7 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
       "org_unit_type_id": 3,
       "parent_org_unit": {"id": 1, "name": "Ethiopia"},
       "has_children": true,
+      "is_applicable": true,
       "expected": 260,
       "received": 142,
       "completeness_percent": 54.6,
@@ -227,6 +234,7 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
       "org_unit_type_id": 4,
       "parent_org_unit": {"id": 12, "name": "Oromia"},
       "has_children": true,
+      "is_applicable": true,
       "expected": 38,
       "received": 18,
       "completeness_percent": 47.4,
@@ -243,6 +251,7 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
       "org_unit_type_id": 4,
       "parent_org_unit": {"id": 12, "name": "Oromia"},
       "has_children": true,
+      "is_applicable": true,
       "expected": 45,
       "received": 28,
       "completeness_percent": 62.2,
@@ -259,6 +268,7 @@ It is an extract: only a few of the 42 rows are shown (6 regions + 36 zones).
       "org_unit_type_id": 4,
       "parent_org_unit": {"id": 13, "name": "Amhara"},
       "has_children": true,
+      "is_applicable": true,
       "expected": 30,
       "received": 15,
       "completeness_percent": 50.0,

@@ -8,7 +8,8 @@ Timestamps are set on both `created_at` and `source_created_at`, since the times
     Ethiopia (Country)
     ├── Afar (Region)
     │   └── Awsi (District)
-    │       └── HP H (Health post, in "Special targets" group) ... MISSING
+    │       ├── HP H (Health post, in "Special targets" group) ... MISSING
+    │       └── HP I (Health post, not in any group) ............. NA       (on time submission, ignored)
     ├── Amhara (Region)
     │   └── North Gondar (District)
     │       ├── HF E (Facility, also in "Special targets") ...... LATE     (2026-03-01)
@@ -22,10 +23,13 @@ Timestamps are set on both `created_at` and `source_created_at`, since the times
     │   │                                                                   other period submissions)
     │   └── East Shewa (District)
     │       └── HF D (Facility) ................................. ON_TIME  (2026-02-10 23:30, deadline day)
-    └── Somali (Region, no children)
+    └── Somali (Region, no children) ............................ NA
+
+Org units with nothing expected in their hierarchy (HP I, Somali) are not applicable ("NA"): `is_applicable` is
+`False` and all their counts and percentages are `None`.
 
 Expected figures (expected / on_time / late / missing):
-    Ethiopia 7/2/2/3 - Afar 1/0/0/1 - Amhara 2/0/1/1 - Oromia 4/2/1/1 - Somali 0/0/0/0
+    Ethiopia 7/2/2/3 - Afar 1/0/0/1 - Amhara 2/0/1/1 - Oromia 4/2/1/1 - Somali NA
     Awsi 1/0/0/1 - North Gondar 2/0/1/1 - Jimma 3/1/1/1 - East Shewa 1/1/0/0
 """
 
@@ -48,6 +52,7 @@ ROW_KEYS = {
     "org_unit_type_id",
     "parent_org_unit",
     "has_children",
+    "is_applicable",
     "expected",
     "received",
     "completeness_percent",
@@ -143,6 +148,7 @@ class PromptnessStatsTestCase(APITestCase):
             "HF G", cls.type_facility, cls.north_gondar, validation_status=m.OrgUnit.VALIDATION_REJECTED
         )
         cls.hp_h = cls.create_ou("HP H", cls.type_health_post, cls.awsi)
+        cls.hp_i = cls.create_ou("HP I", cls.type_health_post, cls.awsi)
 
         cls.other_account_ou = m.OrgUnit.objects.create(
             name="Other account OU",
@@ -212,6 +218,7 @@ class PromptnessStatsTestCase(APITestCase):
         cls.create_submission(cls.hf_d, aware(2026, 2, 10, 23, 30))  # on time (deadline day is inclusive)
         cls.create_submission(cls.hf_e, aware(2026, 3, 1, 10, 0))  # late
         cls.create_submission(cls.hf_g, aware(2026, 1, 5, 10, 0))  # rejected org unit: ignored
+        cls.create_submission(cls.hp_i, aware(2026, 1, 20, 10, 0))  # org unit not expected to submit: ignored
 
     @classmethod
     def create_ou(cls, name, org_unit_type, parent=None, validation_status=m.OrgUnit.VALIDATION_VALID):
@@ -247,6 +254,7 @@ class PromptnessStatsTestCase(APITestCase):
     @staticmethod
     def counts(expected, on_time, late, missing, received, completeness_pct, on_time_pct, late_pct, missing_pct):
         return {
+            "is_applicable": True,
             "expected": expected,
             "received": received,
             "completeness_percent": completeness_pct,
@@ -258,15 +266,35 @@ class PromptnessStatsTestCase(APITestCase):
             "missing_percent": missing_pct,
         }
 
-    def row(self, org_unit, has_children, *counts):
+    @staticmethod
+    def not_applicable_counts():
+        return {
+            "is_applicable": False,
+            "expected": None,
+            "received": None,
+            "completeness_percent": None,
+            "on_time": None,
+            "on_time_percent": None,
+            "late": None,
+            "late_percent": None,
+            "missing": None,
+            "missing_percent": None,
+        }
+
+    def row_without_counts(self, org_unit, has_children):
         return {
             "id": org_unit.id,
             "name": org_unit.name,
             "org_unit_type_id": org_unit.org_unit_type_id,
             "parent_org_unit": {"id": org_unit.parent.id, "name": org_unit.parent.name} if org_unit.parent else None,
             "has_children": has_children,
-            **self.counts(*counts),
         }
+
+    def row(self, org_unit, has_children, *counts):
+        return {**self.row_without_counts(org_unit, has_children), **self.counts(*counts)}
+
+    def not_applicable_row(self, org_unit, has_children):
+        return {**self.row_without_counts(org_unit, has_children), **self.not_applicable_counts()}
 
     # Expected rows / totals, see the module docstring
     def expected_ethiopia_totals(self):
@@ -282,7 +310,7 @@ class PromptnessStatsTestCase(APITestCase):
         return self.row(self.oromia, True, 4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0)
 
     def expected_somali_row(self):
-        return self.row(self.somali, False, 0, 0, 0, 0, 0, None, None, None, None)
+        return self.not_applicable_row(self.somali, False)
 
     def expected_awsi_row(self):
         return self.row(self.awsi, True, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0)

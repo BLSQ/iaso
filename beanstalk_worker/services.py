@@ -13,8 +13,9 @@ import boto3
 import dateparser
 
 from django.conf import settings
-from django.db import connection, connections, transaction
+from django.db import OperationalError, connection, connections, transaction
 from django.utils import timezone
+from psycopg2.errors import LockNotAvailable
 
 from beanstalk_worker.throttle import Concurrency, effective_throttle
 from iaso.models.base import ERRORED, KILLED, QUEUED, RUNNING
@@ -37,6 +38,8 @@ MAX_GLOBAL_BACKOFF_DELAY = 60
 MAX_BACKOFF_DELAY = 300  # SQS accepts up to 900
 # A throttled task still waiting this long after its creation is marked ERRORED, unless its task is paused
 MAX_THROTTLE_WAIT = timedelta(hours=24)
+# The throttle check waits at most this long for the advisory lock of its task name, then defers the task
+THROTTLE_LOCK_TIMEOUT = "10s"
 _MISSING = object()
 
 # Worker connection
@@ -106,8 +109,12 @@ class _TaskServiceBase:
         started, blocked = self._start(task, method, kwargs)
         if blocked:
             if not blocked.paused and timezone.now() - task.created_at > MAX_THROTTLE_WAIT:
+                # logged as an error so that it reaches Sentry: a slot may be held by a stuck task
                 self._end_queued(
-                    task, ERRORED, f"Gave up waiting for a free slot after {MAX_THROTTLE_WAIT}: {blocked.reason}"
+                    task,
+                    ERRORED,
+                    f"Gave up waiting for a free slot after {MAX_THROTTLE_WAIT}: {blocked.reason}",
+                    log=logger.error,
                 )
                 return
             self._defer(task, module_name, method_name, args, kwargs, throttle_attempt + 1, blocked)
@@ -135,32 +142,40 @@ class _TaskServiceBase:
         queue only runs once: only the delivery whose update matched the QUEUED task gets started=True."""
         qs = self.get_queryset()
         task_name = method._task_name or task.name
-        with transaction.atomic(using=qs.db):
-            # the slots are recorded on every run, so that runs started before a limit is configured count for it
-            slots = throttle_slots(task, task_name, effective_throttle(method._throttle), kwargs)
-            # a task is throttled by the limits of its code, or by the config only
-            config = _throttle_config(task_name, qs.db) if self.throttling else {}
-            if self.throttling and (method._throttle or config):
-                with connections[qs.db].cursor() as cursor:
-                    cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", [f"task_throttle:{task_name}"])
-                reap_lost_tasks(qs.db)
-                blocked = check_throttle(task, task_name, slots, config, kwargs, qs.db)
-                if blocked:
-                    return False, blocked
-            throttle_keys = [key_name for _, _, key_name in slots]
+        try:
+            with transaction.atomic(using=qs.db):
+                # the slots are recorded on every run, so that runs started before a limit is configured count for it
+                slots = throttle_slots(task, task_name, effective_throttle(method._throttle), kwargs)
+                # a task is throttled by the limits of its code, or by the config only
+                config = _throttle_config(task_name, qs.db) if self.throttling else {}
+                if self.throttling and (method._throttle or config):
+                    with connections[qs.db].cursor() as cursor:
+                        # don't wait forever behind a stalled holder of the lock: defer the task instead
+                        cursor.execute("SELECT set_config('lock_timeout', %s, true)", [THROTTLE_LOCK_TIMEOUT])
+                        cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", [f"task_throttle:{task_name}"])
+                    reap_lost_tasks(qs.db)
+                    blocked = check_throttle(task, task_name, slots, config, kwargs, qs.db)
+                    if blocked:
+                        return False, blocked
+                throttle_keys = [key_name for _, _, key_name in slots]
 
-            now = timezone.now()
-            started = bool(qs.filter(id=task.id, status=QUEUED).update(status=RUNNING, started_at=now))
-            if started:
-                TaskLease.objects.using(qs.db).update_or_create(
-                    task_id=task.id, defaults={"throttle_keys": throttle_keys, "heartbeat_at": now}
-                )
+                now = timezone.now()
+                started = bool(qs.filter(id=task.id, status=QUEUED).update(status=RUNNING, started_at=now))
+                if started:
+                    TaskLease.objects.using(qs.db).update_or_create(
+                        task_id=task.id, defaults={"throttle_keys": throttle_keys, "heartbeat_at": now}
+                    )
+        except OperationalError as e:
+            if not isinstance(e.__cause__, LockNotAvailable):
+                raise
+            logger.error(f"Task {task.id}: no throttle lock for {task_name} after {THROTTLE_LOCK_TIMEOUT}, deferred")
+            return False, Blocked(f"throttle lock busy for more than {THROTTLE_LOCK_TIMEOUT}", MAX_GLOBAL_BACKOFF_DELAY)
         task.refresh_from_db()
         return started, None
 
-    def _end_queued(self, task, status, message):
+    def _end_queued(self, task, status, message, log=logger.warning):
         """End a task that never started. The conditional update leaves it alone if another worker started it."""
-        logger.warning(f"Task {task.id} not started: {message}")
+        log(f"Task {task.id} not started: {message}")
         self.get_queryset().filter(id=task.id, status=QUEUED).update(
             status=status, ended_at=timezone.now(), result={"result": status, "message": message}
         )

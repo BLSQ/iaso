@@ -45,7 +45,12 @@ and is sent back to the SQS queue with an exponential backoff. Only the SQS work
 Postgres worker used in development runs one task at a time.
 
 A task still throttled 24 hours after its creation (`MAX_THROTTLE_WAIT`) is marked `ERRORED`, unless
-its task is paused in the config. A task killed while it waits is marked `KILLED` without being started.
+its task is paused in the config, and an error is logged (so it reaches Sentry): a slot may be held by a
+stuck task, see [Stuck tasks](#stuck-tasks). A task killed while it waits is marked `KILLED` without being
+started.
+
+The limits are checked under a Postgres advisory lock per task name. A worker that can't get it within
+10 seconds (`THROTTLE_LOCK_TIMEOUT`) logs an error and defers the task, instead of waiting forever.
 
 Every task also has the built-in limits `global`, `account` and `user` (per launching user), unlimited
 by default, so any task can be throttled without changing its code.
@@ -76,6 +81,19 @@ it and waiting for it, per key.
 While a task runs, the worker refreshes a heartbeat in its `TaskLease` every 30 seconds. When a worker
 is killed, the heartbeat stops: after 3 minutes the task no longer occupies its throttle slot, and it is
 marked `ERRORED` by `/tasks/reap_lost_tasks/`, called every 5 minutes by sqsd (see `cron.yaml`).
+
+## Stuck tasks
+
+The heartbeat only proves that the worker process is alive, not that the task progresses. A task stuck
+in an infinite loop or on a call that never returns keeps its lease, so it holds its throttle slots and
+the next runs wait (and give up after 24 hours). Killing it from the web UI doesn't help: it only stops
+when the task next reports its progress.
+
+To unblock the next runs, select the task in the Django admin task list and run the action **Kill
+selected running tasks and free their throttle slots**: the task is marked `KILLED` and its lease is
+deleted. Its code may still run (and use the database) until it reports its progress, which then stops
+it, or until the worker restarts: restarting the worker is the only way to really stop it. Raising the
+limit in **Configs › Task throttles** also lets the next runs start.
 
 ## Run the tasks through SQS locally
 

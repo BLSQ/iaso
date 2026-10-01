@@ -1,9 +1,10 @@
 import json
+import logging
 
 from datetime import timedelta
 from unittest import mock
 
-from django.db import OperationalError
+from django.db import OperationalError, connections
 from django.test import override_settings
 from django.utils import timezone
 
@@ -65,10 +66,14 @@ class SQSTestTaskService(TaskService):
 @mock.patch("beanstalk_worker.services.boto3.client")
 class TaskThrottlingTestCase(TestCase):
     def setUp(self):
+        logging.disable(logging.NOTSET)  # to check the levels of the logs, disabled in iaso/tests/__init__.py
         leases_seen_during_run.clear()
         self.account_a = m.Account.objects.create(name="A")
         self.account_b = m.Account.objects.create(name="B")
         self.service = SQSTestTaskService()
+
+    def tearDown(self):
+        logging.disable(logging.CRITICAL)
 
     def queued_task(self, account, name=TASK_NAME, launcher=None):
         return m.Task.objects.create(
@@ -207,13 +212,49 @@ class TaskThrottlingTestCase(TestCase):
         task = self.queued_task(self.account_a)
         m.Task.objects.filter(id=task.id).update(created_at=timezone.now() - MAX_THROTTLE_WAIT - timedelta(minutes=1))
 
-        self.run_now(task, throttle_attempt=300)
+        # an error, so that it reaches Sentry
+        with self.assertLogs("beanstalk_worker.services", level="ERROR") as logs:
+            self.run_now(task, throttle_attempt=300)
 
+        self.assertIn("Gave up waiting for a free slot", logs.output[-1])
         self.assertEqual(task.status, m.ERRORED)
         self.assertIsNotNone(task.ended_at)
         self.assertIn("Gave up waiting for a free slot", task.result["message"])
         self.assertIn(f"account limit of 2 reached for {self.account_a.id}", task.result["message"])
         self.assertEqual(self.sent_messages(boto_client), [])
+
+    def test_killed_while_waiting_is_only_a_warning(self, boto_client):
+        task = self.queued_task(self.account_a)
+        m.Task.objects.filter(id=task.id).update(should_be_killed=True)
+
+        with self.assertLogs("beanstalk_worker.services", level="WARNING") as logs:
+            self.run_now(task)
+
+        self.assertEqual(task.status, m.KILLED)
+        self.assertEqual([record.levelname for record in logs.records], ["WARNING"])
+
+    @mock.patch("beanstalk_worker.services.THROTTLE_LOCK_TIMEOUT", "100ms")
+    def test_busy_throttle_lock_defers_the_task(self, boto_client):
+        # another session holds the advisory lock of the task name, e.g. a stalled worker
+        other = connections.create_connection("default")
+        try:
+            with other.cursor() as cursor:
+                cursor.execute("SELECT pg_advisory_lock(hashtext(%s))", [f"task_throttle:{TASK_NAME}"])
+            task = self.queued_task(self.account_a)
+
+            with self.assertLogs("beanstalk_worker.services", level="ERROR"):
+                self.run_now(task)
+        finally:
+            other.close()
+
+        self.assertEqual(task.status, m.QUEUED)
+        self.assertIn("throttle lock busy for more than 100ms", task.progress_message)
+        self.assertFalse(m.TaskLease.objects.exists())
+        (sent,) = self.sent_messages(boto_client)
+        self.assertLessEqual(sent["DelaySeconds"], MAX_GLOBAL_BACKOFF_DELAY)
+        # once the lock is free, the task runs
+        self.run_now(task, throttle_attempt=1)
+        self.assertEqual(task.status, m.SUCCESS)
 
     def test_paused_never_gives_up(self, boto_client):
         Config.objects.create(slug=THROTTLE_CONFIG_SLUG, content={TASK_NAME: {"paused": True}})

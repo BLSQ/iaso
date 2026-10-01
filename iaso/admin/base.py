@@ -41,7 +41,9 @@ from iaso.utils.admin.custom_filters import (
 
 from ..models import (
     ERRORED,
+    KILLED,
     QUEUED,
+    RUNNING,
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
@@ -98,6 +100,7 @@ from ..models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLease,
     TaskLog,
     TenantUser,
     UserRole,
@@ -594,6 +597,28 @@ def relaunch_task(_, request, queryset) -> None:
     messages.success(request, f"{task_to_relaunch.count()} task successfully relaunched.")
 
 
+@admin.action(description="Kill selected running tasks and free their throttle slots")
+def kill_running_task(_, request, queryset) -> None:
+    """For a task stuck while its worker is alive (e.g. an infinite loop): its heartbeat keeps its lease, so it
+    holds its throttle slots forever and the "Kill" of the web UI only works when the task reports its progress.
+
+    Its code may still run until the worker restarts: freeing the slots lets other runs start in the meantime."""
+    task_ids = list(queryset.filter(status=RUNNING, external=False).values_list("id", flat=True))
+    with transaction.atomic():
+        killed = Task.objects.filter(id__in=task_ids, status=RUNNING).update(
+            should_be_killed=True,
+            status=KILLED,
+            ended_at=timezone.now(),
+            result={"result": KILLED, "message": f"Killed from the Django admin by {request.user}"},
+        )
+        TaskLease.objects.filter(task_id__in=task_ids).delete()
+    messages.warning(
+        request,
+        f"{killed} running task(s) killed and their throttle slots freed. Their code may still run until it reports "
+        "its progress or the worker restarts.",
+    )
+
+
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
@@ -604,7 +629,7 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
     date_hierarchy = "created_at"
-    actions = (relaunch_task,)
+    actions = (relaunch_task, kill_running_task)
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")

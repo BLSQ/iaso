@@ -15,43 +15,20 @@
   .monitor .toolbar a.selected { font-weight: bold; text-decoration: underline; }
   .monitor form.toolbar label { font-weight: bold; margin-right: 4px; }
 
-  /* activity chart: validated palette (status green / blue / status red), stepped for light and dark */
-  .viz-root, .viz-legend, .viz-table {
+  /* activity chart colors, read by the script: status green / blue / status red, stepped for light and dark */
+  .viz-root {
     --viz-success: #0ca30c; --viz-running: #2a78d6; --viz-waiting: #eda100; --viz-stopped: #4a3aa7;
-    --viz-errored: #d03b3b; --viz-grid: #e1e0d9; --viz-axis: #c3c2b7;
+    --viz-errored: #d03b3b; --viz-grid: #e1e0d9;
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) :is(.viz-root, .viz-legend, .viz-table) {
-      --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a; --viz-axis: #383835;
+    :root:not([data-theme="light"]) .viz-root {
+      --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a;
     }
   }
-  :root[data-theme="dark"] :is(.viz-root, .viz-legend, .viz-table) {
-    --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a; --viz-axis: #383835;
+  :root[data-theme="dark"] .viz-root {
+    --viz-running: #3987e5; --viz-waiting: #c98500; --viz-stopped: #9085e9; --viz-grid: #2c2c2a;
   }
-  .viz-root { position: relative; margin-bottom: 8px; }
-  .viz-root svg { display: block; width: 100%; height: 190px; overflow: visible; }
-  .viz-root .s-success { fill: var(--viz-success); }
-  .viz-root .s-running { fill: var(--viz-running); }
-  .viz-root .s-waiting { fill: var(--viz-waiting); }
-  .viz-root .s-stopped { fill: var(--viz-stopped); }
-  .viz-root .s-errored { fill: var(--viz-errored); }
-  .viz-root .grid { stroke: var(--viz-grid); stroke-width: 1; }
-  .viz-root .baseline { stroke: var(--viz-axis); stroke-width: 1; }
-  .viz-root .tick { fill: var(--body-quiet-color); font-size: 11px; font-variant-numeric: tabular-nums; }
-  .viz-root .hover-band { fill: var(--body-fg); opacity: 0; pointer-events: none; }
-  .viz-root .hover-band.active { opacity: 0.06; }
-  .viz-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 4px 0 8px; color: var(--body-fg); }
-  .viz-legend .swatch, .viz-tooltip .swatch {
-    display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px;
-  }
-  .viz-tooltip {
-    position: absolute; pointer-events: none; display: none; z-index: 10; min-width: 170px;
-    background: var(--body-bg); color: var(--body-fg); border: 1px solid var(--hairline-color);
-    border-radius: 4px; padding: 6px 10px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); font-size: 12px;
-  }
-  .viz-tooltip .row { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
-  .viz-tooltip .when { color: var(--body-quiet-color); margin-bottom: 4px; }
-  .viz-tooltip .detail { color: var(--body-quiet-color); padding-left: 16px; }
+  .viz-root { position: relative; height: 220px; margin-bottom: 8px; }
 </style>
 {% endblock %}
 
@@ -99,12 +76,11 @@
   </form>
 
   <h2>Tasks created per {% if bucket_minutes < 60 %}{{ bucket_minutes }} minutes{% elif bucket_minutes == 1440 %}day (UTC){% else %}{% widthratio bucket_minutes 60 1 %} hour{% if bucket_minutes > 60 %}s{% endif %}{% endif %}, last {{ window }}{% if chart_task %}: {{ chart_task }}{% endif %}{% if account %}, {{ account.name }}{% endif %}</h2>
-  <div class="viz-legend" id="activity-legend"></div>
-  <div class="viz-root" id="activity-chart" data-window="{{ window }}" data-bucket-minutes="{{ bucket_minutes }}">
-    <div class="viz-tooltip" id="activity-tooltip"></div>
+  <div class="viz-root" data-window="{{ window }}" data-bucket-minutes="{{ bucket_minutes }}">
+    <canvas id="activity-chart" role="img" aria-label="Tasks created per period, by status"></canvas>
   </div>
   <p class="help">Each task counts in the period it was created, with its current status.</p>
-  <details style="margin-bottom: 24px" class="viz-table">
+  <details style="margin-bottom: 24px">
     <summary>Data table</summary>
     <table>
       <thead>
@@ -263,6 +239,11 @@
     {% endif %}
   {% endif %}
 </div>
+<script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js"
+  integrity="sha384-zYPBGXwO4633CABX/5Spf6emCKUJCfoOkhOMYyxMsatqQZPnDblmmOewfjsIVWCM"
+  crossorigin="anonymous"
+></script>
 <script>
 (function () {
   "use strict";
@@ -273,15 +254,12 @@
     ["stopped", "Killed / skipped"],
     ["errored", "Errored"],
   ];
-  const totalOf = (d) => SERIES.reduce((sum, [key]) => sum + d[key], 0);
   const data = JSON.parse(document.getElementById("activity-data").textContent);
-  const root = document.getElementById("activity-chart");
-  const tooltip = document.getElementById("activity-tooltip");
+  const canvas = document.getElementById("activity-chart");
+  const root = canvas.parentElement;
   const bucketMinutes = Number(root.dataset.bucketMinutes);
   const window_ = root.dataset.window;
   const daily = bucketMinutes >= 1440;  // the days are UTC days: shown in UTC, else they'd straddle two local dates
-  const NS = "http://www.w3.org/2000/svg";
-  const HEIGHT = 190, MARGIN = { top: 10, right: 8, bottom: 22, left: 40 }, GAP = 2, RADIUS = 4;
 
   const pad = (n) => String(n).padStart(2, "0");
   function formatTime(date, withDay) {
@@ -293,119 +271,72 @@
     const options = { day: "numeric", month: "short", timeZone: "UTC" };
     return date.toLocaleDateString(undefined, withWeekday ? { weekday: "short", ...options } : options);
   }
-  function niceStep(max) {
-    const raw = max / 4, power = Math.pow(10, Math.floor(Math.log10(raw)));
-    const step = [1, 2, 5, 10].map((f) => f * power).find((s) => s >= raw);
-    return Math.max(1, step);
+  function bucketLabel(d, i) {
+    const date = new Date(d.start);
+    return daily ? formatDay(date, false) : formatTime(date, window_ === "7d" || (i === 0 && window_ === "24h"));
   }
-  function el(name, attrs, parent) {
-    const node = document.createElementNS(NS, name);
-    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
-    if (parent) parent.appendChild(node);
-    return node;
-  }
-  // a column segment: square at the bottom, 4px rounded corners at the top when it ends the column
-  function segmentPath(x, y, w, h, rounded) {
-    const r = rounded ? Math.min(RADIUS, h, w / 2) : 0;
-    return `M${x},${y + h} V${y + r} Q${x},${y} ${x + r},${y} H${x + w - r} Q${x + w},${y} ${x + w},${y + r} V${y + h} Z`;
+  function bucketTitle(d) {
+    const from = new Date(d.start), to = new Date(from.getTime() + bucketMinutes * 60000);
+    return daily ? `${formatDay(from, true)} (UTC)` : `${formatTime(from, window_ !== "1h")} – ${formatTime(to, false)}`;
   }
 
-  // legend with the totals of the window: identity never relies on the color alone
-  const legend = document.getElementById("activity-legend");
-  legend.innerHTML = "";
-  for (const [key, label] of SERIES) {
-    const total = data.reduce((sum, d) => sum + d[key], 0);
-    const item = document.createElement("span");
-    item.innerHTML = `<span class="swatch s-${key}" style="background: var(--viz-${key})"></span>`;
-    item.appendChild(document.createTextNode(`${label}: ${total.toLocaleString()}`));
-    legend.appendChild(item);
-  }
   // the data table shows local times too
   document.querySelectorAll(".bucket-start").forEach((cell) => {
     const start = new Date(cell.dataset.start);
     cell.textContent = daily ? formatDay(start, true) : formatTime(start, true);
   });
 
-  function draw() {
-    root.querySelectorAll("svg").forEach((svg) => svg.remove());
-    const width = root.clientWidth;
-    if (!width || !data.length) return;
-    const svg = el("svg", { viewBox: `0 0 ${width} ${HEIGHT}`, role: "img", "aria-label": "Tasks created per period, by status" });
-    root.insertBefore(svg, tooltip);
-    const plotW = width - MARGIN.left - MARGIN.right, plotH = HEIGHT - MARGIN.top - MARGIN.bottom;
-    const max = Math.max(1, ...data.map(totalOf));
-    const step = niceStep(max), top = Math.ceil(max / step) * step;
-    const y = (v) => MARGIN.top + plotH - (v / top) * plotH;
+  // the colors follow the admin theme, see the --viz-* variables
+  const style = getComputedStyle(root);
+  const color = (name) => style.getPropertyValue(name).trim();
+  const totalOf = (d) => SERIES.reduce((sum, [key]) => sum + d[key], 0);
 
-    for (let v = 0; v <= top; v += step) {
-      el("line", { class: v === 0 ? "baseline" : "grid", x1: MARGIN.left, x2: width - MARGIN.right, y1: y(v), y2: y(v) }, svg);
-      el("text", { class: "tick", x: MARGIN.left - 6, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v.toLocaleString();
-    }
-
-    const slot = plotW / data.length, barW = Math.max(2, Math.min(24, slot - GAP));
-    const labelEvery = Math.ceil(data.length / Math.max(1, Math.floor(plotW / 70)));
-    data.forEach((d, i) => {
-      const x = MARGIN.left + i * slot + (slot - barW) / 2;
-      const visible = SERIES.filter(([key]) => d[key] > 0);
-      let base = y(0);
-      visible.forEach(([key], n) => {
-        const h = (d[key] / top) * plotH - (n > 0 ? GAP : 0);  // the 2px surface gap between segments
-        if (h <= 0) return;
-        base -= n > 0 ? GAP : 0;
-        el("path", { class: `s-${key}`, d: segmentPath(x, base - h, barW, h, n === visible.length - 1) }, svg);
-        base -= h;
-      });
-      if (i % labelEvery === 0) {
-        const date = new Date(d.start);
-        const withDay = window_ === "7d" || (i === 0 && window_ === "24h");
-        el("text", { class: "tick", x: x + barW / 2, y: HEIGHT - 6, "text-anchor": "middle" }, svg).textContent =
-          daily ? formatDay(date, false) : formatTime(date, withDay);
-      }
-      // the hover target is the whole slot, bigger than the column
-      const hit = el("rect", { class: "hit", x: MARGIN.left + i * slot, y: MARGIN.top, width: slot, height: plotH, fill: "transparent" }, svg);
-      const band = el("rect", { class: "hover-band", x: MARGIN.left + i * slot, y: MARGIN.top, width: slot, height: plotH }, svg);
-      hit.addEventListener("mouseenter", () => show(d, band));
-      hit.addEventListener("mouseleave", () => hide(band));
-    });
-  }
-
-  function show(d, band) {
-    band.classList.add("active");
-    const from = new Date(d.start), to = new Date(from.getTime() + bucketMinutes * 60000);
-    // in the order of the stack, top first
-    const when = daily ? `${formatDay(from, true)} (UTC)` : `${formatTime(from, window_ !== "1h")} – ${formatTime(to, false)}`;
-    tooltip.innerHTML = `<div class="when">${when}</div>` +
-      SERIES.slice().reverse().map(([key, label]) =>
-        `<div class="row"><span><span class="swatch" style="background: var(--viz-${key})"></span>${label.split(" (")[0]}</span><span>${d[key].toLocaleString()}</span></div>` +
-        (key === "waiting" && d.throttled ? `<div class="row detail"><span>of which throttled</span><span>${d.throttled.toLocaleString()}</span></div>` : "")
-      ).join("") +
-      `<div class="row"><strong>Total</strong><strong>${totalOf(d).toLocaleString()}</strong></div>`;
-    // inside the plot, beside the column: on its right, or on its left near the right edge.
-    // Placed from the rendered column (the svg can be scaled), and measured at left 0 since an absolute box
-    // shrinks when placed near the edge of its container.
-    tooltip.style.left = "0px";
-    tooltip.style.display = "block";
-    const width = tooltip.offsetWidth, rootBox = root.getBoundingClientRect(), bandBox = band.getBoundingClientRect();
-    const start = bandBox.left - rootBox.left, end = bandBox.right - rootBox.left;
-    const left = end + 8 + width <= root.clientWidth ? end + 8 : start - width - 8;
-    tooltip.style.left = `${Math.max(0, Math.min(left, root.clientWidth - width))}px`;
-    tooltip.style.top = `${MARGIN.top}px`;
-  }
-  function hide(band) {
-    band.classList.remove("active");
-    tooltip.style.display = "none";
-  }
-
-  // redraw when the width of the chart changes: window resize, or the admin sidebar opened or closed
-  let drawnWidth = 0, resizeTimer;
-  new ResizeObserver(() => {
-    if (root.clientWidth === drawnWidth) return;
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      drawnWidth = root.clientWidth;
-      draw();
-    }, drawnWidth ? 100 : 0);
-  }).observe(root);
+  new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: data.map(bucketLabel),
+      datasets: SERIES.map(([key, label]) => ({
+        // the legend shows the totals of the window
+        label: `${label}: ${data.reduce((sum, d) => sum + d[key], 0).toLocaleString()}`,
+        data: data.map((d) => d[key]),
+        backgroundColor: color(`--viz-${key}`),
+        maxBarThickness: 24,
+      })),
+    },
+    options: {
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { color: color("--body-quiet-color"), maxRotation: 0, autoSkipPadding: 16 },
+        },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          grid: { color: color("--viz-grid") },
+          ticks: { color: color("--body-quiet-color"), precision: 0 },
+        },
+      },
+      plugins: {
+        legend: { position: "top", align: "start", labels: { color: color("--body-fg"), boxWidth: 10, boxHeight: 10 } },
+        tooltip: {
+          itemSort: (a, b) => b.datasetIndex - a.datasetIndex,  // in the order of the stack, top first
+          callbacks: {
+            title: (items) => bucketTitle(data[items[0].dataIndex]),
+            label: (item) => `${SERIES[item.datasetIndex][1].split(" (")[0]}: ${item.raw.toLocaleString()}`,
+            afterLabel: (item) => {
+              const d = data[item.dataIndex];
+              return SERIES[item.datasetIndex][0] === "waiting" && d.throttled ? `  of which throttled: ${d.throttled}` : "";
+            },
+            footer: (items) => `Total: ${totalOf(data[items[0].dataIndex]).toLocaleString()}`,
+          },
+        },
+      },
+    },
+  });
 })();
 </script>
 {% endblock %}

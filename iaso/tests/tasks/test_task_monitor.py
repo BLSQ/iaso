@@ -218,6 +218,31 @@ class TaskMonitorTestCase(TestCase):
 
         self.assertEqual(self.client.get(URL).status_code, 403)
 
+    def test_kill_running_task_action(self):
+        admin = User.objects.create_superuser("admin", "admin@example.com", "password")
+        self.client.force_login(admin)
+        stuck = self.running(self.account_a, ["dummy_task:global"])
+        no_lease = self.task(m.RUNNING)
+        external = self.task(m.RUNNING, external=True)
+        done = self.task(m.SUCCESS)
+
+        response = self.client.post(
+            "/admin/iaso/task/",
+            {"action": "kill_running_task", "_selected_action": [stuck.id, no_lease.id, external.id, done.id]},
+            follow=True,
+        )
+
+        self.assertContains(response, "2 running task(s) killed")
+        for task in (stuck, no_lease, external, done):
+            task.refresh_from_db()
+        self.assertEqual((stuck.status, stuck.should_be_killed), (m.KILLED, True))
+        self.assertIsNotNone(stuck.ended_at)
+        self.assertIn("Killed from the Django admin by admin", stuck.result["message"])
+        self.assertFalse(m.TaskLease.objects.exists())
+        self.assertEqual(no_lease.status, m.KILLED)
+        self.assertEqual(external.status, m.RUNNING)
+        self.assertEqual(done.status, m.SUCCESS)
+
     def test_format_duration(self):
         self.assertEqual(
             [format_duration(timedelta(seconds=s)) for s in (5, 75, 3725, 90000)],

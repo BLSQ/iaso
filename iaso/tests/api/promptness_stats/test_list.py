@@ -92,9 +92,37 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         # totals are computed for the requested parent org unit: Oromia (4 expected, 2 on time, 1 late, 1 missing)
         self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
         # rows are the direct children of the requested parent org unit
-        self.assertEqual(data["results"], [self.expected_east_shewa_row(), self.expected_jimma_row()])
+        self.assertEqual(
+            data["results"],
+            [self.expected_borena_row(), self.expected_east_shewa_row(), self.expected_jimma_row()],
+        )
         for row in data["results"]:
             self.assertEqual(row["parent_org_unit"], {"id": self.oromia.id, "name": self.oromia.name})
+
+    def test_drill_down_into_a_not_applicable_section_of_the_pyramid(self):
+        # Borena (Zone, same level as districts) and its health post HP J are not expected to submit the form
+        self.client.force_authenticate(self.user)
+
+        # Level 1: Oromia is applicable, the Borena section doesn't change its figures
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.ethiopia.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        oromia = next(row for row in data["results"] if row["id"] == self.oromia.id)
+        self.assertEqual(oromia, self.expected_oromia_row())
+
+        # Level 2: Borena is not applicable, next to the applicable districts
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
+        self.assertEqual(
+            data["results"],
+            [self.expected_borena_row(), self.expected_east_shewa_row(), self.expected_jimma_row()],
+        )
+
+        # Level 3: inside Borena, the totals and HP J are not applicable (its on time submission is ignored)
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.borena.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["totals"], self.not_applicable_counts())
+        self.assertEqual(data["results"], [self.not_applicable_row(self.hp_j, False)])
 
     def test_drill_down_to_target_org_units(self):
         self.client.force_authenticate(self.user)
@@ -219,7 +247,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["results"], [])
 
     # org_unit_type_ids
-
     def test_org_unit_types_flat_output(self):
         self.client.force_authenticate(self.user)
         params = self.get_serializer_params(org_unit_type_ids=f"{self.type_region.id},{self.type_district.id}")
@@ -232,7 +259,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         )
         self.assertIn(self.expected_jimma_row(), data["results"])
         self.assertIn(self.expected_oromia_row(), data["results"])
-        # totals are not the sum of the rows
+        # totals are not the sum of the rows - since regions are requested, totals are the ones from the country
         self.assertEqual(data["totals"], self.expected_ethiopia_totals())
 
     def test_org_unit_types_deep_level(self):
@@ -251,7 +278,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(self.result_names(data), ["East Shewa", "Jimma"])
 
     # statuses
-
     def test_excluded_statuses(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(status="LATE,MISSING"))
@@ -271,7 +297,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["results"][3], self.expected_somali_row())
 
     # order
-
     def test_order_descending(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(order="-expected"))
@@ -325,7 +350,12 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
 
     def test_order_by_percentage(self):
         self.client.force_authenticate(self.user)
-        params = self.get_serializer_params(order="-completeness_percent", parent_org_unit_id=self.oromia.id)
+        # Only districts: Borena (Zone) is not applicable, it has no percentage to be ordered by
+        params = self.get_serializer_params(
+            order="-completeness_percent",
+            parent_org_unit_id=self.oromia.id,
+            org_unit_type_ids=str(self.type_district.id),
+        )
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.result_names(data), ["East Shewa", "Jimma"])
@@ -371,7 +401,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user_restricted)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(self.result_names(data), ["East Shewa", "Jimma"])
+        self.assertEqual(self.result_names(data), ["Borena", "East Shewa", "Jimma"])
 
     def test_user_restricted_to_org_units_cannot_see_parent(self):
         # user_restricted only has access to Oromia and its descendants

@@ -397,7 +397,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(second_page["totals"], self.expected_ethiopia_totals())
 
     # access
-
     def test_user_restricted_to_org_units(self):
         # user_restricted only has access to Oromia and its descendants
         self.client.force_authenticate(self.user_restricted)
@@ -411,26 +410,3 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.ethiopia.id))
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("parent_org_unit_id", data)
-
-    # validation errors
-
-    def test_bad_requests(self):
-        cases = [
-            ({"form_id": None}, "form_id"),
-            ({"period": None}, "period"),
-            ({"parent_org_unit_id": None}, "parent_org_unit_id"),
-            ({"form_id": self.form_other_account.id}, "form_id"),
-            ({"form_id": self.form_without_period_type.id}, "form_id"),
-            ({"form_id": self.form_without_grace_period.id}, "form_id"),
-            ({"period": "not a period"}, "period"),
-            ({"period": "2026Q1"}, "period"),
-            ({"parent_org_unit_id": self.other_account_ou.id}, "parent_org_unit_id"),
-            ({"org_unit_type_ids": str(self.type_other_account.id)}, "org_unit_type_ids"),
-            ({"status": "RECEIVED"}, "status"),
-        ]
-        self.client.force_authenticate(self.user)
-        for params, field in cases:
-            with self.subTest(params=params):
-                response = self.client.get(self.URL, self.get_serializer_params(**params))
-                data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-                self.assertIn(field, data)

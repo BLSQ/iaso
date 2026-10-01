@@ -7,7 +7,7 @@ Timestamps are set on both `created_at` and `source_created_at`, since the times
 
     Ethiopia (Country)
     ├── Afar (Region)
-    │   └── Awsi (District)
+    │   └── Awsi (District) (would be NA if there wasn't HP H)
     │       ├── HP H (Health post, in "Special targets" group) ... MISSING
     │       └── HP I (Health post, not in any group) ............. NA       (on time submission, ignored)
     ├── Amhara (Region)

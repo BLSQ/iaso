@@ -350,6 +350,8 @@ class FormsVersionAPITestCase(APITestCase):
         imported = {
             # overwrite
             "question_2": {"id": "de2bis", "valueType": "INTEGER", "categoryOptionCombo": "coc2"},
+            # overwrite a never mapped marker
+            "question_6": {"id": "de6", "valueType": "NUMBER"},
             # select all that apply, no data element id at the top level
             "question_3": {"type": "multiple", "values": {"a": {"id": "de3a", "valueType": "BOOLEAN"}}},
             # event tracker question inside a repeat group
@@ -371,6 +373,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         undo = {
             "question_2": original["question_2"],
+            "question_6": {"type": "neverMapped"},
             "question_3": {"action": "unmap"},
             "question_4": {"action": "unmap"},
             "question_5": {"action": "unmap"},

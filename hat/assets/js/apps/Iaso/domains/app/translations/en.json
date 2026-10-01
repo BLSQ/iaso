@@ -1135,7 +1135,7 @@
     "iaso.mappings.import.compareLabel": "Comparing {source} with version {versionId}. Nothing is applied until you confirm.",
     "iaso.mappings.import.decision": "Decision",
     "iaso.mappings.import.done": "{added} mappings added, {overwritten} overwritten, {kept} kept, {ignored} not imported",
-    "iaso.mappings.import.droppedHint": "These mappings cannot be imported: the question does not exist in this version or is marked as never mapped.",
+    "iaso.mappings.import.droppedHint": "These mappings cannot be imported: the question does not exist in this version.",
     "iaso.mappings.import.fileMeta": "Exported from {formName} - {versionId}",
     "iaso.mappings.import.fromFile": "Or import a mapping export (.json), for example from another account.",
     "iaso.mappings.import.identicalHint": "Same DHIS2 target on both sides. Nothing to resolve.",

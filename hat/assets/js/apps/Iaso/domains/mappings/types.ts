@@ -12,11 +12,9 @@ export type DiffRow = {
     kind: DiffKind;
     questionKey: string;
     questionLabel?: string;
+    // a mapping or a never mapped marker
     current?: QuestionMapping;
     incoming: QuestionMapping;
-    // dropped rows: the question is absent from the current version,
-    // or marked as never mapped
-    neverMapped?: boolean;
 };
 
 export type ImportPlan = {

@@ -211,10 +211,10 @@ describe('computeMappingsDiff', () => {
             q1: 'identical',
             q2: 'conflict',
             q3: 'add',
-            q4: 'dropped',
+            // overwriting a never mapped marker is a decision to take
+            q4: 'conflict',
             gone: 'dropped',
         });
-        expect(rows.find(r => r.questionKey === 'q4')?.neverMapped).toBe(true);
     });
 
     it('only imports choice keys of select all that apply questions', () => {
@@ -249,14 +249,23 @@ describe('computeMappingsDiff', () => {
             rows.map(r => [r.questionKey, getDefaultDecision(r, true)]),
         );
         const plan = buildImportPlan(rows, decisions);
-        expect(plan.changes).toEqual({ q2: de('c'), q3: de('d') });
-        expect(plan.undo).toEqual({ q2: de('b'), q3: { action: 'unmap' } });
+        expect(plan.changes).toEqual({
+            q2: de('c'),
+            q3: de('d'),
+            q4: de('e'),
+        });
+        expect(plan.undo).toEqual({
+            q2: de('b'),
+            q3: { action: 'unmap' },
+            // undo puts the never mapped marker back
+            q4: { type: 'neverMapped' },
+        });
         expect(plan).toMatchObject({
             added: 1,
-            overwritten: 1,
+            overwritten: 2,
             kept: 0,
             skipped: 0,
-            dropped: 2,
+            dropped: 1,
         });
     });
 
@@ -266,7 +275,7 @@ describe('computeMappingsDiff', () => {
         );
         const plan = buildImportPlan(rows, decisions);
         expect(Object.keys(plan.changes)).toEqual(['q3']);
-        expect(plan.kept).toBe(1);
+        expect(plan.kept).toBe(2);
     });
 });
 

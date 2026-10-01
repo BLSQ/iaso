@@ -938,7 +938,7 @@
     "iaso.mappings.import.compareLabel": "Comparando {source} con la versión {versionId}. No se aplica nada hasta que confirme.",
     "iaso.mappings.import.decision": "Decisión",
     "iaso.mappings.import.done": "{added} mapeos añadidos, {overwritten} sobrescritos, {kept} mantenidos, {ignored} no importados",
-    "iaso.mappings.import.droppedHint": "Estos mapeos no se pueden importar: la pregunta no existe en esta versión o está marcada como nunca mapeada.",
+    "iaso.mappings.import.droppedHint": "Estos mapeos no se pueden importar: la pregunta no existe en esta versión.",
     "iaso.mappings.import.fileMeta": "Exportado desde {formName} - {versionId}",
     "iaso.mappings.import.fromFile": "O importe una exportación de mapeo (.json), por ejemplo desde otra cuenta.",
     "iaso.mappings.import.identicalHint": "Mismo destino DHIS2 en ambos lados. Nada que resolver.",

@@ -174,14 +174,15 @@ export const computeMappingsDiff = (
                 questionLabel: question
                     ? Descriptor.getHumanLabel(question)
                     : undefined,
-                current: hasTarget(current) ? current : undefined,
+                // a never mapped marker is a decision too: overwriting it is a conflict
+                current:
+                    hasTarget(current) || isNeverMapped(current)
+                        ? current
+                        : undefined,
                 incoming,
             };
             if (!question) {
                 row.kind = 'dropped';
-            } else if (isNeverMapped(current)) {
-                row.kind = 'dropped';
-                row.neverMapped = true;
             } else if (row.current) {
                 row.kind = isSameMapping(row.current, incoming)
                     ? 'identical'

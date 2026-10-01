@@ -376,7 +376,7 @@ const MESSAGES = defineMessages({
     droppedHint: {
         id: 'iaso.mappings.import.droppedHint',
         defaultMessage:
-            'These mappings cannot be imported: the question does not exist in this version or is marked as never mapped.',
+            'These mappings cannot be imported: the question does not exist in this version.',
     },
     question: {
         id: 'iaso.label.question',

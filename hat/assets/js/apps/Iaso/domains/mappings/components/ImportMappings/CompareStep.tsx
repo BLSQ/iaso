@@ -17,6 +17,7 @@ import { textPlaceholder } from '../../../../constants/uiConstants';
 import { SxStyles } from '../../../../types/general';
 import { DIFF_KINDS, getMappingLabel } from '../../importMappings';
 import MESSAGES from '../../messages';
+import { isNeverMapped } from '../../question_mappings';
 import { Decision, DiffKind, DiffRow, ImportPlan } from '../../types';
 
 type Props = {
@@ -105,12 +106,13 @@ export const CompareStep: FunctionComponent<Props> = ({
     const bulk = BULK[bucket];
 
     const getCurrentLabel = (row: DiffRow): string => {
+        if (isNeverMapped(row.current)) {
+            return formatMessage(MESSAGES.markedNeverMapped);
+        }
         if (row.kind !== 'dropped') {
             return getMappingLabel(row.current) || textPlaceholder;
         }
-        return row.neverMapped
-            ? formatMessage(MESSAGES.markedNeverMapped)
-            : formatMessage(MESSAGES.questionAbsent, { versionId });
+        return formatMessage(MESSAGES.questionAbsent, { versionId });
     };
 
     return (
@@ -215,7 +217,8 @@ export const CompareStep: FunctionComponent<Props> = ({
                                     </TableCell>
                                     <TableCell
                                         sx={
-                                            row.current
+                                            row.current &&
+                                            !isNeverMapped(row.current)
                                                 ? styles.current
                                                 : styles.noCurrent
                                         }

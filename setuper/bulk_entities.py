@@ -39,7 +39,7 @@ from datetime import datetime, timedelta
 from random import randint
 from uuid import uuid4
 
-import requests
+import pyarrow.parquet as pq
 
 from iaso_api_client import IasoClient
 from submissions import APP_VERSION, instance_by_LLIN_campaign_form, org_unit_gps_point, submission2xml
@@ -52,23 +52,34 @@ def fetch_all_org_units(iaso_client, org_unit_type_name):
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
     org_unit_type = next(out for out in org_unit_types if out["name"] == org_unit_type_name)
 
-    org_units = []
-    page = 1
-    page_size = 1000
-    while True:
-        page_data = iaso_client.get(
-            "/api/orgunits/",
-            params={
-                "limit": page_size,
-                "page": page,
-                "orgUnitTypeId": org_unit_type["id"],
-                "fields": "id,longitude,latitude,altitude",
-            },
-        )
-        org_units += page_data["orgunits"]
-        if len(page_data["orgunits"]) < page_size:
-            break
-        page += 1
+    # The parquet export streams the whole filtered pyramid in a single request, which is much
+    # faster than paginating the JSON API (each page re-runs the count + offset query).
+    # It only accepts filters through `searches`.
+    response = iaso_client.request(
+        "GET",
+        "/api/orgunits/",
+        params={
+            "parquet": "true",
+            "order": "id",
+            "searches": json.dumps([{"orgUnitTypeId": str(org_unit_type["id"])}]),
+        },
+    )
+    if response.status_code != 200:
+        raise Exception(f"Org units parquet export failed: {response.status_code} {response.text}")
+
+    table = pq.read_table(
+        io.BytesIO(response.content),
+        columns=["org_unit_id", "org_unit_longitude", "org_unit_latitude", "org_unit_altitude"],
+    )
+    org_units = [
+        {
+            "id": row["org_unit_id"],
+            "longitude": row["org_unit_longitude"],
+            "latitude": row["org_unit_latitude"],
+            "altitude": row["org_unit_altitude"],
+        }
+        for row in table.to_pylist()
+    ]
 
     if not org_units:
         raise Exception(f"No org units found with type '{org_unit_type_name}'")
@@ -76,13 +87,17 @@ def fetch_all_org_units(iaso_client, org_unit_type_name):
 
 
 def fetch_form(iaso_client, form_name):
-    forms = iaso_client.get("/api/forms/")["forms"]
+    # Restrict fields (and pre-filter by name server side): the default /api/forms/ payload
+    # computes instance counts and other annotations for every form, which is very slow on big accounts.
+    forms = iaso_client.get(
+        "/api/forms/",
+        params={"fields": "id,name,form_id,latest_form_version", "search": form_name},
+    )["forms"]
     form = next(f for f in forms if f["name"] == form_name)
-    form_detail = iaso_client.get(f"/api/forms/{form['id']}/?fields=id,form_id,latest_form_version")
     return {
-        "id": form_detail["id"],
-        "form_id": form_detail["form_id"],
-        "latest_form_version": form_detail["latest_form_version"],
+        "id": form["id"],
+        "form_id": form["form_id"],
+        "latest_form_version": form["latest_form_version"],
     }
 
 
@@ -131,6 +146,7 @@ def build_batch_zip(
     reference_form,
     followup_form,
     batch_size,
+    min_followups,
     max_followups,
     followup_window_days,
     registration_window_days,
@@ -144,15 +160,17 @@ def build_batch_zip(
             entity_uuid = str(uuid4())
             org_unit = org_units[randint(0, len(org_units) - 1)]
 
-            # Spread registration dates over the past, instead of dating every entity "now".
-            registration_date = now - timedelta(days=randint(0, registration_window_days))
+            # Spread registration dates over the past, instead of dating every entity "now",
+            # but far enough back for the mandatory followups to fit before "now".
+            min_days_ago = min_followups * followup_window_days
+            registration_date = now - timedelta(days=randint(min_days_ago, max(min_days_ago, registration_window_days)))
             add_instance_to_zip(
                 zip_file, instances_json, org_unit, reference_form, entity_uuid, entity_type_id, registration_date
             )
 
             # Followups happen at random, increasing gaps after the registration, capped at "now".
             followup_date = registration_date
-            for _ in range(randint(0, max_followups)):
+            for _ in range(randint(min_followups, max_followups)):
                 followup_date += timedelta(days=randint(1, followup_window_days))
                 if followup_date > now:
                     break
@@ -166,14 +184,22 @@ def build_batch_zip(
     return buffer, len(instances_json)
 
 
-def upload_batch_zip(iaso_client, account_name, zip_buffer, batch_index):
-    url = iaso_client.server_url.rstrip("/") + "/api/mobile/bulkupload/"
+def upload_batch_zip(iaso_client, app_id, zip_buffer, batch_index):
     files = {"zip_file": (f"bulk_entities_{batch_index}.zip", zip_buffer, "application/zip")}
-    response = requests.post(
-        url, params={"app_id": account_name, "app_version": APP_VERSION}, headers=iaso_client.headers, files=files
+    response = iaso_client.request(
+        "POST", "/api/mobile/bulkupload/", params={"app_id": app_id, "app_version": APP_VERSION}, files=files
     )
     if response.status_code != 204:
         raise Exception(f"Bulk upload of batch {batch_index} failed: {response.status_code} {response.text}")
+
+
+def fetch_main_project_app_id(iaso_client):
+    # The app_id isn't always the account name (e.g. accounts not created by setuper.py),
+    # but the setup_account API always names the initial project "Main Project".
+    for project in iaso_client.get("/api/projects/")["projects"]:
+        if project["name"] == "Main Project":
+            return project["app_id"]
+    raise Exception("No 'Main Project' found for this account")
 
 
 def wait_for_bulk_uploads(iaso_client, expected_count, poll_interval=5, timeout=3600):
@@ -201,9 +227,9 @@ def wait_for_bulk_uploads(iaso_client, expected_count, poll_interval=5, timeout=
 
 def create_bulk_entities(
     iaso_client,
-    account_name,
     count,
     batch_size,
+    min_followups,
     max_followups,
     followup_window_days,
     registration_window_days,
@@ -218,6 +244,7 @@ def create_bulk_entities(
     reference_form = fetch_form(iaso_client, reference_form_name)
     followup_form = fetch_form(iaso_client, followup_form_name)
     org_units = fetch_all_org_units(iaso_client, org_unit_type_name)
+    app_id = fetch_main_project_app_id(iaso_client)
     print(f"\tFound {len(org_units)} org units to spread {count} entities across")
 
     remaining = count
@@ -232,11 +259,12 @@ def create_bulk_entities(
             reference_form,
             followup_form,
             current_batch_size,
+            min_followups,
             max_followups,
             followup_window_days,
             registration_window_days,
         )
-        upload_batch_zip(iaso_client, account_name, zip_buffer, batch_index)
+        upload_batch_zip(iaso_client, app_id, zip_buffer, batch_index)
 
         remaining -= current_batch_size
         batch_index += 1
@@ -272,6 +300,7 @@ if __name__ == "__main__":
         help="Entities per uploaded zip (with default followup settings, averages ~2000 submissions/instances "
         "per batch, matching the mobile app's INSTANCES_PER_ZIP)",
     )
+    parser.add_argument("--min-followups", type=int, default=0, help="Min number of followup submissions per entity")
     parser.add_argument("--max-followups", type=int, default=5, help="Max number of followup submissions per entity")
     parser.add_argument(
         "--followup-window-days",
@@ -289,6 +318,9 @@ if __name__ == "__main__":
     parser.add_argument("--entity-type-name", type=str, default="Children less than 5")
     parser.add_argument("--reference-form-name", type=str, default="Child/Enfant - Registration/Enregistrement")
     parser.add_argument("--followup-form-name", type=str, default="Child/Enfant - Follow-up/Suivi")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Log every remote call (url + params) with a timestamp"
+    )
     parser.add_argument(
         "--wait",
         action="store_true",
@@ -314,13 +346,14 @@ if __name__ == "__main__":
         sys.exit("ERROR: Value for server url is required (pass -s or set it in credentials.py)")
 
     iaso_client = IasoClient(server_url=server_url)
+    iaso_client.verbose = args.verbose
     iaso_client.authenticate_with_username_and_password(username=username, password=password)
 
     create_bulk_entities(
         iaso_client,
-        args.account,
         args.count,
         args.batch_size,
+        args.min_followups,
         args.max_followups,
         args.followup_window_days,
         args.registration_window_days,

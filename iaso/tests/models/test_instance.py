@@ -2,6 +2,7 @@ from unittest import mock
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
 from rest_framework import status
@@ -10,6 +11,7 @@ from iaso import models as m
 from iaso.odk import parsing
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase, FileUploadToTestCase, IasoTestCaseMixin, TestCase
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 class InstanceBase(IasoTestCaseMixin):
@@ -809,6 +811,40 @@ class InstanceUploadToTestCase(FileUploadToTestCase):
         expected_file_name = f"unknown_account/instances/{instance.created_at.strftime('%Y_%m')}/{self.FILE_NAME}"
         self.assertEqual(instance.file.name, expected_file_name)
 
+    def test_upload_to_long_file_name_is_not_truncated(self):
+        # Longer than Django's default `max_length` of 100, which would truncate it and append a random suffix
+        long_file_name = f"{'a' * 150}.xml"
+        with QueryProfiler() as profiler:
+            instance = m.Instance.objects.create(
+                created_by=self.user_1,
+                file=ContentFile(b"<data/>", name=long_file_name),
+            )
+
+        expected_file_name = f"{self.account_1.short_sanitized_name}_{self.account_1.id}/instances/{instance.created_at.strftime('%Y_%m')}/{long_file_name}"
+        self.assertGreater(len(expected_file_name), 100)
+        self.assertEqual(instance.file.name, expected_file_name)
+        # A single `exists()` (a HEAD on S3) to check the name is available
+        profiler.assertStorageCalls({"exists": [expected_file_name], "_save": [expected_file_name]})
+
+    def test_upload_to_file_name_over_max_length_is_truncated(self):
+        # Over the field's `max_length` of 255: Django truncates it and appends a random suffix, after checking the
+        # original name with an extra `exists()` (an extra HEAD on S3) - what every name over 100 chars used to cost.
+        too_long_file_name = f"{'a' * 300}.xml"
+        with QueryProfiler() as profiler:
+            instance = m.Instance.objects.create(
+                created_by=self.user_1,
+                file=ContentFile(b"<data/>", name=too_long_file_name),
+            )
+        prefix = f"{self.account_1.short_sanitized_name}_{self.account_1.id}/instances/{instance.created_at.strftime('%Y_%m')}/"
+
+        self.assertEqual(len(instance.file.name), 255)
+        self.assertTrue(instance.file.name.startswith(f"{prefix}aaa"))
+        self.assertTrue(instance.file.name.endswith(".xml"))
+        self.assertNotEqual(instance.file.name, f"{prefix}{too_long_file_name}")
+        profiler.assertStorageCalls(
+            {"exists": [f"{prefix}{too_long_file_name}", instance.file.name], "_save": [instance.file.name]}
+        )
+
 
 class InstanceFileUploadToTestCase(FileUploadToTestCase):
     FILE_NAME = "test.xml"
@@ -867,6 +903,19 @@ class InstanceFileUploadToTestCase(FileUploadToTestCase):
         expected_file_name = (
             f"unknown_account/instance_files/{instance_file.created_at.strftime('%Y_%m')}/{self.FILE_NAME}"
         )
+        self.assertEqual(instance_file.file.name, expected_file_name)
+
+    def test_upload_to_long_file_name_is_not_truncated(self):
+        # Longer than Django's default `max_length` of 100, which would truncate it and append a random suffix
+        long_file_name = f"{'a' * 150}.webp"
+        instance = m.Instance.objects.create(created_by=self.user_1)
+        instance_file = m.InstanceFile.objects.create(
+            file=ContentFile(b"image", name=long_file_name),
+            instance=instance,
+        )
+
+        expected_file_name = f"{self.account_1.short_sanitized_name}_{self.account_1.id}/instance_files/{instance_file.created_at.strftime('%Y_%m')}/{long_file_name}"
+        self.assertGreater(len(expected_file_name), 100)
         self.assertEqual(instance_file.file.name, expected_file_name)
 
     def test_upload_to_no_instance(self):

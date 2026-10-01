@@ -5,6 +5,8 @@ import sentry_sdk
 
 from lazy_services import LazyService  # type: ignore
 
+from beanstalk_worker.throttle import register_task
+
 
 logger = getLogger(__name__)
 
@@ -12,7 +14,9 @@ logger = getLogger(__name__)
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
 
 
-def task_decorator(task_name=""):
+def task_decorator(task_name="", throttle=None):
+    """`throttle`: a `beanstalk_worker.throttle.Throttle` limiting how many runs of the task can happen at the same time"""
+
     def inner_task(func):
         assert func.__name__ == func.__qualname__, f"{func.__qualname__} is not a global"
 
@@ -61,6 +65,9 @@ def task_decorator(task_name=""):
             return task
 
         wrapper._is_task = True
+        wrapper._task_name = task_name
+        wrapper._throttle = throttle
+        register_task(task_name, throttle)
         return wrapper
 
     return inner_task

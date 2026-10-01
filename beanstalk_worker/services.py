@@ -1,22 +1,46 @@
 import decimal
 import importlib
 import json
+import random
+import threading
 
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from logging import getLogger
+from typing import Any, List, Optional, Tuple
 
 import boto3
 import dateparser
 
 from django.conf import settings
-from django.db import connection
+from django.db import OperationalError, connection, connections, transaction
 from django.utils import timezone
+from psycopg2.errors import LockNotAvailable
 
-from iaso.models.base import KILLED, QUEUED, RUNNING
-from iaso.models.task import Task
+from beanstalk_worker.throttle import Concurrency, effective_throttle
+from iaso.models.base import ERRORED, KILLED, QUEUED, RUNNING
+from iaso.models.json_config import Config
+from iaso.models.task import Task, TaskLease
 
 
 logger = getLogger(__name__)
+
+# Slug of the Config overriding the throttle limits declared in the code, see beanstalk_worker/throttle.py
+THROTTLE_CONFIG_SLUG = "task_throttles"
+HEARTBEAT_INTERVAL = 30  # seconds
+# A running task whose heartbeat is older than this is considered lost: its worker was killed
+LOST_AFTER = timedelta(minutes=3)
+BACKOFF_BASE_DELAY = 15  # seconds
+# Start of the progress message of the queued tasks waiting for a throttle slot
+THROTTLED_MESSAGE_PREFIX = "Waiting for a free slot"
+# Tasks waiting for a global slot retry more often, so they don't get overtaken by the newly queued ones
+MAX_GLOBAL_BACKOFF_DELAY = 60
+MAX_BACKOFF_DELAY = 300  # SQS accepts up to 900
+# A throttled task still waiting this long after its creation is marked ERRORED, unless its task is paused
+MAX_THROTTLE_WAIT = timedelta(hours=24)
+# The throttle check waits at most this long for the advisory lock of its task name, then defers the task
+THROTTLE_LOCK_TIMEOUT = "10s"
+_MISSING = object()
 
 # Worker connection
 # The problem we had before was that, if a task launched a transaction, the progress on the transaction was not visible from the outside:
@@ -55,35 +79,118 @@ class _TaskServiceBase:
         # from the worker.
         return Task.objects.using("worker")
 
+    # Only the SQS TaskService enforces the `throttle` of the tasks, see beanstalk_worker/throttle.py
+    throttling = False
+
     def run_task(self, body):
         data = json.loads(body, object_hook=json_load)
-        self.run(data["module"], data["method"], data["task_id"], data["args"], data["kwargs"])
+        self.run(
+            data["module"],
+            data["method"],
+            data["task_id"],
+            data["args"],
+            data["kwargs"],
+            throttle_attempt=data.get("throttle_attempt", 0),
+        )
 
-    def run(self, module_name, method_name, task_id, args, kwargs):
+    def run(self, module_name, method_name, task_id, args, kwargs, throttle_attempt=0):
         """run a task, called by the view that receives them from the queue"""
-        kwargs["_immediate"] = True
         #  for the using() see Worker connection above
         task = self.get_queryset().get(id=task_id)
-        if task.status == QUEUED:  # ensure a task is only run once
-            task.status = RUNNING
-            task.started_at = timezone.now()
-            task.save()
-            module = importlib.import_module(module_name)
-            method = getattr(module, method_name)
-            assert method._is_task
+        if task.status != QUEUED:  # ensure a task is only run once
+            return
+        if task.should_be_killed:  # killed before it started, e.g. while waiting for a throttle slot
+            self._end_queued(task, KILLED, "Killed before it started")
+            return
+        module = importlib.import_module(module_name)
+        method = getattr(module, method_name)
+        assert method._is_task
 
-            method(*args, task=task, **kwargs)
+        started, blocked = self._start(task, method, kwargs)
+        if blocked:
+            if not blocked.paused and timezone.now() - task.created_at > MAX_THROTTLE_WAIT:
+                # logged as an error so that it reaches Sentry: a slot may be held by a stuck task
+                self._end_queued(
+                    task,
+                    ERRORED,
+                    f"Gave up waiting for a free slot after {MAX_THROTTLE_WAIT}: {blocked.reason}",
+                    log=logger.error,
+                )
+                return
+            self._defer(task, module_name, method_name, args, kwargs, throttle_attempt + 1, blocked)
+            return
+        if not started:  # another delivery of the same task started it first
+            return
 
-            task.refresh_from_db()
-            if task.status == RUNNING:
-                logger.warning(f"Task {task} still in status RUNNING after execution")
+        heartbeat = Heartbeat(self.get_queryset().db, task.id)
+        heartbeat.start()
+        try:
+            method(*args, task=task, _immediate=True, **kwargs)
+        finally:
+            heartbeat.stop()
+            TaskLease.objects.using(self.get_queryset().db).filter(task_id=task.id).delete()
 
-    def enqueue(self, module_name, method_name, args, kwargs, task_id):
-        body = json.dumps(
-            {"module": module_name, "method": method_name, "task_id": task_id, "args": args, "kwargs": kwargs},
+        task.refresh_from_db()
+        if task.status == RUNNING:
+            logger.warning(f"Task {task} still in status RUNNING after execution")
+
+    def _start(self, task, method, kwargs) -> Tuple[bool, Optional["Blocked"]]:
+        """Mark the task RUNNING and give it a lease, unless a throttle limit is reached: then return why.
+
+        Returns (started, blocked). Throttle checks are serialized per task name with an advisory lock, so that two
+        workers can't both take the last free slot. The conditional update ensures that a task delivered twice by the
+        queue only runs once: only the delivery whose update matched the QUEUED task gets started=True."""
+        qs = self.get_queryset()
+        task_name = method._task_name or task.name
+        try:
+            with transaction.atomic(using=qs.db):
+                # the slots are recorded on every run, so that runs started before a limit is configured count for it
+                slots = throttle_slots(task, task_name, effective_throttle(method._throttle), kwargs)
+                # a task is throttled by the limits of its code, or by the config only
+                config = _throttle_config(task_name, qs.db) if self.throttling else {}
+                if self.throttling and (method._throttle or config):
+                    with connections[qs.db].cursor() as cursor:
+                        # don't wait forever behind a stalled holder of the lock: defer the task instead
+                        cursor.execute("SELECT set_config('lock_timeout', %s, true)", [THROTTLE_LOCK_TIMEOUT])
+                        cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", [f"task_throttle:{task_name}"])
+                    reap_lost_tasks(qs.db)
+                    blocked = check_throttle(task, task_name, slots, config, kwargs, qs.db)
+                    if blocked:
+                        return False, blocked
+                throttle_keys = [key_name for _, _, key_name in slots]
+
+                now = timezone.now()
+                started = bool(qs.filter(id=task.id, status=QUEUED).update(status=RUNNING, started_at=now))
+                if started:
+                    TaskLease.objects.using(qs.db).update_or_create(
+                        task_id=task.id, defaults={"throttle_keys": throttle_keys, "heartbeat_at": now}
+                    )
+        except OperationalError as e:
+            if not isinstance(e.__cause__, LockNotAvailable):
+                raise
+            logger.error(f"Task {task.id}: no throttle lock for {task_name} after {THROTTLE_LOCK_TIMEOUT}, deferred")
+            return False, Blocked(f"throttle lock busy for more than {THROTTLE_LOCK_TIMEOUT}", MAX_GLOBAL_BACKOFF_DELAY)
+        task.refresh_from_db()
+        return started, None
+
+    def _end_queued(self, task, status, message, log=logger.warning):
+        """End a task that never started. The conditional update leaves it alone if another worker started it."""
+        log(f"Task {task.id} not started: {message}")
+        self.get_queryset().filter(id=task.id, status=QUEUED).update(
+            status=status, ended_at=timezone.now(), result={"result": status, "message": message}
+        )
+
+    def _defer(self, task, module_name, method_name, args, kwargs, attempt, blocked):
+        raise NotImplementedError(f"{self.__class__.__name__} does not support throttling")
+
+    def _body(self, module_name, method_name, task_id, args, kwargs, **extra):
+        return json.dumps(
+            {"module": module_name, "method": method_name, "task_id": task_id, "args": args, "kwargs": kwargs, **extra},
             default=json_dump,
         )
-        return self._enqueue(body)
+
+    def enqueue(self, module_name, method_name, args, kwargs, task_id):
+        return self._enqueue(self._body(module_name, method_name, task_id, args, kwargs))
 
 
 class PostgresTaskService(_TaskServiceBase):
@@ -131,6 +238,161 @@ class TestTaskService(PostgresTaskService):
 
 
 class TaskService(_TaskServiceBase):
-    def _enqueue(self, body):
+    throttling = True
+
+    def _enqueue(self, body, delay_seconds=0):
         sqs = boto3.client("sqs", region_name=settings.BEANSTALK_SQS_REGION)
-        return sqs.send_message(QueueUrl=settings.BEANSTALK_SQS_URL, MessageAttributes={}, MessageBody=body)
+        extra = {"DelaySeconds": delay_seconds} if delay_seconds else {}
+        return sqs.send_message(QueueUrl=settings.BEANSTALK_SQS_URL, MessageAttributes={}, MessageBody=body, **extra)
+
+    def _defer(self, task, module_name, method_name, args, kwargs, attempt, blocked):
+        """Send the task again to the queue, to be retried later with an exponential backoff.
+
+        sqsd then deletes the current message since the view answers 200. If the worker dies in between, the task is
+        delivered twice, which is harmless: only one delivery can switch it to RUNNING."""
+        delay = backoff_delay(attempt, blocked.max_delay)
+        message = f"{THROTTLED_MESSAGE_PREFIX}: {blocked.reason} (attempt {attempt}, next try in {delay}s)"
+        logger.info(f"Task {task.id} throttled. {message}")
+        self.get_queryset().filter(id=task.id, status=QUEUED).update(progress_message=message)
+        body = self._body(module_name, method_name, task.id, args, kwargs, throttle_attempt=attempt)
+        self._enqueue(body, delay_seconds=delay)
+
+
+@dataclass(frozen=True)
+class Blocked:
+    reason: str
+    max_delay: int  # in seconds
+    paused: bool = False  # waits for the config to change, so it never gives up
+
+
+def backoff_delay(attempt: int, max_delay: int) -> int:
+    """Exponential backoff with jitter, so throttled tasks don't all retry at the same time."""
+    ceiling = min(max_delay, BACKOFF_BASE_DELAY * 2 ** (attempt - 1))
+    return int(ceiling / 2 + random.uniform(0, ceiling / 2))
+
+
+def throttle_key(task_name, concurrency_name, key=None) -> str:
+    return f"{task_name}:{concurrency_name}" if key is None else f"{task_name}:{concurrency_name}:{key}"
+
+
+def throttle_slots(task, task_name, throttle, kwargs) -> List[Tuple[Concurrency, Any, str]]:
+    """The (limit, key, throttle key) a run of the task occupies.
+
+    A limit with a key doesn't apply to the tasks for which the key is None (e.g. the `user` of a task without launcher).
+    A key callable that fails is logged and its limit ignored: a mistake must not block the tasks."""
+    slots = []
+    for concurrency in throttle.concurrency:
+        try:
+            key = concurrency.key(task, **kwargs) if concurrency.key else None
+        except Exception:
+            logger.exception(f"Ignoring the throttle limit {concurrency.name} of {task_name}")
+            continue
+        if concurrency.key and key is None:
+            continue
+        slots.append((concurrency, key, throttle_key(task_name, concurrency.name, key)))
+    return slots
+
+
+def check_throttle(task, task_name, slots, config, kwargs, db) -> Optional[Blocked]:
+    """Return why the task can't start now, or None.
+
+    `config` is the entry of the task in the `task_throttles` Config.
+    A limit whose configuration or callable fails is logged and ignored: a mistake must not block the tasks."""
+    if config.get("paused"):
+        return Blocked(f"paused in the {THROTTLE_CONFIG_SLUG} config", MAX_BACKOFF_DELAY, paused=True)
+
+    alive_leases = TaskLease.objects.using(db).filter(heartbeat_at__gte=timezone.now() - LOST_AFTER)
+    for concurrency, key, key_name in slots:
+        try:
+            limit = _limit(task, concurrency, key, config.get(concurrency.name, _MISSING), kwargs)
+        except Exception:
+            logger.exception(f"Ignoring the throttle limit {concurrency.name} of {task_name}")
+            continue
+        if limit is not None and alive_leases.filter(throttle_keys__contains=[key_name]).count() >= limit:
+            if key is None:
+                return Blocked(f"{concurrency.name} limit of {limit} reached", MAX_GLOBAL_BACKOFF_DELAY)
+            return Blocked(f"{concurrency.name} limit of {limit} reached for {key}", MAX_BACKOFF_DELAY)
+    return None
+
+
+def _throttle_config(task_name, db) -> dict:
+    try:
+        content = Config.objects.using(db).filter(slug=THROTTLE_CONFIG_SLUG).values_list("content", flat=True).first()
+        config = (content or {}).get(task_name) or {}
+        if not isinstance(config, dict):
+            raise ValueError(f"Expected an object for {task_name}, got {config!r}")
+        return config
+    except Exception:
+        logger.exception(f"Invalid {THROTTLE_CONFIG_SLUG} config, using the throttle limits of the code")
+        return {}
+
+
+def configured_limit(concurrency, key, configured, log=True):
+    """The limit set in the config for this key: a number, None for unlimited, or _MISSING when not (validly) set."""
+    if isinstance(configured, dict):
+        keys = configured.get("keys", {})
+        default = configured.get("default", _MISSING)
+        configured = keys.get(str(key), default) if isinstance(keys, dict) and key is not None else default
+    if configured is None or (isinstance(configured, int) and not isinstance(configured, bool)):
+        return configured
+    if configured is not _MISSING and log:
+        logger.error(f"Invalid {THROTTLE_CONFIG_SLUG} limit for {concurrency.name}: {configured!r}, using the code's")
+    return _MISSING
+
+
+def _limit(task, concurrency, key, configured, kwargs) -> Optional[int]:
+    limit = configured_limit(concurrency, key, configured)
+    if limit is not _MISSING:
+        return limit
+    return concurrency.limit(task, **kwargs) if callable(concurrency.limit) else concurrency.limit
+
+
+def reap_lost_tasks(db="worker") -> int:
+    """Mark as ERRORED the RUNNING tasks whose worker was killed (their heartbeat stopped), and free their lease."""
+    cutoff = timezone.now() - LOST_AFTER
+    count = 0
+    for lease in TaskLease.objects.using(db).filter(heartbeat_at__lt=cutoff):
+        count += (
+            Task.objects.using(db)
+            .filter(id=lease.task_id, status=RUNNING)
+            .update(
+                status=ERRORED,
+                ended_at=timezone.now(),
+                result={"result": ERRORED, "message": f"Worker lost: no heartbeat since {lease.heartbeat_at}"},
+            )
+        )
+        lease.delete()
+    if count:
+        logger.warning(f"Marked {count} task(s) as ERRORED because their worker was lost")
+    return count
+
+
+class Heartbeat(threading.Thread):
+    """Refresh the lease of a running task, from its own database connection so that it's visible immediately
+    even if the task runs in a transaction."""
+
+    def __init__(self, db, task_id, interval=HEARTBEAT_INTERVAL):
+        super().__init__(name=f"task-heartbeat-{task_id}", daemon=True)
+        self.db = db
+        self.task_id = task_id
+        self.interval = interval
+        self._stopped = threading.Event()
+
+    def run(self):
+        try:
+            while not self._stopped.wait(self.interval):
+                try:
+                    self.beat()
+                except Exception:
+                    logger.exception(f"Heartbeat of task {self.task_id} failed")
+                    # a failed query can leave this thread's connection unusable, and Django only replaces broken
+                    # connections between requests: drop it so that the next beat reconnects
+                    connections[self.db].close()
+        finally:
+            connections.close_all()  # the connections of this thread only
+
+    def beat(self):
+        TaskLease.objects.using(self.db).filter(task_id=self.task_id).update(heartbeat_at=timezone.now())
+
+    def stop(self):
+        self._stopped.set()

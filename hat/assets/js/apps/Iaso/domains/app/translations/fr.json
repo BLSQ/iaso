@@ -1087,6 +1087,7 @@
     "iaso.label.workflow": "Workflow",
     "iaso.label.workflows": "Workflows",
     "iaso.label.workflowVersion": "Version du workflow",
+    "iaso.label.workflowVersion.exposeAutoFirstStep": "Première étape automatique",
     "iaso.label.wrongAccount": "Vous êtes connecté au mauvais compte, voulez-vous vous déconnecter pour vous connecter avec le bon compte?",
     "iaso.label.wrongAccountTitle": "Mauvais compte",
     "iaso.label.xls_form_file": "Fichier XLSForm",

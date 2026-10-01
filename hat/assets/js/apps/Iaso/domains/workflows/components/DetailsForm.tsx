@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
 import { Box, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
@@ -10,34 +9,34 @@ import { WorkflowVersionDetail } from '../types';
 type Props = {
     workflowVersion: WorkflowVersionDetail;
 };
-// @ts-ignore
-const useStyles = makeStyles(theme => ({
-    root: {
-        position: 'relative',
-        '& #input-text-name': {
-            paddingRight: theme.spacing(15),
-        },
-    },
-    button: {
-        position: 'absolute !important',
-        right: theme.spacing(3),
-        top: 26,
-    },
-}));
+
 export const DetailsForm: FunctionComponent<Props> = ({ workflowVersion }) => {
-    const classes: Record<string, string> = useStyles();
     const [name, setName] = useState<string>(workflowVersion.name);
+    const [autoFirstStep, setAutoFirstStep] = useState<boolean>(
+        workflowVersion.auto_first_step,
+    );
     const { formatMessage } = useSafeIntl();
     const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(
         'workflowVersion',
         workflowVersion.version_id,
     );
     const handleSave = useCallback(() => {
-        updateWorkflowVersion({ name, versionId: workflowVersion.version_id });
-    }, [name, updateWorkflowVersion, workflowVersion.version_id]);
-    const saveDisabled = name === workflowVersion.name || name === '';
+        updateWorkflowVersion({
+            name,
+            versionId: workflowVersion.version_id,
+            auto_first_step: autoFirstStep,
+        });
+    }, [
+        autoFirstStep,
+        name,
+        updateWorkflowVersion,
+        workflowVersion.version_id,
+    ]);
+    const saveDisabled =
+        (name === workflowVersion.name || name === '') &&
+        autoFirstStep === workflowVersion.auto_first_step;
     return (
-        <Box p={2} className={classes.root}>
+        <Box p={2}>
             <InputComponent
                 withMarginTop={false}
                 keyValue="name"
@@ -47,16 +46,24 @@ export const DetailsForm: FunctionComponent<Props> = ({ workflowVersion }) => {
                 label={MESSAGES.name}
                 required
             />
-            <Button
-                className={classes.button}
-                disabled={saveDisabled}
-                color="primary"
-                data-test="save-name-button"
-                onClick={handleSave}
-                variant="contained"
-            >
-                {formatMessage(MESSAGES.save)}
-            </Button>
+            <InputComponent
+                type="checkbox"
+                keyValue="auto_first_step"
+                value={autoFirstStep}
+                label={MESSAGES.autoFirstStep}
+                onChange={() => setAutoFirstStep(!autoFirstStep)}
+            />
+            <Box display="flex" justifyContent="flex-end">
+                <Button
+                    disabled={saveDisabled}
+                    color="primary"
+                    data-test="save-name-button"
+                    onClick={handleSave}
+                    variant="contained"
+                >
+                    {formatMessage(MESSAGES.save)}
+                </Button>
+            </Box>
         </Box>
     );
 };

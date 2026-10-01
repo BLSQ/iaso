@@ -31,7 +31,7 @@ from .stocks import (
     StockRulesVersionsStatus,
 )
 from .storage import StorageDevice, StorageLogEntry, StoragePassword
-from .task import Task, TaskLog
+from .task import Task, TaskLease, TaskLog
 from .team import Team
 from .tenant_users import TenantUser
 from .validation_workflow import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
@@ -109,6 +109,7 @@ __all__ = [
     "StorageLogEntry",
     "StoragePassword",
     "Task",
+    "TaskLease",
     "TaskLog",
     "Team",
     "TenantUser",

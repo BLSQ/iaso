@@ -889,6 +889,7 @@
     "iaso.label.workflow": "Flujo de trabajo",
     "iaso.label.workflows": "Flujos de trabajo",
     "iaso.label.workflowVersion": "Versión del flujo de trabajo",
+    "iaso.label.workflowVersion.exposeAutoFirstStep": "Primer paso automático",
     "iaso.label.wrongAccount": "Está conectado con la cuenta incorrecta, ¿desea cerrar sesión y conectarse con la cuenta correcta para ver este enlace?",
     "iaso.label.wrongAccountTitle": "Cuenta incorrecta",
     "iaso.label.xls_form_file": "Archivo XLSForm",

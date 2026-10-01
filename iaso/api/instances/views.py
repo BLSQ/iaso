@@ -1120,7 +1120,7 @@ def import_data(instances, user, app_id, api_import=None):
         # The overlapping names caused a single reference Instance to be created that two entities tried to
         # reference simultaneously as their attributes, causing an IntegrityError.
         # refs: SLEEP-1634
-        if uuids_by_file_name[file_name] - {uuid}:
+        if any(existing_uuid != uuid for existing_uuid in uuids_by_file_name[file_name]):
             base, ext = os.path.splitext(file_name)
             file_name = f"{base}_dup_{uuid}{ext}"
 

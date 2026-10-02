@@ -31,6 +31,7 @@ export const StockVariationSearch: FunctionComponent<Props> = ({
     const redirectTo = useRedirectTo();
     const urlSearch = params[searchKey] ?? '';
     const [search, setSearch] = useState<string>(urlSearch);
+    const [hasForbiddenChars, setHasForbiddenChars] = useState(false);
 
     useEffect(() => {
         setSearch(urlSearch);
@@ -59,6 +60,8 @@ export const StockVariationSearch: FunctionComponent<Props> = ({
                     onChange={handleChange}
                     labelString={formatMessage(MESSAGES.search)}
                     onEnterPressed={handleSearch}
+                    blockForbiddenChars
+                    onErrorChange={setHasForbiddenChars}
                 />
             </Grid>
             <Grid item xs={12} md={8}>
@@ -69,7 +72,7 @@ export const StockVariationSearch: FunctionComponent<Props> = ({
                     height="100%"
                 >
                     <SearchButton
-                        disabled={search === urlSearch}
+                        disabled={hasForbiddenChars || search === urlSearch}
                         onSearch={handleSearch}
                     />
                 </Box>

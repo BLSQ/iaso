@@ -32,18 +32,31 @@ export type StockVariationTab =
     | 'incident'
     | 'earmarked';
 
+export type StockVariationSearchKey =
+    | 'formaSearch'
+    | 'destructionSearch'
+    | 'incidentSearch';
+
+export type StockVariationPageKey =
+    | 'formaPage'
+    | 'destructionPage'
+    | 'incidentPage';
+
 export type StockVariationParams = {
     id: string; // number as string
     tab: StockVariationTab;
     formaPageSize: string; // number as string
     formaPage: string; // number as string
     formaOrder: string;
+    formaSearch?: string;
     destructionPageSize: string; // number as string
     destructionPage: string; // number as string
     destructionOrder: string;
+    destructionSearch?: string;
     incidentPageSize: string; // number as string
     incidentPage: string; // number as string
     incidentOrder: string;
+    incidentSearch?: string;
     unusableVialsOrder: string; // number as string
     usableVialsPageSize: string; // number as string
     usableVialsPage: string; // number as string

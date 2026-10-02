@@ -198,11 +198,18 @@ def get_rows_queryset(
     rows = rows.annotate(has_children=Exists(valid_children))
 
     targets_ctes = get_targets_ctes(target_org_units, parent_org_unit)
-    return annotate_counts(rows, targets_ctes).select_related("parent")
+    return (
+        annotate_counts(rows, targets_ctes)
+        .select_related("parent")
+        .only("id", "name", "org_unit_type", "parent__id", "parent__name")
+        # Only the columns used by `PromptnessStatsRowSerializer`
+    )
 
 
 def get_totals(parent_org_unit: OrgUnit, target_org_units: QuerySet[OrgUnit]) -> OrgUnit:
     """The parent org unit, annotated with the counts for its whole hierarchy (see `annotate_counts()`)."""
-    parent_queryset = OrgUnit.objects.filter(id=parent_org_unit.id)
+    parent_queryset = OrgUnit.objects.filter(id=parent_org_unit.id).only(
+        "id"
+    )  # only the id for PromptnessStatsTotalsSerializer
     targets_ctes = get_targets_ctes(target_org_units, parent_org_unit)
     return annotate_counts(parent_queryset, targets_ctes).get()

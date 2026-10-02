@@ -2,8 +2,8 @@
 
 The computation is done in 3 steps:
 
-1. `get_target_org_units()`: the org units expected to submit the form, each annotated with its promptness status
-   (based on its earliest valid submission for the period).
+1. `get_target_org_units()`: the org units expected to submit the form, each annotated with whether it has a valid
+   submission for the period, and whether it has one before the end of the deadline day.
 2. `annotate_counts()`: for each org unit of a queryset, count the target org units in its hierarchy (itself included),
    per status, and compute the percentages.
 3. `get_rows_queryset()` / `get_totals()`: apply `annotate_counts()` on the rows of the response and on the parent
@@ -29,7 +29,7 @@ from django.db.models.functions import Cast, Round
 
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType
 
-from .constants import STATUS_LATE, STATUS_MISSING, STATUS_ON_TIME, SUBMISSION_TIMESTAMP_FIELD
+from .constants import SUBMISSION_TIMESTAMP_FIELD
 from .period import PromptnessPeriod
 
 
@@ -50,35 +50,30 @@ def get_valid_submissions(form: Form, period: PromptnessPeriod) -> QuerySet[Inst
 
 
 def get_target_org_units(form: Form, period: PromptnessPeriod) -> QuerySet[OrgUnit]:
-    """`VALID` org units expected to submit the form, annotated with `promptness_status`.
+    """`VALID` org units expected to submit the form, annotated with `has_submission` and `submitted_on_time`.
 
     An org unit is expected to submit the form if its type is one of the form's org unit types, or if it belongs to
     one of the form's org unit groups. Its status depends on its earliest valid submission:
-    - no submission: `MISSING`
-    - submitted before the end of the deadline day: `ON_TIME`
-    - submitted after: `LATE`
+    - no submission: `MISSING` (`has_submission` is `False`)
+    - submitted before the end of the deadline day: `ON_TIME` (`submitted_on_time` is `True`)
+    - submitted after: `LATE` (`has_submission` is `True`, `submitted_on_time` is `False`)
+
+    The earliest submission is before the deadline if and only if at least one submission is before the deadline:
+    both annotations are `EXISTS`, which stop at the first matching submission, instead of looking for the earliest
+    one.
     """
     targeted_by_type = Q(org_unit_type__in=form.org_unit_types.all())
     group_members = Group.org_units.through.objects.filter(group__in=form.org_unit_groups.all())
     targeted_by_group = Q(id__in=group_members.values("orgunit_id"))
 
-    earliest_submission_at = Subquery(
-        get_valid_submissions(form, period)
-        .filter(org_unit=OuterRef("pk"))
-        .order_by(SUBMISSION_TIMESTAMP_FIELD)
-        .values(SUBMISSION_TIMESTAMP_FIELD)[:1]
-    )
+    submissions = get_valid_submissions(form, period).filter(org_unit=OuterRef("pk"))
+    submissions_on_time = submissions.filter(**{f"{SUBMISSION_TIMESTAMP_FIELD}__lt": period.deadline_end})
 
-    return (
-        OrgUnit.objects.filter(targeted_by_type | targeted_by_group, validation_status=OrgUnit.VALIDATION_VALID)
-        .annotate(earliest_submission_at=earliest_submission_at)
-        .annotate(
-            promptness_status=Case(
-                When(earliest_submission_at__isnull=True, then=Value(STATUS_MISSING)),
-                When(earliest_submission_at__lt=period.deadline_end, then=Value(STATUS_ON_TIME)),
-                default=Value(STATUS_LATE),
-            )
-        )
+    return OrgUnit.objects.filter(
+        targeted_by_type | targeted_by_group, validation_status=OrgUnit.VALIDATION_VALID
+    ).annotate(
+        has_submission=Exists(submissions),
+        submitted_on_time=Exists(submissions_on_time),
     )
 
 
@@ -96,8 +91,11 @@ def percentage_of_expected(field_name: str) -> Case:
 def annotate_counts(org_units: QuerySet[OrgUnit], target_org_units: QuerySet[OrgUnit]) -> QuerySet[OrgUnit]:
     """Annotate each org unit with the counts of the target org units in its hierarchy (itself included):
 
-    - `expected`, `on_time`, `late`, `missing`
-    - `received`: `on_time + late`
+    - `expected`: target org units
+    - `received`: target org units with a valid submission
+    - `on_time`: target org units with a valid submission before the end of the deadline day
+    - `late`: `received - on_time`
+    - `missing`: `expected - received`
     - `completeness_percent`, `on_time_percent`, `late_percent`, `missing_percent`
     """
     targets_in_hierarchy = target_org_units.filter(path__descendants=OuterRef("path")).values("id")
@@ -105,11 +103,13 @@ def annotate_counts(org_units: QuerySet[OrgUnit], target_org_units: QuerySet[Org
     return (
         org_units.annotate(
             expected=SubqueryCount(targets_in_hierarchy),
-            on_time=SubqueryCount(targets_in_hierarchy.filter(promptness_status=STATUS_ON_TIME)),
-            late=SubqueryCount(targets_in_hierarchy.filter(promptness_status=STATUS_LATE)),
-            missing=SubqueryCount(targets_in_hierarchy.filter(promptness_status=STATUS_MISSING)),
+            received=SubqueryCount(targets_in_hierarchy.filter(has_submission=True)),
+            on_time=SubqueryCount(targets_in_hierarchy.filter(submitted_on_time=True)),
         )
-        .annotate(received=F("on_time") + F("late"))
+        .annotate(
+            late=F("received") - F("on_time"),
+            missing=F("expected") - F("received"),
+        )
         .annotate(
             completeness_percent=percentage_of_expected("received"),
             on_time_percent=percentage_of_expected("on_time"),

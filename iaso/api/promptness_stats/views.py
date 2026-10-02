@@ -1,12 +1,12 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from iaso.api.common import HasPermission
+from iaso.api.promptness_stats.filters import StableOrderingFilter
 from iaso.api.promptness_stats.pagination import PromptnessStatsPagination
 from iaso.api.promptness_stats.period import PromptnessPeriod
 from iaso.api.promptness_stats.queries import get_rows_queryset, get_target_org_units, get_totals
@@ -39,7 +39,7 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     serializer_class = PromptnessStatsQueryParamsSerializer
     pagination_class = PromptnessStatsPagination
-    filter_backends = [OrderingFilter]
+    filter_backends = [StableOrderingFilter]
     ordering_fields = [
         "name",
         "org_unit_type__name",

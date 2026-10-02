@@ -84,7 +84,7 @@ returned by the [summary endpoint](#get-promptness-summary).
 - `order`: String (optional) - Comma-separated list of fields to order by. Prefix with `-` for descending order.
   Defaults to `name`. Allowed values: `name`, `org_unit_type__name`, `expected`, `received`, `completeness_percent`,
   `on_time`, `on_time_percent`, `late`, `late_percent`, `missing`, `missing_percent`. Unsupported fields are
-  ignored.
+  ignored. Rows with equal values are always ordered by org unit id, so that the pagination is stable.
     - Example: `&order=-missing,name`
 - `page`: Int (optional) - Current page number. Defaults to `1`.
 - `limit`: Int (optional) - Number of rows per page. Defaults to `20`.

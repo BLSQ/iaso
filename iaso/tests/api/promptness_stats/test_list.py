@@ -261,6 +261,23 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
             ],
         )
 
+    def test_rows_with_equal_values_are_ordered_by_id(self):
+        # 2 org units with the same name: whatever the direction of the ordering on `name`, the tie is broken by `id`
+        first_twin = self.create_ou("Twin", self.type_district, self.somali)
+        second_twin = self.create_ou("Twin", self.type_district, self.somali)
+        self.assertLess(first_twin.id, second_twin.id)
+
+        self.client.force_authenticate(self.user)
+        for order in ["name", "-name"]:
+            with self.subTest(order=order):
+                params = self.get_serializer_params(parent_org_unit_id=self.somali.id, order=order)
+                response = self.client.get(self.URL, params)
+                data = self.assertJSONResponse(response, status.HTTP_200_OK)
+                self.assertEqual(
+                    [(row["name"], row["id"]) for row in data["results"]],
+                    [("Twin", first_twin.id), ("Twin", second_twin.id)],
+                )
+
     def test_unsupported_order_field_is_ignored(self):
         # DRF OrderingFilter ignores unknown fields and falls back to the default ordering
         self.client.force_authenticate(self.user)

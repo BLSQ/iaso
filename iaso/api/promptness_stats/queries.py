@@ -27,7 +27,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast, Round
 
-from iaso.models import Form, Instance, OrgUnit, OrgUnitType
+from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType
 
 from .constants import STATUS_LATE, STATUS_MISSING, STATUS_ON_TIME, SUBMISSION_TIMESTAMP_FIELD
 from .period import PromptnessPeriod
@@ -59,9 +59,8 @@ def get_target_org_units(form: Form, period: PromptnessPeriod) -> QuerySet[OrgUn
     - submitted after: `LATE`
     """
     targeted_by_type = Q(org_unit_type__in=form.org_unit_types.all())
-    targeted_by_group = Q(groups__in=form.org_unit_groups.all())
-    # An org unit can match both conditions (or several groups): selecting the ids first avoids duplicates
-    target_ids = OrgUnit.objects.filter(targeted_by_type | targeted_by_group).values("id")
+    group_members = Group.org_units.through.objects.filter(group__in=form.org_unit_groups.all())
+    targeted_by_group = Q(id__in=group_members.values("orgunit_id"))
 
     earliest_submission_at = Subquery(
         get_valid_submissions(form, period)
@@ -71,7 +70,7 @@ def get_target_org_units(form: Form, period: PromptnessPeriod) -> QuerySet[OrgUn
     )
 
     return (
-        OrgUnit.objects.filter(id__in=target_ids, validation_status=OrgUnit.VALIDATION_VALID)
+        OrgUnit.objects.filter(targeted_by_type | targeted_by_group, validation_status=OrgUnit.VALIDATION_VALID)
         .annotate(earliest_submission_at=earliest_submission_at)
         .annotate(
             promptness_status=Case(

@@ -1,5 +1,6 @@
 import time_machine
 
+from django.contrib.auth.models import User
 from rest_framework import status
 
 from iaso import models as m
@@ -14,6 +15,22 @@ from iaso.tests.api.promptness_stats.common import (
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
 class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
+    def test_num_queries(self):
+        # The user is reloaded from the database, like in a real request: its profile and account are not cached yet
+        user = User.objects.get(id=self.user.id)
+        self.client.force_authenticate(user)
+
+        with self.assertNumQueries(8):
+            # 1-2: PERMISSION (user and group permissions)
+            # 3: SELECT PROFILE of the user
+            # 4: SELECT ACCOUNT of the user
+            # 5: EXISTS ORG UNITS of the user (restriction of the accessible org units)
+            # 6: SELECT FORM (validation of form_id)
+            # 7: SELECT PARENT ORG UNIT (validation of parent_org_unit_id)
+            # 8: SELECT the parent org unit with its totals (CTE of the targets, joined to the parent)
+            response = self.client.get(self.SUMMARY_URL, self.get_serializer_params())
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
     # Response shape
     def test_response_shape(self):
         self.client.force_authenticate(self.user)

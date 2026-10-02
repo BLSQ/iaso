@@ -1,5 +1,6 @@
 import time_machine
 
+from django.contrib.auth.models import User
 from rest_framework import status
 
 from iaso import models as m
@@ -10,6 +11,23 @@ from iaso.tests.api.promptness_stats.common import RESPONSE_KEYS, ROW_KEYS, Prom
 class PromptnessStatsListTestCase(PromptnessStatsTestCase):
     def result_names(self, data):
         return [row["name"] for row in data["results"]]
+
+    def test_num_queries(self):
+        # The user is reloaded from the database, like in a real request: its profile and account are not cached yet
+        user = User.objects.get(id=self.user.id)
+        self.client.force_authenticate(user)
+
+        with self.assertNumQueries(9):
+            # 1-2: PERMISSION (user and group permissions)
+            # 3: SELECT PROFILE of the user
+            # 4: SELECT ACCOUNT of the user
+            # 5: EXISTS ORG UNITS of the user (restriction of the accessible org units)
+            # 6: SELECT FORM (validation of form_id)
+            # 7: SELECT PARENT ORG UNIT (validation of parent_org_unit_id)
+            # 8: COUNT the rows (pagination)
+            # 9: SELECT the rows of the page with their counts (CTE of the targets, joined to the rows)
+            response = self.client.get(self.URL, self.get_serializer_params())
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     # Response shape
     def test_response_shape(self):

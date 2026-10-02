@@ -39,6 +39,8 @@ services:
             - db
         env_file:
             -   .env
+        environment:
+            MCP_ENABLED: "true"
         logging: &iaso_logging
             driver: 'json-file'
             options:
@@ -79,6 +81,20 @@ services:
             WEBPACK_POLL: 'true'
         logging: *iaso_logging
         command: start_webpack
+
+    mcp-ui:
+        image: node:22.18.0-bullseye-slim
+        working_dir: /opt/app/iaso/mcp/frontend
+        ports:
+            - "5173:5173"
+        volumes:
+            - ./iaso/mcp/frontend:/opt/app/iaso/mcp/frontend
+        environment:
+            IASO_PROXY: http://iaso:8081
+        depends_on:
+            - iaso
+        logging: *iaso_logging
+        command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
 
     # celery worker for wfp plugin
     redis:

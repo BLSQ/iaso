@@ -85,96 +85,6 @@ def save_file_to_api_import(api_import, file_path):
         api_import.save()
 
 
-def create_zip_file_at_scale(api_import, num_patients=25):
-    """
-    `num_patients` distinct *new* patients, each with exactly one registration + one CATT
-    follow-up - the realistic shape of a large bulk sync from one facility: broad (many
-    distinct entities), not deep (a few entities repeated many times, which would be a
-    rarer "lots of follow-ups for the same patient" case). Same org unit and same 2 forms/
-    versions throughout, reusing the base fixture's registration/CATT xml content as
-    byte templates under fresh uuids.
-    """
-    base_dir = zip_fixture_dir(CATT_TABLET_DIR)
-    with open(
-        os.path.join(
-            base_dir,
-            DISASI_MAKULO_REGISTRATION,
-            "20_56_bd75c228-ee48-4df6-9226-d6360d0e6b6c_2024-04-05_16-08-56.xml",
-        ),
-        "rb",
-    ) as f:
-        registration_xml_bytes = f.read()
-    with open(
-        os.path.join(
-            base_dir, DISASI_MAKULO_CATT, "16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
-        ),
-        "rb",
-    ) as f:
-        catt_xml_bytes = f.read()
-
-    with open(os.path.join(base_dir, "instances.json")) as f:
-        base_instances_data = json.load(f)
-    with open(os.path.join(base_dir, "orgUnits.json")) as f:
-        org_units_data = json.load(f)
-
-    org_unit_uuid = base_instances_data[0]["orgUnitId"]
-
-    zip_path = f"/tmp/{CATT_TABLET_DIR}_at_scale.zip"
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        zipf.writestr("orgUnits.json", json.dumps(org_units_data))
-
-        new_instances = []
-        for _ in range(num_patients):
-            # Matches the base fixture's convention: entityUuid == the registration
-            # instance's own uuid.
-            registration_uuid = str(uuid.uuid4())
-            catt_uuid = str(uuid.uuid4())
-
-            reg_file_name = f"registration_{registration_uuid}.xml"
-            catt_file_name = f"followup_{catt_uuid}.xml"
-            zipf.writestr(f"{registration_uuid}/{reg_file_name}", registration_xml_bytes)
-            zipf.writestr(f"{catt_uuid}/{catt_file_name}", catt_xml_bytes)
-
-            new_instances.append(
-                {
-                    "id": registration_uuid,
-                    "created_at": 1.712326150005e9,
-                    "updated_at": 1.712326150005e9,
-                    "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{registration_uuid}/{reg_file_name}",
-                    "name": "Enregistrement",
-                    "formId": "1",
-                    "orgUnitId": org_unit_uuid,
-                    "entityUuid": registration_uuid,
-                    "entityTypeId": "1",
-                    "latitude": 50.6429429,
-                    "longitude": 4.6004524,
-                    "altitude": 128.3,
-                    "accuracy": 14.929,
-                }
-            )
-            new_instances.append(
-                {
-                    "id": catt_uuid,
-                    "created_at": 1.71232618245e9,
-                    "updated_at": 1.71232618245e9,
-                    "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{catt_uuid}/{catt_file_name}",
-                    "name": "CATT",
-                    "formId": "2",
-                    "orgUnitId": org_unit_uuid,
-                    "entityUuid": registration_uuid,
-                    "entityTypeId": "1",
-                    "latitude": 50.6429501,
-                    "longitude": 4.6004282,
-                    "altitude": 128.3,
-                    "accuracy": 12.74,
-                }
-            )
-
-        zipf.writestr("instances.json", json.dumps(new_instances))
-
-    save_file_to_api_import(api_import, zip_path)
-
-
 def create_entity_with_registration(
     self,
     name,
@@ -258,7 +168,93 @@ class ProcessMobileBulkUploadTest(TestCase):
         save_file_to_api_import(self.api_import, zip_path)
 
     def _create_zip_file_at_scale(self, num_patients=25):
-        create_zip_file_at_scale(self.api_import, num_patients)
+        """
+        `num_patients` distinct *new* patients, each with exactly one registration + one CATT
+        follow-up - the realistic shape of a large bulk sync from one facility: broad (many
+        distinct entities), not deep (a few entities repeated many times, which would be a
+        rarer "lots of follow-ups for the same patient" case). Same org unit and same 2 forms/
+        versions throughout, reusing the base fixture's registration/CATT xml content as
+        byte templates under fresh uuids.
+        """
+        base_dir = zip_fixture_dir(CATT_TABLET_DIR)
+        with open(
+            os.path.join(
+                base_dir,
+                DISASI_MAKULO_REGISTRATION,
+                "20_56_bd75c228-ee48-4df6-9226-d6360d0e6b6c_2024-04-05_16-08-56.xml",
+            ),
+            "rb",
+        ) as f:
+            registration_xml_bytes = f.read()
+        with open(
+            os.path.join(
+                base_dir, DISASI_MAKULO_CATT, "16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
+            ),
+            "rb",
+        ) as f:
+            catt_xml_bytes = f.read()
+
+        with open(os.path.join(base_dir, "instances.json")) as f:
+            base_instances_data = json.load(f)
+        with open(os.path.join(base_dir, "orgUnits.json")) as f:
+            org_units_data = json.load(f)
+
+        org_unit_uuid = base_instances_data[0]["orgUnitId"]
+
+        zip_path = f"/tmp/{CATT_TABLET_DIR}_at_scale.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("orgUnits.json", json.dumps(org_units_data))
+
+            new_instances = []
+            for _ in range(num_patients):
+                # Matches the base fixture's convention: entityUuid == the registration
+                # instance's own uuid.
+                registration_uuid = str(uuid.uuid4())
+                catt_uuid = str(uuid.uuid4())
+
+                reg_file_name = f"registration_{registration_uuid}.xml"
+                catt_file_name = f"followup_{catt_uuid}.xml"
+                zipf.writestr(f"{registration_uuid}/{reg_file_name}", registration_xml_bytes)
+                zipf.writestr(f"{catt_uuid}/{catt_file_name}", catt_xml_bytes)
+
+                new_instances.append(
+                    {
+                        "id": registration_uuid,
+                        "created_at": 1.712326150005e9,
+                        "updated_at": 1.712326150005e9,
+                        "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{registration_uuid}/{reg_file_name}",
+                        "name": "Enregistrement",
+                        "formId": "1",
+                        "orgUnitId": org_unit_uuid,
+                        "entityUuid": registration_uuid,
+                        "entityTypeId": "1",
+                        "latitude": 50.6429429,
+                        "longitude": 4.6004524,
+                        "altitude": 128.3,
+                        "accuracy": 14.929,
+                    }
+                )
+                new_instances.append(
+                    {
+                        "id": catt_uuid,
+                        "created_at": 1.71232618245e9,
+                        "updated_at": 1.71232618245e9,
+                        "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{catt_uuid}/{catt_file_name}",
+                        "name": "CATT",
+                        "formId": "2",
+                        "orgUnitId": org_unit_uuid,
+                        "entityUuid": registration_uuid,
+                        "entityTypeId": "1",
+                        "latitude": 50.6429501,
+                        "longitude": 4.6004282,
+                        "altitude": 128.3,
+                        "accuracy": 12.74,
+                    }
+                )
+
+            zipf.writestr("instances.json", json.dumps(new_instances))
+
+        save_file_to_api_import(self.api_import, zip_path)
 
     def test_success(self):
         self._create_zip_file()

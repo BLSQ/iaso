@@ -267,9 +267,6 @@ class PromptnessStatsTotalsSerializerTestCase(PromptnessStatsTestCase):
 
 
 class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
-    def serialize(self, org_unit, status=PROMPTNESS_STATUSES):
-        return dict(PromptnessStatsRowSerializer(org_unit, context={"status": status}).data)
-
     def fake_oromia(self):
         return fake_org_unit_with_counts(
             expected=4,
@@ -284,7 +281,7 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
         )
 
     def test_serialize(self):
-        data = self.serialize(self.fake_oromia())
+        data = PromptnessStatsRowSerializer(self.fake_oromia(), context={"status": PROMPTNESS_STATUSES}).data
         self.assertEqual(set(data.keys()), ROW_KEYS)
         self.assertEqual(
             data,
@@ -319,7 +316,7 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
             parent=SimpleNamespace(id=1, name="Ethiopia"),
             has_children=False,
         )
-        data = self.serialize(org_unit)
+        data = PromptnessStatsRowSerializer(org_unit, context={"status": PROMPTNESS_STATUSES}).data
         self.assertEqual(
             data,
             {
@@ -344,11 +341,11 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
             parent=None,
             has_children=True,
         )
-        data = self.serialize(org_unit)
+        data = PromptnessStatsRowSerializer(org_unit, context={"status": PROMPTNESS_STATUSES}).data
         self.assertIsNone(data["parent_org_unit"])
 
     def test_excluded_statuses(self):
-        data = self.serialize(self.fake_oromia(), status=["ON_TIME", "MISSING"])
+        data = PromptnessStatsRowSerializer(self.fake_oromia(), context={"status": ["ON_TIME", "MISSING"]}).data
         self.assertEqual(data["late"], None)
         self.assertEqual(data["late_percent"], None)
         self.assertEqual(data["on_time"], 2)

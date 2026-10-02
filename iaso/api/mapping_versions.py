@@ -11,7 +11,7 @@ import iaso.models as m
 from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from hat.audit.models import MAPPING_VERSION_API, log_modification, serialize_instance
-from iaso.models import FormVersion, MappingVersion
+from iaso.models import MappingVersion
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 
 from .common import HasPermission, ModelViewSet, TimestampField
@@ -249,10 +249,7 @@ class MappingVersionsViewSet(ModelViewSet):
             "order", "form_version__form__name,form_version__version_id,mapping__mapping_type"
         ).split(",")
 
-        profile = self.request.user.iaso_profile
-        queryset = MappingVersion.objects.filter(
-            form_version_id__in=FormVersion.objects.filter(form__projects__account=profile.account)
-        )
+        queryset = MappingVersion.objects.filter_for_user(self.request.user)
 
         search_term = self.request.GET.get("search") or self.request.GET.get("search")
         if search_term:

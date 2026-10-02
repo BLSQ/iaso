@@ -332,6 +332,38 @@ class FormsVersionAPITestCase(APITestCase):
         resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id},{self.project.id}")
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
+    def test_mappingversions_not_visible_from_other_account(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version = self.create_mapping_version(form_version, self.sw_source)
+
+        self.client.force_authenticate(self.batman)
+        resp = self.client.get("/api/mappingversions/")
+        self.assertJSONResponse(resp, status.HTTP_200_OK)
+        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+
+        resp = self.client.get(f"/api/mappingversions/{mapping_version['id']}/")
+        self.assertJSONResponse(resp, status.HTTP_404_NOT_FOUND)
+
+        self.assertEqual(m.MappingVersion.objects.filter_for_user(self.batman).count(), 0)
+
+    def test_mappingversions_no_duplicates_when_form_in_several_projects(self):
+        """form <-> project is m2m: a form shared by 2 projects of the account must not duplicate rows"""
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        self.create_mapping_version(form_version, self.sw_source)
+
+        other_project = m.Project.objects.create(
+            name="Cloning facility", app_id="stars.empire.cloning", account=self.star_wars
+        )
+        other_project.forms.add(form_version.form)
+
+        resp = self.client.get("/api/mappingversions/")
+        self.assertJSONResponse(resp, status.HTTP_200_OK)
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        self.assertEqual(m.MappingVersion.objects.filter_for_user(self.yoda).count(), 1)
+
     def test_mappingversions_bulk_patch(self):
         """PATCH /mappingversions/<id>: several question mappings at once, as the import wizard does, then
         restoring and unmapping some of them"""

@@ -55,10 +55,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         profiles = Profile.objects.filter(account=user.iaso_profile.account)
         return profiles.filter(id=obj.id).exists() and user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name())
     if isinstance(obj, MappingVersion):
-        # same scope as the mapping versions API
-        mapping_versions = MappingVersion.objects.filter(
-            form_version__form__projects__account=user.iaso_profile.account
-        )
+        mapping_versions = MappingVersion.objects.filter_for_user(user)
         return mapping_versions.filter(id=obj.id).exists() and user.has_perm(CORE_MAPPINGS_PERMISSION.full_name())
 
     # Now checking models that are part of plugins

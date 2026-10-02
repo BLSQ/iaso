@@ -3,6 +3,7 @@ import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/ho
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { PublicVaccineStockResponse } from './types';
 
 const usableEndpoint = '/api/polio/dashboards/public/vaccine_stock/get_usable';
 const unusableEndpoint =
@@ -14,25 +15,28 @@ const defaults = {
     page: 1,
 };
 
-const getPublicVaccineStock = (queryString = '', usable = true) => {
+const getPublicVaccineStock = (
+    queryString = '',
+    usable = true,
+): Promise<PublicVaccineStockResponse> => {
     const endpoint = usable ? usableEndpoint : unusableEndpoint;
     return getRequest(`${endpoint}/?${queryString}`);
 };
-export const useGetPublicVaccineStock = allParams => {
+export const useGetPublicVaccineStock = (allParams: Record<string, string>) => {
     const appId = useAppId();
     const { tab, ...params } = allParams;
     const isUsable = (tab ?? 'usable') === 'usable';
-    const safeParams = useUrlParams({ ...params, app_id: appId }, defaults);
+    const safeParams = useUrlParams(
+        { ...params, app_id: appId } as Parameters<typeof useUrlParams>[0],
+        defaults,
+    );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
 
-    return useSnackQuery({
+    return useSnackQuery<PublicVaccineStockResponse>({
         queryKey: ['public_stock', queryString, tab],
         queryFn: () => getPublicVaccineStock(queryString, isUsable),
         options: {
-            select: data => {
-                return data ?? {};
-            },
             keepPreviousData: true,
             cacheTime: 60000,
             staleTime: 60000,

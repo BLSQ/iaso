@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 08:47+0000\n"
+"POT-Creation-Date: 2026-09-21 12:43+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -191,6 +191,14 @@ msgstr "Ces IDs d'org unit n'existent pas:"
 #: iaso/api/metrics/serializers.py
 msgid "Year must be between 1900 and 2100."
 msgstr "L'année doit être entre 1900 et 2100,"
+
+#: iaso/api/metrics/serializers.py
+msgid "Metric type does not exist."
+msgstr "Le type de métrique n'existe pas."
+
+#: iaso/api/metrics/serializers.py
+msgid "Every value's year must be one of the submitted 'years'."
+msgstr "L'année de chaque valeur doit faire partie des 'years' soumises."
 
 #: iaso/api/metrics/serializers.py
 msgid "metric_type_ids must be a comma-separated list of integers."

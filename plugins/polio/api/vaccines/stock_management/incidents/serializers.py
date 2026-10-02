@@ -18,7 +18,7 @@ class IncidentReportSerializer(ModelWithFileSerializer):
 
     class Meta:
         model = IncidentReport
-        exclude = ["file_last_scan", "file_scan_status"]
+        exclude = ["file_last_scan", "file_scan_status", "md5"]
 
     def get_can_edit(self, obj):
         return has_vaccine_stock_edit_access(
@@ -34,7 +34,7 @@ class IncidentReportSerializer(ModelWithFileSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        self.scan_file_if_exists(validated_data)
+        self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):

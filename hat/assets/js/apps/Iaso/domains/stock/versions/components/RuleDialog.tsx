@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
+    AddButton,
+    ConfirmCancelModal,
     IntlFormatMessage,
     IntlMessage,
-    useSafeIntl,
-    ConfirmCancelModal,
     makeFullModal,
-    AddButton,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
@@ -15,6 +15,7 @@ import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
+import { formatLabel } from 'Iaso/domains/instances/utils';
 import { useGetImpacts } from 'Iaso/domains/stock/hooks/useGetImpacts';
 import { useGetSkusDropdownOptions } from 'Iaso/domains/stock/hooks/useGetSkusDropdownOptions';
 import MESSAGES from 'Iaso/domains/stock/messages';
@@ -74,6 +75,7 @@ const RuleDialog: FunctionComponent<Props> = ({
     },
     saveRule,
 }) => {
+    const isEditing = initialData?.id;
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
@@ -122,7 +124,7 @@ const RuleDialog: FunctionComponent<Props> = ({
     const possibleFieldsOptions = useMemo(() => {
         return possibleFields.map(field => {
             return {
-                label: field.label,
+                label: formatLabel(field),
                 value: field.name,
             } as DropdownOptions<string>;
         });
@@ -158,6 +160,7 @@ const RuleDialog: FunctionComponent<Props> = ({
                                 errors={getErrors('sku')}
                                 label={MESSAGES.sku}
                                 options={skusList ?? []}
+                                disabled={isEditing}
                             />
                             <InputComponent
                                 type="select"
@@ -171,6 +174,7 @@ const RuleDialog: FunctionComponent<Props> = ({
                                 value={values.form}
                                 label={MESSAGES.form}
                                 options={formsList ?? []}
+                                disabled={isEditing}
                             />
                             <InputComponent
                                 type="select"

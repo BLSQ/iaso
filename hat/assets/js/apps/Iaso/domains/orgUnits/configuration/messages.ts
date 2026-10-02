@@ -167,6 +167,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Org Unit Types which do not have a configuration can be edited by the users without restriction.',
     },
+    code: {
+        id: 'iaso.oucrc.code',
+        defaultMessage: 'Code',
+    },
 });
 
 export default MESSAGES;

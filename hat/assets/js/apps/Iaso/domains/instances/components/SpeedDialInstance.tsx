@@ -21,6 +21,7 @@ import {
     useLinkToOrgUnitAction,
     useLockAction,
 } from '../hooks/speedDialActions';
+import { SpeedDialAction } from '../hooks/speedDialActions';
 import { useGetFormDefForInstance } from '../hooks/speeddials';
 import { ReassignInstancePayload } from '../hooks/useReassignInstance';
 import { Instance } from '../types/instance';
@@ -109,7 +110,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
     const { mutate: restoreInstance, isLoading: isRestoring } =
         useRestoreInstance();
     const getEnketoUrl = useGetEnketoUrl(window.location.href, currentInstance);
-    const onActionSelected = action => {
+    const onActionSelected = (action: SpeedDialAction) => {
         if (currentInstance) {
             if (action.id === 'instanceEditAction') {
                 getEnketoUrl();

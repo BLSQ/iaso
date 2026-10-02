@@ -4,6 +4,7 @@ import typing
 from unittest import mock
 
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
@@ -175,6 +176,28 @@ class FormsVersionAPITestCase(APITestCase):
         for form_version_data in form_versions_data:
             self.assertValidFormVersionData(form_version_data)
             self.assertNotIn("descriptor", form_version_data)
+
+    def test_form_versions_list_filtered_by_form_ids(self):
+        self.client.force_authenticate(self.yoda)
+
+        fv1 = self.form_1.form_versions.create(
+            file=ContentFile(b"<xml></xml>", name="test_1.xml"), version_id="2020022402"
+        )
+        fv2 = self.form_2.form_versions.first()
+
+        response = self.client.get(f"/api/formversions/?form_ids={self.form_1.id}")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        ids = [fv["id"] for fv in data["form_versions"]]
+        self.assertEqual(ids, [fv1.id])
+
+        response = self.client.get(f"/api/formversions/?form_ids={self.form_1.id},{self.form_2.id}")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        ids = [fv["id"] for fv in data["form_versions"]]
+        self.assertCountEqual(ids, [fv1.id, fv2.id])
+
+        response = self.client.get("/api/formversions/?form_ids=999999")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["form_versions"], [])
 
     def test_form_versions_retrieve(self):
         """GET /formversions/<form_id>: allowed"""
@@ -492,6 +515,34 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.yoda)
         response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_formversions_list_with_app_id_filters_out_version_of_derived_forms(self):
+        """GET /formversions/ with auth for project which requires it: 200"""
+
+        form_derived = m.Form.objects.create(
+            name="Derived",
+            form_id="sample2",
+            period_type="MONTH",
+            single_per_period=False,
+            derived=True,
+        )
+        self.project.forms.add(form_derived)
+        self.project.save()
+        form_derived.org_unit_types.set([self.sith_council])
+        form_derived_file_mock = mock.MagicMock(spec=File)
+        form_derived_file_mock.name = "test.xml"
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
+            form_derived.form_versions.create(
+                file=form_derived_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401"
+            )
+
+        self.client.force_authenticate(user=self.yoda)
+        response = self.client.get("/api/formversions/", {APP_ID: self.project.app_id})
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(response_data["form_versions"]), 1)
+        # form_1 is not returned because it doesn't have a version
+        # form_derived is not returned because it is derived
+        self.assertEqual(response_data["form_versions"][0]["form_id"], self.form_2.pk)
 
     def assertValidFormVersionData(
         self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True

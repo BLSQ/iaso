@@ -333,8 +333,11 @@ class ExternalTaskModelViewSet(ModelViewSet):
             )["runPipeline"]
             # The SUCCESS state will be set by the OpenHexa pipeline
             if run_result["success"]:
+                run_id = (run_result.get("run") or {}).get("id")
+                logger.info(f"Launched OpenHexa run: {run_id}")
                 return RUNNING
-            logger.info(f"Launched OpenHexa run: {run_result['id']}")
+            logger.error("Could not launch pipeline: %s", run_result)
+            return ERRORED
         except:
             logger.exception("Could not launch pipeline")
             return ERRORED

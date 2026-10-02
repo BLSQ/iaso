@@ -371,6 +371,7 @@ class NotificationViewSetTestCase(APITestCase):
         self.assertEqual(notification_import.created_by, self.user)
         self.assertEqual(notification_import.file_scan_status, VirusScanStatus.PENDING)  # Scanning not enabled
         self.assertEqual(notification_import.file_last_scan, None)
+        self.assertEqual(len(notification_import.md5), 32)
 
     @time_machine.travel(DT, tick=False)
     @override_settings(CLAMAV_ACTIVE=True)

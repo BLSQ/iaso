@@ -52,6 +52,7 @@ from iaso.models.entity import Entity, EntityType
 from iaso.models.microplanning import Planning
 from iaso.models.pages import Page
 from iaso.models.team import Team
+from iaso.modules import MODULES
 
 
 """
@@ -86,6 +87,9 @@ class Command(BaseCommand):
 
         for feat in AccountFeatureFlag.objects.all():
             account.feature_flags.add(feat)
+
+        account.modules = [module.codename for module in MODULES]
+        account.save()
 
         user, user_created = User.objects.get_or_create(
             username="testemail" + dhis2_version, email="testemail" + dhis2_version + "@bluesquarehub.com"
@@ -591,6 +595,7 @@ class Command(BaseCommand):
             if with_location:
                 instance.location = Point(-11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0)
             instance.entity = entity
+            instance.resolve_form_version()
             instance.save()
             entity.attributes = instance
             entity.name = " ".join([str(instance.json[k]) for k in form.label_keys])

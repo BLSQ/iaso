@@ -264,6 +264,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
             "new_opening_date": datetime.date(2022, 10, 27),
             "new_closed_date": datetime.date(2024, 10, 27),
             "approved_fields": ["new_org_unit_type"],
+            "new_code": "CODE1",
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
@@ -317,6 +318,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                         }
                     )
                 ],
+                "new_code": "CODE1",
             },
         )
 
@@ -509,6 +511,16 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["requested_fields"], ["new_name", "new_opening_date"])
 
+    def test_deserialize_ok_erase_code(self):
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_code": "",
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["requested_fields"], ["new_code"])
+        self.assertEqual(serializer.validated_data["new_code"], "")
+
     def test_generate_uuid_if_not_provided(self):
         data = {
             "org_unit_id": self.org_unit.id,
@@ -658,6 +670,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "new_opening_date": "2022-10-27",
             "new_closed_date": "2024-10-27",
             "new_reference_instances": [instance1.id, instance2.uuid],
+            "new_code": "CODE1",
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
 
@@ -673,6 +686,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "new_opening_date",
             "new_closed_date",
             "new_reference_instances",
+            "new_code",
         ]
         self.assertEqual(serializer.validated_data["requested_fields"], expected_requested_fields)
 
@@ -685,6 +699,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.new_opening_date, datetime.date(2022, 10, 27))
         self.assertEqual(change_request.new_closed_date, datetime.date(2024, 10, 27))
+        self.assertEqual(change_request.new_code, "CODE1")
         new_groups = change_request.new_groups.all()
         self.assertIn(group1, new_groups)
         self.assertIn(group2, new_groups)

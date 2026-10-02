@@ -79,6 +79,7 @@ export type RoutePath = {
     element: ReactElement; // a prop-less Element (not a component)
     isRootUrl?: boolean;
     allowAnonymous?: boolean;
+    featureFlag?: string;
 };
 
 export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {

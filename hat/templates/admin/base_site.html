@@ -1,0 +1,7 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {# OSM tile policy requires valid Referer; avoid restrictive Referrer-Policy #}
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+{% endblock %}

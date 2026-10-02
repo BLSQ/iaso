@@ -153,6 +153,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
+    def test_orgunits_list_includes_code(self):
+        self.bardock.code = "BARDOCK-01"
+        self.bardock.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        org_units_by_id = {org_unit["id"]: org_unit for org_unit in response.json()["orgUnits"]}
+        self.assertEqual(org_units_by_id[self.bardock.id]["code"], "BARDOCK-01")
+        self.assertEqual(org_units_by_id[self.raditz.id]["code"], "")
+
     def test_org_unit_with_shapes_limited(self):
         self.client.force_authenticate(self.user)
 
@@ -173,9 +184,9 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
             #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
             # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
-            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
-            # 8. Prefetch org unit types → projects (M2M)
-            # 9. Prefetch org units → groups
+            # 7. SELECT "iaso_orgunit" … (main list + parent/org_unit_type joins for annotations)
+            # 8. Prefetch org units → groups (M2M)
+            # 9. Retrieve valid project unit type IDs (M2M via valid_org_unit_type_ids cached_property)
             # 10. SELECT COUNT(*) FROM "django_cache_table"
             # 11. SAVEPOINT (atomic cache write)
             # 12. SELECT "django_cache_table" (cache key)

@@ -8,6 +8,7 @@ import { useGetQueryBuilderListToReplace } from 'Iaso/domains/forms/fields/hooks
 import { useGetQueryBuildersFields } from 'Iaso/domains/forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetPossibleFieldsByFormVersion } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
 import { PossibleField } from 'Iaso/domains/forms/types/forms';
+import { getLocaleDateFormat } from 'Iaso/utils/dates';
 import { iasoFields } from '../config/followUps';
 
 export const useGetFieldsForForm = (form_id: number) => {
@@ -35,5 +36,9 @@ export const useHumanReadableJsonLogicForForm = (
 ): ((logic?: JsonLogicTree) => ReactNode) => {
     const fields = useGetFieldsForForm(form_id);
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
-    return useHumanReadableJsonLogic(fields, queryBuilderListToReplace);
+    return useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+        getLocaleDateFormat,
+    );
 };

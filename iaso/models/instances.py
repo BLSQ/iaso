@@ -5,7 +5,7 @@ import time
 import typing
 
 from functools import reduce
-from io import StringIO
+from io import BytesIO, StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
@@ -34,7 +34,7 @@ from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
-from .common import ValidationWorkflowArtefact
+from .common import ValidationWorkflowArtefact, ValidationWorkflowArtefactQuerySet
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -85,7 +85,7 @@ def resolve_status_form_ids(form_id=None, form_ids=None):
     return resolved or None
 
 
-class InstanceQuerySet(django_cte.CTEQuerySet):
+class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.
@@ -236,6 +236,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         self,
         form_id=None,
         form_ids=None,
+        form_version_ids=None,
         with_location=None,
         org_unit_type_id=None,
         device_id=None,
@@ -338,6 +339,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
+
+        if form_version_ids:
+            queryset = queryset.filter(form_version_id__in=form_version_ids.split(","))
 
         if show_deleted:
             queryset = queryset.filter(deleted=True)
@@ -522,6 +526,10 @@ class Instance(ValidationWorkflowArtefact):
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )
+    api_import = models.ForeignKey(
+        "api_import.APIImport", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances"
+    )
+    app_version = models.CharField(max_length=25, blank=True, null=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -588,7 +596,7 @@ class Instance(ValidationWorkflowArtefact):
     def get_absolute_url(self):
         return f"/dashboard/forms/submission/instanceId/{self.pk}"
 
-    def convert_location_from_field(self, field_name=None):
+    def convert_location_from_field(self, field_name=None, save=True):
         f = field_name
         if f is None:
             f = self.form.location_field
@@ -598,9 +606,10 @@ class Instance(ValidationWorkflowArtefact):
                 latitude, longitude, altitude = coords[:3]
                 self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 self.accuracy = coords[3] if len(coords) > 3 else None
-                self.save()
+                if save:
+                    self.save()
 
-    def convert_device(self):
+    def convert_device(self, save=True):
         if self.json and not self.device:
             device_field = self.form.device_field
             if not device_field:
@@ -609,11 +618,12 @@ class Instance(ValidationWorkflowArtefact):
             if imei is not None:
                 device, created = Device.objects.get_or_create(imei=imei)
                 self.device = device
-                self.save()
+                if save:
+                    self.save()
                 if self.project:
                     self.device.projects.add(self.project)
 
-    def convert_correlation(self):
+    def convert_correlation(self, save=True):
         if not self.correlation_id:
             identifier = str(self.id)
             if self.form.correlation_field and self.json:
@@ -623,9 +633,12 @@ class Instance(ValidationWorkflowArtefact):
             value = int(identifier + random_number)
             suffix = f"{value % 97:02d}"
             self.correlation_id = identifier + random_number + suffix
-            self.save()
+            if save:
+                self.save()
 
-    def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
+    def xml_file_to_json(
+        self, file: typing.IO, form_versions_cache: typing.Optional[dict] = None
+    ) -> typing.Dict[str, typing.Any]:
         raw_content = file.read().decode("utf-8")
         fixed_content = fix_emoji(raw_content).decode("utf-8")
         copy_io_utf8 = StringIO(fixed_content)
@@ -634,9 +647,12 @@ class Instance(ValidationWorkflowArtefact):
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
             # TODO: investigate: can self.form be None here? What's the expected behavior?
-            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
-            form_version = form_versions.first()
+            form_version = FormVersion.objects.find_for_form(self.form.id, form_version_id, form_versions_cache)  # type: ignore
             if form_version:
+                # Same (version_id, form) pair `resolve_form_version()` would otherwise look up
+                # again right after this method returns (see `get_and_save_json_of_xml`) - set
+                # it here directly instead of re-querying FormVersion for the same instance.
+                self.form_version = form_version
                 questions_by_path = form_version.questions_by_path()
                 allowed_paths = set(questions_by_path.keys())
                 allowed_paths.update(self.ALWAYS_ALLOWED_PATHS_XML)
@@ -653,13 +669,24 @@ class Instance(ValidationWorkflowArtefact):
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
         return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False, tries=3):
+    def get_and_save_json_of_xml(
+        self, force=False, tries=3, save=True, xml_content: typing.Optional[bytes] = None, form_versions_cache=None
+    ):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
 
         When downloading from S3, attempt `tries` times (3 by default) with
         exponential backoff.
+
+        `save=False` skips the save, for callers that will save `self` themselves right after
+        (e.g. together with other in-memory changes, to avoid a separate round-trip).
+
+        `xml_content`: the raw bytes of `self.file`, for callers that already hold them in memory
+        (e.g. just read from a bulk upload zip). They're parsed directly instead of downloading
+        `self.file` back from storage - on S3 that's a full extra HTTP round-trip per instance.
+
+        `form_versions_cache`: see `FormVersionManager.find_for_form()`.
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -668,7 +695,9 @@ class Instance(ValidationWorkflowArtefact):
             return self.json
         if self.file:
             # not converted yet, but we have a file, so we can convert it
-            if "amazonaws" in self.file.url:
+            if xml_content is not None:
+                file = BytesIO(xml_content)
+            elif "amazonaws" in self.file.url:
                 for i in range(tries):
                     try:
                         file = urlopen(self.file.url)
@@ -682,8 +711,9 @@ class Instance(ValidationWorkflowArtefact):
             else:
                 file = self.file
 
-            self.json = self.xml_file_to_json(file)
-            self.save()
+            self.json = self.xml_file_to_json(file, form_versions_cache)
+            if save:
+                self.save()
             return self.json
         # no file, no json, when/why does this happen?
         return {}
@@ -714,14 +744,29 @@ class Instance(ValidationWorkflowArtefact):
         except NothingToExportError:
             print("Export failed for instance", self)
 
-    def as_dict(self):
-        file_content = self.get_and_save_json_of_xml()
+    def as_dict(self, fields: typing.Optional[typing.Iterable[str]] = None):
+        """
+        :param fields: if given, restrict the returned dict to these keys, and skip computing
+            the (potentially expensive, e.g. S3 fetch + XML parse for `file_content`, or extra
+            queries for `org_unit`) values of any key that isn't requested. `fields=None` (the
+            default) preserves the historical behavior of returning every key.
+        """
+        wanted = None if fields is None else set(fields)
+
+        def want(key: str) -> bool:
+            return wanted is None or key in wanted
+
+        file_content = self.get_and_save_json_of_xml() if want("file_content") else None
         last_modified_by = None
 
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
-        return {
+        # Only touch self.project (a non-select_related FK, so accessing it triggers a query
+        # per instance) when at least one of the fields it feeds is actually requested.
+        project = self.project if want("project_name") or want("project_color") or want("project_id") else None
+
+        result = {
             "uuid": self.uuid,
             "export_id": self.export_id,
             "file_name": self.file_name,
@@ -734,14 +779,18 @@ class Instance(ValidationWorkflowArtefact):
             "updated_at": self.updated_at.timestamp(),
             "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
-            "org_unit": self.org_unit.as_dict() if self.org_unit else None,
+            # `want("org_unit")` must be checked before touching `self.org_unit` at all: with the
+            # org_unit relation not select_related (skipped when "org_unit" isn't requested),
+            # merely evaluating `self.org_unit` triggers a query per instance, regardless of
+            # whether its value ends up used.
+            "org_unit": self.org_unit.as_dict() if want("org_unit") and self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
-            "project_name": self.project.name if self.project else None,
-            "project_color": self.project.color if self.project else None,
-            "project_id": self.project.id if self.project else None,
+            "project_name": project.name if project else None,
+            "project_color": project.color if project else None,
+            "project_id": project.id if project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (
@@ -756,10 +805,22 @@ class Instance(ValidationWorkflowArtefact):
             "last_modified_by": last_modified_by,
         }
 
-    def as_dict_with_descriptor(self):
-        dict = self.as_dict()
-        form_version = self.get_form_version()
-        dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
+        if wanted is None:
+            return result
+        return {key: value for key, value in result.items() if key in wanted}
+
+    def as_dict_with_descriptor(self, fields: typing.Optional[typing.Iterable[str]] = None):
+        """Same as `as_dict()`, plus a `form_descriptor` key (the form version's descriptor).
+
+        :param fields: see `as_dict()`. Additionally, when given and it doesn't contain
+            "form_descriptor", the (potentially expensive) `get_form_version()` lookup is skipped
+            entirely rather than just filtered out afterwards.
+        """
+        wanted = None if fields is None else set(fields)
+        dict = self.as_dict(fields=fields)
+        if wanted is None or "form_descriptor" in wanted:
+            form_version = self.get_form_version()
+            dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
         return dict
 
     def as_full_model(self, with_entity=False):
@@ -776,6 +837,7 @@ class Instance(ValidationWorkflowArtefact):
             "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
+            "device_app_version": self.app_version,
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
@@ -794,6 +856,11 @@ class Instance(ValidationWorkflowArtefact):
             "period": self.period,
             "planning_id": self.planning.id if self.planning else None,
             "planning_name": self.planning.name if self.planning else None,
+            "project": {
+                "id": self.project.id if self.project else None,
+                "name": self.project.name if self.project else None,
+                "color": self.project.color if self.project else None,
+            },
             "team_id": self.planning.team_id if self.planning else None,
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
@@ -897,14 +964,21 @@ class Instance(ValidationWorkflowArtefact):
     def has_org_unit(self):
         return self.org_unit if self.org_unit else None
 
-    def save(self, *args, **kwargs):
+    def resolve_form_version(self, form_versions_cache=None):
+        """
+        Set `form_version` from `self.json["_version"]` + `form_id`, if a matching FormVersion
+        exists. Call this explicitly right after `self.json` is (re)computed from a submission's
+        XML/data -- it used to run on every single `save()` regardless of whether `json` had
+        changed, which meant a `FormVersion` lookup on every save in a save-heavy chain (location/
+        device/correlation conversions, etc.) even when nothing about the version could have
+        changed since the previous save.
+
+        `form_versions_cache`: see `FormVersionManager.find_for_form()`.
+        """
         if self.json is not None and self.json.get("_version"):
-            try:
-                form_version = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id)
+            form_version = FormVersion.objects.find_for_form(self.form.id, self.json["_version"], form_versions_cache)
+            if form_version is not None:
                 self.form_version = form_version
-            except ObjectDoesNotExist:
-                pass
-        return super(Instance, self).save(*args, **kwargs)
 
 
 class InstanceFileExtensionQuerySet(models.QuerySet):

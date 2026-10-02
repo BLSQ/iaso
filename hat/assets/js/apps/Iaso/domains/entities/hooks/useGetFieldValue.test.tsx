@@ -22,7 +22,8 @@ const {
 }));
 
 vi.mock('bluesquare-components', async importOriginal => {
-    const actual = await importOriginal<typeof import('bluesquare-components')>();
+    const actual =
+        await importOriginal<typeof import('bluesquare-components')>();
     return {
         ...actual,
         useSafeIntl: () => ({
@@ -41,7 +42,13 @@ vi.mock('../../instances/utils', () => ({
 }));
 
 vi.mock('../../../components/maps/MarkerMapComponent', () => ({
-    MarkerMap: ({ latitude, longitude }: { latitude?: number; longitude?: number }) => (
+    MarkerMap: ({
+        latitude,
+        longitude,
+    }: {
+        latitude?: number;
+        longitude?: number;
+    }) => (
         <div
             data-testid="marker-map"
             data-latitude={latitude}
@@ -72,9 +79,9 @@ describe('useGetFieldValue', () => {
             ['note', 'a note'],
         ] as const)('returns raw value for %s', (type, value) => {
             const getFieldValue = getValue();
-            expect(
-                getFieldValue('field', { field: value } as any, type),
-            ).toBe(value);
+            expect(getFieldValue('field', { field: value } as any, type)).toBe(
+                value,
+            );
         });
 
         it('returns placeholder when value is missing', () => {
@@ -98,9 +105,9 @@ describe('useGetFieldValue', () => {
             type => {
                 const getFieldValue = getValue();
                 const raw = '2020-01-15T10:30:00';
-                expect(
-                    getFieldValue('ts', { ts: raw } as any, type),
-                ).toBe(moment(raw).format('LTS'));
+                expect(getFieldValue('ts', { ts: raw } as any, type)).toBe(
+                    moment(raw).format('LTS'),
+                );
             },
         );
 
@@ -117,7 +124,11 @@ describe('useGetFieldValue', () => {
             const getFieldValue = getValue();
             const raw = '10:30:00.000+02:00';
             expect(
-                getFieldValue('appointment', { appointment: raw } as any, 'time'),
+                getFieldValue(
+                    'appointment',
+                    { appointment: raw } as any,
+                    'time',
+                ),
             ).toBe(moment.parseZone(raw, ['HH:mm:ss.SSSZ']).format('LT'));
         });
 
@@ -125,7 +136,11 @@ describe('useGetFieldValue', () => {
             const getFieldValue = getValue();
             const raw = '14:05:00';
             expect(
-                getFieldValue('appointment', { appointment: raw } as any, 'time'),
+                getFieldValue(
+                    'appointment',
+                    { appointment: raw } as any,
+                    'time',
+                ),
             ).toBe(moment.parseZone(raw, ['HH:mm:ss']).format('LT'));
         });
 
@@ -133,15 +148,19 @@ describe('useGetFieldValue', () => {
             const getFieldValue = getValue();
             const raw = '09:15';
             expect(
-                getFieldValue('appointment', { appointment: raw } as any, 'time'),
+                getFieldValue(
+                    'appointment',
+                    { appointment: raw } as any,
+                    'time',
+                ),
             ).toBe(moment.parseZone(raw, ['HH:mm']).format('LT'));
         });
 
         it('returns placeholder for empty time', () => {
             const getFieldValue = getValue();
-            expect(
-                getFieldValue('appointment', {} as any, 'time'),
-            ).toBe(textPlaceholder);
+            expect(getFieldValue('appointment', {} as any, 'time')).toBe(
+                textPlaceholder,
+            );
         });
 
         it('returns placeholder for invalid time', () => {
@@ -160,7 +179,9 @@ describe('useGetFieldValue', () => {
         it.each(['select one', 'select_one'] as const)(
             'delegates to getDescriptorValue for %s',
             type => {
-                const descriptors = [{ children: [] }] as unknown as FormDescriptor[];
+                const descriptors = [
+                    { children: [] },
+                ] as unknown as FormDescriptor[];
                 const getFieldValue = getValue(descriptors);
                 const fileContent = { gender: 'M' } as any;
 

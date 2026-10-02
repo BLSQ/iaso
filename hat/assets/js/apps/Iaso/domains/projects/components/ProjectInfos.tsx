@@ -34,7 +34,7 @@ type Props = {
 const styles: SxStyles = {
     qrCodeLarge: {
         width: 300,
-        height: 300,
+        height: 368,
     },
     qrCodeContainer: {
         display: 'flex',

@@ -3,6 +3,8 @@ import os
 
 # Get the setuper directory path
 SETUPER_DIR = os.path.dirname(os.path.abspath(__file__))
+# The repo root is where docker-compose.yml lives, one level up from setuper/
+REPO_ROOT_DIR = os.path.dirname(SETUPER_DIR)
 # Change the working directory to the setuper directory
 os.chdir(SETUPER_DIR)
 
@@ -10,6 +12,7 @@ import argparse
 import random
 import re
 import string
+import subprocess
 import sys
 
 from additional_projects import create_projects, link_new_projects_to_main_data_source
@@ -38,6 +41,48 @@ seed_entities = True
 seed_registry = True
 
 seed_review_change_proposal = True
+
+
+def create_local_django_superuser(username, password, email=None):
+    """
+    Create a Django superuser directly inside the local `iaso` docker compose
+    service, via `manage.py createsuperuser --noinput`, so the setuper can run
+    end-to-end without the manual `docker compose exec iaso ./manage.py
+    createsuperuser` step.
+    """
+    email = email or f"{username}@example.com"
+    print(f"Creating local Django superuser '{username}' via docker compose...")
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "exec",
+            "-T",
+            "-e",
+            f"DJANGO_SUPERUSER_USERNAME={username}",
+            "-e",
+            f"DJANGO_SUPERUSER_PASSWORD={password}",
+            "-e",
+            f"DJANGO_SUPERUSER_EMAIL={email}",
+            "iaso",
+            "./manage.py",
+            "createsuperuser",
+            "--noinput",
+        ],
+        cwd=REPO_ROOT_DIR,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        if "already taken" in result.stderr:
+            print(f"Local Django superuser '{username}' already exists, reusing it.")
+        else:
+            print(result.stdout)
+            print(result.stderr)
+            sys.exit("ERROR: could not create the local Django superuser")
+    else:
+        print(f"Local Django superuser '{username}' created.")
 
 
 def admin_login(server_url, username, password):
@@ -167,6 +212,15 @@ if __name__ == "__main__":
         help="Flag to create the main organizational unit (default: False)",
     )
     parser.add_argument("--create_demo_form", action="store_true", help="Flag to create a demo form (default: False")
+    parser.add_argument(
+        "--local",
+        action="store_true",
+        help=(
+            "Create a fresh Django admin via `docker compose exec ... manage.py createsuperuser` "
+            "on the local stack, then use those credentials to set up the account "
+            "(no need to run createsuperuser manually or configure credentials.py)."
+        ),
+    )
 
     args = parser.parse_args()
     server_url = args.server_url
@@ -177,7 +231,12 @@ if __name__ == "__main__":
     create_main_org_unit = args.create_main_org_unit
     create_demo_form = args.create_demo_form
 
-    if server_url is None or username is None or password is None:
+    if args.local:
+        server_url = server_url or "http://localhost:8081"
+        username = username or "admin_" + "".join(random.choices(string.ascii_lowercase, k=7))
+        password = password or "".join(random.choices(string.ascii_letters + string.digits, k=16))
+        create_local_django_superuser(username, password)
+    elif server_url is None or username is None or password is None:
         from credentials import *
 
         try:

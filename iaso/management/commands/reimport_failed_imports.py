@@ -27,7 +27,7 @@ class Command(BaseCommand):
         instance_count = 0
         for i in failed_instance_imports:
             try:
-                import_instances(i.json_body, i)
+                import_instances(i.json_body, i.user, i.app_id, i)
                 i.has_problem = False
                 i.save()
                 instance_count = instance_count + 1

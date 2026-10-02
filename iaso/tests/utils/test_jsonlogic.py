@@ -175,6 +175,26 @@ class JsonLogicTests(TestCase):
         q, _ = jsonlogic_to_q(filters)
         self.assertEqual(str(q), "(AND: ('gender__exact', 'F'), ('age__lt', '25'))")
 
+    def test_jsonlogic_to_q_like_needle_first_in(self) -> None:
+        filters = {"in": ["Beau", {"var": "responsable_fosa"}]}
+        q, _ = jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(AND: ('json__responsable_fosa__icontains', 'Beau'))")
+
+    def test_jsonlogic_to_q_not_like(self) -> None:
+        filters = {"!": {"in": ["Beau", {"var": "name"}]}}
+        q, _ = jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(NOT (AND: ('json__name__icontains', 'Beau')))")
+
+    def test_jsonlogic_to_q_is_empty(self) -> None:
+        filters = {"!": {"var": "name"}}
+        q, _ = jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(OR: ('json__name__isnull', True), ('json__name', ''))")
+
+    def test_jsonlogic_to_q_is_not_empty(self) -> None:
+        filters = {"!!": {"var": "name"}}
+        q, _ = jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(NOT (OR: ('json__name__isnull', True), ('json__name', '')))")
+
 
 class JsonLogicSomeAllStringFieldTests(TestCase):
     def test_some_operator_all_values_present(self):
@@ -211,3 +231,35 @@ class JsonLogicSomeAllStringFieldTests(TestCase):
         q, _ = instance_jsonlogic_to_q(filters)
         pattern = r"^red$"
         self.assertEqual(str(q), f"(AND: ('colors__regex', '{pattern}'))")
+
+
+class JsonLogicQueryBuilderTextOperatorsTests(TestCase):
+    def test_like_needle_first_in(self):
+        filters = {"in": ["Beau", {"var": "responsable_fosa"}]}
+        q, _ = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(AND: ('json__responsable_fosa__icontains', 'Beau'))")
+
+    def test_like_trims_value(self):
+        filters = {"in": [" Beau ", {"var": "name"}]}
+        q, _ = instance_jsonlogic_to_q(filters)
+        self.assertEqual(str(q), "(AND: ('name__icontains', 'Beau'))")
+
+    def test_not_like(self):
+        filters = {"!": {"in": ["Beau", {"var": "name"}]}}
+        q, _ = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(NOT (AND: ('json__name__icontains', 'Beau')))")
+
+    def test_is_empty(self):
+        filters = {"!": {"var": "name"}}
+        q, _ = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(OR: ('json__name__isnull', True), ('json__name', ''))")
+
+    def test_is_not_empty(self):
+        filters = {"!!": {"var": "name"}}
+        q, _ = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(NOT (OR: ('json__name__isnull', True), ('json__name', '')))")
+
+    def test_field_first_in_still_supported(self):
+        filters = {"in": [{"var": "name"}, "john"]}
+        q, _ = instance_jsonlogic_to_q(filters, field_prefix="json__")
+        self.assertEqual(str(q), "(AND: ('json__name__icontains', 'john'))")

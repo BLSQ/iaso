@@ -53,6 +53,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Version',
         id: 'iaso.label.version',
     },
+    formVersions: {
+        defaultMessage: 'Form versions',
+        id: 'iaso.instances.formVersions',
+    },
+    selectFormFirst: {
+        defaultMessage: 'You must select at least one form first',
+        id: 'iaso.instances.selectFormFirst',
+    },
     downloadXml: {
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
@@ -117,6 +125,10 @@ const MESSAGES = defineMessages({
     device_id: {
         id: 'iaso.instance.device',
         defaultMessage: 'IMEI device',
+    },
+    device_app_version: {
+        id: 'iaso.instance.device_app_version',
+        defaultMessage: 'Device App Version',
     },
     coordinate: {
         id: 'iaso.instance.coordinate',
@@ -997,6 +1009,14 @@ const MESSAGES = defineMessages({
     notReferenceSubmission: {
         defaultMessage: 'Not a reference',
         id: 'iaso.instance.notReferenceSubmission',
+    },
+    org_unit_status: {
+        id: 'iaso.instance.org_unit_status',
+        defaultMessage: 'Org Unit Status',
+    },
+    downloadAll: {
+        id: 'iaso.instance.downloadAll',
+        defaultMessage: 'Download all',
     },
 });
 

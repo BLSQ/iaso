@@ -250,7 +250,7 @@ class StockLedgerItemWriteSerializer(serializers.ModelSerializer):
         queryset=StockKeepingUnit.objects.all(),
         required=True,
     )
-    org_unit = PrimaryKeyRelatedField(
+    org_unit = IdOrUuidRelatedField(
         queryset=OrgUnit.objects.all(),
         required=True,
     )

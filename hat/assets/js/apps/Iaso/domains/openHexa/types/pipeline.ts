@@ -1,4 +1,11 @@
-export type ParameterType = 'str' | 'bool' | 'int' | 'float' | 'list' | 'dict';
+export type ParameterType =
+    | 'str'
+    | 'bool'
+    | 'int'
+    | 'float'
+    | 'list'
+    | 'dict'
+    | 'secret';
 
 export type Parameter = {
     type: ParameterType;

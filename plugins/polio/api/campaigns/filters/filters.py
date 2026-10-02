@@ -1,9 +1,12 @@
+from typing import Optional
+
 import django_filters
 
 from django.db.models import BooleanField, ExpressionWrapper, OuterRef, Q, QuerySet, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from rest_framework import filters
 
 from iaso.models import OrgUnit, OrgUnitType
 from plugins.polio.models.base import ON_HOLD, PLANNED, PREVENTIVE, REGULAR, Campaign, Round
@@ -25,6 +28,61 @@ def search_queryset(queryset, value):
 
         return queryset.filter(query)
     return queryset
+
+
+def filter_queryset_by_campaign_category(
+    queryset: QuerySet,
+    value: Optional[str],
+    *,
+    prefix: str = "",
+) -> QuerySet:
+    """
+    Filter a queryset by campaign category using campaign-level boolean fields.
+
+    Works on Campaign querysets (`prefix=""`) or related models such as Round
+    (`prefix="campaign"`). Unknown / empty / `"all"` values leave the queryset unchanged.
+
+    Possible values: ``regular``, ``is_preventive``, ``on_hold``, ``is_planned``.
+
+    Note: ``CampaignFilter`` uses a richer ON_HOLD definition (round-level). Prefer that
+    FilterSet when listing Campaigns; use this helper for Round-based or other endpoints.
+    """
+    if not value or value == "all":
+        return queryset
+
+    def field(name: str) -> str:
+        return f"{prefix}__{name}" if prefix else name
+
+    if value == ON_HOLD:
+        return queryset.filter(**{field("on_hold"): True})
+    if value == PREVENTIVE:
+        return queryset.filter(**{field("is_preventive"): True})
+    if value == REGULAR:
+        return queryset.filter(
+            **{
+                field("is_preventive"): False,
+                field("is_test"): False,
+                field("on_hold"): False,
+                field("is_planned"): False,
+            }
+        )
+    if value == PLANNED:
+        return queryset.filter(**{field("is_planned"): True})
+    return queryset
+
+
+class CampaignCategoryFilterBackend(filters.BaseFilterBackend):
+    """
+    DRF filter backend for ``campaign_category``.
+
+    Configure the relation to Campaign via ``campaign_category_prefix`` on the view
+    (e.g. ``\"campaign\"`` for Round querysets, ``\"\"`` for Campaign querysets).
+    """
+
+    def filter_queryset(self, request, queryset, view):
+        value = request.query_params.get("campaign_category")
+        prefix = getattr(view, "campaign_category_prefix", "campaign")
+        return filter_queryset_by_campaign_category(queryset, value, prefix=prefix)
 
 
 class CampaignFilter(django_filters.rest_framework.FilterSet):

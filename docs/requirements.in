@@ -5,3 +5,6 @@ mkdocs-mermaid2-plugin
 mkdocs-awesome-pages-plugin
 mkdocs-material
 mkdocs-static-i18n
+mkdocs-glightbox
+# Pygments 2.20 breaks mkdocstrings highlight (filename=None → AttributeError)
+pygments<2.20

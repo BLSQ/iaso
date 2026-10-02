@@ -598,6 +598,14 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_role,
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
         )
+        self.assertIn(
+            self.user_role.group,
+            self.user_admin_no_task.groups.all(),
+        )
+        self.assertIn(
+            self.user_role.group,
+            self.user_admin_no_task2.groups.all(),
+        )
 
     def test_profile_bulkupdate_user_managed_cannot_add_role_with_admin_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/ cannot add role with admin permission as a user manager"""
@@ -647,6 +655,8 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
     def test_profile_bulkupdate_user_managed_can_remove_role(self):
         """POST /api/tasks/create/profilesbulkupdate/ remove role as a user manager"""
+        self.user_admin_no_task.groups.add(self.user_role_2.group)
+        self.user_admin_no_task2.groups.add(self.user_role_2.group)
         self.client.force_authenticate(self.user_managed)
         operation_payload = {
             "select_all": True,
@@ -689,6 +699,14 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertNotIn(
             self.user_role_2,
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
+        )
+        self.assertNotIn(
+            self.user_role_2.group,
+            self.user_admin_no_task.groups.all(),
+        )
+        self.assertNotIn(
+            self.user_role_2.group,
+            self.user_admin_no_task2.groups.all(),
         )
 
     def test_profile_bulkupdate_add_user_role_with_not_connected_account(self):

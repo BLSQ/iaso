@@ -19,6 +19,27 @@ from iaso.models.openhexa import OpenHEXAWorkspace
 logger = logging.getLogger(__name__)
 
 
+def sanitize_openhexa_pipeline_config(config):
+    """Drop JSON nulls that OpenHEXA rejects as ``INVALID_CONFIG``.
+
+    Optional list params from the sampling UI often arrive as ``[None, None, None]``.
+    Null items are replaced with empty strings so aligned per-level parameters stay
+    in order (``["", "", ""]``), which OpenHEXA accepts for ``List[str]``.
+    """
+    if not isinstance(config, dict):
+        return config
+
+    cleaned = {}
+    for key, value in config.items():
+        if value is None:
+            continue
+        if isinstance(value, list):
+            cleaned[key] = ["" if item is None else item for item in value]
+        else:
+            cleaned[key] = value
+    return cleaned
+
+
 def get_openhexa_config(account):
     """
     Retrieve OpenHexa configuration from OpenHEXAWorkspace and OpenHEXAInstance models.

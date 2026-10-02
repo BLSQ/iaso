@@ -20,6 +20,7 @@ import {
 import { isEqual } from 'lodash';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
+import { getLocaleDateFormat } from 'Iaso/utils/dates';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -162,6 +163,7 @@ export const Details: FunctionComponent = () => {
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
         fields,
         queryBuilderListToReplace,
+        getLocaleDateFormat,
     );
     const changesColumns = useGetChangesColumns(
         versionId,

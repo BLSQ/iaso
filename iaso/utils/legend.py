@@ -1,5 +1,7 @@
 import json
 
+from typing import Iterable, List, Union
+
 from django.db.models import Max, Min
 
 
@@ -197,6 +199,91 @@ def get_max_range_value(metric_type):
         max_value=Max("value"),
     )
     return result["max_value"]
+
+
+LegendValue = Union[float, str]
+
+
+def is_categorical_values(values: Iterable[LegendValue]) -> bool:
+    """Whether an iterable of metric values should get a categorical (ordinal) legend."""
+    return any(isinstance(value, str) for value in values)
+
+
+def ordinal_legend_config(domain: List) -> dict:
+    palette = list(SEVEN_SHADES)
+    colors = [palette[index % len(palette)] for index in range(len(domain))]
+    return {"domain": list(domain), "range": colors}
+
+
+def linear_legend_config(low: float, high: float) -> dict:
+    # d3's ``scaleLinear`` needs ``len(domain) == len(range)``, so emit exactly two of each and let
+    # the colours be interpolated between ``low`` and ``high``.
+    return {"domain": [low, high], "range": [SEVEN_SHADES[0], SEVEN_SHADES[-1]]}
+
+
+def threshold_legend_config(low: float, high: float, num_colors: int = len(SEVEN_SHADES)) -> dict:
+    """Equal-interval threshold classification.
+
+    d3's ``scaleThreshold`` expects ``len(range) == len(domain) + 1`` (one extra colour for the
+    bucket above the last breakpoint), so ``num_colors`` colours need ``num_colors - 1`` *interior*
+    breakpoints dividing ``[low, high]`` into equal buckets.
+    """
+    if low is None or high is None or high <= low:
+        # Degenerate range (all values equal / single value): one breakpoint, two colours.
+        return {"domain": [low], "range": [SEVEN_SHADES[0], SEVEN_SHADES[-1]]}
+
+    round_digits = 2 if low < 1 else 0
+    step = (high - low) / num_colors
+    breakpoints: List[float] = []
+    for index in range(1, num_colors):
+        value = round(low + step * index, round_digits)
+        # Rounding can collapse neighbouring breakpoints on a small range; keep them distinct.
+        if not breakpoints or value != breakpoints[-1]:
+            breakpoints.append(value)
+    return {"domain": breakpoints, "range": get_range_from_count(len(breakpoints))}
+
+
+def build_auto_legend_config(
+    legend_type: str, values: Iterable[LegendValue], category_order: "List[str] | None" = None
+) -> dict:
+    """Build a `{domain, range}` legend config from a metric's actual values.
+
+    Shared by composite layers (values from an evaluated graph) and standard layers (values from an
+    import), so both get the same equal-interval threshold / sorted-domain ordinal defaults.
+    """
+    non_null = [value for value in values if value is not None]
+
+    if legend_type == "ordinal":
+        if is_categorical_values(non_null):
+            domain = list(category_order) if category_order else sorted({str(value) for value in non_null})
+        else:
+            domain = sorted({value for value in non_null})
+        return ordinal_legend_config(domain)
+
+    if not non_null:
+        return {"domain": [], "range": list(SEVEN_SHADES)}
+
+    low, high = min(non_null), max(non_null)
+    if legend_type == "linear":
+        return linear_legend_config(low, high)
+
+    return threshold_legend_config(low, high)
+
+
+def resolve_auto_legend_type(selected: "str | None", values: Iterable[LegendValue]) -> str:
+    """Pick the effective legend type from a requested one and the actual values.
+
+    Categorical values are always ordinal (numeric legends can't render strings). For numeric
+    values, honour an explicit ``linear``/``ordinal`` choice; anything else (including no choice, or
+    "auto") defaults to a threshold legend.
+    """
+    if is_categorical_values(values):
+        return "ordinal"
+
+    selected = (selected or "").lower()
+    if selected in ("linear", "ordinal"):
+        return selected
+    return "threshold"
 
 
 def get_range_from_count(count):

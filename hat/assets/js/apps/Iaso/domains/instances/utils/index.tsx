@@ -641,6 +641,7 @@ export const getFilters = (
         dateTo: getToDateString(params.dateTo, false),
         showDeleted: params.showDeleted,
         form_ids: params.formIds,
+        form_version_ids: params.formVersionIds,
         jsonContent: params.fieldsSearch,
         planningIds: params.planningIds,
         project_ids: params.projectIds,
@@ -656,6 +657,7 @@ export const getFilters = (
             params.referenceInstances && params.referenceInstances !== 'all'
                 ? params.referenceInstances
                 : undefined,
+        org_unit_status: params.org_unit_status,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

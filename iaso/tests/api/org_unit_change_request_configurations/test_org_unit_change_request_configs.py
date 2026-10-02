@@ -292,6 +292,28 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertIn("org_unit_type_id", result)
         self.assertIn(str(probably_not_a_valid_id), result["org_unit_type_id"][0])
 
+    def test_create_with_code_as_editable_field(self):
+        self.client.force_authenticate(self.user_brock)
+        new_ou_type = self.create_new_org_unit_type(name="new ou type", project=self.project_johto)
+        data = {
+            "project_id": self.project_johto.id,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            "org_unit_type_id": new_ou_type.id,
+            "org_units_editable": True,
+            "editable_fields": ["code"],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(
+            project_id=self.project_johto.id, org_unit_type_id=new_ou_type.id
+        )
+        self.assertEqual(oucrc.editable_fields, ["code"])
+
+        response = self.client.get(f"{self.OUCRC_API_URL}{oucrc.id}/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response.json()["editable_fields"], ["code"])
+
     def test_create_invalid_editable_fields(self):
         self.client.force_authenticate(self.user_misty)
         pikachu = "PIKACHU"

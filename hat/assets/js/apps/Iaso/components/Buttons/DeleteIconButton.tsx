@@ -14,12 +14,14 @@ type Props = {
     onClick: () => void;
     message?: IntlMessage;
     color?: string;
+    disabled?: boolean;
 };
 
 export const DeleteIconButton: FunctionComponent<Props> = ({
     onClick,
     message,
     color = 'action',
+    disabled = false,
 }) => {
     return (
         <IconButton
@@ -27,6 +29,7 @@ export const DeleteIconButton: FunctionComponent<Props> = ({
             overrideIcon={DeleteIcon}
             tooltipMessage={message ?? messages.delete}
             color={color}
+            disabled={disabled}
         />
     );
 };

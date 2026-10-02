@@ -21,6 +21,7 @@ import {
 import get from 'lodash/get';
 import { SxStyles } from 'Iaso/types/general';
 import { baseUrls } from '../../../../constants/urls';
+import { ProjectChip } from '../../../projects/components/ProjectChip';
 import {
     INSTANCE_METAS_FIELDS,
     INSTANCE_STATUS_ERROR,
@@ -134,7 +135,6 @@ export const GeneralCard: FunctionComponent<Props> = ({
     const statusLabel = currentInstance.status
         ? (STATUS_LABELS[currentInstance.status] ?? null)
         : null;
-
     // identifiers and provenance, folded away by default
     const technicalRows: ReactNode[] = [
         <ActivityRow
@@ -158,10 +158,17 @@ export const GeneralCard: FunctionComponent<Props> = ({
             {currentInstance.device_id || textPlaceholder}
         </InfoRow>,
         <InfoRow
+            key="device_app_version"
+            mono
+            label={formatMessage(MESSAGES.device_app_version)}
+        >
+            {currentInstance.device_app_version || textPlaceholder}
+        </InfoRow>,
+        <InfoRow
             key="project_name"
             label={formatMessage(MESSAGES.project_name)}
         >
-            {fieldValue('project_name')}
+            <ProjectChip project={currentInstance.project} />
         </InfoRow>,
         <InfoRow key="planning" label={formatMessage(MESSAGES.planning)}>
             {fieldValue('planning')}

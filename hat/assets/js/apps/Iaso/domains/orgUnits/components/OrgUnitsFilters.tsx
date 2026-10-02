@@ -409,7 +409,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             <Grid item xs={12} sm={4}>
                 <Box mb={1}>
                     <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
                         titleMessage={MESSAGES.parent}
                         onConfirm={orgUnit => {
                             // TODO rename levels in to parent

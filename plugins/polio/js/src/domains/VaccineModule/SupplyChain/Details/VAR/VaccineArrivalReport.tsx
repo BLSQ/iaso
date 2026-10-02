@@ -5,10 +5,8 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import {
-    DropdownOptions,
-    Optional,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { toNumber } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/dataManipulation';
 import { NumberInput, Select } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
@@ -132,14 +130,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const handleDosesShippedUpdate = useCallback(
         (value: number) => {
             if (dosesShippedRef.current) {
-                const vialsShipped = doses_per_vial
-                    ? Math.ceil(
-                          ((value as Optional<number>) ?? 0) / doses_per_vial,
-                      )
-                    : 0;
                 handleSetValues({
                     doses_shipped: value,
-                    vials_shipped: vialsShipped,
+                    ...(doses_per_vial
+                        ? {
+                              vials_shipped: Math.ceil(
+                                  toNumber(value) / doses_per_vial,
+                              ),
+                          }
+                        : {}),
                 });
             }
         },
@@ -149,14 +148,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const handleDosesReceivedUpdate = useCallback(
         (value: number) => {
             if (dosesReceivedRef.current) {
-                const vialsReceived = doses_per_vial
-                    ? Math.ceil(
-                          ((value as Optional<number>) ?? 0) / doses_per_vial,
-                      )
-                    : 0;
                 handleSetValues({
                     doses_received: value,
-                    vials_received: vialsReceived,
+                    ...(doses_per_vial
+                        ? {
+                              vials_received: Math.ceil(
+                                  toNumber(value) / doses_per_vial,
+                              ),
+                          }
+                        : {}),
                 });
             }
         },
@@ -166,10 +166,11 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const handleVialsShippededUpdate = useCallback(
         (value: number) => {
             if (vialsShippedRef.current) {
-                const dosesShipped = value * (doses_per_vial ?? 0);
                 handleSetValues({
                     vials_shipped: value,
-                    doses_shipped: dosesShipped,
+                    ...(doses_per_vial
+                        ? { doses_shipped: toNumber(value) * doses_per_vial }
+                        : {}),
                 });
             }
         },
@@ -179,10 +180,11 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const handleVialsReceivedUpdate = useCallback(
         (value: number) => {
             if (vialsReceivedRef.current) {
-                const dosesReceived = value * (doses_per_vial ?? 0);
                 handleSetValues({
                     vials_received: value,
-                    doses_received: dosesReceived,
+                    ...(doses_per_vial
+                        ? { doses_received: toNumber(value) * doses_per_vial }
+                        : {}),
                 });
             }
         },
@@ -191,23 +193,26 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
 
     const handleDosesPerVialUpdate = useCallback(
         (_, value: number) => {
-            const vialsShipped = Math.ceil(
-                parseInt(
-                    (arrival_reports?.[index].doses_shipped ?? '0') as string,
-                    10,
-                ) / value,
-            );
-            const vialsReceived = Math.ceil(
-                parseInt(
-                    (arrival_reports?.[index].doses_received ?? '0') as string,
-                    10,
-                ) / value,
-            );
-            handleSetValues({
-                vials_shipped: vialsShipped,
-                doses_per_vial: value,
-                vials_received: vialsReceived,
-            });
+            const newValues: Record<string, number> = { doses_per_vial: value };
+            if (value) {
+                const report = arrival_reports?.[index];
+                const dosesShipped = toNumber(report?.doses_shipped);
+                const vialsShipped = toNumber(report?.vials_shipped);
+                if (vialsShipped) {
+                    newValues.doses_shipped = vialsShipped * value;
+                } else if (dosesShipped) {
+                    newValues.vials_shipped = Math.ceil(dosesShipped / value);
+                }
+
+                const dosesReceived = toNumber(report?.doses_received);
+                const vialsReceived = toNumber(report?.vials_received);
+                if (vialsReceived) {
+                    newValues.doses_received = vialsReceived * value;
+                } else if (dosesReceived) {
+                    newValues.vials_received = Math.ceil(dosesReceived / value);
+                }
+            }
+            handleSetValues(newValues);
         },
         [arrival_reports, index, handleSetValues],
     );
@@ -308,33 +313,33 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label={formatMessage(MESSAGES.doses_shipped)}
-                                name={`${VAR}[${index}].doses_shipped`}
-                                component={NumberInput}
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`arrival_reports[${index}].doses_per_vial`}
+                                component={SingleSelect}
                                 disabled={
                                     markedForDeletion ||
-                                    !arrival_reports?.[index].can_edit
+                                    !arrival_reports?.[index].can_edit ||
+                                    dosesForVaccineOptions.length === 1
                                 }
-                                onFocus={onDosesShippedFocused}
-                                onBlur={onDosesShippedBlur}
-                                onChange={handleDosesShippedUpdate}
+                                onChange={handleDosesPerVialUpdate}
+                                options={dosesForVaccineOptions}
+                                clearable={false}
                                 required
                             />
                             <Box mt={2}>
                                 <Field
                                     label={formatMessage(
-                                        MESSAGES.doses_per_vial,
+                                        MESSAGES.doses_shipped,
                                     )}
-                                    name={`arrival_reports[${index}].doses_per_vial`}
-                                    component={SingleSelect}
+                                    name={`${VAR}[${index}].doses_shipped`}
+                                    component={NumberInput}
                                     disabled={
                                         markedForDeletion ||
-                                        !arrival_reports?.[index].can_edit ||
-                                        dosesForVaccineOptions.length === 1
+                                        !arrival_reports?.[index].can_edit
                                     }
-                                    onChange={handleDosesPerVialUpdate}
-                                    options={dosesForVaccineOptions}
-                                    clearable={false}
+                                    onFocus={onDosesShippedFocused}
+                                    onBlur={onDosesShippedBlur}
+                                    onChange={handleDosesShippedUpdate}
                                     required
                                 />
                             </Box>

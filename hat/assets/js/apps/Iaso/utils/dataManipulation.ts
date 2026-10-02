@@ -9,3 +9,8 @@ export const stringToBoolean = (str: string): boolean | undefined => {
     if (str === 'false') return false;
     return undefined;
 };
+
+export const toNumber = (value: unknown): number => {  
+    const parsed = Number(value);  
+    return Number.isFinite(parsed) ? parsed : 0;  
+}; 

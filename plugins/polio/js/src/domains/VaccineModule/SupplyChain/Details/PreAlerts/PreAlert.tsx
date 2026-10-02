@@ -14,7 +14,7 @@ import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { usePaperStyles } from '../shared';
-import { toNumber } from '../utils';
+import { toNumber } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/dataManipulation';
 
 type Props = {
     index: number;

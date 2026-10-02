@@ -200,10 +200,3 @@ export const makeHandleSubmit =
         );
     };
 
-export const toNumber = (value: unknown): number => {
-    if (value === null || value === undefined || value === '') {
-        return 0;
-    }
-    const parsed = typeof value === 'number' ? value : parseInt(`${value}`, 10);
-    return Number.isNaN(parsed) ? 0 : parsed;
-};

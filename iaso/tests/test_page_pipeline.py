@@ -299,18 +299,26 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
         self.assertNotIn("user", launch.call_args.kwargs)
 
-    def test_anonymous_visitor_can_launch_a_private_page(self):
+    def test_anonymous_visitor_cannot_launch_a_private_page(self):
         page = self._page(slug="private-page", needs_authentication=True)
         self.client.logout()
-        task = Mock(id=12, status=QUEUED)
-        with (
-            patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID),
-            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=task) as launch,
-        ):
+        with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
             response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
-        self.assertNotIn("user", launch.call_args.kwargs)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json()["error"], "forbidden")
+        launch.assert_not_called()
+        status_response = self.client.get(f"/pages/{page.slug}/pipeline-status/")
+        self.assertEqual(status_response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_who_cannot_open_a_private_page_cannot_launch(self):
+        page = self._page(slug="closed-page", needs_authentication=True)
+        self.client.force_login(self.other_user)
+        with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
+            response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        launch.assert_not_called()
+        status_response = self.client.get(f"/pages/{page.slug}/pipeline-status/")
+        self.assertEqual(status_response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_account_has_openhexa_config(self):
         self.assertTrue(account_has_openhexa_config(self.account))

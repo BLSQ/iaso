@@ -143,12 +143,15 @@ def user_can_access_page(user, page):
     return page.user_roles.filter(group__in=user.groups.all()).exists()
 
 
-def user_may_launch_page_pipeline(_user, page) -> bool:
-    """True when the page has a pipeline and the account has an OpenHEXA workspace.
+def user_may_launch_page_pipeline(user, page) -> bool:
+    """True when the visitor can open the page and the page can launch a pipeline.
 
-    There is no user check. Whoever can open the page sees the button.
+    Public pag es stay open to anyone. Private pages use the same access check as viewing the page,
+    so a guessed slug is not enough to start or poll the pipeline.
     """
     if not page.pipeline_id or not page.account_id:
+        return False
+    if page.needs_authentication and not user_can_access_page(user, page):
         return False
     return account_has_openhexa_config(page.account)
 

@@ -680,7 +680,7 @@ The bar is rendered only when every condition below is true. Otherwise the page 
 | The page belongs to an account | Page admin, field **Account** |
 | That account has an OpenHexa workspace (instance URL, token, and slug) | See [Configuration Setup](#configuration-setup) |
 
-There is no login check for the button. Anyone who can open the page sees it, including anonymous visitors. The launch is recorded on the page account. Opening the page itself still follows **Needs authentication**.
+Anyone who can open the page sees the button, including anonymous visitors on a public page. Launch and status use the same rule as opening the page: a private page (**Needs authentication**) requires `user_can_access_page`, so guessing the slug is not enough to start or poll the pipeline. The launch is recorded on the page account.
 
 ### Page configuration
 

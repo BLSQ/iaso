@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { User, useCurrentUser } from '../../../../utils/usersUtils';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { useGetDataSource } from '../../../dataSources/hooks/useGetDataSource';
 import { useGetDataSourceVersion } from '../../../dataSources/hooks/useGetDataSourceVersion';
 import { Version } from '../../../dataSources/types/dataSources';
@@ -28,7 +28,7 @@ export const useSourceConfig = (
     sourceId: number | string | undefined,
     versionId: number | string | undefined,
 ): Config => {
-    const currentUser: User = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const { formatMessage } = useSafeIntl();
     const { data: source, isFetching: isFetchingSource } = useGetDataSource(
         sourceId && versionId === undefined ? `${sourceId}` : undefined,
@@ -37,7 +37,7 @@ export const useSourceConfig = (
         useGetDataSourceVersion(versionId ? `${versionId}` : undefined);
     return useMemo(() => {
         const defaultUserConfig =
-            currentUser?.account?.default_version?.data_source
+            currentAccount?.default_version?.data_source
                 ?.tree_config_status_fields;
 
         let sourceSettings = DEFAULT_CONFIG;
@@ -81,7 +81,7 @@ export const useSourceConfig = (
             if (defaultUserConfig?.length > 0) {
                 sourceSettings = defaultUserConfig;
             }
-            const defaultVersion = currentUser.account.default_version;
+            const defaultVersion = currentAccount.default_version;
             if (defaultVersion) {
                 sourceInfos = {
                     sourceName: defaultVersion.data_source?.name,
@@ -104,7 +104,7 @@ export const useSourceConfig = (
             sourceInfos,
         };
     }, [
-        currentUser?.account.default_version,
+        currentAccount?.default_version,
         versionId,
         sourceId,
         isFetchingSource,

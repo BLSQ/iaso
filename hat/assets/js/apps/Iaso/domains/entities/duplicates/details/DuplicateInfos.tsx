@@ -7,6 +7,7 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import classnames from 'classnames';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import {
     formSuccessFullMessageKey,
@@ -68,6 +69,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const classes: Record<string, string> = useStyles();
     const redirectTo = useRedirectTo();
 
@@ -150,8 +152,8 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             </Button>
                         </Box>
                         {hasFeatureFlag(
-                            currentUser,
                             ENTITY_DUPLICATES_SOFT_DELETE,
+                            currentAccount,
                         ) && (
                             <Box
                                 ml={2}
@@ -205,8 +207,8 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             </Box>
                         )}
                         {!hasFeatureFlag(
-                            currentUser,
                             ENTITY_DUPLICATES_SOFT_DELETE,
+                            currentAccount,
                         ) && (
                             <Box ml={2} mr={2}>
                                 <Button

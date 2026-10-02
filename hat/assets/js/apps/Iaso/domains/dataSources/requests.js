@@ -1,6 +1,11 @@
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import {
+    getApiAccountsMeRetrieveQueryKey,
+    useApiAccountsSetDefaultVersionPartialUpdate,
+} from 'Iaso/api/accounts';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
+import {
     getRequest,
     iasoFetch,
     postRequest,
@@ -11,7 +16,6 @@ import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
 import MESSAGES from './messages';
 
 /**
@@ -175,11 +179,6 @@ export const csvPreview = async data => {
         });
 };
 
-export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
-    putRequest(`/api/accounts/${accountId}/set-default-version/`, {
-        default_version: defaultVersionId,
-    });
-
 /**
  * Save DataSource on server
  * If the data source is marked as default this necessitates a separate request to
@@ -189,7 +188,7 @@ export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
  */
 export const useSaveDataSource = setFieldErrors => {
     const [isSaving, setIsSaving] = React.useState(false);
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const queryClient = useQueryClient();
 
     const { mutateAsync: saveMutation } = useSnackMutation(
@@ -203,11 +202,12 @@ export const useSaveDataSource = setFieldErrors => {
         undefined,
         snackBarMessages.createDataSourceError,
     );
-    const saveDefaultDataSourceMutation = useSnackMutation(
-        updateDefaultDataSource,
-        false,
-        snackBarMessages.updateDefaultSourceError,
-    );
+
+    const { mutateAsync: saveDefaultDataSourceMutation } =
+        useApiAccountsSetDefaultVersionPartialUpdate({
+            snackSuccessMessage: false,
+            snackBarMessages: snackBarMessages.updateDefaultSourceError,
+        });
 
     const saveDataSource = async form => {
         setIsSaving(true);
@@ -236,11 +236,12 @@ export const useSaveDataSource = setFieldErrors => {
         }
 
         if (is_default_source && form.default_version_id.value) {
-            await saveDefaultDataSourceMutation.mutateAsync([
-                currentUser.account.id,
-                form.default_version_id.value,
-            ]);
+            await saveDefaultDataSourceMutation({
+                id: currentAccount.id,
+                data: { default_version: form.default_version_id.value },
+            });
             queryClient.invalidateQueries('currentUser');
+            queryClient.invalidateQueries(getApiAccountsMeRetrieveQueryKey());
         }
         setIsSaving(false);
     };

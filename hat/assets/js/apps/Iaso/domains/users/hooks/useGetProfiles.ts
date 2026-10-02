@@ -61,5 +61,8 @@ export const useGetProfile = (
     return useSnackQuery({
         queryKey,
         queryFn: () => getProfile(profileId),
+        options: {
+            enabled: !!profileId,
+        },
     });
 };

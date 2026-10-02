@@ -17,6 +17,7 @@ import { Map as LeafletMap } from 'leaflet';
 
 import L from 'leaflet';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
 import { CloseTooltipOnMoveStart } from 'Iaso/utils/map/mapUtils';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
@@ -37,9 +38,8 @@ import {
     orderOrgUnitTypeByDepth,
 } from '../../../../../utils/map/mapUtils';
 import * as Permission from '../../../../../utils/permissions';
-import { useCurrentUser } from '../../../../../utils/usersUtils';
 import { FormsFilterComponent } from '../../../../forms/components/FormsFilterComponent';
-import { userHasPermission } from '../../../../users/utils';
+import { useCurrentUserHasPermission } from '../../../../users/utils';
 import MESSAGES from '../../../messages';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
@@ -101,7 +101,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const map = useRef<LeafletMap | null>(null);
     // These 2 refs are needed because we need to initialize the EditableGroups only once, but we need the map to be ready
     // and we can't predict exactly how many renders that will require
@@ -110,7 +110,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
     const [state, setStateField, , setState] = useFormState(
-        initialState(currentUser),
+        initialState(currentAccount),
     );
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
@@ -159,7 +159,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const toggleEditShape = useCallback(
-        keyName => {
+        (keyName: string) => {
             const editEnabled = state[keyName].value.edit;
             const leafletMap = map.current;
             const group =
@@ -176,7 +176,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const toggleAddShape = useCallback(
-        keyName => {
+        (keyName: string) => {
             const addEnabled = state[keyName].value.add;
             if (addEnabled) {
                 const group =
@@ -194,7 +194,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const toggleDeleteShape = useCallback(
-        keyName => {
+        (keyName: string) => {
             const deleteEnabled = state[keyName].value.delete;
             const leafletMap = map.current;
             const group =
@@ -211,7 +211,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const addShape = useCallback(
-        keyName => {
+        (keyName: string) => {
             const leafletMap = map.current;
             if (keyName === 'location') {
                 state.locationGroup.value.addShape(
@@ -378,11 +378,11 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
             if (currentMap) {
                 state.locationGroup.value.reset(currentMap);
                 state.catchmentGroup.value.reset(currentMap);
-                setState(initialState(currentUser));
+                setState(initialState(currentAccount));
             }
         };
     }, [
-        currentUser,
+        currentAccount,
         setState,
         state.catchmentGroup.value,
         state.locationGroup.value,
@@ -393,10 +393,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         longitude: [],
     });
 
-    const hasEditPermission = userHasPermission(
-        Permission.ORG_UNITS,
-        currentUser,
-    );
+    const hasEditPermission = useCurrentUserHasPermission(Permission.ORG_UNITS);
     const saveDisabled =
         actionBusy ||
         !orgUnitLocationModified ||

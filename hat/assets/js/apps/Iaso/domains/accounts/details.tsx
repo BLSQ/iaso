@@ -24,9 +24,9 @@ import { AccountFeatureFlagPanel } from 'Iaso/domains/accounts/components/detail
 import { CustomTabPanel } from 'Iaso/domains/accounts/components/details/CustomTabPanel';
 import { GeneralInfoPanel } from 'Iaso/domains/accounts/components/details/GeneralInfoPanel';
 import { ModulePanel } from 'Iaso/domains/accounts/components/details/ModulePanel';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { userHasAccessToModule } from 'Iaso/domains/users/utils';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 
 const a11yProps = (value: string) => {
@@ -52,14 +52,14 @@ const AccountsDetails: FunctionComponent = () => {
 
     const { data: account, isLoading } = useApiAccountsRetrieve(accountId);
 
-    const user = useCurrentUser();
+    const currentAccount = useCurrentAccount();
 
     const { data: AIApiKey, isLoading: isLoadingAIApiKey } =
         useApiAccountsAiApiKeyRetrieve(accountId, undefined, {
             query: {
                 enabled:
                     Boolean(accountId) &&
-                    userHasAccessToModule('FORM_AI', user),
+                    userHasAccessToModule('FORM_AI', currentAccount),
             },
         });
 

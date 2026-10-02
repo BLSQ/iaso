@@ -18,9 +18,8 @@ import { useGetProfile } from 'Iaso/domains/users/hooks/useGetProfiles';
 import { useSavePassword } from 'Iaso/domains/users/hooks/useSavePassword';
 import { useSaveProfile } from 'Iaso/domains/users/hooks/useSaveProfile';
 import MESSAGES from 'Iaso/domains/users/messages';
-import { userHasPermission } from 'Iaso/domains/users/utils';
+import { useCurrentUserHasPermission } from 'Iaso/domains/users/utils';
 import * as Permission from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { PermissionsInfoWidgetPaper } from './UserDetailViewComponents/PermissionsInfoWidgetPaper';
 import { UserRolesInfoWidgetPaper } from './UserDetailViewComponents/UserRolesInfoWidgetPaper';
 
@@ -36,16 +35,14 @@ export const UserDetailsView = ({ userId }: Props) => {
     } = useGetProfile(userId);
     const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile({
         id: userId,
     });
     const { mutate: deleteProfile } = useDeleteProfile(userId);
 
     const { mutate: savePassword } = useSavePassword(userId);
-    const canBypassProjectRestrictions = userHasPermission(
+    const canBypassProjectRestrictions = useCurrentUserHasPermission(
         Permission.USERS_ADMIN,
-        currentUser,
     );
 
     const onDeleteProfile = useCallback(() => {

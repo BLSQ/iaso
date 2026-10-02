@@ -13,8 +13,7 @@ import { baseUrls } from '../../../constants/urls';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { postGeoPkg } from '../requests';
 import { VersionDescription } from './VersionDescription';
@@ -42,7 +41,6 @@ export const ImportGeoPkgDialog: FC<Props> = ({
     versionNumber = null,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] =
         useFormState(initialFormState());
 
@@ -114,9 +112,8 @@ export const ImportGeoPkgDialog: FC<Props> = ({
 
     const allowConfirm = Boolean(!mutation.isLoading && form.file.value);
 
-    const hasTaskPermission = userHasPermission(
+    const hasTaskPermission = useCurrentUserHasPermission(
         Permission.DATA_TASKS,
-        currentUser,
     );
 
     const additionalButtonProps = useMemo(

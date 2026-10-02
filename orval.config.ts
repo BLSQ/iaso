@@ -30,7 +30,7 @@ const createConfig = (
                     {
                         domains: [
                             process.env.ORVAL_TARGET_URL_DOMAIN ||
-                                'localhost:8000',
+                                'localhost',
                         ],
                         headers: {
                             Authorization: `Bearer ${process.env.API_TOKEN}`,

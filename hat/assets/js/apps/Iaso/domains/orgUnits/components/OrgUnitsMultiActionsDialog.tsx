@@ -21,13 +21,12 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-// @ts-ignore
 import { UseMutateAsyncFunction } from 'react-query';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import InputComponent from '../../../components/forms/InputComponent';
-import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasAllPermissions } from '../../users/utils';
 
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
@@ -70,7 +69,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const stringOfIdsToArrayofIds = stringValue =>
+const stringOfIdsToArrayofIds = (stringValue?: string) =>
     !stringValue || stringValue === ''
         ? []
         : stringValue.split(',').map(s => parseInt(s, 10));
@@ -103,16 +102,15 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     >(undefined);
     const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
 
-    const currentUser = useCurrentUser();
-    const hasTaskPermission = userHasPermission(
+    const currentAccount = useCurrentAccount();
+    const hasTaskPermission = useCurrentUserHasAllPermissions([
         Permission.DATA_TASKS,
-        currentUser,
-    );
+    ]);
     const searches = useMemo(
         () => decodeSearch(decodeURI(params.searches)),
         [params.searches],
     );
-    const defaultVersion = currentUser?.account?.default_version;
+    const defaultVersion = currentAccount?.default_version;
     const defaultDataSource = defaultVersion?.data_source;
     const dataSourceIds = defaultDataSource?.id
         ? `${defaultDataSource.id}`
@@ -140,26 +138,26 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetOrgUnitValidationStatus();
-    const handleSetEditGroups = editEnabled => {
+    const handleSetEditGroups = (editEnabled: boolean) => {
         if (!editEnabled) {
             setGroupsAdded([]);
             setGroupsRemoved([]);
         }
         setEditGroups(editEnabled);
     };
-    const handleSetEditOuType = editEnabled => {
+    const handleSetEditOuType = (editEnabled: boolean) => {
         if (!editEnabled) {
             setEditOrgUnitType(false);
         }
         setEditOrgUnitType(editEnabled);
     };
-    const handleSetEditValidation = editEnabled => {
+    const handleSetEditValidation = (editEnabled: boolean) => {
         if (!editEnabled) {
             setValidationStatus(undefined);
         }
         setEditValidation(editEnabled);
     };
-    const handleSetUpdateGPS = editEnabled => {
+    const handleSetUpdateGPS = (editEnabled: boolean) => {
         if (!editEnabled) {
             setUpdateGPS(false);
         }

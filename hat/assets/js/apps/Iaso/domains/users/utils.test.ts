@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getApiAccountsMeRetrieveResponseMock } from 'Iaso/api/accounts/endpoints/account/account.msw';
 import { RoutePath } from 'Iaso/constants/routes';
 import { MenuItem } from 'Iaso/domains/app/types';
 import { User } from 'Iaso/utils/usersUtils';
@@ -215,39 +216,29 @@ describe('getFirstAllowedUrl', () => {
 
 describe('userHasAccessToModule', () => {
     it('returns false when user is missing', () => {
-        expect(
-            userHasAccessToModule('forms', undefined as unknown as User),
-        ).toBe(false);
+        expect(userHasAccessToModule('DATA_COLLECTION_FORMS', undefined)).toBe(
+            false,
+        );
     });
 
     it('returns true when the account has the module', () => {
-        const user = createUser({
-            account: {
-                id: 1,
-                name: 'Test account',
-                created_at: 0,
-                updated_at: 0,
-                feature_flags: [],
-                modules: ['forms', 'users'],
-            },
+        const account = getApiAccountsMeRetrieveResponseMock({
+            modules: ['DATA_COLLECTION_FORMS'],
         });
 
-        expect(userHasAccessToModule('forms', user)).toBe(true);
+        expect(userHasAccessToModule('DATA_COLLECTION_FORMS', account)).toBe(
+            true,
+        );
     });
 
     it('returns false when the account does not have the module', () => {
-        const user = createUser({
-            account: {
-                id: 1,
-                name: 'Test account',
-                created_at: 0,
-                updated_at: 0,
-                feature_flags: [],
-                modules: ['users'],
-            },
+        const account = getApiAccountsMeRetrieveResponseMock({
+            modules: [],
         });
 
-        expect(userHasAccessToModule('forms', user)).toBe(false);
+        expect(userHasAccessToModule('DATA_COLLECTION_FORMS', account)).toBe(
+            false,
+        );
     });
 });
 

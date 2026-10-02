@@ -107,7 +107,7 @@ export const useWorkflowsTableColumns = (): Column[] => {
                 },
             });
         }
-        return cols;
+        return cols as Column[];
     }, [formatMessage, user, deleteWorkflow]);
 };
 

@@ -1,11 +1,12 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getApiAccountsMeRetrieveResponseMock } from 'Iaso/api/accounts/endpoints/account/account.msw';
 import {
     MODULE_EMBEDDED_LINKS,
     VALIDATION_WORKFLOW_MODULE,
 } from 'Iaso/utils/modules';
 import { currentUserFactory } from '../../../__tests__/factories/users';
-import { useCurrentUser, User } from '../utils/usersUtils';
+import { CurrentUser, useCurrentUser } from '../utils/usersUtils';
 import { useMenuItems } from './menu';
 
 vi.mock('../utils/usersUtils', () => ({
@@ -24,6 +25,14 @@ vi.mock('bluesquare-components', async importOriginal => {
     };
 });
 
+const { mockCurrentAccount } = vi.hoisted(() => {
+    return { mockCurrentAccount: vi.fn() };
+});
+
+vi.mock('Iaso/domains/accounts/hooks', () => ({
+    useCurrentAccount: mockCurrentAccount,
+}));
+
 vi.mock('../domains/entities/hooks/requests', () => ({
     useGetEntityTypesDropdown: () => ({ data: [] }),
 }));
@@ -34,20 +43,11 @@ vi.mock('../domains/home/hooks/useGetOrgunitsExtraPath', () => ({
 
 const mockUseCurrentUser = vi.mocked(useCurrentUser);
 
-const createMockUser = (modules: string[] = []): User => {
+const createMockUser = (): CurrentUser => {
     return currentUserFactory.build({
         is_staff: true,
         is_superuser: true,
-        account: {
-            feature_flags: [],
-            modules: modules,
-            default_version: {
-                data_source: {
-                    url: null,
-                },
-            },
-        },
-    }) as User;
+    }) as CurrentUser;
 };
 const renderUseMenuItems = () => renderHook(() => useMenuItems());
 
@@ -60,8 +60,11 @@ describe('useMenuItems - VALIDATION_WORKFLOW_MODULE', () => {
     });
 
     it('adds the validation workflow entry to the menu when the module is enabled', () => {
-        mockUseCurrentUser.mockReturnValue(
-            createMockUser([VALIDATION_WORKFLOW_MODULE]),
+        mockUseCurrentUser.mockReturnValue(createMockUser());
+        mockCurrentAccount.mockReturnValue(
+            getApiAccountsMeRetrieveResponseMock({
+                modules: [VALIDATION_WORKFLOW_MODULE],
+            }),
         );
 
         const { result } = renderUseMenuItems();
@@ -75,7 +78,12 @@ describe('useMenuItems - VALIDATION_WORKFLOW_MODULE', () => {
     });
 
     it('does not add the validation workflow entry to the menu when the module is disabled', () => {
-        mockUseCurrentUser.mockReturnValue(createMockUser([]));
+        mockUseCurrentUser.mockReturnValue(createMockUser());
+        mockCurrentAccount.mockReturnValue(
+            getApiAccountsMeRetrieveResponseMock({
+                modules: [],
+            }),
+        );
 
         const { result } = renderUseMenuItems();
 
@@ -92,8 +100,11 @@ describe('useMenuItems - MODULE_EMBEDDED_LINKS', () => {
     });
 
     it('adds the embedded links entry to the menu when the module is enabled', () => {
-        mockUseCurrentUser.mockReturnValue(
-            createMockUser([MODULE_EMBEDDED_LINKS]),
+        mockUseCurrentUser.mockReturnValue(createMockUser());
+        mockCurrentAccount.mockReturnValue(
+            getApiAccountsMeRetrieveResponseMock({
+                modules: [MODULE_EMBEDDED_LINKS],
+            }),
         );
 
         const { result } = renderUseMenuItems();
@@ -105,7 +116,12 @@ describe('useMenuItems - MODULE_EMBEDDED_LINKS', () => {
     });
 
     it('does not add the embedded links entry to the menu when the module is disabled', () => {
-        mockUseCurrentUser.mockReturnValue(createMockUser([]));
+        mockUseCurrentUser.mockReturnValue(createMockUser());
+        mockCurrentAccount.mockReturnValue(
+            getApiAccountsMeRetrieveResponseMock({
+                modules: [],
+            }),
+        );
 
         const { result } = renderUseMenuItems();
 

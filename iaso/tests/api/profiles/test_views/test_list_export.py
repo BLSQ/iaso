@@ -76,7 +76,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
             ]
         )
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,Jane,Doe,,,,,,iaso_forms,,,{self.team1.name},,\r\n"
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,Jane,Doe,{self.child_org_unit.pk},{self.child_org_unit.source_ref},en,,,iaso_forms,,{self.project.name},{self.team1.name},,\r\n"
         expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,\r\n'
         expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,{self.team2.name},,\r\n'
         expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,,\r\n"
@@ -136,7 +136,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                 "first_name": {0: "Jane", 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "last_name": {0: "Doe", 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "orgunit": {
-                    0: None,
+                    0: f"{self.child_org_unit.pk}",
                     1: f"{self.org_unit_from_sub_type.id},{self.org_unit_from_parent_type.id}",
                     2: None,
                     3: None,
@@ -145,7 +145,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                     6: f"{self.org_unit_from_parent_type.id}",
                 },
                 "orgunit__source_ref": {
-                    0: None,
+                    0: f"{self.child_org_unit.source_ref}",
                     1: self.org_unit_from_parent_type.source_ref,
                     2: None,
                     3: None,
@@ -153,7 +153,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                     5: None,
                     6: self.org_unit_from_parent_type.source_ref,
                 },
-                "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
+                "profile_language": {0: "en", 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
@@ -174,7 +174,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                     5: None,
                     6: f"{self.user_role_name},{self.user_role_another_account_name}",
                 },
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
+                "projects": {0: self.project.name, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
                 "teams": {0: self.team1.name, 1: None, 2: self.team2.name, 3: None, 4: None, 5: None, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "editable_org_unit_types": {
@@ -183,7 +183,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                     2: None,
                     3: None,
                     4: None,
-                    5: self.sub_unit_type.pk,
+                    5: int(self.sub_unit_type.pk),
                     6: None,
                 },
             },

@@ -1,6 +1,7 @@
 import React, { ReactElement, useMemo } from 'react';
 import { getSort } from 'bluesquare-components';
 import { Route } from 'react-router-dom';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
 import Page404 from '../../components/errors/Page404';
 import { baseUrls } from '../../constants/urls';
@@ -167,9 +168,10 @@ export const useRedirections: RedirectionsMethod = ({
 
     let redirections: Redirection[] = [];
     const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const homeOfflineComponent = useHomeOfflineComponent();
 
-    const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
+    const canShowHome = hasFeatureFlag(SHOW_HOME_ONLINE, currentAccount);
 
     if (hasNoAccount) {
         redirections = setupRedirections;

@@ -9,8 +9,8 @@ import {
     Typography,
 } from '@mui/material';
 
-import { useSwitchAccount } from '../../hooks/useSwitchAccount';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useApiAccountsMeRetrieve } from 'Iaso/api/accounts';
+import { useSwitchAccount } from 'Iaso/hooks/useSwitchAccount';
 
 type Props = {
     color?: 'inherit' | 'primary' | 'secondary';
@@ -19,7 +19,7 @@ type Props = {
 export const AccountSwitch: FunctionComponent<Props> = ({
     color = 'inherit',
 }) => {
-    const currentUser = useCurrentUser();
+    const { data: currentAccount } = useApiAccountsMeRetrieve();
 
     const [open, setOpen] = useState(false);
     const anchorRef = useRef<HTMLDivElement>(null);
@@ -55,13 +55,18 @@ export const AccountSwitch: FunctionComponent<Props> = ({
     // Return focus to the button when we transitioned from !open -> open
     const prevOpen = useRef(open);
     useEffect(() => {
-        if (prevOpen.current === true && open === false) {
+        if (prevOpen.current && !open) {
             anchorRef.current?.focus();
         }
         prevOpen.current = open;
     }, [open]);
     const menuListKeyDownHandler = React.useCallback(handleListKeyDown, []);
-    if (!currentUser?.other_accounts?.length) {
+
+    if (!currentAccount) {
+        return;
+    }
+
+    if (!currentAccount?.other_accounts?.length) {
         return (
             <Typography
                 variant="body2"
@@ -71,7 +76,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                     fontSize: 16,
                 }}
             >
-                {currentUser.account.name}
+                {currentAccount.name}
             </Typography>
         );
     }
@@ -95,7 +100,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                 aria-expanded={open ? 'true' : undefined}
                 aria-haspopup="true"
             >
-                {currentUser.account.name}
+                {currentAccount.name}
             </Typography>
             <Popper
                 open={open}
@@ -121,13 +126,13 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                                     aria-labelledby="account-button"
                                     onKeyDown={menuListKeyDownHandler}
                                 >
-                                    {currentUser?.other_accounts?.map(
+                                    {currentAccount?.other_accounts?.map(
                                         account => (
                                             <MenuItem
                                                 key={account.id}
                                                 selected={
                                                     account.id ===
-                                                    currentUser.account.id
+                                                    currentAccount.id
                                                 }
                                                 onClick={() =>
                                                     switchAccount(account.id)

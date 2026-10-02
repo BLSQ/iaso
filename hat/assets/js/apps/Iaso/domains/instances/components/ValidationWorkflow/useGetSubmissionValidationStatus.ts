@@ -1,13 +1,12 @@
 import {
-    userHasAccessToModule,
-    userHasAllPermissions,
+    useCurrentUserHasAccessToModule,
+    useCurrentUserHasAllPermissions,
 } from 'Iaso/domains/users/utils';
 import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { SUBMISSIONS, VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 const getSubmissionValidationStatus = (
     id: number,
@@ -16,14 +15,12 @@ const getSubmissionValidationStatus = (
 };
 
 export const useGetSubmissionValidationStatus = (id?: number) => {
-    const user = useCurrentUser();
-    const hasPermission = userHasAllPermissions(
-        [VALIDATION_WORKFLOWS, SUBMISSIONS],
-        user,
-    );
-    const userHasModule = userHasAccessToModule(
+    const hasPermission = useCurrentUserHasAllPermissions([
+        VALIDATION_WORKFLOWS,
+        SUBMISSIONS,
+    ]);
+    const userHasModule = useCurrentUserHasAccessToModule(
         VALIDATION_WORKFLOW_MODULE,
-        user,
     );
 
     return useSnackQuery({

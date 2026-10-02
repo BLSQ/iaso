@@ -3,13 +3,13 @@ import React, { FunctionComponent, useState } from 'react';
 import { Box, Popover, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
+import { getDefaultSourceVersion } from 'Iaso/domains/dataSources/utils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../../../domains/app/components/messages';
-import { getDefaultSourceVersion } from '../../../domains/dataSources/utils';
-import { User } from '../../../utils/usersUtils';
 import { AccountSwitch } from '../AccountSwitch';
 
 type Props = {
-    currentUser: User;
     version: string;
 };
 
@@ -39,13 +39,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const CurrentUserInfos: FunctionComponent<Props> = ({
-    currentUser,
-    version,
-}) => {
+export const CurrentUserInfos: FunctionComponent<Props> = ({ version }) => {
     const classes = useStyles();
+    const currentAccount = useCurrentAccount();
+    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const defaultSourceVersion = getDefaultSourceVersion(currentAccount);
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handlePopoverOpen = event => {
@@ -69,7 +68,7 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
             >
                 {currentUser?.user_name}
             </Box>
-            {currentUser.account && (
+            {currentAccount && (
                 <>
                     <Box sx={{ mx: 1 }}>-</Box>
                     <AccountSwitch />

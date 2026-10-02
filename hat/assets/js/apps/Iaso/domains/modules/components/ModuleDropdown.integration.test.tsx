@@ -9,7 +9,7 @@ import {
     getApiModulesDropdownListMockHandler,
     getApiModulesDropdownListResponseMock,
 } from 'Iaso/api/modules/endpoints/modules/modules.msw';
-import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { useCurrentUserHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import {
     renderWithThemeAndIntlProvider,
@@ -34,7 +34,7 @@ vi.mock('Iaso/utils/usersUtils', () => ({
 }));
 
 vi.mock('Iaso/domains/users/utils', () => ({
-    userHasOneOfPermissions: vi.fn(),
+    useCurrentUserHasOneOfPermissions: vi.fn(),
 }));
 describe('Module dropdown integration test', () => {
     beforeAll(() => {
@@ -48,7 +48,7 @@ describe('Module dropdown integration test', () => {
             onUnhandledRequest: 'error',
         });
         vi.mocked(useCurrentUser).mockReturnValue({} as any);
-        vi.mocked(userHasOneOfPermissions).mockReturnValue(true);
+        vi.mocked(useCurrentUserHasOneOfPermissions).mockReturnValue(true);
     });
 
     afterEach(() => {

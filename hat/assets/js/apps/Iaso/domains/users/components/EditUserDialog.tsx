@@ -118,7 +118,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
 
         saveProfile(currentUser, {
             onSuccess: () => {
-                if (currentUser.id === connectedUser.id) {
+                if (currentUser.id === connectedUser?.id) {
                     queryClient.invalidateQueries('currentUser');
                 }
                 closeDialog();
@@ -134,7 +134,7 @@ const EditUserDialogComponent: FunctionComponent<Props> = ({
         });
     }, [
         closeDialog,
-        connectedUser.id,
+        connectedUser?.id,
         queryClient,
         saveProfile,
         setFieldErrors,

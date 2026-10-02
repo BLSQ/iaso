@@ -12,8 +12,7 @@ import ConfirmCancelDialogComponent from '../../../../components/dialogs/Confirm
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
-import { userHasPermission } from '../../../users/utils';
+import { useCurrentUserHasPermission } from '../../../users/utils';
 import MESSAGES from '../../messages';
 import {
     useCopyDataSourceVersion,
@@ -77,7 +76,6 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceId,
     dataSourceVersionNumber,
 }) => {
-    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
     const [destinationSourceId, setDestinationSourceId] =
@@ -155,9 +153,8 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             setDestinationVersionNumber(nextVersionNumber);
     }, [destinationVersionNumber, nextVersionNumber]);
 
-    const hasTaskPermission = userHasPermission(
+    const hasTaskPermission = useCurrentUserHasPermission(
         Permission.DATA_TASKS,
-        currentUser,
     );
 
     return (

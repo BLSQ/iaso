@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { getYears } from 'Iaso/utils';
 import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from 'Iaso/utils/featureFlags';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import {
     MONTHS,
     PERIOD_TYPE_QUARTER_NOV,
@@ -23,7 +23,7 @@ export const usePeriodPickerOptions = (
     currentPeriod: Partial<PeriodObject> | null,
 ) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const getQuarterOptionLabel = useCallback(
         (value, label) => {
             if (periodType === PERIOD_TYPE_QUARTER_NOV) {
@@ -32,7 +32,7 @@ export const usePeriodPickerOptions = (
                 )}-${formatMessage(QUARTERS_NOV_RANGE[value][1])})`;
             }
 
-            if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
+            if (hasFeatureFlag(HIDE_PERIOD_QUARTER_NAME, currentAccount)) {
                 return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
                     QUARTERS_RANGE[value][1],
                 )}`;
@@ -41,7 +41,7 @@ export const usePeriodPickerOptions = (
                 QUARTERS_RANGE[value][0],
             )}-${formatMessage(QUARTERS_RANGE[value][1])})`;
         },
-        [formatMessage, periodType, currentUser],
+        [formatMessage, periodType, currentAccount],
     );
     const weekOptions = useMemo(() => {
         if (!currentPeriod?.year) {

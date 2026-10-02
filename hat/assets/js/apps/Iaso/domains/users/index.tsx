@@ -39,7 +39,7 @@ import { useSaveProfile } from './hooks/useSaveProfile';
 
 import MESSAGES from './messages';
 
-import { userHasPermission } from './utils';
+import { useCurrentUserHasPermission } from './utils';
 
 const baseUrl = baseUrls.users;
 
@@ -56,9 +56,8 @@ export const Users = () => {
     const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
-    const canBypassProjectRestrictions = userHasPermission(
+    const canBypassProjectRestrictions = useCurrentUserHasPermission(
         Permission.USERS_ADMIN,
-        currentUser,
     );
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();

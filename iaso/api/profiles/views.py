@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Min, Prefetch, QuerySet
 from django.db.transaction import atomic
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import translation
@@ -32,7 +32,6 @@ from hat.audit.models import PROFILE_API
 from iaso.api.bulk_create_users.constants import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, ModelViewSet
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.api.profiles.constants import PK_ME
 from iaso.api.profiles.filters import ProfileListFilter
 from iaso.api.profiles.pagination import ProfileDropdownPagination, ProfilePagination
 from iaso.api.profiles.permissions import HasProfilePermission
@@ -46,6 +45,7 @@ from iaso.api.profiles.policies import (
 from iaso.api.profiles.serializers import (
     ProfileCreateSerializer,
     ProfileListSerializer,
+    ProfileRetrieveCurrentSerializer,
     ProfileRetrieveSerializer,
     ProfileUpdateSerializer,
     ProfileUserFallbackRetrieveSerializer,
@@ -53,7 +53,7 @@ from iaso.api.profiles.serializers import (
 from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import BaseProfileUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.mail.branding import core_email_branding_context
-from iaso.models import OrgUnit, Profile, TenantUser, UserRole
+from iaso.models import OrgUnit, Profile, Project, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
 
@@ -105,14 +105,16 @@ class ProfilesViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "retrieve":
             return ProfileRetrieveSerializer
+        if self.action == "retrieve_current":
+            return ProfileRetrieveCurrentSerializer
         if self.action == "create":
             return ProfileCreateSerializer
         if self.action == "list":
             return ProfileListSerializer
         if self.action in ["update", "partial_update"]:
-            if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field, "") == PK_ME:
-                return BaseProfileUpdateSerializer
             return ProfileUpdateSerializer
+        if self.action in ["update_current"]:
+            return BaseProfileUpdateSerializer
         if self.action in ["update_password"]:
             return ProfileUpdatePasswordSerializer
         if self.action == "dropdown":
@@ -124,12 +126,100 @@ class ProfilesViewSet(ModelViewSet):
         account = self.request.user.iaso_profile.account
         qs = Profile.objects.filter(account=account)
 
+        if self.action == "retrieve_current":
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "projects",
+                    Project.objects.only(
+                        "id",
+                        "name",
+                        "app_id",
+                        "color",
+                    )
+                    .all()
+                    .order_by("name"),
+                ),
+                Prefetch(
+                    "org_units",
+                    OrgUnit.objects.only("id", "name").all().order_by("name"),
+                ),
+            ).select_related("user", "user__tenant_user", "user__tenant_user__main_user", "account")
+            return qs
+
+        qs = qs.with_editable_org_unit_types()
+
+        if self.action == "retrieve":
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "projects",
+                    Project.objects.only(
+                        "id",
+                        "name",
+                        "app_id",
+                        "color",
+                    )
+                    .all()
+                    .order_by("name"),
+                ),
+                Prefetch(
+                    "user_roles",
+                    UserRole.objects.all()
+                    .select_related("group")
+                    .prefetch_related(
+                        Prefetch("group__permissions", Permission.objects.filter(codename__startswith="iaso_"))
+                    )
+                    .order_by("group__name"),
+                ),
+                Prefetch(
+                    "org_units",
+                    OrgUnit.objects.select_related(
+                        "version",
+                        "version__data_source",
+                        "org_unit_type",
+                    )
+                    .only(
+                        "id",
+                        "name",
+                        "version_id",
+                        "created_at",
+                        "source_ref",
+                        "parent_id",
+                        "org_unit_type_id",
+                        "aliases",
+                        "validation_status",
+                        "location",
+                        "source_created_at",
+                        "updated_at",
+                        "simplified_geom",
+                        "opening_date",
+                        "closed_date",
+                        "version__id",
+                        "version__number",
+                        "version__data_source_id",
+                        "version__data_source__id",
+                        "version__data_source__name",
+                        "org_unit_type__id",
+                        "org_unit_type__name",
+                        "org_unit_type__depth",
+                    )
+                    .order_by("name"),
+                ),
+                "editable_org_unit_types",
+                "account__feature_flags",
+            ).select_related(
+                "user",
+                "user__tenant_user",
+                "user__tenant_user__main_user",
+                "account",
+                "account__default_version",
+                "account__default_version__data_source",
+            )
+            return qs
+
         if self.action == "dropdown":
             # ProfileDropdownSerializer only reads obj.user_id and obj.user.username/first_name/last_name,
             # so skip the editable_org_unit_types annotation (extra joins + GROUP BY) it never uses.
             return qs.select_related("user")
-
-        qs = qs.with_editable_org_unit_types()
 
         if self.action == "list":
             if self.request.query_params.get("managedUsersOnly", "").lower() in ["true", "1"]:
@@ -166,18 +256,27 @@ class ProfilesViewSet(ModelViewSet):
         return qs
 
     def get_object(self):
-        if self.kwargs.get(self.lookup_field, "") == PK_ME:
+        if self.action in ["retrieve_current", "update_current", "destroy_current"]:
             return self.filter_queryset(self.get_queryset()).get(user=self.request.user)
         return super().get_object()
 
-    def retrieve(self, request, *args, **kwargs):
+    @action(detail=False, methods=["get"], url_path="me")
+    def retrieve_current(self, request, *args, **kwargs):
         try:
             return super().retrieve(request, *args, **kwargs)
         except Profile.DoesNotExist:
-            if kwargs.get(self.lookup_field, "") == PK_ME:
-                serializer = ProfileUserFallbackRetrieveSerializer(instance=self.request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            raise Http404
+            serializer = ProfileUserFallbackRetrieveSerializer(instance=self.request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @retrieve_current.mapping.put
+    @retrieve_current.mapping.patch
+    def update_current(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @retrieve_current.mapping.delete
+    @transaction.atomic
+    def destroy_current(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=False, methods=["get"], url_path="export-csv", url_name="export-csv")
     def export_csv(self, request, *args, **kwargs):
@@ -348,7 +447,7 @@ class ProfilesViewSet(ModelViewSet):
         # post-audit
         source = f"{PROFILE_API}_mobile" if is_mobile_request(self.request) else PROFILE_API
 
-        if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field, "") == PK_ME:
+        if self.action == "update_current":
             source = f"{PROFILE_API}_mobile_me" if is_mobile_request(self.request) else f"{PROFILE_API}_me"
 
         audit_logger.log_modification(

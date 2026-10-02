@@ -2,12 +2,11 @@ import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
 import {
-    userHasAccessToModule,
-    userHasPermission,
+    useCurrentUserHasAccessToModule,
+    useCurrentUserHasPermission,
 } from 'Iaso/domains/users/utils';
 import { MODULE_EXTERNAL_STORAGE } from 'Iaso/utils/modules';
 import { STORAGES } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
@@ -18,7 +17,6 @@ import { useGetFields } from './useGetFields';
 
 export const useGetEntityFields = (entity: Entity | undefined) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
 
     const { data: entityTypes } = useGetEntityTypesDropdown();
     const { possibleFields } = useGetPossibleFields(
@@ -47,11 +45,10 @@ export const useGetEntityFields = (entity: Entity | undefined) => {
         formDescriptors,
     );
 
-    const hasExternalStorageAccess = userHasAccessToModule(
+    const hasExternalStorageAccess = useCurrentUserHasAccessToModule(
         MODULE_EXTERNAL_STORAGE,
-        currentUser,
     );
-    const hasPermission = userHasPermission(STORAGES, currentUser);
+    const hasPermission = useCurrentUserHasPermission(STORAGES);
 
     const staticFields: Field[] = useMemo(() => {
         const fields: Field[] = [];

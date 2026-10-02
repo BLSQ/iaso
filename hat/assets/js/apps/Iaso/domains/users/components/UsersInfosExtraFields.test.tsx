@@ -3,6 +3,7 @@ import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { UsersInfosExtraFields } from 'Iaso/domains/users/components/UsersInfosExtraFields';
+import { UserDialogData } from 'Iaso/domains/users/types';
 import {
     renderWithThemeAndIntlProvider,
     selectFromComboBoxWithAsync,
@@ -18,6 +19,14 @@ vi.mock('Iaso/domains/projects/hooks/requests', async () => {
         useGetProjectsDropdownOptions: mockUseGetProjectsDropdownOptions,
     };
 });
+
+const { mockCurrentUser } = vi.hoisted(() => {
+    return { mockCurrentUser: vi.fn() };
+});
+
+vi.mock('Iaso/utils/usersUtils', () => ({
+    useCurrentUser: mockCurrentUser,
+}));
 
 describe('UsersInfosExtraFields test', () => {
     beforeEach(() => {
@@ -35,8 +44,9 @@ describe('UsersInfosExtraFields test', () => {
     });
     it('sets projects value', async () => {
         const mockSetFieldValue = vi.fn();
-        let currentUser = {
+        let currentUser: Partial<UserDialogData> = {
             projects: {
+                // @ts-ignore
                 value: '',
                 errors: [],
             },
@@ -45,13 +55,12 @@ describe('UsersInfosExtraFields test', () => {
                 errors: [],
             },
         };
+
+        mockCurrentUser.mockReturnValue(currentUser);
         const { rerender } = renderWithThemeAndIntlProvider(
             <UsersInfosExtraFields
                 setFieldValue={mockSetFieldValue}
-                // @ts-ignore
-                currentUser={currentUser}
-                // @ts-ignore
-                loggedUser={currentUser}
+                currentUser={currentUser as UserDialogData}
                 canBypassProjectRestrictions={true}
             />,
         );
@@ -66,6 +75,7 @@ describe('UsersInfosExtraFields test', () => {
         expect(mockSetFieldValue).toHaveBeenCalledWith('projects', [1]);
         currentUser = {
             projects: {
+                // @ts-ignore
                 value: '1',
                 errors: [],
             },
@@ -78,10 +88,7 @@ describe('UsersInfosExtraFields test', () => {
         rerender(
             <UsersInfosExtraFields
                 setFieldValue={mockSetFieldValue}
-                // @ts-ignore
-                currentUser={currentUser}
-                // @ts-ignore
-                loggedUser={currentUser}
+                currentUser={currentUser as UserDialogData}
                 canBypassProjectRestrictions={true}
             />,
         );

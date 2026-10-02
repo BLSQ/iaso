@@ -2,7 +2,7 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
-import { useHasNoAccount } from '../../../utils/usersUtils';
+import { useHasNoAccount } from 'Iaso/domains/accounts/hooks';
 import { useAppLocales } from '../../app/constants';
 import { useLocale } from '../../app/contexts/LocaleContext';
 import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser';

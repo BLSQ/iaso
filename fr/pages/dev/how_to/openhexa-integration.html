@@ -1247,6 +1247,7 @@
 <li><a href="#development-utilities">Development Utilities</a></li>
 <li><a href="#api-integration">API Integration</a></li>
 <li><a href="#frontend-integration">Frontend Integration</a></li>
+<li><a href="#launch-button-on-a-page">Launch button on a page</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
 </ol>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
@@ -1850,13 +1851,99 @@ def process_openhexa_export(account, export_id, openhexa_config=None):
 <li><strong>Parameter Validation</strong>: Client-side validation for required parameters</li>
 <li><strong>Error Handling</strong>: Displays clear error messages for failed operations</li>
 </ul>
+<h2 id="launch-button-on-a-page">Launch button on a page<a class="headerlink" href="#launch-button-on-a-page" title="Permanent link">#</a></h2>
+<p>Embedded pages (raw HTML, text, iframe, Power BI, Superset) can show a bar at the bottom with a button that launches one OpenHexa pipeline. The pipeline runs with an empty config and the workspace's current version. Use this for pipelines that take no parameters, such as a dashboard refresh. The page button does not send <code>task_id</code>, <code>connection_token</code>, or <code>connection_host</code>.</p>
+<p>The button is not the pipelines screen at <code>/dashboard/pipelines/</code>. It does not use the workspace <code>config.pipelines</code> defaults, and it does not require the <strong>Pipeline management</strong> permission.</p>
+<h3 id="when-the-button-is-visible">When the button is visible<a class="headerlink" href="#when-the-button-is-visible" title="Permanent link">#</a></h3>
+<p>The bar is rendered only when every condition below is true. Otherwise the page is unchanged and the button is absent.</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Where to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The page has a pipeline id in <code>additional_config</code></td>
+<td>Page admin, field <strong>Additional config</strong></td>
+</tr>
+<tr>
+<td>The page belongs to an account</td>
+<td>Page admin, field <strong>Account</strong></td>
+</tr>
+<tr>
+<td>That account has an OpenHexa workspace (instance URL, token, and slug)</td>
+<td>See <a href="#configuration-setup">Configuration Setup</a></td>
+</tr>
+</tbody>
+</table>
+<p>Anyone who can open the page sees the button, including anonymous visitors on a public page. Launch and status use the same rule as opening the page: a private page (<strong>Needs authentication</strong>) requires <code>user_can_access_page</code>, so guessing the slug is not enough to start or poll the pipeline. The launch is recorded on the page account.</p>
+<h3 id="page-configuration">Page configuration<a class="headerlink" href="#page-configuration" title="Permanent link">#</a></h3>
+<p>In Django admin, open the page and set <strong>Additional config</strong>:</p>
+<pre><code class="language-json">{
+  "pipeline_config": {
+    "pipeline_id": "your-pipeline-uuid",
+    "text": "Refresh the data"
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pipeline_config.pipeline_id</code></td>
+<td>yes</td>
+<td>OpenHexa pipeline UUID in the account workspace. The current version is resolved at launch time.</td>
+</tr>
+<tr>
+<td><code>pipeline_config.text</code></td>
+<td>no</td>
+<td>Button label. One string, because a page has one language. If omitted or blank, the label comes from the page language: "Launch refresh" in English, "Lancer l'actualisation" in French.</td>
+</tr>
+</tbody>
+</table>
+<p><code>additional_config</code> can hold other keys later. Only <code>pipeline_config</code> is read for this button.</p>
+<h3 id="language">Language<a class="headerlink" href="#language" title="Permanent link">#</a></h3>
+<p>Pages can be opened without a logged-in user, so the visitor's profile language is not used. Set <strong>Language</strong> on the page. An empty value means English.</p>
+<p>The field accepts a language or a locale: <code>en</code>, <code>fr</code>, <code>en-us</code>, <code>fr-be</code>. The short code is the part before <code>-</code> or <code>_</code>, lowercased. <code>fr-be</code> is French. Power BI still receives the full value as its report locale.</p>
+<p>Status text on the bar (in progress, finished, failed, could not start) exists for English and French. Any other short code falls back to English. The button label follows the same rule when <code>text</code> is empty. When <code>text</code> is set, that string is shown as-is in every case.</p>
+<p>Example for a French page:</p>
+<ul>
+<li><strong>Language</strong>: <code>fr</code> (or <code>fr-be</code> if Power BI should use that locale)</li>
+<li><strong>Additional config</strong>:</li>
+</ul>
+<pre><code class="language-json">{
+  "pipeline_config": {
+    "pipeline_id": "your-pipeline-uuid",
+    "text": "Actualiser les données"
+  }
+}
+</code></pre>
+<p>With that language and no <code>text</code>, the button reads "Lancer l'actualisation" and the status line is in French.</p>
+<h3 id="what-the-visitor-sees">What the visitor sees<a class="headerlink" href="#what-the-visitor-sees" title="Permanent link">#</a></h3>
+<p>The bar stays fixed at the bottom. The status message is on the left and the button on the right. While a launch for this pipeline is queued or running on the account, the button is disabled and the bar says the refresh is in progress. The page checks status every 10 seconds. A second click while a run is in progress is rejected. When the run succeeds, the bar asks the visitor to reload the page. When the run fails or is killed, the bar shows a generic error and the button can be used again. The message does not include the pipeline logs. The embedded report is not refreshed on its own.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
 <h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">#</a></h3>
-<h4 id="1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard">1. 403 Forbidden on <code>/api/openhexa/pipelines/</code> or the pipelines dashboard<a class="headerlink" href="#1-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard" title="Permanent link">#</a></h4>
+<h4 id="1-the-refresh-button-does-not-appear-on-a-page">1. The refresh button does not appear on a page<a class="headerlink" href="#1-the-refresh-button-does-not-appear-on-a-page" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: One of the <a href="#when-the-button-is-visible">visibility conditions</a> is missing. The usual ones are an empty <code>additional_config</code> or no OpenHexa workspace on the page account.</p>
+<p><strong>Solution</strong>:</p>
+<ul>
+<li>Set <code>additional_config.pipeline_config.pipeline_id</code> to the pipeline UUID.</li>
+<li>Confirm the page <strong>Account</strong> has an OpenHexa workspace with a URL, token, and slug.</li>
+<li>Set <strong>Language</strong> (<code>en</code>, <code>fr</code>, <code>fr-be</code>, …). Leave it empty for English. Status messages are translated for <code>en</code> and <code>fr</code> only.</li>
+</ul>
+<h4 id="2-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard">2. 403 Forbidden on <code>/api/openhexa/pipelines/</code> or the pipelines dashboard<a class="headerlink" href="#2-403-forbidden-on-apiopenhexapipelines-or-the-pipelines-dashboard" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The authenticated user does not have the <strong>Pipeline management</strong> permission (<code>iaso.iaso_pipeline_management</code>).</p>
 <p><strong>Solution</strong>: Grant <strong>Pipeline management</strong> to the user (or to a role assigned to the user) in the account admin / permissions UI, then retry.</p>
 <p>For pipeline code that calls Iaso (e.g. task status <code>PATCH</code>), ensure the token is for a user with this permission—use the launcher token from <code>connection_token</code> in the launch payload when possible.</p>
-<h4 id="2-no-openhexa-workspace-configured-for-your-account">2. "No OpenHEXA workspace configured for your account"<a class="headerlink" href="#2-no-openhexa-workspace-configured-for-your-account" title="Permanent link">#</a></h4>
+<h4 id="3-no-openhexa-workspace-configured-for-your-account">3. "No OpenHEXA workspace configured for your account"<a class="headerlink" href="#3-no-openhexa-workspace-configured-for-your-account" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.</p>
 <p><strong>Solution</strong>: Create or update the OpenHEXA configuration:</p>
 <pre><code class="language-python">from iaso.models import Account
@@ -1897,7 +1984,7 @@ workspace, created = OpenHEXAWorkspace.objects.get_or_create(
 - ✅ OpenHEXAWorkspace exists for the account
 - ✅ Workspace has a non-empty slug
 - ✅ Workspace is linked to an OpenHEXAInstance</p>
-<h4 id="3-user-profile-not-found">3. "User profile not found"<a class="headerlink" href="#3-user-profile-not-found" title="Permanent link">#</a></h4>
+<h4 id="4-user-profile-not-found">4. "User profile not found"<a class="headerlink" href="#4-user-profile-not-found" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: On endpoints that use <code>@require_openhexa_config</code> (list, detail, launch), the authenticated user has no <code>iaso_profile</code>. Note: without <strong>Pipeline management</strong> you get <strong>403</strong> before this message; this case applies once the user has the permission but still lacks a profile.</p>
 <p><strong>Solution</strong>: Ensure all users who need to access OpenHexa have an Iaso profile:</p>
 <pre><code class="language-python">from django.contrib.auth.models import User
@@ -1912,13 +1999,13 @@ profile, created = Profile.objects.get_or_create(
     defaults={"account": account}
 )
 </code></pre>
-<h4 id="4-the-provided-config-contains-invalid-keys">4. "The provided config contains invalid key(s)"<a class="headerlink" href="#4-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
+<h4 id="5-the-provided-config-contains-invalid-keys">5. "The provided config contains invalid key(s)"<a class="headerlink" href="#5-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The pipeline parameters don't match the expected parameter names.</p>
 <p><strong>Solution</strong>: Ensure all parameters in your pipeline are properly defined with <code>@parameter</code> decorators:</p>
 <pre><code class="language-python">@parameter("task_id", type=str, name="Task ID", required=True)
 @parameter("pipeline_id", type=str, name="Pipeline ID", required=True)
 </code></pre>
-<h4 id="5-openhexa-url-must-contain-graphql">5. "OpenHEXA URL must contain 'graphql'"<a class="headerlink" href="#5-openhexa-url-must-contain-graphql" title="Permanent link">#</a></h4>
+<h4 id="6-openhexa-url-must-contain-graphql">6. "OpenHEXA URL must contain 'graphql'"<a class="headerlink" href="#6-openhexa-url-must-contain-graphql" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.</p>
 <p><strong>Solution</strong>: Update the instance URL to include the GraphQL endpoint:</p>
 <pre><code class="language-python">from iaso.models.openhexa import OpenHEXAInstance
@@ -1927,7 +2014,7 @@ instance = OpenHEXAInstance.objects.get(name="Production OpenHEXA")
 instance.url = "https://your-openhexa-instance.com/graphql/"  # Must contain 'graphql'
 instance.save()
 </code></pre>
-<h4 id="6-local-development-issues">6. Local Development Issues<a class="headerlink" href="#6-local-development-issues" title="Permanent link">#</a></h4>
+<h4 id="7-local-development-issues">7. Local Development Issues<a class="headerlink" href="#7-local-development-issues" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: OpenHexa can't reach your local Iaso instance.</p>
 <p><strong>Solution</strong>: 
 1. Use ngrok to create a public tunnel: <code>ngrok http 8081</code>

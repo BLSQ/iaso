@@ -52,6 +52,8 @@ class FormsViewSet(ModelViewSet):
         {"field": "name", "title": "Nom", "width": 40},
         {"field": "org_unit_types", "title": "Type", "width": 20},
         {"field": "org_unit_groups", "title": "Groupes", "width": 20},
+        {"field": "period_type", "title": "Périodicité", "width": 20},
+        {"field": "single_per_period", "title": "Une seule réponse par période", "width": 20},
         {"field": "created_at", "title": "Date de création", "width": 20},
         {"field": "updated_at", "title": "Date de modification", "width": 20},
         {"field": "projects", "title": "Projets", "width": 20},

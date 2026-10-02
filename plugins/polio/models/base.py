@@ -637,7 +637,13 @@ class CampaignQuerySet(models.QuerySet):
 
 class PolioCampaignManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("campaign_types").filter(campaign_types__name=CampaignType.POLIO)
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("campaign_types")
+            # Ugly patch to allow fIPV campaigns to be launched. This needs to be fixed, fIPV is not a campaign type, it's a vaccine type for polio campaigns.
+            .filter(campaign_types__name__in=[CampaignType.POLIO, "fIPV"])
+        )
 
 
 class Campaign(SoftDeletableModel):

@@ -87,9 +87,7 @@ class QueryProfiler:
         for table in self.trace_tables:
             if f'"{table}"' in sql:
                 # Skip our own frames and test-code frames to land on the actual call site.
-                frames = [
-                    f for f in traceback.extract_stack()[:-1] if "/iaso/" in f.filename and "/tests/" not in f.filename
-                ]
+                frames = [f for f in traceback.extract_stack()[:-1] if _is_project_frame(f.filename, ("iaso",))]
                 self._stacks_by_table[table].append(frames[-1] if frames else None)
         start = time.perf_counter()
         try:
@@ -107,11 +105,7 @@ class QueryProfiler:
             # The direct caller (e.g. Django's `Storage.save()`), then the project frames calling the storage,
             # innermost first: a few of them, as the innermost one is often a generic helper (e.g. a model field).
             stack = traceback.extract_stack()[:-1]
-            frames = [
-                f
-                for f in stack
-                if any(d in f.filename for d in ("/iaso/", "/hat/", "/plugins/")) and "/tests/" not in f.filename
-            ]
+            frames = [f for f in stack if _is_project_frame(f.filename, ("iaso", "hat", "plugins"))]
             caller = [] if not stack or stack[-1] in frames else [stack[-1]]
             chain = tuple((f.filename, f.lineno, f.name) for f in caller + list(reversed(frames[-3:])))
             profiler._storage_stacks.setdefault(method_name, []).append(chain)
@@ -486,6 +480,14 @@ class QueryProfiler:
 
 # The methods of `Storage` that make a round trip to S3
 STORAGE_METHODS = ("_save", "_open", "exists", "delete", "size", "listdir", "get_modified_time")
+
+
+def _is_project_frame(filename: str, top_dirs: typing.Tuple[str, ...]) -> bool:
+    """Whether the frame is non-test code under one of the project's `top_dirs`. Matched on the path relative to
+    `BASE_DIR`, not on the absolute one: in CI, the checkout itself lives in `/home/runner/work/iaso/iaso/`."""
+    relpath = os.path.relpath(filename, settings.BASE_DIR)
+    parts = relpath.split(os.sep)
+    return parts[0] in top_dirs and "tests" not in parts
 
 
 def _latency_seconds(latency_ms: typing.Optional[float], env_var: str, default_ms: float) -> float:

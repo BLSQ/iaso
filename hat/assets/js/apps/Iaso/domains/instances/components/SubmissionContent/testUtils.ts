@@ -1,5 +1,4 @@
-import { SubmissionField } from './types';
-import { FilteredSection } from './useSubmissionSections';
+import { SubmissionField, SubmissionSection } from './types';
 
 /** Minimal field factory for SubmissionContent tests. */
 export const makeField = (
@@ -14,13 +13,9 @@ export const makeField = (
     ...overrides,
 });
 
-export const makeSection = (
-    overrides: Partial<FilteredSection> = {},
-): FilteredSection => ({
-    id: 'group_1',
-    label: 'Introduction',
-    depth: 0,
-    fields: [
+/** Section factory; `fields` is a shortcut for a section holding only questions. */
+export const makeSection = ({
+    fields = [
         makeField({
             kind: 'text',
             id: 'name',
@@ -29,7 +24,15 @@ export const makeSection = (
             rawValue: 'Ada',
         }),
     ],
-    totalFields: 1,
+    ...overrides
+}: Partial<SubmissionSection> & {
+    fields?: SubmissionField[];
+} = {}): SubmissionSection => ({
+    key: '/group_1',
+    id: 'group_1',
+    label: 'Introduction',
+    depth: 0,
+    items: fields.map(field => ({ type: 'field' as const, field })),
     ...overrides,
 });
 

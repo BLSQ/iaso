@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-18 13:21+0000\n"
+"POT-Creation-Date: 2026-09-29 09:18+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -28,13 +28,11 @@ msgstr "Préparation de campagne"
 
 #: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
-#, python-brace-format
 msgid "Round {} ended"
 msgstr "Round {} terminé"
 
 #: plugins/polio/api/calendar/serializers.py
 #: plugins/polio/api/campaigns/serializers/campaigns.py
-#, python-brace-format
 msgid "Round {} started"
 msgstr "Round {} commencé"
 

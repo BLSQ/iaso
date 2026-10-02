@@ -63,8 +63,8 @@ class PromptnessStatsQueryParamsSerializer(serializers.Serializer):
             user = request.user
             self.fields["form_id"].queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
-            self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
-                user, None
+            self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter(
+                projects__account=user.iaso_profile.account
             ).distinct()
 
     def validate_form_id(self, form: Form) -> Form:

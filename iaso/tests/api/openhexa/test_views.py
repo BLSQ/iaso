@@ -80,6 +80,41 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
             self.assertEqual(len(response.json()["results"]), 2)
             self.assertEqual(response.json()["results"][0]["name"], "test_pipeline_1")
 
+    def test_get_pipelines_follows_graphql_pages(self):
+        """OpenHexa pages are concatenated so the dropdown is not stuck on the first page."""
+        first_page = {
+            "pipelines": {
+                "pageNumber": 1,
+                "totalPages": 2,
+                "totalItems": 2,
+                "items": [{"id": "60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "name": "page_one"}],
+            }
+        }
+        second_page = {
+            "pipelines": {
+                "pageNumber": 2,
+                "totalPages": 2,
+                "totalItems": 2,
+                "items": [{"id": "70fcb048-a5f6-4a79-9529-1ccfa55e75d2", "name": "page_two"}],
+            }
+        }
+
+        with patch("iaso.api.openhexa.views.Client") as mock_client_class:
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_client.execute.side_effect = [first_page, second_page]
+
+            response = self.client.get("/api/openhexa/pipelines/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item["name"] for item in response.json()["results"]], ["page_one", "page_two"])
+        self.assertEqual(mock_client.execute.call_count, 2)
+        first_variables = mock_client.execute.call_args_list[0].kwargs["variable_values"]
+        second_variables = mock_client.execute.call_args_list[1].kwargs["variable_values"]
+        self.assertEqual(first_variables["page"], 1)
+        self.assertEqual(first_variables["perPage"], 100)
+        self.assertEqual(second_variables["page"], 2)
+
     def test_get_pipelines_config_not_found(self):
         """Test pipeline list when OpenHexa workspace is not found."""
         # Delete the workspace

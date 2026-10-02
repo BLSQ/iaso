@@ -13,7 +13,8 @@ This guide covers the complete integration between Iaso and OpenHexa, including 
 7. [Development Utilities](#development-utilities)
 8. [API Integration](#api-integration)
 9. [Frontend Integration](#frontend-integration)
-10. [Troubleshooting](#troubleshooting)
+10. [Launch button on a page](#launch-button-on-a-page)
+11. [Troubleshooting](#troubleshooting)
 
 ## Overview
 
@@ -663,11 +664,88 @@ Users need the **Pipeline management** permission to use the pipelines screens a
 - **Error Handling**: Displays clear error messages for failed operations
 
 
+## Launch button on a page
+
+Embedded pages (raw HTML, text, iframe, Power BI, Superset) can show a bar at the bottom with a button that launches one OpenHexa pipeline. The pipeline runs with an empty config and the workspace's current version. Use this for pipelines that take no parameters, such as a dashboard refresh. The page button does not send `task_id`, `connection_token`, or `connection_host`.
+
+The button is not the pipelines screen at `/dashboard/pipelines/`. It does not use the workspace `config.pipelines` defaults, and it does not require the **Pipeline management** permission.
+
+### When the button is visible
+
+The bar is rendered only when every condition below is true. Otherwise the page is unchanged and the button is absent.
+
+| Condition | Where to set it |
+|-----------|-----------------|
+| The page has a pipeline id in `additional_config` | Page admin, field **Additional config** |
+| The page belongs to an account | Page admin, field **Account** |
+| That account has an OpenHexa workspace (instance URL, token, and slug) | See [Configuration Setup](#configuration-setup) |
+
+Anyone who can open the page sees the button, including anonymous visitors on a public page. Launch and status use the same rule as opening the page: a private page (**Needs authentication**) requires `user_can_access_page`, so guessing the slug is not enough to start or poll the pipeline. The launch is recorded on the page account.
+
+### Page configuration
+
+In Django admin, open the page and set **Additional config**:
+
+```json
+{
+  "pipeline_config": {
+    "pipeline_id": "your-pipeline-uuid",
+    "text": "Refresh the data"
+  }
+}
+```
+
+| Key | Required | Description |
+|-----|----------|-------------|
+| `pipeline_config.pipeline_id` | yes | OpenHexa pipeline UUID in the account workspace. The current version is resolved at launch time. |
+| `pipeline_config.text` | no | Button label. One string, because a page has one language. If omitted or blank, the label comes from the page language: "Launch refresh" in English, "Lancer l'actualisation" in French. |
+
+`additional_config` can hold other keys later. Only `pipeline_config` is read for this button.
+
+### Language
+
+Pages can be opened without a logged-in user, so the visitor's profile language is not used. Set **Language** on the page. An empty value means English.
+
+The field accepts a language or a locale: `en`, `fr`, `en-us`, `fr-be`. The short code is the part before `-` or `_`, lowercased. `fr-be` is French. Power BI still receives the full value as its report locale.
+
+Status text on the bar (in progress, finished, failed, could not start) exists for English and French. Any other short code falls back to English. The button label follows the same rule when `text` is empty. When `text` is set, that string is shown as-is in every case.
+
+Example for a French page:
+
+- **Language**: `fr` (or `fr-be` if Power BI should use that locale)
+- **Additional config**:
+
+```json
+{
+  "pipeline_config": {
+    "pipeline_id": "your-pipeline-uuid",
+    "text": "Actualiser les données"
+  }
+}
+```
+
+With that language and no `text`, the button reads "Lancer l'actualisation" and the status line is in French.
+
+### What the visitor sees
+
+The bar stays fixed at the bottom. The status message is on the left and the button on the right. While a launch for this pipeline is queued or running on the account, the button is disabled and the bar says the refresh is in progress. The page checks status every 10 seconds. A second click while a run is in progress is rejected. When the run succeeds, the bar asks the visitor to reload the page. When the run fails or is killed, the bar shows a generic error and the button can be used again. The message does not include the pipeline logs. The embedded report is not refreshed on its own.
+
+
 ## Troubleshooting
 
 ### Common Issues
 
-#### 1. 403 Forbidden on `/api/openhexa/pipelines/` or the pipelines dashboard
+#### 1. The refresh button does not appear on a page
+
+**Cause**: One of the [visibility conditions](#when-the-button-is-visible) is missing. The usual ones are an empty `additional_config` or no OpenHexa workspace on the page account.
+
+**Solution**:
+
+- Set `additional_config.pipeline_config.pipeline_id` to the pipeline UUID.
+- Confirm the page **Account** has an OpenHexa workspace with a URL, token, and slug.
+- Set **Language** (`en`, `fr`, `fr-be`, …). Leave it empty for English. Status messages are translated for `en` and `fr` only.
+
+#### 2. 403 Forbidden on `/api/openhexa/pipelines/` or the pipelines dashboard
 
 **Cause**: The authenticated user does not have the **Pipeline management** permission (`iaso.iaso_pipeline_management`).
 
@@ -675,7 +753,7 @@ Users need the **Pipeline management** permission to use the pipelines screens a
 
 For pipeline code that calls Iaso (e.g. task status `PATCH`), ensure the token is for a user with this permission—use the launcher token from `connection_token` in the launch payload when possible.
 
-#### 2. "No OpenHEXA workspace configured for your account"
+#### 3. "No OpenHEXA workspace configured for your account"
 
 **Cause**: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.
 
@@ -722,7 +800,7 @@ workspace, created = OpenHEXAWorkspace.objects.get_or_create(
 - ✅ Workspace has a non-empty slug
 - ✅ Workspace is linked to an OpenHEXAInstance
 
-#### 3. "User profile not found"
+#### 4. "User profile not found"
 
 **Cause**: On endpoints that use `@require_openhexa_config` (list, detail, launch), the authenticated user has no `iaso_profile`. Note: without **Pipeline management** you get **403** before this message; this case applies once the user has the permission but still lacks a profile.
 
@@ -742,7 +820,7 @@ profile, created = Profile.objects.get_or_create(
 )
 ```
 
-#### 4. "The provided config contains invalid key(s)"
+#### 5. "The provided config contains invalid key(s)"
 
 **Cause**: The pipeline parameters don't match the expected parameter names.
 
@@ -752,7 +830,7 @@ profile, created = Profile.objects.get_or_create(
 @parameter("pipeline_id", type=str, name="Pipeline ID", required=True)
 ```
 
-#### 5. "OpenHEXA URL must contain 'graphql'"
+#### 6. "OpenHEXA URL must contain 'graphql'"
 
 **Cause**: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.
 
@@ -765,7 +843,7 @@ instance.url = "https://your-openhexa-instance.com/graphql/"  # Must contain 'gr
 instance.save()
 ```
 
-#### 6. Local Development Issues
+#### 7. Local Development Issues
 
 **Cause**: OpenHexa can't reach your local Iaso instance.
 

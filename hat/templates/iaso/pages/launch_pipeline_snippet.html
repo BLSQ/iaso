@@ -1,0 +1,221 @@
+{% if launch_pipeline %}
+    <style>
+        :root {
+            --launch-pipeline-bar-height: 64px;
+        }
+
+        body:has(#launchPipeline) {
+            margin: 0;
+            padding-bottom: var(--launch-pipeline-bar-height);
+        }
+
+        body:has(#launchPipeline) > section {
+            padding: 16px 24px;
+        }
+
+        body:has(#launchPipeline) #reportContainer,
+        body:has(#launchPipeline) > iframe,
+        body:has(#launchPipeline) #superset-container,
+        body:has(#launchPipeline) #superset-container iframe {
+            height: calc(100vh - var(--launch-pipeline-bar-height)) !important;
+            max-height: calc(100vh - var(--launch-pipeline-bar-height));
+        }
+
+        #launchPipeline {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1300;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 0;
+            min-height: var(--launch-pipeline-bar-height);
+            padding: 8px 24px calc(8px + env(safe-area-inset-bottom));
+            box-sizing: border-box;
+            background: #fff;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.12);
+            color: #333;
+        }
+
+        #launchPipelineButton {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 0 0 auto;
+            flex-shrink: 0;
+            padding: 6px 16px;
+            min-height: 36px;
+            border: 0;
+            border-radius: 4px;
+            background: #006699;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.75;
+            letter-spacing: 0.02857em;
+            cursor: pointer;
+            box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+        }
+
+        #launchPipelineButton:hover:not(:disabled) {
+            background: #004d73;
+        }
+
+        #launchPipelineButton:disabled {
+            background: rgba(0, 0, 0, 0.12);
+            color: rgba(0, 0, 0, 0.26);
+            box-shadow: none;
+            cursor: default;
+        }
+
+        #launchPipeline .launch-pipeline__spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.15);
+            border-top-color: rgba(0, 0, 0, 0.45);
+            border-radius: 50%;
+            animation: launch-pipeline-spin 0.8s linear infinite;
+        }
+
+        #launchPipelineButton:disabled .launch-pipeline__spinner {
+            display: inline-block;
+        }
+
+        #launchPipelineLabel {
+            margin: 0;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            line-height: 1.43;
+        }
+
+        #launchPipelineLabel[data-state="progress"] {
+            background: #e5f6fd;
+            color: #014361;
+        }
+
+        #launchPipelineLabel[data-state="done"] {
+            background: #edf7ed;
+            color: #1e4620;
+        }
+
+        #launchPipelineLabel[data-state="error"] {
+            background: #fdeded;
+            color: #5f2120;
+        }
+
+        @keyframes launch-pipeline-spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <div id="launchPipeline" data-ongoing="{{ launch_pipeline.ongoing|yesno:'true,false' }}">
+        {% csrf_token %}
+        <p id="launchPipelineLabel" role="status" data-state="progress"
+           {% if not launch_pipeline.ongoing %}style="display:none;"{% endif %}>
+            {{ launch_pipeline.in_progress }}
+        </p>
+        <button id="launchPipelineButton" type="button" onclick="launchPagePipeline()"
+                {% if launch_pipeline.ongoing %}disabled="disabled"{% endif %}>
+            <span class="launch-pipeline__spinner" aria-hidden="true"></span>
+            {{ launch_pipeline.button_text }}
+        </button>
+    </div>
+    <script>
+      (function () {
+        var root = document.getElementById('launchPipeline');
+        var button = document.getElementById('launchPipelineButton');
+        var label = document.getElementById('launchPipelineLabel');
+        var wasOngoing = {{ launch_pipeline.ongoing|yesno:"true,false" }};
+        var messages = {
+          inProgress: '{{ launch_pipeline.in_progress|escapejs }}',
+          finished: '{{ launch_pipeline.finished|escapejs }}',
+          failed: '{{ launch_pipeline.failed|escapejs }}',
+          error: '{{ launch_pipeline.error|escapejs }}'
+        };
+        var pollTimer = null;
+
+        function csrfToken() {
+          var input = root.querySelector('input[name=csrfmiddlewaretoken]');
+          return input ? input.value : '';
+        }
+
+        function showMessage(text, state) {
+          label.textContent = text;
+          label.dataset.state = state;
+          label.style.display = 'block';
+        }
+
+        function applyState(ongoing, failed) {
+          button.disabled = ongoing;
+          if (ongoing) {
+            showMessage(messages.inProgress, 'progress');
+            wasOngoing = true;
+            schedulePoll();
+            return;
+          }
+          if (wasOngoing && failed) {
+            showMessage(messages.failed, 'error');
+          } else if (wasOngoing) {
+            showMessage(messages.finished, 'done');
+          } else {
+            label.style.display = 'none';
+          }
+          if (pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+          }
+        }
+
+        function refreshStatus() {
+          fetch('{{ launch_pipeline.status_url }}', {credentials: 'same-origin'})
+            .then(function (response) { return response.json(); })
+            .then(function (data) { applyState(Boolean(data.ongoing), Boolean(data.failed)); })
+            .catch(function () {});
+        }
+
+        function schedulePoll() {
+          if (pollTimer) {
+            return;
+          }
+          pollTimer = setInterval(refreshStatus, 10000);
+        }
+
+        window.launchPagePipeline = function () {
+          if (button.disabled) {
+            return;
+          }
+          button.disabled = true;
+          fetch('{{ launch_pipeline.launch_url }}', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken()
+            },
+            body: '{}'
+          }).then(function (response) {
+            if (response.status === 409 || response.ok) {
+              applyState(true, false);
+              return;
+            }
+            button.disabled = false;
+            showMessage(messages.error, 'error');
+          }).catch(function () {
+            button.disabled = false;
+            showMessage(messages.error, 'error');
+          });
+        };
+
+        if (wasOngoing) {
+          schedulePoll();
+        }
+      })();
+    </script>
+{% endif %}

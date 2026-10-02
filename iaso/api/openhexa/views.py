@@ -28,6 +28,58 @@ from iaso.utils.tokens import get_user_token
 
 logger = logging.getLogger(__name__)
 
+PIPELINES_PER_PAGE = 100
+MAX_PIPELINE_PAGES = 20
+
+
+def list_workspace_pipelines(client, workspace_slug: str) -> list:
+    """Fetch every pipeline page from OpenHexa.
+
+    The pipelines query defaults to a short page, so a workspace with dozens of pipelines
+    would otherwise come back truncated.
+    """
+    query = gql(
+        """
+        query getPipelines($workspaceSlug: String!, $page: Int!, $perPage: Int!) {
+            pipelines(workspaceSlug: $workspaceSlug, page: $page, perPage: $perPage) {
+                pageNumber
+                totalPages
+                totalItems
+                items {
+                    id
+                    name
+                    createdAt
+                    currentVersion {
+                        versionNumber
+                    }
+                }
+            }
+        }
+        """
+    )
+    items = []
+    seen_ids = set()
+    page = 1
+    total_pages = 1
+    while page <= total_pages and page <= MAX_PIPELINE_PAGES:
+        result = client.execute(
+            query,
+            variable_values={"workspaceSlug": workspace_slug, "page": page, "perPage": PIPELINES_PER_PAGE},
+        )
+        pipelines_data = (result or {}).get("pipelines") or {}
+        page_items = pipelines_data.get("items") or []
+        if not page_items:
+            break
+        for item in page_items:
+            item_id = item.get("id")
+            if item_id in seen_ids:
+                continue
+            seen_ids.add(item_id)
+            items.append(item)
+        total_pages = pipelines_data.get("totalPages") or 1
+        page += 1
+    return items
+
 
 @extend_schema(tags=["OpenHexa Pipelines"])
 class OpenHexaPipelinesViewSet(ViewSet):
@@ -64,29 +116,9 @@ class OpenHexaPipelinesViewSet(ViewSet):
             )
             client = Client(transport=transport, fetch_schema_from_transport=True)
 
-            get_pipelines = gql(
-                """
-                query getPipelines($workspaceSlug: String!) {
-                    pipelines(workspaceSlug: $workspaceSlug) {
-                        items {
-                            id
-                            name
-                            createdAt
-                            currentVersion {
-                                versionNumber
-                            }
-                        }
-                    }
-                }
-                """
-            )
+            items = list_workspace_pipelines(client, workspace_slug)
 
-            result = client.execute(get_pipelines, variable_values={"workspaceSlug": workspace_slug})
-
-            logger.info(f"Successfully retrieved pipelines for workspace {workspace_slug}")
-            # Return results in consistent format with other APIs
-            pipelines_data = result.get("pipelines", {})
-            items = pipelines_data.get("items", [])
+            logger.info(f"Retrieved {len(items)} pipelines for workspace {workspace_slug}")
             return Response({"results": items})
 
         except Exception as e:

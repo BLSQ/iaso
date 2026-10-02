@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
 
@@ -120,7 +119,7 @@ def percentage_of_expected(count: int, expected: int) -> Optional[float]:
 class PromptnessStatsCountsSerializer(serializers.Serializer):
     """Base serializer for the counts of a row or of the totals.
 
-    Input: an object (or dict) with `expected`, `on_time`, `late` and `missing`.
+    Input: an OrgUnit annotated with `expected`, `on_time`, `late` and `missing` (see `annotate_counts()`).
     Output: `is_applicable`, the counts plus `received`, `completeness_percent` and a `<status>_percent` for each
     status.
 
@@ -157,20 +156,15 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
     missing = serializers.IntegerField(allow_null=True)
     missing_percent = serializers.FloatField(allow_null=True)
 
-    @staticmethod
-    def get_count(instance, field_name: str) -> int:
-        if isinstance(instance, Mapping):
-            return instance[field_name]
-        return getattr(instance, field_name)
-
-    def to_representation(self, instance) -> dict:
-        expected = self.get_count(instance, "expected")
+    def to_representation(self, org_unit: OrgUnit) -> dict:
+        """this expects an OrgUnit with annotations `expected`, `on_time`, `late` and `missing` (see `annotate_counts()`)"""
+        expected = org_unit.expected
         if expected == 0:
             not_applicable_counts = {field_name: None for field_name in self.COUNT_FIELDS}
             return {"is_applicable": False, **not_applicable_counts}
 
-        on_time = self.get_count(instance, "on_time")
-        late = self.get_count(instance, "late")
+        on_time = org_unit.on_time
+        late = org_unit.late
         received = on_time + late
 
         counts = {
@@ -183,7 +177,7 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
         selected_statuses = self.context["status"]
         for status, field_name in self.STATUS_TO_FIELD.items():
             if status in selected_statuses:
-                count = self.get_count(instance, field_name)
+                count = getattr(org_unit, field_name)
                 counts[field_name] = count
                 counts[f"{field_name}_percent"] = percentage_of_expected(count, expected)
             else:

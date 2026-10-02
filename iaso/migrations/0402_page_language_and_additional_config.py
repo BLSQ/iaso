@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0400_metrictype_is_complete"),
+        ("iaso", "0401_merge_0400_metrictype_is_complete_0400_task_lease"),
     ]
 
     operations = [

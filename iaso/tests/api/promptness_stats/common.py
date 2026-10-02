@@ -67,9 +67,8 @@ ROW_KEYS = {
 }
 TOTALS_KEYS = ROW_KEYS - {"id", "name", "org_unit_type_id", "parent_org_unit", "has_children"}
 PERIOD_KEYS = {"value", "start", "end", "grace_period_days", "deadline", "is_current", "is_provisional"}
+SUMMARY_KEYS = {"period", "totals"}
 RESPONSE_KEYS = {
-    "period",
-    "totals",
     "count",
     "has_next",
     "has_previous",
@@ -89,6 +88,7 @@ class PromptnessStatsTestCase(APITestCase):
 
     URL = "/api/promptness_stats/"
     EXPORT_CSV_URL = "/api/promptness_stats/export_csv/"
+    SUMMARY_URL = "/api/promptness_stats/summary/"
 
     PERIOD = "202601"
     # Date at which the tests run by default: long after the deadline, so figures are final

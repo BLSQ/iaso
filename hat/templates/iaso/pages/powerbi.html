@@ -46,10 +46,21 @@
             'formatLocale': config.language
         };
     }
-    // Mount config
+    // Safari blocks XLS export from the Power BI iframe unless downloads
+    // are allowed. Set this after bootstrap creates the iframe and before
+    // embed navigates it, otherwise Safari snapshots the policy too late.
+    function allowIframeDownloads(container) {
+        container.querySelectorAll('iframe').forEach(function (iframe) {
+            iframe.setAttribute('allowfullscreen', 'true');
+            iframe.setAttribute('allow', 'downloads *; fullscreen *');
+        });
+    }
+
     reportContainer = document.getElementById('reportContainer');
     powerbi.bootstrap(reportContainer, reportLoadConfig);
+    allowIframeDownloads(reportContainer);
     const report = powerbi.embed(reportContainer, reportLoadConfig);
+    allowIframeDownloads(reportContainer);
 </script>
 <style>
     iframe {

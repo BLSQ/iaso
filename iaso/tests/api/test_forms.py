@@ -381,6 +381,66 @@ class FormsAPITestCase(APITestCase):
             expected_attachment_filename="forms.xlsx",
         )
 
+    def test_forms_list_csv_default_columns(self):
+        """GET /forms/ csv only exports the base columns when no optional column is requested"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?csv=1&fields=name,created_at,updated_at,org_unit_types")
+        rows = self.assertCsvFileResponse(response, expected_name="forms.csv", streaming=True, return_as_lists=True)
+
+        self.assertEqual(
+            rows[0],
+            ["ID du formulaire", "Nom", "Type", "Groupes", "Date de création", "Date de modification", "Projets"],
+        )
+        self.assertEqual(
+            rows[1][:4], ["sample2", "Hydroponic public survey", "Jedi Council, Jedi Academy", "Health facilities"]
+        )
+        self.assertEqual(rows[1][6], self.project_1.name)
+        self.assertEqual(len(rows), 3)
+
+    def test_forms_list_csv_optional_columns(self):
+        """GET /forms/ csv adds the optional columns requested in fields"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?csv=1&fields=name,instances_count,instance_updated_at")
+        rows = self.assertCsvFileResponse(response, expected_name="forms.csv", streaming=True, return_as_lists=True)
+
+        self.assertEqual(rows[0][-2:], ["Enregistrement(s)", "Dernière soumission"])
+        # the test device instance is not counted
+        self.assertEqual(rows[1][-2], "1")
+        self.assertNotEqual(rows[1][-1], "")
+        self.assertEqual(rows[2][-2:], ["0", ""])
+
+    def test_forms_list_csv_without_fields_exports_all_columns(self):
+        """GET /forms/ csv without fields keeps exporting every column"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?csv=1")
+        rows = self.assertCsvFileResponse(response, expected_name="forms.csv", streaming=True, return_as_lists=True)
+
+        self.assertEqual(len(rows[0]), 9)
+
+    def test_forms_list_xlsx_optional_columns(self):
+        """GET /forms/ xlsx adds the optional columns requested in fields"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?xlsx=1&fields=name,instances_count")
+        columns, _ = self.assertXlsxFileResponse(response, expected_name="forms.xlsx")
+
+        self.assertEqual(
+            columns,
+            [
+                "ID du formulaire",
+                "Nom",
+                "Type",
+                "Groupes",
+                "Date de création",
+                "Date de modification",
+                "Projets",
+                "Enregistrement(s)",
+            ],
+        )
+
     def test_forms_retrieve_without_auth(self):
         """GET /forms/<form_id> without auth should result in a 404"""
 

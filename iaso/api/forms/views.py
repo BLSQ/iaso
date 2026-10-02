@@ -1,5 +1,3 @@
-import typing
-
 from datetime import timedelta
 
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Subquery
@@ -48,13 +46,20 @@ class FormsViewSet(ModelViewSet):
     serializer_class = FormSerializer
     results_key = "forms"
 
-    EXPORT_TABLE_COLUMNS = (
-        {"title": "ID du formulaire", "width": 20},
-        {"title": "Nom", "width": 40},
-        {"title": "Enregistrement(s)", "width": 20},
-        {"title": "Type", "width": 20},
-        {"title": "Date de création", "width": 20},
-        {"title": "Date de modification", "width": 20},
+    # always exported, whatever the visible columns of the forms list
+    EXPORT_BASE_COLUMNS = (
+        {"field": "form_id", "title": "ID du formulaire", "width": 20},
+        {"field": "name", "title": "Nom", "width": 40},
+        {"field": "org_unit_types", "title": "Type", "width": 20},
+        {"field": "org_unit_groups", "title": "Groupes", "width": 20},
+        {"field": "created_at", "title": "Date de création", "width": 20},
+        {"field": "updated_at", "title": "Date de modification", "width": 20},
+        {"field": "projects", "title": "Projets", "width": 20},
+    )
+    # only exported when requested in `fields` (i.e. visible in the forms list), as some are costly to compute
+    EXPORT_OPTIONAL_COLUMNS = (
+        {"field": "instances_count", "title": "Enregistrement(s)", "width": 20},
+        {"field": "instance_updated_at", "title": "Dernière soumission", "width": 20},
     )
     EXPORT_FILE_NAME = "forms"
     filter_backends = [DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
@@ -93,6 +98,9 @@ class FormsViewSet(ModelViewSet):
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
         requested_fields = self.request.query_params.get("fields")
+        if requested_fields and self._is_export():
+            base_fields = [column["field"] for column in self.EXPORT_BASE_COLUMNS]
+            requested_fields = ",".join([*requested_fields.split(","), *base_fields])
 
         is_request_from_manifest = self.request.path.endswith("/manifest/")
         default_order = "id" if is_request_from_manifest else "name"
@@ -243,9 +251,23 @@ class FormsViewSet(ModelViewSet):
 
         return super().list(request, *args, **kwargs)
 
+    def _is_export(self) -> bool:
+        return bool(self.request.query_params.get("csv") or self.request.query_params.get("xlsx"))
+
+    def _get_export_columns(self) -> list:
+        requested_fields = self.request.query_params.get("fields")
+        order = self.request.query_params.get("order", "name").split(",")
+        optional_columns = [
+            column
+            for column in self.EXPORT_OPTIONAL_COLUMNS
+            if is_field_referenced(column["field"], requested_fields, order)
+        ]
+        return [*self.EXPORT_BASE_COLUMNS, *optional_columns]
+
     def list_to_csv(self):
+        columns = self._get_export_columns()
         response = StreamingHttpResponse(
-            streaming_content=(iter_items(self.get_queryset(), Echo(), self.EXPORT_TABLE_COLUMNS, self._get_table_row)),
+            streaming_content=(iter_items(self.get_queryset(), Echo(), columns, self._row_getter(columns))),
             content_type=CONTENT_TYPE_CSV,
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
@@ -253,31 +275,29 @@ class FormsViewSet(ModelViewSet):
         return response
 
     def list_to_xlsx(self):
+        columns = self._get_export_columns()
         response = HttpResponse(
-            generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, self.get_queryset(), self._get_table_row),
+            generate_xlsx("Forms", columns, self.get_queryset(), self._row_getter(columns)),
             content_type=CONTENT_TYPE_XLSX,
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
 
         return response
 
-    def _get_table_row(self, form: typing.Mapping, **kwargs):  # TODO: use serializer
-        form_data = self.get_serializer(form).data
-        created_at = timestamp_to_datetime(form_data.get("created_at"))
-        updated_at = (
-            timestamp_to_datetime(form_data.get("instance_updated_at"))
-            if form_data.get("instance_updated_at")
-            else "2019-01-01 00:00:00"
-        )
-        org_unit_types = ", ".join([o["name"] for o in form_data.get("org_unit_types") if o is not None])
-        return [
-            form_data.get("form_id"),
-            form_data.get("name"),
-            form_data.get("instances_count"),
-            org_unit_types,
-            created_at,
-            updated_at,
-        ]
+    @staticmethod
+    def _get_export_value(form: Form, field: str):
+        if field in ("org_unit_types", "org_unit_groups", "projects"):
+            return ", ".join(related.name for related in getattr(form, field).all())
+        if field in ("created_at", "updated_at", "instance_updated_at"):
+            value = getattr(form, field)
+            return timestamp_to_datetime(value.timestamp()) if value else None
+        return getattr(form, field)
+
+    def _row_getter(self, columns: list):
+        def get_row(form: Form, **kwargs):
+            return [self._get_export_value(form, column["field"]) for column in columns]
+
+        return get_row
 
     def destroy(self, request, *args, **kwargs):
         original = get_object_or_404(Form, pk=self.kwargs["pk"])

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 
 import Add from '@mui/icons-material/Add';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
@@ -13,17 +13,24 @@ import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
-import { useQueryString } from 'Iaso/hooks/useApiParams';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
 import * as Permission from 'Iaso/utils/permissions';
+import { cleanupParams } from 'Iaso/utils/requests';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import {
+    DownloadMenuButton,
+    useDownloadOption,
+} from '../../../components/DownloadMenuButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
-import { FormResponse, tableDefaults } from '../hooks/useGetForms';
+import {
+    DEFAULT_VISIBLE_COLUMNS,
+    FormResponse,
+    tableDefaults,
+} from '../hooks/useGetForms';
 import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
 const dwnldBaseUrl = '/api/forms';
@@ -41,6 +48,7 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
+    const downloadOption = useDownloadOption();
     const { filters, handleSearch, handleChange } = useFilterState({
         baseUrl,
         params,
@@ -74,10 +82,28 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
         });
     }, [redirectTo]);
 
-    const downloadQueryString = useQueryString(
-        { ...params, all: 'true' },
-        tableDefaults,
-    );
+    const downloadQueryString = useMemo(() => {
+        // the export isn't paginated: only the filters, the order and the
+        // visible columns are sent
+        const {
+            pageSize: _pageSize,
+            page: _page,
+            accountId: _accountId,
+            isSearchActive: _isSearchActive,
+            showDeleted,
+            onlyDeleted,
+            ...filterParams
+        } = params as FormsParams & Record<string, string | undefined>;
+        return new URLSearchParams(
+            cleanupParams({
+                ...filterParams,
+                order: params.order ?? tableDefaults.order,
+                show_deleted: showDeleted,
+                only_deleted: onlyDeleted,
+                fields: params.fields ?? DEFAULT_VISIBLE_COLUMNS.join(','),
+            }),
+        ).toString();
+    }, [params]);
     const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
     const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
 
@@ -180,10 +206,11 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                         />
                     </Box>
                     <Box mt={2} display="flex" justifyContent="flex-end">
-                        <DownloadButtonsComponent
-                            variant="outlined"
-                            xlsxUrl={xlsxUrl}
-                            csvUrl={csvUrl}
+                        <DownloadMenuButton
+                            options={[
+                                downloadOption('csv', csvUrl),
+                                downloadOption('xlsx', xlsxUrl),
+                            ]}
                             disabled={isLoadingForms || !forms?.forms?.length}
                         />
                     </Box>

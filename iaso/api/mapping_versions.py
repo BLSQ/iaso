@@ -10,10 +10,42 @@ import iaso.models as m
 
 from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
-from iaso.models import FormVersion, MappingVersion
+from hat.audit.models import MAPPING_VERSION_API, log_modification, serialize_instance
+from iaso.models import MappingVersion
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 
 from .common import HasPermission, ModelViewSet, TimestampField
+
+
+def get_question_mapping_shape_error(mapping_type, data_element):
+    """The shape a question mapping must have for the exporters of its mapping type, or None if it is valid.
+
+    The id and valueType of plain data element mappings are checked separately."""
+    if isinstance(data_element, dict) and data_element.get("type") == MappingVersion.QUESTION_MAPPING_NEVER_MAPPED:
+        return None
+
+    if mapping_type == m.EVENT_TRACKER:
+        if not isinstance(data_element, list) or not data_element:
+            return "should be a list for EVENT_TRACKER mappings"
+        for item in data_element:
+            if not isinstance(item, dict):
+                return "should only contain objects"
+            is_data_element = isinstance(item.get("dataElement"), dict) and item["dataElement"].get("id")
+            is_attribute = isinstance(item.get("trackedEntityAttribute"), dict) and item["trackedEntityAttribute"].get(
+                "id"
+            )
+            is_repeat_group = item.get("type") == "repeat" and item.get("program_id")
+            if not (is_data_element or is_attribute or is_repeat_group):
+                return "should map a data element, a tracked entity attribute or a repeat group"
+        return None
+
+    if not isinstance(data_element, dict):
+        return f"should not be a list for {mapping_type} mappings"
+    if data_element.get("type") == MappingVersion.QUESTION_MAPPING_MULTIPLE:
+        values = data_element.get("values")
+        if not isinstance(values, dict) or not all(isinstance(v, dict) and v.get("id") for v in values.values()):
+            return "should map each choice to a data element id"
+    return None
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
@@ -141,10 +173,25 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
         return m.MappingVersion.objects.create(mapping=mapping, form_version=form_version, json=validated_data["json"])
 
     def update(self, instance, validated_data):
+        # serialized before any change: question mappings are edited in place in instance.json
+        past_value = serialize_instance(instance)
+
         # partial update only question mappings
         if "question_mappings" in validated_data:
+            # empty when the form version has no descriptor: nothing to check against
+            mappable_questions = instance.form_version.mappable_questions_by_name()
             for question_name, data_element in validated_data["question_mappings"].items():
                 path = "question_mappings." + question_name
+
+                # unmapping stays allowed, to clean up mappings of questions removed from the form
+                is_unmap = isinstance(data_element, dict) and data_element.get("action") == "unmap"
+                if mappable_questions and not is_unmap and question_name not in mappable_questions:
+                    raise serializers.ValidationError({path: "question does not exist in this form version"})
+
+                if data_element is not None and not is_unmap:
+                    shape_error = get_question_mapping_shape_error(instance.mapping.mapping_type, data_element)
+                    if shape_error:
+                        raise serializers.ValidationError({path: shape_error})
 
                 if type(data_element) is list:
                     instance.json["question_mappings"][question_name] = data_element
@@ -169,6 +216,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             instance.json["event_date_source"] = validated_data["event_date_source"]
 
         instance.save()
+        log_modification(past_value, instance, source=MAPPING_VERSION_API, user=self.context["request"].user)
 
         return instance
 
@@ -201,10 +249,7 @@ class MappingVersionsViewSet(ModelViewSet):
             "order", "form_version__form__name,form_version__version_id,mapping__mapping_type"
         ).split(",")
 
-        profile = self.request.user.iaso_profile
-        queryset = MappingVersion.objects.filter(
-            form_version_id__in=FormVersion.objects.filter(form__projects__account=profile.account)
-        )
+        queryset = MappingVersion.objects.filter_for_user(self.request.user)
 
         search_term = self.request.GET.get("search") or self.request.GET.get("search")
         if search_term:

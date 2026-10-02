@@ -1,10 +1,16 @@
 from copy import deepcopy
+from unittest import mock
 
+from django.core.files import File
 from rest_framework import status
 
 from hat.audit.models import log_modification
 from iaso import models as m
-from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -195,3 +201,42 @@ class LogsAPITestCase(APITestCase):
         self.client.force_authenticate(user_superuser)
         response = self.client.get(f"/api/logs/{modification.id}/")
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_perm_mapping_version(self):
+        """To read mapping version history the user needs the mappings perm, within its account"""
+        form_file_mock = mock.MagicMock(spec=File)
+        form_file_mock.name = "test.xml"
+        form_version = self.reference_form.form_versions.create(file=form_file_mock, version_id="2020022401")
+        data_source = m.DataSource.objects.create(name="DHIS2")
+        mapping = m.Mapping.objects.create(form=self.reference_form, data_source=data_source, mapping_type=m.AGGREGATE)
+        mapping_version = m.MappingVersion.objects.create(
+            mapping=mapping, form_version=form_version, json={"question_mappings": {}}
+        )
+        modification = log_modification(None, mapping_version, user=self.jane, source="myunittest")
+
+        user_with_mappings_perm = self.create_user_with_profile(
+            username="bob", account=self.ghi, permissions=[CORE_MAPPINGS_PERMISSION]
+        )
+        user_no_mappings_perm = self.create_user_with_profile(username="bob2", account=self.ghi, permissions=[])
+        other_account = m.Account.objects.create(name="other")
+        user_other_account = self.create_user_with_profile(
+            username="jim", account=other_account, permissions=[CORE_MAPPINGS_PERMISSION]
+        )
+        list_url = f"/api/logs/?contentType=iaso.mappingversion&objectId={mapping_version.id}&fields=field_diffs"
+
+        self.client.force_authenticate(user_with_mappings_perm)
+        response = self.client.get(f"/api/logs/{modification.id}/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response = self.client.get(list_url)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([log["id"] for log in r["list"]], [modification.id])
+
+        for user in (user_no_mappings_perm, user_other_account):
+            with self.subTest(user=user.username):
+                self.client.force_authenticate(user)
+                response = self.client.get(f"/api/logs/{modification.id}/")
+                r = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+                self.assertEqual(r, {"error": "Unauthorized"})
+                response = self.client.get(list_url)
+                r = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+                self.assertEqual(r, {"error": "Unauthorized"})

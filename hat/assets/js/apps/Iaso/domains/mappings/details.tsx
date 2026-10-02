@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Grid, Box } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { History } from '@mui/icons-material';
+import { Grid, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
+    ExternalLink,
     LoadingSpinner,
     useRedirectToReplace,
     useSafeIntl,
@@ -14,6 +16,7 @@ import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
+import { MappingImportActions } from './components/ImportMappings/MappingImportActions';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import RecursiveTreeView from './components/RecursiveTreeView';
@@ -23,6 +26,7 @@ import {
     useApplyUpdate,
     useGetMappingVersionDetail,
 } from './hooks';
+import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.mappingDetail;
@@ -34,6 +38,18 @@ const useStyles = makeStyles(theme => ({
         height: 'auto',
         display: 'block',
         cursor: 'pointer',
+    },
+    actions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+    },
+    linkWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5em',
     },
 }));
 
@@ -72,6 +88,11 @@ const MappingDetails = () => {
     const indexedQuestions = currentFormVersion
         ? Descriptor.indexQuestions(currentFormVersion.descriptor)
         : {};
+
+    const mappableQuestions = useMemo(
+        () => getMappableQuestions(currentFormVersion?.descriptor),
+        [currentFormVersion],
+    );
 
     const [currentQuestion, setCurrentQuestion] = useState(
         indexedQuestions[params.questionName],
@@ -158,6 +179,22 @@ const MappingDetails = () => {
 
             {currentMappingVersion && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Box className={classes.actions}>
+                        <ExternalLink
+                            url={`/${baseUrls.apiLogs}/?objectId=${currentMappingVersion.id}&contentType=iaso.mappingversion&fields=field_diffs`}
+                        >
+                            <Typography className={classes.linkWithIcon}>
+                                <History />
+                                {formatMessage(MESSAGES.changeLog)}
+                            </Typography>
+                        </ExternalLink>
+                        {currentFormVersion && isDataElementMappable && (
+                            <MappingImportActions
+                                mappingVersion={currentMappingVersion}
+                                questions={mappableQuestions}
+                            />
+                        )}
+                    </Box>
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
                             <Grid item xs={4} md={3}>

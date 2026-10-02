@@ -13,11 +13,12 @@ from rest_framework.response import Response
 
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import Modification
-from iaso.models import Form, Instance, OrgUnit
+from iaso.models import Form, Instance, MappingVersion, OrgUnit
 from iaso.models.base import Profile
 from iaso.models.org_unit import OrgUnitChangeRequest
 from iaso.models.payments import Payment, PaymentLot
 from iaso.permissions.core_permissions import (
+    CORE_MAPPINGS_PERMISSION,
     CORE_PAYMENTS_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
     CORE_SUBMISSIONS_UPDATE_PERMISSION,
@@ -53,6 +54,9 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, Profile):
         profiles = Profile.objects.filter(account=user.iaso_profile.account)
         return profiles.filter(id=obj.id).exists() and user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name())
+    if isinstance(obj, MappingVersion):
+        mapping_versions = MappingVersion.objects.filter_for_user(user)
+        return mapping_versions.filter(id=obj.id).exists() and user.has_perm(CORE_MAPPINGS_PERMISSION.full_name())
 
     # Now checking models that are part of plugins
     if is_polio_plugin_active():
@@ -78,7 +82,7 @@ class LogsViewSet(viewsets.ViewSet):
         - new_value
         - field_diffs
 
-    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance, polio.campaign
+    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance, iaso.mappingversion, polio.campaign
 
     list:
     Returns the list of modifications

@@ -16,7 +16,10 @@ import { useNavigate } from 'react-router-dom';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { SxStyles } from 'Iaso/types/general';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
+import {
+    DownloadMenuButton,
+    useDownloadOption,
+} from '../../components/DownloadMenuButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
@@ -67,6 +70,7 @@ export const OrgUnits: FunctionComponent = () => {
     const navigate = useNavigate();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const downloadOption = useDownloadOption();
     // HOOKS
 
     // STATE
@@ -77,10 +81,14 @@ export const OrgUnits: FunctionComponent = () => {
     const searches: [Search] = useMemo(() => {
         return decodeSearch(decodeURI(params.searches));
     }, [params.searches]);
+    const canExportParquet = searches.filter(s => !s.isAdded).length <= 1;
     // MEMO
 
     // CUSTOM HOOKS
-    const { getUrl, apiParams } = useGetApiParams(searches, params);
+    const { getUrl, getParquetUrl, apiParams } = useGetApiParams(
+        searches,
+        params,
+    );
     const { apiParams: apiParamsLocations } = useGetApiParams(
         searches,
         params,
@@ -176,10 +184,33 @@ export const OrgUnits: FunctionComponent = () => {
                             display="flex"
                             justifyContent="flex-end"
                         >
-                            <DownloadButtonsComponent
-                                csvUrl={getUrl(true, 'csv')}
-                                xlsxUrl={getUrl(true, 'xlsx')}
-                                gpkgUrl={getUrl(true, 'gpkg')}
+                            <DownloadMenuButton
+                                options={[
+                                    downloadOption('csv', getUrl(true, 'csv')),
+                                    downloadOption(
+                                        'xlsx',
+                                        getUrl(true, 'xlsx'),
+                                    ),
+                                    downloadOption(
+                                        'gpkg',
+                                        getUrl(true, 'gpkg'),
+                                    ),
+                                    // the parquet export doesn't support multiple searches
+                                    ...(canExportParquet
+                                        ? [
+                                              downloadOption(
+                                                  'parquet',
+                                                  getParquetUrl(),
+                                              ),
+                                              downloadOption(
+                                                  'parquet_simplified_geom',
+                                                  getParquetUrl([
+                                                      'simplified_geom_geojson',
+                                                  ]),
+                                              ),
+                                          ]
+                                        : []),
+                                ]}
                             />
                         </Box>
                     )}

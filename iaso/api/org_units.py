@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import tempfile
 
 from copy import deepcopy
@@ -218,6 +219,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             count_instances = True
         else:
             count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
+
+        if parquet_format:
+            error_response = self.validate_parquet_request(request, order)
+            if error_response:
+                return error_response
 
         if with_shapes or as_location or parquet_format:
             count_instances = False
@@ -484,11 +490,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return response
 
-    def anwser_with_parquet_file(self, request, queryset, profile):
-        user_account_name = profile.account.name if profile else ""
-        environment = settings.ENVIRONMENT
-        filename = "org_units"
-        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+    def validate_parquet_request(self, request, order):
+        """Returns an error response if the request can't be served as a parquet export, None otherwise.
+
+        Only looks at the request, so it can be called before building the (potentially expensive) queryset.
+        """
         # validate no unsupported/extra params is passed
         allowed_params = {"parquet", "order", "searches", "extra_fields"}
         received_params = set(request.GET.keys())
@@ -502,8 +508,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        extra_fields_raw = request.GET.get("extra_fields", "")
-        extra_fields = [x for x in extra_fields_raw.split(",") if x]
+        extra_fields = [x for x in request.GET.get("extra_fields", "").split(",") if x]
 
         possible_extra_fields = [
             "geom_geojson",
@@ -526,6 +531,29 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        if any(field.lstrip("-") == "instances_count" for field in order):
+            # the instances aren't counted for the parquet export (too expensive on all the org units)
+            return JsonResponse(
+                {"error": "Ordering by instances_count is not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(json.loads(request.GET.get("searches", "[]"))) > 1:
+            # the searches are combined with a union, which the parquet export can't annotate
+            return JsonResponse(
+                {"error": "Multiple searches are not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return None
+
+    def anwser_with_parquet_file(self, request, queryset, profile):
+        user_account_name = profile.account.name if profile else ""
+        environment = settings.ENVIRONMENT
+        filename = "org_units"
+        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        extra_fields = [x for x in request.GET.get("extra_fields", "").split(",") if x]
+
         try:
             export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
         except ValueError as e:
@@ -536,7 +564,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename + ".parquet")
-
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @action(methods=["GET"], detail=False)

@@ -3,13 +3,7 @@ import time_machine
 from rest_framework import status
 
 from iaso import models as m
-from iaso.tests.api.promptness_stats.common import (
-    PERIOD_KEYS,
-    RESPONSE_KEYS,
-    ROW_KEYS,
-    PromptnessStatsTestCase,
-    aware,
-)
+from iaso.tests.api.promptness_stats.common import RESPONSE_KEYS, ROW_KEYS, PromptnessStatsTestCase
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
@@ -23,7 +17,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params())
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(set(data.keys()), RESPONSE_KEYS)
-        self.assertEqual(set(data["period"].keys()), PERIOD_KEYS)
         for row in data["results"]:
             self.assertEqual(set(row.keys()), ROW_KEYS)
 
@@ -31,18 +24,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params())
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(
-            data["period"],
-            {
-                "value": self.PERIOD,
-                "start": "2026-01-01",
-                "end": "2026-01-31",
-                "grace_period_days": 10,
-                "deadline": "2026-02-10",
-                "is_current": False,
-                "is_provisional": False,
-            },
-        )
         self.assertEqual(
             data["results"],
             [
@@ -52,45 +33,23 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
                 self.expected_somali_row(),
             ],
         )
-        self.assertEqual(data["totals"], self.expected_ethiopia_totals())
 
-    def test_period_block_during_the_period(self):
-        self.client.force_authenticate(self.user)
-        with time_machine.travel(aware(2026, 1, 20, 12, 0), tick=False):
-            response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        period_data = data["period"]
-        self.assertTrue(period_data["is_current"])
-        self.assertTrue(period_data["is_provisional"])
-
-    def test_period_block_during_the_grace_period(self):
-        self.client.force_authenticate(self.user)
-        with time_machine.travel(aware(2026, 2, 10, 12, 0), tick=False):
-            response = self.client.get(self.URL, self.get_serializer_params())
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        period_data = data["period"]
-        self.assertFalse(period_data["is_current"])
-        self.assertTrue(period_data["is_provisional"])
-
-    # Figures
     def test_invariants(self):
         self.client.force_authenticate(self.user)
         # params = self.get_serializer_params(org_unit_type_ids=f"{self.type_region.id},{self.type_district.id}")
         params = self.get_serializer_params()
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        for counts in [data["totals"], *data["results"]]:
-            if not counts["is_applicable"]:
+        for row in data["results"]:
+            if not row["is_applicable"]:
                 continue  # not applicable org units (e.g. Somali) have no counts
-            self.assertEqual(counts["on_time"] + counts["late"] + counts["missing"], counts["expected"])
-            self.assertEqual(counts["on_time"] + counts["late"], counts["received"])
+            self.assertEqual(row["on_time"] + row["late"] + row["missing"], row["expected"])
+            self.assertEqual(row["on_time"] + row["late"], row["received"])
 
     def test_drill_down(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        # totals are computed for the requested parent org unit: Oromia (4 expected, 2 on time, 1 late, 1 missing)
-        self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
         # rows are the direct children of the requested parent org unit
         self.assertEqual(
             data["results"],
@@ -112,16 +71,14 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         # Level 2: Borena is not applicable, next to the applicable districts
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
         self.assertEqual(
             data["results"],
             [self.expected_borena_row(), self.expected_east_shewa_row(), self.expected_jimma_row()],
         )
 
-        # Level 3: inside Borena, the totals and HP J are not applicable (its on time submission is ignored)
+        # Level 3: inside Borena, HP J is not applicable (its on time submission is ignored)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.borena.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.not_applicable_counts())
         self.assertEqual(data["results"], [self.not_applicable_row(self.hp_j, False)])
 
     def test_drill_down_to_target_org_units(self):
@@ -137,12 +94,11 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
             ],
         )
 
-    def test_org_unit_without_target_is_not_applicable(self):
-        """Somali has no org unit expected to submit the form: its totals are not applicable"""
+    def test_org_unit_without_children_has_no_rows(self):
+        # Somali has no children
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.somali.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.not_applicable_counts())
         self.assertEqual(data["results"], [])
         self.assertEqual(data["count"], 0)
 
@@ -162,26 +118,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["results"][0]["on_time"], 1)
 
-    def test_zero_grace_period(self):
-        self.client.force_authenticate(self.user)
-
-        # With the 10 days grace period: HF D (submitted on 2026-02-10) is on time
-        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["period"]["deadline"], "2026-02-10")
-        self.assertEqual(data["totals"]["on_time"], 2)
-        self.assertEqual(data["totals"]["late"], 1)
-
-        self.form.promptness_grace_period_days = 0
-        self.form.save()
-
-        # Without grace period: the deadline is the end of the period, HF D becomes late
-        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["period"]["deadline"], "2026-01-31")
-        self.assertEqual(data["totals"]["on_time"], 1)
-        self.assertEqual(data["totals"]["late"], 2)
-
     def test_ignored_submissions(self):
         # HF C only has deleted, file-less, other form and other period submissions
         self.client.force_authenticate(self.user)
@@ -196,8 +132,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.north_gondar.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.result_names(data), ["HF E", "HF F"])
-        self.assertEqual(data["totals"]["expected"], 2)
-        self.assertEqual(data["totals"]["on_time"], 0)
 
     def test_new_org_units_are_ignored(self):
         self.create_ou("HF New", self.type_facility, self.north_gondar, validation_status=m.OrgUnit.VALIDATION_NEW)
@@ -205,7 +139,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.north_gondar.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.result_names(data), ["HF E", "HF F"])
-        self.assertEqual(data["totals"]["expected"], 2)
 
     def test_target_by_org_unit_group(self):
         # HP H is a health post (not a target type) but belongs to a target group: it is expected to submit the form
@@ -228,8 +161,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
                 self.not_applicable_row(self.hp_i, False),
             ],
         )
-        # Awsi totals only count HP H
-        self.assertEqual(data["totals"], self.counts(1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0))
 
     def test_target_by_type_and_group_is_counted_once(self):
         # HF E is a facility and belongs to a target group
@@ -239,14 +170,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         hf_e = next(row for row in data["results"] if row["id"] == self.hf_e.id)
         self.assertEqual(hf_e["expected"], 1)
 
-    def test_parent_org_unit_itself_is_counted(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.hf_a.id))
-        data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(1, 1, 0, 0, 1, 100.0, 100.0, 0.0, 0.0))
-        self.assertEqual(data["results"], [])
-
-    # org_unit_type_ids
     def test_org_unit_types_flat_output(self):
         self.client.force_authenticate(self.user)
         params = self.get_serializer_params(org_unit_type_ids=f"{self.type_region.id},{self.type_district.id}")
@@ -259,8 +182,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         )
         self.assertIn(self.expected_jimma_row(), data["results"])
         self.assertIn(self.expected_oromia_row(), data["results"])
-        # totals are not the sum of the rows - since regions are requested, totals are the ones from the country
-        self.assertEqual(data["totals"], self.expected_ethiopia_totals())
 
     def test_org_unit_types_deep_level(self):
         self.client.force_authenticate(self.user)
@@ -282,9 +203,8 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(status="LATE,MISSING"))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        # ON_TIME is hidden from the totals, the other values are unchanged (expected, received and
-        # completeness_percent still include the on time submissions)
-        self.assertEqual(data["totals"], {**self.expected_ethiopia_totals(), "on_time": None, "on_time_percent": None})
+        # ON_TIME is hidden, the other values are unchanged (expected, received and completeness_percent still
+        # include the on time submissions)
         self.assertEqual(data["results"][2], {**self.expected_oromia_row(), "on_time": None, "on_time_percent": None})
         # ON_TIME is hidden from every row, LATE and MISSING are still returned for applicable rows
         for row in data["results"]:
@@ -391,10 +311,6 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(self.result_names(second_page), ["Oromia", "Somali"])
         self.assertFalse(second_page["has_next"])
         self.assertTrue(second_page["has_previous"])
-
-        # totals are computed for all the rows, not only the current page
-        self.assertEqual(first_page["totals"], self.expected_ethiopia_totals())
-        self.assertEqual(second_page["totals"], self.expected_ethiopia_totals())
 
     # access
     def test_user_restricted_to_org_units(self):

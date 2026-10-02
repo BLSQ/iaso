@@ -219,3 +219,14 @@ class PromptnessStatsRowSerializer(PromptnessStatsCountsSerializer):
             "has_children": org_unit.has_children,
             **super().to_representation(org_unit),
         }
+
+
+class PromptnessStatsSummarySerializer(serializers.Serializer):
+    """Serializes the response of the `summary` action.
+
+    Input: a dict with `period` (a `PromptnessPeriod`) and `totals` (the parent org unit annotated by
+    `annotate_counts()`). `context["status"]` is passed to the totals serializer.
+    """
+
+    period = PromptnessPeriodSerializer()
+    totals = PromptnessStatsTotalsSerializer()

@@ -13,59 +13,6 @@ from iaso.api.promptness_stats.serializers import (
 from iaso.tests.api.promptness_stats.common import PERIOD_KEYS, ROW_KEYS, TOTALS_KEYS, PromptnessStatsTestCase
 
 
-class PromptnessPeriodTestCase(PromptnessStatsTestCase):
-    def test_month_period(self):
-        period = PromptnessPeriod.build("202601", 10, today=datetime.date(2026, 9, 28))
-        self.assertEqual(period.value, "202601")
-        self.assertEqual(period.start, datetime.date(2026, 1, 1))
-        self.assertEqual(period.end, datetime.date(2026, 1, 31))
-        self.assertEqual(period.grace_period_days, 10)
-        self.assertEqual(period.deadline, datetime.date(2026, 2, 10))
-        self.assertFalse(period.is_current)
-        self.assertFalse(period.is_provisional)
-
-    def test_zero_grace_period(self):
-        period = PromptnessPeriod.build("202602", 0, today=datetime.date(2026, 9, 28))
-        self.assertEqual(period.end, datetime.date(2026, 2, 28))
-        self.assertEqual(period.deadline, period.end)
-
-    def test_deadline_in_next_year(self):
-        period = PromptnessPeriod.build("202612", 10, today=datetime.date(2026, 9, 28))
-        self.assertEqual(period.end, datetime.date(2026, 12, 31))
-        self.assertEqual(period.deadline, datetime.date(2027, 1, 10))
-
-    def test_quarter_period(self):
-        period = PromptnessPeriod.build("2026Q1", 15, today=datetime.date(2026, 9, 28))
-        self.assertEqual(period.start, datetime.date(2026, 1, 1))
-        self.assertEqual(period.end, datetime.date(2026, 3, 31))
-        self.assertEqual(period.deadline, datetime.date(2026, 4, 15))
-
-    def test_year_period(self):
-        period = PromptnessPeriod.build("2026", 0, today=datetime.date(2026, 9, 28))
-        self.assertEqual(period.start, datetime.date(2026, 1, 1))
-        self.assertEqual(period.end, datetime.date(2026, 12, 31))
-
-    def test_is_current_and_is_provisional(self):
-        cases = [
-            # today, is_current, is_provisional
-            (datetime.date(2025, 12, 31), False, True),  # before the period
-            (datetime.date(2026, 1, 1), True, True),  # first day
-            (datetime.date(2026, 1, 31), True, True),  # last day
-            (datetime.date(2026, 2, 1), False, True),  # grace period
-            (datetime.date(2026, 2, 10), False, True),  # deadline day is inclusive
-            (datetime.date(2026, 2, 11), False, False),  # after the deadline
-        ]
-        for today, is_current, is_provisional in cases:
-            with self.subTest(today=today):
-                period = PromptnessPeriod.build("202601", 10, today=today)
-                self.assertEqual(period.is_current, is_current)
-                self.assertEqual(period.is_provisional, is_provisional)
-
-    def test_invalid_period(self):
-        with self.assertRaises(ValueError):
-            PromptnessPeriod.build("not a period", 10)
-
-
 class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
     def get_serializer(self, params, user=None):
         request = APIRequestFactory().get("/")

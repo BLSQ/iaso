@@ -136,6 +136,7 @@ from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
+from .api.v3.org_units.views import OrgUnitViewSetV3
 from .api.validation_workflow_instances.views import ValidationWorkflowInstanceViewSet
 from .api.validation_workflows.views import ValidationWorkflowViewSet
 from .api.validation_workflows_node_templates.views import ValidationNodeTemplatesView
@@ -163,6 +164,7 @@ router.register(
 router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
 router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, basename="mobileorgunitschanges")
 router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunitstree")
+router.register(r"v3/orgunits", OrgUnitViewSetV3, basename="orgunits_v3")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")

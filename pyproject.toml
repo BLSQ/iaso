@@ -5,6 +5,7 @@ requires-python = ">=3.9,<3.10"
 version = "2026.10.6.dev0"
 dependencies = [
     "anthropic==0.52.0", # https://github.com/anthropics/anthropic-sdk-python/tags
+    "ariadne==0.26.2", # last release supporting python 3.9 - https://github.com/mirumee/ariadne/releases
     "azure-storage-blob==12.19.0",
     "beautifulsoup4==4.12.2", # https://pypi.org/project/beautifulsoup4/
     "boto3==1.42.44", # https://github.com/boto/boto3/tags

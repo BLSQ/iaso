@@ -1,0 +1,222 @@
+extend type Query {
+  "Org units visible to the requesting user, ordered by `id` unless `order` says otherwise."
+  orgUnits(
+    filters: OrgUnitFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [OrgUnitOrder!]
+    "1-10 000; 1-1 000 when `geom`, `simplifiedGeom`, `catchment` or `ancestors` is selected; 1-100 with `instanceCount`."
+    limit: Int! = 100
+    offset: Int! = 0
+  ): OrgUnitPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  orgUnit(id: Int!): OrgUnit
+}
+
+type OrgUnitPage {
+  items: [OrgUnit!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+enum ValidationStatus {
+  NEW
+  VALID
+  REJECTED
+}
+
+enum OrgUnitTypeCategory {
+  COUNTRY
+  REGION
+  DISTRICT
+  HF
+}
+
+"`NAME`/`NAME_DESC`: `name` has no database index, ordering by it is a full unindexed sort."
+enum OrgUnitOrder {
+  ID
+  ID_DESC
+  NAME
+  NAME_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+  OPENING_DATE
+  OPENING_DATE_DESC
+  CLOSED_DATE
+  CLOSED_DATE_DESC
+  VALIDATION_STATUS
+  VALIDATION_STATUS_DESC
+}
+
+type OrgUnit {
+  id: Int!
+  name: String!
+  uuid: String
+  validationStatus: ValidationStatus!
+  "External (DHIS2) reference"
+  sourceRef: String
+  "DHIS2 code"
+  code: String!
+  aliases: [String!]!
+  openingDate: Date
+  closedDate: Date
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  "Creation time on the client device"
+  sourceCreatedAt: DateTime
+  parentId: Int
+  orgUnitTypeId: Int
+  versionId: Int
+  "ltree path depth, root = 1"
+  depth: Int
+  "`null` without a recorded point"
+  location: Location
+  "Has a geom or simplified_geom"
+  hasGeoJson: Boolean!
+  "Has a location or a shape: something to draw on a map"
+  hasGeometry: Boolean!
+  "Has at least one child, located or not"
+  hasChildren: Boolean!
+  "Submissions attached to this org unit (not deleted, with a file, not from a test device). Reads every instance of every org unit of the page: pages of at most 100."
+  instanceCount: Int!
+  "GeoJSON"
+  geom: JSON
+  "GeoJSON"
+  simplifiedGeom: JSON
+  "GeoJSON"
+  catchment: JSON
+  parent: OrgUnitSummary
+  "Root first, excluding the org unit itself"
+  ancestors: [OrgUnitSummary!]!
+  orgUnitType: OrgUnitType
+  version: SourceVersion
+  groups: [Group!]!
+  "`null` for org units with no recorded creator"
+  createdBy: User
+}
+
+"An `ancestors` entry, and `parent`: no relations, so no way to walk further."
+type OrgUnitSummary {
+  id: Int!
+  name: String!
+  sourceRef: String
+  validationStatus: ValidationStatus!
+  orgUnitTypeId: Int
+  parentId: Int
+}
+
+type OrgUnitType {
+  id: Int!
+  name: String!
+  shortName: String!
+  category: OrgUnitTypeCategory
+}
+
+type SourceVersion {
+  id: Int!
+  number: Int!
+  dataSourceId: Int
+  dataSource: DataSource
+}
+
+type DataSource {
+  id: Int!
+  name: String!
+}
+
+type Group {
+  id: Int!
+  name: String!
+}
+
+"""
+The `/api/v3/orgunits/` filters, one field per query param (`name__icontains` -> `nameIContains`), all AND-ed.
+`...In` lists take at most 1 000 values. Text matches are case-insensitive only, not accent-insensitive.
+"""
+input OrgUnitFilter {
+  id: Int
+  idIn: [Int!]
+
+  name: String
+  nameIContains: String
+  nameStartsWith: String
+  "Case-insensitive search across name and aliases"
+  search: String
+
+  "Indexed: exact/in/startsWith only (a btree index doesn't help a substring match)"
+  sourceRef: String
+  sourceRefIn: [String!]
+  sourceRefStartsWith: String
+  code: String
+  codeIn: [String!]
+
+  validationStatus: ValidationStatus
+  validationStatusIn: [ValidationStatus!]
+
+  orgUnitTypeId: Int
+  "Only the direct children of this org unit id. Use `ancestorId` for all descendants."
+  parentId: Int
+  groupId: Int
+  "Via the org unit's version"
+  sourceId: Int
+  versionId: Int
+  "Org units whose type is linked to this project id"
+  projectId: Int
+  "Restrict to the requesting user's account's default source version"
+  defaultVersion: Boolean
+  "Only the root org unit(s) visible to the requesting user"
+  rootsForUser: Boolean
+
+  orgUnitTypeNameIContains: String
+  orgUnitTypeCategory: OrgUnitTypeCategory
+  parentNameIContains: String
+  parentSourceRef: String
+
+  sourceCreatedAtGte: DateTime
+  sourceCreatedAtLte: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  updatedAtGte: DateTime
+  updatedAtLte: DateTime
+  openingDateGte: Date
+  openingDateLte: Date
+  closedDateGte: Date
+  closedDateLte: Date
+
+  "Has a geom or simplified_geom"
+  hasShape: Boolean
+  hasLocation: Boolean
+  geomIsNull: Boolean
+  simplifiedGeomIsNull: Boolean
+  catchmentIsNull: Boolean
+  locationIsNull: Boolean
+
+  "All descendants of this org unit id, at any depth (excluding itself)"
+  ancestorId: Int
+  "Only the direct children of this org unit id - same as `parentId`"
+  ancestorIdDirectChildren: Int
+  "ltree path depth (1 = root)"
+  depth: Int
+
+  "`geom` inside the box or overlapping it"
+  geomWithinOrIntersectsBbox: Bbox
+  simplifiedGeomWithinOrIntersectsBbox: Bbox
+  "`location` inside the box (or on its edge)"
+  locationWithinBbox: Bbox
+  "Has a `geom`, and it doesn't intersect the box"
+  geomOutsideBbox: Bbox
+  simplifiedGeomOutsideBbox: Bbox
+  "Has a `location`, and it falls outside the box"
+  locationOutsideBbox: Bbox
+  "`geom` contained within that org unit's simplified_geom (else geom)"
+  geomWithinOrgUnit: Int
+  locationWithinOrgUnit: Int
+  "Has a `geom`, and it isn't contained within that org unit's geometry"
+  geomOutsideOrgUnit: Int
+  "Has a `location`, and it falls outside that org unit's geometry - typically a data quality check"
+  locationOutsideOrgUnit: Int
+}

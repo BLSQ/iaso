@@ -1,0 +1,53 @@
+"""
+Read-only org units, submissions and forms: the GraphQL counterpart of `/api/v3/orgunits/` and of the
+`/api/v3/instances/` design (writes stay on the v1 endpoints). One file per model, each extending `Query` with its
+own root fields (`org_units/schema.graphql`, `instances/schema.graphql`, `forms/schema.graphql`); the types shared
+by several models are here.
+
+Deliberately narrower than "GraphQL" usually means:
+- The `...Filter` inputs are flat, mirroring the v3 query params: every filter at most once, all AND-ed - no
+  AND/OR/NOT, no lookup on arbitrary fields.
+- The types have no cycle (a `...Summary` has no relations), so the schema itself bounds the depth.
+- At most one list of each kind per operation, and aliases only on root fields.
+- No unbounded list below a list: an `Instance` has its `orgUnit`, an `OrgUnit` has no `instances` - a page of org
+  units never multiplies into their submissions.
+"""
+type Query
+
+"ISO 8601 date (`2024-01-31`)"
+scalar Date
+
+"ISO 8601 datetime with a time zone offset within 16 hours of UTC"
+scalar DateTime
+
+"Arbitrary JSON (GeoJSON geometries)"
+scalar JSON
+
+"A point: computed by PostGIS from the `location` column, only the selected coordinates."
+type Location {
+  latitude: Float!
+  longitude: Float!
+  "`null` for a 2D point"
+  altitude: Float
+}
+
+"Degrees, as in GeoJSON. Longitudes -180..180, latitudes -90..90; `minx > maxx` crosses the antimeridian."
+input Bbox {
+  minx: Float!
+  miny: Float!
+  maxx: Float!
+  maxy: Float!
+}
+
+type User {
+  id: Int!
+  username: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+
+type Project {
+  id: Int!
+  name: String!
+}

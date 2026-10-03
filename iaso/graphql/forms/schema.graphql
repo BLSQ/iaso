@@ -1,0 +1,191 @@
+extend type Query {
+  "Forms of the requesting user's account (and projects, if restricted to some), deleted ones excluded."
+  forms(
+    filters: FormFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [FormOrder!]
+    "1-1 000; 1-100 when `versions` is selected."
+    limit: Int! = 100
+    offset: Int! = 0
+  ): FormPage!
+
+  "`null` if it doesn't exist, is deleted or isn't visible to the requesting user."
+  form(id: Int!): Form
+
+  "Versions of the forms `forms` returns, newest first (`CREATED_AT_DESC`) unless `order` says otherwise."
+  formVersions(
+    filters: FormVersionFilter
+    order: [FormVersionOrder!]
+    "1-1 000; 1-100 when `formDescriptor` is selected."
+    limit: Int! = 100
+    offset: Int! = 0
+  ): FormVersionPage!
+
+  "`null` if it doesn't exist or its form isn't visible to the requesting user."
+  formVersion(id: Int!): FormVersion
+}
+
+type FormPage {
+  items: [Form!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+type FormVersionPage {
+  items: [FormVersion!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+enum PeriodType {
+  DAY
+  WEEK
+  MONTH
+  QUARTER
+  QUARTER_NOV
+  SIX_MONTH
+  YEAR
+  FINANCIAL_NOV
+}
+
+enum FormOrder {
+  ID
+  ID_DESC
+  NAME
+  NAME_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+}
+
+enum FormVersionOrder {
+  ID
+  ID_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+}
+
+type Form {
+  id: Int!
+  uuid: String!
+  name: String!
+  "The XLSForm `form_id` (`form_id` in the v1 API): the same across versions"
+  odkFormId: String
+  "`null` for a form not collected per period"
+  periodType: PeriodType
+  "At most one submission per org unit and period: the others are `DUPLICATED`"
+  singlePerPeriod: Boolean!
+  periodsBeforeAllowed: Int
+  periodsAfterAllowed: Int
+  "The question holding the device id"
+  deviceField: String
+  "The question holding the GPS point"
+  locationField: String
+  correlatable: Boolean!
+  correlationField: String
+  "Computed from other forms' submissions, not filled on a device"
+  derived: Boolean!
+  "The questions whose answers label a submission"
+  labelKeys: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  "The questions of all the versions, as a flat list"
+  possibleFields: JSON
+  legendThreshold: JSON
+  projects: [Project!]!
+  "The org unit types this form is filled for"
+  orgUnitTypes: [OrgUnitType!]!
+  "The most recently created version, `null` before the first upload"
+  latestVersion: FormVersion
+  "Newest first. Pages of at most 100 forms."
+  versions: [FormVersion!]!
+}
+
+"The form of a submission or of a version: no relations, no way to walk further."
+type FormSummary {
+  id: Int!
+  name: String!
+  "The XLSForm `form_id` (`form_id` in the v1 API): the same across versions"
+  odkFormId: String
+  periodType: PeriodType
+  singlePerPeriod: Boolean!
+}
+
+"An uploaded XLSForm and the XForm built from it."
+type FormVersion {
+  id: Int!
+  "The XLSForm `version`"
+  versionId: String!
+  formId: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  "First period this version is used for, e.g. `202401`"
+  startPeriod: String
+  "Last period this version is used for"
+  endPeriod: String
+  "The XForm (XML) the devices download"
+  fileUrl: String
+  "The XLSForm it was built from"
+  xlsFileUrl: String
+  "The questions, as a tree: the whole form, of any size. Pages of at most 100."
+  formDescriptor: JSON
+  "The questions of this version, as a flat list"
+  possibleFields: JSON
+  form: FormSummary!
+  createdBy: User
+  updatedBy: User
+}
+
+"The form version of a submission: no relations, no way to walk further."
+type FormVersionSummary {
+  id: Int!
+  versionId: String!
+  startPeriod: String
+  endPeriod: String
+  createdAt: DateTime!
+}
+
+"""
+Form filters, one field per query param, all AND-ed. The project and org unit type filters are `EXISTS` subqueries:
+a form linked to several of them is still listed once.
+"""
+input FormFilter {
+  id: Int
+  idIn: [Int!]
+  nameIContains: String
+  odkFormId: String
+  odkFormIdIn: [String!]
+  projectId: Int
+  projectIdIn: [Int!]
+  orgUnitTypeId: Int
+  orgUnitTypeIdIn: [Int!]
+  periodType: PeriodType
+  "`true` for the forms not collected per period"
+  periodTypeIsNull: Boolean
+  singlePerPeriod: Boolean
+  derived: Boolean
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  updatedAtGte: DateTime
+  updatedAtLte: DateTime
+}
+
+input FormVersionFilter {
+  id: Int
+  idIn: [Int!]
+  formId: Int
+  formIdIn: [Int!]
+  "The XLSForm `version`"
+  versionId: String
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  updatedAtGte: DateTime
+  updatedAtLte: DateTime
+}

@@ -1,0 +1,186 @@
+extend type Query {
+  """
+  Submissions visible to the requesting user (account, org units and projects they are restricted to, forms not
+  deleted), newest first (`ID_DESC`) unless `order` says otherwise. Deleted ones only with `filters: {deleted: true}`.
+  """
+  instances(
+    filters: InstanceFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [InstanceOrder!]
+    "1-10 000; 1-1 000 when `content` or `orgUnit { ancestors }` is selected."
+    limit: Int! = 20
+    offset: Int! = 0
+  ): InstancePage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user. Deleted ones included, see `deleted`."
+  instance(id: Int!): Instance
+}
+
+type InstancePage {
+  items: [Instance!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+enum InstanceStatus {
+  READY
+  "The form is single per period and another (non-deleted) submission has the same org unit and period"
+  DUPLICATED
+  "Exported to DHIS2 at least once"
+  EXPORTED
+}
+
+"Only indexed columns."
+enum InstanceOrder {
+  ID
+  ID_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+  SOURCE_CREATED_AT
+  SOURCE_CREATED_AT_DESC
+  SOURCE_UPDATED_AT
+  SOURCE_UPDATED_AT_DESC
+  PERIOD
+  PERIOD_DESC
+}
+
+"A form submission (\"submission\" in the UI, `Instance` in the code)."
+type Instance {
+  id: Int!
+  uuid: String
+  formId: Int
+  formVersionId: Int
+  orgUnitId: Int
+  projectId: Int
+  "DHIS2 period (`202401`, `2024Q1`, `2024`...)"
+  period: String
+  status: InstanceStatus!
+  "Saved in IASO (server clock)"
+  createdAt: DateTime!
+  "Last modified in IASO (server clock)"
+  updatedAt: DateTime!
+  "Submitted on the device, `null` if it didn't say"
+  sourceCreatedAt: DateTime
+  "Last modified on the device, `null` if it didn't say"
+  sourceUpdatedAt: DateTime
+  createdById: Int
+  lastModifiedById: Int
+  "`null` without a recorded GPS point"
+  location: Location
+  "GPS accuracy, in meters"
+  accuracy: Float
+  deviceId: Int
+  entityId: Int
+  planningId: Int
+  "The org unit has this submission as its reference instance"
+  isReferenceInstance: Boolean!
+  deleted: Boolean!
+  fileName: String
+  "Id of the DHIS2 event/data value set"
+  exportId: String
+  "The submitted answers, as parsed from the XML: question name -> answer. Pages of at most 1 000."
+  content: JSON
+  form: FormSummary
+  formVersion: FormVersionSummary
+  orgUnit: InstanceOrgUnit
+  project: Project
+  createdBy: User
+  lastModifiedBy: User
+}
+
+"""
+The org unit of a submission: its summary and its ancestors (for the \"region > district > facility\" of each row),
+no further - e.g. no way to its other submissions. Pages of at most 1 000 with `ancestors`.
+"""
+type InstanceOrgUnit {
+  id: Int!
+  name: String!
+  sourceRef: String
+  validationStatus: ValidationStatus!
+  orgUnitTypeId: Int
+  parentId: Int
+  "Root first, excluding the org unit itself"
+  ancestors: [OrgUnitSummary!]!
+}
+
+"A point and a radius, in meters (at most 100 000)."
+input Near {
+  longitude: Float!
+  latitude: Float!
+  distanceMeters: Float!
+}
+
+"""
+The `InstanceV3FilterSet` of the `/api/v3/instances/` design, one field per query param, all AND-ed. Lookups only
+where an index serves them; nothing on the submitted `content`.
+"""
+input InstanceFilter {
+  id: Int
+  idIn: [Int!]
+
+  formId: Int
+  formIdIn: [Int!]
+  formNameIContains: String
+
+  orgUnitId: Int
+  orgUnitIdIn: [Int!]
+  "This org unit and all its descendants, at any depth - unlike `OrgUnitFilter.ancestorId`, the org unit itself is included (legacy `orgUnitParentId`)"
+  orgUnitAncestorId: Int
+  orgUnitNameIContains: String
+  orgUnitSourceRef: String
+  orgUnitTypeId: Int
+  orgUnitTypeIdIn: [Int!]
+  orgUnitValidationStatus: ValidationStatus
+  orgUnitValidationStatusIn: [ValidationStatus!]
+
+  period: String
+  periodIn: [String!]
+  "Compared as text: only meaningful between periods of the same type (`202401` and `202406`, not `2024Q1`)"
+  periodGte: String
+  periodLte: String
+
+  "Computed per row: `DUPLICATED` alone only reads the single-per-period forms' submissions, the others read them all"
+  status: InstanceStatus
+  statusIn: [InstanceStatus!]
+
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  updatedAtGte: DateTime
+  updatedAtLte: DateTime
+  sourceCreatedAtGte: DateTime
+  sourceCreatedAtLte: DateTime
+  sourceUpdatedAtGte: DateTime
+  sourceUpdatedAtLte: DateTime
+
+  createdById: Int
+  createdByIdIn: [Int!]
+  lastModifiedById: Int
+  projectId: Int
+  projectIdIn: [Int!]
+  deviceId: Int
+  entityId: Int
+  planningId: Int
+  planningIdIn: [Int!]
+
+  "GPS accuracy at most this many meters"
+  accuracyLte: Float
+  hasLocation: Boolean
+  isReferenceInstance: Boolean
+  "`false` (the default, also when `null`) hides the deleted submissions, `true` shows only them"
+  deleted: Boolean
+
+  "`location` within `distanceMeters` of the point (on the sphere)"
+  locationNear: Near
+  "`location` inside the box (or on its edge)"
+  locationWithinBbox: Bbox
+  "Has a `location`, and it falls outside the box"
+  locationOutsideBbox: Bbox
+  "`location` within that org unit's simplified_geom (else geom)"
+  locationWithinOrgUnit: Int
+  "Has a `location`, and it falls outside that org unit's geometry - a data quality check"
+  locationOutsideOrgUnit: Int
+}

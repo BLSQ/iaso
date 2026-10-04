@@ -51,7 +51,7 @@ def has_children() -> Exists:
     return Exists(OrgUnit.objects.filter(parent_id=OuterRef("pk")))
 
 
-def instance_count() -> Coalesce:
+def submission_count() -> Coalesce:
     """Same instances as the legacy `/api/orgunits/` `instances_count`: not deleted, with a file, not from a
     test device. A correlated subquery rather than a `Count` aggregate: no `GROUP BY` over every selected column."""
     instances = (

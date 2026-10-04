@@ -6,7 +6,7 @@ from django.db.models import Prefetch, QuerySet
 
 from iaso.models import FormVersion, OrgUnitType, Project
 
-from ..common import SelectionTree, columns
+from ..common import PROJECT_COLUMNS, SelectionTree, columns
 from ..org_units.selection import ORG_UNIT_TYPE_COLUMNS, USER_COLUMNS
 
 
@@ -58,7 +58,6 @@ VERSION_SUMMARY_COLUMNS = {
     "endPeriod": "end_period",
     "createdAt": "created_at",
 }
-PROJECT_COLUMNS = {"id": "id", "name": "name"}
 
 #: page size caps of the fields whose cost grows with the page: a list per form (`versions`), a whole form
 #: (`formDescriptor`, ~20 kB for a small one) per row

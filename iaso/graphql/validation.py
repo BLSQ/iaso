@@ -24,7 +24,18 @@ from graphql import (
 
 MAX_TOKENS = 2_000
 #: per operation, by field name; root fields not listed here are capped by `MAX_ROOT_FIELDS` only
-ROOT_FIELD_LIMITS = {"orgUnits": 1, "instances": 1, "forms": 1, "formVersions": 1}
+ROOT_FIELD_LIMITS = {
+    "orgUnits": 1,
+    "submissions": 1,
+    "forms": 1,
+    "formVersions": 1,
+    "bulkUpdateOrgUnits": 1,
+    "dataSources": 1,
+    "orgUnitTypes": 1,
+    "groups": 1,
+    "users": 1,
+    "sourceVersions": 1,
+}
 MAX_ROOT_FIELDS = 10
 
 
@@ -58,7 +69,8 @@ class RootFieldLimitsRule(ValidationRule):
 class NoNestedAliasesRule(ValidationRule):
     def enter_field(self, node: FieldNode, *_args):
         parent_type = self.context.get_parent_type()
-        if node.alias and parent_type is not None and parent_type is not self.context.schema.query_type:
+        root_types = (self.context.schema.query_type, self.context.schema.mutation_type)
+        if node.alias and parent_type is not None and parent_type not in root_types:
             self.report_error(
                 GraphQLError(f"Aliases are only allowed on root fields, not on `{parent_type.name}`.", node)
             )

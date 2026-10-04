@@ -1,0 +1,32 @@
+# The errors of the mutations refusing their input (`errors.py`): their own section of the reference.
+
+"""
+A problem with a mutation's input: the shape every mutation's own error type shares (`FormVersionError`,
+`SubmissionError`, `OrgUnitBulkUpdateError`), each adding a `code` among the few it can return. A mutation that can
+be refused returns them all in its `errors`, as a form shows every invalid field at once, and saves nothing when there
+is any. What isn't about the input stays a top-level GraphQL error (`extensions.code`): `UNAUTHENTICATED`,
+`FORBIDDEN` (a missing permission), `QUERY_TIMEOUT`...
+
+The codes, by what to do about them - stable, to branch on; the `message` says what exactly (and may change):
+- `NOT_FOUND`: an id of nothing the user can see (a form, a submission, an org unit, a group...) - fix the reference;
+- `INVALID`: the value is refused, the `message` says why (a broken constraint with the form's own message, a
+  required answer left empty, a period of the wrong type, a move under a descendant...) - fix the value;
+- `INVALID_XLSFORM`: the XLSForm is refused, one error per problem with the row and the `question` - fix the file;
+- `NOT_EDITABLE`: what is changed can't be, whatever the input (deleted, locked, read-only source...);
+- `UNCONFIRMED_CHANGES`: the change has consequences to confirm (the mutation's `warnings`) - send `force: true`.
+"""
+interface InputError {
+  "For people, in English; for a submission's answers, the form's own constraint message when it has one."
+  message: String!
+  """
+  Where in the mutation's input: the argument, then its input fields and list indexes - `["update", "parentId"]`,
+  `["answers", "2", "value"]` (the value of the 3rd answer). `[]`: the input as a whole.
+  """
+  field: [String!]!
+  """
+  The form question at fault (`household/adults`). For a submission's answers, possibly not one of those answered,
+  when the new answers break another question's constraint (then `field` is `["answers"]`); for an XLSForm, the
+  question of the row at fault.
+  """
+  question: String
+}

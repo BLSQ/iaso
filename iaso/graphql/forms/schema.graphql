@@ -76,7 +76,7 @@ type Form {
   id: Int!
   uuid: String!
   name: String!
-  "The XLSForm `form_id` (`form_id` in the v1 API): the same across versions"
+  "The XLSForm `form_id`: the same across versions"
   odkFormId: String
   "`null` for a form not collected per period"
   periodType: PeriodType
@@ -101,7 +101,7 @@ type Form {
   legendThreshold: JSON
   projects: [Project!]!
   "The org unit types this form is filled for"
-  orgUnitTypes: [OrgUnitType!]!
+  orgUnitTypes: [OrgUnitTypeSummary!]!
   "The most recently created version, `null` before the first upload"
   latestVersion: FormVersion
   "Newest first. Pages of at most 100 forms."
@@ -112,7 +112,7 @@ type Form {
 type FormSummary {
   id: Int!
   name: String!
-  "The XLSForm `form_id` (`form_id` in the v1 API): the same across versions"
+  "The XLSForm `form_id`: the same across versions"
   odkFormId: String
   periodType: PeriodType
   singlePerPeriod: Boolean!
@@ -139,8 +139,8 @@ type FormVersion {
   "The questions of this version, as a flat list"
   possibleFields: JSON
   form: FormSummary!
-  createdBy: User
-  updatedBy: User
+  createdBy: UserSummary
+  updatedBy: UserSummary
 }
 
 "The form version of a submission: no relations, no way to walk further."
@@ -153,8 +153,8 @@ type FormVersionSummary {
 }
 
 """
-Form filters, one field per query param, all AND-ed. The project and org unit type filters are `EXISTS` subqueries:
-a form linked to several of them is still listed once.
+The forms matching all the filters given (AND), each one at most once. A form linked to several of the projects or
+org unit types filtered on is still listed once.
 """
 input FormFilter {
   id: Int
@@ -188,4 +188,90 @@ input FormVersionFilter {
   createdAtLte: DateTime
   updatedAtGte: DateTime
   updatedAtLte: DateTime
+}
+
+extend type Mutation {
+  """
+  A new version of the form, from its XLSForm (`.xlsx` or `.xls`, at most 10 MB): converted to the XForm the
+  devices download, the questions read from it. The file is sent as a GraphQL multipart request (see `Upload`).
+
+  Compared with the latest version, the structural changes the data already collected or configured may not fit come
+  as `warnings`: questions removed or changing type, and the entity workflows' follow-up conditions and changes
+  reading them. The version is only created with `force: true` when there is any (else `UNCONFIRMED_CHANGES`): send
+  the file without `force` first to see them.
+
+  Needs the "forms" permission (a top-level `FORBIDDEN` error otherwise). `errors`: `NOT_FOUND` (a form the user
+  can't see), `INVALID` (not an XLSForm file, too large, a period that doesn't exist or of another type than the
+  form's, a start after the end), `INVALID_XLSFORM` (each problem in the file, with the row and the `question`; a
+  version not greater than the previous one, a `form_id` other than the form's or already another form's),
+  `UNCONFIRMED_CHANGES`.
+  """
+  createFormVersion(
+    formId: Int!
+    xlsFile: Upload!
+    "First period this version is used for (`202401`), of the form's period type"
+    startPeriod: String
+    "Last period this version is used for"
+    endPeriod: String
+    "Create it despite its `warnings`"
+    force: Boolean = false
+  ): FormVersionPayload!
+}
+
+type FormVersionPayload {
+  "The version created, any field selectable; `null` when refused"
+  formVersion: FormVersion
+  "Every problem found, nothing created when there is any"
+  errors: [FormVersionError!]!
+  "The structural changes against the latest version, whether created (with `force`) or not"
+  warnings: [FormVersionWarning!]!
+}
+
+"A change of the new version the submissions already collected may not fit: created only with `force: true`."
+type FormVersionWarning {
+  code: FormVersionWarningCode!
+  "For people, in English"
+  message: String!
+  "The question's name"
+  question: String!
+}
+
+enum FormVersionWarningCode {
+  "A question of the latest version isn't in the new one: the answers already collected to it leave the form"
+  QUESTION_REMOVED
+  "A question's type changes (`integer` -> `text`): the answers already collected may not fit the new one"
+  QUESTION_TYPE_CHANGED
+  """
+  A question removed or changing type that a follow-up's condition of an entity workflow reads (the form being the
+  workflow's entity type's reference form): the follow-up may no longer be proposed as expected
+  """
+  WORKFLOW_CONDITION
+  """
+  A question removed or changing type that a workflow change maps (to or from the entity's attributes): the change
+  may no longer apply, its questions' types having to match
+  """
+  WORKFLOW_MAPPING
+}
+
+"A problem with `createFormVersion`'s input (see `InputError`): nothing created when there is any."
+type FormVersionError implements InputError {
+  code: FormVersionErrorCode!
+  message: String!
+  field: [String!]!
+  "For `INVALID_XLSFORM`: the question of the row at fault, when there is one"
+  question: String
+}
+
+enum FormVersionErrorCode {
+  "A form the user can't see (`formId`)"
+  NOT_FOUND
+  "Not an XLSForm file or too large (`xlsFile`); a period that doesn't exist, of another type than the form's, or a start after the end"
+  INVALID
+  """
+  The XLSForm is refused, one error per problem: IASO's checks (with the row and the `question`), pyxform's conversion
+  (a version not greater than the previous one...), a `form_id` other than the form's or already another form's
+  """
+  INVALID_XLSFORM
+  "Structural changes to confirm (the payload's `warnings`): send `force: true` to create the version anyway"
+  UNCONFIRMED_CHANGES
 }

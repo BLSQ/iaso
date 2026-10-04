@@ -140,6 +140,8 @@ lintErrors.html
 extracted_translation.json
 
 hat/assets/webpack/
+# built by `npm run graphql-docs`
+hat/assets/graphql/
 docker/DHIS2_home/
 
 # Auto-generated files

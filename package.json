@@ -26,6 +26,7 @@
         "build": "npm run webpack",
         "webpack": "webpack --config ./hat/webpack.dev.js",
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
+        "graphql-docs": "node ./iaso/graphql/docs/examples.mjs && npx -y spectaql@3.0.9 ./iaso/graphql/docs/spectaql.yml",
         "webpack-server": "webpack serve --config ./hat/webpack.dev.js",
         "webpack-server-verbose": "webpack serve --config ./hat/webpack.dev.js --progress --stats detailed",
         "dev": "npm run webpack-server",

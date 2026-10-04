@@ -3,8 +3,8 @@
 
 from django.db.models import QuerySet
 
-from ..common import SelectionTree, columns
-from ..forms.selection import FORM_SUMMARY_COLUMNS, PROJECT_COLUMNS, VERSION_SUMMARY_COLUMNS
+from ..common import PROJECT_COLUMNS, SelectionTree, columns
+from ..forms.selection import FORM_SUMMARY_COLUMNS, VERSION_SUMMARY_COLUMNS
 from ..org_units.expressions import AncestorsJson
 from ..org_units.selection import SUMMARY_COLUMNS, USER_COLUMNS
 from .expressions import is_reference_instance, location_coordinate, status
@@ -79,8 +79,7 @@ def load_selected(queryset: QuerySet, fields: SelectionTree) -> QuerySet:
         )
     if "status" in fields:
         queryset = queryset.annotate(status=status())
-    if "isReferenceInstance" in fields:
-        # the name the model's `is_reference_instance` property reads
-        queryset = queryset.annotate(_is_reference_instance=is_reference_instance())
+    if "isReferenceSubmission" in fields:
+        queryset = queryset.annotate(is_reference_submission=is_reference_instance())
 
     return queryset.only(*only)

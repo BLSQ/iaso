@@ -25,6 +25,10 @@ COPY ../../tsconfig.json ../../babel-register.js ./
 # Build webpack assets
 RUN npm run webpack-prod
 
+# GraphQL reference (`/api/graphql/docs/`), from the schema files alone
+COPY ../../iaso/graphql/ ./iaso/graphql/
+RUN npm run graphql-docs
+
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.

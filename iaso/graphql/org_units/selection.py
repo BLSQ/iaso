@@ -11,14 +11,15 @@ from django.db.models import Prefetch, QuerySet
 from iaso.models import Group
 
 from ..common import SelectionTree, columns
+from ..sources.selection import DATA_SOURCE_SUMMARY_COLUMNS, SOURCE_VERSION_COLUMNS
 from .expressions import (
     AncestorsJson,
     depth,
     has_children,
     has_geo_json,
     has_geometry,
-    instance_count,
     location_coordinate,
+    submission_count,
 )
 
 
@@ -48,9 +49,14 @@ SUMMARY_COLUMNS = {
     "orgUnitTypeId": "org_unit_type_id",
     "parentId": "parent_id",
 }
-ORG_UNIT_TYPE_COLUMNS = {"id": "id", "name": "name", "shortName": "short_name", "category": "category"}
-SOURCE_VERSION_COLUMNS = {"id": "id", "number": "number", "dataSourceId": "data_source_id"}
-DATA_SOURCE_COLUMNS = {"id": "id", "name": "name"}
+#: `OrgUnitTypeSummary`: under an org unit, a form
+ORG_UNIT_TYPE_COLUMNS = {
+    "id": "id",
+    "name": "name",
+    "shortName": "short_name",
+    "category": "category",
+    "depth": "depth",
+}
 USER_COLUMNS = {
     "id": "id",
     "username": "username",
@@ -58,12 +64,13 @@ USER_COLUMNS = {
     "lastName": "last_name",
     "email": "email",
 }
-GROUP_COLUMNS = {"id": "id", "name": "name"}
+#: `GroupSummary`: under an org unit
+GROUP_COLUMNS = {"id": "id", "name": "name", "sourceRef": "source_ref"}
 
 #: page size cap of the fields whose cost grows with the page, beyond a column read: a big value (a geometry),
 #: other rows read per row (`ancestors`), or a whole history read per row (`instanceCount`: every instance of the
 #: org unit is fetched from the table to check `deleted`/`file`/`device`). The lowest cap selected applies.
-FIELD_LIMITS = {"geom": 1_000, "simplifiedGeom": 1_000, "catchment": 1_000, "ancestors": 1_000, "instanceCount": 100}
+FIELD_LIMITS = {"geom": 1_000, "simplifiedGeom": 1_000, "catchment": 1_000, "ancestors": 1_000, "submissionCount": 100}
 
 
 def load_selected(queryset: QuerySet, fields: SelectionTree) -> QuerySet:
@@ -84,7 +91,10 @@ def load_selected(queryset: QuerySet, fields: SelectionTree) -> QuerySet:
         if "dataSource" in fields["version"]:
             queryset = queryset.select_related("version__data_source")
             data_source = fields["version"]["dataSource"]
-            only += ["version__data_source", *columns(data_source, DATA_SOURCE_COLUMNS, "version__data_source__")]
+            only += [
+                "version__data_source",
+                *columns(data_source, DATA_SOURCE_SUMMARY_COLUMNS, "version__data_source__"),
+            ]
     if "createdBy" in fields:
         queryset = queryset.select_related("creator")
         only += ["creator", *columns(fields["createdBy"], USER_COLUMNS, "creator__")]
@@ -121,7 +131,7 @@ def load_selected(queryset: QuerySet, fields: SelectionTree) -> QuerySet:
         queryset = queryset.annotate(has_geometry=has_geometry())
     if "hasChildren" in fields:
         queryset = queryset.annotate(has_children=has_children())
-    if "instanceCount" in fields:
-        queryset = queryset.annotate(instance_count=instance_count())
+    if "submissionCount" in fields:
+        queryset = queryset.annotate(submission_count=submission_count())
 
     return queryset.only(*only)

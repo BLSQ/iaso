@@ -1,5 +1,9 @@
+import tempfile
+
+from pathlib import Path
 from unittest import mock
 
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
@@ -7,12 +11,12 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from iaso import models as m
 from iaso.graphql.common import MAX_IN_VALUES
-from iaso.test import APITestCase
+from iaso.graphql.views import EXAMPLE_QUERY
+from iaso.tests.graphql.base import URL, GraphQLTestCase
+from iaso.tests.graphql.fixtures import health_account
 
 
-URL = "/api/graphql/"
-
-DECLARATIONS = {"filters": "OrgUnitFilter", "order": "[OrgUnitOrder!]", "limit": "Int!", "offset": "Int!"}
+DOCS_URL = "/api/graphql/docs/"
 
 
 def outer_query(sql: str) -> str:
@@ -30,34 +34,30 @@ def page_queries(context):
     ]
 
 
-class OrgUnitGraphQLTestCase(APITestCase):
-    """Same Star Wars pyramid as the v3 REST tests (country > region > district, plus two other countries) the
-    requesting user can see, and a Marvel account whose org units they must never see."""
+class OrgUnitGraphQLTestCase(GraphQLTestCase):
+    """The Ministry of Health's pyramid, same shape as the v3 REST tests (country > region > district, plus two other
+    countries) the requesting data manager can see, and a Partner NGO account whose org units they must never see."""
 
     @classmethod
     def setUpTestData(cls):
-        cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
-        cls.project = project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
-        )
-        cls.sw_source = sw_source = m.DataSource.objects.create(name="Evil Empire")
-        sw_source.projects.add(project)
-        cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        star_wars.default_version = sw_version_1
-        star_wars.save()
+        health = health_account()
+        cls.moh = moh = health.account
+        cls.project = project = health.project
+        cls.moh_source = health.source
+        cls.moh_version_1 = moh_version_1 = health.version
 
-        cls.country_type = m.OrgUnitType.objects.create(name="Country", short_name="Cnt", category="COUNTRY")
-        cls.region_type = m.OrgUnitType.objects.create(name="Region", short_name="Rgn")
-        cls.district_type = m.OrgUnitType.objects.create(name="District", short_name="Dst")
+        cls.country_type = m.OrgUnitType.objects.create(name="Country", short_name="CTY", category="COUNTRY")
+        cls.region_type = m.OrgUnitType.objects.create(name="Region", short_name="REG")
+        cls.district_type = m.OrgUnitType.objects.create(name="District", short_name="DIS")
         for org_unit_type in (cls.country_type, cls.region_type, cls.district_type):
             org_unit_type.projects.add(project)
 
-        cls.elite_group = m.Group.objects.create(name="Elite councils", source_version=sw_version_1)
+        cls.malaria_group = m.Group.objects.create(name="Malaria hotspots", source_version=moh_version_1)
 
         cls.country = m.OrgUnit.objects.create(
             org_unit_type=cls.country_type,
-            version=sw_version_1,
-            name="Naboo",
+            version=moh_version_1,
+            name="Kanda",
             geom=MultiPolygon(Polygon(((0, 0), (0, 10), (10, 10), (10, 0), (0, 0)))),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="country-ref",
@@ -65,55 +65,57 @@ class OrgUnitGraphQLTestCase(APITestCase):
         )
         cls.country_without_geom = m.OrgUnit.objects.create(
             org_unit_type=cls.country_type,
-            version=sw_version_1,
-            name="Tatooine",
+            version=moh_version_1,
+            name="Moyo",
             validation_status=m.OrgUnit.VALIDATION_VALID,
             code="C2",
         )
         cls.region = m.OrgUnit.objects.create(
             org_unit_type=cls.region_type,
-            version=sw_version_1,
+            version=moh_version_1,
             parent=cls.country,
-            name="Theed",
+            name="North Region",
             location=Point(x=5, y=5, z=0),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="region-ref",
             code="R1",
         )
-        cls.region.groups.set([cls.elite_group])
+        cls.region.groups.set([cls.malaria_group])
         cls.district = m.OrgUnit.objects.create(
             org_unit_type=cls.district_type,
-            version=sw_version_1,
+            version=moh_version_1,
             parent=cls.region,
-            name="Theed District",
+            name="North District",
             validation_status=m.OrgUnit.VALIDATION_NEW,
         )
         cls.cote = m.OrgUnit.objects.create(
             org_unit_type=cls.country_type,
-            version=sw_version_1,
+            version=moh_version_1,
             name="Côte d'Ivoire",
             validation_status=m.OrgUnit.VALIDATION_VALID,
             code="C3",
             aliases=["CIV"],
         )
-        cls.star_wars_org_units = [cls.country, cls.country_without_geom, cls.region, cls.district, cls.cote]
+        cls.moh_org_units = [cls.country, cls.country_without_geom, cls.region, cls.district, cls.cote]
 
-        cls.user = cls.create_user_with_profile(username="padme", account=star_wars)
+        cls.user = cls.create_user_with_profile(username="data_manager", account=moh)
 
         form = m.Form.objects.create(name="Census")
         for file, deleted in (("census.xml", False), ("census-2.xml", False), ("deleted.xml", True), ("", False)):
             m.Instance.objects.create(org_unit=cls.region, form=form, project=project, file=file, deleted=deleted)
 
-        cls.marvel = marvel = m.Account.objects.create(name="MCU")
-        cls.other_account_user = cls.create_user_with_profile(username="tchalla", account=marvel)
-        marvel_project = m.Project.objects.create(name="Wakanda outreach", app_id="marvel.app", account=marvel)
-        marvel_source = m.DataSource.objects.create(name="Wakandan registry")
-        marvel_source.projects.add(marvel_project)
-        marvel_version = m.SourceVersion.objects.create(data_source=marvel_source, number=1)
-        cls.marvel_org_unit = m.OrgUnit.objects.create(
+        cls.partner_ngo = partner_ngo = m.Account.objects.create(name="Partner NGO")
+        cls.other_account_user = cls.create_user_with_profile(username="partner_admin", account=partner_ngo)
+        partner_project = m.Project.objects.create(
+            name="Partner outreach", app_id="partner.outreach", account=partner_ngo
+        )
+        partner_source = m.DataSource.objects.create(name="Partner registry")
+        partner_source.projects.add(partner_project)
+        partner_version = m.SourceVersion.objects.create(data_source=partner_source, number=1)
+        cls.partner_org_unit = m.OrgUnit.objects.create(
             org_unit_type=cls.country_type,
-            version=marvel_version,
-            name="Wakanda",
+            version=partner_version,
+            name="Coastal Province",
             geom=MultiPolygon(Polygon(((20, 20), (20, 30), (30, 30), (30, 20), (20, 20)))),
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
@@ -124,43 +126,12 @@ class OrgUnitGraphQLTestCase(APITestCase):
 
     # -- helpers --
 
-    def execute(self, query, variables=None, **extra):
-        response = self.client.post(URL, {"query": query, "variables": variables or {}}, format="json", **extra)
-        self.assertIn(response.status_code, (200, 400), response.content)
-        return response.json()
-
-    def data(self, query, variables=None):
-        body = self.execute(query, variables)
-        self.assertNotIn("errors", body, body.get("errors"))
-        return body["data"]
-
-    def error(self, query, variables=None):
-        body = self.execute(query, variables)
-        self.assertIn("errors", body)
-        return body["errors"][0]["message"]
-
-    def page(self, selection="items { id }", filters=None, **arguments):
-        variables = {"filters": filters or {}, **arguments}
-        signature = ", ".join(f"${name}: {DECLARATIONS[name]}" for name in variables)
-        call = ", ".join(f"{name}: ${name}" for name in variables)
-        return self.data(f"query ({signature}) {{ orgUnits({call}) {{ {selection} }} }}", variables)["orgUnits"]
-
-    def items(self, selection="id", filters=None, **arguments):
-        return self.page(f"items {{ {selection} }}", filters, **arguments)["items"]
-
-    def ids(self, filters=None, **arguments):
-        return [row["id"] for row in self.items("id", filters, **arguments)]
-
     def assertIds(self, filters, org_units):
-        self.assertEqual(sorted(self.ids(filters)), sorted(org_unit.id for org_unit in org_units))
+        self.assertEqual(sorted(self.ids("orgUnits", filters=filters)), sorted(org_unit.id for org_unit in org_units))
 
-    def row(self, org_unit, selection):
-        query = f"query ($id: Int!) {{ orgUnit(id: $id) {{ {selection} }} }}"
-        return self.data(query, {"id": org_unit.id})["orgUnit"]
-
-    def capture(self, selection, filters=None):
+    def capture(self, selection):
         with CaptureQueriesContext(connection) as context:
-            self.items(selection, filters)
+            self.items("orgUnits", selection)
         return page_queries(context)
 
     # -- authentication and scoping --
@@ -179,7 +150,7 @@ class OrgUnitGraphQLTestCase(APITestCase):
         self.client.force_authenticate(None)
         token = AccessToken.for_user(self.user)
         body = self.execute("{ orgUnits { items { id } } }", HTTP_AUTHORIZATION=f"Bearer {token}")
-        self.assertEqual(len(body["data"]["orgUnits"]["items"]), len(self.star_wars_org_units))
+        self.assertEqual(len(body["data"]["orgUnits"]["items"]), len(self.moh_org_units))
 
     def test_invalid_jwt_is_401(self):
         self.client.force_authenticate(None)
@@ -188,19 +159,47 @@ class OrgUnitGraphQLTestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    def test_graphiql_for_account_users(self):
+        response = self.client.get(URL)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<title>IASO GraphQL</title>")
+        self.assertContains(response, "GraphiQLPluginExplorer.explorerPlugin(")
+        # the query and variables of its URL (the reference's "Open in GraphiQL"), else the example
+        self.assertContains(response, "params.get('query')")
+        self.assertContains(response, "'# The \\u0022Docs\\u0022 panel")
+        self.assertContains(response, "href: 'docs/'")
+        # the example runs
+        self.assertNotIn("errors", self.execute(EXAMPLE_QUERY))
+        for user in (None, User.objects.create(username="no_profile")):
+            self.client.force_authenticate(user)
+            self.assertEqual(self.client.get(URL).status_code, 403)
+
+    def test_reference_for_account_users(self):
+        with tempfile.TemporaryDirectory() as directory:
+            built = Path(directory) / "docs.html"
+            with mock.patch("iaso.graphql.views.DOCS_PATH", built):
+                self.assertContains(self.client.get(DOCS_URL), "npm run graphql-docs", status_code=404)
+                built.write_text("<title>IASO GraphQL API</title>")
+                response = self.client.get(DOCS_URL)
+                self.assertEqual(response["Content-Type"], "text/html; charset=utf-8")
+                self.assertEqual(b"".join(response.streaming_content), b"<title>IASO GraphQL API</title>")
+                for user in (None, User.objects.create(username="no_profile")):
+                    self.client.force_authenticate(user)
+                    self.assertEqual(self.client.get(DOCS_URL).status_code, 403)
+
     def test_only_the_users_account(self):
-        self.assertIds({}, self.star_wars_org_units)
+        self.assertIds({}, self.moh_org_units)
         self.client.force_authenticate(self.other_account_user)
-        self.assertIds({}, [self.marvel_org_unit])
+        self.assertIds({}, [self.partner_org_unit])
 
     def test_org_unit_by_id(self):
-        self.assertEqual(self.row(self.region, "name"), {"name": "Theed"})
+        self.assertEqual(self.row("orgUnit", self.region.id, "name"), {"name": "North Region"})
         # another account's org unit is just absent
-        self.assertIsNone(self.row(self.marvel_org_unit, "name"))
+        self.assertIsNone(self.row("orgUnit", self.partner_org_unit.id, "name"))
 
     def test_statement_timeout(self):
         with CaptureQueriesContext(connection) as context:
-            self.items("id")
+            self.items("orgUnits", "id")
         self.assertTrue(any("SET LOCAL statement_timeout" in q["sql"] for q in context.captured_queries))
 
     # -- fields: what is selected is what is loaded --
@@ -212,10 +211,12 @@ class OrgUnitGraphQLTestCase(APITestCase):
         self.assertNotIn("JOIN", outer_query(sql))
 
     def test_typename_only(self):
-        self.assertEqual(len(self.items("__typename")), 5)
+        self.assertEqual(len(self.items("orgUnits", "__typename")), 5)
 
     def test_geometries_are_geo_json(self):
-        row = self.row(self.country, "geom simplifiedGeom catchment hasGeoJson hasGeometry location { latitude }")
+        row = self.row(
+            "orgUnit", self.country.id, "geom simplifiedGeom catchment hasGeoJson hasGeometry location { latitude }"
+        )
         self.assertEqual(row["geom"]["type"], "MultiPolygon")
         self.assertEqual(row["geom"]["coordinates"][0][0][2], [10, 10])
         self.assertIsNone(row["simplifiedGeom"])
@@ -223,7 +224,7 @@ class OrgUnitGraphQLTestCase(APITestCase):
         self.assertTrue(row["hasGeometry"])
         self.assertIsNone(row["location"])
         self.assertEqual(
-            self.row(self.region, "location { latitude longitude altitude } geom"),
+            self.row("orgUnit", self.region.id, "location { latitude longitude altitude } geom"),
             {"location": {"latitude": 5.0, "longitude": 5.0, "altitude": 0.0}, "geom": None},
         )
 
@@ -236,27 +237,28 @@ class OrgUnitGraphQLTestCase(APITestCase):
 
     def test_instance_count(self):
         # deleted and file-less instances aren't counted, same as the legacy instances_count
-        self.assertEqual(self.row(self.region, "instanceCount")["instanceCount"], 2)
-        self.assertEqual(self.row(self.country, "instanceCount")["instanceCount"], 0)
-        self.assertEqual(len(self.capture("id instanceCount")), 1)
+        self.assertEqual(self.row("orgUnit", self.region.id, "submissionCount")["submissionCount"], 2)
+        self.assertEqual(self.row("orgUnit", self.country.id, "submissionCount")["submissionCount"], 0)
+        self.assertEqual(len(self.capture("id submissionCount")), 1)
         self.assertNotIn("iaso_instance", self.capture("id name")[0])
 
     def test_scalars_and_computed_fields(self):
         row = self.row(
-            self.region,
+            "orgUnit",
+            self.region.id,
             "name validationStatus sourceRef code parentId orgUnitTypeId versionId depth hasChildren aliases "
             "createdAt openingDate uuid",
         )
         self.assertEqual(
             row,
             {
-                "name": "Theed",
+                "name": "North Region",
                 "validationStatus": "VALID",
                 "sourceRef": "region-ref",
                 "code": "R1",
                 "parentId": self.country.id,
                 "orgUnitTypeId": self.region_type.id,
-                "versionId": self.sw_version_1.id,
+                "versionId": self.moh_version_1.id,
                 "depth": 2,
                 "hasChildren": True,
                 "aliases": [],
@@ -265,7 +267,7 @@ class OrgUnitGraphQLTestCase(APITestCase):
                 "uuid": None,
             },
         )
-        self.assertEqual(self.row(self.cote, "aliases")["aliases"], ["CIV"])
+        self.assertEqual(self.row("orgUnit", self.cote.id, "aliases")["aliases"], ["CIV"])
 
     def test_relations_are_joined_in_one_query(self):
         selection = (
@@ -273,33 +275,40 @@ class OrgUnitGraphQLTestCase(APITestCase):
         )
         (sql,) = self.capture(selection)
         self.assertEqual(outer_query(sql).count("JOIN"), 4)
-        row = self.row(self.region, selection)
-        self.assertEqual(row["parent"], {"name": "Naboo"})
+        row = self.row("orgUnit", self.region.id, selection)
+        self.assertEqual(row["parent"], {"name": "Kanda"})
         self.assertEqual(row["orgUnitType"], {"name": "Region", "category": None})
         self.assertEqual(
-            row["version"], {"number": 1, "dataSourceId": self.sw_source.id, "dataSource": {"name": "Evil Empire"}}
+            row["version"],
+            {
+                "number": 1,
+                "dataSourceId": self.moh_source.id,
+                "dataSource": {"name": "National health facility registry"},
+            },
         )
-        self.assertIsNone(self.row(self.country, "parent { name }")["parent"])
+        self.assertIsNone(self.row("orgUnit", self.country.id, "parent { name }")["parent"])
 
     def test_created_by(self):
-        self.assertIsNone(self.row(self.region, "createdBy { username }")["createdBy"])
+        self.assertIsNone(self.row("orgUnit", self.region.id, "createdBy { username }")["createdBy"])
         m.OrgUnit.objects.filter(pk=self.region.pk).update(creator=self.user)
-        self.assertEqual(self.row(self.region, "createdBy { username }"), {"createdBy": {"username": "padme"}})
+        self.assertEqual(
+            self.row("orgUnit", self.region.id, "createdBy { username }"), {"createdBy": {"username": "data_manager"}}
+        )
 
     def test_groups_and_ancestors(self):
         with CaptureQueriesContext(connection) as context:
-            rows = self.items("name groups { name } ancestors { name orgUnitTypeId }")
+            rows = self.items("orgUnits", "name groups { name } ancestors { name orgUnitTypeId }")
         by_name = {row["name"]: row for row in rows}
-        self.assertEqual(by_name["Theed"]["groups"], [{"name": "Elite councils"}])
-        self.assertEqual(by_name["Naboo"]["groups"], [])
+        self.assertEqual(by_name["North Region"]["groups"], [{"name": "Malaria hotspots"}])
+        self.assertEqual(by_name["Kanda"]["groups"], [])
         self.assertEqual(
-            by_name["Theed District"]["ancestors"],
+            by_name["North District"]["ancestors"],
             [
-                {"name": "Naboo", "orgUnitTypeId": self.country_type.id},
-                {"name": "Theed", "orgUnitTypeId": self.region_type.id},
+                {"name": "Kanda", "orgUnitTypeId": self.country_type.id},
+                {"name": "North Region", "orgUnitTypeId": self.region_type.id},
             ],
         )
-        self.assertEqual(by_name["Naboo"]["ancestors"], [])
+        self.assertEqual(by_name["Kanda"]["ancestors"], [])
         # the page and every ancestor of every row: one query; every group of the page: a second one
         (sql,) = page_queries(context)
         self.assertEqual(sum('FROM "iaso_group"' in q["sql"] for q in context.captured_queries), 1)
@@ -312,18 +321,16 @@ class OrgUnitGraphQLTestCase(APITestCase):
         selection = (
             "id name uuid validationStatus sourceRef code aliases openingDate closedDate createdAt updatedAt "
             "sourceCreatedAt parentId orgUnitTypeId versionId depth location { latitude longitude altitude } "
-            "hasGeoJson hasGeometry hasChildren instanceCount geom simplifiedGeom catchment "
+            "hasGeoJson hasGeometry hasChildren submissionCount geom simplifiedGeom catchment "
             "parent { id name sourceRef validationStatus orgUnitTypeId parentId } "
             "ancestors { id name sourceRef validationStatus orgUnitTypeId parentId } "
             "orgUnitType { id name shortName category } version { id number dataSourceId dataSource { id name } } "
             "groups { id name } createdBy { id username firstName lastName email }"
         )
-        counts = []
-        for limit in (1, 5):
-            with CaptureQueriesContext(connection) as context:
-                self.assertEqual(len(self.items(selection, limit=limit)), limit)
-            counts.append(len(context.captured_queries))
-        self.assertEqual(counts[0], counts[1])
+        one, rows = self.profiled(lambda: self.items("orgUnits", selection, limit=1))
+        five, more_rows = self.profiled(lambda: self.items("orgUnits", selection, limit=5))
+        self.assertEqual((len(rows), len(more_rows)), (1, 5))
+        five.assertSameQueryCounts(one)
 
     def test_ancestors_through_a_fragment(self):
         query = (
@@ -341,30 +348,31 @@ class OrgUnitGraphQLTestCase(APITestCase):
 
     def test_ancestors_of_a_single_org_unit(self):
         self.assertEqual(
-            self.row(self.district, "ancestors { name }")["ancestors"], [{"name": "Naboo"}, {"name": "Theed"}]
+            self.row("orgUnit", self.district.id, "ancestors { name }")["ancestors"],
+            [{"name": "Kanda"}, {"name": "North Region"}],
         )
 
     # -- pagination --
 
     def test_total_count_only_when_selected(self):
         with CaptureQueriesContext(connection) as context:
-            self.items("id")
+            self.items("orgUnits", "id")
         self.assertFalse(any("COUNT(*)" in q["sql"] for q in context.captured_queries))
         with CaptureQueriesContext(connection) as context:
-            page = self.page("totalCount", limit=2)
+            page = self.page("orgUnits", "totalCount", limit=2)
         self.assertEqual(page, {"totalCount": 5})
         # no row fetched for a count alone
         self.assertEqual(len(page_queries(context)), 1)
 
     def test_has_next_page(self):
-        self.assertTrue(self.page("hasNextPage", limit=4)["hasNextPage"])
-        page = self.page("hasNextPage items { id }", limit=5)
+        self.assertTrue(self.page("orgUnits", "hasNextPage", limit=4)["hasNextPage"])
+        page = self.page("orgUnits", "hasNextPage items { id }", limit=5)
         self.assertFalse(page["hasNextPage"])
         self.assertEqual(len(page["items"]), 5)
 
     def test_pagination(self):
-        all_ids = self.ids()
-        self.assertEqual(self.ids(offset=1, limit=2), all_ids[1:3])
+        all_ids = self.ids("orgUnits")
+        self.assertEqual(self.ids("orgUnits", offset=1, limit=2), all_ids[1:3])
 
     def test_limit_is_bounded(self):
         self.assertIn("between 1 and 10000", self.error("{ orgUnits(limit: 1000000) { items { id } } }"))
@@ -373,35 +381,35 @@ class OrgUnitGraphQLTestCase(APITestCase):
         self.assertIn("Int!", self.error("{ orgUnits(limit: null) { items { id } } }"))
 
     def test_expensive_fields_lower_the_limit(self):
-        self.assertEqual(len(self.items("id", limit=5_000)), 5)
+        self.assertEqual(len(self.items("orgUnits", "id", limit=5_000)), 5)
         message = self.error("{ orgUnits(limit: 5000) { items { id simplifiedGeom ancestors { id } } } }")
         self.assertIn("between 1 and 1000 when selecting ancestors, simplifiedGeom", message)
 
     def test_instance_count_has_the_lowest_cap(self):
-        self.assertEqual(len(self.items("id instanceCount", limit=100)), 5)
-        message = self.error("{ orgUnits(limit: 500) { items { id geom instanceCount } } }")
-        self.assertIn("between 1 and 100 when selecting instanceCount", message)
+        self.assertEqual(len(self.items("orgUnits", "id submissionCount", limit=100)), 5)
+        message = self.error("{ orgUnits(limit: 500) { items { id geom submissionCount } } }")
+        self.assertIn("between 1 and 100 when selecting submissionCount", message)
         # a single org unit is a single count
-        self.assertEqual(self.row(self.region, "instanceCount"), {"instanceCount": 2})
+        self.assertEqual(self.row("orgUnit", self.region.id, "submissionCount"), {"submissionCount": 2})
 
     def test_ordering(self):
-        names = [row["name"] for row in self.items("name", order=["NAME_DESC"])]
+        names = [row["name"] for row in self.items("orgUnits", "name", order=["NAME_DESC"])]
         self.assertEqual(names, sorted(names, reverse=True))
-        self.assertEqual(self.ids(), sorted(self.ids()))  # `id` by default
-        self.assertEqual(self.ids(order=["ID_DESC"]), sorted(self.ids(), reverse=True))
+        self.assertEqual(self.ids("orgUnits"), sorted(self.ids("orgUnits")))  # `id` by default
+        self.assertEqual(self.ids("orgUnits", order=["ID_DESC"]), sorted(self.ids("orgUnits"), reverse=True))
 
     # -- filters: the v3 query params --
 
     def test_text_filters(self):
-        self.assertIds({"nameIContains": "theed"}, [self.region, self.district])
-        self.assertIds({"nameStartsWith": "Th"}, [self.region, self.district])
-        self.assertIds({"name": "Naboo"}, [self.country])
+        self.assertIds({"nameIContains": "north"}, [self.region, self.district])
+        self.assertIds({"nameStartsWith": "No"}, [self.region, self.district])
+        self.assertIds({"name": "Kanda"}, [self.country])
         self.assertIds({"sourceRefIn": ["country-ref", "region-ref"]}, [self.country, self.region])
         self.assertIds({"sourceRefStartsWith": "coun"}, [self.country])
         self.assertIds({"code": "C3"}, [self.cote])
         self.assertIds({"codeIn": ["C1", "C3"]}, [self.country, self.cote])
         self.assertIds({"search": "CIV"}, [self.cote])
-        self.assertIds({"idIn": [self.country.id, self.marvel_org_unit.id]}, [self.country])
+        self.assertIds({"idIn": [self.country.id, self.partner_org_unit.id]}, [self.country])
 
     def test_nul_characters_are_refused(self):
         # postgres text can't hold them: a bad request, not a server error
@@ -423,13 +431,13 @@ class OrgUnitGraphQLTestCase(APITestCase):
         self.assertIds({"orgUnitTypeCategory": "COUNTRY"}, [self.country, self.country_without_geom, self.cote])
         self.assertIds({"orgUnitTypeNameIContains": "regi"}, [self.region])
         self.assertIds({"orgUnitTypeId": self.district_type.id}, [self.district])
-        self.assertIds({"parentNameIContains": "naboo"}, [self.region])
+        self.assertIds({"parentNameIContains": "kanda"}, [self.region])
         self.assertIds({"parentSourceRef": "region-ref"}, [self.district])
-        self.assertIds({"groupId": self.elite_group.id}, [self.region])
-        self.assertIds({"sourceId": self.sw_source.id}, self.star_wars_org_units)
-        self.assertIds({"versionId": self.sw_version_1.id}, self.star_wars_org_units)
-        self.assertIds({"projectId": self.project.id}, self.star_wars_org_units)
-        self.assertIds({"defaultVersion": True}, self.star_wars_org_units)
+        self.assertIds({"groupId": self.malaria_group.id}, [self.region])
+        self.assertIds({"sourceId": self.moh_source.id}, self.moh_org_units)
+        self.assertIds({"versionId": self.moh_version_1.id}, self.moh_org_units)
+        self.assertIds({"projectId": self.project.id}, self.moh_org_units)
+        self.assertIds({"defaultVersion": True}, self.moh_org_units)
         self.assertIds({"rootsForUser": True}, [self.country, self.country_without_geom, self.cote])
 
     def test_hierarchy_filters(self):
@@ -441,7 +449,7 @@ class OrgUnitGraphQLTestCase(APITestCase):
             "does not exist",
             self.error(
                 "query ($id: Int) { orgUnits(filters: {ancestorId: $id}) { items { id } } }",
-                {"id": self.marvel_org_unit.id},
+                {"id": self.partner_org_unit.id},
             ),
         )
 
@@ -471,9 +479,9 @@ class OrgUnitGraphQLTestCase(APITestCase):
         )
 
     def test_date_filters(self):
-        self.assertIds({"createdAtGte": "2000-01-01T00:00:00Z"}, self.star_wars_org_units)
+        self.assertIds({"createdAtGte": "2000-01-01T00:00:00Z"}, self.moh_org_units)
         self.assertIds({"createdAtLte": "2000-01-01T00:00:00Z"}, [])
-        self.assertIds({"createdAtGte": "2000-01-01T00:00:00"}, self.star_wars_org_units)
+        self.assertIds({"createdAtGte": "2000-01-01T00:00:00"}, self.moh_org_units)
         self.assertIds({"openingDateGte": "2000-01-01"}, [])
         self.assertIn(
             "16 hours",
@@ -485,10 +493,10 @@ class OrgUnitGraphQLTestCase(APITestCase):
 
     def test_filters_are_and_ed(self):
         self.assertIds({"orgUnitTypeCategory": "COUNTRY", "hasShape": False}, [self.country_without_geom, self.cote])
-        self.assertIds({"orgUnitTypeCategory": "COUNTRY", "nameStartsWith": "T"}, [self.country_without_geom])
+        self.assertIds({"orgUnitTypeCategory": "COUNTRY", "nameStartsWith": "M"}, [self.country_without_geom])
 
     def test_explicit_null_is_not_filtered(self):
-        self.assertIds({"name": None, "hasShape": None}, self.star_wars_org_units)
+        self.assertIds({"name": None, "hasShape": None}, self.moh_org_units)
 
     # -- complexity: nothing v3 couldn't express --
 
@@ -524,7 +532,7 @@ class OrgUnitGraphQLTestCase(APITestCase):
         self.assertIn("only allowed on root fields", self.error(f"{{ orgUnits {{ items {{ {aliases} }} }} }}"))
         query = "query ($a: Int!, $b: Int!) { a: orgUnit(id: $a) { name } b: orgUnit(id: $b) { name } }"
         data = self.data(query, {"a": self.country.id, "b": self.region.id})
-        self.assertEqual(data, {"a": {"name": "Naboo"}, "b": {"name": "Theed"}})
+        self.assertEqual(data, {"a": {"name": "Kanda"}, "b": {"name": "North Region"}})
 
     def test_root_fields_are_bounded(self):
         fields = " ".join(f"o{i}: orgUnit(id: {i}) {{ id }}" for i in range(11))

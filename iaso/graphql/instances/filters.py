@@ -145,7 +145,7 @@ METHODS: Dict[str, FilterMethod] = {
     "status": _status,
     "statusIn": _status_in,
     "hasLocation": _has_location,
-    "isReferenceInstance": _is_reference_instance,
+    "isReferenceSubmission": _is_reference_instance,
     "orgUnitAncestorId": _org_unit_ancestor_id,
     "locationNear": _location_near,
     "locationWithinBbox": _location_bbox(outside=False),

@@ -17,6 +17,9 @@ from iaso.models import OrgUnit
 from .org_units.expressions import as_geometry
 
 
+#: `Project` GraphQL field -> model column, for every type with projects
+PROJECT_COLUMNS = {"id": "id", "name": "name"}
+
 #: selected field name -> its sub-selection (`None` for a leaf)
 SelectionTree = Dict[str, Optional["SelectionTree"]]
 #: a filter that isn't a plain lookup: `(queryset, value, user) -> queryset`
@@ -163,3 +166,20 @@ def containment_filter(column: str, outside: bool) -> FilterMethod:
         return queryset.filter(**{f"{column}__within": geometry})
 
     return apply
+
+
+def page(selected: SelectionTree, queryset: QuerySet, load, order_by, limit: int, offset: int) -> Dict[str, Any]:
+    """A `...Page` of `queryset`: `items` loaded by `load(queryset, items' selection)`, `hasNextPage` from one extra
+    row, `totalCount` a `COUNT(*)` only when selected."""
+    result: Dict[str, Any] = {}
+    if "totalCount" in selected:
+        result["total_count"] = queryset.count()
+    if "items" in selected or "hasNextPage" in selected:
+        # one extra row tells whether there is a next page, without a COUNT(*)
+        extra_row = 1 if "hasNextPage" in selected else 0
+        rows = list(
+            load(queryset, selected.get("items") or {}).order_by(*order_by)[offset : offset + limit + extra_row]
+        )
+        result["has_next_page"] = len(rows) > limit
+        result["items"] = rows[:limit]
+    return result

@@ -3,28 +3,28 @@ extend type Query {
   Submissions visible to the requesting user (account, org units and projects they are restricted to, forms not
   deleted), newest first (`ID_DESC`) unless `order` says otherwise. Deleted ones only with `filters: {deleted: true}`.
   """
-  instances(
-    filters: InstanceFilter
+  submissions(
+    filters: SubmissionFilter
     "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
-    order: [InstanceOrder!]
+    order: [SubmissionOrder!]
     "1-10 000; 1-1 000 when `content` or `orgUnit { ancestors }` is selected."
     limit: Int! = 20
     offset: Int! = 0
-  ): InstancePage!
+  ): SubmissionPage!
 
   "`null` if it doesn't exist or isn't visible to the requesting user. Deleted ones included, see `deleted`."
-  instance(id: Int!): Instance
+  submission(id: Int!): Submission
 }
 
-type InstancePage {
-  items: [Instance!]!
+type SubmissionPage {
+  items: [Submission!]!
   "Fetches one extra row, no `COUNT(*)`."
   hasNextPage: Boolean!
   "A `COUNT(*)` over the whole filtered set: only run when selected."
   totalCount: Int!
 }
 
-enum InstanceStatus {
+enum SubmissionStatus {
   READY
   "The form is single per period and another (non-deleted) submission has the same org unit and period"
   DUPLICATED
@@ -33,7 +33,7 @@ enum InstanceStatus {
 }
 
 "Only indexed columns."
-enum InstanceOrder {
+enum SubmissionOrder {
   ID
   ID_DESC
   CREATED_AT
@@ -48,8 +48,8 @@ enum InstanceOrder {
   PERIOD_DESC
 }
 
-"A form submission (\"submission\" in the UI, `Instance` in the code)."
-type Instance {
+"The answers sent for a form, for an org unit (and a period, if the form has periods): from a device or edited since."
+type Submission {
   id: Int!
   uuid: String
   formId: Int
@@ -58,7 +58,7 @@ type Instance {
   projectId: Int
   "DHIS2 period (`202401`, `2024Q1`, `2024`...)"
   period: String
-  status: InstanceStatus!
+  status: SubmissionStatus!
   "Saved in IASO (server clock)"
   createdAt: DateTime!
   "Last modified in IASO (server clock)"
@@ -76,8 +76,8 @@ type Instance {
   deviceId: Int
   entityId: Int
   planningId: Int
-  "The org unit has this submission as its reference instance"
-  isReferenceInstance: Boolean!
+  "The org unit has this submission as its reference submission"
+  isReferenceSubmission: Boolean!
   deleted: Boolean!
   fileName: String
   "Id of the DHIS2 event/data value set"
@@ -86,17 +86,17 @@ type Instance {
   content: JSON
   form: FormSummary
   formVersion: FormVersionSummary
-  orgUnit: InstanceOrgUnit
+  orgUnit: SubmissionOrgUnit
   project: Project
-  createdBy: User
-  lastModifiedBy: User
+  createdBy: UserSummary
+  lastModifiedBy: UserSummary
 }
 
 """
 The org unit of a submission: its summary and its ancestors (for the \"region > district > facility\" of each row),
 no further - e.g. no way to its other submissions. Pages of at most 1 000 with `ancestors`.
 """
-type InstanceOrgUnit {
+type SubmissionOrgUnit {
   id: Int!
   name: String!
   sourceRef: String
@@ -115,10 +115,10 @@ input Near {
 }
 
 """
-The `InstanceV3FilterSet` of the `/api/v3/instances/` design, one field per query param, all AND-ed. Lookups only
-where an index serves them; nothing on the submitted `content`.
+The submissions matching all the filters given (AND), each one at most once. Only filters an index serves: nothing
+on the submitted `content`.
 """
-input InstanceFilter {
+input SubmissionFilter {
   id: Int
   idIn: [Int!]
 
@@ -144,8 +144,8 @@ input InstanceFilter {
   periodLte: String
 
   "Computed per row: `DUPLICATED` alone only reads the single-per-period forms' submissions, the others read them all"
-  status: InstanceStatus
-  statusIn: [InstanceStatus!]
+  status: SubmissionStatus
+  statusIn: [SubmissionStatus!]
 
   createdAtGte: DateTime
   createdAtLte: DateTime
@@ -169,7 +169,7 @@ input InstanceFilter {
   "GPS accuracy at most this many meters"
   accuracyLte: Float
   hasLocation: Boolean
-  isReferenceInstance: Boolean
+  isReferenceSubmission: Boolean
   "`false` (the default, also when `null`) hides the deleted submissions, `true` shows only them"
   deleted: Boolean
 
@@ -183,4 +183,80 @@ input InstanceFilter {
   locationWithinOrgUnit: Int
   "Has a `location`, and it falls outside that org unit's geometry - a data quality check"
   locationOutsideOrgUnit: Int
+}
+
+# Each needs the "edit submissions" permission (a top-level `FORBIDDEN` error otherwise), and refuses - in its
+# `errors` - a submission that isn't visible to the user (`NOT_FOUND`), or deleted, without form or locked by a user
+# above them in the pyramid (`NOT_EDITABLE`).
+extend type Mutation {
+  """
+  Sets the submission's period. Needs the "edit submissions" permission. `errors`, on top of those of any submission
+  edit (`NOT_FOUND`, `NOT_EDITABLE` on `id`: not visible, deleted, without form, locked): `NOT_EDITABLE` when the
+  form has no period type, `INVALID` for a period that doesn't exist (`202413`) or of another type than the form's
+  (`202401` for a `MONTH` form).
+  """
+  updateSubmissionPeriod(id: Int!, period: String!): SubmissionPayload!
+
+  """
+  Attaches the submission to another org unit; a reference submission of its previous org unit no longer is. Needs the
+  "edit submissions" permission. `errors`, on top of those of any submission edit: `NOT_FOUND` for an org unit the
+  user can't see, `INVALID` when its type isn't one of the form's.
+  """
+  updateSubmissionOrgUnit(id: Int!, orgUnitId: Int!): SubmissionPayload!
+
+  """
+  Edits the answers as ODK Collect would (JavaRosa, through odk_cli): the submission is reopened with its form
+  version, the answers are set, the calculates and the relevance are recomputed, then the whole form is checked -
+  required questions, constraints - before the new XML is saved and `content` (and `location`) re-read from it.
+  Repeat instances, metadata and the other answers are kept; the questions no longer relevant are dropped, as Collect
+  would. Not re-exported to DHIS2.
+
+  Needs the "edit submissions" permission. `errors` lists every problem at once, in the order of the form's
+  questions, each `INVALID` with its `question` and a message to show next to it - the form's own constraint message,
+  "Answer is required", "Unknown choice(s): maybe", "Not relevant", "Read only"...: on an answer
+  (`field: ["answers", "<index>", "path" or "value"]`), or on another question whose constraint the new answers
+  break (`field: ["answers"]`). Also `INVALID` for more than 1 000 answers or a question answered twice,
+  `NOT_EDITABLE` without XML file or form version, and those of any submission edit. A top-level
+  `SERVICE_UNAVAILABLE` error when the editor (odk_cli) isn't available.
+  """
+  updateSubmissionContent(id: Int!, answers: [AnswerInput!]!): SubmissionPayload!
+}
+
+type SubmissionPayload {
+  "The submission as saved, any field selectable; `null` when refused"
+  submission: Submission
+  "Every problem found, nothing saved when there is any: see each mutation for its codes"
+  errors: [SubmissionError!]!
+}
+
+input AnswerInput {
+  """
+  The question's path below the root, as in the form: `group/question`. In a repeat group, `repeat[2]/question` is
+  the 2nd repeat instance (`repeat/question` the 1st).
+  """
+  path: String!
+  "As written in the XML (`2024-01-31`, `yes`, space-separated choices...); `null` for no answer"
+  value: String
+}
+
+"A problem with a submission edit's input (see `InputError`): nothing saved when there is any."
+type SubmissionError implements InputError {
+  code: SubmissionErrorCode!
+  message: String!
+  field: [String!]!
+  "For `updateSubmissionContent`: the form question at fault"
+  question: String
+}
+
+enum SubmissionErrorCode {
+  "A submission (`id`) or an org unit (`orgUnitId`) the user can't see"
+  NOT_FOUND
+  """
+  The value is refused, the `message` says why: a period that doesn't exist or of another type than the form's, an org
+  unit of a type the form doesn't take; for answers, the form's own constraint message, "Answer is required",
+  "Unknown choice(s): ...", "Not relevant", "Read only", a question answered twice, more than 1 000 answers...
+  """
+  INVALID
+  "The submission can't be edited: deleted, locked by a user above in the pyramid, without form, XML file or form version"
+  NOT_EDITABLE
 }

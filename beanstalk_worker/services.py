@@ -216,7 +216,8 @@ class PostgresTaskService(_TaskServiceBase):
 
         if connection.in_atomic_block:
             while connection.run_on_commit:
-                sids, func = connection.run_on_commit.pop(0)
+                # `(sids, func, robust)` since Django 4.2
+                func = connection.run_on_commit.pop(0)[1]
                 func()
         count = 0
         task = self.get_queryset().filter(status=QUEUED).first()

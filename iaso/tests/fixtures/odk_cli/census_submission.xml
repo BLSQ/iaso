@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<data xmlns:jr="http://openrosa.org/javarosa" id="census" version="2024010101" iasoInstance="{id}">
+  <start>2024-01-15T10:00:00.000+01:00</start>
+  <household>
+    <population>5</population>
+    <adults>2</adults>
+    <children_count>3</children_count>
+    <vaccinated>yes</vaccinated>
+  </household>
+  <gps>5.0 5.0 100.0 3.0</gps>
+  <child>
+    <child_name>Amina</child_name>
+    <child_age>3</child_age>
+  </child>
+  <child>
+    <child_name>Ibrahim &#55357;&#56397;</child_name>
+    <child_age>3</child_age>
+  </child>
+  <meta>
+    <instanceID>uuid:2b7f3cfe-0001</instanceID>
+  </meta>
+</data>

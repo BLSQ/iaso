@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>Census</h:title>
+    <model odk:xforms-version="1.0.0">
+      <instance>
+        <data id="census" version="2024010101">
+          <start/>
+          <household>
+            <population/>
+            <adults/>
+            <children_count/>
+            <vaccinated/>
+            <reason/>
+          </household>
+          <gps/>
+          <child jr:template="">
+            <child_name/>
+            <child_age/>
+          </child>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/start" type="dateTime" jr:preload="timestamp" jr:preloadParams="start"/>
+      <bind nodeset="/data/household/population" type="int" required="true()" constraint=". &gt; 0"/>
+      <bind nodeset="/data/household/adults" type="int" constraint=". &lt;= ../population"/>
+      <bind nodeset="/data/household/children_count" type="int" calculate="../population - ../adults"/>
+      <bind nodeset="/data/household/vaccinated" type="string"/>
+      <bind nodeset="/data/household/reason" type="string" relevant="../vaccinated = 'no'"/>
+      <bind nodeset="/data/gps" type="geopoint"/>
+      <bind nodeset="/data/child/child_name" type="string"/>
+      <bind nodeset="/data/child/child_age" type="int"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/household">
+      <input ref="/data/household/population"><label>Population</label></input>
+      <input ref="/data/household/adults"><label>Adults</label></input>
+      <select1 ref="/data/household/vaccinated">
+        <label>Vaccinated</label>
+        <item><label>Yes</label><value>yes</value></item>
+        <item><label>No</label><value>no</value></item>
+      </select1>
+      <input ref="/data/household/reason"><label>Why not</label></input>
+    </group>
+    <input ref="/data/gps"><label>Location</label></input>
+    <group ref="/data/child">
+      <label>Child</label>
+      <repeat nodeset="/data/child">
+        <input ref="/data/child/child_name"><label>Name</label></input>
+        <input ref="/data/child/child_age"><label>Age</label></input>
+      </repeat>
+    </group>
+  </h:body>
+</h:html>

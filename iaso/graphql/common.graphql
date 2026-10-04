@@ -1,18 +1,20 @@
-"""
-Read-only org units, submissions and forms: the GraphQL counterpart of `/api/v3/orgunits/` and of the
-`/api/v3/instances/` design (writes stay on the v1 endpoints). One file per model, each extending `Query` with its
-own root fields (`org_units/schema.graphql`, `instances/schema.graphql`, `forms/schema.graphql`); the types shared
-by several models are here.
+# Org units, submissions and forms: the GraphQL counterpart of `/api/v3/orgunits/` and of the
+# `/api/v3/instances/` design, plus a few writes (`Mutation`): submission edits, org units bulk updates - as a
+# background `Task` (`tasks/schema.graphql`). One file per model, each extending `Query` with its
+# own root fields (`org_units/schema.graphql`, `instances/schema.graphql`, `forms/schema.graphql`); the types shared
+# by several models are here.
+#
+# Deliberately narrower than "GraphQL" usually means:
+# - The `...Filter` inputs are flat, mirroring the v3 query params: every filter at most once, all AND-ed - no
+#   AND/OR/NOT, no lookup on arbitrary fields.
+# - The types have no cycle (a `...Summary` has no relations), so the schema itself bounds the depth.
+# - At most one list of each kind per operation, and aliases only on root fields.
+# - No unbounded list below a list: an `Submission` has its `orgUnit`, an `OrgUnit` has no `submissions` - a page of org
+#   units never multiplies into their submissions.
 
-Deliberately narrower than "GraphQL" usually means:
-- The `...Filter` inputs are flat, mirroring the v3 query params: every filter at most once, all AND-ed - no
-  AND/OR/NOT, no lookup on arbitrary fields.
-- The types have no cycle (a `...Summary` has no relations), so the schema itself bounds the depth.
-- At most one list of each kind per operation, and aliases only on root fields.
-- No unbounded list below a list: an `Instance` has its `orgUnit`, an `OrgUnit` has no `instances` - a page of org
-  units never multiplies into their submissions.
-"""
 type Query
+
+type Mutation
 
 "ISO 8601 date (`2024-01-31`)"
 scalar Date
@@ -22,6 +24,13 @@ scalar DateTime
 
 "Arbitrary JSON (GeoJSON geometries)"
 scalar JSON
+
+"""
+A file, sent as a GraphQL multipart request (https://github.com/jaydenseric/graphql-multipart-request-spec): a
+`multipart/form-data` POST with the operation as JSON (`operations`, the file variable `null`), a `map` of the file parts
+to the variables, the files themselves - and a `GraphQL-Preflight: 1` header. Only as a mutation's argument.
+"""
+scalar Upload
 
 "A point: computed by PostGIS from the `location` column, only the selected coordinates."
 type Location {
@@ -39,7 +48,8 @@ input Bbox {
   maxy: Float!
 }
 
-type User {
+"A user below another object (`createdBy`, `launcher`...): no relations. The whole user: `user(id:)`."
+type UserSummary {
   id: Int!
   username: String!
   firstName: String!

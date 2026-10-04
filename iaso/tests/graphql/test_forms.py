@@ -1,15 +1,9 @@
-import re
-
-from django.db import connection
-from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
-from iaso.test import APITestCase
+from iaso.tests.graphql.base import GraphQLTestCase
 
-
-URL = "/api/graphql/"
 
 DESCRIPTOR = {
     "name": "census",
@@ -18,16 +12,19 @@ DESCRIPTOR = {
 }
 
 
-class FormGraphQLTestCase(APITestCase):
-    """A census (two versions, monthly, single per period) and a survey (no version yet) of a Star Wars project, a
-    deleted form, a form of a project the user isn't restricted to, and a Marvel form they must never see."""
+class FormGraphQLTestCase(GraphQLTestCase):
+    """A census (two versions, monthly, single per period) and a survey (no version yet) of a Ministry of Health
+    project, a deleted form, a form of a project the user isn't restricted to, and a Partner NGO form they must never
+    see."""
 
     @classmethod
     def setUpTestData(cls):
-        star_wars = m.Account.objects.create(name="Star Wars")
-        cls.project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.hydroponics", account=star_wars)
-        cls.other_project = m.Project.objects.create(name="Moisture farms", app_id="stars.moisture", account=star_wars)
-        cls.country_type = m.OrgUnitType.objects.create(name="Country", short_name="Cnt")
+        moh = m.Account.objects.create(name="Ministry of Health")
+        cls.project = m.Project.objects.create(name="Health facility monitoring", app_id="hf.monitoring", account=moh)
+        cls.other_project = m.Project.objects.create(
+            name="Vaccination campaign", app_id="vaccination.campaign", account=moh
+        )
+        cls.country_type = m.OrgUnitType.objects.create(name="Country", short_name="CTY")
 
         cls.census = m.Form.objects.create(
             name="Census",
@@ -43,12 +40,12 @@ class FormGraphQLTestCase(APITestCase):
         cls.survey.projects.add(cls.project)
         cls.deleted = m.Form.objects.create(name="Old census", deleted_at=timezone.now())
         cls.deleted.projects.add(cls.project)
-        cls.farm_form = m.Form.objects.create(name="Farm inventory")
-        cls.farm_form.projects.add(cls.other_project)
+        cls.tally_form = m.Form.objects.create(name="Vaccination campaign tally")
+        cls.tally_form.projects.add(cls.other_project)
 
-        cls.user = cls.create_user_with_profile(username="padme", account=star_wars)
+        cls.user = cls.create_user_with_profile(username="data_manager", account=moh)
         cls.submitter = cls.create_user_with_profile(
-            username="anakin", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
+            username="health_worker", account=moh, permissions=[CORE_SUBMISSIONS_PERMISSION]
         )
         cls.v1 = m.FormVersion.objects.create(
             form=cls.census, version_id="2024010101", file="forms/census_1.xml", created_by=cls.user
@@ -58,11 +55,13 @@ class FormGraphQLTestCase(APITestCase):
         )
         m.FormVersion.objects.create(form=cls.deleted, version_id="1")
 
-        marvel = m.Account.objects.create(name="MCU")
-        marvel_project = m.Project.objects.create(name="Wakanda outreach", app_id="marvel.app", account=marvel)
-        cls.marvel_form = m.Form.objects.create(name="Vibranium census")
-        cls.marvel_form.projects.add(marvel_project)
-        cls.marvel_version = m.FormVersion.objects.create(form=cls.marvel_form, version_id="1")
+        partner_ngo = m.Account.objects.create(name="Partner NGO")
+        partner_project = m.Project.objects.create(
+            name="Partner outreach", app_id="partner.outreach", account=partner_ngo
+        )
+        cls.partner_form = m.Form.objects.create(name="Partner household census")
+        cls.partner_form.projects.add(partner_project)
+        cls.partner_version = m.FormVersion.objects.create(form=cls.partner_form, version_id="1")
 
         form = m.Form.objects.create(name="Census submissions")
         form.projects.add(cls.project)
@@ -74,23 +73,8 @@ class FormGraphQLTestCase(APITestCase):
         super().setUp()
         self.client.force_authenticate(self.user)
 
-    def data(self, query, variables=None):
-        response = self.client.post(URL, {"query": query, "variables": variables or {}}, format="json")
-        body = response.json()
-        self.assertNotIn("errors", body, body.get("errors"))
-        return body["data"]
-
-    def error(self, query, variables=None):
-        body = self.client.post(URL, {"query": query, "variables": variables or {}}, format="json").json()
-        self.assertIn("errors", body)
-        return body["errors"][0]["message"]
-
-    def forms(self, selection="name", filters=None, **arguments):
-        query = (
-            "query ($filters: FormFilter, $limit: Int!) "
-            f"{{ forms(filters: $filters, limit: $limit) {{ items {{ {selection} }} }} }}"
-        )
-        return self.data(query, {"filters": filters or {}, "limit": arguments.get("limit", 100)})["forms"]["items"]
+    def forms(self, selection="name", filters=None):
+        return self.items("forms", selection, filters=filters or {})
 
     def names(self, filters=None):
         return [row["name"] for row in self.forms("name", filters)]
@@ -98,15 +82,14 @@ class FormGraphQLTestCase(APITestCase):
     # -- scope --
 
     def test_only_the_accounts_forms_without_deleted_ones(self):
-        self.assertEqual(self.names(), ["Census", "Survey", "Farm inventory", "Census submissions"])
-        query = "query ($id: Int!) { form(id: $id) { name } }"
-        self.assertIsNone(self.data(query, {"id": self.marvel_form.id})["form"])
-        self.assertIsNone(self.data(query, {"id": self.deleted.id})["form"])
+        self.assertEqual(self.names(), ["Census", "Survey", "Vaccination campaign tally", "Census submissions"])
+        self.assertIsNone(self.row("form", self.partner_form.id, "name"))
+        self.assertIsNone(self.row("form", self.deleted.id, "name"))
 
     def test_restricted_to_the_users_projects(self):
         self.user.iaso_profile.projects.set([self.other_project])
         self.client.force_authenticate(m.User.objects.get(pk=self.user.pk))  # a fresh profile, no cached projects
-        self.assertEqual(self.names(), ["Census", "Farm inventory"])
+        self.assertEqual(self.names(), ["Census", "Vaccination campaign tally"])
 
     # -- fields --
 
@@ -136,26 +119,31 @@ class FormGraphQLTestCase(APITestCase):
             "name projects { name } orgUnitTypes { name } latestVersion { versionId } "
             "versions { versionId startPeriod createdBy { username } }"
         )
-        with CaptureQueriesContext(connection) as context:
-            rows = {row["name"]: row for row in self.forms(selection)}
+        profiler, forms = self.profiled(lambda: self.forms(selection))
+        rows = {row["name"]: row for row in forms}
         census = rows["Census"]
-        self.assertEqual(census["projects"], [{"name": "Hydroponic gardens"}, {"name": "Moisture farms"}])
+        self.assertEqual(census["projects"], [{"name": "Health facility monitoring"}, {"name": "Vaccination campaign"}])
         self.assertEqual(census["orgUnitTypes"], [{"name": "Country"}])
         self.assertEqual(census["latestVersion"], {"versionId": "2024020101"})
         self.assertEqual(
             census["versions"],
             [
                 {"versionId": "2024020101", "startPeriod": "202402", "createdBy": None},
-                {"versionId": "2024010101", "startPeriod": None, "createdBy": {"username": "padme"}},
+                {"versionId": "2024010101", "startPeriod": None, "createdBy": {"username": "data_manager"}},
             ],
         )
         self.assertIsNone(rows["Survey"]["latestVersion"])
         self.assertEqual(rows["Survey"]["versions"], [])
         # the forms, then one query per list for the whole page
-        form_queries = [
-            q["sql"] for q in context.captured_queries if re.search(r"iaso_form|iaso_project_forms", q["sql"])
-        ]
-        self.assertEqual(len(form_queries), 5, form_queries)
+        with profiler.report_on_failure():
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_form": 1,
+                    "iaso_formversion": 2,  # `versions`, `latestVersion`
+                    "iaso_orgunittype": 1,
+                    "iaso_project": 2,  # the forms' account scoping, `projects`
+                }
+            )
 
     def test_versions_lower_the_limit(self):
         self.assertIn(
@@ -174,28 +162,27 @@ class FormGraphQLTestCase(APITestCase):
         # linked to both projects, listed once
         self.assertEqual(
             self.names({"projectIdIn": [self.project.id, self.other_project.id]}),
-            ["Census", "Survey", "Farm inventory", "Census submissions"],
+            ["Census", "Survey", "Vaccination campaign tally", "Census submissions"],
         )
-        self.assertEqual(self.names({"projectId": self.other_project.id}), ["Census", "Farm inventory"])
+        self.assertEqual(self.names({"projectId": self.other_project.id}), ["Census", "Vaccination campaign tally"])
 
     # -- form versions --
 
     def test_form_versions(self):
-        query = "query ($filters: FormVersionFilter) { formVersions(filters: $filters) { items { versionId form { name odkFormId } fileUrl } } }"
-        items = self.data(query, {"filters": {}})["formVersions"]["items"]
+        selection = "versionId form { name odkFormId } fileUrl"
+        items = self.items("formVersions", selection, filters={})
         # newest first, nor the deleted form's version nor the other account's
         self.assertEqual([row["versionId"] for row in items], ["2024020101", "2024010101"])
         self.assertEqual(items[0]["form"], {"name": "Census", "odkFormId": "census"})
         self.assertIsNone(items[0]["fileUrl"])
         self.assertIn("census_1.xml", items[1]["fileUrl"])
-        filtered = self.data(query, {"filters": {"versionId": "2024010101"}})["formVersions"]["items"]
+        filtered = self.items("formVersions", selection, filters={"versionId": "2024010101"})
         self.assertEqual([row["versionId"] for row in filtered], ["2024010101"])
-        single = "query ($id: Int!) { formVersion(id: $id) { versionId formDescriptor } }"
         self.assertEqual(
-            self.data(single, {"id": self.v2.id})["formVersion"],
+            self.row("formVersion", self.v2.id, "versionId formDescriptor"),
             {"versionId": "2024020101", "formDescriptor": DESCRIPTOR},
         )
-        self.assertIsNone(self.data(single, {"id": self.marvel_version.id})["formVersion"])
+        self.assertIsNone(self.row("formVersion", self.partner_version.id, "versionId formDescriptor"))
 
     def test_form_descriptor_lowers_the_limit(self):
         message = self.error("{ formVersions(limit: 500) { items { formDescriptor } } }")
@@ -203,11 +190,8 @@ class FormGraphQLTestCase(APITestCase):
 
     def test_instance_form_and_version(self):
         self.client.force_authenticate(self.submitter)
-        query = (
-            "query ($id: Int!) { instance(id: $id) { form { name periodType } formVersion { versionId startPeriod } } }"
-        )
         self.assertEqual(
-            self.data(query, {"id": self.instance.id})["instance"],
+            self.row("submission", self.instance.id, "form { name periodType } formVersion { versionId startPeriod }"),
             {
                 "form": {"name": "Census", "periodType": "MONTH"},
                 "formVersion": {"versionId": "2024020101", "startPeriod": "202402"},

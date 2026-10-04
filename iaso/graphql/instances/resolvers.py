@@ -43,6 +43,11 @@ def visible_instances(info: GraphQLResolveInfo) -> QuerySet:
     user = requesting_user(info)
     if not any(user.has_perm(permission.full_name()) for permission in READ_PERMISSIONS):
         raise GraphQLError("You do not have permission to see submissions.", extensions={"code": "FORBIDDEN"})
+    return instances_of(user)
+
+
+def instances_of(user) -> QuerySet:
+    """The submissions in `user`'s scope, whatever their permissions (checked by the caller)."""
     return (
         Instance.objects.filter_for_user(user)
         .filter_on_user_projects(user=user)
@@ -50,7 +55,7 @@ def visible_instances(info: GraphQLResolveInfo) -> QuerySet:
     )
 
 
-@query.field("instances")
+@query.field("submissions")
 def resolve_instances(
     _, info: GraphQLResolveInfo, limit: int, offset: int, filters: Optional[Dict[str, Any]] = None, order=None
 ):
@@ -72,7 +77,7 @@ def resolve_instances(
     return page
 
 
-@query.field("instance")
+@query.field("submission")
 def resolve_instance(_, info: GraphQLResolveInfo, id: int):
     """Deleted ones included: a link to a submission keeps working after it's deleted, `deleted` tells."""
     return load_selected(visible_instances(info), selection_tree(info)).filter(pk=id).order_by().first()

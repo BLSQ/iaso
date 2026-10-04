@@ -3,7 +3,7 @@
 from ariadne import ObjectType
 
 
-instance = ObjectType("Instance")
+instance = ObjectType("Submission")
 
 
 @instance.field("location")
@@ -26,7 +26,7 @@ def resolve_org_unit(instance, _info):
     return org_unit
 
 
-instance_org_unit = ObjectType("InstanceOrgUnit")
+instance_org_unit = ObjectType("SubmissionOrgUnit")
 
 
 @instance_org_unit.field("ancestors")

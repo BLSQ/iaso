@@ -452,3 +452,47 @@ class QueryProfilerTest(TestCase):
                 self.assertEqual(out.getvalue().count("Total queries: 1"), 1)
                 with open(os.path.join(tmp_media_root, "query_reports", "report.md")) as f:
                     self.assertEqual(f.read(), profiler.to_markdown(title="Forced report"))
+
+    def test_assert_same_query_counts_passes_for_the_same_queries(self):
+        with QueryProfiler() as small:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+        with QueryProfiler() as big:
+            m.Account.objects.filter(pk=MISSING_PK - 1).exists()
+
+        big.assertSameQueryCounts(small)
+
+    def test_assert_same_query_counts_lists_every_table_that_grew(self):
+        with QueryProfiler() as small:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+        with QueryProfiler() as big:
+            # one query per row: the N+1 this assertion catches
+            for pk in (MISSING_PK, MISSING_PK - 1):
+                m.Account.objects.filter(pk=pk).exists()
+                m.Project.objects.filter(pk=pk).exists()
+
+        with self.assertRaises(AssertionError) as cm:
+            big.assertSameQueryCounts(small)
+        self.assertEqual(
+            str(cm.exception),
+            "Query counts differ:\n"
+            "iaso_account: 2 here, 1 in the other run\n"
+            "iaso_project: 2 here, 0 in the other run\n"
+            "total: 4 here, 1 in the other run",
+        )
+
+    def test_assert_same_query_counts_exclude_skips_tables(self):
+        with QueryProfiler() as small:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+        with QueryProfiler() as big:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            m.Project.objects.filter(pk=MISSING_PK).exists()
+
+        big.assertSameQueryCounts(small, exclude=["iaso_project"])
+
+    def test_table_counts_count_a_table_once_per_query(self):
+        with QueryProfiler() as profiler:
+            # one query, reading iaso_project twice (the outer query and a subquery)
+            m.Project.objects.filter(pk__in=m.Project.objects.filter(pk=MISSING_PK).values("pk")).exists()
+
+        self.assertEqual(profiler.table_counts()["iaso_project"], 1)
+        self.assertEqual(profiler.total_queries(), 1)

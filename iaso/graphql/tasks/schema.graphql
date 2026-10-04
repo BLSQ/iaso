@@ -1,0 +1,59 @@
+extend type Query {
+  """
+  `null` if it doesn't exist, belongs to another account, or was launched by someone else and the user doesn't have
+  the "data tasks" permission. Polled to follow a task a mutation queued (`bulkUpdateOrgUnits`).
+  """
+  task(id: Int!): Task
+
+  """
+  The messages the task reported, oldest first: the progress messages `progressMessage` only shows the last of.
+  Pass the last `id` received as `afterId` to only get the new ones. Same visibility as `task`: empty otherwise.
+  """
+  taskLogs(
+    taskId: Int!
+    afterId: Int
+    "1-1 000"
+    limit: Int! = 100
+  ): [TaskLog!]!
+}
+
+enum TaskStatus {
+  QUEUED
+  RUNNING
+  EXPORTED
+  ERRORED
+  SKIPPED
+  KILLED
+  SUCCESS
+}
+
+type Task {
+  id: Int!
+  name: String!
+  status: TaskStatus!
+  "Out of `endValue`: both 0 until the task reports some progress"
+  progressValue: Int!
+  endValue: Int!
+  "The last one reported, the error's message on a failure"
+  progressMessage: String
+  "As the task reported it, `{result, message}` or `{result, data}`, plus `stack_trace` on a failure"
+  result: JSON
+  createdAt: DateTime!
+  startedAt: DateTime
+  endedAt: DateTime
+  "Asked to stop: the task stops at its next progress report"
+  shouldBeKilled: Boolean!
+  """
+  Why the task refused its input, when it ended `ERRORED` because of it (a move under a descendant, a read-only
+  source...): as a mutation's `errors`, nothing done. Empty otherwise, a crash included (see `progressMessage`).
+  """
+  errors: [InputError!]!
+  createdBy: UserSummary
+  launcher: UserSummary
+}
+
+type TaskLog {
+  id: Int!
+  message: String!
+  createdAt: DateTime!
+}

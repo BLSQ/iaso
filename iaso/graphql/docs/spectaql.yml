@@ -1,0 +1,163 @@
+# SpectaQL configuration of the GraphQL reference served at `/api/graphql/docs/` (`iaso/graphql/views.py`).
+# Built by `npm run graphql-docs` straight from the `.graphql` files (no Django needed): the prod image builds it in
+# its node stage. The types, fields and arguments are documented by their descriptions in the `.graphql` files;
+# the concepts by the `x-introItems` below.
+spectaql:
+  targetDir: ./hat/assets/graphql
+  targetFile: docs.html
+  oneFile: true
+  embeddable: false
+  # the default theme, with the reference grouped by model: see `theme/data/index.mjs`
+  themeDir: ./iaso/graphql/docs/theme
+
+introspection:
+  schemaFile:
+    - ./iaso/graphql/*.graphql
+    - ./iaso/graphql/*/schema.graphql
+  # built by `examples.mjs` (run first by `npm run graphql-docs`)
+  metadataFile: ./hat/assets/graphql/examples.json
+  queryNameStrategy: capitalizeFirst
+  fieldExpansionDepth: 2
+
+info:
+  title: IASO GraphQL API
+  # required by SpectaQL, which wants an absolute URL: the host depends on the deployment
+  x-url: https://your-iaso-server/api/graphql/
+  description: |
+    Org units, submissions and forms, read with one request selecting exactly the fields needed, plus a few writes:
+    submission edits and org units bulk updates.
+
+    The endpoint is `POST /api/graphql/` with a JSON body `{"query": "...", "variables": {...}}`. To try queries,
+    open `/api/graphql/` in a browser while logged in.
+  x-introItems:
+    - title: Authentication
+      description: |
+        The same as the REST API: the session cookie of a logged-in browser, or a JWT
+        (`Authorization: Bearer <token>`, from `/api/token/`). Requests must be `Content-Type: application/json`.
+        Everything is scoped to the requesting user: their account, the org units and projects they are restricted
+        to. An object the user can't see is reported as missing, never as forbidden.
+    - title: Main concepts
+      description: |
+        - **OrgUnit**: a node of the pyramid (country, region, district, health facility...), with its type,
+          parent, groups, validation status and geometry. `orgUnits` lists them, `orgUnit(id)` reads one.
+        - **Submission**: the answers (`content`) sent for a form, attached to an org unit and a period.
+          `submissions` / `submission(id)`; edited with the `updateSubmission...` mutations.
+        - **Form** / **FormVersion**: what submissions answer. `forms`, `formVersions`.
+        - **Task**: a background job queued by a mutation (`bulkUpdateOrgUnits`), followed with `task(id)` and
+          `taskLogs(taskId)`.
+    - title: Filters, paging and ordering
+      description: |
+        Lists take a flat `filters` input, one field per filter (`nameIContains`, `orgUnitTypeId`, `idIn`...): the
+        items match all those given (AND), each one at most once. Pages are `limit`/`offset`; `hasNextPage` is cheap,
+        `totalCount` runs a `COUNT(*)` only when selected. `order` takes a list, `id` is always appended so that
+        pages stay stable.
+
+        ```graphql
+        query {
+          orgUnits(filters: {validationStatus: VALID, ancestorId: 12}, order: [NAME], limit: 50) {
+            items { id name orgUnitType { name } parent { name } }
+            hasNextPage
+          }
+        }
+        ```
+    - title: Limits
+      description: |
+        At most one list of each kind and 10 root fields per operation, aliases only on root fields, 2 000 tokens
+        per document, 10 seconds per SQL statement. The page size caps depend on the fields selected (geometries,
+        counts): see each `limit` argument.
+    - title: Errors
+      description: |
+        Two kinds:
+
+        - **A refused input.** A mutation returns every problem it found in its payload's `errors`, as a form shows
+          all its invalid fields at once, and saves nothing. Each mutation has its own error type -
+          [`FormVersionError`](#definition-FormVersionError), [`SubmissionError`](#definition-SubmissionError),
+          [`OrgUnitBulkUpdateError`](#definition-OrgUnitBulkUpdateError) - of the same shape
+          ([`InputError`](#definition-InputError), with the meaning of every code): a `code` among the few it can
+          return (its `...ErrorCode` enum: stable, to branch on), a `message` (for people), the `field` of the input
+          at fault (`["answers", "0", "value"]`) and, for a form, the `question`. A task refusing its input
+          (`bulkUpdateOrgUnits`) ends `ERRORED` with the same errors in `Task.errors`
+          (`errors { message field ... on OrgUnitBulkUpdateError { code } }`).
+          Some changes need a confirmation instead: `createFormVersion` returns the structural changes it found as
+          `warnings` (questions removed or retyped, the entity workflows reading them) and creates the version only
+          with `force: true` - else `UNCONFIRMED_CHANGES`.
+        - **Anything else**, in the top-level `errors`, with `extensions.code`: `UNAUTHENTICATED`, `FORBIDDEN` (a
+          missing permission), `BAD_USER_INPUT` (a query's argument: a `limit` out of range, an invalid filter),
+          `QUERY_TIMEOUT` (over 10 seconds: narrow the filters or the selection), `GRAPHQL_VALIDATION_FAILED` (a
+          malformed operation, or over the limits), `SERVICE_UNAVAILABLE`, `INTERNAL_SERVER_ERROR`.
+
+        ```graphql
+        mutation {
+          updateSubmissionContent(id: 98231, answers: [{path: "household/adults", value: "9"}]) {
+            submission { id }
+            errors { code message field question }
+          }
+        }
+        ```
+
+        ```json
+        {
+          "data": {
+            "updateSubmissionContent": {
+              "submission": null,
+              "errors": [
+                {
+                  "code": "INVALID",
+                  "message": "More adults than people in the household",
+                  "field": ["answers", "0", "value"],
+                  "question": "household/adults"
+                }
+              ]
+            }
+          }
+        }
+        ```
+
+        Several mutations in one operation run one after the other, each on its own: a refused one doesn't undo
+        the others.
+    - title: Bulk updates and tasks
+      description: |
+        `bulkUpdateOrgUnits` queues a task and returns it right away. Its filters are applied when the task runs: to
+        update exactly the org units you selected, pass their ids (`idIn`, up to 1 000 per call). Poll the task until
+        its `status` is `SUCCESS`, `ERRORED` or `KILLED`:
+
+        ```graphql
+        mutation {
+          bulkUpdateOrgUnits(filters: {idIn: [1287, 1291, 1302]}, update: {validationStatus: VALID}) {
+            task { id status }
+            errors { code message field }
+          }
+        }
+
+        query ($id: Int!, $afterId: Int) {
+          task(id: $id) {
+            status progressValue endValue progressMessage result
+            errors { message ... on OrgUnitBulkUpdateError { code } }
+          }
+          taskLogs(taskId: $id, afterId: $afterId) { id message }
+        }
+        ```
+    - title: Uploading a file
+      description: |
+        A file (`Upload`: the XLSForm of `createFormVersion`) is sent as a
+        [GraphQL multipart request](https://github.com/jaydenseric/graphql-multipart-request-spec), which Apollo
+        Client, urql or Altair support: a `multipart/form-data` POST with three kinds of parts:
+
+        - `operations`: the operation as usual, the file's variable `null`;
+        - `map`: which part goes in which variable;
+        - the files themselves.
+
+        It also needs a `GraphQL-Preflight: 1` header: a request without it is refused, so that another site can't
+        upload with your session.
+
+        ```shell
+        curl https://your-iaso-server/api/graphql/ \
+          -H "Authorization: Bearer $TOKEN" \
+          -H "GraphQL-Preflight: 1" \
+          -F operations='{
+            "query": "mutation ($file: Upload!) { createFormVersion(formId: 7, xlsFile: $file) { formVersion { id versionId } errors { code message field question } } }",
+            "variables": {"file": null}
+          }' \
+          -F map='{"0": ["variables.file"]}' \
+          -F 0=@monthly_hf_report.xlsx
+        ```

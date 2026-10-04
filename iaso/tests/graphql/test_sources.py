@@ -126,8 +126,8 @@ class SourcesGraphQLTestCase(GraphQLTestCase):
         self.assertIsNone(self.row("dataSource", self.partner_registry.id, selection))
 
     def test_versions_lower_the_limit(self):
-        body = self.execute("{ dataSources(limit: 500) { items { versions { id } } } }")
-        self.assertIn("limit must be between 1 and 100 when selecting versions", body["errors"][0]["message"])
+        message = self.error("{ dataSources(limit: 500) { items { versions { id } } } }")
+        self.assertIn("limit must be between 1 and 100 when selecting versions", message)
 
     # -- sourceVersions --
 

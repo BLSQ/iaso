@@ -7,10 +7,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
-from iaso.test import APITestCase
+from iaso.tests.graphql.base import URL, GraphQLTestCase
 
 
-URL = "/api/graphql/"
 FIXTURES = "iaso/tests/fixtures"
 
 CREATE = """
@@ -26,7 +25,7 @@ mutation ($formId: Int!, $xlsFile: Upload!, $startPeriod: String, $endPeriod: St
 """
 
 
-class FormVersionMutationSetUp(APITestCase):
+class FormVersionMutationSetUp(GraphQLTestCase):
     """A monthly form of the Ministry of Health, given a version by the national admin."""
 
     @classmethod

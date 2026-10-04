@@ -14,10 +14,9 @@ from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.graphql.instances.mutations import MAX_ANSWERS
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
-from iaso.test import APITestCase
+from iaso.tests.graphql.base import URL, GraphQLTestCase
+from iaso.tests.graphql.fixtures import health_account
 
-
-URL = "/api/graphql/"
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "odk_cli"
 
@@ -50,19 +49,15 @@ DESCRIPTOR = {
 }
 
 
-class InstanceMutationsSetUp(APITestCase):
+class InstanceMutationsSetUp(GraphQLTestCase):
     """A monthly census of districts, edited by a district supervisor restricted to the North Region: never the
     River District, outside it."""
 
     @classmethod
     def setUpTestData(cls):
-        account = m.Account.objects.create(name="Ministry of Health")
-        cls.project = project = m.Project.objects.create(name="Census", app_id="census", account=account)
-        source = m.DataSource.objects.create(name="National health facility registry")
-        source.projects.add(project)
-        version = m.SourceVersion.objects.create(data_source=source, number=1)
-        account.default_version = version
-        account.save()
+        health = health_account(project="Census", app_id="census")
+        account, version = health.account, health.version
+        cls.project = project = health.project
 
         cls.region_type = m.OrgUnitType.objects.create(name="Region")
         cls.district_type = m.OrgUnitType.objects.create(name="District")
@@ -123,18 +118,10 @@ class InstanceMutationsSetUp(APITestCase):
 
     # -- helpers --
 
-    def execute(self, query, variables):
-        response = self.client.post(URL, {"query": query, "variables": variables}, format="json")
-        self.assertIn(response.status_code, (200, 400), response.content)
-        return response.json()
-
     def mutate(self, mutation, selection="id", **arguments):
-        declarations = {"id": "Int!", "period": "String!", "orgUnitId": "Int!", "answers": "[AnswerInput!]!"}
         variables = {"id": self.instance.id, **arguments}
-        signature = ", ".join(f"${name}: {declarations[name]}" for name in variables)
-        call = ", ".join(f"{name}: ${name}" for name in variables)
         returned = f"submission {{ {selection} }} errors {{ code message field question }}"
-        return self.execute(f"mutation ({signature}) {{ {mutation}({call}) {{ {returned} }} }}", variables)
+        return self.execute(self.operation(mutation, returned, **variables), variables)
 
     def updated(self, mutation, selection="id", **arguments):
         body = self.mutate(mutation, selection, **arguments)

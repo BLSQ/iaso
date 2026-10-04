@@ -6,14 +6,13 @@ from unittest import mock
 from django.test import override_settings
 
 from iaso import models as m
-from iaso.test import APITestCase
+from iaso.tests.graphql.base import URL, GraphQLTestCase
 
 
-URL = "/api/graphql/"
 LOGGER = "iaso.graphql.operations"
 
 
-class OperationLogTestCase(APITestCase):
+class OperationLogTestCase(GraphQLTestCase):
     """The `graphql.start`/`graphql.end` JSON lines of `iaso.graphql.monitoring`."""
 
     @classmethod

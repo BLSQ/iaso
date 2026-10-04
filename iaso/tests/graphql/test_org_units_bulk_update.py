@@ -350,8 +350,7 @@ class OrgUnitsBulkUpdateTestCase(GraphQLTestCase):
     def test_one_per_operation(self):
         body = self.execute(
             "mutation { a: bulkUpdateOrgUnits(filters: {}, update: {validationStatus: VALID}) { errors { code } } "
-            "b: bulkUpdateOrgUnits(filters: {}, update: {validationStatus: NEW}) { errors { code } } }",
-            {},
+            "b: bulkUpdateOrgUnits(filters: {}, update: {validationStatus: NEW}) { errors { code } } }"
         )
         self.assertIn("At most 1 `bulkUpdateOrgUnits` per operation", body["errors"][0]["message"])
         self.assertFalse(m.Task.objects.exists())

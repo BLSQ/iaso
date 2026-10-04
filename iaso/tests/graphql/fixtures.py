@@ -1,6 +1,6 @@
-"""The health world the GraphQL tests run on: what nearly every test builds the same way - an account with its project,
-data source and default version, the four levels of the pyramid. Each test then builds its own org units, forms and
-users on top: its assertions depend on them."""
+"""The health world the GraphQL tests run on: what most tests build the same way - an account with its project, data
+source and default version. Each test then builds its own org unit types, org units, forms and users on top: its
+assertions depend on them."""
 
 from dataclasses import dataclass
 
@@ -30,29 +30,3 @@ def health_account(
     account.default_version = version
     account.save()
     return HealthAccount(account, health_project, data_source, version)
-
-
-@dataclass
-class PyramidTypes:
-    country: m.OrgUnitType
-    region: m.OrgUnitType
-    district: m.OrgUnitType
-    health_facility: m.OrgUnitType
-
-
-def pyramid_types(*projects: m.Project) -> PyramidTypes:
-    """Country > Region > District > Health facility, each a sub-unit type of the one above, linked to `projects`."""
-    levels = [
-        ("Country", "CTY", "COUNTRY"),
-        ("Region", "REG", "REGION"),
-        ("District", "DIS", "DISTRICT"),
-        ("Health facility", "HF", "HF"),
-    ]
-    types = []
-    for depth, (name, short_name, category) in enumerate(levels):
-        org_unit_type = m.OrgUnitType.objects.create(name=name, short_name=short_name, category=category, depth=depth)
-        org_unit_type.projects.add(*projects)
-        if types:
-            types[-1].sub_unit_types.add(org_unit_type)
-        types.append(org_unit_type)
-    return PyramidTypes(*types)

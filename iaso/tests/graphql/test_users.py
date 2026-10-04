@@ -136,8 +136,8 @@ class UsersGraphQLTestCase(GraphQLTestCase):
         )
 
     def test_lists_lower_the_limit(self):
-        body = self.execute("{ users(limit: 500) { items { orgUnits { id } } } }")
-        self.assertIn("limit must be between 1 and 100 when selecting orgUnits", body["errors"][0]["message"])
+        message = self.error("{ users(limit: 500) { items { orgUnits { id } } } }")
+        self.assertIn("limit must be between 1 and 100 when selecting orgUnits", message)
 
     def test_no_query_per_user(self):
         selection = "username language phoneNumber profileId projects { name } orgUnits { name }"

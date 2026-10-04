@@ -4,19 +4,21 @@ Code: `iaso/graphql/`. Endpoint: `POST /api/graphql/`. Reference: `/api/graphql/
 
 ## Decisions
 
-### GraphQL is the default API
+### GraphQL alongside REST (proposal)
 
-- New API work goes to GraphQL: new models, new fields, new screens, new integrations.
-- Why: clients select exactly the fields they need, in one request. No `?fields=` conventions, no N endpoints per
-  screen, no per-client serializers.
-- REST is frozen: bug fixes and security only, no new endpoints or fields. A REST endpoint is removed once nothing
-  calls it (check the access logs).
-- REST stays for what isn't a JSON API:
+This is a proof of concept, not an adopted decision. If the team goes ahead, the suggested direction is:
+
+- Consider GraphQL for new read-heavy screens and integrations where clients need flexible field selection.
+- Why it can help: clients select the fields they need, in one request, instead of relying on `?fields=`
+  conventions, several endpoints per screen, or per-client serializers.
+- REST keeps working as today. Whether to slow down new REST endpoints, and when (if ever) to retire existing ones,
+  is a separate decision to take once GraphQL has proven itself in production.
+- REST remains the better fit for what isn't a JSON API:
   - file downloads and exports (CSV, XLSX, GPKG);
-  - the mobile app's sync endpoints (`/api/mobile/...`), until the app moves;
+  - the mobile app's sync endpoints (`/api/mobile/...`);
   - endpoints third parties are bound to (DHIS2, FHIR, webhooks).
-- Supersedes [ADR 0000](../../../decisions/0000-use-one-api-endpoint-per-operation.md) (one endpoint per
-  operation). Its goal (no single point of failure) is kept by:
+- This would need to be reconciled with [ADR 0000](../../../decisions/0000-use-one-api-endpoint-per-operation.md)
+  (one endpoint per operation), likely through a new ADR. Its goal (no single point of failure) could be kept by:
   - one root field per use case (`orgUnits`, `submissions`, `bulkUpdateOrgUnits`...), each with its own code;
   - per-operation limits and monitoring (below), so one heavy operation can't hide behind the shared URL.
 

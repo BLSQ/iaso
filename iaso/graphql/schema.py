@@ -20,6 +20,7 @@ from .errors import input_error
 from .forms.mutations import mutation as forms_mutation
 from .forms.resolvers import query as forms_query
 from .forms.types import form, form_summary, form_version
+from .instances.attachments import query as attachments_query, submission_attachment
 from .instances.mutations import mutation as instances_mutation
 from .instances.resolvers import query as instances_query
 from .instances.types import instance, instance_org_unit
@@ -88,6 +89,8 @@ schema = make_executable_schema(
     instances_mutation,
     instance,
     instance_org_unit,
+    attachments_query,
+    submission_attachment,
     forms_query,
     forms_mutation,
     form,

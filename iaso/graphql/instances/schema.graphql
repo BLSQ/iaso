@@ -14,6 +14,84 @@ extend type Query {
 
   "`null` if it doesn't exist or isn't visible to the requesting user. Deleted ones included, see `deleted`."
   submission(id: Int!): Submission
+
+  """
+  The files sent with the submissions `submission(id:)` shows - those of deleted submissions included -, oldest
+  first (`ID`) unless `order` says otherwise. Same permissions as `submissions`. Those of one submission:
+  `filters: {submissionId: ...}`.
+  """
+  submissionAttachments(
+    filters: SubmissionAttachmentFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [SubmissionAttachmentOrder!]
+    "1-1 000"
+    limit: Int! = 100
+    offset: Int! = 0
+  ): SubmissionAttachmentPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  submissionAttachment(id: Int!): SubmissionAttachment
+}
+
+type SubmissionAttachmentPage {
+  items: [SubmissionAttachment!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+"From the file's extension, as the web UI's filters."
+enum AttachmentType {
+  "jpg, jpeg, png, gif, bmp, tiff, webp"
+  IMAGE
+  "mp4, mov"
+  VIDEO
+  "pdf, doc, docx, xls, xlsx, csv, txt"
+  DOCUMENT
+  "Any other extension (audio...), or none"
+  OTHER
+}
+
+enum SubmissionAttachmentOrder {
+  ID
+  ID_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+}
+
+"""
+A file sent with a submission - a photo, a video, a document... -, ODK's "submission attachment". Its `name` is the
+answer of its question in the submission's `content`. Not the submission's XML file itself (`Submission.fileName`).
+"""
+type SubmissionAttachment {
+  id: Int!
+  "The file name, as given in the submission's `content`"
+  name: String
+  "Where to download it: `null` without a stored file"
+  url: String
+  type: AttachmentType!
+  "Received by IASO (server clock)"
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  submissionId: Int
+}
+
+"The attachments matching all the filters given (AND), each one at most once."
+input SubmissionAttachmentFilter {
+  id: Int
+  idIn: [Int!]
+  submissionId: Int
+  submissionIdIn: [Int!]
+  "Of the submissions of this form"
+  formId: Int
+  "Of the submissions of this org unit (not its descendants)"
+  orgUnitId: Int
+  nameIContains: String
+  type: AttachmentType
+  typeIn: [AttachmentType!]
+  createdAtGte: DateTime
+  createdAtLte: DateTime
 }
 
 type SubmissionPage {

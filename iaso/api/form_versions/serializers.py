@@ -9,9 +9,9 @@ from rest_framework.fields import Field
 
 from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import TimestampField
+from iaso.api.form_versions.configuration_impacts.common import ConfigurationImpactKind
 from iaso.api.forms.permissions import HasFormPermission
 from iaso.models import Form, FormVersion
-from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.odk import parsing, validate_xls_form
 
 
@@ -239,18 +239,19 @@ class ModifiedQuestionSerializer(serializers.Serializer):
     new_type = serializers.CharField()
 
 
-class WorkflowImpactSerializer(serializers.Serializer):
-    """A removed or modified question an entity workflow reads (`compute_workflow_impacts`)."""
+class ConfigurationImpactSerializer(serializers.Serializer):
+    """A removed or modified question some configuration reads (`configuration_impacts.common.impact()`)."""
 
-    kind = serializers.ChoiceField(choices=["follow_up_condition", "change_mapping"])
+    kind = serializers.ChoiceField(choices=ConfigurationImpactKind.choices)
     question = serializers.CharField()
-    entity_type_id = serializers.IntegerField()
-    entity_type_name = serializers.CharField()
-    workflow_version_id = serializers.IntegerField()
-    workflow_version_name = serializers.CharField()
-    workflow_version_status = serializers.ChoiceField(choices=WorkflowVersionsStatus.choices)
+    target_id = serializers.IntegerField(
+        help_text="The form, predefined filter, entity type, stock rules version, DHIS2 mapping version or workflow "
+        "version to check"
+    )
+    target_name = serializers.CharField()
+    condition = serializers.JSONField(allow_null=True, help_text="The JsonLogic of a predefined filter or follow-up")
+    entity_type_id = serializers.IntegerField(allow_null=True, help_text="Workflows only")
     follow_up_order = serializers.IntegerField(allow_null=True)
-    follow_up_condition = serializers.JSONField(allow_null=True)
     mapping_source = serializers.CharField(allow_null=True)
     mapping_target = serializers.CharField(allow_null=True)
 
@@ -260,4 +261,4 @@ class FormVersionDiffSerializer(serializers.Serializer):
     removed_questions = QuestionSerializer(many=True)
     added_questions = QuestionSerializer(many=True)
     modified_questions = ModifiedQuestionSerializer(many=True)
-    workflow_impacts = WorkflowImpactSerializer(many=True)
+    configuration_impacts = ConfigurationImpactSerializer(many=True)

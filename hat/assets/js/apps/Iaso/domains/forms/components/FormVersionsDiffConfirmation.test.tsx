@@ -10,33 +10,21 @@ vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
     return {
         ...actual,
-        useSafeIntl: () => ({
-            formatMessage: (
-                msg: { defaultMessage?: string },
-                values?: Record<string, unknown>,
-            ) => {
-                let text = msg?.defaultMessage ?? '';
-                if (values) {
-                    Object.entries(values).forEach(([key, val]) => {
-                        text = text.replace(`{${key}}`, String(val));
-                    });
-                }
-                return text;
-            },
-        }),
+        useSafeIntl: (await import('../../../../../tests/mocks/safeIntl'))
+            .mockUseSafeIntl,
     };
 });
 
-// fetches the form's questions and the current user: covered by FormVersionsWorkflowImpactsTable.test.tsx
-vi.mock('./FormVersionsWorkflowImpactsTable', () => ({
+// fetches the form's questions and the current user: covered by FormVersionsConfigurationImpactsTable.test.tsx
+vi.mock('./FormVersionsConfigurationImpactsTable', () => ({
     default: ({
         formId,
-        workflowImpacts,
+        configurationImpacts,
     }: {
         formId: number;
-        workflowImpacts: unknown[];
+        configurationImpacts: unknown[];
     }) => (
-        <div>{`workflow impacts table: form ${formId}, ${workflowImpacts.length} rows`}</div>
+        <div>{`configuration impacts table: form ${formId}, ${configurationImpacts.length} rows`}</div>
     ),
 }));
 
@@ -52,15 +40,13 @@ const baseDiff: FormVersionDiff = {
             new_type: 'integer',
         },
     ],
-    workflow_impacts: [],
+    configuration_impacts: [],
 };
 
 const impact = {
+    target_id: 9,
+    target_name: 'Patients / Follow-ups (PUBLISHED)',
     entity_type_id: 3,
-    entity_type_name: 'Patients',
-    workflow_version_id: 9,
-    workflow_version_name: 'Follow-ups',
-    workflow_version_status: 'PUBLISHED' as const,
 };
 
 describe('FormVersionsDiffConfirmation', () => {
@@ -132,16 +118,16 @@ describe('FormVersionsDiffConfirmation', () => {
         expect(screen.getByText(/^~0 type changed$/)).toBeInTheDocument();
     });
 
-    it('shows the entity workflows reading the changed questions', () => {
+    it('shows the configuration reading the changed questions', () => {
         const diff: FormVersionDiff = {
             ...baseDiff,
-            workflow_impacts: [
+            configuration_impacts: [
                 {
                     ...impact,
                     kind: 'follow_up_condition',
                     question: 'q_changed',
                     follow_up_order: 2,
-                    follow_up_condition: { '==': [{ var: 'q_changed' }, 1] },
+                    condition: { '==': [{ var: 'q_changed' }, 1] },
                     mapping_source: null,
                     mapping_target: null,
                 },
@@ -150,7 +136,7 @@ describe('FormVersionsDiffConfirmation', () => {
                     kind: 'change_mapping',
                     question: 'q_gone',
                     follow_up_order: null,
-                    follow_up_condition: null,
+                    condition: null,
                     mapping_source: 'dob',
                     mapping_target: 'q_gone',
                 },
@@ -162,23 +148,23 @@ describe('FormVersionsDiffConfirmation', () => {
         );
 
         expect(
-            screen.getByText(/^2 used by entity workflows$/),
+            screen.getByText(/^2 used in the configuration$/),
         ).toBeInTheDocument();
         expect(
-            screen.getByText('workflow impacts table: form 7, 2 rows'),
+            screen.getByText('configuration impacts table: form 7, 2 rows'),
         ).toBeInTheDocument();
     });
 
-    it('shows no workflow chip when no workflow reads them', () => {
+    it('shows no configuration chip when no configuration reads them', () => {
         renderWithThemeAndIntlProvider(
             <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(
-            screen.queryByText(/used by entity workflows/),
+            screen.queryByText(/used in the configuration/),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByText(/workflow impacts table/),
+            screen.queryByText(/configuration impacts table/),
         ).not.toBeInTheDocument();
     });
 

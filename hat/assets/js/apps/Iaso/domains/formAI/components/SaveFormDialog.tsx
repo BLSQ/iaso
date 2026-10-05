@@ -24,7 +24,7 @@ import { useGetGroupDropdown } from '../../../domains/orgUnits/hooks/requests/us
 import { useGetOrgUnitTypesDropdownOptions } from '../../../domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../../domains/projects/hooks/requests';
 import FormVersionsDiffConfirmation from '../../forms/components/FormVersionsDiffConfirmation';
-import { FormVersionDiff } from '../../forms/requests';
+import { FormVersionDiff, hasStructuralChanges } from '../../forms/requests';
 import { previewFormAIVersion } from '../hooks/requests/previewFormAIVersion';
 import { useCreateForm } from '../hooks/requests/useCreateForm';
 import { useSaveFormVersion } from '../hooks/requests/useSaveFormVersion';
@@ -151,10 +151,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                     selectedFormId,
                     xlsformUuid,
                 );
-                if (
-                    preview.removed_questions.length > 0 ||
-                    preview.modified_questions.length > 0
-                ) {
+                if (hasStructuralChanges(preview)) {
                     setDiff(preview);
                     return;
                 }

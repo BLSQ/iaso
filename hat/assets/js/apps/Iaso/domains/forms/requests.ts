@@ -59,17 +59,29 @@ export const updateForm = (
         throw error;
     });
 
-// A removed or modified question an entity workflow reads: a follow-up's condition, or a change's mapping
-export type WorkflowImpact = {
-    kind: 'follow_up_condition' | 'change_mapping';
+// A removed or modified question some configuration reads, the target being the object to check
+export type ConfigurationImpact = {
+    kind:
+        | 'location_field'
+        | 'device_field'
+        | 'correlation_field'
+        | 'label_key'
+        | 'predefined_filter'
+        | 'entity_type_list_field'
+        | 'entity_type_detail_field'
+        | 'entity_type_duplicate_field'
+        | 'stock_rule'
+        | 'dhis2_mapping'
+        | 'follow_up_condition'
+        | 'change_mapping';
     question: string;
-    entity_type_id: number;
-    entity_type_name: string;
-    workflow_version_id: number;
-    workflow_version_name: string;
-    workflow_version_status: 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
+    target_id: number;
+    target_name: string;
+    // the JsonLogic of a predefined filter or a follow-up
+    condition: Record<string, unknown> | null;
+    // workflows only
+    entity_type_id: number | null;
     follow_up_order: number | null;
-    follow_up_condition: Record<string, unknown> | null;
     mapping_source: string | null;
     mapping_target: string | null;
 };
@@ -84,8 +96,13 @@ export type FormVersionDiff = {
         old_type: string;
         new_type: string;
     }[];
-    workflow_impacts: WorkflowImpact[];
+    configuration_impacts: ConfigurationImpact[];
 };
+// Whether to confirm a new version before saving it: it removes or retypes questions, the configuration impacts
+// coming from those only
+export const hasStructuralChanges = (diff: FormVersionDiff): boolean =>
+    diff.removed_questions.length > 0 || diff.modified_questions.length > 0;
+
 type FormVersionData = {
     data: Record<string, any>;
     xls_file: File;

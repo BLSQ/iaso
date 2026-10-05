@@ -30,6 +30,7 @@ import {
     createFormVersion,
     previewFormVersion,
     updateFormVersion,
+    hasStructuralChanges,
 } from '../requests';
 import FormVersionsDiffConfirmation from './FormVersionsDiffConfirmation';
 
@@ -171,10 +172,7 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                         xls_file: formState.xls_file.value,
                         data: { form_id: formId },
                     });
-                    if (
-                        preview.removed_questions.length > 0 ||
-                        preview.modified_questions.length > 0
-                    ) {
+                    if (hasStructuralChanges(preview)) {
                         setDiff(preview);
                         setStep('confirming');
                         setIsLoading(false);

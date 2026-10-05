@@ -4,12 +4,17 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { FormVersionDiff } from '../requests';
 import FormVersionsDiffTables from './FormVersionsDiffTables';
+import FormVersionsWorkflowImpactsTable from './FormVersionsWorkflowImpactsTable';
 
 type Props = {
+    formId: number;
     diff: FormVersionDiff;
 };
 
-const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({ diff }) => {
+const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({
+    formId,
+    diff,
+}) => {
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -42,11 +47,24 @@ const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({ diff }) => {
                     color="warning"
                     label={`~${diff.modified_questions.length} ${formatMessage(MESSAGES.questionModified)}`}
                 />
+                {diff.workflow_impacts?.length > 0 && (
+                    <Chip
+                        size="small"
+                        color="warning"
+                        label={`${diff.workflow_impacts.length} ${formatMessage(MESSAGES.workflowImpacts)}`}
+                    />
+                )}
             </Box>
             <FormVersionsDiffTables
                 removedQuestions={diff.removed_questions}
                 modifiedQuestions={diff.modified_questions}
             />
+            {diff.workflow_impacts?.length > 0 && (
+                <FormVersionsWorkflowImpactsTable
+                    formId={formId}
+                    workflowImpacts={diff.workflow_impacts}
+                />
+            )}
         </Box>
     );
 };

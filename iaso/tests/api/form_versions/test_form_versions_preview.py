@@ -288,6 +288,82 @@ class FormVersionPreviewAPITestCase(APITestCase):
         self.assertEqual(modified_by_name["age"]["old_type"], "integer")
         self.assertEqual(modified_by_name["age"]["new_type"], "text")
 
+    def test_preview_workflow_impacts(self):
+        """The entity workflows reading the removed (birth_date) or retyped (age) questions."""
+        account = self.yoda.iaso_profile.account
+        entity_type = m.EntityType.objects.create(
+            name="Patients", reference_form=self.form_with_version, account=account
+        )
+        version = m.WorkflowVersion.objects.create(
+            workflow=m.Workflow.objects.create(entity_type=entity_type), name="Follow-ups", status="PUBLISHED"
+        )
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=2, condition={">": [{"var": "age"}, 5]})
+        visit = m.Form.objects.create(name="Visit")
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=visit, mapping={"dob": "birth_date", "name": "full_name"}
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        common = {
+            "entity_type_id": entity_type.id,
+            "entity_type_name": "Patients",
+            "workflow_version_id": version.id,
+            "workflow_version_name": "Follow-ups",
+            "workflow_version_status": "PUBLISHED",
+        }
+        self.assertEqual(
+            data["workflow_impacts"],
+            [
+                {
+                    "kind": "follow_up_condition",
+                    "question": "age",
+                    **common,
+                    "follow_up_order": 2,
+                    "follow_up_condition": {">": [{"var": "age"}, 5]},
+                    "mapping_source": None,
+                    "mapping_target": None,
+                },
+                # full_name is unchanged: not there
+                {
+                    "kind": "change_mapping",
+                    "question": "birth_date",
+                    **common,
+                    "follow_up_order": None,
+                    "follow_up_condition": None,
+                    "mapping_source": "dob",
+                    "mapping_target": "birth_date",
+                },
+            ],
+        )
+
+    def test_preview_workflow_impacts_self_mapping_listed_once(self):
+        """A change of the reference form into itself mapping birth_date to birth_date: one entry, not one per side."""
+        entity_type = m.EntityType.objects.create(
+            name="Patients", reference_form=self.form_with_version, account=self.yoda.iaso_profile.account
+        )
+        version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=self.form_with_version, mapping={"birth_date": "birth_date"}
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(i["kind"], i["question"], i["mapping_source"], i["mapping_target"]) for i in data["workflow_impacts"]],
+            [("change_mapping", "birth_date", "birth_date", "birth_date")],
+        )
+
     def test_preview_unchanged_questions_absent_from_diff(self):
         """full_name and instanceID are identical in v1 and v2 → absent from all diff lists."""
         self.client.force_authenticate(self.yoda)
@@ -337,8 +413,9 @@ class FormVersionPreviewAPITestCase(APITestCase):
         """Preview endpoint should use a bounded number of database queries."""
         self.client.force_authenticate(self.yoda)
         with open(FIXTURE_V2, "rb") as xls_file:
-            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup
-            with self.assertNumQueries(5):
+            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup + the
+            # workflows reading the removed or modified questions: 1 for the follow-ups, 1 for the changes
+            with self.assertNumQueries(7):
                 response = self.client.post(
                     PREVIEW_URL,
                     data={"form_id": self.form_with_version.id, "xls_file": xls_file},

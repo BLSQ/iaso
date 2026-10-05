@@ -279,7 +279,7 @@ const FormVersionsDialogComponent: FunctionComponent<Props> = ({
                 {...dialogProps}
             >
                 {step === 'confirming' && diff ? (
-                    <FormVersionsDiffConfirmation diff={diff} />
+                    <FormVersionsDiffConfirmation formId={formId} diff={diff} />
                 ) : (
                     <Grid container spacing={4} justifyContent="flex-start">
                         <Grid xs={12} item>

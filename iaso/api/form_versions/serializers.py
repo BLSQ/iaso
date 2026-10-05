@@ -11,6 +11,7 @@ from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompat
 from iaso.api.common import TimestampField
 from iaso.api.forms.permissions import HasFormPermission
 from iaso.models import Form, FormVersion
+from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.odk import parsing, validate_xls_form
 
 
@@ -238,8 +239,25 @@ class ModifiedQuestionSerializer(serializers.Serializer):
     new_type = serializers.CharField()
 
 
+class WorkflowImpactSerializer(serializers.Serializer):
+    """A removed or modified question an entity workflow reads (`compute_workflow_impacts`)."""
+
+    kind = serializers.ChoiceField(choices=["follow_up_condition", "change_mapping"])
+    question = serializers.CharField()
+    entity_type_id = serializers.IntegerField()
+    entity_type_name = serializers.CharField()
+    workflow_version_id = serializers.IntegerField()
+    workflow_version_name = serializers.CharField()
+    workflow_version_status = serializers.ChoiceField(choices=WorkflowVersionsStatus.choices)
+    follow_up_order = serializers.IntegerField(allow_null=True)
+    follow_up_condition = serializers.JSONField(allow_null=True)
+    mapping_source = serializers.CharField(allow_null=True)
+    mapping_target = serializers.CharField(allow_null=True)
+
+
 class FormVersionDiffSerializer(serializers.Serializer):
     previous_version_id = serializers.CharField(allow_null=True)
     removed_questions = QuestionSerializer(many=True)
     added_questions = QuestionSerializer(many=True)
     modified_questions = ModifiedQuestionSerializer(many=True)
+    workflow_impacts = WorkflowImpactSerializer(many=True)

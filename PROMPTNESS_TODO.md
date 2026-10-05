@@ -23,7 +23,7 @@ Spec: `docs/pages/dev/reference/API/promptness_stats.en.md` - Code: `iaso/api/pr
 | 8  | Percentages computed twice | By the database (needed by the ordering) and by the serializer (output). Both round half up, so the values match. | **Open** |
 | 9  | Stable pagination | `StableOrderingFilter` always ends the ordering with `id`. Tests + spec. | **Done** |
 | 10 | CSV export | `export_csv` is a stub, its format is not decided. Response documented as the params serializer, `order` not documented, commented out in `test_permissions.py`, `setUp()` / `get_csv()` helpers to remove from `test_export_csv.py`. Should it include the totals? | **To do** |
-| 11 | Grace period in the form settings | `Form.promptness_grace_period_days` exists (with its migration) but is not exposed by the form serializers. | **To do** |
+| 11 | Grace period in the form settings | `Form.promptness_grace_period_days` exists (with its migration) but is not exposed by the form serializers. | **Done** |
 | 12 | OpenAPI documentation | Params and responses documented for the list and the summary (`self.get_serializer()`). Export: see 10. | **Done** |
 | 13 | Filters out of scope | `team_ids`, `user_ids`, `project_ids`, `planning_id`, `org_unit_group_id` (supported by the completeness stats). | Unchanged |
 | 14 | Spec clean-up | Grace period, 400 examples, list / summary split, ordering ties. The open questions will have to be updated once 1-4 are decided. | **Done** |

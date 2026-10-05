@@ -331,6 +331,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Failed to copy image to clipboard',
         id: 'iaso.label.project.failedToCopyImage',
     },
+    downloadError: {
+        defaultMessage: 'An error occurred while downloading the file',
+        id: 'iaso.snackBar.downloadError',
+    },
 });
 
 export default MESSAGES;

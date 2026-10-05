@@ -48,7 +48,10 @@ def task_decorator(task_name="", throttle=None):
             # enqueue the task
             task = Task()
             user = kwargs.pop("user", None)
-            if user:
+            account_id = kwargs.pop("account_id", None)
+            if account_id:
+                task.account_id = account_id
+            elif user:
                 task.account_id = user.iaso_profile.account_id
             else:
                 project = Project.objects.get(id=kwargs["project_id"])

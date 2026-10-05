@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     UrlParams,
@@ -21,33 +21,31 @@ import {
 import { baseUrls } from '../../../../constants/urls';
 import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
 import {
-    useGetDestructionList,
     useGetDosesOptions,
-    useGetEarmarkedList,
-    useGetFormAList,
-    useGetIncidentList,
     useGetStockManagementSummary,
 } from '../hooks/api';
 import MESSAGES from '../messages';
 import { StockVariationParams, StockVariationTab } from '../types';
 
+import { useStockVariationTabConfig } from './config';
 import { CreateDestruction } from './Modals/CreateEditDestruction';
 import { CreateEarmarked } from './Modals/CreateEditEarmarked';
 import { CreateFormA } from './Modals/CreateEditFormA';
 import { CreateIncident } from './Modals/CreateEditIncident';
-import {
-    useDestructionTableColumns,
-    useEarmarkedTableColumns,
-    useFormATableColumns,
-    useIncidentTableColumns,
-} from './Table/columns';
+import { StockVariationSearch } from './Modals/StockVariationSearch';
 import { VaccineStockVariationTable } from './Table/VaccineStockVariationTable';
 
 const useStyles = makeStyles(theme => {
+    const common = commonStyles(theme);
     return {
-        ...commonStyles(theme),
-        marginTop: {
-            marginTop: theme.spacing(2),
+        ...common,
+        containerNoTopPadding: {
+            ...common.containerFullHeightPadded,
+            paddingTop: 0,
+            [theme.breakpoints.down('md')]: {
+                padding: theme.spacing(2),
+                paddingTop: 2,
+            },
         },
     };
 });
@@ -81,36 +79,73 @@ export const VaccineStockVariation: FunctionComponent = () => {
     const defaultDosesPerVial =
         //@ts-ignore
         (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
-    const { data: formA, isFetching: isFetchingFormA } = useGetFormAList(
-        params,
-        tab === FORM_A,
-    );
-    const { data: destructions, isFetching: isFetchingDestructions } =
-        useGetDestructionList(params, tab === DESTRUCTION);
-    const { data: incidents, isFetching: isFetchingIncidents } =
-        useGetIncidentList(params, tab === INCIDENT);
-    const { data: earmarked, isFetching: isFetchingEarmarked } =
-        useGetEarmarkedList(params, tab === EARMARKED);
     const { data: summary } = useGetStockManagementSummary(params.id);
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
 
-    const formAColumns = useFormATableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
-    const destructionsColumns = useDestructionTableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
-    const incidentsColumns = useIncidentTableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
-    );
-    const earmarkedColumns = useEarmarkedTableColumns(
-        summary?.country_name,
-        summary?.vaccine_type,
+    const currentTabConfig = useStockVariationTabConfig({
+        params,
+        tab,
+        countryName: summary?.country_name,
+        vaccineType: summary?.vaccine_type,
+    });
+
+    const createButton = (
+        <>
+            <DisplayIfUserHasPerm
+                permissions={[STOCK_MANAGEMENT_WRITE, STOCK_MANAGEMENT_READ]}
+            >
+                <>
+                    {tab === FORM_A && (
+                        <CreateFormA
+                            iconProps={{ disabled: !hasUsableStock }}
+                            countryName={summary?.country_name}
+                            vaccine={summary?.vaccine_type}
+                            vaccineStockId={params.id as string}
+                            dosesOptions={dosesOptions}
+                            defaultDosesPerVial={defaultDosesPerVial}
+                        />
+                    )}
+                    {tab === DESTRUCTION && (
+                        <CreateDestruction
+                            iconProps={{ disabled: !hasUnusableStock }}
+                            countryName={summary?.country_name}
+                            vaccine={summary?.vaccine_type}
+                            vaccineStockId={params.id as string}
+                            dosesOptions={dosesOptions}
+                            defaultDosesPerVial={defaultDosesPerVial}
+                        />
+                    )}
+                    {tab === INCIDENT && (
+                        <CreateIncident
+                            iconProps={{}}
+                            countryName={summary?.country_name}
+                            vaccine={summary?.vaccine_type}
+                            vaccineStockId={params.id as string}
+                            dosesOptions={dosesOptions}
+                            hasUsableStock={hasUsableStock}
+                            hasUnusableStock={hasUnusableStock}
+                            defaultDosesPerVial={defaultDosesPerVial}
+                        />
+                    )}
+                </>
+            </DisplayIfUserHasPerm>
+            <DisplayIfUserHasPerm
+                permissions={[STOCK_EARMARKS_NONADMIN, STOCK_EARMARKS_ADMIN]}
+            >
+                {tab === EARMARKED && (
+                    <CreateEarmarked
+                        iconProps={{ disabled: !hasUsableStock }}
+                        countryName={summary?.country_name}
+                        vaccine={summary?.vaccine_type}
+                        vaccineStockId={params.id as string}
+                        dosesOptions={dosesOptions}
+                        defaultDosesPerVial={defaultDosesPerVial}
+                    />
+                )}
+            </DisplayIfUserHasPerm>
+        </>
     );
 
     return (
@@ -148,155 +183,30 @@ export const VaccineStockVariation: FunctionComponent = () => {
                     />
                 </Tabs>
             </TopBar>
-            <Box className={classes.containerFullHeightPadded}>
-                <Paper elevation={2} className={classes.marginTop}>
+            <Box className={classes.containerNoTopPadding}>
+                <Paper elevation={2}>
                     <Box padding={2}>
-                        <Grid container justifyContent="space-between">
-                            <Typography variant="h5" color="primary">
-                                {formatMessage(MESSAGES[`${tab}Reports`])}
-                            </Typography>
-                            <DisplayIfUserHasPerm
-                                permissions={[
-                                    STOCK_MANAGEMENT_WRITE,
-                                    STOCK_MANAGEMENT_READ,
-                                ]}
-                            >
-                                {tab === FORM_A && (
-                                    <CreateFormA
-                                        iconProps={{
-                                            disabled: !hasUsableStock,
-                                        }}
-                                        countryName={summary?.country_name}
-                                        vaccine={summary?.vaccine_type}
-                                        vaccineStockId={params.id as string}
-                                        dosesOptions={dosesOptions}
-                                        defaultDosesPerVial={
-                                            defaultDosesPerVial
-                                        }
-                                    />
-                                )}
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[
-                                    STOCK_MANAGEMENT_WRITE,
-                                    STOCK_MANAGEMENT_READ,
-                                ]}
-                            >
-                                {tab === DESTRUCTION && (
-                                    <CreateDestruction
-                                        iconProps={{
-                                            disabled: !hasUnusableStock,
-                                        }}
-                                        countryName={summary?.country_name}
-                                        vaccine={summary?.vaccine_type}
-                                        vaccineStockId={params.id as string}
-                                        dosesOptions={dosesOptions}
-                                        defaultDosesPerVial={
-                                            defaultDosesPerVial
-                                        }
-                                    />
-                                )}
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[
-                                    STOCK_MANAGEMENT_WRITE,
-                                    STOCK_MANAGEMENT_READ,
-                                ]}
-                            >
-                                {tab === INCIDENT && (
-                                    <CreateIncident
-                                        iconProps={{}}
-                                        countryName={summary?.country_name}
-                                        vaccine={summary?.vaccine_type}
-                                        vaccineStockId={params.id as string}
-                                        dosesOptions={dosesOptions}
-                                        hasUsableStock={hasUsableStock}
-                                        hasUnusableStock={hasUnusableStock}
-                                        defaultDosesPerVial={
-                                            defaultDosesPerVial
-                                        }
-                                    />
-                                )}
-                            </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[
-                                    STOCK_EARMARKS_NONADMIN,
-                                    STOCK_EARMARKS_ADMIN,
-                                ]}
-                            >
-                                {tab === EARMARKED && (
-                                    <CreateEarmarked
-                                        iconProps={{
-                                            disabled: !hasUsableStock,
-                                        }}
-                                        countryName={summary?.country_name}
-                                        vaccine={summary?.vaccine_type}
-                                        vaccineStockId={params.id as string}
-                                        dosesOptions={dosesOptions}
-                                        defaultDosesPerVial={
-                                            defaultDosesPerVial
-                                        }
-                                    />
-                                )}
-                            </DisplayIfUserHasPerm>
-                        </Grid>
-                        {tab === FORM_A && (
-                            <VaccineStockVariationTable
-                                data={formA}
-                                columns={formAColumns}
+                        <Typography variant="h5" color="primary">
+                            {formatMessage(MESSAGES[`${tab}Reports`])}
+                        </Typography>
+                        {currentTabConfig.search && (
+                            <StockVariationSearch
                                 params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingFormA}
-                                defaultSorted={[
-                                    { id: 'form_a_reception_date', desc: true },
-                                ]}
+                                searchKey={currentTabConfig.search.searchKey}
+                                pageKey={currentTabConfig.search.pageKey}
                             />
                         )}
-                        {tab === DESTRUCTION && (
-                            <VaccineStockVariationTable
-                                data={destructions}
-                                columns={destructionsColumns}
-                                params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingDestructions}
-                                defaultSorted={[
-                                    {
-                                        id: 'rrt_destruction_report_reception_date',
-                                        desc: true,
-                                    },
-                                ]}
-                            />
-                        )}
-                        {tab === INCIDENT && (
-                            <VaccineStockVariationTable
-                                data={incidents}
-                                columns={incidentsColumns}
-                                params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingIncidents}
-                                defaultSorted={[
-                                    {
-                                        id: 'incident_report_received_by_rrt',
-                                        desc: true,
-                                    },
-                                ]}
-                            />
-                        )}
-                        {tab === EARMARKED && (
-                            <VaccineStockVariationTable
-                                data={earmarked}
-                                columns={earmarkedColumns}
-                                params={params}
-                                paramsPrefix={tab}
-                                isFetching={isFetchingEarmarked}
-                                defaultSorted={[
-                                    {
-                                        id: 'created_at',
-                                        desc: true,
-                                    },
-                                ]}
-                            />
-                        )}
+                        <Box mt={1} justifyContent="flex-end" display="flex">
+                            {createButton}
+                        </Box>
+                        <VaccineStockVariationTable
+                            data={currentTabConfig.data}
+                            columns={currentTabConfig.columns}
+                            params={params}
+                            paramsPrefix={tab}
+                            isFetching={currentTabConfig.isFetching}
+                            defaultSorted={currentTabConfig.defaultSorted}
+                        />
                     </Box>
                 </Paper>
             </Box>

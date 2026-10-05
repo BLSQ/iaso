@@ -8,7 +8,7 @@ import iaso.utils.models.sized_file_field
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0401_merge_0400_metrictype_is_complete_0400_task_lease"),
+        ("iaso", "0402_page_language_and_additional_config"),
     ]
 
     operations = [

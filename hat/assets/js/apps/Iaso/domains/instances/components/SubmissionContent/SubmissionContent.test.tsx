@@ -69,6 +69,83 @@ describe('SubmissionContent', () => {
         expect(screen.getByText('Age')).toBeInTheDocument();
     });
 
+    it('collapses and expands a section when clicking its header', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <SubmissionContent
+                formDescriptor={formDescriptor}
+                instanceData={instanceData}
+            />,
+        );
+
+        const header = screen.getByRole('button', { name: /Introduction/ });
+        await user.click(header);
+        expect(header).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByText('Name')).not.toBeInTheDocument();
+
+        await user.click(header);
+        expect(header).toHaveAttribute('aria-expanded', 'true');
+        expect(screen.getByText('Name')).toBeInTheDocument();
+    });
+
+    it('collapses nested sections by default and expands them on header click', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <SubmissionContent
+                formDescriptor={{
+                    name: 'survey',
+                    type: 'survey',
+                    children: [
+                        {
+                            name: 'outer',
+                            type: 'group',
+                            label: 'Outer',
+                            children: [
+                                { name: 'top', type: 'text', label: 'Top' },
+                                {
+                                    name: 'inner',
+                                    type: 'group',
+                                    label: 'Inner',
+                                    children: [
+                                        {
+                                            name: 'deep',
+                                            type: 'text',
+                                            label: 'Deep',
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                }}
+                instanceData={{ top: 'a', deep: 'b' }}
+            />,
+        );
+
+        expect(screen.getByText('Top')).toBeInTheDocument();
+        const inner = screen.getByRole('button', { name: /Inner/ });
+        expect(inner).toHaveAttribute('aria-expanded', 'false');
+        expect(screen.queryByText('Deep')).not.toBeInTheDocument();
+
+        await user.click(inner);
+        expect(screen.getByText('Deep')).toBeInTheDocument();
+    });
+
+    it('shows matches of a collapsed section while searching', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <SubmissionContent
+                formDescriptor={formDescriptor}
+                instanceData={instanceData}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', { name: /Introduction/ }));
+        await user.type(screen.getByPlaceholderText('Search'), 'Age');
+
+        expect(screen.getByText('Age')).toBeInTheDocument();
+    });
+
     it('shows an empty search state when nothing matches', async () => {
         const user = userEvent.setup();
         renderWithThemeAndIntlProvider(

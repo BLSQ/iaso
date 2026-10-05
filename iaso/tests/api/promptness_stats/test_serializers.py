@@ -40,6 +40,15 @@ class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
         self.assertCountEqual(serializer.validated_data["org_unit_types"], [self.type_region, self.type_district])
         self.assertEqual(serializer.validated_data["status"], {"LATE", "MISSING"})
 
+    def test_all_statuses_by_default(self):
+        params = self.get_serializer_params()
+        self.assertNotIn("status", params)
+
+        serializer = self.get_serializer(params)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+        self.assertEqual(serializer.validated_data["status"], {"ON_TIME", "LATE", "MISSING"})
+
     def test_required_params(self):
         for field in ["form_id", "period", "parent_org_unit_id"]:
             with self.subTest(field=field):

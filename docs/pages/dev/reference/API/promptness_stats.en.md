@@ -22,8 +22,8 @@ conventions (comma-separated id lists, pagination envelope, row shape, drill-dow
   is one of the form's `org_unit_types`, **or** it belongs to one of the form's `org_unit_groups`.
   Only org units with validation status `VALID` are taken into account (not configurable).
 - **Expected**: the number of submissions expected from target org units in the hierarchy of a row (the row itself
-  included). Currently, this is equal to the number of org units below + itself, but this will change once missions
-  are implemented.
+  included). Currently, this is equal to the number of target org units in this hierarchy (one submission each), but
+  this will change once missions are implemented.
 - **Period window**: `start` and `end` dates of the requested `period`, as computed by `iaso.periods.Period`.
 - **Grace period**: a number of days, configured per form in the form settings (`Form.promptness_grace_period_days`,
   see [Dependencies](#dependencies-and-open-questions)). `null` when not set: the promptness can't be computed for
@@ -59,8 +59,9 @@ the rows.
 
 `GET /api/promptness_stats/`
 
-The rows of the table: one row per org unit below `parent_org_unit_id`, with its counts. The period and the totals are
-returned by the [summary endpoint](#get-promptness-summary).
+The rows of the table: one row per org unit below `parent_org_unit_id`, with its counts. Only org units with
+validation status `VALID` are returned as rows. The period and the totals are returned by the
+[summary endpoint](#get-promptness-summary).
 
 ## Permissions
 
@@ -74,14 +75,14 @@ returned by the [summary endpoint](#get-promptness-summary).
   period (`promptness_grace_period_days` not `null`, `0` is allowed).
 - `period`: String (**required**) - Period in the IASO period format (e.g. `202609` for September 2026, `2026Q3`,
   `2026`...). Its period type must match the form's `period_type`.
-- `parent_org_unit_id`: Int (**required**) - ID of the parent org unit. By default, the rows are its direct children
-  (the totals of the summary are computed for this org unit). Must be accessible to the user.
+- `parent_org_unit_id`: Int (**required**) - ID of the parent org unit. By default, the rows are its `VALID` direct
+  children (the totals of the summary are computed for this org unit). Must be accessible to the user.
 - `org_unit_type_ids`: String (optional) - Comma-separated list of org unit type IDs (multiple select).
-  When provided, the rows are the descendants of `parent_org_unit_id` having one of these types, instead of its
-  direct children.
+  When provided, the rows are the `VALID` descendants of `parent_org_unit_id` (itself excluded) having one of these
+  types, instead of its direct children.
     - Example: `&org_unit_type_ids=3,4`
 - `status`: String (optional) - Comma-separated list of statuses to include, among `ON_TIME`, `LATE`, `MISSING`.
-  Defaults to all three. An excluded status is hidden from the rows and from the totals of the summary (its count and
+  Defaults to all three. When provided, at least 1 status is required (`status=` is rejected). An excluded status is hidden from the rows and from the totals of the summary (its count and
   percentage are returned as `null`). `expected`, `received` and `completeness_percent` are not affected.
     - Example: `&status=LATE,MISSING`
 - `order`: String (optional) - Comma-separated list of fields to order by. Prefix with `-` for descending order.
@@ -143,7 +144,7 @@ Standard paginated response:
         "id": "Int",
         "name": "String"
       },
-      "has_children": "Boolean - true if the row can be drilled down (call again with parent_org_unit_id=<id>)",
+      "has_children": "Boolean - true if the row has at least 1 VALID child, i.e. can be drilled down (call again with parent_org_unit_id=<id>)",
       "is_applicable": "Boolean - false if nothing is expected in the hierarchy of the row (all counts are then null)",
       "expected": "Int|null - target org units in the hierarchy of the row (itself included)",
       "received": "Int|null - on_time + late",
@@ -283,7 +284,7 @@ Returned with a field-keyed body when:
 - the form has no `period_type`
 - the form has no grace period (`promptness_grace_period_days` is `null`)
 - `period` is invalid, or its period type does not match the form's `period_type`
-- `status` contains an unknown value
+- `status` contains an unknown value, or is empty (at least 1 status is required)
 
 The errors on each param are reported together:
 
@@ -441,8 +442,8 @@ Same as [Get promptness statistics](#400-bad-request).
 
 # Dependencies and open questions
 
-- **Form setting for the grace period**: `Form.promptness_grace_period_days` (nullable), added with its migration.
-  It still has to be editable from the form settings, which implies an update of the form serializers.
+- **Form setting for the grace period**: `Form.promptness_grace_period_days` (nullable), added with its migration,
+  and editable through the forms API (`FormSerializer`, `/api/forms/`).
 - **Timezone of the deadline**: the timezone used to evaluate "end of the deadline day" has to be confirmed
   (server `TIME_ZONE` by default).
 - **Out of scope for now**: the additional filters supported by the completeness statistics (`team_ids`, `user_ids`,

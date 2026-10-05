@@ -157,6 +157,8 @@ def annotate_counts(org_units: QuerySet[OrgUnit], targets_ctes: TargetsCTEs) -> 
     - `late`: `received - on_time`
     - `missing`: `expected - received`
     - `completeness_percent`, `on_time_percent`, `late_percent`, `missing_percent`
+    - `is_applicable`: `expected > 0`, only used to order the not applicable rows last (see
+      `PromptnessStatsOrderingFilter`)
 
     `targets_ctes` are built by `get_targets_ctes()`, for a parent org unit whose hierarchy contains `org_units`.
     """

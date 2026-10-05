@@ -23,10 +23,10 @@ Spec: `docs/pages/dev/reference/API/promptness_stats.en.md` - Code: `iaso/api/pr
 | 8  | Percentages computed in a single place | The database computes the counts and the percentages (`percentage_of_expected()` in `queries.py`: `numeric`, rounded half up to 1 decimal), used both to order the rows and as returned values. The serializers don't compute anything anymore: they return the `Decimal` values as is (`DecimalField(coerce_to_string=False)` in the schema, rendered as JSON numbers). Tests: `test_values_are_not_recomputed`, `test_percentages_are_rounded_half_up`, `test_percentages_are_json_numbers`. | **Done** |
 | 9  | Stable pagination | `StableOrderingFilter` always ends the ordering with `id`. Tests + spec. | **Done** |
 | 10 | CSV export | `export_csv` is a stub, its format is not decided. Response documented as the params serializer, `order` not documented, commented out in `test_permissions.py`, `setUp()` / `get_csv()` helpers to remove from `test_export_csv.py`. Should it include the totals? | **To do** |
-| 11 | Grace period in the form settings | `Form.promptness_grace_period_days` exists (with its migration) but is not exposed by the form serializers. | **Done** |
+| 11 | Grace period in the form settings | `Form.promptness_grace_period_days` (with its migration) is exposed and editable through the forms API (`FormSerializer`), with tests in `test_forms.py` (creation, update to 0 or `null`, negative and too large values rejected, kept when not sent). The frontend (form settings page) is not covered here. | **Done** (backend) |
 | 12 | OpenAPI documentation | Params and responses documented for the list and the summary (`self.get_serializer()`). Export: see 10. | **Done** |
 | 13 | Filters out of scope | `team_ids`, `user_ids`, `project_ids`, `planning_id`, `org_unit_group_id` (supported by the completeness stats). | Unchanged |
-| 14 | Spec clean-up | Grace period, 400 examples, list / summary split, ordering ties. The open questions will have to be updated once 1-4 are decided. | **Done** |
+| 14 | Spec clean-up | Grace period, 400 examples, list / summary split, ordering ties, `VALID` rows, required `status`, grace period editable through the forms API. Items 1 (submission timestamp) and 3 (ordering of the NA rows) are documented; the open questions left are the timezone of the deadline (2) and the out of scope filters (13). | **Done** |
 
 ## Small pending questions
 

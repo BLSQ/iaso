@@ -12,7 +12,7 @@ from iaso.periods import Period, detect
 
 
 class PromptnessStatsQueryParamsSerializer(serializers.Serializer):
-    """Validates the query params shared by the `list` and `export_csv` actions.
+    """Validates the query params shared by all the endpoints of the promptness stats API.
 
     Expects the request in its context (`context={"request": request}`) to restrict the choices to what the user
     can access.
@@ -180,7 +180,7 @@ class ParentOrgUnitSerializer(serializers.Serializer):
 class PromptnessStatsRowSerializer(PromptnessStatsCountsSerializer):
     """Serializes one row of `results`.
 
-    Input: an OrgUnit annotated with `expected`, `on_time`, `late`, `missing` and `has_children`.
+    Input: an OrgUnit annotated by `annotate_counts()`, and with `has_children` (see `annotate_rows()`).
     Output: `id`, `name`, `org_unit_type_id`, `parent_org_unit` (`{id, name}` or `None`), `has_children` and the counts.
     """
 

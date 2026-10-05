@@ -48,7 +48,11 @@ class PathOrgUnitIds(Func):
 
 
 def get_valid_submissions(form: Form, period: PromptnessPeriod) -> QuerySet[Instance]:
-    """Submissions taken into account: for this form and period, not deleted and with a file."""
+    """Submissions taken into account: for this form and period, not deleted and with a file.
+
+    These filters are the condition of the partial index `iaso_instance_promptness_idx`: they
+    must stay the same, otherwise Postgres can't use the index.
+    """
     return (
         Instance.objects.filter(form=form, period=period.value, deleted=False)
         .exclude(file__isnull=True)

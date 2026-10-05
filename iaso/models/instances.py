@@ -547,6 +547,12 @@ class Instance(ValidationWorkflowArtefact):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
             models.Index(fields=["source_updated_at"]),
+            # Valid submissions of a form for a period, used by the promptness stats
+            models.Index(
+                fields=["form", "period", "org_unit", "created_at"],
+                condition=Q(deleted=False) & Q(file__isnull=False) & ~Q(file=""),
+                name="iaso_instance_promptness_idx",
+            ),
         ]
 
     def __str__(self):

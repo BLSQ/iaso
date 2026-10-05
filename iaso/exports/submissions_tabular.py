@@ -137,7 +137,8 @@ def build_submissions_tabular_queryset(
     named_annotations = {}
     for index, (column, annotation) in enumerate(zip(columns, annotations)):
         column["field"] = f"{FIELD_PREFIX}{index}"
-        # answers are written as numbers in xlsx when possible
+        # the answers are texts in the submission json: written as numbers in xlsx when they all are. The other
+        # columns keep their type (ids, coordinates...) or must stay texts (codes like org_unit__code, export_id)
         column["infer_number"] = index >= answers_start
         named_annotations[column["field"]] = annotation
 

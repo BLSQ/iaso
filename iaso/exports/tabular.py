@@ -73,7 +73,7 @@ def export_django_query_to_csv_via_duckdb(qs: QuerySet, output_file_path: str, c
     finally:
         if os.path.exists(rows_file_path):
             os.remove(rows_file_path)
-    logger.warning(f"exported csv {output_file_path} took {time.perf_counter() - start:.3f} seconds")
+    logger.info(f"exported csv {output_file_path} took {time.perf_counter() - start:.3f} seconds")
 
 
 def export_django_query_to_xlsx_via_duckdb(
@@ -89,51 +89,55 @@ def export_django_query_to_xlsx_via_duckdb(
     start = time.perf_counter()
     header_rows = 2 if sub_columns else 1
     raw_file_path = output_file_path + ".raw.xlsx"
-    with duckdb_attached_to_postgres() as duckdb_connection:
-        duckdb_connection.execute("INSTALL excel; LOAD excel;")
-        # stored first so that the columns types can be inferred from the whole content
-        # like xlsxwriter, the rows beyond excel's limit are ignored
-        duckdb_connection.execute(
-            f"CREATE TABLE export_source AS SELECT * FROM {postgres_query_source(qs)} LIMIT {XLSX_MAX_ROWS - header_rows}"
-        )
-        types = dict(
-            duckdb_connection.execute("SELECT column_name, column_type FROM (DESCRIBE export_source)").fetchall()
-        )
-        number_types = infer_number_types(duckdb_connection, [c["field"] for c in columns if c.get("infer_number")])
-
-        projections = []
-        for column in columns:
-            field = sql_identifier(column["field"])
-            if column["field"] in number_types:
-                value = f"CAST(NULLIF({field}, '') AS {number_types[column['field']]})"
-            elif types[column["field"]] == "VARCHAR":
-                value = f"left(regexp_replace({field}, '{XLSX_INVALID_CHARS_RE}', '', 'g'), {XLSX_STRING_MAX_LENGTH})"
-            else:
-                value = field
-            projections.append(f"{value} AS {field}")
-
-        # the xlsx writer is single threaded: the values are computed beforehand (in parallel)
-        duckdb_connection.execute(
-            f"CREATE TABLE export_values AS SELECT {', '.join(projections)} FROM export_source LIMIT 0"
-        )
-        if sub_columns:
-            # empty placeholder row (written as <row r="2"></row>), replaced by the sub columns in style_xlsx: the
-            # sub columns can't be written by duckdb since they are texts in columns that can be numbers
-            duckdb_connection.execute("INSERT INTO export_values DEFAULT VALUES")
-        # the insertion order is kept by the table scan of COPY
-        duckdb_connection.execute(f"INSERT INTO export_values SELECT {', '.join(projections)} FROM export_source")
-        duckdb_connection.execute("DROP TABLE export_source")
-        duckdb_connection.execute(
-            f"COPY export_values TO {sql_literal(raw_file_path)} "
-            f"(FORMAT xlsx, HEADER true, SHEET {sql_literal(sheet_name[:31])})"
-        )
-    written = time.perf_counter()
     try:
+        with duckdb_attached_to_postgres() as duckdb_connection:
+            duckdb_connection.execute("INSTALL excel; LOAD excel;")
+            # stored first so that the columns types can be inferred from the whole content
+            # like xlsxwriter, the rows beyond excel's limit are ignored
+            duckdb_connection.execute(
+                f"CREATE TABLE export_source AS SELECT * FROM {postgres_query_source(qs)} LIMIT {XLSX_MAX_ROWS - header_rows}"
+            )
+            types = dict(
+                duckdb_connection.execute("SELECT column_name, column_type FROM (DESCRIBE export_source)").fetchall()
+            )
+            number_types = infer_number_types(duckdb_connection, [c["field"] for c in columns if c.get("infer_number")])
+
+            projections = []
+            for column in columns:
+                field = sql_identifier(column["field"])
+                if column["field"] in number_types:
+                    value = f"CAST(NULLIF({field}, '') AS {number_types[column['field']]})"
+                elif types[column["field"]] == "VARCHAR":
+                    value = (
+                        f"left(regexp_replace({field}, '{XLSX_INVALID_CHARS_RE}', '', 'g'), {XLSX_STRING_MAX_LENGTH})"
+                    )
+                else:
+                    value = field
+                projections.append(f"{value} AS {field}")
+            values_select = f"SELECT {', '.join(projections)} FROM export_source"
+
+            # the xlsx writer is single threaded: the values are computed beforehand (in parallel)
+            if sub_columns:
+                # the sub columns can't be written by duckdb (texts in columns that can be numbers): an empty
+                # placeholder row (all NULLs, written as <row r="2"></row>) is inserted first, before the values,
+                # and replaced by the sub columns in style_xlsx. The insertion order is kept by the table scan of COPY
+                duckdb_connection.execute(f"CREATE TABLE export_values AS {values_select} LIMIT 0")  # only the types
+                duckdb_connection.execute("INSERT INTO export_values DEFAULT VALUES")
+                duckdb_connection.execute(f"INSERT INTO export_values {values_select}")
+            else:
+                duckdb_connection.execute(f"CREATE TABLE export_values AS {values_select}")
+            duckdb_connection.execute("DROP TABLE export_source")
+            duckdb_connection.execute(
+                f"COPY export_values TO {sql_literal(raw_file_path)} "
+                f"(FORMAT xlsx, HEADER true, SHEET {sql_literal(sheet_name[:31])})"
+            )
+        written = time.perf_counter()
         style_xlsx(raw_file_path, output_file_path, columns, sub_columns)
     finally:
-        os.remove(raw_file_path)
+        if os.path.exists(raw_file_path):
+            os.remove(raw_file_path)
     end = time.perf_counter()
-    logger.warning(
+    logger.info(
         f"exported xlsx {output_file_path} took {end - start:.3f} seconds (styling {end - written:.3f} seconds)"
     )
 
@@ -243,8 +247,8 @@ def infer_number_types(duckdb_connection, fields: List[str]) -> Dict[str, str]:
     results = duckdb_connection.execute(f"SELECT {', '.join(checks)} FROM export_source").fetchone()
 
     number_types = {}
-    for index, field in enumerate(fields):
-        only_integers, only_numbers = results[2 * index], results[2 * index + 1]
+    # two checks per field: only integers, only numbers (integers or decimals)
+    for field, only_integers, only_numbers in zip(fields, results[0::2], results[1::2]):
         if only_integers:
             number_types[field] = "BIGINT"
         elif only_numbers:

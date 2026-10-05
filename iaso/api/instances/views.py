@@ -429,6 +429,8 @@ class InstancesViewSet(viewsets.ViewSet):
         self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
     ):
         """Same content as list_file_export, but the rows are computed by postgres and written by duckdb"""
+        # TODO once the legacy csv/xlsx exports (list_file_export, engine=legacy) are removed: also handle the
+        #  parquet export (anwser_with_parquet_file) here, all the duckdb exports in one place
         form = get_form_from_instance_filters(filters)
         if not form:
             return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)

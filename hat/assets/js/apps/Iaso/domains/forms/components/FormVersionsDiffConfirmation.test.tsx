@@ -27,6 +27,19 @@ vi.mock('bluesquare-components', async () => {
     };
 });
 
+// fetches the form's questions and the current user: covered by FormVersionsWorkflowImpactsTable.test.tsx
+vi.mock('./FormVersionsWorkflowImpactsTable', () => ({
+    default: ({
+        formId,
+        workflowImpacts,
+    }: {
+        formId: number;
+        workflowImpacts: unknown[];
+    }) => (
+        <div>{`workflow impacts table: form ${formId}, ${workflowImpacts.length} rows`}</div>
+    ),
+}));
+
 const baseDiff: FormVersionDiff = {
     previous_version_id: '42',
     added_questions: [{ name: 'q_new', label: 'New Q', type: 'text' }],
@@ -39,12 +52,21 @@ const baseDiff: FormVersionDiff = {
             new_type: 'integer',
         },
     ],
+    workflow_impacts: [],
+};
+
+const impact = {
+    entity_type_id: 3,
+    entity_type_name: 'Patients',
+    workflow_version_id: 9,
+    workflow_version_name: 'Follow-ups',
+    workflow_version_status: 'PUBLISHED' as const,
 };
 
 describe('FormVersionsDiffConfirmation', () => {
     it('renders the warning alert with the previous version id', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -54,6 +76,7 @@ describe('FormVersionsDiffConfirmation', () => {
     it('falls back to em-dash when previous_version_id is null', () => {
         renderWithThemeAndIntlProvider(
             <FormVersionsDiffConfirmation
+                formId={7}
                 diff={{ ...baseDiff, previous_version_id: null }}
             />,
         );
@@ -63,7 +86,7 @@ describe('FormVersionsDiffConfirmation', () => {
 
     it('renders the added questions chip with correct count', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByText(/^\+1 added$/)).toBeInTheDocument();
@@ -71,7 +94,7 @@ describe('FormVersionsDiffConfirmation', () => {
 
     it('renders the removed questions chip with correct count', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByText(/^-1 removed or renamed$/)).toBeInTheDocument();
@@ -79,7 +102,7 @@ describe('FormVersionsDiffConfirmation', () => {
 
     it('renders the modified questions chip with correct count', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByText(/^~1 type changed$/)).toBeInTheDocument();
@@ -101,7 +124,7 @@ describe('FormVersionsDiffConfirmation', () => {
         };
 
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={diff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={diff} />,
         );
 
         expect(screen.getByText(/^\+2 added$/)).toBeInTheDocument();
@@ -109,9 +132,59 @@ describe('FormVersionsDiffConfirmation', () => {
         expect(screen.getByText(/^~0 type changed$/)).toBeInTheDocument();
     });
 
+    it('shows the entity workflows reading the changed questions', () => {
+        const diff: FormVersionDiff = {
+            ...baseDiff,
+            workflow_impacts: [
+                {
+                    ...impact,
+                    kind: 'follow_up_condition',
+                    question: 'q_changed',
+                    follow_up_order: 2,
+                    follow_up_condition: { '==': [{ var: 'q_changed' }, 1] },
+                    mapping_source: null,
+                    mapping_target: null,
+                },
+                {
+                    ...impact,
+                    kind: 'change_mapping',
+                    question: 'q_gone',
+                    follow_up_order: null,
+                    follow_up_condition: null,
+                    mapping_source: 'dob',
+                    mapping_target: 'q_gone',
+                },
+            ],
+        };
+
+        renderWithThemeAndIntlProvider(
+            <FormVersionsDiffConfirmation formId={7} diff={diff} />,
+        );
+
+        expect(
+            screen.getByText(/^2 used by entity workflows$/),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('workflow impacts table: form 7, 2 rows'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows no workflow chip when no workflow reads them', () => {
+        renderWithThemeAndIntlProvider(
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
+        );
+
+        expect(
+            screen.queryByText(/used by entity workflows/),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/workflow impacts table/),
+        ).not.toBeInTheDocument();
+    });
+
     it('delegates table rendering to FormVersionsDiffTables', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(

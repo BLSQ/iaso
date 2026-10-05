@@ -59,6 +59,21 @@ export const updateForm = (
         throw error;
     });
 
+// A removed or modified question an entity workflow reads: a follow-up's condition, or a change's mapping
+export type WorkflowImpact = {
+    kind: 'follow_up_condition' | 'change_mapping';
+    question: string;
+    entity_type_id: number;
+    entity_type_name: string;
+    workflow_version_id: number;
+    workflow_version_name: string;
+    workflow_version_status: 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
+    follow_up_order: number | null;
+    follow_up_condition: Record<string, unknown> | null;
+    mapping_source: string | null;
+    mapping_target: string | null;
+};
+
 export type FormVersionDiff = {
     previous_version_id: string | null;
     removed_questions: { name: string; label: string; type: string }[];
@@ -69,6 +84,7 @@ export type FormVersionDiff = {
         old_type: string;
         new_type: string;
     }[];
+    workflow_impacts: WorkflowImpact[];
 };
 type FormVersionData = {
     data: Record<string, any>;

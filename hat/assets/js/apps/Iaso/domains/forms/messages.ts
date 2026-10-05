@@ -796,6 +796,35 @@ const MESSAGES = defineMessages({
         id: 'iaso.formversions.modifiedQuestionsSection',
         defaultMessage: 'Questions with changed type ({count})',
     },
+    workflowImpacts: {
+        id: 'iaso.formversions.workflowImpacts',
+        defaultMessage: 'used by entity workflows',
+    },
+    workflowImpactsSection: {
+        id: 'iaso.formversions.workflowImpactsSection',
+        defaultMessage:
+            'Removed or changed questions used by entity workflows ({count})',
+    },
+    workflowEntityType: {
+        id: 'iaso.formversions.workflowEntityType',
+        defaultMessage: 'Entity type',
+    },
+    workflowVersion: {
+        id: 'iaso.formversions.workflowVersion',
+        defaultMessage: 'Workflow version',
+    },
+    workflowUsage: {
+        id: 'iaso.formversions.workflowUsage',
+        defaultMessage: 'Used in',
+    },
+    workflowFollowUpCondition: {
+        id: 'iaso.formversions.workflowFollowUpCondition',
+        defaultMessage: 'Condition of follow-up {order}',
+    },
+    workflowChangeMapping: {
+        id: 'iaso.formversions.workflowChangeMapping',
+        defaultMessage: 'Change mapping {source} → {target}',
+    },
     questionName: {
         id: 'iaso.formversions.questionName',
         defaultMessage: 'Name',

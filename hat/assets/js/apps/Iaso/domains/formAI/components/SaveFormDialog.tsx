@@ -23,6 +23,9 @@ import { SxStyles } from 'Iaso/types/general';
 import { useGetGroupDropdown } from '../../../domains/orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../../domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../../domains/projects/hooks/requests';
+import FormVersionsDiffConfirmation from '../../forms/components/FormVersionsDiffConfirmation';
+import { FormVersionDiff } from '../../forms/requests';
+import { previewFormAIVersion } from '../hooks/requests/previewFormAIVersion';
 import { useCreateForm } from '../hooks/requests/useCreateForm';
 import { useSaveFormVersion } from '../hooks/requests/useSaveFormVersion';
 import MESSAGES from '../messages';
@@ -96,6 +99,9 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
     const [selectedOrgUnitGroups, setSelectedOrgUnitGroups] = useState<
         { value: number; label: string }[]
     >([]);
+    // the questions the new version removes or retypes, to confirm before saving it
+    const [diff, setDiff] = useState<FormVersionDiff | null>(null);
+    const [isPreviewing, setIsPreviewing] = useState(false);
 
     const { data: projectOptions } = useGetProjectsDropdownOptions();
     const selectedProjectIds = selectedProjects.map(p => p.value);
@@ -129,14 +135,35 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
     const { mutateAsync: saveVersion, isLoading: isSavingVersion } =
         useSaveFormVersion();
 
-    const isSaving = isCreating || isSavingVersion;
+    const isSaving = isCreating || isSavingVersion || isPreviewing;
 
     const handleEnter = useCallback(() => {
         setTab(selectedFormId ? 0 : 1);
+        setDiff(null);
     }, [selectedFormId]);
 
     const handleSaveNewVersion = useCallback(async () => {
         if (!selectedFormId) return;
+        if (!diff) {
+            setIsPreviewing(true);
+            try {
+                const preview = await previewFormAIVersion(
+                    selectedFormId,
+                    xlsformUuid,
+                );
+                if (
+                    preview.removed_questions.length > 0 ||
+                    preview.modified_questions.length > 0
+                ) {
+                    setDiff(preview);
+                    return;
+                }
+            } catch {
+                // an invalid XLSForm is reported by the save itself
+            } finally {
+                setIsPreviewing(false);
+            }
+        }
         try {
             const result = await saveVersion({
                 formId: selectedFormId,
@@ -147,7 +174,14 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
         } catch {
             // error already displayed by useSnackMutation
         }
-    }, [selectedFormId, xlsformUuid, saveVersion, onSaveNewVersion, onClose]);
+    }, [
+        selectedFormId,
+        diff,
+        xlsformUuid,
+        saveVersion,
+        onSaveNewVersion,
+        onClose,
+    ]);
 
     const handleSaveNewForm = useCallback(async () => {
         if (
@@ -215,121 +249,158 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="sm"
+            maxWidth={diff ? 'md' : 'sm'}
             fullWidth
             TransitionProps={{ onEnter: handleEnter }}
         >
             <DialogTitle>{formatMessage(MESSAGES.saveForm)}</DialogTitle>
             <DialogContent>
-                <Tabs
-                    value={tab}
-                    onChange={(_e, v) => setTab(v)}
-                    sx={styles.tabs}
-                >
-                    <Tab
-                        label={formatMessage(MESSAGES.saveAsNewVersion)}
-                        disabled={!selectedFormId}
+                {diff && selectedFormId ? (
+                    <FormVersionsDiffConfirmation
+                        formId={selectedFormId}
+                        diff={diff}
                     />
-                    <Tab label={formatMessage(MESSAGES.saveAsNewForm)} />
-                </Tabs>
+                ) : (
+                    <>
+                        <Tabs
+                            value={tab}
+                            onChange={(_e, v) => setTab(v)}
+                            sx={styles.tabs}
+                        >
+                            <Tab
+                                label={formatMessage(MESSAGES.saveAsNewVersion)}
+                                disabled={!selectedFormId}
+                            />
+                            <Tab
+                                label={formatMessage(MESSAGES.saveAsNewForm)}
+                            />
+                        </Tabs>
 
-                {tab === 0 && selectedFormId && (
-                    <Typography>
-                        {formatMessage(MESSAGES.saveNewVersionOf)}{' '}
-                        <strong>{selectedFormName}</strong>
-                    </Typography>
-                )}
+                        {tab === 0 && selectedFormId && (
+                            <Typography>
+                                {formatMessage(MESSAGES.saveNewVersionOf)}{' '}
+                                <strong>{selectedFormName}</strong>
+                            </Typography>
+                        )}
 
-                {tab === 1 && (
-                    <Box sx={styles.newFormFields}>
-                        <TextField
-                            label={formatMessage(MESSAGES.formName)}
-                            value={formName}
-                            onChange={e => setFormName(e.target.value)}
-                            fullWidth
-                            required
-                        />
-                        <TextField
-                            label={formatMessage(MESSAGES.formOdkId)}
-                            value={formOdkId}
-                            onChange={e =>
-                                setFormOdkId(sanitizeOdkId(e.target.value))
-                            }
-                            fullWidth
-                            helperText={formatMessage(MESSAGES.formOdkIdHelp)}
-                        />
-                        <Autocomplete
-                            multiple
-                            options={projectOptions ?? []}
-                            getOptionLabel={(option: any) => option.label ?? ''}
-                            value={selectedProjects}
-                            onChange={(_event, newValue) => {
-                                setSelectedProjects(newValue as any);
-                                if (newValue.length === 0) {
-                                    setSelectedOrgUnitTypes([]);
-                                    setSelectedOrgUnitGroups([]);
-                                }
-                            }}
-                            renderInput={params => (
+                        {tab === 1 && (
+                            <Box sx={styles.newFormFields}>
                                 <TextField
-                                    {...params}
-                                    label={formatMessage(MESSAGES.projects)}
+                                    label={formatMessage(MESSAGES.formName)}
+                                    value={formName}
+                                    onChange={e => setFormName(e.target.value)}
+                                    fullWidth
                                     required
                                 />
-                            )}
-                            isOptionEqualToValue={(option: any, value: any) =>
-                                option.value === value.value
-                            }
-                        />
-                        <Autocomplete
-                            multiple
-                            options={orgUnitTypeOptions ?? []}
-                            getOptionLabel={(option: any) => option.label ?? ''}
-                            value={selectedOrgUnitTypes}
-                            onChange={(_event, newValue) =>
-                                setSelectedOrgUnitTypes(newValue as any)
-                            }
-                            loading={isFetchingOrgUnitTypes}
-                            disabled={selectedProjects.length === 0}
-                            renderInput={params => (
                                 <TextField
-                                    {...params}
-                                    label={formatMessage(MESSAGES.orgUnitTypes)}
-                                    required={isOrgUnitTypeOrGroupMissing}
-                                />
-                            )}
-                            isOptionEqualToValue={(option: any, value: any) =>
-                                option.value === value.value
-                            }
-                        />
-                        <Autocomplete
-                            multiple
-                            options={orgUnitGroupOptions ?? []}
-                            getOptionLabel={(option: any) => option.label ?? ''}
-                            value={selectedOrgUnitGroups}
-                            onChange={(_event, newValue) =>
-                                setSelectedOrgUnitGroups(newValue as any)
-                            }
-                            loading={isFetchingOrgUnitGroups}
-                            disabled={selectedProjects.length === 0}
-                            renderInput={params => (
-                                <TextField
-                                    {...params}
-                                    label={formatMessage(
-                                        MESSAGES.orgUnitGroups,
+                                    label={formatMessage(MESSAGES.formOdkId)}
+                                    value={formOdkId}
+                                    onChange={e =>
+                                        setFormOdkId(
+                                            sanitizeOdkId(e.target.value),
+                                        )
+                                    }
+                                    fullWidth
+                                    helperText={formatMessage(
+                                        MESSAGES.formOdkIdHelp,
                                     )}
-                                    required={isOrgUnitTypeOrGroupMissing}
                                 />
-                            )}
-                            isOptionEqualToValue={(option: any, value: any) =>
-                                option.value === value.value
-                            }
-                        />
-                    </Box>
+                                <Autocomplete
+                                    multiple
+                                    options={projectOptions ?? []}
+                                    getOptionLabel={(option: any) =>
+                                        option.label ?? ''
+                                    }
+                                    value={selectedProjects}
+                                    onChange={(_event, newValue) => {
+                                        setSelectedProjects(newValue as any);
+                                        if (newValue.length === 0) {
+                                            setSelectedOrgUnitTypes([]);
+                                            setSelectedOrgUnitGroups([]);
+                                        }
+                                    }}
+                                    renderInput={params => (
+                                        <TextField
+                                            {...params}
+                                            label={formatMessage(
+                                                MESSAGES.projects,
+                                            )}
+                                            required
+                                        />
+                                    )}
+                                    isOptionEqualToValue={(
+                                        option: any,
+                                        value: any,
+                                    ) => option.value === value.value}
+                                />
+                                <Autocomplete
+                                    multiple
+                                    options={orgUnitTypeOptions ?? []}
+                                    getOptionLabel={(option: any) =>
+                                        option.label ?? ''
+                                    }
+                                    value={selectedOrgUnitTypes}
+                                    onChange={(_event, newValue) =>
+                                        setSelectedOrgUnitTypes(newValue as any)
+                                    }
+                                    loading={isFetchingOrgUnitTypes}
+                                    disabled={selectedProjects.length === 0}
+                                    renderInput={params => (
+                                        <TextField
+                                            {...params}
+                                            label={formatMessage(
+                                                MESSAGES.orgUnitTypes,
+                                            )}
+                                            required={
+                                                isOrgUnitTypeOrGroupMissing
+                                            }
+                                        />
+                                    )}
+                                    isOptionEqualToValue={(
+                                        option: any,
+                                        value: any,
+                                    ) => option.value === value.value}
+                                />
+                                <Autocomplete
+                                    multiple
+                                    options={orgUnitGroupOptions ?? []}
+                                    getOptionLabel={(option: any) =>
+                                        option.label ?? ''
+                                    }
+                                    value={selectedOrgUnitGroups}
+                                    onChange={(_event, newValue) =>
+                                        setSelectedOrgUnitGroups(
+                                            newValue as any,
+                                        )
+                                    }
+                                    loading={isFetchingOrgUnitGroups}
+                                    disabled={selectedProjects.length === 0}
+                                    renderInput={params => (
+                                        <TextField
+                                            {...params}
+                                            label={formatMessage(
+                                                MESSAGES.orgUnitGroups,
+                                            )}
+                                            required={
+                                                isOrgUnitTypeOrGroupMissing
+                                            }
+                                        />
+                                    )}
+                                    isOptionEqualToValue={(
+                                        option: any,
+                                        value: any,
+                                    ) => option.value === value.value}
+                                />
+                            </Box>
+                        )}
+                    </>
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} disabled={isSaving}>
+                <Button
+                    onClick={diff ? () => setDiff(null) : onClose}
+                    disabled={isSaving}
+                >
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
                 {tab === 0 && (

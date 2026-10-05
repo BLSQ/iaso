@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from iaso.models.metric import MetricValue
 from iaso.test import TestCase
-from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_exists_q_clauses, jsonlogic_to_q
+from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_exists_q_clauses, jsonlogic_to_q, variables
 
 
 class JsonLogicTests(TestCase):
@@ -263,3 +263,20 @@ class JsonLogicQueryBuilderTextOperatorsTests(TestCase):
         filters = {"in": [{"var": "name"}, "john"]}
         q, _ = instance_jsonlogic_to_q(filters, field_prefix="json__")
         self.assertEqual(str(q), "(AND: ('json__name__icontains', 'john'))")
+
+
+class JsonLogicVariablesTests(TestCase):
+    def test_every_name_read_at_any_depth(self):
+        condition = {
+            "and": [
+                {">": [{"var": "age"}, 60]},
+                {"in": ["F", {"var": ["gender", ""]}]},
+                {"!": {"var": "deceased"}},
+            ]
+        }
+        self.assertEqual(list(variables(condition)), ["age", "gender", "deceased"])
+
+    def test_no_variables(self):
+        for condition in ({}, {"==": [1, 1]}, True, None, {"var": ""}, {"var": []}):
+            with self.subTest(condition=condition):
+                self.assertEqual(list(variables(condition)), [])

@@ -99,8 +99,6 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     import_instances(instances_data, user, project.app_id, api_import=api_import, cache=cache)
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
-                    # The batch's instances share a few (form, version) pairs: look each up once.
-                    form_versions_cache = {}
                     # One INSERT per chunk of audit rows instead of one per instance
                     modifications = []
 
@@ -108,7 +106,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         uuid = instance_data["id"]
                         instance = cache.instance(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
-                        instance = process_instance_xml(instance, instance_data, zip_ref, user, form_versions_cache)
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user, cache.form_versions)
                         if instance is None:
                             continue
                         stats["new_instances"] += 1

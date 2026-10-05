@@ -99,3 +99,32 @@ class InstanceImportCacheTestCase(TestCase):
         cache.add_entity(entity)
 
         self.assertEqual(cache.entities(new_uuid, str(entity_type.id)), [entity])
+
+    def test_forms_in_a_single_query(self):
+        registration = m.Form.objects.create(name="Registration")
+        follow_up = m.Form.objects.create(name="Follow-up")
+        cache = InstanceImportCache([])
+
+        with self.assertNumQueries(1):
+            cache.prefetch_forms([registration.id, follow_up.id, registration.id])
+
+        with self.assertNumQueries(0):
+            self.assertEqual(cache.form(registration.id), registration)
+            self.assertEqual(cache.form(follow_up.id), follow_up)
+            self.assertIsNone(cache.form(0))
+            self.assertIsNone(cache.form(None))
+
+    def test_reference_form_looked_up_once_per_entity_type(self):
+        registration = m.Form.objects.create(name="Registration")
+        entity_type = m.EntityType.objects.create(name="Patient", account=self.account, reference_form=registration)
+        existing_patient = m.Entity.objects.create(uuid=uuid.uuid4(), entity_type=entity_type, account=self.account)
+        existing_patient = m.Entity.objects.get(id=existing_patient.id)  # without its entity type loaded
+        # Created as `find_entity()` does, with the payload's string entity type id
+        new_patient = m.Entity.objects.create(
+            uuid=uuid.uuid4(), entity_type_id=str(entity_type.id), account=self.account
+        )
+        cache = InstanceImportCache([])
+
+        with self.assertNumQueries(1):
+            self.assertEqual(cache.reference_form_id(existing_patient), registration.id)
+            self.assertEqual(cache.reference_form_id(new_patient), registration.id)

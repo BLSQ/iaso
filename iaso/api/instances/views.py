@@ -1143,13 +1143,6 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     rtn_instances = []
 
-    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at
-    # the same few forms - fetch those once up front instead of lazily once per instance.
-    form_ids = {int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None}
-    forms_by_id = {form.id: form for form in Form.objects.filter(id__in=form_ids)}
-    # Same for entity types (typically a single one per batch): only their reference form is needed.
-    reference_form_ids_by_entity_type_id = {}
-
     file_names = {ntpath.basename(instance_data["file"]) for instance_data in instances if instance_data.get("file")}
     uuids_by_file_name = defaultdict(set)
     for existing_file_name, existing_uuid in Instance.objects.filter(file_name__in=file_names).values_list(
@@ -1160,6 +1153,10 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
 
     if cache is None:
         cache = InstanceImportCache([instance_data.get("id") for instance_data in instances])
+    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at the same few forms
+    cache.prefetch_forms(
+        int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None
+    )
     cache.prefetch_entities(
         project.account,
         [
@@ -1225,9 +1222,10 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
         # Normalize to int: the mobile app sends this as a JSON string (e.g. "1"), which would make
         # id comparisons (e.g. against `entity_type.reference_form_id`) silently fail ("1" != 1).
         instance.form_id = int(raw_form_id) if raw_form_id is not None else None
-        if instance.form_id in forms_by_id:
-            # Share the prefetched Form across instances, so `instance.form` doesn't re-query it.
-            instance.form = forms_by_id[instance.form_id]
+        prefetched_form = cache.form(instance.form_id)
+        if prefetched_form:
+            # Shared by the batch's instances, so `instance.form` doesn't query it again
+            instance.form = prefetched_form
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
@@ -1263,11 +1261,7 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
             instance.entity = entity
 
             # If instance's form is the same as the type reference form, set the instance as reference_instance
-            # int(): entities created above by `find_entity()` keep the payload's string entityTypeId.
-            entity_type_id = int(entity.entity_type_id)
-            if entity_type_id not in reference_form_ids_by_entity_type_id:
-                reference_form_ids_by_entity_type_id[entity_type_id] = entity.entity_type.reference_form_id
-            if reference_form_ids_by_entity_type_id[entity_type_id] == instance.form_id:
+            if cache.reference_form_id(entity) == instance.form_id:
                 entity.attributes = instance
                 entity.save()
 

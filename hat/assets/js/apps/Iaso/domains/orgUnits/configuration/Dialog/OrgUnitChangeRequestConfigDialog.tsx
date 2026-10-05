@@ -1,8 +1,10 @@
 import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Typography } from '@mui/material';
+import { AutocompleteRenderGetTagProps } from '@mui/material/Autocomplete';
 import {
     ConfirmCancelModal,
     LoadingSpinner,
+    renderTags,
     useSafeIntl,
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
@@ -10,10 +12,12 @@ import { isEqual } from 'lodash';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
+import { DropdownOptions } from '../../../../types/utils';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetGroupSetsDropdown } from '../../hooks/requests/useGetGroupSets';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import {
+    creationMandatoryEditableField,
     editableFieldsManyToManyFields,
     orgUnitChangeRequestConfigTypeCreation,
 } from '../constants';
@@ -61,7 +65,9 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
             type: config.type,
             orgUnitTypeId: config.orgUnitType.id,
             orgUnitsEditable: isCreation ? true : undefined,
-            editableFields: undefined,
+            editableFields: isCreation
+                ? creationMandatoryEditableField
+                : undefined,
             possibleTypeIds: undefined,
             possibleParentTypeIds: undefined,
             groupSetIds: undefined,
@@ -81,9 +87,25 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
         useRetrieveOrgUnitChangeRequestConfig(config?.id);
     useEffect(() => {
         if (fetchedConfig) {
-            setValues(fetchedConfig);
+            const fields = fetchedConfig.editableFields
+                ? fetchedConfig.editableFields.split(',')
+                : [];
+            if (
+                isCreation &&
+                !fields.includes(creationMandatoryEditableField)
+            ) {
+                setValues({
+                    ...fetchedConfig,
+                    editableFields: [
+                        creationMandatoryEditableField,
+                        ...fields,
+                    ].join(','),
+                });
+            } else {
+                setValues(fetchedConfig);
+            }
         }
-    }, [fetchedConfig, setValues]);
+    }, [fetchedConfig, isCreation, setValues]);
     const {
         data: orgUnitTypeOptions,
         isFetching: isFetchingOrgUnitTypeOptions,
@@ -118,7 +140,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     });
 
     const onChange = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: boolean | string) => {
             setFieldTouched(keyValue, true);
             setFieldValue(keyValue, value);
         },
@@ -126,23 +148,56 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     );
 
     const onChangeEditableFields = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: string) => {
+            let newValue = value;
+            if (isCreation) {
+                const split = newValue ? newValue.split(',') : [];
+                if (!split.includes(creationMandatoryEditableField)) {
+                    newValue = [creationMandatoryEditableField, ...split].join(
+                        ',',
+                    );
+                }
+            }
             // if a many-to-many field has some value, but the field is removed from editableFields, we need to clean the field
-            if (value) {
-                const split = value.split(',');
+            if (newValue) {
+                const split = newValue.split(',');
                 editableFieldsManyToManyFields.forEach(field => {
                     if (!split.includes(field)) {
                         setFieldValue(field, undefined);
                     }
                 });
             }
-            onChange(keyValue, value);
+            onChange(keyValue, newValue);
         },
-        [onChange, setFieldValue],
+        [isCreation, onChange, setFieldValue],
+    );
+
+    const renderEditableFieldsTags = useCallback(
+        (
+            tagValue: DropdownOptions<string>[],
+            getTagProps: AutocompleteRenderGetTagProps,
+        ) =>
+            renderTags((option: DropdownOptions<string>) => option.label)(
+                tagValue,
+                ({ index }: { index: number }) => {
+                    const tagProps = getTagProps({ index });
+                    if (
+                        isCreation &&
+                        tagValue[index]?.value ===
+                            creationMandatoryEditableField
+                    ) {
+                        const { onDelete: _onDelete, ...restTagProps } =
+                            tagProps;
+                        return restTagProps;
+                    }
+                    return tagProps;
+                },
+            ),
+        [isCreation],
     );
 
     const onChangeOrgUnitsEditable = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: string) => {
             // if we say that the org units are no longer editable, we need to clean everything up
             const boolValue = value === 'true';
             if (!boolValue) {
@@ -214,6 +269,8 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     errors={getErrors('editableFields')}
                     label={MESSAGES.editableFields}
                     options={orgUnitEditableFieldsOptions}
+                    renderTags={renderEditableFieldsTags}
+                    clearable={!isCreation}
                 />
             )}
             {values?.orgUnitsEditable && (

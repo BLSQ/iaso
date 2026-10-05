@@ -7,7 +7,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
@@ -1086,7 +1086,16 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
 
-def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int] = None) -> Entity:
+def find_entity(
+    account: Account,
+    entity_uuid: str,
+    entity_type_id: Optional[int] = None,
+    existing_entities: Optional[List[Entity]] = None,
+) -> Entity:
+    """
+    `existing_entities`: the entities matching (even soft-deleted), when the caller already looked them up - see
+    `InstanceImportCache.entities()`.
+    """
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
     # If a non-deleted entity was found, ignore potential duplicates.
     if entity_type_id is not None:
@@ -1100,7 +1109,8 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
             "uuid": entity_uuid,
             "account": account,
         }
-    existing_entities = list(Entity.objects_include_deleted.filter(**filters))
+    if existing_entities is None:
+        existing_entities = list(Entity.objects_include_deleted.filter(**filters))
 
     if len(existing_entities) == 0:
         if entity_type_id is not None:
@@ -1150,6 +1160,14 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
 
     if cache is None:
         cache = InstanceImportCache([instance_data.get("id") for instance_data in instances])
+    cache.prefetch_entities(
+        project.account,
+        [
+            (instance_data["entityUuid"], instance_data["entityTypeId"])
+            for instance_data in instances
+            if instance_data.get("entityUuid") and instance_data.get("entityTypeId")
+        ],
+    )
 
     for instance_data in instances:
         uuid = instance_data.get("id", None)
@@ -1216,7 +1234,10 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
         entity_uuid = instance_data.get("entityUuid", None)
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:
-            entity = find_entity(project.account, entity_uuid, entity_type_id)
+            existing_entities = cache.entities(entity_uuid, entity_type_id)
+            entity = find_entity(project.account, entity_uuid, entity_type_id, existing_entities=existing_entities)
+            if existing_entities == []:  # none yet: `find_entity()` created it
+                cache.add_entity(entity)
 
             if entity.deleted_at:
                 logger.info(

@@ -638,9 +638,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # xml_file_to_json and the conversions don't re-query it). `iaso_entitytype`: 1 query per
         # distinct entity type, whose reference form import_data() caches for the batch.
         # `iaso_orgunit`: 5 to import orgUnits.json, then 1 per distinct org unit, which import_data()
-        # caches for the batch. Its entity lookups are still done once per instance (no batch
-        # prefetch/caching yet), so `iaso_entity` is O(instances) - bounded at its exact observed
-        # value, to be tightened once those lookups get cached. `iaso_formversion`: 1 query per distinct (form, version) pair (2
+        # caches for the batch. `iaso_entity`: the batch's entities looked up once (1), then for each
+        # new entity, its creation (1) and its reference instance set (1). `iaso_formversion`: 1 query per distinct (form, version) pair (2
         # here), from `xml_file_to_json` via the batch's `form_versions_cache` -
         # `get_and_save_json_of_xml` reuses the FormVersion it already found there instead of
         # looking it up again via `resolve_form_version()`. `iaso_instance`: 5/instance -
@@ -668,7 +667,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 {
                     "iaso_orgunit": 6,
                     "iaso_form": 1,
-                    "iaso_entity": 8,
+                    "iaso_entity": 5,
                     "iaso_formversion": 2,
                     "iaso_instance": 23,
                     "audit_modification": 1,
@@ -685,7 +684,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 86)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 83)
             # S3 round trips: the zip download, then 1 upload per instance XML + 1 for the attachment (its duplicate
             # reuses the stored file), each preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False`. It was 9
             # `exists()` when the 128-char XML paths were over Django's default `max_length` of 100, each also checking
@@ -735,8 +734,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Entity.objects.count(), 25)
 
         # Same per-instance import_data() lookups as the baseline test (see comment there), at
-        # 12.5x the instance count (50 vs 4): `iaso_entity` scales with the batch, `iaso_orgunit` stays at
-        # the baseline's 6 (a single org unit).
+        # 12.5x the instance count (50 vs 4): `iaso_entity` scales with the new entities only (1 + 2 x 25),
+        # `iaso_orgunit` stays at the baseline's 6 (a single org unit).
         # `iaso_form`/`iaso_entitytype` stay at 1 query per distinct form/entity type, as in the baseline. `iaso_formversion`: same 2 distinct (form, version) pairs as the baseline, so still 2.
         # `iaso_instance`: 5/instance as the baseline test (see comment there), at scale: 250, + 1 per batch.
         # `audit_modification`: still a single bulk INSERT at scale. The rest is the same fixed
@@ -750,7 +749,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 {
                     "iaso_orgunit": 6,
                     "iaso_form": 1,
-                    "iaso_entity": 100,
+                    "iaso_entity": 51,
                     "iaso_formversion": 2,
                     "iaso_instance": 252,
                     "audit_modification": 1,
@@ -766,7 +765,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 495)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 446)
             # S3 round trips: the zip download, then 1 upload per instance XML (no attachment in this zip), each
             # preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False` makes it look for an available name -
             # 100 when the XML paths were over the field's `max_length`, each also checking its truncated name.
@@ -864,6 +863,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         # its json): the registrations are found in the batch's instances. It was 277: 3 more per existing registration
         # and 1 more per new follow-up, each looked up by uuid on its own.
         self.assertEqual(profiler.table_counts()["iaso_instance"], 2 + 25 * 5 + 25 * 2)
+        # Entities: the batch's looked up once (1), the registrations' coming with them (read when updating them). It
+        # was 50: each follow-up's patient looked up on its own, each updated registration's entity loaded on its own.
+        self.assertEqual(profiler.table_counts()["iaso_entity"], 1)
 
         self.assertEqual(m.Instance.objects.count(), 50)
         self.assertEqual(m.Entity.objects.count(), 25)

@@ -1,3 +1,7 @@
+import uuid
+
+from django.utils import timezone
+
 from iaso import models as m
 from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.test import TestCase
@@ -49,3 +53,49 @@ class InstanceImportCacheTestCase(TestCase):
 
         with self.assertRaises(m.OrgUnit.DoesNotExist):
             cache.org_unit("facility-uuid", None)
+
+    def test_existing_entities_in_a_single_query(self):
+        entity_type = m.EntityType.objects.create(name="Patient", account=self.account)
+        patient = m.Entity.objects.create(uuid=uuid.uuid4(), entity_type=entity_type, account=self.account)
+        # Older data can have several entities with the same uuid, even soft-deleted ones
+        duplicated_uuid = uuid.uuid4()
+        duplicate = m.Entity.objects.create(uuid=duplicated_uuid, entity_type=entity_type, account=self.account)
+        deleted_duplicate = m.Entity.objects.create(
+            uuid=duplicated_uuid, entity_type=entity_type, account=self.account, deleted_at=timezone.now()
+        )
+        other_account = m.Account.objects.create(name="Other account")
+        m.Entity.objects.create(uuid=patient.uuid, entity_type=entity_type, account=other_account)
+        new_uuid = str(uuid.uuid4())
+        cache = InstanceImportCache([])
+
+        with self.assertNumQueries(1):
+            cache.prefetch_entities(
+                self.account,
+                [
+                    # As sent by the mobile app: strings, the uuid possibly in capitals
+                    (str(patient.uuid).upper(), str(entity_type.id)),
+                    (str(duplicated_uuid), str(entity_type.id)),
+                    (new_uuid, str(entity_type.id)),
+                    ("not-a-uuid", str(entity_type.id)),
+                ],
+            )
+
+        with self.assertNumQueries(0):
+            self.assertEqual(cache.entities(str(patient.uuid), entity_type.id), [patient])
+            self.assertCountEqual(cache.entities(str(duplicated_uuid), entity_type.id), [duplicate, deleted_duplicate])
+            self.assertEqual(cache.entities(new_uuid, entity_type.id), [])
+            # Not prefetched: up to `find_entity()` to look them up
+            self.assertIsNone(cache.entities(str(uuid.uuid4()), entity_type.id))
+            self.assertIsNone(cache.entities("not-a-uuid", entity_type.id))
+
+    def test_add_entity(self):
+        entity_type = m.EntityType.objects.create(name="Patient", account=self.account)
+        new_uuid = str(uuid.uuid4())
+        cache = InstanceImportCache([])
+        cache.prefetch_entities(self.account, [(new_uuid, str(entity_type.id))])
+        # Created as `find_entity()` does, with the payload's strings
+        entity = m.Entity.objects.create(uuid=new_uuid, entity_type_id=str(entity_type.id), account=self.account)
+
+        cache.add_entity(entity)
+
+        self.assertEqual(cache.entities(new_uuid, str(entity_type.id)), [entity])

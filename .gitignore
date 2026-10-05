@@ -220,3 +220,6 @@ iaso-enketo/
 
 # default open API file for orval
 openapi.json
+
+.schemathesis/
+schemathesis-report/

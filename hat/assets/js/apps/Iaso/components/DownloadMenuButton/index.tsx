@@ -1,13 +1,6 @@
-import React, {
-    FunctionComponent,
-    ReactNode,
-    useCallback,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import DatasetOutlinedIcon from '@mui/icons-material/DatasetOutlined';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import PublicIcon from '@mui/icons-material/Public';
 import {
     Box,
     Button,
@@ -18,101 +11,16 @@ import {
     MenuItem,
     Typography,
 } from '@mui/material';
-import { CsvSvg, ExcellSvg, useSafeIntl } from 'bluesquare-components';
-import { defineMessages } from 'react-intl';
+import { useSafeIntl } from 'bluesquare-components';
 import {
     DownloadState,
     useDownloadWithProgress,
-} from '../hooks/useDownloadWithProgress';
+} from '../../hooks/useDownloadWithProgress';
+import MESSAGES from './messages';
+import { DownloadOption } from './types';
 
-const MESSAGES = defineMessages({
-    download: {
-        id: 'iaso.label.download',
-        defaultMessage: 'Download',
-    },
-    preparing: {
-        id: 'iaso.label.downloadPreparing',
-        defaultMessage:
-            'Preparing the file, this can take a while for big exports…',
-    },
-    downloadingPercent: {
-        id: 'iaso.label.downloadingPercent',
-        defaultMessage: 'Downloading: {percent}%',
-    },
-    downloadingSize: {
-        id: 'iaso.label.downloadingSize',
-        defaultMessage: 'Downloading: {size} MB',
-    },
-    parquetSimplifiedGeom: {
-        id: 'iaso.label.parquetSimplifiedGeom',
-        defaultMessage: 'Parquet (with simplified geometry)',
-    },
-});
-
-export type DownloadOption = {
-    // also used as the extension of the file when the server doesn't name it
-    key: string;
-    label: string;
-    url: string;
-    icon?: ReactNode;
-    // extension of the file when different from the key (ex: several parquet options)
-    extension?: string;
-};
-
-export type DownloadFormat =
-    | 'csv'
-    | 'xlsx'
-    | 'gpkg'
-    | 'parquet'
-    | 'parquet_simplified_geom';
-
-/** the usual formats, with their label and icon */
-export const useDownloadOption = (): ((
-    format: DownloadFormat,
-    url: string,
-) => DownloadOption) => {
-    const { formatMessage } = useSafeIntl();
-    return useCallback(
-        (format: DownloadFormat, url: string) => {
-            switch (format) {
-                case 'csv':
-                    return { key: format, url, label: 'CSV', icon: <CsvSvg /> };
-                case 'xlsx':
-                    return {
-                        key: format,
-                        url,
-                        label: 'XLSX',
-                        icon: <ExcellSvg />,
-                    };
-                case 'gpkg':
-                    return {
-                        key: format,
-                        url,
-                        label: 'GPKG',
-                        icon: <PublicIcon />,
-                    };
-                case 'parquet':
-                    return {
-                        key: format,
-                        url,
-                        label: 'Parquet',
-                        icon: <DatasetOutlinedIcon />,
-                    };
-                case 'parquet_simplified_geom':
-                    return {
-                        key: format,
-                        url,
-                        extension: 'parquet',
-                        label: formatMessage(MESSAGES.parquetSimplifiedGeom),
-                        icon: <DatasetOutlinedIcon />,
-                    };
-                default:
-                    throw new Error(`Unknown download format ${format}`);
-            }
-        },
-        [formatMessage],
-    );
-};
+export { useDownloadOption } from './hooks/useDownloadOption';
+export type { DownloadFormat, DownloadOption } from './types';
 
 type Props = {
     options: DownloadOption[];

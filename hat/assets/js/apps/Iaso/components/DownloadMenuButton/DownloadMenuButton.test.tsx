@@ -1,9 +1,10 @@
 import React from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
-import { DownloadMenuButton, DownloadOption } from './DownloadMenuButton';
-import { openSnackBar } from './snackBars/EventDispatcher';
+import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
+import { openSnackBar } from '../snackBars/EventDispatcher';
+import { DownloadOption } from './types';
+import { DownloadMenuButton } from '.';
 
 vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
@@ -20,7 +21,7 @@ vi.mock('bluesquare-components', async () => {
     };
 });
 
-vi.mock('./snackBars/EventDispatcher', () => ({ openSnackBar: vi.fn() }));
+vi.mock('../snackBars/EventDispatcher', () => ({ openSnackBar: vi.fn() }));
 
 // data-test attributes (not data-testid)
 const get = (dataTest: string): HTMLElement => {

@@ -29,6 +29,14 @@ vi.mock('Iaso/utils/usersUtils', () => ({
     useCurrentUser: mockCurrentUser,
 }));
 
+const { mockCurrentAccount } = vi.hoisted(() => {
+    return { mockCurrentAccount: vi.fn() };
+});
+
+vi.mock('Iaso/domains/accounts/hooks', () => ({
+    useCurrentAccount: mockCurrentAccount,
+}));
+
 describe('InstanceValidationWidgetPaper a11y', () => {
     const baseProps = { currentInstanceId: 42 };
 
@@ -48,10 +56,11 @@ describe('InstanceValidationWidgetPaper a11y', () => {
         });
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             is_superuser: true,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
         });
 
         const { container } = renderWithThemeAndIntlProvider(
@@ -68,10 +77,11 @@ describe('InstanceValidationWidgetPaper a11y', () => {
     it('no module state is accessible', async () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [],
-            },
             is_superuser: true,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [],
         });
 
         const { container } = renderWithThemeAndIntlProvider(
@@ -89,10 +99,11 @@ describe('InstanceValidationWidgetPaper a11y', () => {
     it('no permissions state is accessible', async () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             is_superuser: false,
+        });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
         });
 
         const { container } = renderWithThemeAndIntlProvider(
@@ -116,11 +127,13 @@ describe('InstanceValidationWidgetPaper a11y', () => {
     it('valid state is accessible', async () => {
         mockCurrentUser.mockReturnValue({
             id: 1,
-            account: {
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
             permissions: [VALIDATION_WORKFLOWS, SUBMISSIONS],
         });
+
+        mockCurrentAccount.mockReturnValue({
+            modules: [VALIDATION_WORKFLOW_MODULE],
+        });
+
         (useGetSubmissionValidationStatus as any).mockReturnValue({
             data: { foo: 'bar' },
             isLoading: false,
@@ -130,6 +143,9 @@ describe('InstanceValidationWidgetPaper a11y', () => {
             <InstanceValidationWidgetPaper {...baseProps} />,
         );
 
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });

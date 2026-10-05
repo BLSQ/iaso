@@ -14,8 +14,7 @@ import { baseUrls } from '../../../constants/urls';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { sendDhisOuImporterRequest } from '../requests';
 import { VersionDescription } from './VersionDescription';
@@ -48,7 +47,6 @@ export const AddTask: FunctionComponent<Props> = ({
     sourceVersionNumber,
     sourceCredentials = {},
 }) => {
-    const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
@@ -212,9 +210,8 @@ export const AddTask: FunctionComponent<Props> = ({
             ]}
         />
     );
-    const hasTaskPermission = userHasPermission(
+    const hasTaskPermission = useCurrentUserHasPermission(
         Permission.DATA_TASKS,
-        currentUser,
     );
 
     const additionalButtonProps = useMemo(() => {

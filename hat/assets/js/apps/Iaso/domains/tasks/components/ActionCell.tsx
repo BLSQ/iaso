@@ -6,9 +6,8 @@ import { TaskModal } from 'Iaso/domains/tasks/components/TaskModal';
 import { useKillTask, useRelaunchTask } from 'Iaso/domains/tasks/hooks/api';
 import MESSAGES from 'Iaso/domains/tasks/messages';
 import { Task } from 'Iaso/domains/tasks/types';
-import { userHasPermission } from 'Iaso/domains/users/utils';
+import { useCurrentUserHasPermission } from 'Iaso/domains/users/utils';
 import { POLIO_NOTIFICATIONS } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 export type Props = {
     task: Task<any>;
@@ -16,10 +15,8 @@ export type Props = {
 
 export const TaskActionCell: FunctionComponent<Props> = ({ task }) => {
     const { formatMessage } = useSafeIntl();
-    const hasPolioNotificationsPerm = userHasPermission(
-        POLIO_NOTIFICATIONS,
-        useCurrentUser(),
-    );
+    const hasPolioNotificationsPerm =
+        useCurrentUserHasPermission(POLIO_NOTIFICATIONS);
     const { mutateAsync: killTaskAction } = useKillTask();
     const { mutateAsync: relaunchTaskAction } = useRelaunchTask();
     return (

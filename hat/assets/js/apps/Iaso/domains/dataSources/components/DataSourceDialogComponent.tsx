@@ -17,9 +17,11 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { userHasPermission, userHasAccessToModule } from '../../users/utils';
+import {
+    useCurrentUserHasPermission,
+    useCurrentUserHasAccessToModule,
+} from '../../users/utils';
 import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors';
 import MESSAGES from '../messages';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
@@ -146,12 +148,10 @@ export const DataSourceDialogComponent: FunctionComponent<Props> = ({
     const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false);
     const { formatMessage } = useSafeIntl();
 
-    const currentUser = useCurrentUser();
-    const userCanChangeDefaultVersion = userHasPermission(
+    const userCanChangeDefaultVersion = useCurrentUserHasPermission(
         Permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION,
-        currentUser,
     );
-    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
+    const hasDhis2Module = useCurrentUserHasAccessToModule('DHIS2_MAPPING');
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
         closeDialog();

@@ -2,8 +2,8 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { Alert, Box, Grid } from '@mui/material';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { SxStyles } from 'Iaso/types/general';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useAppLocales } from '../../app/constants';
 
@@ -48,11 +48,11 @@ export const UsersInfos: FunctionComponent<Props> = ({
     setEmail,
     mode,
 }) => {
-    const loggedUser = useCurrentUser();
+    const loggedUserAccount = useCurrentAccount();
     const { formatMessage } = useSafeIntl();
 
     const isEmailAdressExist = isEmpty(currentUser.email?.value);
-    const sendUserEmailInvitation = !!isEmailAdressExist;
+    const sendUserEmailInvitation = isEmailAdressExist;
     const sendUserIEmailnvitationLabel = isEmailAdressExist
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
@@ -80,7 +80,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
                     {formatMessage(
                         MESSAGES.multiAccountUserInfoDisabledWarning,
                         {
-                            account: loggedUser.account?.name,
+                            account: loggedUserAccount?.name ?? '',
                         },
                     )}
                 </Alert>
@@ -131,7 +131,6 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         <UsersInfosExtraFields
                             setFieldValue={setFieldValue}
                             currentUser={currentUser}
-                            loggedUser={loggedUser}
                             canBypassProjectRestrictions={
                                 canBypassProjectRestrictions
                             }
@@ -196,7 +195,10 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         }}
                         label={MESSAGES.phoneNumber}
                     />
-                    {userHasAccessToModule('DHIS2_MAPPING', loggedUser) && (
+                    {userHasAccessToModule(
+                        'DHIS2_MAPPING',
+                        loggedUserAccount,
+                    ) && (
                         <InputComponent
                             keyValue="dhis2_id"
                             onChange={(key, value) => setFieldValue(key, value)}
@@ -255,7 +257,6 @@ export const UsersInfos: FunctionComponent<Props> = ({
                         <UsersInfosExtraFields
                             setFieldValue={setFieldValue}
                             currentUser={currentUser}
-                            loggedUser={loggedUser}
                             canBypassProjectRestrictions={
                                 canBypassProjectRestrictions
                             }

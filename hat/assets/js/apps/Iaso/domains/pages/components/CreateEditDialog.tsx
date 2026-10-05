@@ -55,7 +55,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
     const handleSubmit = (values, helpers) => {
         const tempValues = { ...values };
-        const users = values.users || [currentUser.user_id];
+        const users = values.users || [currentUser?.user_id];
         tempValues.users = users;
         savePage(tempValues, {
             onSuccess: () => {

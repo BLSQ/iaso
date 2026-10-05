@@ -15,9 +15,8 @@ import {
 } from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
 import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { Selection } from '../../../orgUnits/types/selection';
-import { userHasPermission } from '../../../users/utils';
+import { useCurrentUserHasPermission } from '../../../users/utils';
 import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
 import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import MESSAGES from '../../messages';
@@ -43,7 +42,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     const ORG_UNIT_HAS_ALREADY_GPS = 'orgUnitHasAlreadyGps';
 
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
 
     const redirectTo = useRedirectTo();
 
@@ -111,9 +109,8 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         [approveOrgUnitHasGps, approveSubmissionNoHasGps],
     );
 
-    const hasTaskPermission = userHasPermission(
+    const hasTaskPermission = useCurrentUserHasPermission(
         Permission.DATA_TASKS,
-        currentUser,
     );
 
     const evaluateWarning = (

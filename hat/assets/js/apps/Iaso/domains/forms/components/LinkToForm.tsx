@@ -2,8 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import { useCurrentUserHasPermission } from '../../users/utils';
 
 type Props = {
     formId: string | number;
@@ -11,8 +10,7 @@ type Props = {
 };
 
 export const LinkToForm: FunctionComponent<Props> = ({ formId, formName }) => {
-    const user = useCurrentUser();
-    const condition = userHasPermission(Permission.FORMS, user);
+    const condition = useCurrentUserHasPermission(Permission.FORMS);
     const url = `/${baseUrls.formDetail}/formId/${formId}`;
     return <LinkTo condition={condition} url={url} text={formName} />;
 };

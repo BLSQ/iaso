@@ -18,6 +18,7 @@ import {
 import classnames from 'classnames';
 
 import { isEqual } from 'lodash';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { getColor } from 'Iaso/hooks/useGetColors';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { SearchButton } from '../../../components/SearchButton';
@@ -25,7 +26,6 @@ import { SearchButton } from '../../../components/SearchButton';
 import { baseUrls } from '../../../constants/urls';
 
 import { ORG_UNITS } from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { Count } from '../hooks/requests/useGetOrgUnits';
 import MESSAGES from '../messages';
 import { OrgUnitParams } from '../types/orgUnit';
@@ -77,15 +77,15 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     counts,
     colors,
 }) => {
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const redirectTo = useRedirectTo();
 
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const defaultVersion = useMemo(
-        () => currentUser?.account?.default_version,
-        [currentUser],
+        () => currentAccount?.default_version,
+        [currentAccount],
     );
     const defaultSource = useMemo(
         () => defaultVersion?.data_source,

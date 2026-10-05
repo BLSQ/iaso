@@ -17,10 +17,10 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router-dom';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { useMenuItems } from '../../../constants/menu';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 import { baseUrls } from '../../../constants/urls';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useSidebar } from '../contexts/SideBarContext';
 import { LogoAndTitle } from './LogoAndTitle';
 import MenuItem from './MenuItemComponent';
@@ -92,17 +92,17 @@ type Props = { location: any };
 const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
     const classes: Record<string, string> = useStyles();
     const { toggleSidebar, isOpen } = useSidebar();
-    const onClick = url => {
+    const onClick = (url?: string) => {
         toggleSidebar();
         if (url) {
             window.open(url);
         }
     };
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
     const { formatMessage } = useSafeIntl();
     const menuItems = useMenuItems();
-    const userGuideUrl = currentUser.account?.user_manual_path;
-    const forumGuideUrl = currentUser.account?.forum_path;
+    const userGuideUrl = currentAccount?.user_manual_path;
+    const forumGuideUrl = currentAccount?.forum_path;
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
@@ -129,7 +129,6 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                             menuItem={menuItem}
                             onClick={(_, url) => onClick(url)}
                             url={menuItem.url}
-                            target="_blank"
                         />
                     ))}
                 </List>

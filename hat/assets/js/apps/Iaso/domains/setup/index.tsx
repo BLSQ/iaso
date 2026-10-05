@@ -8,6 +8,7 @@ import { makeStyles } from '@mui/styles';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { useHasNoAccount } from 'Iaso/domains/accounts/hooks';
 import { ModulesDropdown } from 'Iaso/domains/modules/components/ModulesDropdown';
 import InputComponent from '../../components/forms/InputComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -55,7 +56,7 @@ export const SetupAccount = () => {
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const isAdmin = currentUser.is_superuser || currentUser.is_staff;
+    const isAdmin = currentUser?.is_superuser || currentUser?.is_staff;
 
     const { mutateAsync: saveAccount, isLoading } = useSaveAccount();
     const {
@@ -121,7 +122,7 @@ export const SetupAccount = () => {
     });
 
     const allowConfirm = isValid && !isEqual(values, initialValues);
-    const hasAccount = Boolean(currentUser.account);
+    const hasAccount = !useHasNoAccount();
     return (
         <>
             <TopBar

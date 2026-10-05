@@ -8,12 +8,12 @@ import { useCompletenessStatsColumns } from './useCompletenessStatsColumns';
 // 1. --- MOCKING DEPENDENCIES ---
 
 // Hoist the permission mock so we can easily toggle it between tests
-const { mockUserHasPermission } = vi.hoisted(() => ({
-    mockUserHasPermission: vi.fn().mockReturnValue(true),
+const { mockUseCurrentUserHasOneOfPermissions } = vi.hoisted(() => ({
+    mockUseCurrentUserHasOneOfPermissions: vi.fn().mockReturnValue(true),
 }));
 
 vi.mock('../../users/utils', () => ({
-    userHasOneOfPermissions: mockUserHasPermission,
+    useCurrentUserHasOneOfPermissions: mockUseCurrentUserHasOneOfPermissions,
 }));
 
 vi.mock('../../../utils/usersUtils', () => ({
@@ -99,7 +99,7 @@ describe('useCompletenessStatsColumns', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Default to having permissions
-        mockUserHasPermission.mockReturnValue(true);
+        mockUseCurrentUserHasOneOfPermissions.mockReturnValue(true);
     });
 
     // Helper function to render a cell in the test DOM
@@ -154,7 +154,7 @@ describe('useCompletenessStatsColumns', () => {
 
     it('DOES NOT display the eye short-cut icon if the user lacks SUBMISSIONS permissions, even if submissions exist', () => {
         // Strip the user of their permissions
-        mockUserHasPermission.mockReturnValue(false);
+        mockUseCurrentUserHasOneOfPermissions.mockReturnValue(false);
 
         renderActionCell(rowDescendantsHaveSubmissions);
 

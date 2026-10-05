@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
 
 import { useLocation } from 'react-router-dom';
+import { useHasNoAccount } from 'Iaso/domains/accounts/hooks';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import SidebarMenu from '../../domains/app/components/SidebarMenuComponent';
-import { useCurrentUser, useHasNoAccount } from '../../utils/usersUtils';
 import PageError from './PageError';
 
 type Props = Omit<

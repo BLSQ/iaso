@@ -1,9 +1,8 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import {
-    userHasAllPermissions,
-    userHasOneOfPermissions,
-} from '../domains/users/utils';
-import { useCurrentUser } from '../utils/usersUtils';
+    useCurrentUserHasAllPermissions,
+    useCurrentUserHasOneOfPermissions,
+} from 'Iaso/domains/users/utils';
 
 type Props = {
     permissions: string[];
@@ -11,21 +10,42 @@ type Props = {
     strict?: boolean;
 };
 
+const DisplayIfUserHasPermNotStrict: FunctionComponent<
+    Omit<Props, 'strict'>
+> = ({ permissions, children }) => {
+    const hasPermissions = useCurrentUserHasOneOfPermissions(permissions);
+
+    if (hasPermissions && children) return <>{children}</>;
+
+    return null;
+};
+
+const DisplayIfUserHasPermStrict: FunctionComponent<Omit<Props, 'strict'>> = ({
+    permissions,
+    children,
+}) => {
+    const hasPermissions = useCurrentUserHasAllPermissions(permissions);
+    if (hasPermissions && children) return <>{children}</>;
+
+    return null;
+};
+
 export const DisplayIfUserHasPerm: FunctionComponent<Props> = ({
     permissions,
     children,
     strict = false,
 }) => {
-    const currentUser = useCurrentUser();
     if (strict) {
-        if (userHasAllPermissions(permissions, currentUser) && children) {
-            // Use fragment to avoid TS error when children is an array
-            return <>{children}</>;
-        }
-    } else if (userHasOneOfPermissions(permissions, currentUser) && children) {
-        // Use fragment to avoid TS error when children is an array
-        return <>{children}</>;
+        return (
+            <DisplayIfUserHasPermStrict permissions={permissions}>
+                {children}
+            </DisplayIfUserHasPermStrict>
+        );
+    } else {
+        return (
+            <DisplayIfUserHasPermNotStrict permissions={permissions}>
+                {children}
+            </DisplayIfUserHasPermNotStrict>
+        );
     }
-
-    return null;
 };

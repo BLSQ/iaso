@@ -4,12 +4,11 @@ import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';
 import {
-    userHasAccessToModule,
-    userHasPermission,
+    useCurrentUserHasAccessToModule,
+    useCurrentUserHasPermission,
 } from 'Iaso/domains/users/utils';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 type ValidationWorkflowDropdownProps = Omit<
     InputComponentProps,
@@ -19,11 +18,9 @@ type ValidationWorkflowDropdownProps = Omit<
 export const ValidationWorkflowDropdown = ({
     ...props
 }: ValidationWorkflowDropdownProps) => {
-    const currentUser = useCurrentUser();
-    const hasPermission = userHasPermission(VALIDATION_WORKFLOWS, currentUser);
-    const userHasModule = userHasAccessToModule(
+    const hasPermission = useCurrentUserHasPermission(VALIDATION_WORKFLOWS);
+    const userHasModule = useCurrentUserHasAccessToModule(
         VALIDATION_WORKFLOW_MODULE,
-        currentUser,
     );
 
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =

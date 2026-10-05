@@ -5,9 +5,8 @@ import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell
 import { findDescriptorInChildren } from '../../../../../utils';
 import {
     ENTITY_DUPLICATES_SOFT_DELETE,
-    hasFeatureFlag,
+    useCurrentUserHasFeatureFlag,
 } from '../../../../../utils/featureFlags';
-import { useCurrentUser } from '../../../../../utils/usersUtils';
 import { formatLabel } from '../../../../instances/utils';
 import MESSAGES from '../../messages';
 import { DuplicateEntityForTable } from '../../types';
@@ -27,7 +26,9 @@ export const useDuplicationDetailsColumns = ({
     descriptors,
 }: UseDuplicationDetailsColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
+    const hasFeatureFlag = useCurrentUserHasFeatureFlag(
+        ENTITY_DUPLICATES_SOFT_DELETE,
+    );
 
     return useMemo(() => {
         const columns = [
@@ -113,7 +114,7 @@ export const useDuplicationDetailsColumns = ({
             },
         ];
 
-        if (!hasFeatureFlag(currentUser, ENTITY_DUPLICATES_SOFT_DELETE)) {
+        if (!hasFeatureFlag) {
             columns.push({
                 Header: formatMessage(MESSAGES.finalValue),
                 accessor: 'final',
@@ -138,7 +139,7 @@ export const useDuplicationDetailsColumns = ({
 
         return columns;
     }, [
-        currentUser,
+        hasFeatureFlag,
         formatMessage,
         setQuery,
         state,

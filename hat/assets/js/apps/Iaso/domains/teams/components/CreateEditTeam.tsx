@@ -104,7 +104,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
             name: team?.name,
             description: team?.description,
             project: team?.project,
-            manager: team?.manager || currentUser.user_id,
+            manager: team?.manager || currentUser?.user_id,
             subTeams: team?.sub_teams || [],
             type: team?.type,
             users: team?.users || [],

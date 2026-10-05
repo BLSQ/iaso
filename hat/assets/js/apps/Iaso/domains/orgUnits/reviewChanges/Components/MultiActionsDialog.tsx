@@ -29,8 +29,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { SxStyles } from '../../../../types/general';
 import { DropdownOptions } from '../../../../types/utils';
 import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
-import { userHasPermission } from '../../../users/utils';
+import { useCurrentUserHasPermission } from '../../../users/utils';
 import { Selection } from '../../types/selection';
 import { useBulkSaveChangeRequestStatus } from '../hooks/api/useBulkSaveChangeRequestStatus';
 import MESSAGES from '../messages';
@@ -147,10 +146,8 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
         },
         [setStatus],
     );
-    const currentUser = useCurrentUser();
-    const hasTaskPermission = userHasPermission(
+    const hasTaskPermission = useCurrentUserHasPermission(
         Permission.DATA_TASKS,
-        currentUser,
     );
     if (!open) {
         return null;

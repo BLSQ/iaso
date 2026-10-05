@@ -2,7 +2,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
-import { User } from 'Iaso/utils/usersUtils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { UserDialogData } from '../types';
@@ -10,20 +10,19 @@ import { UserDialogData } from '../types';
 type Props = {
     setFieldValue: (key: string, value: string) => void;
     currentUser: UserDialogData;
-    loggedUser: User;
     canBypassProjectRestrictions: boolean;
 };
 
 export const UsersInfosExtraFields: FunctionComponent<Props> = ({
     setFieldValue,
     currentUser,
-    loggedUser,
     canBypassProjectRestrictions,
 }) => {
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
+    const loggedUser = useCurrentUser();
     const availableProjects = useMemo(() => {
-        if (!loggedUser || !loggedUser.projects) {
+        if (!loggedUser || !loggedUser?.projects) {
             return [];
         }
         return allProjects?.map(project => {

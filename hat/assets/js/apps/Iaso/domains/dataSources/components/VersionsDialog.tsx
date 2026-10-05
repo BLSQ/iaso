@@ -16,9 +16,8 @@ import {
 } from 'bluesquare-components';
 
 import { FormattedMessage } from 'react-intl';
-import { userHasAccessToModule } from 'Iaso/domains/users/utils';
+import { useCurrentUserHasAccessToModule } from 'Iaso/domains/users/utils';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns';
 import MESSAGES from '../messages';
 import { DataSource } from '../types/dataSources';
@@ -62,10 +61,7 @@ export const VersionsDialog: FunctionComponent<Props> = ({
         () => source?.versions ?? [],
         [source?.versions],
     );
-    const hasDhis2Module = userHasAccessToModule(
-        'DHIS2_MAPPING',
-        useCurrentUser(),
-    );
+    const hasDhis2Module = useCurrentUserHasAccessToModule('DHIS2_MAPPING');
     const { formatMessage } = useSafeIntl();
 
     const columns = useVersionsDialogTableColumns(source, hasDhis2Module);

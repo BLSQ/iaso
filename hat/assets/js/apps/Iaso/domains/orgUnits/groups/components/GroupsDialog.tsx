@@ -6,7 +6,7 @@ import ConfirmCancelDialogComponent from '../../../../components/dialogs/Confirm
 import InputComponent from '../../../../components/forms/InputComponent';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
-import { userHasPermission } from '../../../users/utils';
+import { userHasAllPermissions } from '../../../users/utils';
 import MESSAGES from '../messages';
 
 const initialGroup = currentGroup => {
@@ -126,7 +126,7 @@ const GroupDialog: FunctionComponent<Props> = ({
                         type="text"
                         label={MESSAGES.sourceRef}
                     />
-                    {userHasPermission(
+                    {userHasAllPermissions(
                         [Permission.POLIO, Permission.POLIO_CONFIG],
                         currentUser,
                     ) && (

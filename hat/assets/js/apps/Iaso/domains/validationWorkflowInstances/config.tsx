@@ -7,15 +7,16 @@ import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useCurrentAccount } from 'Iaso/domains/accounts/hooks';
 import { ProjectChip } from 'Iaso/domains/projects/components/ProjectChip';
 import { StatusChip } from 'Iaso/domains/validationWorkflowInstances/components/StatusChip';
 import { getLocaleDateFormat } from 'Iaso/utils/dates';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 
 export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
+    const currentAccount = useCurrentAccount();
+
     return useMemo(
         () => [
             {
@@ -89,7 +90,7 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 Cell: settings => (
                     <section>
                         <IconButton
-                            url={`/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}/instanceId/${settings.row.original.id}/accountId/${currentUser.account?.id}/`}
+                            url={`/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}/instanceId/${settings.row.original.id}/accountId/${currentAccount?.id}/`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
                         />
@@ -97,6 +98,6 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 ),
             },
         ],
-        [currentUser.account?.id, formatMessage],
+        [currentAccount?.id, formatMessage],
     );
 };

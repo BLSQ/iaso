@@ -5,7 +5,6 @@ import json
 import re
 
 from unittest import mock
-from urllib.parse import quote
 from uuid import uuid4
 
 import openpyxl
@@ -145,10 +144,12 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
                 instance.flag_reference_instance(instance.org_unit)
         m.Entity.objects_include_deleted.filter(name="entity 3").update(deleted_at=timezone.now())
 
-    def get(self, file_format, engine, filters=""):
+    def get(self, file_format, engine, params=None):
         self.client.force_authenticate(self.user)
-        url = f"/api/instances/?form_ids={self.form.id}&{file_format}=true&order=id{filters}"
-        response = self.client.get(url + ("&engine=legacy" if engine == "legacy" else ""))
+        query = {"form_ids": self.form.id, file_format: "true", "order": "id", **(params or {})}
+        if engine == "legacy":
+            query["engine"] = "legacy"
+        response = self.client.get("/api/instances/", query)
         self.assertEqual(response.status_code, 200)
         content = b"".join(
             chunk.encode() if isinstance(chunk, str) else chunk
@@ -217,7 +218,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
 
     def test_no_submission(self):
         """only the header rows (from the form version) when no submission matches the filters"""
-        no_match = "&search=ids:0"
+        no_match = {"search": "ids:0"}
 
         legacy_rows = csv_rows(self.get("csv", "legacy", no_match))
         self.assertEqual(csv_rows(self.get("csv", "duckdb", no_match)), legacy_rows)
@@ -247,7 +248,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
 
     def test_filter_values_with_dollar_quotes(self):
         json_content = json.dumps({"==": [{"var": "other"}, DOLLAR_QUOTED]})
-        filters = "&jsonContent=" + quote(json_content)
+        filters = {"jsonContent": json_content}
 
         legacy_rows = csv_rows(self.get("csv", "legacy", filters))
         self.assertEqual(csv_rows(self.get("csv", "duckdb", filters)), legacy_rows)
@@ -259,4 +260,4 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
         self.assertEqual(len(rows), 4)
 
         # the search is also sent in the sql as is
-        self.assertEqual(len(csv_rows(self.get("csv", "duckdb", "&search=" + quote("a$$b")))), 1)
+        self.assertEqual(len(csv_rows(self.get("csv", "duckdb", {"search": "a$$b"}))), 1)

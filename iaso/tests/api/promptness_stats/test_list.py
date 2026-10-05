@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 
 from iaso import models as m
-from iaso.tests.api.promptness_stats.common import RESPONSE_KEYS, ROW_KEYS, PromptnessStatsTestCase
+from iaso.tests.api.promptness_stats.common import RESPONSE_KEYS, ROW_KEYS, PromptnessStatsTestCase, aware
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
@@ -135,6 +135,18 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.east_shewa.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["results"][0]["on_time"], 1)
+
+    def test_upload_date_is_used(self):
+        # HF F (missing): a submission created on the device before the deadline, but uploaded after it, is late
+        self.create_submission(
+            self.hf_f, created_at=aware(2026, 2, 15, 10, 0), source_created_at=aware(2026, 1, 20, 10, 0)
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.north_gondar.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        hf_f = next(row for row in data["results"] if row["id"] == self.hf_f.id)
+        self.assertEqual(hf_f["on_time"], 0)
+        self.assertEqual(hf_f["late"], 1)
 
     def test_ignored_submissions(self):
         # HF C only has deleted, file-less, other form and other period submissions

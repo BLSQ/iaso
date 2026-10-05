@@ -35,8 +35,9 @@ conventions (comma-separated id lists, pagination envelope, row shape, drill-dow
     - `ON_TIME`: earliest submission timestamp ≤ deadline
     - `LATE`: earliest submission timestamp > deadline
     - `MISSING`: no valid submission
-- **Submission timestamp**: either `created_at` (reception on the server) or `source_created_at` (creation on the
-  device). **To be decided** — see [open questions](#dependencies-and-open-questions). The contract is the same in both cases.
+- **Submission timestamp**: the upload date of the submission, `created_at` (set by the server when it receives the
+  submission). The creation date on the device (`source_created_at`) is not used: a submission created on time but
+  uploaded after the deadline (e.g. by an offline device) is late.
 - **Received**: `on_time + late`.
 - **Completeness**: `received / expected`.
 - **Not applicable ("NA")**: an org unit with nothing expected in its hierarchy (itself included), e.g. an org unit
@@ -438,8 +439,6 @@ Same as [Get promptness statistics](#400-bad-request).
 
 - **Form setting for the grace period**: `Form.promptness_grace_period_days` (nullable), added with its migration.
   It still has to be editable from the form settings, which implies an update of the form serializers.
-- **Submission timestamp**: `created_at` (reception on the server) or `source_created_at` (creation on the device)?
-  Waiting for client input.
 - **Timezone of the deadline**: the timezone used to evaluate "end of the deadline day" has to be confirmed
   (server `TIME_ZONE` by default).
 - **Out of scope for now**: the additional filters supported by the completeness statistics (`team_ids`, `user_ids`,

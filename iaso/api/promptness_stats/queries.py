@@ -33,7 +33,6 @@ from django_cte import With
 
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType
 
-from .constants import SUBMISSION_TIMESTAMP_FIELD
 from .period import PromptnessPeriod
 
 
@@ -75,7 +74,9 @@ def get_target_org_units(form: Form, period: PromptnessPeriod) -> QuerySet[OrgUn
     targeted_by_group = Q(id__in=group_members.values("orgunit_id"))
 
     submissions = get_valid_submissions(form, period).filter(org_unit=OuterRef("pk"))
-    submissions_on_time = submissions.filter(**{f"{SUBMISSION_TIMESTAMP_FIELD}__lt": period.deadline_end})
+    submissions_on_time = submissions.filter(
+        created_at__lt=period.deadline_end
+    )  # upload date, not creation on mobile date
 
     return OrgUnit.objects.filter(
         targeted_by_type | targeted_by_group, validation_status=OrgUnit.VALIDATION_VALID

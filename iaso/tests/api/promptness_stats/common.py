@@ -3,7 +3,8 @@
 Form "Monthly facility report": period type MONTH, grace period 10 days, targets org units of type "Facility"
 and org units of the group "Special targets". Period 202601 -> window 2026-01-01..2026-01-31, deadline 2026-02-10.
 
-Timestamps are set on both `created_at` and `source_created_at`, since the timestamp to use is not decided yet.
+A submission is on time if it was uploaded (`created_at`) before the end of the deadline day. The dates below are
+`created_at` dates; unless specified, `source_created_at` (creation on the device) is the same date.
 
     Ethiopia (Country)
     ├── Afar (Region)
@@ -238,19 +239,23 @@ class PromptnessStatsTestCase(APITestCase):
         )
 
     @classmethod
-    def create_submission(cls, org_unit, submitted_at, form=None, period=None, file=None, **kwargs):
+    def create_submission(
+        cls, org_unit, created_at, form=None, period=None, file=None, source_created_at=None, **kwargs
+    ):
+        """`source_created_at` defaults to `created_at`"""
+        source_created_at = source_created_at or created_at
         instance = m.Instance.objects.create(
             form=form or cls.form,
             org_unit=org_unit,
             period=period or cls.PERIOD,
             project=cls.project,
             file=cls.create_file_mock(name="test.xml") if file is None else file,
-            source_created_at=submitted_at,
-            source_updated_at=submitted_at,
+            source_created_at=source_created_at,
+            source_updated_at=source_created_at,
             **kwargs,
         )
         # `created_at` is `auto_now_add`: force it with an update
-        m.Instance.objects.filter(pk=instance.pk).update(created_at=submitted_at)
+        m.Instance.objects.filter(pk=instance.pk).update(created_at=created_at)
         return instance
 
     def get_serializer_params(self, **kwargs):

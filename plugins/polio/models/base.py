@@ -2156,6 +2156,8 @@ class VaccineStockCalculator:
         self.arrival_reports = VaccineArrivalReport.objects.filter(
             request_form__campaign__country=vaccine_stock.country,
             request_form__vaccine_type=vaccine_stock.vaccine,
+            request_form__deleted_at__isnull=True,
+            request_form__campaign__deleted_at__isnull=True,
         )
         self.destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
             "destruction_report_date"
@@ -2332,6 +2334,7 @@ class VaccineStockCalculator:
         vrfs = VaccineRequestForm.objects.filter(
             campaign__country=self.vaccine_stock.country,
             vaccine_type=self.vaccine_stock.vaccine,
+            campaign__deleted_at__isnull=True,
         )
         if self.end_date:
             eligible_rounds = (

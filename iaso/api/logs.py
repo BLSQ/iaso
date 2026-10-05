@@ -142,7 +142,7 @@ class LogsViewSet(viewsets.ViewSet):
                 )
             obj = content_type.get_object_for_this_type(pk=object_id)
             if not has_access_to(user, obj):
-                return Response({"error": _("Unauthorized")}, status=401)
+                return Response({"error": _("Forbidden")}, status=403)
 
         queryset = queryset.order_by(*orders)
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 import { ValidationWorkflowDropdown } from './ValidationWorkflowDropdown';
 
@@ -51,7 +50,6 @@ describe('ValidationWorkflowDropdown', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockCurrentUser.mockReturnValue({ id: 1 });
-        mockUserHasPermission.mockReturnValue(true);
         mockUserHasAccessToModule.mockReturnValue(true);
     });
 
@@ -67,31 +65,13 @@ describe('ValidationWorkflowDropdown', () => {
 
         expect(screen.getByRole('combobox')).toBeInTheDocument();
         expect(screen.getByRole('combobox')).not.toBeDisabled();
-        expect(
-            screen.queryByLabelText(
-                `You're missing the following permission(s): ${VALIDATION_WORKFLOWS}`,
-            ),
-        ).not.toBeInTheDocument();
+
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
         expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(undefined, {
             query: {
                 enabled: true,
             },
         });
-    });
-
-    it('does not render input when user lacks permission', () => {
-        mockUserHasPermission.mockReturnValue(false);
-
-        mockUseGetWorkflowOptions.mockReturnValue({
-            data: [],
-            isFetching: false,
-        });
-
-        const { container } = renderWithThemeAndIntlProvider(
-            <ValidationWorkflowDropdown keyValue={'vf'} />,
-        );
-        expect(container.innerHTML).toBe('');
     });
 
     it('does not render input when when user lacks module', () => {
@@ -153,36 +133,6 @@ describe('ValidationWorkflowDropdown', () => {
         });
 
         expect(await screen.findByText('Test')).toBeInTheDocument();
-    });
-
-    it('does not call the API when user has no permissions', () => {
-        mockUserHasPermission.mockReturnValue(false);
-
-        mockUseGetWorkflowOptions.mockReturnValue({});
-
-        renderWithThemeAndIntlProvider(
-            <ValidationWorkflowDropdown keyValue={'vf'} />,
-        );
-
-        expect(mockUseGetWorkflowOptions).toHaveBeenCalledWith(undefined, {
-            query: {
-                enabled: false,
-            },
-        });
-    });
-
-    it('does not pass initialValue when user has no permissions', () => {
-        mockUserHasPermission.mockReturnValue(false);
-
-        mockUseGetWorkflowOptions.mockReturnValue({});
-
-        renderWithThemeAndIntlProvider(
-            <ValidationWorkflowDropdown keyValue={'vf'} value={1} />,
-        );
-
-        expect(
-            screen.queryByText('Value not found in possible options'),
-        ).not.toBeInTheDocument();
     });
 
     it('does not call the API when user has no module', () => {

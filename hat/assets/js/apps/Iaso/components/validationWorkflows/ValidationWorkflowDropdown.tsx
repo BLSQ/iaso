@@ -3,12 +3,8 @@ import { useApiValidationWorkflowsDropdownList } from 'Iaso/api/validationWorkfl
 import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';
-import {
-    userHasAccessToModule,
-    userHasPermission,
-} from 'Iaso/domains/users/utils';
+import { userHasAccessToModule } from 'Iaso/domains/users/utils';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
-import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 type ValidationWorkflowDropdownProps = Omit<
@@ -20,7 +16,6 @@ export const ValidationWorkflowDropdown = ({
     ...props
 }: ValidationWorkflowDropdownProps) => {
     const currentUser = useCurrentUser();
-    const hasPermission = userHasPermission(VALIDATION_WORKFLOWS, currentUser);
     const userHasModule = userHasAccessToModule(
         VALIDATION_WORKFLOW_MODULE,
         currentUser,
@@ -28,14 +23,14 @@ export const ValidationWorkflowDropdown = ({
 
     const { data: workflowOptions, isFetching: isFetchingWorkflows } =
         useApiValidationWorkflowsDropdownList(undefined, {
-            query: { enabled: hasPermission && userHasModule },
+            query: { enabled: userHasModule },
         });
     const { loading, disabled, ...newProps } = props;
 
     const isLoading = loading || isFetchingWorkflows;
-    const isDisabled = disabled || !hasPermission || !userHasModule;
+    const isDisabled = disabled || !userHasModule;
 
-    return hasPermission && userHasModule ? (
+    return userHasModule ? (
         <InputComponent
             dataTestId={'validation-workflow-dropdown-input'}
             type="select"

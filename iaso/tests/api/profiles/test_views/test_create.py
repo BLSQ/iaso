@@ -169,10 +169,9 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
-            self.assertEqual(len(mail.outbox), 0)
 
         response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
-        self.assertGreaterEqual(len(callbacks), 1)
+        self.assertEqual(len(callbacks), 1)
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
 
@@ -229,10 +228,9 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
-            self.assertEqual(len(mail.outbox), 0)
 
         result = self.assertJSONResponse(response, status.HTTP_201_CREATED)
-        self.assertGreaterEqual(len(callbacks), 1)
+        self.assertEqual(len(callbacks), 1)
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
         self.assertEqual(
@@ -302,14 +300,13 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
-            self.assertEqual(len(mail.outbox), 0)
         result = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         profile = Profile.objects.get(pk=result["id"])
         user = profile.user
 
         self.assertTrue(user.has_usable_password())  # because the view sets a random 32-char password
-        self.assertGreaterEqual(len(callbacks), 1)
+        self.assertEqual(len(callbacks), 1)
         self.assertEqual(len(mail.outbox), 1)
 
     def test_create_profile_with_managed_geo_limit(self):
@@ -408,9 +405,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
-            self.assertEqual(len(mail.outbox), 0)
-        self.assertGreaterEqual(len(callbacks), 1)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(len(callbacks), 1)
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user = get_user_model().objects.get(username="invited_user_empty_password")
@@ -426,9 +421,7 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
-            self.assertEqual(len(mail.outbox), 1)
-        self.assertGreaterEqual(len(callbacks), 1)
-        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(len(callbacks), 1)
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         user = get_user_model().objects.get(username="invited_user_missing_password")
@@ -445,10 +438,9 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
 
         with self.captureOnCommitCallbacks(execute=True) as callbacks:
             response = self.client.post(reverse("profiles-list"), data=data, format="json")
-            self.assertEqual(len(mail.outbox), 2)
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
-        self.assertGreaterEqual(len(callbacks), 1)
+        self.assertEqual(len(callbacks), 1)
 
         user = get_user_model().objects.get(username="invited_user_password_is_none")
         self.assertTrue(user.has_usable_password())

@@ -15,10 +15,8 @@ vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
     return {
         ...actual,
-        useSafeIntl: () => ({
-            formatMessage: (msg: { defaultMessage?: string }) =>
-                msg?.defaultMessage ?? '',
-        }),
+        useSafeIntl: (await import('../../../../../tests/mocks/safeIntl'))
+            .mockUseSafeIntl,
     };
 });
 
@@ -53,7 +51,7 @@ const emptyDiff: FormVersionDiff = {
     added_questions: [],
     removed_questions: [],
     modified_questions: [],
-    workflow_impacts: [],
+    configuration_impacts: [],
 };
 
 const renderDialog = (onSaveNewVersion = vi.fn(), onClose = vi.fn()) =>

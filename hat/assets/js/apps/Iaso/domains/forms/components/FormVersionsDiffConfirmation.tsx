@@ -3,8 +3,8 @@ import { Alert, Box, Chip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { FormVersionDiff } from '../requests';
+import FormVersionsConfigurationImpactsTable from './FormVersionsConfigurationImpactsTable';
 import FormVersionsDiffTables from './FormVersionsDiffTables';
-import FormVersionsWorkflowImpactsTable from './FormVersionsWorkflowImpactsTable';
 
 type Props = {
     formId: number;
@@ -47,11 +47,11 @@ const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({
                     color="warning"
                     label={`~${diff.modified_questions.length} ${formatMessage(MESSAGES.questionModified)}`}
                 />
-                {diff.workflow_impacts?.length > 0 && (
+                {diff.configuration_impacts?.length > 0 && (
                     <Chip
                         size="small"
                         color="warning"
-                        label={`${diff.workflow_impacts.length} ${formatMessage(MESSAGES.workflowImpacts)}`}
+                        label={`${diff.configuration_impacts.length} ${formatMessage(MESSAGES.configurationImpacts)}`}
                     />
                 )}
             </Box>
@@ -59,10 +59,10 @@ const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({
                 removedQuestions={diff.removed_questions}
                 modifiedQuestions={diff.modified_questions}
             />
-            {diff.workflow_impacts?.length > 0 && (
-                <FormVersionsWorkflowImpactsTable
+            {diff.configuration_impacts?.length > 0 && (
+                <FormVersionsConfigurationImpactsTable
                     formId={formId}
-                    workflowImpacts={diff.workflow_impacts}
+                    configurationImpacts={diff.configuration_impacts}
                 />
             )}
         </Box>

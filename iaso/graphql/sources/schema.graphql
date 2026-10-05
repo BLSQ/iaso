@@ -1,0 +1,151 @@
+extend type Query {
+  """
+  Data sources of the requesting user's account (of one of its projects), ordered by `name` unless `order` says
+  otherwise. Needs one of the "sources", "mappings", "org units", "org units (read)" or "links" permissions.
+  """
+  dataSources(
+    filters: DataSourceFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [DataSourceOrder!]
+    "1-1 000; 1-100 with `versions`."
+    limit: Int! = 100
+    offset: Int! = 0
+  ): DataSourcePage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  dataSource(id: Int!): DataSource
+
+  """
+  Versions of the data sources `dataSources` returns, newest first (`CREATED_AT_DESC`) unless `order` says
+  otherwise. The org units of a version: `orgUnits(filters: {versionId: ...})`, with its `totalCount`.
+  """
+  sourceVersions(
+    filters: SourceVersionFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [SourceVersionOrder!]
+    "1-1 000"
+    limit: Int! = 100
+    offset: Int! = 0
+  ): SourceVersionPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  sourceVersion(id: Int!): SourceVersion
+}
+
+type DataSourcePage {
+  items: [DataSource!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+type SourceVersionPage {
+  items: [SourceVersion!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+"""
+Where org units come from - a DHIS2 instance, a CSV import... -, in successive versions (`SourceVersion`): each org
+unit belongs to one version of one source.
+"""
+type DataSource {
+  id: Int!
+  name: String!
+  description: String
+  "Its org units can't be edited (an imported reference)"
+  readOnly: Boolean!
+  "Readable by anyone, even not logged in, on the public endpoints"
+  public: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  "The validation statuses the org unit tree shows"
+  treeConfigStatusFields: [ValidationStatus!]!
+  defaultVersionId: Int
+  "The version used when none is given"
+  defaultVersion: SourceVersionSummary
+  "Newest first. Reads every version of every source of the page: pages of at most 100."
+  versions: [SourceVersionSummary!]!
+  projects: [Project!]!
+}
+
+"A version of a data source: a snapshot of its org units."
+type SourceVersion {
+  id: Int!
+  "1, 2, 3...: unique within its data source"
+  number: Int!
+  description: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  dataSourceId: Int!
+  dataSource: DataSourceSummary!
+}
+
+"A data source below another object: no relations, so no way to walk further."
+type DataSourceSummary {
+  id: Int!
+  name: String!
+  readOnly: Boolean!
+  public: Boolean!
+}
+
+"A version below its data source: no relations, so no way to walk further."
+type SourceVersionSummary {
+  id: Int!
+  number: Int!
+  description: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"The data sources matching all the filters given (AND), each one at most once. `...In` lists take at most 1 000 values."
+input DataSourceFilter {
+  id: Int
+  idIn: [Int!]
+  nameIContains: String
+  "Linked to this project"
+  projectId: Int
+  projectIdIn: [Int!]
+  readOnly: Boolean
+  public: Boolean
+  "With at least one version (`true`) or none (`false`)"
+  hasVersions: Boolean
+}
+
+"The versions matching all the filters given (AND), each one at most once. `...In` lists take at most 1 000 values."
+input SourceVersionFilter {
+  id: Int
+  idIn: [Int!]
+  dataSourceId: Int
+  dataSourceIdIn: [Int!]
+  number: Int
+  "Their data source's default version (`true`) or not (`false`)"
+  isDefault: Boolean
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+}
+
+enum DataSourceOrder {
+  ID
+  ID_DESC
+  NAME
+  NAME_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+}
+
+enum SourceVersionOrder {
+  ID
+  ID_DESC
+  NUMBER
+  NUMBER_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+}

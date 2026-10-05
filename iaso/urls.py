@@ -19,6 +19,7 @@ from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.api.validation_workflows.views_mobile import ValidationWorkflowMobileViewSet
+from iaso.graphql.views import graphql_docs_view, graphql_view
 from plugins.router import router as plugins_router
 
 from .api.account_feature_flags.views import AccountFeatureFlagViewSet
@@ -321,6 +322,8 @@ urlpatterns: URLList = [
     ),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
     path("captcha/", include("captcha.urls")),
+    path("graphql/", view=graphql_view, name="graphql"),
+    path("graphql/docs/", view=graphql_docs_view, name="graphql_docs"),
 ]
 
 

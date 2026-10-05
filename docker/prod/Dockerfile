@@ -25,6 +25,10 @@ COPY ../../tsconfig.json ../../babel-register.js ./
 # Build webpack assets
 RUN npm run webpack-prod
 
+# GraphQL reference (`/api/graphql/docs/`), from the schema files alone
+COPY ../../iaso/graphql/ ./iaso/graphql/
+RUN npm run graphql-docs
+
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.
@@ -87,6 +91,20 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     curl \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
+
+# odk_cli (https://github.com/BLSQ/odk_cli, private): edits a submission's answers as ODK Collect would
+# (`iaso.odk.instance_editor`). Its release binary, published on S3, checked against the checksum pinned here - same
+# URL and checksum in docker/django/Dockerfile and docker/prod/Dockerfile. v1.0.0 (commit 3f50e1b). linux/amd64
+# only: elsewhere, the edits answer `SERVICE_UNAVAILABLE`.
+ARG ODK_CLI_URL=https://blsq-io.s3.eu-west-1.amazonaws.com/odk-cli/odk_cli-linux-amd64
+ARG ODK_CLI_SHA256=468532d367706da54a443c84e551efd4e60cd8fa3a506144e4475603b8747fca
+RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+        curl -fsSL -o /usr/local/bin/odk_cli "${ODK_CLI_URL}" \
+        && echo "${ODK_CLI_SHA256}  /usr/local/bin/odk_cli" | sha256sum -c - \
+        && chmod +x /usr/local/bin/odk_cli; \
+    else \
+        echo "odk_cli: no $(dpkg --print-architecture) binary, submissions' answers can't be edited"; \
+    fi
 
 WORKDIR /opt/app
 

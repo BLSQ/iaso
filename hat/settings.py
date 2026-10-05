@@ -166,9 +166,13 @@ SITE_ID = 1
 
 LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", default="INFO")
 HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
+GRAPHQL_LOGGING_LEVEL = env.str("GRAPHQL_LOGGING_LEVEL", default="INFO")
+#: a GraphQL operation slower than this is logged as a `WARNING`, with its query text (`iaso.graphql.monitoring`)
+GRAPHQL_SLOW_MS = env.int("GRAPHQL_SLOW_MS", default=2000)
 if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
+    GRAPHQL_LOGGING_LEVEL = "CRITICAL"
 
 ENKETO = {
     "ENKETO_DEV": env.str("ENKETO_DEV", default=None),
@@ -179,12 +183,19 @@ ENKETO = {
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
 
+# odk_cli (https://github.com/BLSQ/odk_cli) native binary, to edit submissions server-side (`iaso.odk.instance_editor`)
+ODK_CLI_PATH = env.str("ODK_CLI_PATH", default="/usr/local/bin/odk_cli")
+
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
 LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
+    "formatters": {
+        "default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"},
+        # the message alone: a JSON object per line, with its own time and level
+        "message": {"format": "%(message)s"},
+    },
     "filters": {"no_static": {"()": "hat.common.log_filter.StaticUrlFilter"}},
     "handlers": {
         "console": {
@@ -192,7 +203,8 @@ LOGGING: Dict[str, Any] = {
             "formatter": "default",
             # Don't pollute the log output with lots of static url request in development
             "filters": ["no_static"] if DEBUG else None,
-        }
+        },
+        "operations": {"class": "logging.StreamHandler", "formatter": "message"},
     },
     "loggers": {
         "django": {"level": LOGGING_LEVEL},
@@ -201,6 +213,8 @@ LOGGING: Dict[str, Any] = {
         "iaso": {"level": LOGGING_LEVEL},
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
+        # `iaso.graphql.monitoring`: one JSON line per GraphQL operation start and end
+        "iaso.graphql.operations": {"level": GRAPHQL_LOGGING_LEVEL, "handlers": ["operations"], "propagate": False},
         "": {"handlers": ["console"]},
     },
 }

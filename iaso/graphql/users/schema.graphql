@@ -1,0 +1,90 @@
+extend type Query {
+  """
+  The users of the requesting user's account, by `id` unless `order` says otherwise. Needs the "users admin" or
+  "users managed" permission; with "users managed" only, `filters: {managedOnly: true}` keeps the users the requesting
+  user manages (assigned below their org units).
+  """
+  users(
+    filters: UserFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [UserOrder!]
+    "1-1 000; 1-100 with `projects` or `orgUnits`."
+    limit: Int! = 100
+    offset: Int! = 0
+  ): UserPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user. Same permissions as `users`."
+  user(id: Int!): User
+
+  "The requesting user: no permission needed."
+  me: User!
+}
+
+type UserPage {
+  items: [User!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+"A user of the account, with their IASO profile: what they can see (`projects`, `orgUnits`)."
+type User {
+  "The user's id, as `createdBy { id }`"
+  id: Int!
+  "The profile's id, in the users' REST API (`/api/profiles/<id>/`); `null` without an IASO profile (`me`, a Django superuser)"
+  profileId: Int
+  username: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  "Can log in"
+  isActive: Boolean!
+  dateJoined: DateTime!
+  "`null` if they never logged in"
+  lastLogin: DateTime
+  "Their interface's language (`en`, `fr`...)"
+  language: String
+  "International format (`+23276123456`)"
+  phoneNumber: String
+  organization: String
+  "Their DHIS2 user id, for logging in through DHIS2"
+  dhis2Id: String
+  """
+  The projects they are restricted to (the mobile apps they can use, the data they see). Empty: no restriction - all
+  the account's projects.
+  """
+  projects: [Project!]!
+  """
+  The org units they are assigned to: they see these and everything below. Empty: no restriction - the whole pyramid.
+  """
+  orgUnits: [OrgUnitSummary!]!
+}
+
+"The users matching all the filters given (AND), each one at most once. `...In` lists take at most 1 000 values."
+input UserFilter {
+  id: Int
+  idIn: [Int!]
+  "Case-insensitive, in the username, first name, last name or email"
+  search: String
+  isActive: Boolean
+  "Restricted to this project"
+  projectId: Int
+  "Assigned to this org unit"
+  orgUnitId: Int
+  "Only the users the requesting user manages (with the \"users managed\" permission: assigned below their org units)"
+  managedOnly: Boolean
+}
+
+enum UserOrder {
+  ID
+  ID_DESC
+  USERNAME
+  USERNAME_DESC
+  LAST_NAME
+  LAST_NAME_DESC
+  DATE_JOINED
+  DATE_JOINED_DESC
+  LAST_LOGIN
+  LAST_LOGIN_DESC
+}

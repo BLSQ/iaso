@@ -42,10 +42,18 @@ const FormVersionsDiffConfirmation: FunctionComponent<Props> = ({ diff }) => {
                     color="warning"
                     label={`~${diff.modified_questions.length} ${formatMessage(MESSAGES.questionModified)}`}
                 />
+                {diff.workflow_impacts?.length > 0 && (
+                    <Chip
+                        size="small"
+                        color="warning"
+                        label={`${diff.workflow_impacts.length} ${formatMessage(MESSAGES.workflowImpacts)}`}
+                    />
+                )}
             </Box>
             <FormVersionsDiffTables
                 removedQuestions={diff.removed_questions}
                 modifiedQuestions={diff.modified_questions}
+                workflowImpacts={diff.workflow_impacts ?? []}
             />
         </Box>
     );

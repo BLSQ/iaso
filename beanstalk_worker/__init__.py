@@ -3,6 +3,7 @@ from logging import getLogger
 
 import sentry_sdk
 
+from django.db import transaction
 from lazy_services import LazyService  # type: ignore
 
 from beanstalk_worker.throttle import register_task
@@ -62,8 +63,14 @@ def task_decorator(task_name="", throttle=None):
             task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}
             # Save it here so we can have the id
             task.save()
-            task.queue_answer = task_service.enqueue(func.__module__, func.__name__, args, kwargs, task_id=task.id)
-            task.save()
+
+            def enqueue():
+                task.queue_answer = task_service.enqueue(func.__module__, func.__name__, args, kwargs, task_id=task.id)
+                task.save(update_fields=["queue_answer"])
+
+            # the worker can only find the task once it's committed: after the caller's transaction if there is one
+            # (`ATOMIC_REQUESTS`, the GraphQL view...), right away otherwise
+            transaction.on_commit(enqueue)
 
             return task
 

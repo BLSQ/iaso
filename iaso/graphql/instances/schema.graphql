@@ -1,0 +1,340 @@
+extend type Query {
+  """
+  Submissions visible to the requesting user (account, org units and projects they are restricted to, forms not
+  deleted), newest first (`ID_DESC`) unless `order` says otherwise. Deleted ones only with `filters: {deleted: true}`.
+  """
+  submissions(
+    filters: SubmissionFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [SubmissionOrder!]
+    "1-10 000; 1-1 000 when `content` or `orgUnit { ancestors }` is selected."
+    limit: Int! = 20
+    offset: Int! = 0
+  ): SubmissionPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user. Deleted ones included, see `deleted`."
+  submission(id: Int!): Submission
+
+  """
+  The files sent with the submissions `submission(id:)` shows - those of deleted submissions included -, oldest
+  first (`ID`) unless `order` says otherwise. Same permissions as `submissions`. Those of one submission:
+  `filters: {submissionId: ...}`.
+  """
+  submissionAttachments(
+    filters: SubmissionAttachmentFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [SubmissionAttachmentOrder!]
+    "1-1 000"
+    limit: Int! = 100
+    offset: Int! = 0
+  ): SubmissionAttachmentPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  submissionAttachment(id: Int!): SubmissionAttachment
+}
+
+type SubmissionAttachmentPage {
+  items: [SubmissionAttachment!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+"From the file's extension, as the web UI's filters."
+enum AttachmentType {
+  "jpg, jpeg, png, gif, bmp, tiff, webp"
+  IMAGE
+  "mp4, mov"
+  VIDEO
+  "pdf, doc, docx, xls, xlsx, csv, txt"
+  DOCUMENT
+  "Any other extension (audio...), or none"
+  OTHER
+}
+
+enum SubmissionAttachmentOrder {
+  ID
+  ID_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+}
+
+"""
+A file sent with a submission - a photo, a video, a document... -, ODK's "submission attachment". Its `name` is the
+answer of its question in the submission's `content`. Not the submission's XML file itself (`Submission.fileName`).
+"""
+type SubmissionAttachment {
+  id: Int!
+  "The file name, as given in the submission's `content`"
+  name: String
+  "Where to download it: `null` without a stored file"
+  url: String
+  type: AttachmentType!
+  "Received by IASO (server clock)"
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  submissionId: Int
+}
+
+"The attachments matching all the filters given (AND), each one at most once."
+input SubmissionAttachmentFilter {
+  id: Int
+  idIn: [Int!]
+  submissionId: Int
+  submissionIdIn: [Int!]
+  "Of the submissions of this form"
+  formId: Int
+  "Of the submissions of this org unit (not its descendants)"
+  orgUnitId: Int
+  nameIContains: String
+  type: AttachmentType
+  typeIn: [AttachmentType!]
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+}
+
+type SubmissionPage {
+  items: [Submission!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+enum SubmissionStatus {
+  READY
+  "The form is single per period and another (non-deleted) submission has the same org unit and period"
+  DUPLICATED
+  "Exported to DHIS2 at least once"
+  EXPORTED
+}
+
+"Only indexed columns."
+enum SubmissionOrder {
+  ID
+  ID_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+  SOURCE_CREATED_AT
+  SOURCE_CREATED_AT_DESC
+  SOURCE_UPDATED_AT
+  SOURCE_UPDATED_AT_DESC
+  PERIOD
+  PERIOD_DESC
+}
+
+"The answers sent for a form, for an org unit (and a period, if the form has periods): from a device or edited since."
+type Submission {
+  id: Int!
+  uuid: String
+  formId: Int
+  formVersionId: Int
+  orgUnitId: Int
+  projectId: Int
+  "DHIS2 period (`202401`, `2024Q1`, `2024`...)"
+  period: String
+  status: SubmissionStatus!
+  "Saved in IASO (server clock)"
+  createdAt: DateTime!
+  "Last modified in IASO (server clock)"
+  updatedAt: DateTime!
+  "Submitted on the device, `null` if it didn't say"
+  sourceCreatedAt: DateTime
+  "Last modified on the device, `null` if it didn't say"
+  sourceUpdatedAt: DateTime
+  createdById: Int
+  lastModifiedById: Int
+  "`null` without a recorded GPS point"
+  location: Location
+  "GPS accuracy, in meters"
+  accuracy: Float
+  deviceId: Int
+  entityId: Int
+  planningId: Int
+  "The org unit has this submission as its reference submission"
+  isReferenceSubmission: Boolean!
+  deleted: Boolean!
+  fileName: String
+  "Id of the DHIS2 event/data value set"
+  exportId: String
+  "The submitted answers, as parsed from the XML: question name -> answer. Pages of at most 1 000."
+  content: JSON
+  form: FormSummary
+  formVersion: FormVersionSummary
+  orgUnit: SubmissionOrgUnit
+  project: Project
+  createdBy: UserSummary
+  lastModifiedBy: UserSummary
+}
+
+"""
+The org unit of a submission: its summary and its ancestors (for the \"region > district > facility\" of each row),
+no further - e.g. no way to its other submissions. Pages of at most 1 000 with `ancestors`.
+"""
+type SubmissionOrgUnit {
+  id: Int!
+  name: String!
+  sourceRef: String
+  validationStatus: ValidationStatus!
+  orgUnitTypeId: Int
+  parentId: Int
+  "Root first, excluding the org unit itself"
+  ancestors: [OrgUnitSummary!]!
+}
+
+"A point and a radius, in meters (at most 100 000)."
+input Near {
+  longitude: Float!
+  latitude: Float!
+  distanceMeters: Float!
+}
+
+"""
+The submissions matching all the filters given (AND), each one at most once. Only filters an index serves: nothing
+on the submitted `content`.
+"""
+input SubmissionFilter {
+  id: Int
+  idIn: [Int!]
+
+  formId: Int
+  formIdIn: [Int!]
+  formNameIContains: String
+
+  orgUnitId: Int
+  orgUnitIdIn: [Int!]
+  "This org unit and all its descendants, at any depth - unlike `OrgUnitFilter.ancestorId`, the org unit itself is included (legacy `orgUnitParentId`)"
+  orgUnitAncestorId: Int
+  orgUnitNameIContains: String
+  orgUnitSourceRef: String
+  orgUnitTypeId: Int
+  orgUnitTypeIdIn: [Int!]
+  orgUnitValidationStatus: ValidationStatus
+  orgUnitValidationStatusIn: [ValidationStatus!]
+
+  period: String
+  periodIn: [String!]
+  "Compared as text: only meaningful between periods of the same type (`202401` and `202406`, not `2024Q1`)"
+  periodGte: String
+  periodLte: String
+
+  "Computed per row: `DUPLICATED` alone only reads the single-per-period forms' submissions, the others read them all"
+  status: SubmissionStatus
+  statusIn: [SubmissionStatus!]
+
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  updatedAtGte: DateTime
+  updatedAtLte: DateTime
+  sourceCreatedAtGte: DateTime
+  sourceCreatedAtLte: DateTime
+  sourceUpdatedAtGte: DateTime
+  sourceUpdatedAtLte: DateTime
+
+  createdById: Int
+  createdByIdIn: [Int!]
+  lastModifiedById: Int
+  projectId: Int
+  projectIdIn: [Int!]
+  deviceId: Int
+  entityId: Int
+  planningId: Int
+  planningIdIn: [Int!]
+
+  "GPS accuracy at most this many meters"
+  accuracyLte: Float
+  hasLocation: Boolean
+  isReferenceSubmission: Boolean
+  "`false` (the default, also when `null`) hides the deleted submissions, `true` shows only them"
+  deleted: Boolean
+
+  "`location` within `distanceMeters` of the point (on the sphere)"
+  locationNear: Near
+  "`location` inside the box (or on its edge)"
+  locationWithinBbox: Bbox
+  "Has a `location`, and it falls outside the box"
+  locationOutsideBbox: Bbox
+  "`location` within that org unit's simplified_geom (else geom)"
+  locationWithinOrgUnit: Int
+  "Has a `location`, and it falls outside that org unit's geometry - a data quality check"
+  locationOutsideOrgUnit: Int
+}
+
+# Each needs the "edit submissions" permission (a top-level `FORBIDDEN` error otherwise), and refuses - in its
+# `errors` - a submission that isn't visible to the user (`NOT_FOUND`), or deleted, without form or locked by a user
+# above them in the pyramid (`NOT_EDITABLE`).
+extend type Mutation {
+  """
+  Sets the submission's period. Needs the "edit submissions" permission. `errors`, on top of those of any submission
+  edit (`NOT_FOUND`, `NOT_EDITABLE` on `id`: not visible, deleted, without form, locked): `NOT_EDITABLE` when the
+  form has no period type, `INVALID` for a period that doesn't exist (`202413`) or of another type than the form's
+  (`202401` for a `MONTH` form).
+  """
+  updateSubmissionPeriod(id: Int!, period: String!): SubmissionPayload!
+
+  """
+  Attaches the submission to another org unit; a reference submission of its previous org unit no longer is. Needs the
+  "edit submissions" permission. `errors`, on top of those of any submission edit: `NOT_FOUND` for an org unit the
+  user can't see, `INVALID` when its type isn't one of the form's.
+  """
+  updateSubmissionOrgUnit(id: Int!, orgUnitId: Int!): SubmissionPayload!
+
+  """
+  Edits the answers as ODK Collect would (JavaRosa, through odk_cli): the submission is reopened with its form
+  version, the answers are set, the calculates and the relevance are recomputed, then the whole form is checked -
+  required questions, constraints - before the new XML is saved and `content` (and `location`) re-read from it.
+  Repeat instances, metadata and the other answers are kept; the questions no longer relevant are dropped, as Collect
+  would. Not re-exported to DHIS2.
+
+  Needs the "edit submissions" permission. `errors` lists every problem at once, in the order of the form's
+  questions, each `INVALID` with its `question` and a message to show next to it - the form's own constraint message,
+  "Answer is required", "Unknown choice(s): maybe", "Not relevant", "Read only"...: on an answer
+  (`field: ["answers", "<index>", "path" or "value"]`), or on another question whose constraint the new answers
+  break (`field: ["answers"]`). Also `INVALID` for more than 1 000 answers or a question answered twice,
+  `NOT_EDITABLE` without XML file or form version, and those of any submission edit. A top-level
+  `SERVICE_UNAVAILABLE` error when the editor (odk_cli) isn't available.
+  """
+  updateSubmissionContent(id: Int!, answers: [AnswerInput!]!): SubmissionPayload!
+}
+
+type SubmissionPayload {
+  "The submission as saved, any field selectable; `null` when refused"
+  submission: Submission
+  "Every problem found, nothing saved when there is any: see each mutation for its codes"
+  errors: [SubmissionError!]!
+}
+
+input AnswerInput {
+  """
+  The question's path below the root, as in the form: `group/question`. In a repeat group, `repeat[2]/question` is
+  the 2nd repeat instance (`repeat/question` the 1st).
+  """
+  path: String!
+  "As written in the XML (`2024-01-31`, `yes`, space-separated choices...); `null` for no answer"
+  value: String
+}
+
+"A problem with a submission edit's input (see `InputError`): nothing saved when there is any."
+type SubmissionError implements InputError {
+  code: SubmissionErrorCode!
+  message: String!
+  field: [String!]!
+  "For `updateSubmissionContent`: the form question at fault"
+  question: String
+}
+
+enum SubmissionErrorCode {
+  "A submission (`id`) or an org unit (`orgUnitId`) the user can't see"
+  NOT_FOUND
+  """
+  The value is refused, the `message` says why: a period that doesn't exist or of another type than the form's, an org
+  unit of a type the form doesn't take; for answers, the form's own constraint message, "Answer is required",
+  "Unknown choice(s): ...", "Not relevant", "Read only", a question answered twice, more than 1 000 answers...
+  """
+  INVALID
+  "The submission can't be edited: deleted, locked by a user above in the pyramid, without form, XML file or form version"
+  NOT_EDITABLE
+}

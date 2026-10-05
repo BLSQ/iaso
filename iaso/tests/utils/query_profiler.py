@@ -24,6 +24,13 @@ class QueryProfiler:
         with profiler.report_on_failure("my_report.md"):
             profiler.assertLessEqualQueryCount({...})
 
+        # no N+1: the same queries on more data
+        with QueryProfiler() as small:
+            run(rows=1)
+        with QueryProfiler() as big:
+            run(rows=5)
+        big.assertSameQueryCounts(small)
+
         # or drill into one table:
         profiler.queries_for_table("iaso_formversion")
         profiler.call_sites_for_table("iaso_formversion")
@@ -58,7 +65,8 @@ class QueryProfiler:
 
     def _wrapper(self, execute, sql, params, many, context):
         self._total_queries += 1
-        self._table_counts.update(re.findall(r'(?:FROM|UPDATE|INTO)\s+"?(\w+)"?', sql, re.IGNORECASE))
+        # each table once per query: a query reading it in two subqueries is still one query on it
+        self._table_counts.update(set(re.findall(r'(?:FROM|UPDATE|INTO)\s+"?(\w+)"?', sql, re.IGNORECASE)))
         for table in self.trace_tables:
             if f'"{table}"' in sql:
                 # Skip our own frames and test-code frames to land on the actual call site.
@@ -126,6 +134,26 @@ class QueryProfiler:
         violations += [f"{table}: not in `expected` or `exclude`, got {counts[table]}" for table in unaccounted]
         if violations:
             raise AssertionError("Query count(s) exceeded expected bound:\n" + "\n".join(violations))
+
+    def assertSameQueryCounts(self, other: "QueryProfiler", exclude: typing.Sequence[str] = ()) -> None:
+        """
+        Assert that `other` hit every table as many times as this profiler, and ran as many queries in total: the
+        same code run on more data (a bigger page, more rows) doing no more queries - no N+1, wherever it hides.
+        Profile the small run first, then the big one, and compare: `big.assertSameQueryCounts(small)`.
+
+        `exclude` as in `assertLessEqualQueryCount`. Lists every table whose count differs, rather than just "8 != 6".
+        """
+        tables = (set(self.table_counts()) | set(other.table_counts())) - set(exclude)
+        differences = [
+            f"{table}: {self.table_counts()[table]} here, {other.table_counts()[table]} in the other run"
+            for table in sorted(tables)
+            if self.table_counts()[table] != other.table_counts()[table]
+        ]
+        total, other_total = self.total_queries(exclude), other.total_queries(exclude)
+        if total != other_total:
+            differences.append(f"total: {total} here, {other_total} in the other run")
+        if differences:
+            raise AssertionError("Query counts differ:\n" + "\n".join(differences))
 
     def _relpath(self, filename: str) -> typing.Optional[str]:
         relpath = os.path.relpath(filename, settings.BASE_DIR)

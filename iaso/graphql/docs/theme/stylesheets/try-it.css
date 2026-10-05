@@ -1,0 +1,54 @@
+/* the "Try it out" panel of `javascripts/try-it.js`, in the examples' dark column */
+.try-it-toggle,
+.try-it-execute {
+    margin: 0 0 12px;
+    padding: 6px 14px;
+    border: 1px solid #49cc90;
+    border-radius: 4px;
+    background: transparent;
+    color: #49cc90;
+    font-weight: 600;
+    cursor: pointer;
+}
+.try-it-execute {
+    margin-top: 12px;
+    background: #49cc90;
+    color: #1d1f21;
+}
+.try-it-toggle:disabled,
+.try-it-execute:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.try-it-panel {
+    margin-bottom: 24px;
+}
+.try-it-panel h5 {
+    margin: 12px 0 6px;
+}
+.try-it-panel textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background: #272822;
+    color: #f8f8f2;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+.try-it-result {
+    max-height: 480px;
+    overflow: auto;
+    padding: 8px;
+    border-radius: 4px;
+    background: #272822;
+    color: #f8f8f2;
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+.try-it-playground {
+    margin-left: 16px;
+    color: #49cc90;
+}

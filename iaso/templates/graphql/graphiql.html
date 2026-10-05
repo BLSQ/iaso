@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+{% comment %}
+GraphiQL at `GET /api/graphql/` (`iaso/graphql/views.py`), with the explorer plugin. Rather than Ariadne's page: it
+opens the query and variables of the URL (`?query=...&variables=...`, GraphiQL's convention - the reference's "Open
+in GraphiQL" links), keeps the URL in sync while editing (a link to share), and links to the reference.
+Assets from unpkg.com, the versions Ariadne 0.26.2 uses.
+{% endcomment %}
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IASO GraphQL</title>
+    <style>
+      body {
+        height: 100%;
+        margin: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+      #graphiql {
+        height: 100vh;
+      }
+      #graphiql-loading {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #545454;
+        font: bold 1.5em sans-serif;
+      }
+      .iaso-logo a {
+        margin-left: 12px;
+        font-size: 0.6em;
+        font-weight: normal;
+      }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/graphiql@3.3.2/graphiql.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@graphiql/plugin-explorer@3.1.0/dist/style.css" />
+  </head>
+
+  <body>
+    <div id="graphiql"><div id="graphiql-loading">Loading IASO GraphQL...</div></div>
+
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/graphiql@3.3.2/graphiql.min.js"></script>
+    <script crossorigin src="https://unpkg.com/@graphiql/plugin-explorer@3.1.0/dist/index.umd.js"></script>
+
+    <script>
+      var params = new URLSearchParams(window.location.search);
+      var fetcher = GraphiQL.createFetcher({ url: window.location.pathname });
+
+      /** The address bar as a link to what is being edited. */
+      function syncUrl(query, variables) {
+        var search = new URLSearchParams({ query: query });
+        if (variables && variables.trim()) search.set('variables', variables);
+        window.history.replaceState(null, '', window.location.pathname + '?' + search.toString());
+      }
+
+      function IasoGraphiQL() {
+        var [query, setQuery] = React.useState(params.get('query') || '{{ example_query|escapejs }}');
+        var [variables, setVariables] = React.useState(params.get('variables') || '');
+        var explorer = GraphiQLPluginExplorer.explorerPlugin({ query: query, onEdit: setQuery });
+        React.useEffect(
+          function () {
+            syncUrl(query, variables);
+          },
+          [query, variables],
+        );
+        return React.createElement(
+          GraphiQL,
+          {
+            fetcher: fetcher,
+            defaultEditorToolsVisibility: true,
+            plugins: [explorer],
+            query: query,
+            onEditQuery: setQuery,
+            variables: variables,
+            onEditVariables: setVariables,
+          },
+          React.createElement(
+            GraphiQL.Logo,
+            null,
+            React.createElement(
+              'span',
+              { className: 'iaso-logo' },
+              'IASO GraphQL',
+              React.createElement('a', { href: '{{ docs_url|escapejs }}', target: '_blank' }, 'Reference'),
+            ),
+          ),
+        );
+      }
+
+      ReactDOM.render(React.createElement(IasoGraphiQL), document.getElementById('graphiql'));
+    </script>
+  </body>
+</html>

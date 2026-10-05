@@ -1,0 +1,418 @@
+extend type Query {
+  "Org units visible to the requesting user, ordered by `id` unless `order` says otherwise."
+  orgUnits(
+    filters: OrgUnitFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [OrgUnitOrder!]
+    "1-10 000; 1-1 000 when `geom`, `simplifiedGeom`, `catchment` or `ancestors` is selected; 1-100 with `submissionCount`."
+    limit: Int! = 100
+    offset: Int! = 0
+  ): OrgUnitPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  orgUnit(id: Int!): OrgUnit
+
+  "Org unit types of the requesting user's account (of one of its projects), by `depth` then `name` unless `order` says otherwise."
+  orgUnitTypes(
+    filters: OrgUnitTypeFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [OrgUnitTypeOrder!]
+    "1-1 000"
+    limit: Int! = 100
+    offset: Int! = 0
+  ): OrgUnitTypePage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  orgUnitType(id: Int!): OrgUnitType
+
+  """
+  Groups of org units of the requesting user's account (of one of its data sources), by `name` unless `order` says
+  otherwise. Needs one of the "org units", "org units (read)" or "completeness stats" permissions. The org units of a
+  group: `orgUnits(filters: {groupId: ...})`, with its `totalCount`.
+  """
+  groups(
+    filters: GroupFilter
+    "Applied in this order; `id` is always appended as the tie-breaker that keeps offset pages stable."
+    order: [GroupOrder!]
+    "1-1 000"
+    limit: Int! = 100
+    offset: Int! = 0
+  ): GroupPage!
+
+  "`null` if it doesn't exist or isn't visible to the requesting user."
+  group(id: Int!): Group
+}
+
+type OrgUnitPage {
+  items: [OrgUnit!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+enum ValidationStatus {
+  NEW
+  VALID
+  REJECTED
+}
+
+enum OrgUnitTypeCategory {
+  COUNTRY
+  REGION
+  DISTRICT
+  HF
+}
+
+"`NAME`/`NAME_DESC`: `name` has no database index, ordering by it is a full unindexed sort."
+enum OrgUnitOrder {
+  ID
+  ID_DESC
+  NAME
+  NAME_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+  OPENING_DATE
+  OPENING_DATE_DESC
+  CLOSED_DATE
+  CLOSED_DATE_DESC
+  VALIDATION_STATUS
+  VALIDATION_STATUS_DESC
+}
+
+type OrgUnit {
+  id: Int!
+  name: String!
+  uuid: String
+  validationStatus: ValidationStatus!
+  "External (DHIS2) reference"
+  sourceRef: String
+  "DHIS2 code"
+  code: String!
+  aliases: [String!]!
+  openingDate: Date
+  closedDate: Date
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  "Creation time on the client device"
+  sourceCreatedAt: DateTime
+  parentId: Int
+  orgUnitTypeId: Int
+  versionId: Int
+  "ltree path depth, root = 1"
+  depth: Int
+  "`null` without a recorded point"
+  location: Location
+  "Has a geom or simplified_geom"
+  hasGeoJson: Boolean!
+  "Has a location or a shape: something to draw on a map"
+  hasGeometry: Boolean!
+  "Has at least one child, located or not"
+  hasChildren: Boolean!
+  "Submissions attached to this org unit (not deleted, with a file, not from a test device). Reads every submission of every org unit of the page: pages of at most 100."
+  submissionCount: Int!
+  "GeoJSON"
+  geom: JSON
+  "GeoJSON"
+  simplifiedGeom: JSON
+  "GeoJSON"
+  catchment: JSON
+  parent: OrgUnitSummary
+  "Root first, excluding the org unit itself"
+  ancestors: [OrgUnitSummary!]!
+  orgUnitType: OrgUnitTypeSummary
+  version: SourceVersion
+  groups: [GroupSummary!]!
+  "`null` for org units with no recorded creator"
+  createdBy: UserSummary
+}
+
+"An `ancestors` entry, and `parent`: no relations, so no way to walk further."
+type OrgUnitSummary {
+  id: Int!
+  name: String!
+  sourceRef: String
+  validationStatus: ValidationStatus!
+  orgUnitTypeId: Int
+  parentId: Int
+}
+
+"An org unit type below another object: no relations, so no way to walk further."
+type OrgUnitTypeSummary {
+  id: Int!
+  name: String!
+  shortName: String!
+  category: OrgUnitTypeCategory
+  "Its level in the pyramid: 0 for a country..."
+  depth: Int
+}
+
+"A group below another object: no relations, so no way to walk further."
+type GroupSummary {
+  id: Int!
+  name: String!
+  "External (DHIS2) reference"
+  sourceRef: String
+}
+
+"""
+The org units matching all the filters given (AND), each one at most once. `...In` lists take at most 1 000 values. Text matches are case-insensitive only, not accent-insensitive.
+"""
+input OrgUnitFilter {
+  id: Int
+  idIn: [Int!]
+
+  name: String
+  nameIContains: String
+  nameStartsWith: String
+  "Case-insensitive search across name and aliases"
+  search: String
+
+  "Indexed: exact/in/startsWith only (a btree index doesn't help a substring match)"
+  sourceRef: String
+  sourceRefIn: [String!]
+  sourceRefStartsWith: String
+  code: String
+  codeIn: [String!]
+
+  validationStatus: ValidationStatus
+  validationStatusIn: [ValidationStatus!]
+
+  orgUnitTypeId: Int
+  "Only the direct children of this org unit id. Use `ancestorId` for all descendants."
+  parentId: Int
+  groupId: Int
+  "Via the org unit's version"
+  sourceId: Int
+  versionId: Int
+  "Org units whose type is linked to this project id"
+  projectId: Int
+  "Restrict to the requesting user's account's default source version"
+  defaultVersion: Boolean
+  "Only the root org unit(s) visible to the requesting user"
+  rootsForUser: Boolean
+
+  orgUnitTypeNameIContains: String
+  orgUnitTypeCategory: OrgUnitTypeCategory
+  parentNameIContains: String
+  parentSourceRef: String
+
+  sourceCreatedAtGte: DateTime
+  sourceCreatedAtLte: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  updatedAtGte: DateTime
+  updatedAtLte: DateTime
+  openingDateGte: Date
+  openingDateLte: Date
+  closedDateGte: Date
+  closedDateLte: Date
+
+  "Has a geom or simplified_geom"
+  hasShape: Boolean
+  hasLocation: Boolean
+  geomIsNull: Boolean
+  simplifiedGeomIsNull: Boolean
+  catchmentIsNull: Boolean
+  locationIsNull: Boolean
+
+  "All descendants of this org unit id, at any depth (excluding itself)"
+  ancestorId: Int
+  "Only the direct children of this org unit id - same as `parentId`"
+  ancestorIdDirectChildren: Int
+  "ltree path depth (1 = root)"
+  depth: Int
+
+  "`geom` inside the box or overlapping it"
+  geomWithinOrIntersectsBbox: Bbox
+  simplifiedGeomWithinOrIntersectsBbox: Bbox
+  "`location` inside the box (or on its edge)"
+  locationWithinBbox: Bbox
+  "Has a `geom`, and it doesn't intersect the box"
+  geomOutsideBbox: Bbox
+  simplifiedGeomOutsideBbox: Bbox
+  "Has a `location`, and it falls outside the box"
+  locationOutsideBbox: Bbox
+  "`geom` contained within that org unit's simplified_geom (else geom)"
+  geomWithinOrgUnit: Int
+  locationWithinOrgUnit: Int
+  "Has a `geom`, and it isn't contained within that org unit's geometry"
+  geomOutsideOrgUnit: Int
+  "Has a `location`, and it falls outside that org unit's geometry - typically a data quality check"
+  locationOutsideOrgUnit: Int
+}
+
+extend type Mutation {
+  """
+  Updates the validation status, type, parent or groups of the org units the filters match, in the background:
+  queues a task and returns it right away, to follow with `task(id:)` and `taskLogs(taskId:)`. At most one per
+  operation: two would run in no particular order.
+
+  The filters are applied when the task runs, to the org units visible to the user then: an org unit created or
+  changed in between can match, or no longer match. To update exactly the org units you selected, pass their ids:
+  `filters: {idIn: [...]}` (at most 1 000 per call). `filters: {}` updates all the org units visible to the user.
+
+  All the org units are updated or none, and nothing is kept if the task is killed. Those of a type the user can't
+  edit are skipped (listed in the task's `result`). Each update is recorded in the org unit's history.
+
+  Needs the "org units" permission (a top-level `FORBIDDEN` error otherwise). Refused right away, in `errors`, with
+  no task: `NOT_FOUND` (a type, group or parent the user can't see), `INVALID` (nothing to update, a group both added
+  and removed, more than 1 000 groups, a filter on an org unit the user can't see or an invalid bbox...). Refused by
+  the task, which ends `ERRORED` with its `errors` and updates nothing: `NOT_EDITABLE` (org units in a read-only
+  source), `INVALID` (a move under a descendant or to another source version, see `OrgUnitBulkUpdate.parentId`).
+  """
+  bulkUpdateOrgUnits(filters: OrgUnitFilter!, update: OrgUnitBulkUpdate!): BulkUpdateOrgUnitsPayload!
+}
+
+type BulkUpdateOrgUnitsPayload {
+  "The task queued; `null` when refused"
+  task: Task
+  "Every problem found in the input, no task queued when there is any"
+  errors: [OrgUnitBulkUpdateError!]!
+}
+
+"At least one field: those left out (or `null`) aren't changed."
+input OrgUnitBulkUpdate {
+  validationStatus: ValidationStatus
+  orgUnitTypeId: Int
+  """
+  Moves them under this org unit (visible to the user), with their descendants: "move these health centers to that
+  district". All of them must be in the parent's source version, and none can be the parent or one of its
+  ancestors (an org unit can't move under itself or its own descendants): otherwise the task fails without updating
+  any (`INVALID` in the task's `errors`). Pass `filters: {idIn: [...]}` to move exactly the
+  org units selected.
+  """
+  parentId: Int
+  "Groups of the account the org units are added to"
+  groupIdsAdded: [Int!]
+  "Groups the org units are removed from"
+  groupIdsRemoved: [Int!]
+}
+
+"""
+A problem with `bulkUpdateOrgUnits`' input (see `InputError`): refused right away (no task), or by the task (in its
+`errors`, nothing updated).
+"""
+type OrgUnitBulkUpdateError implements InputError {
+  code: OrgUnitBulkUpdateErrorCode!
+  message: String!
+  field: [String!]!
+  "Always `null`: no form question here"
+  question: String
+}
+
+enum OrgUnitBulkUpdateErrorCode {
+  "A type, group or parent the user can't see"
+  NOT_FOUND
+  """
+  The value is refused, the `message` says why: nothing to update, a group both added and removed, more than 1 000
+  groups, a filter on an org unit the user can't see or an invalid bbox; in the task, a move under a descendant or to
+  another source version
+  """
+  INVALID
+  "In the task: org units in a read-only source"
+  NOT_EDITABLE
+}
+
+type OrgUnitTypePage {
+  items: [OrgUnitType!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+type GroupPage {
+  items: [Group!]!
+  "Fetches one extra row, no `COUNT(*)`."
+  hasNextPage: Boolean!
+  "A `COUNT(*)` over the whole filtered set: only run when selected."
+  totalCount: Int!
+}
+
+"A level of the pyramid (country, region, district, health facility...), with what can be below it."
+type OrgUnitType {
+  id: Int!
+  name: String!
+  shortName: String!
+  category: OrgUnitTypeCategory
+  "Its level in the pyramid: 0 for a country..."
+  depth: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  "The types its children can be"
+  subUnitTypes: [OrgUnitTypeSummary!]!
+  "The types of the children the mobile app can create below one of its org units"
+  allowCreatingSubUnitTypes: [OrgUnitTypeSummary!]!
+  "The forms describing its org units (their reference submissions)"
+  referenceForms: [FormSummary!]!
+  "The account's projects using it"
+  projects: [Project!]!
+}
+
+"A named set of org units of one source version (`DHIS2` org unit groups...)."
+type Group {
+  id: Int!
+  name: String!
+  "External (DHIS2) reference"
+  sourceRef: String
+  "Only countries (a block of countries)"
+  blockOfCountries: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  sourceVersionId: Int
+  sourceVersion: SourceVersion
+}
+
+"The org unit types matching all the filters given (AND), each one at most once. `...In` lists take at most 1 000 values."
+input OrgUnitTypeFilter {
+  id: Int
+  idIn: [Int!]
+  "Case-insensitive, in the name or the short name"
+  search: String
+  category: OrgUnitTypeCategory
+  depth: Int
+  "Used by this project"
+  projectId: Int
+  projectIdIn: [Int!]
+}
+
+"The groups matching all the filters given (AND), each one at most once. `...In` lists take at most 1 000 values."
+input GroupFilter {
+  id: Int
+  idIn: [Int!]
+  nameIContains: String
+  sourceRef: String
+  sourceVersionId: Int
+  sourceVersionIdIn: [Int!]
+  dataSourceId: Int
+  "Of the requesting user's account's default source version"
+  defaultVersion: Boolean
+  blockOfCountries: Boolean
+}
+
+enum OrgUnitTypeOrder {
+  ID
+  ID_DESC
+  NAME
+  NAME_DESC
+  DEPTH
+  DEPTH_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+}
+
+enum GroupOrder {
+  ID
+  ID_DESC
+  NAME
+  NAME_DESC
+  CREATED_AT
+  CREATED_AT_DESC
+  UPDATED_AT
+  UPDATED_AT_DESC
+}

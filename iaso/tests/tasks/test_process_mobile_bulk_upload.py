@@ -637,21 +637,23 @@ class ProcessMobileBulkUploadTest(TestCase):
         # by every instance of the batch (so the later `instance.form` accesses in import_data(),
         # xml_file_to_json and the conversions don't re-query it). `iaso_entitytype`: 1 query per
         # distinct entity type, whose reference form import_data() caches for the batch.
-        # import_data()'s own org-unit/entity lookups are still done once per instance (no batch
-        # prefetch/caching yet), so `iaso_orgunit`/`iaso_entity` are O(instances) - bounded at
-        # their exact observed value, to be tightened once those lookups get cached. `iaso_formversion`: 1 query per distinct (form, version) pair (2
+        # `iaso_orgunit`: 5 to import orgUnits.json, then 1 per distinct org unit, which import_data()
+        # caches for the batch. Its entity lookups are still done once per instance (no batch
+        # prefetch/caching yet), so `iaso_entity` is O(instances) - bounded at its exact observed
+        # value, to be tightened once those lookups get cached. `iaso_formversion`: 1 query per distinct (form, version) pair (2
         # here), from `xml_file_to_json` via the batch's `form_versions_cache` -
         # `get_and_save_json_of_xml` reuses the FormVersion it already found there instead of
-        # looking it up again via `resolve_form_version()`. `iaso_instance`: 6/instance -
-        # `import_data()`'s dedup filter (1) + get_or_create (2) + final save (1), then
+        # looking it up again via `resolve_form_version()`. `iaso_instance`: 5/instance -
+        # `import_data()`'s get_or_create (2) + final save (1), then
         # `process_instance_file()`'s file-persisting save (1, required before
         # `get_and_save_json_of_xml()` can fetch the file back on S3 storage) + one merged save (1,
         # covers json/form_version and the location/device/correlation conversions together) -
         # down from 8/instance, since the previous separate uuid re-fetch and the previous 3rd
-        # save are both gone - plus 1 per batch for `process_mobile_bulk_upload()`'s pre-existing
-        # uuids lookup. `iaso_instance`/`audit_modification` scale 1:1 with the batch (6 and
-        # 1 per instance) - a regression would push these to a multiple of the bounds below, not a
-        # small overshoot. The rest (`iaso_task`/`iaso_tasklog`/`iaso_project`/
+        # save are both gone, then 6/instance, since import_data() reuses
+        # `process_mobile_bulk_upload()`'s pre-existing uuids lookup (1 per batch) instead of its own
+        # per-instance dedup filter. `iaso_instance` scales 1:1 with the batch (5 per instance) - a
+        # regression would push it to a multiple of the bound below, not a small overshoot.
+        # `audit_modification`: a single bulk INSERT for the whole batch, instead of 1 per instance. The rest (`iaso_task`/`iaso_tasklog`/`iaso_project`/
         # `vector_control_apiimport`/`auth_user`/`iaso_profile`/`iaso_account`/`iaso_datasource`/
         # `iaso_instancefile`) are fixed per-run bookkeeping overhead, unrelated to instance count -
         # bounded at their exact observed value so a new query pattern on any of them still gets
@@ -664,12 +666,12 @@ class ProcessMobileBulkUploadTest(TestCase):
         ):
             profiler.assertLessEqualQueryCount(
                 {
-                    "iaso_orgunit": 9,
+                    "iaso_orgunit": 6,
                     "iaso_form": 1,
                     "iaso_entity": 8,
                     "iaso_formversion": 2,
-                    "iaso_instance": 27,
-                    "audit_modification": 4,
+                    "iaso_instance": 23,
+                    "audit_modification": 1,
                     "iaso_entitytype": 1,
                     "iaso_task": 7,
                     "iaso_tasklog": 4,
@@ -683,7 +685,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 96)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 86)
             # S3 round trips: the zip download, then 1 upload per instance XML + 1 for the attachment (its duplicate
             # reuses the stored file), each preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False`. It was 9
             # `exists()` when the 128-char XML paths were over Django's default `max_length` of 100, each also checking
@@ -733,10 +735,11 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Entity.objects.count(), 25)
 
         # Same per-instance import_data() lookups as the baseline test (see comment there), at
-        # 12.5x the instance count (50 vs 4): `iaso_orgunit`/`iaso_entity` scale with the batch.
+        # 12.5x the instance count (50 vs 4): `iaso_entity` scales with the batch, `iaso_orgunit` stays at
+        # the baseline's 6 (a single org unit).
         # `iaso_form`/`iaso_entitytype` stay at 1 query per distinct form/entity type, as in the baseline. `iaso_formversion`: same 2 distinct (form, version) pairs as the baseline, so still 2.
-        # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300, + 1 per batch.
-        # `audit_modification` scales 1:1 with the batch, at scale: 50. The rest is the same fixed
+        # `iaso_instance`: 5/instance as the baseline test (see comment there), at scale: 250, + 1 per batch.
+        # `audit_modification`: still a single bulk INSERT at scale. The rest is the same fixed
         # per-run bookkeeping overhead as the baseline test (see comment there), still O(1) rather
         # than scaling with the 12.5x larger batch - this zip has no attachments so
         # `iaso_instancefile` never fires, unlike the baseline test.
@@ -745,12 +748,12 @@ class ProcessMobileBulkUploadTest(TestCase):
         ):
             profiler.assertLessEqualQueryCount(
                 {
-                    "iaso_orgunit": 55,
+                    "iaso_orgunit": 6,
                     "iaso_form": 1,
                     "iaso_entity": 100,
                     "iaso_formversion": 2,
-                    "iaso_instance": 302,
-                    "audit_modification": 50,
+                    "iaso_instance": 252,
+                    "audit_modification": 1,
                     "iaso_entitytype": 1,
                     "iaso_task": 7,
                     "iaso_tasklog": 4,
@@ -763,7 +766,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 643)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 495)
             # S3 round trips: the zip download, then 1 upload per instance XML (no attachment in this zip), each
             # preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False` makes it look for an available name -
             # 100 when the XML paths were over the field's `max_length`, each also checking its truncated name.
@@ -771,13 +774,14 @@ class ProcessMobileBulkUploadTest(TestCase):
 
     def test_audit_trail_at_scale(self):
         """
-        A batch of 50 new instances: one audit row each, with the instance as created by `import_data()` (no file nor
-        json yet) as past value, and the fully processed instance as new value.
+        More new instances (520) than `MODIFICATIONS_BATCH_SIZE`: still one audit row each, bulk inserted in 2 chunks,
+        with the instance as created by `import_data()` (no file nor json yet) as past value, and the fully processed
+        instance as new value.
         """
-        # Setup: 25 patients, each with a registration and a follow-up
+        # Setup: 260 patients, each with a registration and a follow-up
         m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
         m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
-        self._create_zip_file_at_scale(num_patients=25)
+        self._create_zip_file_at_scale(num_patients=260)
 
         # Exercise
         with QueryProfiler(trace_tables=["audit_modification"]) as profiler:
@@ -790,10 +794,10 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         # Assert
         instances = m.Instance.objects.all()
-        self.assertEqual(instances.count(), 50)
+        self.assertEqual(instances.count(), 520)
         content_type = ContentType.objects.get_for_model(m.Instance)
         modifications = Modification.objects.filter(source=BULK_UPLOAD)
-        self.assertEqual(modifications.count(), 50)
+        self.assertEqual(modifications.count(), 520)
         self.assertEqual(
             sorted(modifications.values_list("object_id", flat=True)),
             sorted(str(instance_id) for instance_id in instances.values_list("id", flat=True)),
@@ -821,8 +825,8 @@ class ProcessMobileBulkUploadTest(TestCase):
                     },
                 },
             )
-        # One INSERT per audit row
-        self.assertEqual(profiler.table_counts()["audit_modification"], 50)
+        # One INSERT per chunk of `MODIFICATIONS_BATCH_SIZE` audit rows
+        self.assertEqual(profiler.table_counts()["audit_modification"], 2)
 
     def test_campaign_registrations_then_followups_query_count(self):
         """
@@ -855,11 +859,11 @@ class ProcessMobileBulkUploadTest(TestCase):
                 api_import_id=followups_import.id, project_id=self.project.id, task=followups_task, _immediate=True
             )
 
-        # The batch's pre-existing uuids lookup and `import_data()`'s file names lookup (2), then 6 per new follow-up
-        # (see test_form_version_query_count_baseline) and 5 per updated registration: looked up by uuid 3 times (twice
-        # by `import_data()`, once by `process_mobile_bulk_upload()`), then its 2 saves (with the new file, then with
-        # its json).
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 2 + 25 * 6 + 25 * 5)
+        # The batch's instances (`InstanceImportCache`) and file names lookups (2), then 5 per new follow-up (see
+        # test_form_version_query_count_baseline) and 2 per updated registration (its saves, with the new file then with
+        # its json): the registrations are found in the batch's instances. It was 277: 3 more per existing registration
+        # and 1 more per new follow-up, each looked up by uuid on its own.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 2 + 25 * 5 + 25 * 2)
 
         self.assertEqual(m.Instance.objects.count(), 50)
         self.assertEqual(m.Entity.objects.count(), 25)
@@ -2105,9 +2109,9 @@ class ProcessMobileBulkUploadTest(TestCase):
                 "instances": [registration_uuid],
             },
         )
-        # Queries: the batch's uuids and file names lookups (2), its uuid looked up (1), found by its file name (1),
+        # Queries: the batch's instances (`InstanceImportCache`) and file names lookups (2), found by its file name (1),
         # saved by `import_data()` (1), then twice with its XML and data (2). S3: the zip, then the XML stored again.
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 7)
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 6)
         profiler.assertStorageCounts({"_open": 1, "exists": 1, "_save": 1})
 
     def test_approved_instance_sent_again(self):
@@ -2136,10 +2140,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         updated = instance_state(registration_uuid)
         self.assertNotEqual(updated["file"], approved["file"])
         self.assertEqual(updated, {**approved, "file": updated["file"], "updated at": a_day_later})
-        # Queries: the batch's uuids and file names lookups (2), its uuid looked up by `import_data()` (1) - which
-        # leaves it out, as approved - and by the task (1), then saved twice with its new XML and data (2). S3: the zip,
+        # Queries: the batch's instances (`InstanceImportCache`) and file names lookups (2) - where `import_data()` (which
+        # leaves it out, as approved) and the task find it - then saved twice with its new XML and data (2). S3: the zip,
         # then the new XML: its name is taken by the previous one, so a 2nd HEAD for the name it's stored under.
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 6)
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 4)
         profiler.assertStorageCounts({"_open": 1, "exists": 2, "_save": 1})
 
     def test_existing_instance_sent_again_without_its_xml(self):
@@ -2169,9 +2173,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Assert: nothing changed
         self.assertEqual(instance_state(registration_uuid), received)
         self.assertEqual(entity_state(registration_uuid), patient)
-        # Queries: the batch's uuids and file names lookups (2), its uuid looked up twice by `import_data()` (2) and once
-        # by the task (1). S3: only the zip, nothing stored.
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 5)
+        # Queries: the batch's instances (`InstanceImportCache`) and file names lookups (2) - where it's found - and
+        # nothing else. S3: only the zip, nothing stored.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 2)
         profiler.assertStorageCounts({"_open": 1})
 
     def test_new_followup_without_its_xml(self):
@@ -2202,9 +2206,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertIsNone(instance_state(followup_uuid))
         self.assertEqual(instance_state(registration_uuid), registration)
         self.assertEqual(entity_state(registration_uuid), patient)
-        # Queries: the batch's uuids and file names lookups (2), its uuid looked up (1), created by `import_data()` (2)
-        # and saved (1), then deleted (1). S3: only the zip, nothing stored.
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 7)
+        # Queries: the batch's instances (`InstanceImportCache`) and file names lookups (2), created by `import_data()`
+        # (2) and saved (1), then deleted (1). S3: only the zip, nothing stored.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 6)
         profiler.assertStorageCounts({"_open": 1})
 
     def _sku(self):
@@ -2336,10 +2340,10 @@ class ProcessMobileBulkUploadTest(TestCase):
             updated_followup, {**received_followup, "file": updated_followup["file"], "updated at": a_day_later}
         )
         self.assertEqual(instance_state(active_registration_uuid), active_registration)
-        # Queries: the batch's uuids and file names lookups (2), its uuid looked up twice by `import_data()` (2) and once
-        # by the task (1), saved twice with its new XML and data (2), then the merged patient's reference instance
-        # loaded, to see it's not this follow-up (1). S3: the zip, then the new XML (its name is taken: a 2nd HEAD).
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 8)
+        # Queries: the batch's instances (`InstanceImportCache`) and file names lookups (2) - where it's found - saved
+        # twice with its new XML and data (2), then the merged patient's reference instance loaded, to see it's not this
+        # follow-up (1). S3: the zip, then the new XML (its name is taken: a 2nd HEAD).
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 5)
         profiler.assertStorageCounts({"_open": 1, "exists": 2, "_save": 1})
 
     def test_older_registration_update_of_merged_entity(self):
@@ -2372,9 +2376,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         updated = instance_state(registration_uuid)
         self.assertEqual(updated, {**merged_registration, "file": updated["file"], "updated at": a_day_later})
         self.assertEqual(instance_state(active_registration_uuid), active_registration)
-        # Queries: as in test_updated_followup_of_merged_entity (8), plus the active patient's registration loaded, to
+        # Queries: as in test_updated_followup_of_merged_entity (5), plus the active patient's registration loaded, to
         # compare their dates (1). S3: the zip, then the new XML (its name is taken: a 2nd HEAD).
-        self.assertEqual(profiler.table_counts()["iaso_instance"], 9)
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 6)
         profiler.assertStorageCounts({"_open": 1, "exists": 2, "_save": 1})
 
     def test_unknown_project(self):

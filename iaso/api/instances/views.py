@@ -39,6 +39,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
 from iaso.api.instances.permissions import PERMISSION_CLASSES_RW, HasInstanceBulkPermission, HasInstancePermission
 from iaso.api.instances.serializers import (
@@ -1121,11 +1122,13 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id, api_import=None):
+def import_data(instances, user, app_id, api_import=None, cache: Optional[InstanceImportCache] = None):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by
     the second endpoint (POST /sync/form_upload/).
+
+    `cache`: the batch's `InstanceImportCache`, when the caller shares it - the instances created here are added to it.
     """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     rtn_instances = []
@@ -1145,10 +1148,14 @@ def import_data(instances, user, app_id, api_import=None):
         if existing_uuid:
             uuids_by_file_name[existing_file_name].add(existing_uuid)
 
+    if cache is None:
+        cache = InstanceImportCache([instance_data.get("id") for instance_data in instances])
+
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
-        existing_instances = Instance.objects.filter(uuid=uuid)
+        # A missing or empty uuid keeps its own lookup, as before
+        existing_instances = cache.instances(uuid) if uuid else Instance.objects.filter(uuid=uuid).order_by("id")
         if existing_instances:
             if all(
                 existing_instance.general_validation_status
@@ -1156,7 +1163,7 @@ def import_data(instances, user, app_id, api_import=None):
                 + Instance._meta.get_field("general_validation_status").empty_values
                 for existing_instance in existing_instances
             ):
-                rtn_instances.append(existing_instances.first())
+                rtn_instances.append(existing_instances[0])
             continue
 
         # Get or create instance based on file_name - this "get or create" logic is important:
@@ -1173,10 +1180,11 @@ def import_data(instances, user, app_id, api_import=None):
             file_name = f"{base}_dup_{uuid}{ext}"
 
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
+        instance.uuid = uuid
         if uuid:
             uuids_by_file_name[file_name].add(uuid)
+            cache.add_instance(instance)
 
-        instance.uuid = uuid
         instance.project = project
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
@@ -1193,8 +1201,7 @@ def import_data(instances, user, app_id, api_import=None):
         if str(tentative_org_unit_id).isdigit():
             instance.org_unit_id = tentative_org_unit_id
         else:
-            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id, version_id=project.account.default_version_id)
-            instance.org_unit = org_unit
+            instance.org_unit = cache.org_unit(tentative_org_unit_id, project.account.default_version_id)
 
         raw_form_id = instance_data.get("formId")
         # Normalize to int: the mobile app sends this as a JSON string (e.g. "1"), which would make
@@ -1285,6 +1292,9 @@ def import_data(instances, user, app_id, api_import=None):
             except Exception as e:
                 # so we avoid the whole instance creation crashing
                 logger.error(e)
+                # `start()` may have set the status before failing: rolled back in the database, but not on this
+                # in-memory instance, which callers keep using and saving (see `InstanceImportCache`).
+                instance.refresh_from_db(fields=["general_validation_status"])
 
     return rtn_instances
 

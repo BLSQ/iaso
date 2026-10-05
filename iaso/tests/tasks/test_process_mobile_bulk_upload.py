@@ -263,12 +263,13 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 0)
         self.assertEqual(m.InstanceFile.objects.count(), 0)
 
-        process_mobile_bulk_upload(
-            api_import_id=self.api_import.id,
-            project_id=self.project.id,
-            task=self.task,
-            _immediate=True,
-        )
+        with QueryProfiler() as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -277,6 +278,32 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.api_import.refresh_from_db()
         self.assertEqual(self.api_import.import_type, "bulk")
         self.assertFalse(self.api_import.has_problem)
+
+        # Storage (S3) operations: the zip is the only file read, and each file is uploaded once under its
+        # full `upload_to` path - one XML per instance + the single attachment, as its duplicate points to
+        # the same stored file instead of uploading it again. The XML paths are longer than Django's
+        # default `max_length` of 100, which used to truncate them and append a random suffix.
+        with open(os.path.join(zip_fixture_dir(CATT_TABLET_DIR), "instances.json")) as f:
+            instances_data = json.load(f)
+        expected_xml_names = [
+            instance_upload_to(
+                m.Instance.objects.get(uuid=data["id"]), os.path.join(data["id"], os.path.basename(data["file"]))
+            )
+            for data in instances_data
+        ]
+        self.assertTrue(all(len(name) > 100 for name in expected_xml_names))
+        disasi_image = m.InstanceFile.objects.get(instance__uuid=DISASI_MAKULO_CATT)
+        expected_attachment_name = instance_file_upload_to(disasi_image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
+        # `exists()`: the in-memory storage checks each name is available before saving it
+        profiler.assertStorageCalls(
+            {"_open": [self.api_import.file.name], "_save": expected_xml_names + [expected_attachment_name]},
+            exclude=["exists"],
+        )
+        self.assertCountEqual([i.file.name for i in m.Instance.objects.all()], expected_xml_names)
+        self.assertEqual(
+            list(m.InstanceFile.objects.values_list("file", flat=True)),
+            [expected_attachment_name, expected_attachment_name],
+        )
 
         # Org unit was created
         ou = m.OrgUnit.objects.get(name="New Org Unit")
@@ -329,15 +356,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertIsNone(catt_instance.device)
 
         # Checking if files are uploaded to the correct location
-        generated_file_name = instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
-        # as the generated file name is longer than 100 chars, Django truncates it and adds a random suffix to it
-        # it's therefore impossible to strictly check for equality
-        expected_file_name = generated_file_name[:85]
-        self.assertTrue(catt_instance.file.name.startswith(expected_file_name))
-        # same issue about name length for InstanceFile
-        generated_attachment_name = instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
-        expected_attachment_name = generated_attachment_name[:85]
-        self.assertTrue(image.file.name.startswith(expected_attachment_name))
+        self.assertEqual(catt_instance.file.name, instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME))
+        self.assertEqual(image.file.name, instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME))
 
         # Entity 2: Patrice Akambu
         reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
@@ -368,6 +388,47 @@ class ProcessMobileBulkUploadTest(TestCase):
         # in their submitted XML, so the single uploaded attachment gets duplicated onto
         # the other instance rather than each instance only keeping its own file (or none).
         self.assertEqual(m.InstanceFile.objects.filter(name="1712326156339.webp").count(), 2)
+
+    def test_long_attachment_name_is_not_truncated(self):
+        """
+        Attachment paths longer than Django's default `max_length` of 100 used to be truncated
+        with a random suffix appended: they're now stored on S3 under their full `upload_to` path.
+        """
+        long_attachment_name = f"{'patient_photo_' * 6}1712326156339.webp"
+        zip_path = f"/tmp/{CATT_TABLET_DIR}_long_attachment_name.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        with zipfile.ZipFile(zip_path, "r") as zipf:
+            entries = {name: zipf.read(name) for name in zipf.namelist()}
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for name, content in entries.items():
+                zipf.writestr(name.replace("1712326156339.webp", long_attachment_name), content)
+        save_file_to_api_import(self.api_import, zip_path)
+
+        with QueryProfiler() as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        image = m.InstanceFile.objects.get(instance__uuid=DISASI_MAKULO_CATT)
+        self.assertEqual(image.name, long_attachment_name)
+        expected_name = instance_file_upload_to(image, f"{DISASI_MAKULO_CATT}/{long_attachment_name}")
+        self.assertGreater(len(expected_name), 100)
+        self.assertEqual(image.file.name, expected_name)
+        # Uploaded once, under that exact key - its duplicate on Patrice's CATT points to the same file.
+        self.assertEqual(profiler.storage_names("_save", suffix=".webp"), [expected_name])
+        self.assertEqual(
+            list(m.InstanceFile.objects.values_list("file", flat=True)),
+            [expected_name, expected_name],
+        )
+        with image.file.open("rb") as f:
+            self.assertEqual(f.read(), entries[f"{DISASI_MAKULO_CATT}/1712326156339.webp"])
 
     def test_device_converted_from_configured_device_field_during_bulk_upload(self):
         """`convert_device()` should actually assign a Device when the form's device_field
@@ -563,6 +624,11 @@ class ProcessMobileBulkUploadTest(TestCase):
                 exclude=["django_content_type"],
             )
             self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 96)
+            # S3 round trips: the zip download, then 1 upload per instance XML + 1 for the attachment (its duplicate
+            # reuses the stored file), each preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False`. It was 9
+            # `exists()` when the 128-char XML paths were over Django's default `max_length` of 100, each also checking
+            # its truncated name.
+            profiler.assertStorageCounts({"_open": 1, "exists": 5, "_save": 5})
 
         # form_version is no longer resolved on every save() - make sure the bulk upload path
         # still sets it on every instance it creates.
@@ -638,6 +704,10 @@ class ProcessMobileBulkUploadTest(TestCase):
                 exclude=["django_content_type"],
             )
             self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 643)
+            # S3 round trips: the zip download, then 1 upload per instance XML (no attachment in this zip), each
+            # preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False` makes it look for an available name -
+            # 100 when the XML paths were over the field's `max_length`, each also checking its truncated name.
+            profiler.assertStorageCounts({"_open": 1, "exists": 50, "_save": 50})
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()

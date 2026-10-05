@@ -120,6 +120,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
             request_form__campaign=obj["campaign__id"],
             request_form__rounds=obj["id"],
             request_form__vaccine_type=obj["vaccine_name"],
+            request_form__deleted_at__isnull=True,
         )
         return [
             {

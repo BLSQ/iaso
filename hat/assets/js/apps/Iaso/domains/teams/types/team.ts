@@ -44,19 +44,15 @@ export type TeamDropdown = {
 };
 
 export type TeamFilterParams = {
-    dateTo?: string;
-    dateFrom?: string;
     project?: number;
     type?: TeamType;
-    managers?: User;
-    ancestor?: string;
+    managers?: number;
     fields?: string;
 };
 
-export type TeamParams = UrlParams &
-    TeamFilterParams & {
-        select?: (data: Array<Team>) => Array<any>;
-    };
+export type TeamDropdownFilterParams = TeamFilterParams;
+
+export type TeamUrlParams = UrlParams & TeamFilterParams;
 
 export type DropdownTeamsOptions = {
     label: string;

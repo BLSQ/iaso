@@ -1,5 +1,7 @@
 import time
 
+from datetime import datetime
+
 import requests
 
 
@@ -9,12 +11,26 @@ class IasoClient:
 
     def __init__(self, server_url):
         self.debug = False
+        self.verbose = False
         self.server_url = server_url
         self.headers = {}
 
+    def request(self, method, url, params=None, **kwargs):
+        """Send an authenticated request to the server, logging it (url + params) when verbose is on."""
+        full_url = self.server_url.rstrip("/") + "/" + url.lstrip("/")
+        if self.verbose:
+            print(f"[{datetime.now().isoformat(timespec='milliseconds')}] {method} {full_url} params={params}")
+        start = time.monotonic()
+        r = requests.request(method, full_url, params=params, headers=self.headers, **kwargs)
+        if self.verbose:
+            print(
+                f"[{datetime.now().isoformat(timespec='milliseconds')}] <- {r.status_code} in {time.monotonic() - start:.2f}s"
+            )
+        return r
+
     def authenticate_with_username_and_password(self, username, password):
         credentials = {"username": username, "password": password}
-        r = requests.post(self.server_url + "/api/token/", json=credentials)
+        r = self.request("POST", "/api/token/", json=credentials)
         token = r.json().get("access")
         self.authenticate_with_token(token)
 
@@ -23,8 +39,7 @@ class IasoClient:
 
     def post(self, url, json=None, params=None, data=None, files=None):
         self.log(url, json)
-        full_url = self.server_url.rstrip("/") + "/" + url.lstrip("/")
-        r = requests.post(full_url, json=json, params=params, data=data, headers=self.headers, files=files)
+        r = self.request("POST", url, json=json, params=params, data=data, files=files)
         resp = None
         try:
             resp = r.json()
@@ -38,8 +53,7 @@ class IasoClient:
     def patch(self, url, json=None, params=None, data=None, files=None):
         self.log(url, json)
         print(url, json)
-        full_url = self.server_url.rstrip("/") + "/" + url.lstrip("/")
-        r = requests.patch(full_url, json=json, params=params, data=data, headers=self.headers, files=files)
+        r = self.request("PATCH", url, json=json, params=params, data=data, files=files)
         resp = None
         try:
             resp = r.json()
@@ -53,7 +67,7 @@ class IasoClient:
     def put(self, url, json=None, data=None, files=None):
         self.log(url, json)
         print(url, json)
-        r = requests.put(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        r = self.request("PUT", url, json=json, data=data, files=files)
         resp = None
         try:
             resp = r.json()
@@ -65,7 +79,7 @@ class IasoClient:
         return resp
 
     def get(self, url, params=None):
-        r = requests.get(self.server_url + url, params=params, headers=self.headers)
+        r = self.request("GET", url, params=params)
         resp = None
         try:
             resp = r.json()

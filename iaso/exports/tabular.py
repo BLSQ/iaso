@@ -118,11 +118,20 @@ def export_django_query_to_xlsx_via_duckdb(
 
             # the xlsx writer is single threaded: the values are computed beforehand (in parallel)
             if sub_columns:
-                # the sub columns can't be written by duckdb (texts in columns that can be numbers): an empty
-                # placeholder row (all NULLs, written as <row r="2"></row>) is inserted first, before the values,
-                # and replaced by the sub columns in style_xlsx. The insertion order is kept by the table scan of COPY
-                duckdb_connection.execute(f"CREATE TABLE export_values AS {values_select} LIMIT 0")  # only the types
+                # the sheet layout is:
+                #   row 1: the header (the question names), written by duckdb (HEADER true)
+                #   row 2: the sub columns (the question labels, strings)
+                #   row 3+: the values, cast to numbers where possible
+                # duckdb can't write the row 2 strings in columns typed as numbers: an all NULLs placeholder row
+                # (written as <row r="2"></row>) is inserted before the values. The insertion order is kept by the
+                # table scan of COPY. duckdb only writes that empty row: it's filled afterwards by style_xlsx, which
+                # rewrites the sheet xml inside the xlsx zip (without loading the workbook) and puts the sub
+                # columns strings in it
+                # empty table, only to get the column names and types computed by values_select
+                duckdb_connection.execute(f"CREATE TABLE export_values AS {values_select} LIMIT 0")
+                # no column has a declared default: inserts the all NULLs placeholder row
                 duckdb_connection.execute("INSERT INTO export_values DEFAULT VALUES")
+                # the values, after the placeholder row
                 duckdb_connection.execute(f"INSERT INTO export_values {values_select}")
             else:
                 duckdb_connection.execute(f"CREATE TABLE export_values AS {values_select}")

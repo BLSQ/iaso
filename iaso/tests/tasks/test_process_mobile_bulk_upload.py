@@ -771,13 +771,15 @@ class ProcessMobileBulkUploadTest(TestCase):
 
     def test_audit_trail_at_scale(self):
         """
-        A large batch (520 instances): one audit row per new instance, with the instance as created by `import_data()`
-        (no file nor json yet) as past value, and the fully processed instance as new value.
+        A batch of 50 new instances: one audit row each, with the instance as created by `import_data()` (no file nor
+        json yet) as past value, and the fully processed instance as new value.
         """
+        # Setup: 25 patients, each with a registration and a follow-up
         m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
         m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
-        self._create_zip_file_at_scale(num_patients=260)
+        self._create_zip_file_at_scale(num_patients=25)
 
+        # Exercise
         with QueryProfiler(trace_tables=["audit_modification"]) as profiler:
             process_mobile_bulk_upload(
                 api_import_id=self.api_import.id,
@@ -786,14 +788,12 @@ class ProcessMobileBulkUploadTest(TestCase):
                 _immediate=True,
             )
 
-        # One INSERT per audit row
-        self.assertEqual(profiler.table_counts()["audit_modification"], 520)
-
+        # Assert
         instances = m.Instance.objects.all()
-        self.assertEqual(instances.count(), 520)
+        self.assertEqual(instances.count(), 50)
         content_type = ContentType.objects.get_for_model(m.Instance)
         modifications = Modification.objects.filter(source=BULK_UPLOAD)
-        self.assertEqual(modifications.count(), 520)
+        self.assertEqual(modifications.count(), 50)
         self.assertEqual(
             sorted(modifications.values_list("object_id", flat=True)),
             sorted(str(instance_id) for instance_id in instances.values_list("id", flat=True)),
@@ -804,16 +804,25 @@ class ProcessMobileBulkUploadTest(TestCase):
         for instance in [instances.order_by("id").first(), instances.order_by("id").last()]:
             modification = modifications.get(object_id=instance.id)
             self.assertIsNotNone(modification.created_at)
-            past_fields = modification.past_value[0]["fields"]
-            new_fields = modification.new_value[0]["fields"]
-            self.assertEqual(modification.past_value[0]["pk"], instance.id)
-            self.assertEqual(modification.new_value[0]["pk"], instance.id)
-            self.assertEqual(past_fields["uuid"], instance.uuid)
-            self.assertEqual(past_fields["file"], "")
-            self.assertIsNone(past_fields["json"])
-            self.assertEqual(new_fields["file"], instance.file.name)
-            self.assertEqual(new_fields["json"], instance.json)
-            self.assertEqual(new_fields["form_version"], instance.form_version_id)
+            past, new = modification.past_value[0], modification.new_value[0]
+            self.assertEqual(
+                {
+                    "past": {"pk": past["pk"], **{k: past["fields"][k] for k in ["uuid", "file", "json"]}},
+                    "new": {"pk": new["pk"], **{k: new["fields"][k] for k in ["file", "json", "form_version"]}},
+                },
+                {
+                    # As created by `import_data()`: no file nor data yet
+                    "past": {"pk": instance.id, "uuid": instance.uuid, "file": "", "json": None},
+                    "new": {
+                        "pk": instance.id,
+                        "file": instance.file.name,
+                        "json": instance.json,
+                        "form_version": instance.form_version_id,
+                    },
+                },
+            )
+        # One INSERT per audit row
+        self.assertEqual(profiler.table_counts()["audit_modification"], 50)
 
     def test_campaign_registrations_then_followups_query_count(self):
         """

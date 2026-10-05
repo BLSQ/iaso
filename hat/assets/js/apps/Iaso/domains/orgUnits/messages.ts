@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Map',
         id: 'iaso.label.map',
     },
+    mapLibre: {
+        defaultMessage: 'Map (MapLibre)',
+        id: 'iaso.orgUnits.mapLibre',
+    },
     parents: {
         defaultMessage: 'Parents',
         id: 'iaso.orgUnits.parents',

@@ -39,6 +39,7 @@ import { OrgUnitForm } from './components/OrgUnitForm';
 import { OrgUnitImages } from './components/OrgUnitImages';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap';
+import { OrgUnitMapLibre } from './components/orgUnitMapLibre/OrgUnitMapLibre';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks';
 import { Logs } from './history/LogsComponent';
@@ -108,6 +109,7 @@ const initialOrgUnit: Partial<OrgUnit> = {
 const tabs = [
     'infos',
     'map',
+    'mapLibre',
     'children',
     'links',
     'history',
@@ -418,6 +420,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             {(isFetchingDetail || isFetchingDatas || savingOu) &&
                 (params.tab === 'infos' ||
                     params.tab === 'map' ||
+                    params.tab === 'mapLibre' ||
                     params.tab === 'comments') && <LoadingSpinner />}
             {currentOrgUnit && (
                 <section>
@@ -500,6 +503,17 @@ const OrgUnitDetail: FunctionComponent = () => {
                                         )}
                                 </Box>
                             </div>
+
+                            {params.tab === 'mapLibre' && !isFetchingDetail && (
+                                <Box
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
+                                    }
+                                    data-test="maplibre-tab"
+                                >
+                                    <OrgUnitMapLibre orgUnit={currentOrgUnit} />
+                                </Box>
+                            )}
 
                             {params.tab === 'history' && currentOrgUnit.id && (
                                 <div data-test="logs-tab">

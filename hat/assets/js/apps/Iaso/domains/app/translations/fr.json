@@ -1201,6 +1201,7 @@
     "iaso.orgUnits.addToGroups": "Ajouter au(x) groupe(s)",
     "iaso.orgUnits.bulkChangeCount": "Vous allez modifier {count} unités d'org.",
     "iaso.orgUnits.bulkChangeTaskHelp": "La modification s'exécute en arrière-plan et peut prendre quelques minutes.",
+    "iaso.orgUnits.mapLibre": "Carte (MapLibre)",
     "iaso.orgUnits.modifyAndFollow": "Modifier et suivre",
     "iaso.orgUnits.closingDate": "Date de fermeture",
     "iaso.orgUnits.code": "Code",

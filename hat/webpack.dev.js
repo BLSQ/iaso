@@ -5,6 +5,7 @@ const { ModuleFederationPlugin } = require('webpack').container;
 
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
+const { maplibreRules } = require('./assets/js/apps/Iaso/bundle/maplibre');
 
 const {
     oldBrowsersConfig,
@@ -229,9 +230,11 @@ module.exports = {
             },
             {
                 test: /\.mjs$/,
+                resourceQuery: { not: [/url/] },
                 type: 'javascript/auto',
                 use: 'babel-loader',
             },
+            ...maplibreRules,
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },

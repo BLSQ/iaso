@@ -50,12 +50,13 @@ import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
 import { buttonsInitialState } from './constants';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { FormsMarkers } from './FormsMarkers';
+import { getAncestorWithGeojson } from './getAncestorWithGeojson';
 import { getBounds } from './getBounds';
 import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
 import { SelectedMarkers } from './SelectedMarkers';
 import { SourcesSelectedShapes } from './SourcesSelectedShapes';
 import { MappedOrgUnit } from './types';
-import { getAncestorWithGeojson, initialState } from './utils';
+import { initialState } from './utils';
 
 export const zoom = 5;
 export const padding = L.point(75, 75);

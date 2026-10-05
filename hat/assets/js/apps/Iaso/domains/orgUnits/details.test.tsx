@@ -91,6 +91,11 @@ vi.mock('./components/orgUnitMap/OrgUnitMap/OrgUnitMap', () => ({
     OrgUnitMap: () => <div data-testid="org-unit-map" />,
 }));
 
+// jsdom has no WebGL: MapLibre can't run here
+vi.mock('./components/orgUnitMapLibre/OrgUnitMapLibre', () => ({
+    OrgUnitMapLibre: () => <div data-testid="org-unit-maplibre" />,
+}));
+
 vi.mock('./details/Children/OrgUnitChildren', () => ({
     OrgUnitChildren: () => <div data-testid="org-unit-children" />,
 }));
@@ -167,8 +172,17 @@ describe('OrgUnitDetail - map tab gating', () => {
         expect(screen.getByTestId('org-unit-map')).toBeInTheDocument();
     });
 
+    it('renders only OrgUnitMapLibre when the mapLibre tab is active', () => {
+        setParamsTab('mapLibre');
+        renderWithThemeAndIntlProvider(<OrgUnitDetail />);
+
+        expect(screen.getByTestId('org-unit-maplibre')).toBeInTheDocument();
+        expect(screen.queryByTestId('org-unit-map')).not.toBeInTheDocument();
+    });
+
     it.each([
         'infos',
+        'mapLibre',
         'children',
         'links',
         'history',

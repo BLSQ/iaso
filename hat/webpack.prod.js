@@ -3,6 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const { ModuleFederationPlugin } = require('webpack').container;
 const BundleTracker = require('webpack-bundle-tracker');
+const { maplibreRules } = require('./assets/js/apps/Iaso/bundle/maplibre');
 
 const {
     generateCombinedTranslations,
@@ -260,9 +261,11 @@ module.exports = {
             },
             {
                 test: /\.mjs$/,
+                resourceQuery: { not: [/url/] },
                 type: 'javascript/auto',
                 use: 'babel-loader',
             },
+            ...maplibreRules,
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },

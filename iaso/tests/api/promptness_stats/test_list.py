@@ -253,7 +253,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(order="-expected"))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        # Somali is not applicable: its `expected` is returned as None, but it is ordered as 0
+        # Somali is not applicable: it comes last
         self.assertEqual(
             [(row["name"], row["expected"]) for row in data["results"]],
             [("Oromia", 4), ("Amhara", 2), ("Afar", 1), ("Somali", None)],
@@ -263,10 +263,56 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.URL, self.get_serializer_params(order="-late,name"))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        # Same number of late submissions: ordered by name. Somali is not applicable, but it is ordered as 0
+        # Same number of late submissions: ordered by name. Somali is not applicable: it comes last
         self.assertEqual(
             [(row["late"], row["name"]) for row in data["results"]],
             [(1, "Amhara"), (1, "Oromia"), (0, "Afar"), (None, "Somali")],
+        )
+
+    def test_not_applicable_rows_come_last_when_ordering_on_a_count(self):
+        # Somali is not applicable: last in both directions, instead of being mixed with the rows at 0
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.URL, self.get_serializer_params(order="late"))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(row["name"], row["late"]) for row in data["results"]],
+            [("Afar", 0), ("Amhara", 1), ("Oromia", 1), ("Somali", None)],
+        )
+
+        response = self.client.get(self.URL, self.get_serializer_params(order="-late"))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(row["name"], row["late"]) for row in data["results"]],
+            [("Amhara", 1), ("Oromia", 1), ("Afar", 0), ("Somali", None)],
+        )
+
+    def test_not_applicable_rows_come_last_when_ordering_on_a_percentage(self):
+        # Somali is not applicable (`NULL` percentages): last in both directions, while Postgres would put it first
+        # in descending order
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.URL, self.get_serializer_params(order="completeness_percent"))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(row["name"], row["completeness_percent"]) for row in data["results"]],
+            [("Afar", 0.0), ("Amhara", 50.0), ("Oromia", 75.0), ("Somali", None)],
+        )
+
+        response = self.client.get(self.URL, self.get_serializer_params(order="-completeness_percent"))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(row["name"], row["completeness_percent"]) for row in data["results"]],
+            [("Oromia", 75.0), ("Amhara", 50.0), ("Afar", 0.0), ("Somali", None)],
+        )
+
+    def test_not_applicable_rows_keep_their_place_when_ordering_on_names(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params(order="-name"))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(row["name"], row["is_applicable"]) for row in data["results"]],
+            [("Somali", False), ("Oromia", True), ("Amhara", True), ("Afar", True)],
         )
 
     def test_order_by_org_unit_type_name(self):

@@ -6,7 +6,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from iaso.api.common import HasPermission
-from iaso.api.promptness_stats.filters import StableOrderingFilter
+from iaso.api.promptness_stats.filters import PromptnessStatsOrderingFilter
 from iaso.api.promptness_stats.pagination import PromptnessStatsPagination
 from iaso.api.promptness_stats.period import PromptnessPeriod
 from iaso.api.promptness_stats.queries import annotate_rows, get_rows, get_target_org_units, get_totals
@@ -39,10 +39,9 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     serializer_class = PromptnessStatsQueryParamsSerializer
     pagination_class = PromptnessStatsPagination
-    filter_backends = [StableOrderingFilter]
-    ordering_fields = [
-        "name",
-        "org_unit_type__name",
+    filter_backends = [PromptnessStatsOrderingFilter]
+    # Figures: when ordering on them, the not applicable rows always come last (see `PromptnessStatsOrderingFilter`)
+    not_applicable_last_fields = [
         "expected",
         "received",
         "completeness_percent",
@@ -53,6 +52,7 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
         "missing",
         "missing_percent",
     ]
+    ordering_fields = ["name", "org_unit_type__name", *not_applicable_last_fields]
     ordering = ["name"]
     # Only used by the browsable API and the schema generation: the actual rows are built in `list()`
     queryset = OrgUnit.objects.none()

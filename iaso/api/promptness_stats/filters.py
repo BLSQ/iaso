@@ -14,3 +14,22 @@ class StableOrderingFilter(OrderingFilter):
         if "id" not in ordering and "-id" not in ordering:
             ordering = [*ordering, "id"]
         return ordering
+
+
+class PromptnessStatsOrderingFilter(StableOrderingFilter):
+    """`StableOrderingFilter` where the not applicable rows (nothing expected) always come last when ordering on a
+    figure (a count or a percentage), whatever the direction of the ordering.
+
+    Without it, Postgres would put the not applicable rows (`NULL` percentages) first in descending order, and mix them
+    with the rows at 0 when ordering on a count. The view lists the figures in `not_applicable_last_fields`; the rows
+    must be annotated with `is_applicable` (see `annotate_counts()`).
+    """
+
+    def get_ordering(self, request, queryset, view):
+        ordering = super().get_ordering(request, queryset, view)
+        not_applicable_last_fields = getattr(view, "not_applicable_last_fields", [])
+        for position, field in enumerate(ordering):
+            if field.removeprefix("-") in not_applicable_last_fields:
+                # Before the first figure: the fields before it (e.g. `name`) keep their ordering
+                return [*ordering[:position], "-is_applicable", *ordering[position:]]
+        return ordering

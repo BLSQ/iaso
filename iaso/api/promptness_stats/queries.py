@@ -14,10 +14,12 @@ The computation is done in 3 steps:
 from typing import List, NamedTuple, Optional
 
 from django.db.models import (
+    BooleanField,
     Case,
     Count,
     DecimalField,
     Exists,
+    ExpressionWrapper,
     F,
     Func,
     IntegerField,
@@ -172,6 +174,7 @@ def annotate_counts(org_units: QuerySet[OrgUnit], targets_ctes: TargetsCTEs) -> 
             on_time=Count(target_paths.col.on_time_id),
         )
         .annotate(
+            is_applicable=ExpressionWrapper(Q(expected__gt=0), output_field=BooleanField()),  # order NA rows last
             late=F("received") - F("on_time"),
             missing=F("expected") - F("received"),
         )

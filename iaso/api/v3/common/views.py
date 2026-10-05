@@ -2,6 +2,7 @@ from itertools import islice
 from typing import Optional
 
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -14,6 +15,21 @@ from .errors import bad_request
 from .fields_parser import parse_fields
 from .param_validator import suggest_close_matches
 from .schema import V3AutoSchema
+
+
+class V3FilterBackend(DjangoFilterBackend):
+    """`DjangoFilterBackend`, minus the query params an action handles itself (the view's `action_params`):
+    accepted by that action only, and still rejected as unknown by the strict FilterSet everywhere else."""
+
+    def get_filterset_kwargs(self, request, queryset, view):
+        kwargs = super().get_filterset_kwargs(request, queryset, view)
+        own_params = getattr(view, "action_params", {}).get(view.action, ())
+        if own_params:
+            data = kwargs["data"].copy()
+            for param in own_params:
+                data.pop(param, None)
+            kwargs["data"] = data
+        return kwargs
 
 
 class BaseV3ReadOnlyViewSet(ReadOnlyModelViewSet):

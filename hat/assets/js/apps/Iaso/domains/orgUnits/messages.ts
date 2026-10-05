@@ -117,6 +117,21 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Map (MapLibre)',
         id: 'iaso.orgUnits.mapLibre',
     },
+    mapLibreApiV1: {
+        defaultMessage:
+            'v1: the shapes of the page data, from /api/orgunits/:id/ (unsaved edits included)',
+        id: 'iaso.orgUnits.mapLibreApiV1',
+    },
+    mapLibreApiV3: {
+        defaultMessage:
+            'v3: the shapes as GeoJSON, from /api/v3/orgunits/?id__in=…',
+        id: 'iaso.orgUnits.mapLibreApiV3',
+    },
+    mapLibreApiMvt: {
+        defaultMessage:
+            'MVT: vector tiles from /api/v3/orgunits/tiles/, framed with the extent from /api/v3/orgunits/',
+        id: 'iaso.orgUnits.mapLibreApiMvt',
+    },
     parents: {
         defaultMessage: 'Parents',
         id: 'iaso.orgUnits.parents',

@@ -18,6 +18,7 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.functions import Transform
 from django.db import connection
 from django.db.models import BooleanField, Expression, F, Func, Q, Value
+from django.utils.cache import patch_vary_headers
 from rest_framework.negotiation import BaseContentNegotiation
 from rest_framework.renderers import BaseRenderer
 
@@ -30,9 +31,18 @@ EXTENT = 4096
 #: geometries are clipped this many grid units beyond the tile, so lines and polygons join seamlessly
 BUFFER = 64
 MAX_ZOOM = 24
+#: MapLibre draws a vector tile on 512 x 512 css pixels
+TILE_SIZE_PX = 512
+#: geometries are simplified (Douglas-Peucker) by this many screen pixels: finer is invisible, and the tile grid
+#: (`EXTENT`) is already 8 times finer than the screen
+SIMPLIFY_TOLERANCE_PX = 0.5
+#: circumference of the earth in web mercator (EPSG:3857) units, i.e. meters at the equator
+WEB_MERCATOR_WIDTH = 2 * math.pi * 6378137
 #: from this zoom, a tile covers few enough rows for a geography index prefilter to pay off (below, postgres
 #: reads most of the scoped rows anyway and the extra test only costs time) - see `tile_queryset`
 INDEX_PREFILTER_MIN_ZOOM = 11
+#: how long a browser may reuse a tile requested with a `cache_key` (the frontend's tile cache key lives as long)
+TILE_CACHE_MAX_AGE = 15 * 60
 #: column holding the MVT feature id: postgres removes it from the properties
 FEATURE_ID_COLUMN = "mvt_feature_id"
 GEOMETRY_COLUMN = "mvt_geom"
@@ -87,6 +97,16 @@ class Tile(NamedTuple):
 
         return self.x / n * 360 - 180, lat(self.y + 1), (self.x + 1) / n * 360 - 180, lat(self.y)
 
+    @property
+    def pixel_size(self) -> float:
+        """Size of a screen pixel, in web mercator units."""
+        return WEB_MERCATOR_WIDTH / 2**self.z / TILE_SIZE_PX
+
+    @property
+    def pixel_size_degrees(self) -> float:
+        """Size of a screen pixel in degrees of longitude, i.e. at most its size in degrees of latitude."""
+        return 360 / 2**self.z / TILE_SIZE_PX
+
 
 class TileEnvelope(Func):
     """The tile's square, in web mercator (EPSG:3857). Constant arguments: postgres computes it once."""
@@ -106,14 +126,25 @@ class _UncastGeometryField(GeometryField):
         return sql, params
 
 
+class Simplify(Func):
+    """Douglas-Peucker simplification, keeping the shapes it would collapse (a tiny org unit stays a dot)."""
+
+    function = "ST_Simplify"
+
+    def __init__(self, geometry, tolerance: float):
+        super().__init__(geometry, Value(tolerance), Value(True), output_field=GeometryField(srid=3857))
+
+
 class AsMVTGeom(Func):
-    """`geometry` (EPSG:4326) in the tile's grid coordinates, clipped to the tile (+ `BUFFER`)."""
+    """`geometry` (EPSG:4326) in the tile's grid coordinates, simplified for the tile's zoom and clipped to the
+    tile (+ `BUFFER`)."""
 
     function = "ST_AsMVTGeom"
     output_field = _UncastGeometryField(srid=0)
 
     def __init__(self, geometry, tile: Tile):
-        super().__init__(Transform(geometry, 3857), TileEnvelope(tile), Value(EXTENT), Value(BUFFER), Value(True))
+        simplified = Simplify(Transform(geometry, 3857), tile.pixel_size * SIMPLIFY_TOLERANCE_PX)
+        super().__init__(simplified, TileEnvelope(tile), Value(EXTENT), Value(BUFFER), Value(True))
 
 
 class BoxesOverlap(Func):
@@ -183,6 +214,16 @@ def tile_queryset(
     return queryset.annotate(
         **annotations, **{GEOMETRY_COLUMN: AsMVTGeom(geometry, tile), FEATURE_ID_COLUMN: F("pk")}
     ).values(*columns, *annotations, GEOMETRY_COLUMN, FEATURE_ID_COLUMN)
+
+
+def set_tile_cache_headers(response, cache_key: Optional[str]):
+    """Tiles depend on the user's access scope: only the user's own browser may keep them (`private`, and
+    `Vary` so another user signing in on that browser doesn't get them).
+
+    By default the browser must always revalidate. With a `cache_key`, the client accepts that the tile may be
+    up to `TILE_CACHE_MAX_AGE` old: it changes the key (so the url) when it knows the data changed."""
+    response["Cache-Control"] = f"private, max-age={TILE_CACHE_MAX_AGE}" if cache_key else "private, no-cache"
+    patch_vary_headers(response, ("Cookie", "Authorization"))
 
 
 def render_tile(values_queryset, layer_name: str) -> bytes:

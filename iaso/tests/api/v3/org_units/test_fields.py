@@ -32,6 +32,12 @@ class OrgUnitV3FieldsTestCase(OrgUnitV3TestCase):
 
     # -- geometry --
 
+    def test_bbox_is_the_org_units_own_extent(self):
+        # its shape - unlike `located_bbox`, which also spans its located descendants
+        self.assertEqual(self.get_row(self.country, {"fields": "bbox"}), {"bbox": [0.0, 0.0, 10.0, 10.0]})
+        self.assertEqual(self.get_row(self.region, {"fields": "bbox"}), {"bbox": [5.0, 5.0, 5.0, 5.0]})
+        self.assertEqual(self.get_row(self.district, {"fields": "bbox"}), {"bbox": None})
+
     def test_geometry_is_opt_in_geojson(self):
         self.assertNotIn("geom", self.get_row(self.country))
         row = self.get_row(self.country, {"fields": "id,geom,simplified_geom,catchment"})

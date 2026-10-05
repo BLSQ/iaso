@@ -1,10 +1,12 @@
 import math
 import struct
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.db.models import Func, IntegerField
 
 from iaso import models as m
-from iaso.api.v3.common.mvt import INDEX_PREFILTER_MIN_ZOOM, MVT_MEDIA_TYPE
+from iaso.api.v3.common.mvt import INDEX_PREFILTER_MIN_ZOOM, MVT_MEDIA_TYPE, TILE_CACHE_MAX_AGE, Tile
+from iaso.api.v3.org_units.expressions import drawn_geometry
 
 from .base import BASE_URL, OrgUnitV3TestCase
 
@@ -72,7 +74,7 @@ GEOMETRY_TYPES = {1: "Point", 2: "LineString", 3: "Polygon"}
 
 
 def decode_tile(content: bytes) -> dict:
-    """{layer name: {feature id: {"properties": {...}, "type": "Point"|...}}}"""
+    """{layer name: {feature id: {"properties": {...}, "type": "Point"|..., "geometry_size": <encoded ints>}}}"""
     layers = {}
     for field, layer in _messages(content):
         if field != 3:
@@ -89,7 +91,7 @@ def decode_tile(content: bytes) -> dict:
                 values.append(_value(value))
         features = {}
         for raw in raw_features:
-            feature_id, properties, geometry_type = None, {}, None
+            feature_id, properties, geometry_type, geometry_size = None, {}, None, 0
             for feature_field, value in _messages(raw):
                 if feature_field == 1:
                     feature_id = value
@@ -98,7 +100,10 @@ def decode_tile(content: bytes) -> dict:
                     properties = {keys[k]: values[v] for k, v in zip(tags[::2], tags[1::2])}
                 elif feature_field == 3:
                     geometry_type = GEOMETRY_TYPES.get(value)
-            features[feature_id] = {"properties": properties, "type": geometry_type}
+                elif feature_field == 4:
+                    # draw commands and their coordinates: grows with the number of vertices
+                    geometry_size = len(_packed(value))
+            features[feature_id] = {"properties": properties, "type": geometry_type, "geometry_size": geometry_size}
         layers[name] = features
     return layers
 
@@ -116,9 +121,7 @@ FIXTURE_TILE = (1, 1, 0)
 EMPTY_TILE = (2, 0, 3)  # south of the south Pacific
 
 
-class OrgUnitV3TilesTestCase(OrgUnitV3TestCase):
-    """`GET /api/v3/orgunits/tiles/{z}/{x}/{y}/`"""
-
+class TileRequestsMixin:
     def tile_url(self, z, x, y):
         return f"{BASE_URL}tiles/{z}/{x}/{y}/"
 
@@ -134,6 +137,10 @@ class OrgUnitV3TilesTestCase(OrgUnitV3TestCase):
 
     def get_tile_error(self, params=None, tile=FIXTURE_TILE, status_code=400):
         return self.assertJSONResponse(self.client.get(self.tile_url(*tile), params or {}), status_code)
+
+
+class OrgUnitV3TilesTestCase(TileRequestsMixin, OrgUnitV3TestCase):
+    """`GET /api/v3/orgunits/tiles/{z}/{x}/{y}/`"""
 
     # -- content --
 
@@ -166,7 +173,27 @@ class OrgUnitV3TilesTestCase(OrgUnitV3TestCase):
         self.assertIn(self.country.id, self.get_features(tile=tile))
 
     def test_is_private_and_not_cached_by_shared_caches(self):
-        self.assertEqual(self.get_tile()["Cache-Control"], "private, no-cache")
+        response = self.get_tile()
+        self.assertEqual(response["Cache-Control"], "private, no-cache")
+        # another user signing in on the same browser doesn't get them
+        self.assertIn("Cookie", response["Vary"])
+        self.assertIn("Authorization", response["Vary"])
+
+    def test_cache_key_lets_the_browser_reuse_the_tile(self):
+        response = self.get_tile({"cache_key": "k1"})
+        self.assertEqual(response["Cache-Control"], f"private, max-age={TILE_CACHE_MAX_AGE}")
+        self.assertIn("Cookie", response["Vary"])
+        # only a cache buster: same tile
+        self.assertEqual(response.content, self.get_tile().content)
+
+    def test_cache_key_is_for_tiles_only(self):
+        response = self.client.get(BASE_URL, {"cache_key": "k1"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_errors_are_never_cached(self):
+        response = self.client.get(self.tile_url(*FIXTURE_TILE), {"cache_key": "k1", "not_a_param": "1"})
+        self.assertEqual(response.status_code, 400)
+        self.assertNotIn("max-age", response.get("Cache-Control", ""))
 
     def test_ignores_the_accept_header_of_map_clients(self):
         response = self.get_tile(HTTP_ACCEPT="application/x-protobuf")
@@ -267,6 +294,48 @@ class OrgUnitV3TilesTestCase(OrgUnitV3TestCase):
         # resolution itself. The profile and account are already loaded on the test user.
         with self.assertNumQueries(4):
             self.get_tile({"fields": "name,has_children,bbox,via_id", "ancestor_id__closest_located": self.country.id})
+
+
+def zigzag_square(teeth=100, amplitude=0.1):
+    """The 1..9 square, its top edge a zigzag of `teeth` teeth `amplitude` degrees high: detail that only shows
+    when zoomed in."""
+    step = 8 / teeth
+    top = [(9 - i * step, 9 + amplitude * (i % 2)) for i in range(teeth + 1)]
+    return MultiPolygon(Polygon(((1, 1), (9, 1), *top, (1, 1))))
+
+
+class OrgUnitV3TileSimplificationTestCase(TileRequestsMixin, OrgUnitV3TestCase):
+    """Shapes are drawn as detailed as the zoom shows, no more."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.zigzag = m.OrgUnit.objects.create(
+            org_unit_type=cls.country_type, version=cls.sw_version_1, name="Zigzag", geom=zigzag_square()
+        )
+
+    def zigzag_geometry_size(self, tile):
+        return self.get_features({"id": self.zigzag.id}, tile=tile)[self.zigzag.id]["geometry_size"]
+
+    def test_low_zoom_tiles_simplify_what_a_pixel_hides(self):
+        # z1: a pixel is 0.35 degrees, the teeth are gone (the tile grid alone is fine enough to keep them):
+        # a 4 corners ring is 11 ints
+        self.assertLess(self.zigzag_geometry_size(FIXTURE_TILE), 20)
+        # z8: a pixel is 0.0014 degrees, the ~17 teeth in that tile stay (2 ints a vertex)
+        self.assertGreater(self.zigzag_geometry_size(tile_for(8, 5, 9)), 40)
+
+    def test_simplified_shape_is_only_drawn_while_it_is_accurate(self):
+        # `simplified_geom` strays up to 0.1% of the 8 degrees extent, 0.008 degrees: half a pixel up to z5
+        simplified = MultiPolygon(Polygon(((1, 1), (9, 1), (9, 9), (1, 9), (1, 1))))
+        m.OrgUnit.objects.filter(pk=self.zigzag.pk).update(simplified_geom=simplified)
+
+        def drawn_points(z):
+            tile = Tile(*tile_for(z, 5, 5))
+            points = Func(drawn_geometry(tile), function="ST_NPoints", output_field=IntegerField())
+            return m.OrgUnit.objects.filter(pk=self.zigzag.pk).values_list(points, flat=True).get()
+
+        self.assertEqual(drawn_points(5), 5)
+        self.assertEqual(drawn_points(6), len(self.zigzag.geom.coords[0][0]))
 
 
 class OrgUnitV3ClosestLocatedTestCase(OrgUnitV3TestCase):

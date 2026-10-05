@@ -6,7 +6,6 @@ from time import gmtime, strftime
 from django.conf import settings
 from django.db.models import F, Func, IntegerField, Max, Q
 from django.http import HttpResponse, StreamingHttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions
@@ -21,16 +20,18 @@ from iaso.api.v3.common.dynamic_fields import KeyedColumns, PositionalColumns, t
 from iaso.api.v3.common.errors import bad_request
 from iaso.api.v3.common.mvt import (
     MVT_MEDIA_TYPE,
+    TILE_CACHE_MAX_AGE,
     FirstRendererNegotiation,
     MVTRenderer,
     Tile,
     render_tile,
+    set_tile_cache_headers,
     tile_properties,
     tile_queryset,
 )
 from iaso.api.v3.common.pagination import V3PagePagination
 from iaso.api.v3.common.renderers import ParquetRenderer, XLSXRenderer
-from iaso.api.v3.common.views import BaseV3ReadOnlyViewSet
+from iaso.api.v3.common.views import BaseV3ReadOnlyViewSet, V3FilterBackend
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import Group, OrgUnit
 
@@ -88,7 +89,17 @@ EXTRA_PARAMETERS = [
 
 
 #: the view-level params that also apply to tiles (`extra_fields` is parquet only)
-TILE_EXTRA_PARAMETERS = [parameter for parameter in EXTRA_PARAMETERS if parameter.name != "extra_fields"]
+TILE_EXTRA_PARAMETERS = [
+    *(parameter for parameter in EXTRA_PARAMETERS if parameter.name != "extra_fields"),
+    OpenApiParameter(
+        name="cache_key",
+        type=OpenApiTypes.STR,
+        description=(
+            f"Any value: lets the browser reuse the tile for up to {TILE_CACHE_MAX_AGE // 60} minutes instead of "
+            "revalidating it. Change it (so the tile url) whenever the org units may have changed."
+        ),
+    ),
+]
 TILE_PATH_PARAMETERS = [
     OpenApiParameter(name=name, type=OpenApiTypes.INT, location=OpenApiParameter.PATH, description=description)
     for name, description in (("z", "Zoom level, 0-24"), ("x", "Tile column, 0..2^z-1"), ("y", "Tile row, 0..2^z-1"))
@@ -118,7 +129,9 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     permission_classes = [AuthenticationEnforcedPermission, permissions.IsAuthenticated]
     serializer_class = OrgUnitSerializerV3
     pagination_class = V3PagePagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_backends = [V3FilterBackend, filters.OrderingFilter]
+    #: query params only the tiles take (on top of the FilterSet's)
+    action_params = {"tiles": frozenset({"cache_key"})}
     filterset_class = OrgUnitFilterSetV3
     extra_parameters = EXTRA_PARAMETERS
     ordering_fields = ORDERING_FIELDS
@@ -217,10 +230,9 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
                 "They tell which child of that org unit a feature stands in for.",
             )
 
-        values = tile_queryset(queryset, drawn_geometry(), properties, tile, geography_columns=GEOGRAPHY_COLUMNS)
+        values = tile_queryset(queryset, drawn_geometry(tile), properties, tile, geography_columns=GEOGRAPHY_COLUMNS)
         response = HttpResponse(render_tile(values, TILE_LAYER), content_type=MVT_MEDIA_TYPE)
-        # depends on the user's access scope: no shared cache may keep it
-        response["Cache-Control"] = "private, no-cache"
+        set_tile_cache_headers(response, request.query_params.get("cache_key"))
         return response
 
     def _export_filename(self, extension: str) -> str:

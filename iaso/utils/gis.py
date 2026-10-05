@@ -1,6 +1,11 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
 
+#: `simplify_geom()`'s tolerance, as a share of the shape's largest extent: how far `simplified_geom` can stray
+#: from `geom` (the vector tiles rely on it to tell when `simplified_geom` is accurate enough)
+SIMPLIFY_TOLERANCE_RATIO = 0.001
+
+
 def convert_2d_point_to_3d(point: Point) -> Point:
     """Convert a 2D point to a 3D point
 
@@ -28,7 +33,7 @@ def simplify_geom(geom: MultiPolygon) -> MultiPolygon:
     height = abs(xmin - xmax)
     width = abs(ymin - ymax)
     _max = max(height, width)
-    tolerance = round(0.001 * _max, 10)
+    tolerance = round(SIMPLIFY_TOLERANCE_RATIO * _max, 10)
     simplified_geom = geom.simplify(tolerance=tolerance)
 
     if type(simplified_geom) == Polygon:

@@ -11,6 +11,7 @@ import {
 import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils';
 import { DataSource } from '../dataSources/types/dataSources';
 import { Link, PaginatedLinks } from '../links/types';
+import { ORG_UNIT_TILES_CACHE_KEY } from './components/orgUnitMapLibre/orgUnitTiles';
 import {
     GroupDropdownOption,
     OrgUnitTypeDropdownOption,
@@ -295,6 +296,7 @@ export const useRefreshOrgUnit = () => {
     return (data: OrgUnit) => {
         queryClient.invalidateQueries('currentOrgUnit');
         queryClient.invalidateQueries('logs');
+        queryClient.invalidateQueries(ORG_UNIT_TILES_CACHE_KEY);
         return queryClient.setQueryData(['forms', data.id], data);
     };
 };

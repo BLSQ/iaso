@@ -4,12 +4,28 @@ The org unit geometry columns are PostGIS `geography`; `geometry(<column>)` cast
 `geometry` (PostGIS' function rather than a typed cast, which would reject the 3D `location` column).
 """
 
+from typing import Optional
+
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import BooleanField, Exists, F, FloatField, Func, IntegerField, OuterRef, Q, Subquery
+from django.db.models import (
+    BooleanField,
+    Case,
+    Exists,
+    F,
+    FloatField,
+    Func,
+    IntegerField,
+    OuterRef,
+    Q,
+    Subquery,
+    When,
+)
 from django.db.models.functions import Coalesce
 
+from iaso.api.v3.common.mvt import SIMPLIFY_TOLERANCE_PX, Tile
 from iaso.models import OrgUnit
+from iaso.utils.gis import SIMPLIFY_TOLERANCE_RATIO
 
 
 #: the org unit has something to draw: a point or a shape
@@ -21,9 +37,40 @@ def as_geometry(column: str) -> Func:
     return Func(F(column), function="geometry", output_field=GeometryField(srid=4326))
 
 
-def drawn_geometry() -> Coalesce:
-    """What a map draws for an org unit: its point, else its simplified shape, else its full shape."""
-    return Coalesce(*(as_geometry(column) for column in GEOGRAPHY_COLUMNS), output_field=GeometryField(srid=4326))
+class _SimplifiedShapeIsAccurate(Func):
+    """`simplified_geom` strays at most `tolerance` degrees from `geom`: `simplify_geom()` simplifies by a share
+    of the shape's largest extent."""
+
+    template = (
+        "(GREATEST(ST_XMax(%(expressions)s) - ST_XMin(%(expressions)s), ST_YMax(%(expressions)s) - "
+        "ST_YMin(%(expressions)s)) * %(ratio)s <= %(tolerance)s)"
+    )
+    output_field = BooleanField()
+
+    def __init__(self, tolerance: float):
+        super().__init__(
+            Func(as_geometry("simplified_geom"), function="box2d"),
+            ratio=SIMPLIFY_TOLERANCE_RATIO,
+            tolerance=tolerance,
+        )
+
+
+def drawn_geometry(tile: Optional[Tile] = None) -> Coalesce:
+    """What a map draws for an org unit: its point, else its simplified shape, else its full shape.
+
+    In a `tile`, the simplified shape only while it's accurate at the tile's zoom: it strays up to 0.1% of the
+    shape's extent, which a big shape shows when zoomed in (a province from about z9)."""
+    if tile is None:
+        return Coalesce(*(as_geometry(column) for column in GEOGRAPHY_COLUMNS), output_field=GeometryField(srid=4326))
+    simplified_is_enough = Q(simplified_geom__isnull=False) & (
+        Q(geom__isnull=True) | Q(_SimplifiedShapeIsAccurate(tile.pixel_size_degrees * SIMPLIFY_TOLERANCE_PX))
+    )
+    shape = Case(
+        When(simplified_is_enough, then=as_geometry("simplified_geom")),
+        default=as_geometry("geom"),
+        output_field=GeometryField(srid=4326),
+    )
+    return Coalesce(as_geometry("location"), shape, output_field=GeometryField(srid=4326))
 
 
 def extent_geometry() -> Coalesce:
@@ -112,6 +159,20 @@ def located_descendants_count() -> Subquery:
         .values("count")
     )
     return Coalesce(Subquery(descendants, output_field=IntegerField()), 0)
+
+
+class Extent(Func):
+    """`[xmin, ymin, xmax, ymax]` of the org unit's full extent (see `extent_geometry`), `NULL` when not located."""
+
+    # the geometry is repeated: fine as long as it takes no params (`extent_geometry()` only reads columns)
+    template = (
+        "CASE WHEN %(expressions)s IS NULL THEN NULL ELSE ARRAY[ST_XMin(Box2D(%(expressions)s)), "
+        "ST_YMin(Box2D(%(expressions)s)), ST_XMax(Box2D(%(expressions)s)), ST_YMax(Box2D(%(expressions)s))] END"
+    )
+    output_field = ArrayField(FloatField())
+
+    def __init__(self):
+        super().__init__(extent_geometry())
 
 
 class LocatedExtent(Func):

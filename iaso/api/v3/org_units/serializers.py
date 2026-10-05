@@ -18,7 +18,7 @@ from rest_framework import serializers
 from iaso.api.v3.common.dynamic_fields import BatchLoader, DynamicFieldsMixin, only_columns
 from iaso.models import OrgUnit
 
-from .expressions import LOCATED, LocatedExtent, bbox_properties, has_children, located_descendants_count
+from .expressions import LOCATED, Extent, LocatedExtent, bbox_properties, has_children, located_descendants_count
 
 
 @extend_schema_field(OpenApiTypes.OBJECT)
@@ -158,6 +158,7 @@ class OrgUnitSerializerV3(DynamicFieldsMixin, serializers.Serializer):
         "has_geometry": {"has_geometry": ExpressionWrapper(LOCATED, output_field=BooleanField())},
         "has_children": {"has_children": has_children()},
         "located_descendants": {"located_descendants": located_descendants_count()},
+        "bbox": {"bbox": Extent()},
         "located_bbox": {"located_bbox": LocatedExtent()},
         "geom": {"geom_geojson": AsGeoJSON("geom")},
         "simplified_geom": {"simplified_geom_geojson": AsGeoJSON("simplified_geom")},
@@ -182,6 +183,12 @@ class OrgUnitSerializerV3(DynamicFieldsMixin, serializers.Serializer):
     has_geometry = serializers.BooleanField(help_text="Has a location or a shape: something to draw on a map")
     has_children = serializers.BooleanField(help_text="Has at least one child, located or not")
     located_descendants = serializers.IntegerField(help_text="Number of located org units below this one")
+    bbox = serializers.ListField(
+        child=serializers.FloatField(),
+        allow_null=True,
+        help_text="`[xmin, ymin, xmax, ymax]` of the org unit itself (its full shape, else its point), to fit a "
+        "map to it - null if it isn't located",
+    )
     located_bbox = serializers.ListField(
         child=serializers.FloatField(),
         allow_null=True,

@@ -10,12 +10,15 @@ type GeometryLayer =
     | Omit<LineLayerSpecification, 'source'>
     | Omit<CircleLayerSpecification, 'source'>;
 
-type Options = {
+export type GeometryStyle = {
     color: string;
-    /** required for vector tile sources: the layer of the tile to draw */
-    sourceLayer?: string;
     fillOpacity?: number;
     lineWidth?: number;
+};
+
+type Options = GeometryStyle & {
+    /** required for vector tile sources: the layer of the tile to draw */
+    sourceLayer?: string;
 };
 
 const isGeometry = (...types: string[]): ExpressionSpecification => [

@@ -1,6 +1,9 @@
 /** `TILE_LAYER` of `iaso/api/v3/org_units/views.py`: the `source-layer` of every org unit tile */
 export const ORG_UNIT_TILES_SOURCE_LAYER = 'org_units';
 
+/** react-query key of the tiles' `cache_key`: invalidate it when org units change (see `useOrgUnitTilesCacheKey`) */
+export const ORG_UNIT_TILES_CACHE_KEY = 'orgUnitTilesCacheKey';
+
 /** Any filter of `/api/v3/orgunits/` (e.g. `parent_id`, `version_id`, `org_unit_type_id`, `fields`) */
 export type OrgUnitTilesFilters = Record<
     string,

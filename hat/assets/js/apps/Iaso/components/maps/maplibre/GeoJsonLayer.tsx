@@ -1,19 +1,24 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Layer, Source } from '@vis.gl/react-maplibre';
 import type { GeoJSON } from 'geojson';
-import { geometryLayers } from './geometryLayers';
+import { GeometryStyle, geometryLayers } from './geometryLayers';
 
-type Props = {
+type Props = GeometryStyle & {
     id: string;
     data: GeoJSON;
-    color: string;
 };
 
 /** Client-side GeoJSON (e.g. from React state) drawn in a single color */
-export const GeoJsonLayer: FunctionComponent<Props> = ({ id, data, color }) => {
+export const GeoJsonLayer: FunctionComponent<Props> = ({
+    id,
+    data,
+    color,
+    fillOpacity,
+    lineWidth,
+}) => {
     const layers = useMemo(
-        () => geometryLayers(id, { color, fillOpacity: 0.3, lineWidth: 3 }),
-        [id, color],
+        () => geometryLayers(id, { color, fillOpacity, lineWidth }),
+        [id, color, fillOpacity, lineWidth],
     );
     return (
         <Source id={id} type="geojson" data={data}>

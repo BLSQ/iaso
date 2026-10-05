@@ -1,6 +1,8 @@
 import time_machine
 
 from django.contrib.auth.models import User
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from iaso import models as m
@@ -24,7 +26,7 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
             # 5: EXISTS ORG UNITS of the user (restriction of the accessible org units)
             # 6: SELECT FORM (validation of form_id)
             # 7: SELECT PARENT ORG UNIT (validation of parent_org_unit_id)
-            # 8: COUNT the rows (pagination)
+            # 8: COUNT the rows, without their counts (pagination)
             # 9: SELECT the rows of the page with their counts (CTE of the targets, joined to the rows)
             response = self.client.get(self.URL, self.get_serializer_params())
         self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -341,6 +343,21 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["limit"], 20)
         self.assertFalse(data["has_next"])
         self.assertFalse(data["has_previous"])
+
+    def test_pagination_count_does_not_compute_the_counts(self):
+        # The rows are counted before being annotated: the count query doesn't compute the targets
+        self.client.force_authenticate(self.user)
+        params = self.get_serializer_params(org_unit_type_ids=str(self.type_facility.id), order="-missing")
+        with CaptureQueriesContext(connection) as captured:
+            response = self.client.get(self.URL, params)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["count"], 6)
+
+        queries = [query["sql"] for query in captured.captured_queries]
+        count_queries = [sql for sql in queries if sql.startswith("SELECT COUNT(")]
+        self.assertEqual(len(count_queries), 1)
+        self.assertNotIn("promptness_targets", count_queries[0])
+        self.assertNotIn("iaso_instance", count_queries[0])
 
     def test_pagination(self):
         self.client.force_authenticate(self.user)

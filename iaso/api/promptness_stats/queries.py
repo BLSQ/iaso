@@ -7,8 +7,8 @@ The computation is done in 3 steps:
 2. `annotate_counts()`: the targets in the hierarchy of the parent org unit are computed once, in a materialized CTE.
    Each org unit of a queryset is then joined to the targets of its hierarchy (itself included), to count them per
    status and compute the percentages.
-3. `get_rows_queryset()` / `get_totals()`: apply `annotate_counts()` on the rows of the response and on the parent
-   org unit.
+3. `annotate_rows()` / `get_totals()`: apply `annotate_counts()` on the rows of the response (see `get_rows()`) and on
+   the parent org unit.
 """
 
 from typing import List, NamedTuple, Optional
@@ -183,22 +183,26 @@ def annotate_counts(org_units: QuerySet[OrgUnit], targets_ctes: TargetsCTEs) -> 
     )
 
 
-def get_rows_queryset(
-    parent_org_unit: OrgUnit,
-    org_unit_types: Optional[List[OrgUnitType]],
-    target_org_units: QuerySet[OrgUnit],
-) -> QuerySet[OrgUnit]:
-    """Rows of the response, annotated with the counts (see `annotate_counts()`) and `has_children`.
+def get_rows(parent_org_unit: OrgUnit, org_unit_types: Optional[List[OrgUnitType]]) -> QuerySet[OrgUnit]:
+    """Rows of the response, without their counts.
 
     Rows are the `VALID` direct children of `parent_org_unit`, or, when `org_unit_types` is given, its `VALID`
-    descendants having one of these types. The ordering is left to the view.
+    descendants having one of these types. Counting them is cheap: there is no targets CTE yet
     """
     rows = OrgUnit.objects.filter(validation_status=OrgUnit.VALIDATION_VALID)
     if org_unit_types:
-        rows = rows.hierarchy(parent_org_unit).exclude(id=parent_org_unit.id).filter(org_unit_type__in=org_unit_types)
-    else:
-        rows = rows.filter(parent=parent_org_unit)
+        return rows.hierarchy(parent_org_unit).exclude(id=parent_org_unit.id).filter(org_unit_type__in=org_unit_types)
+    return rows.filter(parent=parent_org_unit)
 
+
+def annotate_rows(
+    rows: QuerySet[OrgUnit], parent_org_unit: OrgUnit, target_org_units: QuerySet[OrgUnit]
+) -> QuerySet[OrgUnit]:
+    """The rows of `get_rows()`, annotated with the counts (see `annotate_counts()`) and `has_children`.
+
+    The rows keep their number: each row is joined to the targets of its hierarchy (LEFT JOIN), then grouped by row.
+    The ordering is left to the view.
+    """
     valid_children = OrgUnit.objects.filter(parent=OuterRef("pk"), validation_status=OrgUnit.VALIDATION_VALID)
     rows = rows.annotate(has_children=Exists(valid_children))
 
@@ -206,8 +210,8 @@ def get_rows_queryset(
     return (
         annotate_counts(rows, targets_ctes)
         .select_related("parent")
-        .only("id", "name", "org_unit_type", "parent__id", "parent__name")
         # Only the columns used by `PromptnessStatsRowSerializer`
+        .only("id", "name", "org_unit_type", "parent__id", "parent__name")
     )
 
 

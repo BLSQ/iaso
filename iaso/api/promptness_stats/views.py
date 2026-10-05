@@ -9,7 +9,7 @@ from iaso.api.common import HasPermission
 from iaso.api.promptness_stats.filters import StableOrderingFilter
 from iaso.api.promptness_stats.pagination import PromptnessStatsPagination
 from iaso.api.promptness_stats.period import PromptnessPeriod
-from iaso.api.promptness_stats.queries import get_rows_queryset, get_target_org_units, get_totals
+from iaso.api.promptness_stats.queries import annotate_rows, get_rows, get_target_org_units, get_totals
 from iaso.api.promptness_stats.serializers import (
     PromptnessStatsQueryParamsSerializer,
     PromptnessStatsRowSerializer,
@@ -65,9 +65,12 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
         """Promptness of form submissions, per org unit: the rows of the table"""
         params, target_org_units, _ = self._validate_serializer_and_fetch_target_org_units(request)
 
-        rows = get_rows_queryset(params["parent_org_unit"], params.get("org_unit_types"), target_org_units)
-        rows = self.filter_queryset(rows)  # ordering
-        page = self.paginate_queryset(rows)
+        rows = get_rows(params["parent_org_unit"], params.get("org_unit_types"))
+        # The rows are counted before being annotated to avoid higher count() costs
+        rows_count = rows.count()
+        annotated_rows = annotate_rows(rows, params["parent_org_unit"], target_org_units)
+        annotated_rows = self.filter_queryset(annotated_rows)  # ordering
+        page = self.paginator.paginate_queryset(annotated_rows, request, view=self, count=rows_count)
 
         # Excluded statuses are hidden from the rows
         serialized_rows = PromptnessStatsRowSerializer(page, many=True, context={"status": params["status"]}).data

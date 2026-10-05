@@ -91,7 +91,8 @@ def get_target_org_units(form: Form, period: PromptnessPeriod) -> QuerySet[OrgUn
 
 
 def percentage_of_expected(field_name: str) -> Case:
-    """`field_name` / `expected` * 100, rounded to 1 decimal. `None` when nothing is expected."""
+    """`field_name` / `expected` * 100, rounded half up to 1 decimal (Postgres `round()` on `numeric`), as a `Decimal`.
+    `None` when nothing is expected."""
     # Cast to numeric: Postgres can only round numeric values to a given number of decimals
     numeric_count = Cast(F(field_name), output_field=DecimalField(max_digits=12, decimal_places=2))
     return Case(

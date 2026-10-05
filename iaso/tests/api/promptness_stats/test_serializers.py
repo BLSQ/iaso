@@ -1,5 +1,6 @@
 import datetime
 
+from decimal import Decimal
 from types import SimpleNamespace
 
 from rest_framework.test import APIRequestFactory
@@ -200,15 +201,51 @@ class PromptnessPeriodSerializerTestCase(TestCase):
         )
 
 
-def fake_org_unit_with_counts(expected, on_time, late, missing, **attributes):
-    """Fake org unit, with the annotations of `annotate_counts()` and the given attributes"""
-    return SimpleNamespace(expected=expected, on_time=on_time, late=late, missing=missing, **attributes)
+def fake_org_unit_with_counts(
+    expected,
+    received,
+    on_time,
+    late,
+    missing,
+    completeness_percent,
+    on_time_percent,
+    late_percent,
+    missing_percent,
+    **attributes,
+):
+    """Fake org unit, with the annotations of `annotate_counts()` (the percentages are `Decimal`, as returned by the
+    database) and the given attributes"""
+    return SimpleNamespace(
+        expected=expected,
+        received=received,
+        on_time=on_time,
+        late=late,
+        missing=missing,
+        completeness_percent=completeness_percent,
+        on_time_percent=on_time_percent,
+        late_percent=late_percent,
+        missing_percent=missing_percent,
+        **attributes,
+    )
+
+
+def fake_ethiopia_totals():
+    return fake_org_unit_with_counts(
+        expected=7,
+        received=4,
+        on_time=2,
+        late=2,
+        missing=3,
+        completeness_percent=Decimal("57.1"),
+        on_time_percent=Decimal("28.6"),
+        late_percent=Decimal("28.6"),
+        missing_percent=Decimal("42.9"),
+    )
 
 
 class PromptnessStatsTotalsSerializerTestCase(PromptnessStatsTestCase):
     def test_all_statuses(self):
-        org_unit = fake_org_unit_with_counts(expected=7, on_time=2, late=2, missing=3)
-        data = PromptnessStatsTotalsSerializer(org_unit, context={"status": PROMPTNESS_STATUSES}).data
+        data = PromptnessStatsTotalsSerializer(fake_ethiopia_totals(), context={"status": PROMPTNESS_STATUSES}).data
         self.assertEqual(set(data.keys()), TOTALS_KEYS)
         self.assertEqual(
             data,
@@ -216,38 +253,55 @@ class PromptnessStatsTotalsSerializerTestCase(PromptnessStatsTestCase):
                 "is_applicable": True,
                 "expected": 7,
                 "received": 4,
-                "completeness_percent": 57.1,
+                "completeness_percent": Decimal("57.1"),
                 "on_time": 2,
-                "on_time_percent": 28.6,
+                "on_time_percent": Decimal("28.6"),
                 "late": 2,
-                "late_percent": 28.6,
+                "late_percent": Decimal("28.6"),
                 "missing": 3,
-                "missing_percent": 42.9,
+                "missing_percent": Decimal("42.9"),
             },
         )
         for key in ["completeness_percent", "on_time_percent", "late_percent", "missing_percent"]:
-            self.assertIsInstance(data[key], float, key)
+            self.assertIsInstance(data[key], Decimal, key)
 
-    def test_rounding(self):
-        org_unit = fake_org_unit_with_counts(expected=3, on_time=1, late=1, missing=1)
+    def test_values_are_not_recomputed(self):
+        # The counts and the percentages are computed by the database only: inconsistent values are returned as is
+        org_unit = fake_org_unit_with_counts(
+            expected=7,
+            received=99,
+            on_time=2,
+            late=2,
+            missing=3,
+            completeness_percent=Decimal("12.3"),
+            on_time_percent=Decimal("45.6"),
+            late_percent=Decimal("78.9"),
+            missing_percent=Decimal("0.1"),
+        )
         data = PromptnessStatsTotalsSerializer(org_unit, context={"status": PROMPTNESS_STATUSES}).data
-        self.assertEqual(data["completeness_percent"], 66.7)  # 2 / 3
-        self.assertEqual(data["on_time_percent"], 33.3)  # 1 / 3
-
-    def test_rounding_half_up(self):
-        # 1 / 16 = 6.25%: rounded half up like Postgres, not to the nearest even like Python's `round()`
-        org_unit = fake_org_unit_with_counts(expected=16, on_time=1, late=0, missing=15)
-        data = PromptnessStatsTotalsSerializer(org_unit, context={"status": PROMPTNESS_STATUSES}).data
-        self.assertEqual(data["on_time_percent"], 6.3)
+        self.assertEqual(data["received"], 99)
+        self.assertEqual(data["completeness_percent"], Decimal("12.3"))
+        self.assertEqual(data["on_time_percent"], Decimal("45.6"))
+        self.assertEqual(data["late_percent"], Decimal("78.9"))
+        self.assertEqual(data["missing_percent"], Decimal("0.1"))
 
     def test_nothing_expected_is_not_applicable(self):
-        org_unit = fake_org_unit_with_counts(expected=0, on_time=0, late=0, missing=0)
+        org_unit = fake_org_unit_with_counts(
+            expected=0,
+            received=0,
+            on_time=0,
+            late=0,
+            missing=0,
+            completeness_percent=None,
+            on_time_percent=None,
+            late_percent=None,
+            missing_percent=None,
+        )
         data = PromptnessStatsTotalsSerializer(org_unit, context={"status": PROMPTNESS_STATUSES}).data
         self.assertEqual(data, self.not_applicable_counts())
 
     def test_excluded_statuses(self):
-        org_unit = fake_org_unit_with_counts(expected=7, on_time=2, late=2, missing=3)
-        data = PromptnessStatsTotalsSerializer(org_unit, context={"status": ["LATE", "MISSING"]}).data
+        data = PromptnessStatsTotalsSerializer(fake_ethiopia_totals(), context={"status": ["LATE", "MISSING"]}).data
         # ON_TIME is hidden, but still counted in `received` and `completeness_percent`
         self.assertEqual(
             data,
@@ -255,13 +309,13 @@ class PromptnessStatsTotalsSerializerTestCase(PromptnessStatsTestCase):
                 "is_applicable": True,
                 "expected": 7,
                 "received": 4,
-                "completeness_percent": 57.1,
+                "completeness_percent": Decimal("57.1"),
                 "on_time": None,
                 "on_time_percent": None,
                 "late": 2,
-                "late_percent": 28.6,
+                "late_percent": Decimal("28.6"),
                 "missing": 3,
-                "missing_percent": 42.9,
+                "missing_percent": Decimal("42.9"),
             },
         )
 
@@ -270,9 +324,14 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
     def fake_oromia(self):
         return fake_org_unit_with_counts(
             expected=4,
+            received=3,
             on_time=2,
             late=1,
             missing=1,
+            completeness_percent=Decimal("75.0"),
+            on_time_percent=Decimal("50.0"),
+            late_percent=Decimal("25.0"),
+            missing_percent=Decimal("25.0"),
             id=12,
             name="Oromia",
             org_unit_type_id=3,
@@ -294,22 +353,27 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
                 "is_applicable": True,
                 "expected": 4,
                 "received": 3,
-                "completeness_percent": 75.0,
+                "completeness_percent": Decimal("75.0"),
                 "on_time": 2,
-                "on_time_percent": 50.0,
+                "on_time_percent": Decimal("50.0"),
                 "late": 1,
-                "late_percent": 25.0,
+                "late_percent": Decimal("25.0"),
                 "missing": 1,
-                "missing_percent": 25.0,
+                "missing_percent": Decimal("25.0"),
             },
         )
 
     def test_without_children_and_nothing_expected(self):
         org_unit = fake_org_unit_with_counts(
             expected=0,
+            received=0,
             on_time=0,
             late=0,
             missing=0,
+            completeness_percent=None,
+            on_time_percent=None,
+            late_percent=None,
+            missing_percent=None,
             id=15,
             name="Somali",
             org_unit_type_id=3,
@@ -332,9 +396,14 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
     def test_root_org_unit_has_no_parent(self):
         org_unit = fake_org_unit_with_counts(
             expected=7,
+            received=4,
             on_time=2,
             late=2,
             missing=3,
+            completeness_percent=Decimal("57.1"),
+            on_time_percent=Decimal("28.6"),
+            late_percent=Decimal("28.6"),
+            missing_percent=Decimal("42.9"),
             id=1,
             name="Ethiopia",
             org_unit_type_id=1,
@@ -349,5 +418,6 @@ class PromptnessStatsRowSerializerTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["late"], None)
         self.assertEqual(data["late_percent"], None)
         self.assertEqual(data["on_time"], 2)
+        self.assertEqual(data["on_time_percent"], Decimal("50.0"))
         self.assertEqual(data["missing"], 1)
         self.assertEqual(data["received"], 3)  # LATE is hidden, but still counted in `received`

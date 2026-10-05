@@ -20,7 +20,7 @@ Spec: `docs/pages/dev/reference/API/promptness_stats.en.md` - Code: `iaso/api/pr
 | 6g | Count of the pagination | The rows are counted before being annotated (`get_rows()` / `annotate_rows()` in `queries.py`), and the count is given to `PromptnessStatsPagination.paginate_queryset(count=...)` (`CountedDjangoPaginator`): the targets CTE is computed once per list call instead of twice. Count query on form 1196: 612 → 9 ms (regions), 850 → 173 ms (points of interest). Benchmark: form 1196 -26 to -49% at the root (lists 0.72-1.43 s), -25 to -50% for a region (0.22-0.37 s), `page=2` beyond the last page 665 → 68 ms, form 1068 -13 to -26%. Tests: `test_pagination.py`, `test_pagination_count_does_not_compute_the_counts`. | **Done** |
 | 6h | Summary without the paths expansion | The summary only needs the counts of the parent: count directly from the `promptness_targets` CTE instead of expanding the paths (445,206 rows → 63,793 kept on form 1196 at the root, ~225 ms). | **Suggestion** |
 | 7  | Index on the submissions | Partial index `iaso_instance_promptness_idx` on `iaso_instance (form_id, period, org_unit_id, created_at) WHERE NOT deleted AND file IS NOT NULL AND file <> ''` (`Instance.Meta`, migration `0404`, 358 MB on the copy). Its condition must stay the same as `get_valid_submissions()`. Index-only scan instead of 2 `BitmapAnd` + table reads: each submissions lookup 209-226 ms → 21-24 ms on form 1196. Benchmark: form 1196 -31 to -46% at the root, -53 to -71% for a region, form 1068 -7 to -21%. For production: create it with `AddIndexConcurrently` (no write lock on a ~10 GB table). | **Done** |
-| 8  | Percentages computed twice | By the database (needed by the ordering) and by the serializer (output). Both round half up, so the values match. | **Open** |
+| 8  | Percentages computed in a single place | The database computes the counts and the percentages (`percentage_of_expected()` in `queries.py`: `numeric`, rounded half up to 1 decimal), used both to order the rows and as returned values. The serializers don't compute anything anymore: they return the `Decimal` values as is (`DecimalField(coerce_to_string=False)` in the schema, rendered as JSON numbers). Tests: `test_values_are_not_recomputed`, `test_percentages_are_rounded_half_up`, `test_percentages_are_json_numbers`. | **Done** |
 | 9  | Stable pagination | `StableOrderingFilter` always ends the ordering with `id`. Tests + spec. | **Done** |
 | 10 | CSV export | `export_csv` is a stub, its format is not decided. Response documented as the params serializer, `order` not documented, commented out in `test_permissions.py`, `setUp()` / `get_csv()` helpers to remove from `test_export_csv.py`. Should it include the totals? | **To do** |
 | 11 | Grace period in the form settings | `Form.promptness_grace_period_days` exists (with its migration) but is not exposed by the form serializers. | **Done** |
@@ -30,8 +30,6 @@ Spec: `docs/pages/dev/reference/API/promptness_stats.en.md` - Code: `iaso/api/pr
 
 ## Small pending questions
 
-- `test_list.py`: `test_order_multiple_fields` and `test_order_by_org_unit_type_name` put the value before the org unit
-  name in their tuples (`(1, "Amhara")`): put the name first?
 - The summary accepts `org_unit_type_ids` and ignores it (documented in the spec): keep it this way?
 - The database copy has never been vacuumed nor analyzed since its restore (statistics counters at 0, 79% of the
   pages of `iaso_instance` all-visible): `VACUUM (ANALYZE)` would make the plans more reliable (24,010 targets

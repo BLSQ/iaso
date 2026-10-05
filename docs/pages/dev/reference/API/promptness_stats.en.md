@@ -51,7 +51,9 @@ on_time + late + missing = expected
 received = on_time + late
 ```
 
-Percentages are floats between `0` and `100` rounded to 1 decimal, always computed against `expected`.
+Percentages are numbers between `0` and `100` with 1 decimal, always computed against `expected` and rounded half up
+(e.g. 1 / 16 = 6.25 → `6.3`). They are computed by the database, so the values returned are the ones used to order
+the rows.
 
 # Get promptness statistics
 

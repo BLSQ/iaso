@@ -1,6 +1,3 @@
-from decimal import ROUND_HALF_UP, Decimal
-from typing import Optional
-
 from rest_framework import serializers
 
 from iaso.api.common.serializer_fields import CommaSeparatedMultipleChoiceField, CommaSeparatedPrimaryKeysField
@@ -105,31 +102,19 @@ class PromptnessPeriodSerializer(serializers.Serializer):
     is_provisional = serializers.BooleanField()
 
 
-def percentage_of_expected(count: int, expected: int) -> Optional[float]:
-    """`count` / `expected` * 100, rounded to 1 decimal. `None` when nothing is expected.
-
-    Rounds half up like Postgres `round()`, so that the values match the ones used to order the rows.
-    """
-    if expected == 0:
-        return None
-    percentage = Decimal(count) * 100 / Decimal(expected)
-    return float(percentage.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
-
 class PromptnessStatsCountsSerializer(serializers.Serializer):
     """Base serializer for the counts of a row or of the totals.
 
-    Input: an OrgUnit annotated with `expected`, `on_time`, `late` and `missing` (see `annotate_counts()`).
-    Output: `is_applicable`, the counts plus `received`, `completeness_percent` and a `<status>_percent` for each
-    status.
+    Input: an OrgUnit annotated by `annotate_counts()`: the counts (`expected`, `received`, `on_time`, `late`,
+    `missing`) and the percentages (`completeness_percent`, `<status>_percent`) computed by the
+    database.
 
     - An org unit with nothing expected in its hierarchy (itself included) is not applicable ("NA"):
       `is_applicable` is `False` and all the counts and percentages are `None`.
-    - Percentages are computed against `expected`, rounded to 1 decimal.
     - Statuses missing from `context["status"]` have their count and percentage set to `None`
       (`expected`, `received` and `completeness_percent` are not affected).
 
-    The fields are declared for the API schema, the values are computed in `to_representation()`.
+    The fields are declared for the API schema, the values are set in `to_representation()`.
     """
 
     STATUS_TO_FIELD = {STATUS_ON_TIME: "on_time", STATUS_LATE: "late", STATUS_MISSING: "missing"}
@@ -148,38 +133,34 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
     is_applicable = serializers.BooleanField()
     expected = serializers.IntegerField(allow_null=True)
     received = serializers.IntegerField(allow_null=True)
-    completeness_percent = serializers.FloatField(allow_null=True)
+    # `coerce_to_string=False`: rendered as numbers (`COERCE_DECIMAL_TO_STRING` is `True` by default)
+    completeness_percent = serializers.DecimalField(
+        max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True
+    )
     on_time = serializers.IntegerField(allow_null=True)
-    on_time_percent = serializers.FloatField(allow_null=True)
+    on_time_percent = serializers.DecimalField(max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True)
     late = serializers.IntegerField(allow_null=True)
-    late_percent = serializers.FloatField(allow_null=True)
+    late_percent = serializers.DecimalField(max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True)
     missing = serializers.IntegerField(allow_null=True)
-    missing_percent = serializers.FloatField(allow_null=True)
+    missing_percent = serializers.DecimalField(max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True)
 
     def to_representation(self, org_unit: OrgUnit) -> dict:
-        """this expects an OrgUnit with annotations `expected`, `on_time`, `late` and `missing` (see `annotate_counts()`)"""
-        expected = org_unit.expected
-        if expected == 0:
+        if org_unit.expected == 0:
             not_applicable_counts = {field_name: None for field_name in self.COUNT_FIELDS}
             return {"is_applicable": False, **not_applicable_counts}
 
-        on_time = org_unit.on_time
-        late = org_unit.late
-        received = on_time + late
-
         counts = {
             "is_applicable": True,
-            "expected": expected,
-            "received": received,
-            "completeness_percent": percentage_of_expected(received, expected),
+            "expected": org_unit.expected,
+            "received": org_unit.received,
+            "completeness_percent": org_unit.completeness_percent,
         }
 
         selected_statuses = self.context["status"]
         for status, field_name in self.STATUS_TO_FIELD.items():
             if status in selected_statuses:
-                count = getattr(org_unit, field_name)
-                counts[field_name] = count
-                counts[f"{field_name}_percent"] = percentage_of_expected(count, expected)
+                counts[field_name] = getattr(org_unit, field_name)
+                counts[f"{field_name}_percent"] = getattr(org_unit, f"{field_name}_percent")
             else:
                 counts[field_name] = None
                 counts[f"{field_name}_percent"] = None

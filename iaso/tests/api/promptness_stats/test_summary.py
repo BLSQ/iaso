@@ -156,6 +156,25 @@ class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["totals"]["expected"], 2)
 
+    def test_percentages_are_rounded_half_up(self):
+        # A region with 16 facilities, 1 of them on time: 1 / 16 = 6.25% and 15 / 16 = 93.75%, rounded half up by the database
+        region = self.create_ou("Half up region", self.type_region, self.ethiopia)
+        facilities = [self.create_ou(f"Half up facility {i}", self.type_facility, region) for i in range(16)]
+        self.create_submission(facilities[0], aware(2026, 1, 15, 10, 0))
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=region.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["totals"], self.counts(16, 1, 0, 15, 1, 6.3, 6.3, 0.0, 93.8))
+
+    def test_percentages_are_json_numbers(self):
+        # The percentages are `Decimal` values, rendered as numbers (not as strings)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.SUMMARY_URL, self.get_serializer_params())
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        for key in ["completeness_percent", "on_time_percent", "late_percent", "missing_percent"]:
+            self.assertIsInstance(data["totals"][key], float, key)
+
     def test_excluded_statuses(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(status="LATE,MISSING"))

@@ -906,6 +906,7 @@
     "iaso.logs.seeAll": "Ver todos los campos",
     "iaso.logs.seeChanges": "Ver solo cambios",
     "iaso.map.catchment": "Captación",
+    "iaso.map.fullscreen": "Pantalla completa",
     "iaso.map.location": "Ubicación",
     "iaso.map.locationLimit": "Límite de resultados en el mapa",
     "iaso.map.locationLimit.error": "Por favor ingrese un valor correcto",
@@ -994,7 +995,8 @@
     "iaso.orgUnits.mapLibreClusterCount": "{count} unidades org., haga clic para acercar",
     "iaso.orgUnits.mapLibreClusterOfType": "{count} × {type}, haga clic para acercar",
     "iaso.orgUnits.mapLibreNoType": "Sin tipo",
-    "iaso.orgUnits.mapLibreClusters": "Agrupaciones",
+    "iaso.orgUnits.mapLibreClusters": "Agrupar los resultados cercanos",
+    "iaso.orgUnits.mapLibreClustersAuto": "{label} (automático, según el número de resultados)",
     "iaso.orgUnits.mapLibreApiMvt": "MVT: teselas vectoriales de /api/v3/orgunits/tiles/, descritas (url, extensión) por /api/v3/orgunits/tilejson/",
     "iaso.orgUnits.modifyAndFollow": "Modificar y seguir",
     "iaso.orgUnits.closingDate": "Fecha de cierre",
@@ -1321,5 +1323,7 @@
     "iaso.tile.protomaps.dark": "Oscuro",
     "iaso.tile.protomaps.white": "Blanco",
     "iaso.tile.protomaps.grayscale": "Escala de grises",
-    "iaso.tile.protomaps.black": "Negro"
+    "iaso.tile.protomaps.black": "Negro",
+    "map.label.fitToBounds": "Centrar el mapa",
+    "map.label.zoom.box": "Dibujar un cuadrado en el mapa para ampliar una zona"
 }

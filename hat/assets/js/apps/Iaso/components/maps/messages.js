@@ -61,6 +61,31 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.parent',
         defaultMessage: 'Parent',
     },
+    // same ids as the leaflet controls (`CustomZoomControl`, the dialogs)
+    zoomIn: {
+        id: 'iaso.label.zoomIn',
+        defaultMessage: 'Zoom in',
+    },
+    zoomOut: {
+        id: 'iaso.label.zoomOut',
+        defaultMessage: 'Zoom out',
+    },
+    fitToBounds: {
+        id: 'map.label.fitToBounds',
+        defaultMessage: 'Center the map',
+    },
+    boxZoom: {
+        id: 'map.label.zoom.box',
+        defaultMessage: 'Draw a square on the map to zoom in to an area',
+    },
+    fullscreen: {
+        id: 'iaso.map.fullscreen',
+        defaultMessage: 'Fullscreen',
+    },
+    exitFullscreen: {
+        id: 'iaso.label.exitFullscreen',
+        defaultMessage: 'Exit fullscreen',
+    },
     locationNotInShape: {
         id: 'iaso.map.locationNotInShape',
         defaultMessage:

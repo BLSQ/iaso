@@ -1,12 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import {
     Box,
-    Button,
     Checkbox,
     FormControlLabel,
     LinearProgress,
     Paper,
-    Switch,
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
@@ -39,12 +37,7 @@ export type SearchResults = {
 
 type Props = {
     results: SearchResults[];
-    clusters: boolean;
-    onClustersChange: (clusters: boolean) => void;
     onToggleType: (key: number) => void;
-    /** fitted to `bounds` rather than `fit_bounds` */
-    showsAll: boolean;
-    onShowAllChange: (showAll: boolean) => void;
 };
 
 /**
@@ -55,17 +48,9 @@ type Props = {
  */
 export const SearchResultsPanel: FunctionComponent<Props> = ({
     results,
-    clusters,
-    onClustersChange,
     onToggleType,
-    showsAll,
-    onShowAllChange,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const outliers = results.reduce(
-        (total, { tileJSON }) => total + (tileJSON?.outside_fit_bounds ?? 0),
-        0,
-    );
     return (
         <Paper
             elevation={2}
@@ -194,40 +179,6 @@ export const SearchResultsPanel: FunctionComponent<Props> = ({
                     )}
                 </Box>
             ))}
-            <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-            >
-                <FormControlLabel
-                    control={
-                        <Switch
-                            size="small"
-                            checked={clusters}
-                            onChange={event =>
-                                onClustersChange(event.target.checked)
-                            }
-                        />
-                    }
-                    label={
-                        <Typography variant="body2">
-                            {formatMessage(MESSAGES.mapLibreClusters)}
-                        </Typography>
-                    }
-                />
-                {(outliers > 0 || showsAll) && (
-                    <Button
-                        size="small"
-                        onClick={() => onShowAllChange(!showsAll)}
-                    >
-                        {formatMessage(
-                            showsAll
-                                ? MESSAGES.mapLibreFitResults
-                                : MESSAGES.mapLibreShowAll,
-                        )}
-                    </Button>
-                )}
-            </Box>
         </Paper>
     );
 };

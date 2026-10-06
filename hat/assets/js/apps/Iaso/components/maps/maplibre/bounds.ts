@@ -59,3 +59,6 @@ export const unionBounds = (
         ],
     ];
 };
+
+/** How the MapLibre maps fit bounds: clear of the controls, never closer than a neighbourhood */
+export const FIT_BOUNDS_OPTIONS = { padding: 40, maxZoom: 14 };

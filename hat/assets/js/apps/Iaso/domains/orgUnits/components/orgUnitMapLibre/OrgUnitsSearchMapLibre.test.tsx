@@ -18,9 +18,14 @@ vi.mock('../../../../components/maps/maplibre', async importOriginal => ({
     ...(await importOriginal<
         typeof import('../../../../components/maps/maplibre')
     >()),
-    MapLibreMap: ({ children, ...props }: MockProps) => {
+    MapLibreMap: ({ children, controls, ...props }: MockProps) => {
         mapProps.current = props;
-        return <div data-testid="map">{children}</div>;
+        return (
+            <div data-testid="map">
+                {controls}
+                {children}
+            </div>
+        );
     },
 }));
 vi.mock('@vis.gl/react-maplibre', () => ({
@@ -155,11 +160,37 @@ describe('OrgUnitsSearchMapLibre', () => {
             [12, -13],
             [31, 5],
         ]);
-        fireEvent.click(screen.getByText('Show all'));
-        expect(mapProps.current?.bounds).toEqual([
-            [-6, -13],
-            [31, 50],
+        // the map's "fit" button can show them all
+        expect(mapProps.current?.fitTargets).toEqual([
+            {
+                key: 'results',
+                label: 'Fit to the results',
+                bounds: [
+                    [12, -13],
+                    [31, 5],
+                ],
+            },
+            {
+                key: 'all',
+                label: 'Show all (31 far from the others)',
+                bounds: [
+                    [-6, -13],
+                    [31, 50],
+                ],
+            },
         ]);
+    });
+
+    it('only offers to fit the results without outliers', () => {
+        mockUseOrgUnitTileJSONs.mockReturnValue([
+            { data: facilities, isLoading: false },
+        ]);
+        renderMap([{ orgUnitTypeId: '41' }]);
+        expect(
+            (mapProps.current?.fitTargets as { key: string }[]).map(
+                ({ key }) => key,
+            ),
+        ).toEqual(['results']);
     });
 
     it('says which filters the map cannot apply', () => {
@@ -177,10 +208,30 @@ describe('OrgUnitsSearchMapLibre', () => {
         expect(mockUseOrgUnitTileJSONs.mock.calls[0][0][0].cluster).toBe(
             'auto',
         );
-        // the switch shows what the server picked
+        // the button shows what the server picked
         expect(
-            screen.getByRole('checkbox', { name: 'Clusters' }),
-        ).toBeChecked();
+            screen.getByRole('button', {
+                name: 'Group nearby results into clusters (automatic, from the number of results)',
+            }),
+        ).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('overrides the clusters from the map', () => {
+        const onClustersChange = vi.fn();
+        renderWithThemeAndIntlProvider(
+            <OrgUnitsSearchMapLibre
+                searches={[{ levels: '7' }, { orgUnitTypeId: '41' }]}
+                getSearchColor={index => colors[index]}
+                clusters={false}
+                onClustersChange={onClustersChange}
+            />,
+        );
+        const button = screen.getByRole('button', {
+            name: 'Group nearby results into clusters',
+        });
+        expect(button).toHaveAttribute('aria-pressed', 'false');
+        fireEvent.click(button);
+        expect(onClustersChange).toHaveBeenCalledWith(true);
     });
 
     describe('a single search', () => {

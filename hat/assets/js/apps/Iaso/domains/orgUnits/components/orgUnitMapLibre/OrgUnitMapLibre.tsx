@@ -5,6 +5,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import { MapLegend } from '../../../../components/maps/MapLegend';
 import {
+    FitTarget,
     GeoJsonLayer,
     MapLibreMap,
     getGeoJsonBounds,
@@ -126,19 +127,36 @@ export const OrgUnitMapLibre: FunctionComponent<Props> = ({ orgUnit }) => {
         return undefined;
     }, [api, orgUnit, ancestor, v3OrgUnits]);
 
-    const bounds = useMemo(() => {
+    // the org unit and its ancestor, each fitted to on its own from the "fit" button; the map shows both
+    const [currentBounds, parentBounds] = useMemo(() => {
         if (isMvt) {
-            return unionBounds(
-                [currentTileJSON, parentTileJSON].map(
-                    tileJSON => tileJSON && tileJSONBounds(tileJSON),
-                ),
+            return [currentTileJSON, parentTileJSON].map(
+                tileJSON => tileJSON && tileJSONBounds(tileJSON),
             );
         }
-        const features = [shapes?.current, shapes?.parent].flatMap(
-            collection => collection?.features ?? [],
+        return [shapes?.current, shapes?.parent].map(
+            collection => collection && getGeoJsonBounds(collection),
         );
-        return getGeoJsonBounds({ type: 'FeatureCollection', features });
     }, [isMvt, shapes, currentTileJSON, parentTileJSON]);
+    const bounds = useMemo(
+        () => unionBounds([currentBounds, parentBounds]),
+        [currentBounds, parentBounds],
+    );
+    const fitTargets: FitTarget[] = useMemo(
+        () => [
+            {
+                key: 'current',
+                label: formatMessage(MESSAGES.ouCurrent),
+                bounds: currentBounds,
+            },
+            {
+                key: 'parent',
+                label: formatMessage(MESSAGES.ouParent),
+                bounds: parentBounds,
+            },
+        ],
+        [formatMessage, currentBounds, parentBounds],
+    );
 
     const legend = useMemo(
         () => [
@@ -159,7 +177,7 @@ export const OrgUnitMapLibre: FunctionComponent<Props> = ({ orgUnit }) => {
     const parentStyle = { ...SHAPE_STYLE, color: PARENT_COLOR };
 
     return (
-        <MapLibreMap bounds={bounds}>
+        <MapLibreMap bounds={bounds} fitTargets={fitTargets}>
             <ApiSwitch value={api} onChange={setApi} />
             {/* clear of the attribution control */}
             <MapLegend bottom={40} top="auto" options={legend} />

@@ -6,11 +6,18 @@ import React, {
     useRef,
     useState,
 } from 'react';
+import BubbleChart from '@mui/icons-material/BubbleChart';
 import { Layer, MapLayerMouseEvent, Popup } from '@vis.gl/react-maplibre';
 import { useSafeIntl } from 'bluesquare-components';
 import isEqual from 'lodash/isEqual';
 import type { MapLibreEvent, Map as MapLibreMap$ } from 'maplibre-gl';
-import { MapLibreMap, unionBounds } from '../../../../components/maps/maplibre';
+import {
+    FitTarget,
+    MAP_CONTROL_ICON_SX,
+    MapControlButton,
+    MapLibreMap,
+    unionBounds,
+} from '../../../../components/maps/maplibre';
 import { useGetColors } from '../../../../hooks/useGetColors';
 import MESSAGES from '../../messages';
 import { Search } from '../../types/search';
@@ -109,7 +116,6 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
     onClustersChange,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [showAll, setShowAll] = useState(false);
     const [hovered, setHovered] = useState<Hovered>();
     const hoveredRef = useRef<Hovered>();
     const [selected, setSelected] = useState<Selected>();
@@ -179,26 +185,56 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
             ),
         [],
     );
-    // the panel shows what the tiles are: the user's pick, else the server's
+    // the clusters button shows what the tiles are: the user's pick, else the server's
     const isClustered = (cluster?: number | null) =>
         (cluster ?? 0) > THINNING_PX;
     const showsClusters =
         clusters ?? tileJSONs.some(tileJSON => isClustered(tileJSON?.cluster));
 
+    // the map fits the results, outliers left out; its "fit" button can also show them all
     const bounds = useMemo(
         () =>
             unionBounds(
                 tileJSONs.map(
                     tileJSON =>
-                        tileJSON &&
-                        tileJSONBounds(
-                            tileJSON,
-                            showAll ? 'bounds' : 'fit_bounds',
-                        ),
+                        tileJSON && tileJSONBounds(tileJSON, 'fit_bounds'),
                 ),
             ),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [showAll, ...tileJSONs],
+        [...tileJSONs],
+    );
+    const outliers = tileJSONs.reduce(
+        (total, tileJSON) => total + (tileJSON?.outside_fit_bounds ?? 0),
+        0,
+    );
+    const fitTargets: FitTarget[] = useMemo(
+        () => [
+            {
+                key: 'results',
+                label: formatMessage(MESSAGES.mapLibreFitResults),
+                bounds,
+            },
+            ...(outliers > 0
+                ? [
+                      {
+                          key: 'all',
+                          label: `${formatMessage(MESSAGES.mapLibreShowAll)} (${formatMessage(
+                              MESSAGES.mapLibreOutliers,
+                              { count: outliers.toLocaleString() },
+                          )})`,
+                          bounds: unionBounds(
+                              tileJSONs.map(
+                                  tileJSON =>
+                                      tileJSON &&
+                                      tileJSONBounds(tileJSON, 'bounds'),
+                              ),
+                          ),
+                      },
+                  ]
+                : []),
+        ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [formatMessage, bounds, outliers, ...tileJSONs],
     );
 
     const loadedSources = active
@@ -343,6 +379,24 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
     return (
         <MapLibreMap
             bounds={bounds}
+            fitTargets={fitTargets}
+            controls={
+                <MapControlButton
+                    title={
+                        clusters === undefined
+                            ? formatMessage(MESSAGES.mapLibreClustersAuto, {
+                                  label: formatMessage(
+                                      MESSAGES.mapLibreClusters,
+                                  ),
+                              })
+                            : formatMessage(MESSAGES.mapLibreClusters)
+                    }
+                    active={showsClusters}
+                    onClick={() => onClustersChange(!showsClusters)}
+                >
+                    <BubbleChart sx={MAP_CONTROL_ICON_SX} />
+                </MapControlButton>
+            }
             height="75vh"
             interactiveLayerIds={interactiveLayerIds}
             onMouseMove={handleMouseMove}
@@ -350,14 +404,7 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
             onClick={handleClick}
             onIdle={handleIdle}
         >
-            <SearchResultsPanel
-                results={results}
-                clusters={showsClusters}
-                onClustersChange={onClustersChange}
-                onToggleType={toggleType}
-                showsAll={showAll}
-                onShowAllChange={setShowAll}
-            />
+            <SearchResultsPanel results={results} onToggleType={toggleType} />
             {anchors.map(anchor => (
                 <Layer key={anchor.id} {...anchor} />
             ))}

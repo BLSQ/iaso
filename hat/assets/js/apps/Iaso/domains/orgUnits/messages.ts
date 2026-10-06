@@ -157,7 +157,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.mapLibreUnsupported',
     },
     mapLibreCutTiles: {
-        defaultMessage: 'Too many results here: {kept} of {count} shown, zoom in',
+        defaultMessage:
+            'Too many results here: {kept} of {count} shown, zoom in',
         id: 'iaso.orgUnits.mapLibreCutTiles',
     },
     mapLibreClusterCount: {
@@ -173,8 +174,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.mapLibreNoType',
     },
     mapLibreClusters: {
-        defaultMessage: 'Clusters',
+        defaultMessage: 'Group nearby results into clusters',
         id: 'iaso.orgUnits.mapLibreClusters',
+    },
+    mapLibreClustersAuto: {
+        defaultMessage: '{label} (automatic, from the number of results)',
+        id: 'iaso.orgUnits.mapLibreClustersAuto',
     },
     parents: {
         defaultMessage: 'Parents',

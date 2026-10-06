@@ -1211,6 +1211,8 @@
     "iaso.orgUnits.mapLibreUnsupported": "Not applied on this map: {keys}",
     "iaso.orgUnits.mapLibreCutTiles": "Too many results here: {kept} of {count} shown, zoom in",
     "iaso.orgUnits.mapLibreClusterCount": "{count} org units, click to zoom in",
+    "iaso.orgUnits.mapLibreClusterOfType": "{count} × {type}, click to zoom in",
+    "iaso.orgUnits.mapLibreNoType": "No type",
     "iaso.orgUnits.mapLibreClusters": "Clusters",
     "iaso.orgUnits.mapLibreApiMvt": "MVT: vector tiles from /api/v3/orgunits/tiles/, described (url, bounds) by /api/v3/orgunits/tilejson/",
     "iaso.orgUnits.modifyAndFollow": "Modify and follow",

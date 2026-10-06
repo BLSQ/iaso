@@ -1212,6 +1212,8 @@
     "iaso.orgUnits.mapLibreUnsupported": "Non appliqué sur cette carte : {keys}",
     "iaso.orgUnits.mapLibreCutTiles": "Trop de résultats ici : {kept} sur {count} affichés, zoomez",
     "iaso.orgUnits.mapLibreClusterCount": "{count} unités d'org., cliquez pour zoomer",
+    "iaso.orgUnits.mapLibreClusterOfType": "{count} × {type}, cliquez pour zoomer",
+    "iaso.orgUnits.mapLibreNoType": "Sans type",
     "iaso.orgUnits.mapLibreClusters": "Regroupements",
     "iaso.orgUnits.mapLibreApiMvt": "MVT : tuiles vectorielles de /api/v3/orgunits/tiles/, décrites (url, étendue) par /api/v3/orgunits/tilejson/",
     "iaso.orgUnits.modifyAndFollow": "Modifier et suivre",

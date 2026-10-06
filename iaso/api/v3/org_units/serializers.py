@@ -286,3 +286,11 @@ class TileJSONSerializerV3(serializers.Serializer):
         help_text="`[west, south, east, north]` to fit the map to: `bounds` without the far outliers",
     )
     outside_fit_bounds = serializers.IntegerField(help_text="How many located org units `fit_bounds` leaves out")
+    org_unit_types = serializers.ListField(
+        child=serializers.DictField(),
+        help_text="`count` and `located_count` per org unit type (`id`, `name`, `depth`; `id` null: no type), the most "
+        "frequent first",
+    )
+    cluster = serializers.IntegerField(
+        allow_null=True, help_text="How the tiles are clustered, in pixels (null: not clustered)"
+    )

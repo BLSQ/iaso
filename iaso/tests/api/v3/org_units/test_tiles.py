@@ -9,6 +9,7 @@ from django.db.models import Func, IntegerField
 
 from iaso import models as m
 from iaso.api.v3.common.mvt import (
+    AUTO_CLUSTER_PX,
     CLUSTER_MAX_ZOOM,
     INDEX_PREFILTER_MIN_ZOOM,
     MVT_MEDIA_TYPE,
@@ -83,8 +84,9 @@ def _value(buf):
 GEOMETRY_TYPES = {1: "Point", 2: "LineString", 3: "Polygon"}
 
 
-def decode_tile(content: bytes) -> dict:
-    """{layer name: {feature id: {"properties": {...}, "type": "Point"|..., "geometry_size": <encoded ints>}}}"""
+def decode_tile(content: bytes, as_list: bool = False) -> dict:
+    """{layer name: {feature id: {"properties": {...}, "type": "Point"|..., "geometry_size": <encoded ints>}}} - or
+    with `as_list`, {layer name: [{"id": ..., "properties": ..., ...}]}, for features without id (clusters)."""
     layers = {}
     for field, layer in _messages(content):
         if field != 3:
@@ -99,7 +101,7 @@ def decode_tile(content: bytes) -> dict:
                 keys.append(value.decode())
             elif layer_field == 4:
                 values.append(_value(value))
-        features = {}
+        features = [] if as_list else {}
         for raw in raw_features:
             feature_id, properties, geometry_type, geometry_size = None, {}, None, 0
             for feature_field, value in _messages(raw):
@@ -113,7 +115,11 @@ def decode_tile(content: bytes) -> dict:
                 elif feature_field == 4:
                     # draw commands and their coordinates: grows with the number of vertices
                     geometry_size = len(_packed(value))
-            features[feature_id] = {"properties": properties, "type": geometry_type, "geometry_size": geometry_size}
+            feature = {"properties": properties, "type": geometry_type, "geometry_size": geometry_size}
+            if as_list:
+                features.append({"id": feature_id, **feature})
+            else:
+                features[feature_id] = feature
         layers[name] = features
     return layers
 
@@ -369,6 +375,46 @@ class OrgUnitV3TileJSONTestCase(OrgUnitV3TestCase):
         self.assertIn("point_count", tilejson["vector_layers"][0]["fields"])
         self.get_json({"cluster": "0"}, 400, url=f"{BASE_URL}tilejson/")
 
+    def test_counts_per_org_unit_type(self):
+        tilejson = self.get_tilejson({"version_id": self.sw_version_1.id})
+        # the most frequent first, then by id
+        self.assertEqual(
+            tilejson["org_unit_types"],
+            [
+                {"id": self.country_type.id, "name": "Country", "depth": None, "count": 3, "located_count": 1},
+                {"id": self.region_type.id, "name": "Region", "depth": None, "count": 1, "located_count": 1},
+                {"id": self.district_type.id, "name": "District", "depth": None, "count": 1, "located_count": 0},
+            ],
+        )
+
+    def test_counts_org_unit_without_type(self):
+        m.OrgUnit.objects.create(version=self.sw_version_1, name="Untyped", location=Point(1, 1, 0))
+        org_unit_types = self.get_tilejson({"version_id": self.sw_version_1.id})["org_unit_types"]
+        self.assertIn({"id": None, "name": None, "depth": None, "count": 1, "located_count": 1}, org_unit_types)
+
+    def test_cluster_auto_leaves_few_org_units_unclustered(self):
+        tilejson = self.get_tilejson({"version_id": self.sw_version_1.id, "cluster": "auto"})
+        self.assertIsNone(tilejson["cluster"])
+        self.assertTrue(tilejson["tiles"][0].endswith(f"?version_id={self.sw_version_1.id}"))
+        self.assertNotIn("point_count", tilejson["vector_layers"][0]["fields"])
+
+    def test_cluster_auto_clusters_many_org_units(self):
+        # 2 located org units: "many" past 1
+        with mock.patch("iaso.api.v3.common.mvt.AUTO_CLUSTER_MIN_LOCATED", 1):
+            tilejson = self.get_tilejson({"version_id": self.sw_version_1.id, "cluster": "auto"})
+        self.assertEqual(tilejson["cluster"], AUTO_CLUSTER_PX)
+        self.assertTrue(tilejson["tiles"][0].endswith(f"&cluster={AUTO_CLUSTER_PX}"))
+        self.assertIn("point_count", tilejson["vector_layers"][0]["fields"])
+
+    def test_cluster_is_what_was_asked_otherwise(self):
+        self.assertEqual(self.get_tilejson({"cluster": "40"})["cluster"], 40)
+        self.assertIsNone(self.get_tilejson()["cluster"])
+
+    def test_cluster_by_is_passed_on_and_described(self):
+        tilejson = self.get_tilejson({"fields": "name", "cluster": "40", "cluster_by": "org_unit_type_id"})
+        self.assertTrue(tilejson["tiles"][0].endswith("&cluster=40&cluster_by=org_unit_type_id"))
+        self.assertIn("org_unit_type_id", tilejson["vector_layers"][0]["fields"])
+
     def test_bounds_are_the_extent_of_the_matching_org_units(self):
         # the country square and the region point in it - not the other account's Wakanda
         self.assertEqual(self.get_tilejson()["bounds"], [0, 0, 10, 10])
@@ -387,9 +433,10 @@ class OrgUnitV3TileJSONTestCase(OrgUnitV3TestCase):
         self.get_json({"fields": "via_id"}, 400, url=f"{BASE_URL}tilejson/")
 
     def test_query_count(self):
-        # the counts and extents are one query, and `filter_for_user` another. Its settings (`settings_cursor`) add
-        # one query in a request; here, within the test's transaction, a savepoint that also puts them back.
-        with self.assertNumQueries(7):
+        # the counts and extents are one query, the names of the counted types another, and `filter_for_user` a
+        # third. The settings (`settings_cursor`) add one query in a request; here, within the test's transaction,
+        # a savepoint that also puts them back.
+        with self.assertNumQueries(8):
             self.get_tilejson({"version_id": self.sw_version_1.id})
 
 
@@ -608,6 +655,44 @@ class OrgUnitV3TileClusterTestCase(TileRequestsMixin, OrgUnitV3TestCase):
         )
         features = self.get_clustered(tile=tile_for(5, 2, 2))
         self.assertEqual(features[None]["properties"], {"point_count": 5})
+
+    def test_cluster_by_type_makes_one_cluster_per_type(self):
+        for i in range(3):
+            m.OrgUnit.objects.create(
+                org_unit_type=self.region_type,
+                version=self.sw_version_1,
+                name=f"Health post {i}",
+                location=Point(x=2.001 + i * 0.002, y=2.001, z=0),
+            )
+        tile = tile_for(5, 2, 2)
+
+        def clusters(**params):
+            content = self.get_tile({**self.query, "cluster": "40", "fields": "name", **params}, tile=tile).content
+            return sorted(
+                (
+                    feature["properties"]
+                    for feature in decode_tile(content, as_list=True)["org_units"]
+                    if feature["id"] is None
+                ),
+                key=lambda properties: properties["point_count"],
+            )
+
+        self.assertEqual(clusters(), [{"point_count": 8}])
+        # each keeps its type - asked or not in `fields`
+        self.assertEqual(
+            clusters(cluster_by="org_unit_type_id"),
+            [
+                {"point_count": 3, "org_unit_type_id": self.region_type.id},
+                {"point_count": 5, "org_unit_type_id": self.district_type.id},
+            ],
+        )
+
+    def test_rejects_invalid_cluster_by(self):
+        self.get_tile_error({"cluster": "40", "cluster_by": "name"})
+
+    def test_tiles_take_no_auto_cluster(self):
+        # the TileJSON picks for its tiles: their url holds what it picked
+        self.get_tile_error({"cluster": "auto"})
 
     def test_rejects_invalid_cluster_sizes(self):
         for value in ("0", "129", "big"):

@@ -60,27 +60,44 @@ const pointRadius = (hovered: number[], normal: number[]) => [
     ]),
 ];
 
+export type SearchStyle = {
+    /** one color, or an expression giving each feature its own (e.g. by org unit type) */
+    color: string | ExpressionSpecification;
+    /** the tiles are clustered by more than a few pixels: else their clusters are only points a pixel apart */
+    clusters: boolean;
+    /** only the features passing it are drawn (e.g. without the hidden org unit types) */
+    filter?: ExpressionSpecification;
+    /** shapes with a higher key are drawn over the others (e.g. a zone over its province) */
+    shapeSortKey?: number | ExpressionSpecification;
+};
+
 /**
- * The layers of one search, in its color. Only circles, fills and lines: no symbol layer, so no label or icon
- * collision work and no glyphs to load. Clusters are sized by their count (shown on hover), points grow with
- * the zoom and drop their outline when small, so 30k of them stay a light, readable density map.
+ * The layers of one search. Only circles, fills and lines: no symbol layer, so no label or icon collision work
+ * and no glyphs to load. Clusters are sized by their count (shown on hover), the smaller over the bigger ones
+ * (clusters of several types may share a spot); points grow with the zoom and drop their outline when small, so
+ * 30k of them stay a light, readable density map.
  */
 export const searchResultsLayers = (
     sourceId: string,
-    color: string,
-    /** the tiles are clustered by more than a few pixels: else their clusters are only points a pixel apart */
-    clusters: boolean,
+    { color, clusters, filter, shapeSortKey }: SearchStyle,
 ): (SearchLayer & { beforeId: string })[] => {
     const common = (kind: SearchLayerKind) => ({
         id: searchLayerId(sourceId, kind),
         'source-layer': ORG_UNIT_TILES_SOURCE_LAYER,
         beforeId: anchorLayerId(kind),
     });
+    const only = (
+        kindFilter: ExpressionSpecification,
+    ): ExpressionSpecification =>
+        filter ? ['all', kindFilter, filter] : kindFilter;
     return [
         {
             ...common('fill'),
             type: 'fill',
-            filter: isPolygon,
+            filter: only(isPolygon),
+            ...(shapeSortKey !== undefined && {
+                layout: { 'fill-sort-key': shapeSortKey },
+            }),
             paint: {
                 'fill-color': color,
                 // light: a search often holds nested shapes (province, zones, areas), stacking up
@@ -90,7 +107,10 @@ export const searchResultsLayers = (
         {
             ...common('line'),
             type: 'line',
-            filter: isPolygon,
+            filter: only(isPolygon),
+            ...(shapeSortKey !== undefined && {
+                layout: { 'line-sort-key': shapeSortKey },
+            }),
             paint: {
                 'line-color': color,
                 'line-width': ['case', isHovered, 3, 1],
@@ -99,7 +119,8 @@ export const searchResultsLayers = (
         {
             ...common('cluster'),
             type: 'circle',
-            filter: isCluster,
+            filter: only(isCluster),
+            layout: { 'circle-sort-key': ['-', 0, ['get', POINT_COUNT]] },
             paint: {
                 'circle-color': color,
                 'circle-opacity': clusters ? 0.75 : 1,
@@ -127,11 +148,11 @@ export const searchResultsLayers = (
         {
             ...common('point'),
             type: 'circle',
-            filter: [
+            filter: only([
                 'all',
                 ['==', ['geometry-type'], 'Point'],
                 ['!', isCluster],
-            ],
+            ]),
             paint: {
                 'circle-color': color,
                 'circle-radius': pointRadius(

@@ -22,6 +22,9 @@ from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.v3.common.dynamic_fields import KeyedColumns, PositionalColumns, tabular_columns, tabular_values
 from iaso.api.v3.common.errors import bad_request
 from iaso.api.v3.common.mvt import (
+    AUTO_CLUSTER,
+    AUTO_CLUSTER_MIN_LOCATED,
+    AUTO_CLUSTER_PX,
     CLUSTER_MAX_ZOOM,
     COLLAPSED_SHAPE_PX,
     MAX_CLUSTER_PX,
@@ -33,6 +36,7 @@ from iaso.api.v3.common.mvt import (
     FirstRendererNegotiation,
     MVTRenderer,
     Tile,
+    auto_cluster_px,
     render_tile,
     set_tile_cache_headers,
     summary,
@@ -46,7 +50,7 @@ from iaso.api.v3.common.pagination import V3PagePagination
 from iaso.api.v3.common.renderers import ParquetRenderer, XLSXRenderer
 from iaso.api.v3.common.views import BaseV3ReadOnlyViewSet, V3FilterBackend
 from iaso.exports import CleaningFileResponse, parquet
-from iaso.models import Group, OrgUnit
+from iaso.models import Group, OrgUnit, OrgUnitType
 
 from .expressions import GEOGRAPHY_COLUMNS, drawn_geometry, extent_geometry
 from .filters import OrgUnitFilterSetV3
@@ -122,10 +126,24 @@ TILE_EXTRA_PARAMETERS = [
             f"screen pixels - one feature per square, with a `{POINT_COUNT_COLUMN}` property and no id when it "
             f"stands for several org units (a lone point stays itself). Shapes smaller than {COLLAPSED_SHAPE_PX} "
             "pixels are drawn as points, so they are clustered too. A small value (1-2) only thins the points a "
-            "screen can't tell apart; a large one (40-60) makes clusters."
+            "screen can't tell apart; a large one (40-60) makes clusters. TileJSON also takes "
+            f"`{AUTO_CLUSTER}`: clusters by {AUTO_CLUSTER_PX} pixels when more than {AUTO_CLUSTER_MIN_LOCATED} org "
+            "units are located, else none - its tile url and its `cluster` say which."
+        ),
+    ),
+    OpenApiParameter(
+        name="cluster_by",
+        type=OpenApiTypes.STR,
+        enum=["org_unit_type_id"],
+        description=(
+            "With `cluster`: one cluster per value of this field in each square instead of one for all, which keeps "
+            "the value (added to the properties if `fields` leaves it out) - so clusters can be colored and filtered "
+            "by org unit type like single points. Ignored without `cluster`."
         ),
     ),
 ]
+#: what `cluster_by` takes
+CLUSTER_BY_FIELDS = ("org_unit_type_id",)
 TILE_PATH_PARAMETERS = [
     OpenApiParameter(name=name, type=OpenApiTypes.INT, location=OpenApiParameter.PATH, description=description)
     for name, description in (("z", "Zoom level, 0-24"), ("x", "Tile column, 0..2^z-1"), ("y", "Tile row, 0..2^z-1"))
@@ -157,7 +175,10 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     pagination_class = V3PagePagination
     filter_backends = [V3FilterBackend, filters.OrderingFilter]
     #: query params only the tiles take (on top of the FilterSet's)
-    action_params = {"tiles": frozenset({"cache_key", "cluster"}), "tilejson": frozenset({"cache_key", "cluster"})}
+    action_params = {
+        "tiles": frozenset({"cache_key", "cluster", "cluster_by"}),
+        "tilejson": frozenset({"cache_key", "cluster", "cluster_by"}),
+    }
     filterset_class = OrgUnitFilterSetV3
     extra_parameters = EXTRA_PARAMETERS
     ordering_fields = ORDERING_FIELDS
@@ -248,17 +269,23 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         `iaso.api.v3.common.mvt`): nothing but the tile bytes goes through python."""
         tile = Tile.validated(z, x, y)
         cluster_px = validated_cluster_px(request.query_params.get("cluster"))
+        cluster_by = self._cluster_by(request)
         queryset, serializer = self._tile_source(request)
+        properties = tile_properties(serializer)
+        if cluster_by:
+            properties.setdefault(cluster_by, None)
         values = tile_queryset(
             queryset,
             drawn_geometry(tile, collapse_px=COLLAPSED_SHAPE_PX if cluster_px else None),
-            tile_properties(serializer),
+            properties,
             tile,
             geography_columns=GEOGRAPHY_COLUMNS,
             # a collapsed shape is a point inside the shape: the shape tells which tiles may hold it
             filter_geometry=drawn_geometry(tile) if cluster_px else None,
         )
-        response = HttpResponse(render_tile(values, TILE_LAYER, tile, cluster_px), content_type=MVT_MEDIA_TYPE)
+        response = HttpResponse(
+            render_tile(values, TILE_LAYER, tile, cluster_px, cluster_by), content_type=MVT_MEDIA_TYPE
+        )
         set_tile_cache_headers(response, request.query_params.get("cache_key"))
         return response
 
@@ -271,7 +298,9 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
             "tiles outside. Pass it as a vector source's `url`. On top of TileJSON: `count` and `located_count` "
             "(how many org units match, how many are on the map), and `fit_bounds`, where to look: the extent "
             "without the far outliers (e.g. a village geolocated on another continent), `outside_fit_bounds` of "
-            "them left out."
+            "them left out; `org_unit_types`, the same counts per org unit type, with its `name` and `depth` (`id` null "
+            "for the org units without one), the most frequent first; `cluster`, how its tiles are clustered (pixels, null when they aren't) - "
+            "what `cluster=auto` picked."
         ),
         parameters=TILE_EXTRA_PARAMETERS,
         filters=True,
@@ -279,23 +308,57 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     )
     @action(detail=False, url_path="tilejson", renderer_classes=[JSONRenderer])
     def tilejson(self, request):
-        validated_cluster_px(request.query_params.get("cluster"))
+        cluster_px = validated_cluster_px(request.query_params.get("cluster"), allow_auto=True)
+        cluster_by = self._cluster_by(request)
         queryset, serializer = self._tile_source(request)
-        # the tiles url, with every query param of this request (filters, `fields`, `cache_key`)
+        about = summary(queryset, extent_geometry(), count_by="org_unit_type_id")
+        if cluster_px == AUTO_CLUSTER:
+            cluster_px = auto_cluster_px(about["located_count"])
+        # the tiles url, with every query param of this request (filters, `fields`, `cache_key`), `cluster=auto`
+        # replaced by what it picked
+        params = request.GET.copy()
+        if cluster_px:
+            params["cluster"] = str(cluster_px)
+        else:
+            params.pop("cluster", None)
         tiles_url = request.build_absolute_uri(reverse("orgunits_v3-tiles", kwargs={"z": 0, "x": 0, "y": 0}))
         tiles_url = tiles_url.replace("/0/0/0/", "/{z}/{x}/{y}/")
-        if request.GET:
-            tiles_url += "?" + request.GET.urlencode(safe=",")
+        if params:
+            tiles_url += "?" + params.urlencode(safe=",")
         fields = tile_fields(serializer)
-        if "cluster" in request.query_params:
+        if cluster_px:
             fields[POINT_COUNT_COLUMN] = "Number of org units of a cluster (only set on clusters, which have no id)"
-        about = summary(queryset, extent_geometry())
+            if cluster_by:
+                fields.setdefault(cluster_by, "Number")
         document = tilejson(tiles_url, TILE_LAYER, fields, about.pop("bounds"))
         if about["fit_bounds"] is None:
             del about["fit_bounds"]
-        response = Response({**document, **about})
+        counts = about.pop("counts_by")
+        # their names and depths for a legend: one more query, over the few types counted
+        types = OrgUnitType.objects.filter(id__in=[row["value"] for row in counts if row["value"] is not None])
+        types = {org_unit_type["id"]: org_unit_type for org_unit_type in types.values("id", "name", "depth")}
+        about["org_unit_types"] = [
+            {
+                "id": row["value"],
+                "name": types.get(row["value"], {}).get("name"),
+                "depth": types.get(row["value"], {}).get("depth"),
+                "count": row["count"],
+                "located_count": row["located_count"],
+            }
+            for row in counts
+        ]
+        response = Response({**document, **about, "cluster": cluster_px})
         set_tile_cache_headers(response, request.query_params.get("cache_key"))
         return response
+
+    @staticmethod
+    def _cluster_by(request):
+        cluster_by = request.query_params.get("cluster_by") or None
+        if cluster_by is not None and cluster_by not in CLUSTER_BY_FIELDS:
+            raise bad_request(
+                f"Invalid value for 'cluster_by': {cluster_by!r}", f"One of: {', '.join(CLUSTER_BY_FIELDS)}."
+            )
+        return cluster_by
 
     def _tile_source(self, request):
         """The rows and the feature properties of the tiles - also described by their TileJSON."""

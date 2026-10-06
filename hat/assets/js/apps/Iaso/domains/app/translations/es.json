@@ -992,6 +992,8 @@
     "iaso.orgUnits.mapLibreUnsupported": "No aplicado en este mapa: {keys}",
     "iaso.orgUnits.mapLibreCutTiles": "Demasiados resultados aquí: {kept} de {count} mostrados, acerque el mapa",
     "iaso.orgUnits.mapLibreClusterCount": "{count} unidades org., haga clic para acercar",
+    "iaso.orgUnits.mapLibreClusterOfType": "{count} × {type}, haga clic para acercar",
+    "iaso.orgUnits.mapLibreNoType": "Sin tipo",
     "iaso.orgUnits.mapLibreClusters": "Agrupaciones",
     "iaso.orgUnits.mapLibreApiMvt": "MVT: teselas vectoriales de /api/v3/orgunits/tiles/, descritas (url, extensión) por /api/v3/orgunits/tilejson/",
     "iaso.orgUnits.modifyAndFollow": "Modificar y seguir",

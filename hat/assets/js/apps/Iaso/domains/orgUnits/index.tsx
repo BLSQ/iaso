@@ -223,7 +223,12 @@ export const OrgUnits: FunctionComponent = () => {
                             <OrgUnitsSearchMapLibre
                                 searches={searches}
                                 getSearchColor={getSearchColor}
-                                clusters={params.isClusterActive !== 'false'}
+                                // the user's pick, else the map lets the server decide
+                                clusters={
+                                    params.isClusterActive === undefined
+                                        ? undefined
+                                        : params.isClusterActive === 'true'
+                                }
                                 onClustersChange={handleClustersChange}
                             />
                         </Box>

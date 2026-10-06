@@ -29,6 +29,8 @@ describe('tileJSONBounds', () => {
         count: 0,
         located_count: 0,
         outside_fit_bounds: 0,
+        org_unit_types: [],
+        cluster: null,
     };
 
     it('turns TileJSON bounds into MapLibre bounds', () => {

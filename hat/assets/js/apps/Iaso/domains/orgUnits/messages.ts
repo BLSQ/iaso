@@ -164,6 +164,14 @@ const MESSAGES = defineMessages({
         defaultMessage: '{count} org units, click to zoom in',
         id: 'iaso.orgUnits.mapLibreClusterCount',
     },
+    mapLibreClusterOfType: {
+        defaultMessage: '{count} × {type}, click to zoom in',
+        id: 'iaso.orgUnits.mapLibreClusterOfType',
+    },
+    mapLibreNoType: {
+        defaultMessage: 'No type',
+        id: 'iaso.orgUnits.mapLibreNoType',
+    },
     mapLibreClusters: {
         defaultMessage: 'Clusters',
         id: 'iaso.orgUnits.mapLibreClusters',

@@ -58,6 +58,11 @@ GEOMETRY_COLUMN = "mvt_geom"
 POINT_COUNT_COLUMN = "point_count"
 #: largest `cluster` cell, in screen pixels (a quarter of a tile)
 MAX_CLUSTER_PX = TILE_SIZE_PX // 4
+#: `cluster=auto`: the tiles are clustered by `AUTO_CLUSTER_PX` when more than `AUTO_CLUSTER_MIN_LOCATED` rows
+#: are located (unlocated rows are never drawn). Below, they hold every point as is.
+AUTO_CLUSTER = "auto"
+AUTO_CLUSTER_PX = 48
+AUTO_CLUSTER_MIN_LOCATED = 10_000
 #: from this zoom points are never clustered: points that close are the same place (duplicates, a building
 #: drawn twice), which zooming in can't separate - the client lists them instead
 CLUSTER_MAX_ZOOM = 15
@@ -326,34 +331,50 @@ def settings_cursor(**settings):
             cursor.execute(f"SELECT {set_config}", [v for name, value in zip(names, previous) for v in (name, value)])
 
 
-def validated_cluster_px(value) -> Optional[int]:
-    """The `cluster` query param: the side of a cluster cell in screen pixels, `None` when not clustering."""
+def validated_cluster_px(value, allow_auto: bool = False):
+    """The `cluster` query param: the side of a cluster cell in screen pixels, `None` when not clustering - or
+    `AUTO_CLUSTER` where `allow_auto` (TileJSON, which decides for its tiles: see `auto_cluster_px`)."""
     if value in (None, ""):
         return None
+    if allow_auto and value == AUTO_CLUSTER:
+        return AUTO_CLUSTER
     try:
         cluster_px = int(value)
     except ValueError:
         cluster_px = 0
     if not 1 <= cluster_px <= MAX_CLUSTER_PX:
         raise bad_request(
-            f"Invalid value for 'cluster': {value!r}", f"An integer number of pixels, from 1 to {MAX_CLUSTER_PX}."
+            f"Invalid value for 'cluster': {value!r}",
+            f"An integer number of pixels, from 1 to {MAX_CLUSTER_PX}"
+            + (f", or {AUTO_CLUSTER!r}." if allow_auto else "."),
         )
     return cluster_px
+
+
+def auto_cluster_px(located_count: int) -> Optional[int]:
+    """What `cluster=auto` picks for a query with `located_count` rows to draw."""
+    return AUTO_CLUSTER_PX if located_count > AUTO_CLUSTER_MIN_LOCATED else None
 
 
 def _quoted(name: str) -> str:
     return connection.ops.quote_name(name)
 
 
-def _clustered_features_sql(columns, cell: int) -> str:
+def _clustered_features_sql(columns, cell: int, cluster_by: Optional[str] = None) -> str:
     """The rows of `tile_rows` with their points grouped by `cell` x `cell` squares of the tile grid: one feature per
     square, at the points' mean position. A lone point stays itself; a square of several points has their count
     (`POINT_COUNT_COLUMN`) and neither a feature id nor properties, which are those of one org unit.
 
     Points are only kept inside the tile: one on the edge of two tiles overlaps both, and a cluster must count it
-    once. Grouping happens in tile grid coordinates, so squares never straddle tiles."""
+    once. Grouping happens in tile grid coordinates, so squares never straddle tiles.
+
+    With `cluster_by` (one of `columns`), the points of a square are grouped by that column too: one cluster per
+    value, which keeps it - e.g. one per org unit type, which a map can color and filter like single points."""
     single = "count(*) = 1"
-    properties = ", ".join(f"CASE WHEN {single} THEN (array_agg({_quoted(c)}))[1] END AS {_quoted(c)}" for c in columns)
+    properties = ", ".join(
+        _quoted(c) if c == cluster_by else f"CASE WHEN {single} THEN (array_agg({_quoted(c)}))[1] END AS {_quoted(c)}"
+        for c in columns
+    )
     # an empty point (some locations are `POINT EMPTY`) has nothing to draw. Locations are 3D (`POINT Z`) and
     # collapsed shapes 2D: `ST_Collect` takes either, not both, hence `ST_Force2D`.
     is_point = f"ST_GeometryType({GEOMETRY_COLUMN}) = 'ST_Point' AND NOT ST_IsEmpty({GEOMETRY_COLUMN})"
@@ -371,7 +392,7 @@ def _clustered_features_sql(columns, cell: int) -> str:
             CASE WHEN {single} THEN min({FEATURE_ID_COLUMN}) END,
             CASE WHEN NOT {single} THEN count(*) END
         FROM tile_rows WHERE {is_point} AND {in_tile}
-        GROUP BY floor({x} / {cell}), floor({y} / {cell})"""
+        GROUP BY floor({x} / {cell}), floor({y} / {cell}){f", {_quoted(cluster_by)}" if cluster_by else ""}"""
 
 
 def _columns(values_queryset):
@@ -381,16 +402,18 @@ def _columns(values_queryset):
     return [name for name in names if name not in (GEOMETRY_COLUMN, FEATURE_ID_COLUMN)]
 
 
-def render_tile(values_queryset, layer_name: str, tile: Tile, cluster_px: Optional[int] = None) -> bytes:
+def render_tile(
+    values_queryset, layer_name: str, tile: Tile, cluster_px: Optional[int] = None, cluster_by: Optional[str] = None
+) -> bytes:
     """Encode the rows of `tile_queryset()` as one MVT layer, in postgres.
 
     With `cluster_px` (below `CLUSTER_MAX_ZOOM`), points are clustered by squares of that many screen pixels (see
-    `_clustered_features_sql`). A tile holds at most `MAX_TILE_FEATURES`: past it, a `TILE_META_LAYER` is added
+    `_clustered_features_sql`), and by `cluster_by` too when given. A tile holds at most `MAX_TILE_FEATURES`: past it, a `TILE_META_LAYER` is added
     (MVT layers concatenate as bytes) with the number of features the tile should have held."""
     sql, params = values_queryset.query.sql_with_params()
     if cluster_px and tile.z < CLUSTER_MAX_ZOOM:
         cell = cluster_px * EXTENT // TILE_SIZE_PX
-        features = _clustered_features_sql(_columns(values_queryset), cell)
+        features = _clustered_features_sql(_columns(values_queryset), cell, cluster_by)
     else:
         # `ST_AsMVTGeom` gives no geometry for what doesn't reach the tile: not a feature (nor counted as one)
         features = f"SELECT * FROM tile_rows WHERE {GEOMETRY_COLUMN} IS NOT NULL"
@@ -430,14 +453,26 @@ class Box2D(Func):
     output_field = _UncastGeometryField()
 
 
-def summary(queryset, geometry: Expression) -> dict:
+def summary(queryset, geometry: Expression, count_by: Optional[str] = None) -> dict:
     """What a map needs to know of the whole `queryset` before drawing it, in one query:
 
     - `count`, `located_count`: how many rows, how many with a `geometry` (the others aren't on the map);
     - `bounds`: the extent of `geometry` - where tiles may hold something (`None` when nothing is located);
     - `fit_bounds`: where to look - the extent without the far outliers (see `FIT_BOUNDS_MARGIN`), and
-      `outside_fit_bounds`, how many were left out."""
-    boxes_sql, params = queryset.order_by().annotate(box=Box2D(geometry)).values("box").query.sql_with_params()
+      `outside_fit_bounds`, how many were left out;
+    - with `count_by` (a column), `counts_by`: `count` and `located_count` per value of that column, the most
+      frequent first - e.g. per org unit type, for a legend. Rows already read: a few ms more."""
+    boxes = queryset.order_by().annotate(box=Box2D(geometry))
+    if count_by:
+        boxes = boxes.annotate(count_key=F(count_by))
+    boxes_sql, params = boxes.values("box", *(["count_key"] if count_by else [])).query.sql_with_params()
+    counts_by = (
+        """, (SELECT COALESCE(json_agg(json_build_object('value', count_key, 'count', n, 'located_count', l)
+                                ORDER BY n DESC, count_key), '[]')
+             FROM (SELECT count_key, count(*) AS n, count(box) AS l FROM boxes GROUP BY count_key) g)"""
+        if count_by
+        else ""
+    )
     low, high = FIT_BOUNDS_QUANTILE, 1 - FIT_BOUNDS_QUANTILE
     cx = "(ST_XMin(box) + ST_XMax(box)) / 2"
     cy = "(ST_YMin(box) + ST_YMax(box)) / 2"
@@ -459,18 +494,22 @@ def summary(queryset, geometry: Expression) -> dict:
             SELECT box, {cx} BETWEEN west AND east AND {cy} BETWEEN south AND north AS inside FROM boxes, w
         )
         SELECT count(*), count(box), ST_Extent(box), ST_Extent(box) FILTER (WHERE inside),
-               count(box) FILTER (WHERE NOT inside)
+               count(box) FILTER (WHERE NOT inside){counts_by}
         FROM flagged"""
     with settings_cursor(**QUERY_SETTINGS) as cursor:
         cursor.execute(query, params)
-        count, located_count, extent, fit_extent, outside = cursor.fetchone()
-    return {
+        count, located_count, extent, fit_extent, outside, *by = cursor.fetchone()
+    result = {
         "count": count,
         "located_count": located_count,
         "bounds": _box_bounds(extent),
         "fit_bounds": _box_bounds(fit_extent),
         "outside_fit_bounds": outside or 0,
     }
+    if count_by:
+        # a json column: psycopg2 decodes it
+        result["counts_by"] = by[0]
+    return result
 
 
 def _box_bounds(box: Optional[str]) -> Optional[list]:

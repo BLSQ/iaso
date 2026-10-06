@@ -1,13 +1,11 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Layer, Source } from '@vis.gl/react-maplibre';
 import { TileJSON } from './orgUnitTiles';
-import { searchResultsLayers } from './searchResultsLayers';
+import { searchResultsLayers, SearchStyle } from './searchResultsLayers';
 
-type Props = {
+type Props = SearchStyle & {
     id: string;
     tileJSON: TileJSON;
-    color: string;
-    clusters: boolean;
 };
 
 /**
@@ -19,10 +17,14 @@ export const SearchResultsLayer: FunctionComponent<Props> = ({
     tileJSON,
     color,
     clusters,
+    filter,
+    shapeSortKey,
 }) => {
+    // filters and colors change without a new source: no tile is fetched again
     const layers = useMemo(
-        () => searchResultsLayers(id, color, clusters),
-        [id, color, clusters],
+        () =>
+            searchResultsLayers(id, { color, clusters, filter, shapeSortKey }),
+        [id, color, clusters, filter, shapeSortKey],
     );
     return (
         <Source

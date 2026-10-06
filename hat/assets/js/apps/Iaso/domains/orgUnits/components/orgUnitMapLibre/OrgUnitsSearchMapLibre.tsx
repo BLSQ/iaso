@@ -1,6 +1,7 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -10,6 +11,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import isEqual from 'lodash/isEqual';
 import type { MapLibreEvent, Map as MapLibreMap$ } from 'maplibre-gl';
 import { MapLibreMap, unionBounds } from '../../../../components/maps/maplibre';
+import { useGetColors } from '../../../../hooks/useGetColors';
 import MESSAGES from '../../messages';
 import { Search } from '../../types/search';
 import {
@@ -17,6 +19,13 @@ import {
     OrgUnitTilesFilters,
     tileJSONBounds,
 } from './orgUnitTiles';
+import {
+    hiddenTypesFilter,
+    typeColor,
+    typeColorExpression,
+    typeDepthExpression,
+    typeKey,
+} from './orgUnitTypeStyle';
 import { SearchResultsLayer } from './SearchResultsLayer';
 import {
     anchorLayers,
@@ -27,6 +36,7 @@ import {
 } from './searchResultsLayers';
 import {
     CutTiles,
+    LegendType,
     SearchResults,
     SearchResultsPanel,
 } from './SearchResultsPanel';
@@ -36,9 +46,11 @@ import { useOrgUnitTileJSONs } from './useOrgUnitTileJSON';
 
 /** The only tile property: features carry their id, the popups fetch the rest on demand */
 const TILE_FIELDS = 'org_unit_type_id';
-/** `cluster` of the tiles, in pixels: clusters, or only the points a screen can't tell apart */
+/** `cluster` of the tiles, in pixels: clusters, or only the points a screen can't tell apart - when the user
+ * picks; else `auto`, the server's pick from the number of results */
 const CLUSTER_PX = 48;
 const THINNING_PX = 2;
+const AUTO_CLUSTER = 'auto';
 /** `CLUSTER_MAX_ZOOM` of iaso/api/v3/common/mvt.py: no clusters from it */
 const CLUSTER_MAX_ZOOM = 15;
 /** at most this many org units listed in a click's popup */
@@ -46,10 +58,20 @@ const MAX_POPUP_ORG_UNITS = 20;
 
 const sourceId = (index: number) => `search-results-${index}`;
 
+/** The `cluster` of the tiles: the user's pick, else the server's */
+const clusterParam = (clusters?: boolean): string | number => {
+    if (clusters === undefined) {
+        return AUTO_CLUSTER;
+    }
+    return clusters ? CLUSTER_PX : THINNING_PX;
+};
+
 type Hovered = {
     source: string;
     id?: number;
     count?: number;
+    /** of a cluster, when clustered by type */
+    typeId?: number | null;
     longitude: number;
     latitude: number;
 };
@@ -57,21 +79,28 @@ type Hovered = {
 type Selected = { ids: number[]; longitude: number; latitude: number };
 
 const sameFeature = (a?: Hovered, b?: Hovered) =>
-    a?.source === b?.source && a?.id === b?.id && a?.count === b?.count;
+    a?.source === b?.source &&
+    a?.id === b?.id &&
+    a?.count === b?.count &&
+    a?.typeId === b?.typeId;
 
 const anchors = anchorLayers();
 
 type Props = {
     searches: Search[];
     getSearchColor: (index: number) => string;
-    clusters: boolean;
+    /** the user's pick - undefined: the server's, from the number of results */
+    clusters?: boolean;
     onClustersChange: (clusters: boolean) => void;
 };
 
 /**
- * The results of the org unit searches on a MapLibre map, as vector tiles: one source per search, in its color.
- * No location limit: the tiles hold every result, clustered (or thinned) at low zoom by the server, and the
- * map only asks for the tiles in view. The tiles carry ids only: hovering and clicking fetch what they show.
+ * The results of the org unit searches on a MapLibre map, as vector tiles: one source per search. No location
+ * limit: the tiles hold every result, clustered (or thinned) at low zoom by the server, and the map only asks for
+ * the tiles in view. The tiles carry ids and types only: hovering and clicking fetch what they show.
+ *
+ * Several searches are each drawn in their color. A single search is drawn by org unit type: a color per type,
+ * its clusters split by type, and a legend whose types can be hidden - by filtering the tiles already there.
  */
 export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
     searches,
@@ -85,6 +114,9 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
     const hoveredRef = useRef<Hovered>();
     const [selected, setSelected] = useState<Selected>();
     const [cutTiles, setCutTiles] = useState<Record<string, CutTiles>>({});
+    // the `typeKey`s of the types the legend hides
+    const [hiddenTypes, setHiddenTypes] = useState<number[]>([]);
+    const { data: palette = [] } = useGetColors(true);
 
     // the searches being created aren't searched yet (as in useGetApiParams), the others keep their color
     const active = useMemo(
@@ -98,17 +130,60 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
                 .filter(({ index }) => !searches[index].isAdded),
         [searches, getSearchColor],
     );
+    const byType = active.length === 1;
     const tileFilters: OrgUnitTilesFilters[] = useMemo(
         () =>
             active.map(({ filters }) => ({
                 ...filters,
                 fields: TILE_FIELDS,
-                cluster: clusters ? CLUSTER_PX : THINNING_PX,
+                cluster: clusterParam(clusters),
+                // clusters keep their type: colored and hidden with it
+                cluster_by: byType ? 'org_unit_type_id' : undefined,
             })),
-        [active, clusters],
+        [active, clusters, byType],
     );
     const tileJSONQueries = useOrgUnitTileJSONs(tileFilters);
     const tileJSONs = tileJSONQueries.map(query => query.data);
+    const types = byType ? tileJSONs[0]?.org_unit_types : undefined;
+
+    // a new search shows all its types again
+    const searchKey = byType ? JSON.stringify(active[0].filters) : '';
+    useEffect(() => setHiddenTypes([]), [searchKey]);
+
+    const typeStyle = useMemo(
+        () =>
+            types && {
+                color: typeColorExpression(types, palette),
+                filter: hiddenTypesFilter(hiddenTypes),
+                shapeSortKey: typeDepthExpression(types),
+            },
+        [types, palette, hiddenTypes],
+    );
+    const legend: LegendType[] | undefined = useMemo(
+        () =>
+            types?.map(type => ({
+                key: typeKey(type.id),
+                name: type.name,
+                color: typeColor(type.id, palette),
+                located_count: type.located_count,
+                hidden: hiddenTypes.includes(typeKey(type.id)),
+            })),
+        [types, palette, hiddenTypes],
+    );
+    const toggleType = useCallback(
+        (key: number) =>
+            setHiddenTypes(hidden =>
+                hidden.includes(key)
+                    ? hidden.filter(other => other !== key)
+                    : [...hidden, key],
+            ),
+        [],
+    );
+    // the panel shows what the tiles are: the user's pick, else the server's
+    const isClustered = (cluster?: number | null) =>
+        (cluster ?? 0) > THINNING_PX;
+    const showsClusters =
+        clusters ?? tileJSONs.some(tileJSON => isClustered(tileJSON?.cluster));
 
     const bounds = useMemo(
         () =>
@@ -169,6 +244,7 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
                     source: feature.source,
                     id: feature.id as number | undefined,
                     count: feature.properties?.[POINT_COUNT],
+                    typeId: feature.properties?.org_unit_type_id ?? null,
                     longitude: event.lngLat.lng,
                     latitude: event.lngLat.lat,
                 },
@@ -258,8 +334,11 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
             tileJSON: tileJSONs[i],
             isLoading: tileJSONQueries[i].isLoading,
             cut: cutTiles[sourceId(index)],
+            legend: byType ? legend : undefined,
         }),
     );
+    const hoveredType =
+        hovered && types?.find(type => type.id === hovered.typeId);
 
     return (
         <MapLibreMap
@@ -273,8 +352,9 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
         >
             <SearchResultsPanel
                 results={results}
-                clusters={clusters}
+                clusters={showsClusters}
                 onClustersChange={onClustersChange}
+                onToggleType={toggleType}
                 showsAll={showAll}
                 onShowAllChange={setShowAll}
             />
@@ -290,8 +370,10 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
                             key={tileJSON.tiles[0]}
                             id={sourceId(index)}
                             tileJSON={tileJSON}
-                            color={color}
-                            clusters={clusters}
+                            color={typeStyle?.color ?? color}
+                            filter={typeStyle?.filter}
+                            shapeSortKey={typeStyle?.shapeSortKey}
+                            clusters={isClustered(tileJSON.cluster)}
                         />
                     )
                 );
@@ -305,13 +387,20 @@ export const OrgUnitsSearchMapLibre: FunctionComponent<Props> = ({
                     anchor="bottom"
                     offset={12}
                 >
-                    {hovered.id !== undefined ? (
+                    {hovered.id !== undefined && (
                         <HoveredOrgUnitName id={hovered.id} />
-                    ) : (
-                        formatMessage(MESSAGES.mapLibreClusterCount, {
-                            count: String(hovered.count),
-                        })
                     )}
+                    {hovered.id === undefined &&
+                        (hoveredType
+                            ? formatMessage(MESSAGES.mapLibreClusterOfType, {
+                                  count: String(hovered.count),
+                                  type:
+                                      hoveredType.name ??
+                                      formatMessage(MESSAGES.mapLibreNoType),
+                              })
+                            : formatMessage(MESSAGES.mapLibreClusterCount, {
+                                  count: String(hovered.count),
+                              }))}
                 </Popup>
             )}
             {selected && (

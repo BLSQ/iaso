@@ -12,6 +12,15 @@ export type OrgUnitTilesFilters = Record<
     string | number | boolean | undefined
 >;
 
+/** How many results of one org unit type (`id` null: without type) a query has */
+export type OrgUnitTypeCount = {
+    id: number | null;
+    name: string | null;
+    depth: number | null;
+    count: number;
+    located_count: number;
+};
+
 /** What `/api/v3/orgunits/tilejson/` says about the tiles of a query (TileJSON 3.0.0) */
 export type TileJSON = {
     tilejson: string;
@@ -30,6 +39,10 @@ export type TileJSON = {
     fit_bounds?: [number, number, number, number];
     /** how many located org units `fit_bounds` leaves out */
     outside_fit_bounds: number;
+    /** the same counts per org unit type, the most frequent first */
+    org_unit_types: OrgUnitTypeCount[];
+    /** how the tiles are clustered, in pixels: null when they aren't (what `cluster=auto` picked) */
+    cluster: number | null;
 };
 
 /** The TileJSON of the org unit tiles matching `filters` */

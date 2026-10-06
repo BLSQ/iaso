@@ -29,17 +29,21 @@ vi.mock('@vis.gl/react-maplibre', () => ({
             {children}
         </div>
     ),
-    Layer: ({ id, paint }: MockProps) => (
+    Layer: ({ id, paint, filter }: MockProps) => (
         <div
             data-testid="layer"
             data-id={id}
-            data-color={paint?.['fill-color'] ?? ''}
+            data-color={JSON.stringify(paint?.['fill-color'] ?? '')}
+            data-filter={JSON.stringify(filter ?? null)}
         />
     ),
     Popup: ({ children }: MockProps) => <div>{children}</div>,
 }));
 vi.mock('./useOrgUnitTileJSON', () => ({
     useOrgUnitTileJSONs: mockUseOrgUnitTileJSONs,
+}));
+vi.mock('../../../../hooks/useGetColors', () => ({
+    useGetColors: () => ({ data: ['#p0', '#p1', '#p2'] }),
 }));
 
 const tileJSON = (overrides: Partial<TileJSON>): TileJSON => ({
@@ -51,6 +55,8 @@ const tileJSON = (overrides: Partial<TileJSON>): TileJSON => ({
     count: 0,
     located_count: 0,
     outside_fit_bounds: 0,
+    org_unit_types: [],
+    cluster: null,
     ...overrides,
 });
 
@@ -72,12 +78,13 @@ const facilities = tileJSON({
 
 const colors = ['#111111', '#222222', '#333333'];
 
-const renderMap = (searches: Search[], clusters = true) =>
+/** `clusters`: the user's pick, `auto` when they made none */
+const renderMap = (searches: Search[], clusters: boolean | 'auto' = true) =>
     renderWithThemeAndIntlProvider(
         <OrgUnitsSearchMapLibre
             searches={searches}
             getSearchColor={index => colors[index]}
-            clusters={clusters}
+            clusters={clusters === 'auto' ? undefined : clusters}
             onClustersChange={vi.fn()}
         />,
     );
@@ -128,8 +135,8 @@ describe('OrgUnitsSearchMapLibre', () => {
                 /^search-results-\d+-fill$/.test(layer.dataset.id ?? ''),
             );
         expect(fills.map(layer => layer.dataset.color)).toEqual([
-            '#111111',
-            '#333333',
+            '"#111111"',
+            '"#333333"',
         ]);
     });
 
@@ -160,5 +167,116 @@ describe('OrgUnitsSearchMapLibre', () => {
         expect(
             screen.getByText('Not applied on this map: hasInstances'),
         ).toBeInTheDocument();
+    });
+
+    it('lets the server decide whether to cluster, unless the user picked', () => {
+        mockUseOrgUnitTileJSONs.mockReturnValue([
+            { data: { ...kwilu, cluster: 48 }, isLoading: false },
+        ]);
+        renderMap([{ levels: '7' }], 'auto');
+        expect(mockUseOrgUnitTileJSONs.mock.calls[0][0][0].cluster).toBe(
+            'auto',
+        );
+        // the switch shows what the server picked
+        expect(
+            screen.getByRole('checkbox', { name: 'Clusters' }),
+        ).toBeChecked();
+    });
+
+    describe('a single search', () => {
+        const byType = {
+            ...kwilu,
+            cluster: 48,
+            org_unit_types: [
+                {
+                    id: 42,
+                    name: 'Village',
+                    depth: 4,
+                    count: 27861,
+                    located_count: 25796,
+                },
+                {
+                    id: 41,
+                    name: 'Health facility',
+                    depth: 4,
+                    count: 6486,
+                    located_count: 6120,
+                },
+                {
+                    id: null,
+                    name: null,
+                    depth: null,
+                    count: 3,
+                    located_count: 1,
+                },
+            ],
+        };
+        const fill = () =>
+            screen
+                .getAllByTestId('layer')
+                .find(
+                    layer => layer.dataset.id === 'search-results-0-fill',
+                ) as HTMLElement;
+
+        beforeEach(() => {
+            mockUseOrgUnitTileJSONs.mockReturnValue([
+                { data: byType, isLoading: false },
+            ]);
+        });
+
+        it('is drawn by org unit type, its clusters split by type', () => {
+            renderMap([{ levels: '7' }], 'auto');
+            expect(mockUseOrgUnitTileJSONs.mock.calls[0][0][0].cluster_by).toBe(
+                'org_unit_type_id',
+            );
+            // colors by type id from the palette (42 % 3, 41 % 3), grey without type
+            expect(JSON.parse(fill().dataset.color as string)).toEqual([
+                'match',
+                ['coalesce', ['get', 'org_unit_type_id'], -1],
+                42,
+                '#p0',
+                41,
+                '#p2',
+                '#9e9e9e',
+            ]);
+            expect(screen.getByText('Village')).toBeInTheDocument();
+            expect(screen.getByText('25,796')).toBeInTheDocument();
+            expect(screen.getByText('No type')).toBeInTheDocument();
+        });
+
+        it('hides and shows a type from the legend, without new tiles', () => {
+            renderMap([{ levels: '7' }], 'auto');
+            const tileRequests = mockUseOrgUnitTileJSONs.mock.calls.length;
+            fireEvent.click(screen.getByRole('checkbox', { name: /Village/ }));
+            expect(JSON.parse(fill().dataset.filter as string)[2]).toEqual([
+                '!',
+                [
+                    'in',
+                    ['coalesce', ['get', 'org_unit_type_id'], -1],
+                    ['literal', [42]],
+                ],
+            ]);
+            expect(
+                screen.getByRole('checkbox', { name: /Village/ }),
+            ).not.toBeChecked();
+            // the same tiles, filtered
+            expect(
+                mockUseOrgUnitTileJSONs.mock.calls
+                    .slice(tileRequests)
+                    .every(([filters]) => filters[0].cluster === 'auto'),
+            ).toBe(true);
+            fireEvent.click(screen.getByRole('checkbox', { name: /Village/ }));
+            expect(JSON.parse(fill().dataset.filter as string)[0]).toBe(
+                'match',
+            );
+        });
+    });
+
+    it('keeps several searches in their colors, without legend', () => {
+        renderMap([{ levels: '7' }, { orgUnitTypeId: '41' }]);
+        expect(
+            mockUseOrgUnitTileJSONs.mock.calls[0][0][0].cluster_by,
+        ).toBeUndefined();
+        expect(screen.queryByText('No type')).not.toBeInTheDocument();
     });
 });

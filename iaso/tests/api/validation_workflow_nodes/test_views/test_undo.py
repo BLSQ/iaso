@@ -25,7 +25,7 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         res = self.client.post(
             reverse("validation_workflow_nodes-undo", kwargs={"instance_id": self.instance.id, "pk": pk_node})
         )
@@ -38,13 +38,17 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_num_queries(self):
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         node = self.instance.get_next_pending_nodes().first()
         node_pk = node.pk
         # reject first node
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes().first(), self.john_wick, self.instance, approved=True, comment="LGTM"
+            self.instance.get_next_pending_nodes().first(),
+            self.john_submission,
+            self.instance,
+            approved=True,
+            comment="LGTM",
         )
 
         with self.assertNumQueries(11):
@@ -63,7 +67,7 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_undo(self):
-        self.base_test_undo(self.john_wick)
+        self.base_test_undo(self.john_submission)
 
     def test_undo_as_superuser(self):
         self.base_test_undo(self.superuser)
@@ -119,7 +123,7 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
 
         node_pk = other_node.validationnode_set.first().pk
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         res = self.client.post(
             reverse("validation_workflow_nodes-undo", kwargs={"instance_id": other_instance.id, "pk": node_pk})
         )
@@ -132,14 +136,18 @@ class ValidationNodeAPIUndoTestCase(BaseAPITestCase):
         node_pk = node.pk
         # reject first node
         ValidationWorkflowEngine.complete_node(
-            self.instance.get_next_pending_nodes().first(), self.john_wick, self.instance, approved=True, comment="LGTM"
+            self.instance.get_next_pending_nodes().first(),
+            self.john_submission,
+            self.instance,
+            approved=True,
+            comment="LGTM",
         )
 
         self.validation_workflow.delete()
         self.validation_workflow.refresh_from_db()
         self.assertIsNotNone(self.validation_workflow.deleted_at)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         res = self.client.post(
             reverse("validation_workflow_nodes-undo", kwargs={"instance_id": self.instance.id, "pk": node_pk})
         )

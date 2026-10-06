@@ -43,8 +43,8 @@ class CampaignLogsAPITestCase(APITestCase):
         p.org_units.set([self.country2])
         p.save()
         response = self.client.get(f"/api/logs/?objectId={self.c.id}&contentType=polio.campaign&limit=10")
-        j = self.assertJSONResponse(response, 401)
-        self.assertEqual(j, {"error": "Unauthorized"})
+        j = self.assertJSONResponse(response, 403)
+        self.assertEqual(j, {"error": "Forbidden"})
 
         # limit user to the other country. Cannot list
         p = self.user.iaso_profile

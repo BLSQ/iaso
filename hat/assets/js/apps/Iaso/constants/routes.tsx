@@ -510,7 +510,7 @@ export const validationWorkflowsConfigurationDetailPath = {
 export const validationWorkflowInstancesPath = {
     baseUrl: baseUrls.validationWorkflowInstances,
     routerUrl: `${baseUrls.validationWorkflowInstances}/*`,
-    permissions: [Permission.SUBMISSIONS, Permission.VALIDATION_WORKFLOWS],
+    permissions: [Permission.SUBMISSIONS],
     element: <ValidationWorkflowInstances />,
 };
 

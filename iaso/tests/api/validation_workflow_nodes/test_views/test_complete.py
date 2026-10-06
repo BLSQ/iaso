@@ -13,7 +13,7 @@ from iaso.tests.api.validation_workflow_nodes.test_views.common import BaseAPITe
 
 class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
     def test_validation(self):
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         res = self.client.post(
             reverse(
@@ -81,7 +81,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         res = self.client.post(
             reverse(
@@ -102,7 +102,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
     def test_num_queries(self):
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         instance_pk = self.instance.get_next_pending_nodes(self.validation_workflow).first().pk
         with self.assertNumQueries(10):
@@ -121,7 +121,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_reject(self):
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",
@@ -143,7 +143,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
 
         self.assertEqual(validation_node.comment, "Nope")
         self.assertEqual(validation_node.created_by, self.john_wick)
-        self.assertEqual(validation_node.updated_by, self.john_wick)
+        self.assertEqual(validation_node.updated_by, self.john_submission)
         self.assertEqual(validation_node.status, ValidationNodeStatus.REJECTED)
 
         validation_node = self.instance.validationnode_set.last()
@@ -154,7 +154,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.assertEqual(validation_node.status, ValidationNodeStatus.SUBMISSION)
 
     def test_approve(self):
-        self.base_test_approve(self.john_wick)
+        self.base_test_approve(self.john_submission)
 
     def base_test_approve(self, user):
         self.client.force_authenticate(user)
@@ -226,7 +226,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
 
         node_pk = other_node.validationnode_set.first().pk
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         res = self.client.post(
             reverse(
@@ -247,7 +247,7 @@ class ValidationNodeAPICompleteTestCase(BaseAPITestCase):
         self.validation_workflow.refresh_from_db()
         self.assertIsNotNone(self.validation_workflow.deleted_at)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         res = self.client.post(
             reverse(
                 "validation_workflow_nodes-complete",

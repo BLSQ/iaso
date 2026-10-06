@@ -120,7 +120,12 @@ class InstancesViewSet(viewsets.ViewSet):
             )
 
         else:
-            queryset = queryset.select_related("form", "created_by", "last_modified_by").annotate(
+            queryset = queryset.select_related(
+                "form",
+                "created_by",
+                "last_modified_by",
+                "form__validation_workflow",
+            ).annotate(
                 _is_reference_instance=Exists(
                     OrgUnitReferenceInstance.objects.filter(
                         org_unit_id=OuterRef("org_unit_id"),
@@ -279,6 +284,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Référence externe", "width": 20},
             {"title": "OU Code", "width": 20},
             {"title": "OU Status", "width": 20},
+            {"title": "Workflow", "width": 20},
+            {"title": "Validation Status", "width": 20},
             {"title": "parent1", "width": 20},
             {"title": "parent2", "width": 20},
             {"title": "parent3", "width": 20},
@@ -354,6 +361,12 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.org_unit.source_ref,
                 instance.org_unit.code,
                 instance.org_unit.validation_status,
+                instance.form.validation_workflow.name
+                if instance.form.validation_workflow
+                else None
+                if instance.form
+                else None,
+                instance.general_validation_status,
             ]
 
             parent = org_unit.parent
@@ -504,6 +517,9 @@ class InstancesViewSet(viewsets.ViewSet):
         # "search" branches: restricting fields there doesn't change what a file export contains.
         requested_fields = fields_param.split(",") if fields_param else None
         requested_fields_set = set(requested_fields) if requested_fields is not None else None
+        workflow_ids_param = request.GET.get("workflow_ids", None)
+        workflow_ids = workflow_ids_param.split(",") if workflow_ids_param is not None else None
+        validation_status = request.GET.get("validation_status", None)
 
         def wants_field(field_name: str) -> bool:
             return requested_fields_set is None or field_name in requested_fields_set
@@ -557,6 +573,12 @@ class InstancesViewSet(viewsets.ViewSet):
         #       one, both or None and get predictable results)
         if org_unit_status:
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
+        if workflow_ids:
+            queryset = queryset.filter(form__validation_workflow_id__in=workflow_ids)
+
+        if validation_status:
+            queryset = queryset.filter(general_validation_status=validation_status)
 
         if parquet_format:
             return self.anwser_with_parquet_file(request, filters, queryset)
@@ -663,6 +685,8 @@ class InstancesViewSet(viewsets.ViewSet):
             "deviceOwnershipId",
             "search",
             "org_unit_status",  # NEW, VALID, REJECTED
+            "workflow_ids",
+            "validation_status",
         }
         received_params = set(request.GET.keys())
 

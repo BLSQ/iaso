@@ -3767,6 +3767,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "project_color",
             "project_id",
             "status",
+            "validation_status",
+            "workflow",
             "correlation_id",
             "created_by",
             "last_modified_by",

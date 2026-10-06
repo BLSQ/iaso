@@ -792,6 +792,15 @@ class Instance(ValidationWorkflowArtefact):
             "project_color": project.color if project else None,
             "project_id": project.id if project else None,
             "status": getattr(self, "status", None),
+            "validation_status": self.general_validation_status,
+            "workflow": {
+                "id": self.form.validation_workflow.id,
+                "name": self.form.validation_workflow.name,
+            }
+            if self.form.validation_workflow
+            else None
+            if self.form
+            else None,
             "correlation_id": self.correlation_id,
             "created_by": (
                 {
@@ -865,6 +874,15 @@ class Instance(ValidationWorkflowArtefact):
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),
+            "validation_status": self.general_validation_status,
+            "workflow": {
+                "id": self.form.validation_workflow.id,
+                "name": self.form.validation_workflow.name,
+            }
+            if self.form.validation_workflow
+            else None
+            if self.form
+            else None,
             "correlation_id": self.correlation_id,
             "last_export_success_at": self.last_export_success_at.timestamp() if self.last_export_success_at else None,
             "export_id": self.export_id,

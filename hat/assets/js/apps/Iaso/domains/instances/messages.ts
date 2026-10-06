@@ -1023,6 +1023,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.downloadAll',
         defaultMessage: 'Download all',
     },
+    workflow: {
+        id: 'iaso.forms.validationWorkflow',
+        defaultMessage: 'Validation Workflow',
+    },
+    validation_status: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation Status',
+    },
 });
 
 export default MESSAGES;

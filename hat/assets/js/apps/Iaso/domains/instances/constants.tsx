@@ -2,9 +2,11 @@ import React, { FunctionComponent } from 'react';
 
 import {
     displayDateFromTimestamp,
+    Setting,
     textPlaceholder,
 } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { Instance } from 'Iaso/domains/instances/types/instance';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 import * as Permission from '../../utils/permissions';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
@@ -133,10 +135,10 @@ export const INSTANCE_METAS_FIELDS = [
         tableOrder: 1,
         type: 'info',
         renderValue: data => data.project_name || textPlaceholder,
-        Cell: settings => {
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
             const fakeProject = {
-                name: settings.row.original.project_name,
-                color: settings.row.original.project_color,
+                name: data.project_name,
+                color: data.project_color,
             };
             return <ProjectChip project={fakeProject} />;
         },
@@ -150,8 +152,7 @@ export const INSTANCE_METAS_FIELDS = [
         renderValue: data => (
             <LinkToForm formId={data.form_id} formName={data.form_name} />
         ),
-        Cell: settings => {
-            const data = settings.row.original;
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
             return (
                 <LinkToForm formId={data.form_id} formName={data.form_name} />
             );
@@ -164,8 +165,7 @@ export const INSTANCE_METAS_FIELDS = [
         tableOrder: 3,
         type: 'info',
         renderValue: data => <YesNoCell value={data.is_reference_instance} />,
-        Cell: settings => {
-            const data = settings.row.original;
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
             return <YesNoCell value={data.is_reference_instance} />;
         },
     },
@@ -197,8 +197,7 @@ export const INSTANCE_METAS_FIELDS = [
         renderValue: data => {
             return data.file_content?._version || textPlaceholder;
         },
-        Cell: settings => {
-            const data = settings.row.original;
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
             return data.file_content?._version || textPlaceholder;
         },
     },
@@ -222,8 +221,7 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'org_unit_status',
-        Cell: settings => {
-            const data = settings.row.original;
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
             return data.org_unit.validation_status;
         },
         sortable: false,
@@ -252,8 +250,7 @@ export const INSTANCE_METAS_FIELDS = [
         active: false,
         tableOrder: 10,
         type: 'info',
-        Cell: settings => {
-            const data = settings.row.original;
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
             return data.created_by
                 ? getDisplayName(data.created_by)
                 : textPlaceholder;
@@ -294,6 +291,27 @@ export const INSTANCE_METAS_FIELDS = [
         getLabelKey: data => {
             return data.deleted ? 'deleted_at' : 'updated_at';
         },
+    },
+    {
+        key: 'workflow',
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
+            if (data.workflow == null) {
+                return textPlaceholder;
+            }
+            return data.workflow.name;
+        },
+        type: 'info',
+        sortable: false,
+        active: false,
+        tableOrder: 10,
+    },
+    {
+        key: 'validation_status',
+        accessor: 'validation_status',
+        type: 'info',
+        sortable: false,
+        active: false,
+        tableOrder: 10,
     },
 ];
 

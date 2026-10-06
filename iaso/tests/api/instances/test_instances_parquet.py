@@ -374,6 +374,6 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(
             response.json(),
             {
-                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, deviceId, deviceOwnershipId, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, org_unit_status, parquet, planningIds, project_ids, referenceInstances, search, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, deviceId, deviceOwnershipId, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, org_unit_status, parquet, planningIds, project_ids, referenceInstances, search, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, validation_status, withLocation, workflow_ids"
             },
         )

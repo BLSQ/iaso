@@ -301,7 +301,7 @@ class EventHandler(BaseHandler):
                     ),
                 ]
             )
-            self.logger.error(str(event_errors))
+            self.logger.warning(str(event_errors))
 
         questions_by_name = export_status.mapping_version.form_version.questions_by_name()
 
@@ -352,7 +352,7 @@ class EventHandler(BaseHandler):
                 except Exception as error:
                     errored = True
                     event_errors.append([question_key, error])
-                    self.logger.error("ERROR Mapping" + str(error) + "question_key" + question_key)
+                    self.logger.warning("ERROR Mapping" + str(error) + "question_key" + question_key)
 
         if errored:
             return (None, event_errors)

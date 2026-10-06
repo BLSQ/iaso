@@ -16,8 +16,9 @@ import {
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import tiles from '../../../constants/mapTiles';
-import { Tile, TilesSwitchControl } from '../tools/TilesSwitchControl';
-import { rasterBasemapStyle } from './basemaps';
+import { TilesSwitchControl } from '../tools/TilesSwitchControl';
+import { BasemapList } from './BasemapList';
+import { Basemap, basemapStyle, DEFAULT_BASEMAP } from './basemaps';
 import { Bounds } from './bounds';
 import { loadMapLib } from './mapLib';
 
@@ -45,9 +46,10 @@ type Props = Omit<MapProps, 'mapStyle' | 'initialViewState' | 'mapLib'> & {
 };
 
 /**
- * Iaso's MapLibre map: react-maplibre's `<Map>` with Iaso's defaults (basemaps and their switch, controls,
- * pointer cursor over `interactiveLayerIds`). Every other `<Map>` prop is passed through, and content is
- * added declaratively as `<Source>`/`<Layer>` children, like react-leaflet layers.
+ * Iaso's MapLibre map: react-maplibre's `<Map>` with Iaso's defaults (basemaps - the Protomaps vector basemap
+ * by default - and their switch, controls, pointer cursor over `interactiveLayerIds`). Every other `<Map>` prop
+ * is passed through, and content is added declaratively as `<Source>`/`<Layer>` children, like react-leaflet
+ * layers.
  *
  * `maplibre-gl` itself is only loaded when such a map is first rendered (see `loadMapLib`).
  */
@@ -59,11 +61,8 @@ export const MapLibreMap: FunctionComponent<Props> = ({
     onMouseLeave,
     ...mapProps
 }) => {
-    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const mapStyle = useMemo(
-        () => rasterBasemapStyle(currentTile),
-        [currentTile],
-    );
+    const [basemap, setBasemap] = useState<Basemap>(DEFAULT_BASEMAP);
+    const mapStyle = useMemo(() => basemapStyle(basemap, tiles), [basemap]);
     const [isHovering, setIsHovering] = useState(false);
     const handleMouseEnter = useCallback(
         (event: MapLayerMouseEvent) => {
@@ -97,10 +96,9 @@ export const MapLibreMap: FunctionComponent<Props> = ({
         >
             <NavigationControl position="top-left" showCompass={false} />
             <ScaleControl position="bottom-left" />
-            <TilesSwitchControl
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
+            <TilesSwitchControl>
+                <BasemapList basemap={basemap} onChange={setBasemap} />
+            </TilesSwitchControl>
             <FitBoundsOnChange bounds={bounds} />
             {children}
         </Map>

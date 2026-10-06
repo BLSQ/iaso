@@ -1313,5 +1313,11 @@
     "iaso.stock.sku.dialog.delete": "¿Estás seguro de que quieres eliminar este SKU?",
     "iaso.stock.sku.update": "Actualizar SKU",
     "iaso.stock.version.dialog.delete": "¿Estás seguro de que quieres eliminar esta versión?",
-    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar."
+    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar.",
+    "iaso.tile.protomaps": "Protomaps (Bluesquare)",
+    "iaso.tile.protomaps.light": "Claro",
+    "iaso.tile.protomaps.dark": "Oscuro",
+    "iaso.tile.protomaps.white": "Blanco",
+    "iaso.tile.protomaps.grayscale": "Escala de grises",
+    "iaso.tile.protomaps.black": "Negro"
 }

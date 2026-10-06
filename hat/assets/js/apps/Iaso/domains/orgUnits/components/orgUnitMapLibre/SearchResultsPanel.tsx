@@ -56,8 +56,10 @@ export const SearchResultsPanel: FunctionComponent<Props> = ({
             sx={{
                 position: 'absolute',
                 top: 8,
-                right: 8,
-                zIndex: 500,
+                // left of the basemap switch (`TilesSwitchControl`, top right), and under it: its open menu
+                // covers the panel rather than hiding behind it
+                right: 44,
+                zIndex: 499,
                 p: 1.5,
                 width: 280,
                 maxHeight: 'calc(100% - 60px)',

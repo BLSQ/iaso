@@ -24,3 +24,33 @@ export const rasterBasemapStyle = (tile: Tile): StyleSpecification => ({
     },
     layers: [{ id: BASEMAP_ID, type: 'raster', source: BASEMAP_ID }],
 });
+
+/** Bluesquare's vector tile server: Protomaps basemap tiles, with their styles, fonts and icons */
+export const PROTOMAPS_STYLES_URL = 'https://martin.bluesquare.org/styles';
+export const PROTOMAPS_FLAVORS = [
+    'light',
+    'dark',
+    'white',
+    'grayscale',
+    'black',
+] as const;
+export type ProtomapsFlavor = (typeof PROTOMAPS_FLAVORS)[number];
+
+/** What a MapLibre map is drawn over: a Protomaps flavor, or one of the raster tiles of `constants/mapTiles` */
+export type Basemap =
+    | { kind: 'protomaps'; flavor: ProtomapsFlavor }
+    | { kind: 'raster'; key: string };
+
+export const DEFAULT_BASEMAP: Basemap = { kind: 'protomaps', flavor: 'light' };
+
+/**
+ * The map style of a basemap. A Protomaps flavor is a complete style served by the tile server (its tiles,
+ * labels and icons), passed by url; a raster basemap is built here from its tile definition.
+ */
+export const basemapStyle = (
+    basemap: Basemap,
+    rasterTiles: Record<string, Tile>,
+): StyleSpecification | string =>
+    basemap.kind === 'protomaps'
+        ? `${PROTOMAPS_STYLES_URL}/${basemap.flavor}.json`
+        : rasterBasemapStyle(rasterTiles[basemap.key]);

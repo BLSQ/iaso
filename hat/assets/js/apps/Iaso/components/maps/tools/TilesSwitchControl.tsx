@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import Layers from '@mui/icons-material/Layers';
 import { Box, SxProps, Typography } from '@mui/material';
 import { Theme } from '@mui/material/styles';
@@ -66,14 +66,25 @@ export type Tile = {
 };
 
 type Props = {
-    currentTile: Tile;
-    setCurrentTile: (newTile: Tile) => void;
     styles?: SxProps<Theme>;
-};
+} & (
+    | {
+          currentTile: Tile;
+          setCurrentTile: (newTile: Tile) => void;
+          children?: never;
+      }
+    | {
+          /** the list of basemaps to pick from, instead of the raster tiles of `constants/mapTiles` */
+          children: ReactNode;
+          currentTile?: never;
+          setCurrentTile?: never;
+      }
+);
 
 export const TilesSwitchControl: FunctionComponent<Props> = ({
     currentTile,
     setCurrentTile,
+    children,
     styles = {
         top: (theme: Theme) => theme.spacing(1),
         right: (theme: Theme) => theme.spacing(1),
@@ -111,6 +122,8 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
                     tilePopup ? classes.open : classes.closed,
                     classes.container,
                 )}
+                // other content sizes the popup itself
+                sx={children && tilePopup ? { height: 'auto' } : undefined}
             >
                 {tilePopup && (
                     <Box width={235}>
@@ -128,10 +141,14 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
                                 tooltipMessage={MESSAGES.close}
                             />
                         </Box>
-                        <TileSwitch
-                            setCurrentTile={newtile => setCurrentTile(newtile)}
-                            currentTile={currentTile}
-                        />
+                        {children ?? (
+                            <TileSwitch
+                                setCurrentTile={newtile =>
+                                    setCurrentTile?.(newtile as Tile)
+                                }
+                                currentTile={currentTile as Tile}
+                            />
+                        )}
                     </Box>
                 )}
             </Box>

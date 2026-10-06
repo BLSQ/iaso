@@ -13,6 +13,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.tile.title',
         defaultMessage: 'Map layers',
     },
+    protomaps: {
+        id: 'iaso.tile.protomaps',
+        defaultMessage: 'Protomaps (Bluesquare)',
+    },
+    protomapsLight: {
+        id: 'iaso.tile.protomaps.light',
+        defaultMessage: 'Light',
+    },
+    protomapsDark: {
+        id: 'iaso.tile.protomaps.dark',
+        defaultMessage: 'Dark',
+    },
+    protomapsWhite: {
+        id: 'iaso.tile.protomaps.white',
+        defaultMessage: 'White',
+    },
+    protomapsGrayscale: {
+        id: 'iaso.tile.protomaps.grayscale',
+        defaultMessage: 'Grayscale',
+    },
+    protomapsBlack: {
+        id: 'iaso.tile.protomaps.black',
+        defaultMessage: 'Black',
+    },
     osm: {
         id: 'iaso.tile.osm',
         defaultMessage: 'Open Street Map',

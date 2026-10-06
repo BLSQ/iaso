@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import Case, IntegerField, OuterRef, Q, Subquery, When
+from django.db.models import Case, Exists, IntegerField, OuterRef, Q, Subquery, When
 from django_filters import rest_framework as django_filters
 
 from iaso.api.common.filters import NumberInFilter
@@ -12,7 +12,7 @@ from iaso.api.v3.common.spatial_filters import (
     WithinOrgUnitFilter,
     WithinOrIntersectsBboxFilter,
 )
-from iaso.models import OrgUnit, OrgUnitType
+from iaso.models import Instance, OrgUnit, OrgUnitType
 
 from .expressions import LOCATED, PathLabelAt, located_descendants_between
 
@@ -25,14 +25,20 @@ from .expressions import LOCATED, PathLabelAt, located_descendants_between
 POSTGRES_MAX_TZ_OFFSET = timedelta(hours=16)
 
 
+def check_tz_offset(name, value):
+    if value not in (None, "") and value.utcoffset() is not None:
+        if abs(value.utcoffset()) >= POSTGRES_MAX_TZ_OFFSET:
+            raise bad_request(
+                f"Invalid value for {name!r}",
+                f"Time zone offset in {value.isoformat()!r} must be within 16 hours of UTC.",
+            )
+
+
 class SafeIsoDateTimeFilter(django_filters.IsoDateTimeFilter):
+    """With a `method`, the method itself must call `check_tz_offset` (django-filter replaces `filter()`)."""
+
     def filter(self, qs, value):
-        if value not in (None, "") and value.utcoffset() is not None:
-            if abs(value.utcoffset()) >= POSTGRES_MAX_TZ_OFFSET:
-                raise bad_request(
-                    f"Invalid value for {self.field_name!r}",
-                    f"Time zone offset in {value.isoformat()!r} must be within 16 hours of UTC.",
-                )
+        check_tz_offset(self.field_name, value)
         return super().filter(qs, value)
 
 
@@ -100,11 +106,17 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
 
     # -- FK / integer --
     org_unit_type_id = IntegerFilter(field_name="org_unit_type_id", help_text="Exact org unit type id")
+    org_unit_type_id__in = NumberInFilter(
+        field_name="org_unit_type_id", lookup_expr="in", help_text="Comma-separated list of org unit type ids"
+    )
     parent_id = IntegerFilter(
         field_name="parent_id",
         help_text="Exact parent org unit id - only its direct children (one level down), not further descendants. Equivalent to `ancestor_id__direct_children`; use `ancestor_id` instead for all descendants at any depth.",
     )
     group_id = IntegerFilter(field_name="groups__id", help_text="Org units belonging to this group id")
+    group_id__in = NumberInFilter(
+        method="filter_group_id_in", help_text="Org units belonging to at least one of these group ids"
+    )
     source_id = IntegerFilter(
         field_name="version__data_source_id", help_text="Exact data source id (via the org unit's version)"
     )
@@ -190,6 +202,20 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
         help_text="`location` is null (true) / not null (false). Equivalent to `has_location` with the opposite boolean.",
     )
 
+    # -- submissions (instances), as the org unit search filters them --
+    has_instances = django_filters.BooleanFilter(
+        method="filter_has_instances",
+        help_text="Has at least one submission (not deleted, with a file) - or none",
+    )
+    instance__created_at__gte = SafeIsoDateTimeFilter(
+        method="filter_instance_created_at",
+        help_text="Has a submission created at/after this ISO 8601 datetime (the same submission as `instance__created_at__lte`)",
+    )
+    instance__created_at__lte = SafeIsoDateTimeFilter(
+        method="filter_instance_created_at",
+        help_text="Has a submission created at/before this ISO 8601 datetime (the same submission as `instance__created_at__gte`)",
+    )
+
     # -- hierarchy (ltree `path`, no recursive query needed) --
     # Two "search modes" off the same `ancestor_id` concept, named so they read next to each other in the
     # docs instead of requiring the caller to already know `parent_id=X` means "direct children of X":
@@ -198,6 +224,10 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     ancestor_id = IntegerFilter(
         method="filter_ancestor_id",
         help_text="All descendants of this org unit id, at any depth (excluding itself) - not just its direct children. Use `ancestor_id__direct_children` instead to stop at one level down.",
+    )
+    ancestor_id__or_self = IntegerFilter(
+        method="filter_ancestor_id_or_self",
+        help_text="This org unit id and all its descendants, at any depth - the org unit filter of the org unit search.",
     )
     ancestor_id__direct_children = IntegerFilter(
         field_name="parent_id",
@@ -261,6 +291,30 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
     def filter_has_location(self, queryset, name, value):
         return queryset.filter(location__isnull=not value)
 
+    def filter_group_id_in(self, queryset, name, value):
+        # `Exists` rather than a join: an org unit in several of the groups would come back once per group
+        in_groups = OrgUnit.groups.through.objects.filter(orgunit_id=OuterRef("pk"), group_id__in=value)
+        return queryset.filter(Exists(in_groups))
+
+    def filter_has_instances(self, queryset, name, value):
+        """Same submissions as the org unit search (`build_org_units_queryset`'s `hasInstances`)."""
+        instances = Instance.objects.filter(org_unit_id=OuterRef("pk")).exclude(file="").exclude(deleted=True)
+        return queryset.filter(Exists(instances)) if value else queryset.exclude(Exists(instances))
+
+    def filter_instance_created_at(self, queryset, name, value):
+        """Both bounds apply to the same submission (like the org unit search's `dateFrom`/`dateTo`): applied
+        once, by whichever of the two filters runs first."""
+        if getattr(self, "_instance_created_at_done", False):
+            return queryset
+        self._instance_created_at_done = True
+        instances = Instance.objects.filter(org_unit_id=OuterRef("pk"))
+        for lookup in ("gte", "lte"):
+            bound = self.form.cleaned_data.get(f"instance__created_at__{lookup}")
+            if bound is not None:
+                check_tz_offset(f"instance__created_at__{lookup}", bound)
+                instances = instances.filter(**{f"created_at__{lookup}": bound})
+        return queryset.filter(Exists(instances))
+
     def _ancestor(self, org_unit_id):
         """The referenced org unit, scoped to the requesting user (`filter_for_user`), same as
         `within_org_unit`/`outside_org_unit`: a nonexistent id and one belonging to another account both get the
@@ -276,6 +330,12 @@ class OrgUnitFilterSetV3(BaseV3FilterSet):
         if ancestor.path is None:
             return queryset.none()
         return queryset.filter(path__descendants=str(ancestor.path), path__depth__gt=len(ancestor.path))
+
+    def filter_ancestor_id_or_self(self, queryset, name, value):
+        ancestor = self._ancestor(value)
+        if ancestor.path is None:
+            return queryset.filter(pk=ancestor.pk)
+        return queryset.filter(path__descendants=str(ancestor.path))
 
     def filter_ancestor_id_closest_located(self, queryset, name, value):
         """Located descendants of the given org unit with no located org unit in between.

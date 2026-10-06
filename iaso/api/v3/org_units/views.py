@@ -4,7 +4,7 @@ import tempfile
 from time import gmtime, strftime
 
 from django.conf import settings
-from django.db.models import F, Func, IntegerField, Max, Q
+from django.db.models import F, Func, IntegerField, Max
 from django.http import HttpResponse, StreamingHttpResponse
 from django.urls import reverse
 from drf_spectacular.types import OpenApiTypes
@@ -17,22 +17,30 @@ from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
+from iaso.api.org_unit_search import apply_org_unit_search
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.v3.common.dynamic_fields import KeyedColumns, PositionalColumns, tabular_columns, tabular_values
 from iaso.api.v3.common.errors import bad_request
 from iaso.api.v3.common.mvt import (
+    CLUSTER_MAX_ZOOM,
+    COLLAPSED_SHAPE_PX,
+    MAX_CLUSTER_PX,
+    MAX_TILE_FEATURES,
     MVT_MEDIA_TYPE,
+    POINT_COUNT_COLUMN,
     TILE_CACHE_MAX_AGE,
+    TILE_META_LAYER,
     FirstRendererNegotiation,
     MVTRenderer,
     Tile,
-    extent_bounds,
     render_tile,
     set_tile_cache_headers,
+    summary,
     tile_fields,
     tile_properties,
     tile_queryset,
     tilejson,
+    validated_cluster_px,
 )
 from iaso.api.v3.common.pagination import V3PagePagination
 from iaso.api.v3.common.renderers import ParquetRenderer, XLSXRenderer
@@ -73,7 +81,9 @@ PARQUET_EXTRA_FIELDS = [
 #: view-level query params handled in `OrgUnitViewSetV3` itself (filters are documented from their `help_text`).
 EXTRA_PARAMETERS = [
     OpenApiParameter(
-        name="search", type=OpenApiTypes.STR, description="Case-insensitive search across name and aliases"
+        name="search",
+        type=OpenApiTypes.STR,
+        description="Case-insensitive search across name and aliases, or `ids:1,2`, `refs:a,b`, `codes:x,y` (as the org unit search)",
     ),
     OpenApiParameter(
         name="default_version",
@@ -102,6 +112,17 @@ TILE_EXTRA_PARAMETERS = [
         description=(
             f"Any value: lets the browser reuse the tile for up to {TILE_CACHE_MAX_AGE // 60} minutes instead of "
             "revalidating it. Change it (so the tile url) whenever the org units may have changed."
+        ),
+    ),
+    OpenApiParameter(
+        name="cluster",
+        type=OpenApiTypes.INT,
+        description=(
+            f"1 to {MAX_CLUSTER_PX}: below zoom {CLUSTER_MAX_ZOOM}, group the points by squares of that many "
+            f"screen pixels - one feature per square, with a `{POINT_COUNT_COLUMN}` property and no id when it "
+            f"stands for several org units (a lone point stays itself). Shapes smaller than {COLLAPSED_SHAPE_PX} "
+            "pixels are drawn as points, so they are clustered too. A small value (1-2) only thins the points a "
+            "screen can't tell apart; a large one (40-60) makes clusters."
         ),
     ),
 ]
@@ -136,7 +157,7 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     pagination_class = V3PagePagination
     filter_backends = [V3FilterBackend, filters.OrderingFilter]
     #: query params only the tiles take (on top of the FilterSet's)
-    action_params = {"tiles": frozenset({"cache_key"}), "tilejson": frozenset({"cache_key"})}
+    action_params = {"tiles": frozenset({"cache_key", "cluster"}), "tilejson": frozenset({"cache_key", "cluster"})}
     filterset_class = OrgUnitFilterSetV3
     extra_parameters = EXTRA_PARAMETERS
     ordering_fields = ORDERING_FIELDS
@@ -165,9 +186,13 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
 
         search = self.request.query_params.get("search")
         if search:
-            # Case-insensitive only, not accent-insensitive for now (see name__icontains in filters.py -
-            # same tradeoff, deferred to avoid a migration for the `unaccent` postgres extension).
-            queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
+            # The org unit search's: `ids:1,2`, `refs:a,b`, `codes:x,y` or else name/alias. Case-insensitive only,
+            # not accent-insensitive for now (see name__icontains in filters.py - same tradeoff, deferred to avoid
+            # a migration for the `unaccent` postgres extension).
+            try:
+                queryset = apply_org_unit_search(queryset, search)
+            except ValueError:  # `ids:` with something else than ids
+                raise bad_request(f"Invalid search {search!r}", "`ids:` takes comma-separated org unit ids.")
 
         if str(self.request.query_params.get("default_version", "")).lower() == "true":
             profile = getattr(self.request.user, "iaso_profile", None)
@@ -202,7 +227,10 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
             "simplified shape, else their shape. Takes every filter of the list endpoint (e.g. "
             "`version_id`, `org_unit_type_id`, `parent_id`, `roots_for_user=true`, "
             "`ancestor_id__closest_located`) and `fields=` for the feature properties. The MVT feature id is "
-            "the org unit id. An empty body is an empty tile. Errors are JSON."
+            "the org unit id. An empty body is an empty tile. Errors are JSON. "
+            f"A tile holds at most {MAX_TILE_FEATURES} features: a cut tile has an extra `{TILE_META_LAYER}` layer, "
+            "one feature with `feature_count` (how many it should have held) and `kept`. A tile taking too long "
+            "is a 503."
         ),
         parameters=[*TILE_PATH_PARAMETERS, *TILE_EXTRA_PARAMETERS],
         filters=True,
@@ -219,11 +247,18 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         """Built like `list()` - same scoping, same FilterSet - then encoded by postgres (see
         `iaso.api.v3.common.mvt`): nothing but the tile bytes goes through python."""
         tile = Tile.validated(z, x, y)
+        cluster_px = validated_cluster_px(request.query_params.get("cluster"))
         queryset, serializer = self._tile_source(request)
         values = tile_queryset(
-            queryset, drawn_geometry(tile), tile_properties(serializer), tile, geography_columns=GEOGRAPHY_COLUMNS
+            queryset,
+            drawn_geometry(tile, collapse_px=COLLAPSED_SHAPE_PX if cluster_px else None),
+            tile_properties(serializer),
+            tile,
+            geography_columns=GEOGRAPHY_COLUMNS,
+            # a collapsed shape is a point inside the shape: the shape tells which tiles may hold it
+            filter_geometry=drawn_geometry(tile) if cluster_px else None,
         )
-        response = HttpResponse(render_tile(values, TILE_LAYER), content_type=MVT_MEDIA_TYPE)
+        response = HttpResponse(render_tile(values, TILE_LAYER, tile, cluster_px), content_type=MVT_MEDIA_TYPE)
         set_tile_cache_headers(response, request.query_params.get("cache_key"))
         return response
 
@@ -232,8 +267,11 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         description=(
             "Describes the tiles of `tiles/{z}/{x}/{y}/` for the same query params, so a map client can use them on "
             "their own: the tile url (those params included), the zoom range, the feature properties and `bounds`, "
-            "the extent of the matching org units (left out when none is located) - to fit the map to them, and "
-            "which MapLibre also uses to skip the tiles outside. Pass it as a vector source's `url`."
+            "the extent of the matching org units (left out when none is located), which MapLibre uses to skip the "
+            "tiles outside. Pass it as a vector source's `url`. On top of TileJSON: `count` and `located_count` "
+            "(how many org units match, how many are on the map), and `fit_bounds`, where to look: the extent "
+            "without the far outliers (e.g. a village geolocated on another continent), `outside_fit_bounds` of "
+            "them left out."
         ),
         parameters=TILE_EXTRA_PARAMETERS,
         filters=True,
@@ -241,14 +279,21 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     )
     @action(detail=False, url_path="tilejson", renderer_classes=[JSONRenderer])
     def tilejson(self, request):
+        validated_cluster_px(request.query_params.get("cluster"))
         queryset, serializer = self._tile_source(request)
         # the tiles url, with every query param of this request (filters, `fields`, `cache_key`)
         tiles_url = request.build_absolute_uri(reverse("orgunits_v3-tiles", kwargs={"z": 0, "x": 0, "y": 0}))
         tiles_url = tiles_url.replace("/0/0/0/", "/{z}/{x}/{y}/")
         if request.GET:
             tiles_url += "?" + request.GET.urlencode(safe=",")
-        bounds = extent_bounds(queryset, extent_geometry())
-        response = Response(tilejson(tiles_url, TILE_LAYER, tile_fields(serializer), bounds))
+        fields = tile_fields(serializer)
+        if "cluster" in request.query_params:
+            fields[POINT_COUNT_COLUMN] = "Number of org units of a cluster (only set on clusters, which have no id)"
+        about = summary(queryset, extent_geometry())
+        document = tilejson(tiles_url, TILE_LAYER, fields, about.pop("bounds"))
+        if about["fit_bounds"] is None:
+            del about["fit_bounds"]
+        response = Response({**document, **about})
         set_tile_cache_headers(response, request.query_params.get("cache_key"))
         return response
 

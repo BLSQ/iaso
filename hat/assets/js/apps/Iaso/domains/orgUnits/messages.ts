@@ -132,6 +132,42 @@ const MESSAGES = defineMessages({
             'MVT: vector tiles from /api/v3/orgunits/tiles/, described (url, bounds) by /api/v3/orgunits/tilejson/',
         id: 'iaso.orgUnits.mapLibreApiMvt',
     },
+    mapLibreSearch: {
+        defaultMessage: 'Search {index}',
+        id: 'iaso.orgUnits.mapLibreSearch',
+    },
+    mapLibreResultsCount: {
+        defaultMessage: '{count} results, {located} on the map',
+        id: 'iaso.orgUnits.mapLibreResultsCount',
+    },
+    mapLibreOutliers: {
+        defaultMessage: '{count} far from the others',
+        id: 'iaso.orgUnits.mapLibreOutliers',
+    },
+    mapLibreShowAll: {
+        defaultMessage: 'Show all',
+        id: 'iaso.orgUnits.mapLibreShowAll',
+    },
+    mapLibreFitResults: {
+        defaultMessage: 'Fit to the results',
+        id: 'iaso.orgUnits.mapLibreFitResults',
+    },
+    mapLibreUnsupported: {
+        defaultMessage: 'Not applied on this map: {keys}',
+        id: 'iaso.orgUnits.mapLibreUnsupported',
+    },
+    mapLibreCutTiles: {
+        defaultMessage: 'Too many results here: {kept} of {count} shown, zoom in',
+        id: 'iaso.orgUnits.mapLibreCutTiles',
+    },
+    mapLibreClusterCount: {
+        defaultMessage: '{count} org units, click to zoom in',
+        id: 'iaso.orgUnits.mapLibreClusterCount',
+    },
+    mapLibreClusters: {
+        defaultMessage: 'Clusters',
+        id: 'iaso.orgUnits.mapLibreClusters',
+    },
     parents: {
         defaultMessage: 'Parents',
         id: 'iaso.orgUnits.parents',

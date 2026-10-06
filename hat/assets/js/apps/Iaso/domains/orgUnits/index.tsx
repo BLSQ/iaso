@@ -21,6 +21,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
+import { OrgUnitsSearchMapLibre } from './components/orgUnitMapLibre/OrgUnitsSearchMapLibre';
 import { OrgUnitsMap } from './components/OrgUnitsMap';
 import { TableList } from './components/TableList';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
@@ -134,6 +135,18 @@ export const OrgUnits: FunctionComponent = () => {
         },
         [navigate],
     );
+    const handleClustersChange = useCallback(
+        (isClusterActive: boolean) => {
+            navigate(
+                makeRedirectionUrl(baseUrl, {
+                    ...params,
+                    isClusterActive: `${isClusterActive}`,
+                }),
+                { replace: true },
+            );
+        },
+        [params, navigate],
+    );
     // TABS
     const handleChangeTab = useCallback(
         (newtab: string) => {
@@ -199,7 +212,22 @@ export const OrgUnits: FunctionComponent = () => {
                             label={formatMessage(MESSAGES.list)}
                         />
                         <Tab value="map" label={formatMessage(MESSAGES.map)} />
+                        <Tab
+                            value="mapLibre"
+                            label={formatMessage(MESSAGES.mapLibre)}
+                        />
                     </Tabs>
+                    {/* MapLibre only draws while displayed: mounted with its tab */}
+                    {tab === 'mapLibre' && (
+                        <Box className={classes.containerMarginNeg}>
+                            <OrgUnitsSearchMapLibre
+                                searches={searches}
+                                getSearchColor={getSearchColor}
+                                clusters={params.isClusterActive !== 'false'}
+                                onClustersChange={handleClustersChange}
+                            />
+                        </Box>
+                    )}
                     {tab === 'list' && (
                         <TableList
                             params={params}

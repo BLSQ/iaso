@@ -4,10 +4,12 @@ import struct
 from unittest import mock
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.db import connection
 from django.db.models import Func, IntegerField
 
 from iaso import models as m
 from iaso.api.v3.common.mvt import (
+    CLUSTER_MAX_ZOOM,
     INDEX_PREFILTER_MIN_ZOOM,
     MVT_MEDIA_TYPE,
     TILE_CACHE_MAX_AGE,
@@ -299,8 +301,10 @@ class OrgUnitV3TilesTestCase(TileRequestsMixin, OrgUnitV3TestCase):
     def test_query_count(self):
         # the whole tile is one query, whatever the properties. The others: `filter_for_user` checks the user's
         # org units (twice: for the tile, and for resolving the opened org unit, like `ancestor_id`) and that
-        # resolution itself. The profile and account are already loaded on the test user.
-        with self.assertNumQueries(4):
+        # resolution itself. The profile and account are already loaded on the test user. The tile query runs
+        # in a transaction of its own, for its settings (`settings_cursor`): in a request, one more query sets
+        # them; here, within the test's transaction, a savepoint also reads and puts back the previous ones.
+        with self.assertNumQueries(9):
             self.get_tile({"fields": "name,has_children,bbox,via_id", "ancestor_id__closest_located": self.country.id})
 
 
@@ -330,6 +334,41 @@ class OrgUnitV3TileJSONTestCase(OrgUnitV3TestCase):
         )
         self.assertEqual(tilejson["vector_layers"][0]["id"], "org_units")
 
+    def test_counts_the_matching_and_the_located_org_units(self):
+        tilejson = self.get_tilejson({"version_id": self.sw_version_1.id})
+        self.assertEqual((tilejson["count"], tilejson["located_count"]), (5, 2))
+
+    def test_fit_bounds_leave_out_the_far_outliers(self):
+        # 40 points spread in the country square, and a facility geolocated on another continent
+        for i in range(40):
+            m.OrgUnit.objects.create(
+                org_unit_type=self.district_type,
+                version=self.sw_version_1,
+                name=f"Village {i}",
+                location=Point(x=1 + (i % 8), y=1 + (i // 8), z=0),
+            )
+        tilejson = self.get_tilejson({"org_unit_type_id": self.district_type.id})
+        self.assertEqual(tilejson["fit_bounds"], [1, 1, 8, 5])
+        self.assertEqual(tilejson["outside_fit_bounds"], 0)
+        self.create_misplaced_facility(self.region)  # at (50, 50)
+        tilejson = self.get_tilejson({"org_unit_type_id": self.district_type.id})
+        # tiles may still hold it...
+        self.assertEqual(tilejson["bounds"], [1, 1, 50, 50])
+        # ...but the map shouldn't look at a whole continent for it
+        self.assertEqual(tilejson["fit_bounds"], [1, 1, 8, 5])
+        self.assertEqual(tilejson["outside_fit_bounds"], 1)
+
+    def test_fit_bounds_of_a_few_org_units_are_their_bounds(self):
+        tilejson = self.get_tilejson()
+        self.assertEqual(tilejson["fit_bounds"], tilejson["bounds"])
+        self.assertNotIn("fit_bounds", self.get_tilejson({"id": self.district.id}))
+
+    def test_cluster_is_passed_on_and_describes_the_point_count(self):
+        tilejson = self.get_tilejson({"id": self.region.id, "cluster": "40"})
+        self.assertTrue(tilejson["tiles"][0].endswith("&cluster=40"))
+        self.assertIn("point_count", tilejson["vector_layers"][0]["fields"])
+        self.get_json({"cluster": "0"}, 400, url=f"{BASE_URL}tilejson/")
+
     def test_bounds_are_the_extent_of_the_matching_org_units(self):
         # the country square and the region point in it - not the other account's Wakanda
         self.assertEqual(self.get_tilejson()["bounds"], [0, 0, 10, 10])
@@ -348,8 +387,9 @@ class OrgUnitV3TileJSONTestCase(OrgUnitV3TestCase):
         self.get_json({"fields": "via_id"}, 400, url=f"{BASE_URL}tilejson/")
 
     def test_query_count(self):
-        # the extent is one aggregate; the other one is `filter_for_user`
-        with self.assertNumQueries(2):
+        # the counts and extents are one query, and `filter_for_user` another. Its settings (`settings_cursor`) add
+        # one query in a request; here, within the test's transaction, a savepoint that also puts them back.
+        with self.assertNumQueries(7):
             self.get_tilejson({"version_id": self.sw_version_1.id})
 
 
@@ -482,3 +522,146 @@ class OrgUnitV3ClosestLocatedTestCase(OrgUnitV3TestCase):
             district,
             {"has_geometry": False, "has_children": False, "located_descendants": 0, "located_bbox": None},
         )
+
+
+class OrgUnitV3TileClusterTestCase(TileRequestsMixin, OrgUnitV3TestCase):
+    """`cluster=<px>`: points grouped by squares of that many pixels, so a dense search stays a light tile."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # 5 villages within 0.01 degree of (2, 2): a few meters apart at z1, a few hundred at z13
+        cls.villages = [
+            m.OrgUnit.objects.create(
+                org_unit_type=cls.district_type,
+                version=cls.sw_version_1,
+                name=f"Village {i}",
+                location=Point(x=2 + i * 0.002, y=2, z=0),
+            )
+            for i in range(5)
+        ]
+        cls.query = {"org_unit_type_id__in": f"{cls.district_type.id},{cls.region_type.id}"}
+
+    def get_clustered(self, cluster="40", tile=FIXTURE_TILE, **params):
+        return self.get_features({**self.query, "cluster": cluster, **params}, tile=tile)
+
+    def test_groups_close_points_into_one_feature_with_their_count(self):
+        # z5: 40 pixels are 0.9 degree, the villages are in one square, the region 3 degrees away
+        features = self.get_clustered(tile=tile_for(5, 2, 2))
+        # the region at (5, 5) is alone in its square: it stays itself, with its id and properties
+        self.assertEqual(features[self.region.id]["properties"]["name"], "Theed")
+        self.assertNotIn("point_count", features[self.region.id]["properties"])
+        # the villages are one cluster: no id (it isn't an org unit), no properties but the count
+        self.assertEqual(features[None], {"properties": {"point_count": 5}, "type": "Point", "geometry_size": 3})
+        self.assertEqual(len(features), 2)
+
+    def test_points_far_enough_apart_stay_apart(self):
+        # z13: a pixel is 20 meters, the villages are 200 meters apart
+        tile = tile_for(13, 2.004, 2)
+        features = self.get_clustered(cluster="2", tile=tile)
+        self.assertEqual(set(features), {village.id for village in self.villages})
+
+    def test_no_clusters_from_the_cluster_max_zoom(self):
+        # points that close are the same place: the client lists them rather than zooming in for ever
+        tile = tile_for(CLUSTER_MAX_ZOOM, 2.004, 2)
+        features = self.get_clustered(cluster=str(128), tile=tile)
+        self.assertEqual(set(features), {village.id for village in self.villages})
+
+    def test_a_point_counts_in_one_tile_only(self):
+        # a point on the edge of two tiles overlaps both, but is only clustered in one
+        edge = m.OrgUnit.objects.create(
+            org_unit_type=self.district_type, version=self.sw_version_1, name="Edge", location=Point(0, 1, 0)
+        )
+        west, east = tile_for(1, -1, 1), tile_for(1, 1, 1)
+        self.assertIn(edge.id, self.get_features({"id": edge.id}, tile=west))
+        self.assertNotIn(edge.id, self.get_clustered(tile=west, id=edge.id))
+        self.assertIn(edge.id, self.get_clustered(tile=east, id=edge.id))
+
+    def test_shapes_are_not_clustered_but_tiny_ones_become_points(self):
+        tiny = m.OrgUnit.objects.create(
+            org_unit_type=self.district_type,
+            version=self.sw_version_1,
+            name="Health post",
+            geom=MultiPolygon(Polygon(((3, 3), (3, 3.001), (3.001, 3.001), (3.001, 3), (3, 3)))),
+        )
+        params = {"org_unit_type_id__in": f"{self.country_type.id},{self.district_type.id}"}
+        # without clustering, a 0.3 pixel square vanishes once snapped to the tile grid
+        self.assertNotIn(tiny.id, self.get_features({"id": tiny.id}))
+        features = self.get_features({**params, "id__in": f"{tiny.id},{self.country.id}", "cluster": "2"})
+        self.assertEqual(features[tiny.id]["type"], "Point")
+        self.assertEqual(features[self.country.id]["type"], "Polygon")
+
+    def test_clusters_locations_and_collapsed_shapes_together(self):
+        # locations are 3D points, collapsed shapes 2D ones: one cluster all the same
+        m.OrgUnit.objects.create(
+            org_unit_type=self.district_type,
+            version=self.sw_version_1,
+            name="Health post",
+            geom=MultiPolygon(Polygon(((2, 2), (2, 2.001), (2.001, 2.001), (2.001, 2), (2, 2)))),
+        )
+        features = self.get_clustered(tile=tile_for(5, 2, 2))
+        self.assertEqual(features[None]["properties"], {"point_count": 6})
+
+    def test_empty_locations_are_left_out(self):
+        m.OrgUnit.objects.create(
+            org_unit_type=self.district_type, version=self.sw_version_1, name="Nowhere", location="POINT Z EMPTY"
+        )
+        features = self.get_clustered(tile=tile_for(5, 2, 2))
+        self.assertEqual(features[None]["properties"], {"point_count": 5})
+
+    def test_rejects_invalid_cluster_sizes(self):
+        for value in ("0", "129", "big"):
+            with self.subTest(value=value):
+                self.get_tile_error({"cluster": value})
+
+
+class OrgUnitV3TileCapTestCase(TileRequestsMixin, OrgUnitV3TestCase):
+    """A tile is cut at `MAX_TILE_FEATURES` features, and says so."""
+
+    def test_cut_tile_says_how_many_features_it_should_have_held(self):
+        with mock.patch("iaso.api.v3.common.mvt.MAX_TILE_FEATURES", 1):
+            layers = decode_tile(self.get_tile().content)
+        self.assertEqual(len(layers["org_units"]), 1)
+        (meta,) = layers["tile_meta"].values()
+        self.assertEqual(meta["properties"], {"feature_count": 2, "kept": 1})
+
+    def test_whole_tile_has_no_meta_layer(self):
+        self.assertNotIn("tile_meta", decode_tile(self.get_tile().content))
+
+
+class OrgUnitV3TileQuerySettingsTestCase(TileRequestsMixin, OrgUnitV3TestCase):
+    """The tile and TileJSON queries run without JIT, and change no setting of the queries after them."""
+
+    def settings(self):
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT current_setting('jit'), current_setting('statement_timeout')")
+            return cursor.fetchone()
+
+    def settings_during(self, marker, request):
+        """`(jit, statement_timeout)` as the query whose sql holds `marker` runs, for `request`."""
+        seen = []
+
+        def spy(execute, sql, params, many, context):
+            if marker in sql:
+                context["cursor"].execute("SELECT current_setting('jit'), current_setting('statement_timeout')")
+                seen.append(context["cursor"].fetchone())
+            return execute(sql, params, many, context)
+
+        with connection.execute_wrapper(spy):
+            request()
+        (settings,) = seen
+        return settings
+
+    def test_tile_query_runs_without_jit_and_with_a_timeout(self):
+        self.assertEqual(self.settings_during("ST_AsMVT", self.get_tile), ("off", "15s"))
+
+    def test_tilejson_query_runs_without_jit(self):
+        jit, _ = self.settings_during("percentile_cont", lambda: self.client.get(f"{BASE_URL}tilejson/"))
+        self.assertEqual(jit, "off")
+
+    def test_settings_are_put_back_within_a_callers_transaction(self):
+        # the test runs in a transaction, where `SET LOCAL` in a savepoint would last until it ends
+        before = self.settings()
+        self.get_tile({"cluster": "40"})
+        self.client.get(f"{BASE_URL}tilejson/")
+        self.assertEqual(self.settings(), before)

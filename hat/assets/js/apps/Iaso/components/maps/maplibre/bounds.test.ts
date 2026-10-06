@@ -1,4 +1,4 @@
-import { getGeoJsonBounds } from './bounds';
+import { getGeoJsonBounds, unionBounds } from './bounds';
 
 describe('getGeoJsonBounds', () => {
     it('returns the bounding box of a multipolygon', () => {
@@ -62,5 +62,27 @@ describe('getGeoJsonBounds', () => {
         expect(
             getGeoJsonBounds({ type: 'FeatureCollection', features: [] }),
         ).toBeUndefined();
+    });
+});
+
+describe('unionBounds', () => {
+    it('is the box around all bounds, skipping the missing ones', () => {
+        expect(
+            unionBounds([
+                [
+                    [0, 0],
+                    [1, 1],
+                ],
+                undefined,
+                [
+                    [-1, 0.5],
+                    [0.5, 2],
+                ],
+            ]),
+        ).toEqual([
+            [-1, 0],
+            [1, 2],
+        ]);
+        expect(unionBounds([undefined])).toBeUndefined();
     });
 });

@@ -278,3 +278,11 @@ class TileJSONSerializerV3(serializers.Serializer):
     vector_layers = serializers.ListField(
         child=serializers.DictField(), help_text="The tile layer: its `id` and `fields` (property -> description)"
     )
+    count = serializers.IntegerField(help_text="How many org units match (located or not)")
+    located_count = serializers.IntegerField(help_text="How many of them have a location or a shape")
+    fit_bounds = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        help_text="`[west, south, east, north]` to fit the map to: `bounds` without the far outliers",
+    )
+    outside_fit_bounds = serializers.IntegerField(help_text="How many located org units `fit_bounds` leaves out")

@@ -22,6 +22,14 @@ export type TileJSON = {
     /** `[west, south, east, north]`, left out when none of the org units is located */
     bounds?: [number, number, number, number];
     vector_layers: { id: string; fields: Record<string, string> }[];
+    /** how many org units match, located or not */
+    count: number;
+    /** how many of them are on the map */
+    located_count: number;
+    /** where to look: `bounds` without the far outliers, left out when none is located */
+    fit_bounds?: [number, number, number, number];
+    /** how many located org units `fit_bounds` leaves out */
+    outside_fit_bounds: number;
 };
 
 /** The TileJSON of the org unit tiles matching `filters` */
@@ -37,9 +45,16 @@ export const orgUnitTileJSONUrl = (filters: OrgUnitTilesFilters): string => {
     return `/api/v3/orgunits/tilejson/${query ? `?${query}` : ''}`;
 };
 
-/** TileJSON `bounds` as MapLibre's `[[west, south], [east, north]]` */
-export const tileJSONBounds = ({ bounds }: TileJSON): Bounds | undefined =>
-    bounds && [
-        [bounds[0], bounds[1]],
-        [bounds[2], bounds[3]],
-    ];
+/** TileJSON `bounds` (or `fit_bounds`) as MapLibre's `[[west, south], [east, north]]` */
+export const tileJSONBounds = (
+    tileJSON: TileJSON,
+    key: 'bounds' | 'fit_bounds' = 'bounds',
+): Bounds | undefined => {
+    const bounds = tileJSON[key];
+    return (
+        bounds && [
+            [bounds[0], bounds[1]],
+            [bounds[2], bounds[3]],
+        ]
+    );
+};

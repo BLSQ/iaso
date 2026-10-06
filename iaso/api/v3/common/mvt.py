@@ -12,14 +12,16 @@ MVT properties are scalars: the serializer must not declare nested fields.
 
 import math
 
+from contextlib import contextmanager
 from typing import Dict, Iterable, NamedTuple, Optional
 
-from django.contrib.gis.db.models import Extent, GeometryField
+from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.functions import Transform
-from django.db import connection
+from django.db import OperationalError, connection, transaction
 from django.db.models import BooleanField, Expression, F, Func, Q, Value
 from django.utils.cache import patch_vary_headers
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.exceptions import APIException
 from rest_framework.negotiation import BaseContentNegotiation
 from rest_framework.renderers import BaseRenderer
 
@@ -52,6 +54,37 @@ TILE_CACHE_MAX_AGE = 15 * 60
 #: column holding the MVT feature id: postgres removes it from the properties
 FEATURE_ID_COLUMN = "mvt_feature_id"
 GEOMETRY_COLUMN = "mvt_geom"
+#: property of a cluster feature: how many points it stands for (only set when more than one)
+POINT_COUNT_COLUMN = "point_count"
+#: largest `cluster` cell, in screen pixels (a quarter of a tile)
+MAX_CLUSTER_PX = TILE_SIZE_PX // 4
+#: from this zoom points are never clustered: points that close are the same place (duplicates, a building
+#: drawn twice), which zooming in can't separate - the client lists them instead
+CLUSTER_MAX_ZOOM = 15
+#: at most this many features in a tile: past it the tile is cut and says so in a `TILE_META_LAYER` feature.
+#: A safety net for the browser - clustered points never get near it, only unclustered points or shapes can.
+MAX_TILE_FEATURES = 50_000
+#: layer added to a tile only when it was cut: one feature with `feature_count` and `kept`
+TILE_META_LAYER = "tile_meta"
+#: a tile query running longer is cancelled (a 503 the map shows as a missing tile, instead of piling up)
+TILE_STATEMENT_TIMEOUT_MS = 15_000
+#: postgres settings of the tile and TileJSON queries. No JIT: postgres compiles queries estimated above
+#: `jit_above_cost`, which these reach over large searches - and the compiling costs more than it saves (162k org
+#: units: a TileJSON 0.32 s -> 0.16 s, the 6 tiles of the fitted view 2.4 s -> 0.4 s in all).
+QUERY_SETTINGS = {"jit": "off"}
+#: a shape smaller than this many screen pixels is drawn as a point: polygons that small vanish once snapped to
+#: the tile grid (and couldn't be seen anyway), the point keeps them on the map - and in the clusters
+COLLAPSED_SHAPE_PX = 2
+#: `fit_bounds`: the located org units whose center lies further than this many times the spread of the central
+#: 90% (5th to 95th percentile) away from it are left out - a village geolocated on another continent
+FIT_BOUNDS_QUANTILE = 0.05
+FIT_BOUNDS_MARGIN = 1.0
+
+
+class TileTimeout(APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = {"error": "The tile took too long", "detail": "Narrow the filters, or zoom in."}
+    default_code = "tile_timeout"
 
 
 class MVTRenderer(BaseRenderer):
@@ -203,16 +236,23 @@ def tile_properties(serializer) -> Dict[str, Optional[Expression]]:
 
 
 def tile_queryset(
-    queryset, geometry: Expression, properties: Dict[str, Optional[Expression]], tile: Tile, geography_columns=()
+    queryset,
+    geometry: Expression,
+    properties: Dict[str, Optional[Expression]],
+    tile: Tile,
+    geography_columns=(),
+    filter_geometry: Optional[Expression] = None,
 ):
     """`queryset` reduced to the rows overlapping `tile`, as `.values()` rows: the MVT geometry, the feature id
     and `properties`.
 
     `geometry` is the row's shape in EPSG:4326 (`geometry`, not `geography`: the tile is a planar lon/lat box
     once unprojected). From `INDEX_PREFILTER_MIN_ZOOM`, `geography_columns` (the indexed columns `geometry` is
-    derived from) also get an index-backed prefilter."""
+    derived from) also get an index-backed prefilter. `filter_geometry`, when given, picks the rows instead of
+    `geometry`: a cheaper expression whose box holds `geometry`'s (every row of the queryset is tested, only the
+    rows of the tile are drawn)."""
     envelope = Transform(TileEnvelope(tile), 4326)
-    queryset = queryset.order_by().filter(BoxesOverlap(geometry, envelope))
+    queryset = queryset.order_by().filter(BoxesOverlap(filter_geometry or geometry, envelope))
     if geography_columns and tile.z >= INDEX_PREFILTER_MIN_ZOOM:
         queryset = queryset.filter(geography_index_prefilter(tile, geography_columns))
     columns = [name for name, expression in properties.items() if expression is None]
@@ -250,16 +290,6 @@ def tile_fields(serializer) -> Dict[str, str]:
     return fields
 
 
-def extent_bounds(queryset, geometry: Expression) -> Optional[list]:
-    """`[west, south, east, north]` of `geometry` over the whole `queryset` (one aggregate), within web
-    mercator's latitudes - `None` when nothing is located."""
-    extent = queryset.order_by().aggregate(extent=Extent(geometry))["extent"]
-    if extent is None:
-        return None
-    west, south, east, north = extent
-    return [west, max(south, -MAX_MERCATOR_LATITUDE), east, min(north, MAX_MERCATOR_LATITUDE)]
-
-
 def tilejson(tiles_url: str, layer_name: str, fields: Dict[str, str], bounds: Optional[list]) -> dict:
     """A TileJSON 3.0.0 document (https://github.com/mapbox/tilejson-spec): what a map client needs to use a tile
     source on its own - where to fetch the tiles, up to which zoom, what their features hold and where they are.
@@ -276,13 +306,176 @@ def tilejson(tiles_url: str, layer_name: str, fields: Dict[str, str], bounds: Op
     return document
 
 
-def render_tile(values_queryset, layer_name: str) -> bytes:
-    """Encode the rows of `tile_queryset()` as one MVT layer, in postgres."""
-    sql, params = values_queryset.query.sql_with_params()
-    with connection.cursor() as cursor:
-        cursor.execute(
-            f"SELECT ST_AsMVT(t.*, %s, %s, %s, %s) FROM ({sql}) AS t",
-            [layer_name, EXTENT, GEOMETRY_COLUMN, FEATURE_ID_COLUMN, *params],
+@contextmanager
+def settings_cursor(**settings):
+    """A cursor in a transaction of its own, with postgres `settings` (`SET LOCAL`) for the duration of the block.
+
+    Requests run in autocommit: the transaction, so the settings, end with the block. Within a caller's transaction
+    (`ATOMIC_REQUESTS`, tests), the block is a savepoint, which doesn't scope `SET LOCAL`: the previous values are
+    put back after it (on an error, rolling the savepoint back does)."""
+    names = list(settings)
+    nested = connection.in_atomic_block
+    with transaction.atomic(), connection.cursor() as cursor:
+        if nested:
+            cursor.execute("SELECT " + ", ".join(["current_setting(%s)"] * len(names)), names)
+            previous = cursor.fetchone()
+        set_config = ", ".join(["set_config(%s, %s, true)"] * len(names))
+        cursor.execute(f"SELECT {set_config}", [v for name in names for v in (name, str(settings[name]))])
+        yield cursor
+        if nested:
+            cursor.execute(f"SELECT {set_config}", [v for name, value in zip(names, previous) for v in (name, value)])
+
+
+def validated_cluster_px(value) -> Optional[int]:
+    """The `cluster` query param: the side of a cluster cell in screen pixels, `None` when not clustering."""
+    if value in (None, ""):
+        return None
+    try:
+        cluster_px = int(value)
+    except ValueError:
+        cluster_px = 0
+    if not 1 <= cluster_px <= MAX_CLUSTER_PX:
+        raise bad_request(
+            f"Invalid value for 'cluster': {value!r}", f"An integer number of pixels, from 1 to {MAX_CLUSTER_PX}."
         )
-        row = cursor.fetchone()
+    return cluster_px
+
+
+def _quoted(name: str) -> str:
+    return connection.ops.quote_name(name)
+
+
+def _clustered_features_sql(columns, cell: int) -> str:
+    """The rows of `tile_rows` with their points grouped by `cell` x `cell` squares of the tile grid: one feature per
+    square, at the points' mean position. A lone point stays itself; a square of several points has their count
+    (`POINT_COUNT_COLUMN`) and neither a feature id nor properties, which are those of one org unit.
+
+    Points are only kept inside the tile: one on the edge of two tiles overlaps both, and a cluster must count it
+    once. Grouping happens in tile grid coordinates, so squares never straddle tiles."""
+    single = "count(*) = 1"
+    properties = ", ".join(f"CASE WHEN {single} THEN (array_agg({_quoted(c)}))[1] END AS {_quoted(c)}" for c in columns)
+    # an empty point (some locations are `POINT EMPTY`) has nothing to draw. Locations are 3D (`POINT Z`) and
+    # collapsed shapes 2D: `ST_Collect` takes either, not both, hence `ST_Force2D`.
+    is_point = f"ST_GeometryType({GEOMETRY_COLUMN}) = 'ST_Point' AND NOT ST_IsEmpty({GEOMETRY_COLUMN})"
+    # `ST_XMin` rather than `ST_X`: postgres may evaluate it before `is_point`, and it takes any geometry
+    x, y = f"ST_XMin({GEOMETRY_COLUMN})", f"ST_YMin({GEOMETRY_COLUMN})"
+    in_tile = f"{x} >= 0 AND {x} < {EXTENT} AND {y} >= 0 AND {y} < {EXTENT}"
+    plain_columns = "".join(f"{_quoted(c)}, " for c in columns)
+    return f"""
+        SELECT {plain_columns}{GEOMETRY_COLUMN}, {FEATURE_ID_COLUMN}, NULL::bigint AS {POINT_COUNT_COLUMN}
+        FROM tile_rows WHERE {GEOMETRY_COLUMN} IS NOT NULL AND ST_GeometryType({GEOMETRY_COLUMN}) <> 'ST_Point'
+        UNION ALL
+        SELECT {properties}{", " if columns else ""}
+            CASE WHEN {single} THEN (array_agg({GEOMETRY_COLUMN}))[1]
+                 ELSE ST_SnapToGrid(ST_Centroid(ST_Collect(ST_Force2D({GEOMETRY_COLUMN}))), 1) END,
+            CASE WHEN {single} THEN min({FEATURE_ID_COLUMN}) END,
+            CASE WHEN NOT {single} THEN count(*) END
+        FROM tile_rows WHERE {is_point} AND {in_tile}
+        GROUP BY floor({x} / {cell}), floor({y} / {cell})"""
+
+
+def _columns(values_queryset):
+    """Property columns of a `tile_queryset()`, in their select order."""
+    query = values_queryset.query
+    names = [*query.values_select, *query.annotation_select]
+    return [name for name in names if name not in (GEOMETRY_COLUMN, FEATURE_ID_COLUMN)]
+
+
+def render_tile(values_queryset, layer_name: str, tile: Tile, cluster_px: Optional[int] = None) -> bytes:
+    """Encode the rows of `tile_queryset()` as one MVT layer, in postgres.
+
+    With `cluster_px` (below `CLUSTER_MAX_ZOOM`), points are clustered by squares of that many screen pixels (see
+    `_clustered_features_sql`). A tile holds at most `MAX_TILE_FEATURES`: past it, a `TILE_META_LAYER` is added
+    (MVT layers concatenate as bytes) with the number of features the tile should have held."""
+    sql, params = values_queryset.query.sql_with_params()
+    if cluster_px and tile.z < CLUSTER_MAX_ZOOM:
+        cell = cluster_px * EXTENT // TILE_SIZE_PX
+        features = _clustered_features_sql(_columns(values_queryset), cell)
+    else:
+        # `ST_AsMVTGeom` gives no geometry for what doesn't reach the tile: not a feature (nor counted as one)
+        features = f"SELECT * FROM tile_rows WHERE {GEOMETRY_COLUMN} IS NOT NULL"
+    query = f"""
+        WITH tile_rows AS ({sql}), features AS ({features})
+        SELECT
+            COALESCE((SELECT ST_AsMVT(t.*, %s, {EXTENT}, %s, %s) FROM (SELECT * FROM features LIMIT %s) t), ''::bytea)
+            || COALESCE((
+                SELECT ST_AsMVT(m.*, %s, {EXTENT}, 'geom') FROM (
+                    SELECT ST_MakePoint({EXTENT // 2}, {EXTENT // 2}) AS geom, n AS feature_count, %s AS kept
+                    FROM (SELECT count(*) AS n FROM features) c WHERE n > %s
+                ) m
+            ), ''::bytea)"""
+    query_params = [
+        *params,
+        layer_name,
+        GEOMETRY_COLUMN,
+        FEATURE_ID_COLUMN,
+        MAX_TILE_FEATURES,
+        TILE_META_LAYER,
+        MAX_TILE_FEATURES,
+        MAX_TILE_FEATURES,
+    ]
+    try:
+        with settings_cursor(**QUERY_SETTINGS, statement_timeout=TILE_STATEMENT_TIMEOUT_MS) as cursor:
+            cursor.execute(query, query_params)
+            row = cursor.fetchone()
+    except OperationalError as error:
+        if getattr(error.__cause__, "pgcode", None) == "57014":  # query_canceled
+            raise TileTimeout()
+        raise
     return bytes(row[0]) if row and row[0] is not None else b""
+
+
+class Box2D(Func):
+    function = "Box2D"
+    output_field = _UncastGeometryField()
+
+
+def summary(queryset, geometry: Expression) -> dict:
+    """What a map needs to know of the whole `queryset` before drawing it, in one query:
+
+    - `count`, `located_count`: how many rows, how many with a `geometry` (the others aren't on the map);
+    - `bounds`: the extent of `geometry` - where tiles may hold something (`None` when nothing is located);
+    - `fit_bounds`: where to look - the extent without the far outliers (see `FIT_BOUNDS_MARGIN`), and
+      `outside_fit_bounds`, how many were left out."""
+    boxes_sql, params = queryset.order_by().annotate(box=Box2D(geometry)).values("box").query.sql_with_params()
+    low, high = FIT_BOUNDS_QUANTILE, 1 - FIT_BOUNDS_QUANTILE
+    cx = "(ST_XMin(box) + ST_XMax(box)) / 2"
+    cy = "(ST_YMin(box) + ST_YMax(box)) / 2"
+    query = f"""
+        WITH boxes AS MATERIALIZED ({boxes_sql}),
+        q AS (
+            SELECT percentile_cont({low}) WITHIN GROUP (ORDER BY {cx}) AS x0,
+                   percentile_cont({high}) WITHIN GROUP (ORDER BY {cx}) AS x1,
+                   percentile_cont({low}) WITHIN GROUP (ORDER BY {cy}) AS y0,
+                   percentile_cont({high}) WITHIN GROUP (ORDER BY {cy}) AS y1
+            FROM boxes WHERE box IS NOT NULL
+        ),
+        w AS (
+            SELECT x0 - (x1 - x0) * {FIT_BOUNDS_MARGIN} AS west, x1 + (x1 - x0) * {FIT_BOUNDS_MARGIN} AS east,
+                   y0 - (y1 - y0) * {FIT_BOUNDS_MARGIN} AS south, y1 + (y1 - y0) * {FIT_BOUNDS_MARGIN} AS north
+            FROM q
+        ),
+        flagged AS (
+            SELECT box, {cx} BETWEEN west AND east AND {cy} BETWEEN south AND north AS inside FROM boxes, w
+        )
+        SELECT count(*), count(box), ST_Extent(box), ST_Extent(box) FILTER (WHERE inside),
+               count(box) FILTER (WHERE NOT inside)
+        FROM flagged"""
+    with settings_cursor(**QUERY_SETTINGS) as cursor:
+        cursor.execute(query, params)
+        count, located_count, extent, fit_extent, outside = cursor.fetchone()
+    return {
+        "count": count,
+        "located_count": located_count,
+        "bounds": _box_bounds(extent),
+        "fit_bounds": _box_bounds(fit_extent),
+        "outside_fit_bounds": outside or 0,
+    }
+
+
+def _box_bounds(box: Optional[str]) -> Optional[list]:
+    """`BOX(west south,east north)` (postgres' text of a box2d) as TileJSON bounds, within web mercator."""
+    if box is None:
+        return None
+    west, south, east, north = (float(n) for n in box[4:-1].replace(",", " ").split())
+    return [west, max(south, -MAX_MERCATOR_LATITUDE), east, min(north, MAX_MERCATOR_LATITUDE)]

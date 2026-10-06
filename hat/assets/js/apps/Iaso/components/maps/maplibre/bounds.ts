@@ -39,3 +39,23 @@ export const getGeoJsonBounds = (geoJson: GeoJSON): Bounds | undefined => {
         [Math.max(...lngs), Math.max(...lats)],
     ];
 };
+
+/** The box around all `bounds`, `undefined` when there are none */
+export const unionBounds = (
+    bounds: (Bounds | undefined)[],
+): Bounds | undefined => {
+    const boxes = bounds.filter((box): box is Bounds => box !== undefined);
+    if (boxes.length === 0) {
+        return undefined;
+    }
+    return [
+        [
+            Math.min(...boxes.map(box => box[0][0])),
+            Math.min(...boxes.map(box => box[0][1])),
+        ],
+        [
+            Math.max(...boxes.map(box => box[1][0])),
+            Math.max(...boxes.map(box => box[1][1])),
+        ],
+    ];
+};

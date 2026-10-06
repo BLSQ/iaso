@@ -7,6 +7,11 @@ import MESSAGES from '../../messages';
 /** The `/api/v3/orgunits/` fields the map asks for (each only when requested) */
 export type OrgUnitV3 = {
     id: number;
+    name?: string;
+    validation_status?: string;
+    source_ref?: string | null;
+    org_unit_type?: { id: number; name: string } | null;
+    parent?: { id: number; name: string } | null;
     simplified_geom?: Geometry | null;
     latitude?: number | null;
     longitude?: number | null;

@@ -266,3 +266,63 @@ class OrgUnitV3FiltersTestCase(OrgUnitV3TestCase):
         self.assertEqual(data["error"], "Unsupported query parameter(s): dateFrom")
         self.assertEqual(data["suggestions"], {})
         self.assertEqual(data["detail"], "No close match found among the known query parameters.")
+
+
+class OrgUnitV3SearchFiltersTestCase(OrgUnitV3TestCase):
+    """The filters the org unit search needs, so a search can be drawn from the v3 tiles (see
+    `searchToV3Filters` on the frontend)."""
+
+    def assert_ids(self, params, expected_org_units):
+        self.assertCountEqual(
+            self.get_ids({"fields": "id", **params}), [org_unit.id for org_unit in expected_org_units]
+        )
+
+    def test_org_unit_type_id_in(self):
+        self.assert_ids(
+            {"org_unit_type_id__in": f"{self.region_type.id},{self.district_type.id}"}, [self.region, self.district]
+        )
+
+    def test_group_id_in_returns_each_org_unit_once(self):
+        other_group = m.Group.objects.create(name="Other", source_version=self.sw_version_1)
+        self.region.groups.add(other_group)
+        self.district.groups.add(other_group)
+        self.assert_ids({"group_id__in": f"{self.elite_group.id},{other_group.id}"}, [self.region, self.district])
+
+    def test_ancestor_id_or_self(self):
+        # the org unit filter of the search: the org unit and its descendants
+        self.assert_ids({"ancestor_id__or_self": self.region.id}, [self.region, self.district])
+        self.get_error({"ancestor_id__or_self": self.marvel_org_unit.id})
+
+    def create_instance(self, org_unit, created_at, **kwargs):
+        form = m.Form.objects.create(name="Census")
+        instance = m.Instance.objects.create(org_unit=org_unit, form=form, file="census.xml", **kwargs)
+        m.Instance.objects.filter(pk=instance.pk).update(created_at=created_at)
+        return instance
+
+    def test_has_instances(self):
+        self.create_instance(self.region, "2024-01-10T00:00:00Z")
+        # deleted or without a file: not a submission for the search
+        self.create_instance(self.district, "2024-01-10T00:00:00Z", deleted=True)
+        self.assert_ids({"has_instances": "true"}, [self.region])
+        self.assert_ids(
+            {"has_instances": "false", "version_id": self.sw_version_1.id},
+            [self.country, self.country_without_geom, self.district, self.cote],
+        )
+
+    def test_instance_created_at_bounds_apply_to_the_same_instance(self):
+        self.create_instance(self.region, "2024-01-10T00:00:00Z")
+        self.create_instance(self.district, "2023-01-10T00:00:00Z")
+        self.create_instance(self.district, "2025-01-10T00:00:00Z")
+        self.assert_ids({"instance__created_at__gte": "2024-01-01T00:00:00Z"}, [self.region, self.district])
+        # the district has one submission before 2024-02 and one after 2024-01, but none in between
+        self.assert_ids(
+            {"instance__created_at__gte": "2024-01-01T00:00:00Z", "instance__created_at__lte": "2024-02-01T00:00:00Z"},
+            [self.region],
+        )
+        self.get_error({"instance__created_at__lte": "2024-02-01T00:00:00-17:00"})
+
+    def test_search_takes_the_org_unit_search_prefixes(self):
+        self.assert_ids({"search": f"ids:{self.region.id},{self.cote.id}"}, [self.region, self.cote])
+        self.assert_ids({"search": f"codes:{self.region.code}"}, [self.region])
+        self.assert_ids({"search": f"refs:{self.country.source_ref}, iaso:{self.cote.id}"}, [self.country, self.cote])
+        self.get_error({"search": "ids:12,abc"})

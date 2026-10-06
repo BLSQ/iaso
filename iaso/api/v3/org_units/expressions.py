@@ -55,11 +55,32 @@ class _SimplifiedShapeIsAccurate(Func):
         )
 
 
-def drawn_geometry(tile: Optional[Tile] = None) -> Coalesce:
+class _PointIfSmaller(Func):
+    """The shape, or a point on it when the diagonal of its bounding box is shorter than `size` degrees."""
+
+    output_field = GeometryField(srid=4326)
+
+    def __init__(self, shape, size: float):
+        super().__init__(shape, size=size)
+
+    def as_sql(self, compiler, connection, **extra_context):
+        sql, params = compiler.compile(self.source_expressions[0])
+        size = float(self.extra["size"])
+        # the shape is repeated rather than computed once in a scalar subselect: a subplan would cost postgres its
+        # parallel plan (4 times slower on 70k rows). Only the rows without a location compute it, and only in the
+        # tile (see `tile_queryset`'s `filter_geometry`).
+        return (
+            f"(CASE WHEN ST_Length(ST_BoundingDiagonal({sql})) < {size} THEN ST_PointOnSurface({sql}) ELSE {sql} END)",
+            params * 3,
+        )
+
+
+def drawn_geometry(tile: Optional[Tile] = None, collapse_px: Optional[float] = None) -> Coalesce:
     """What a map draws for an org unit: its point, else its simplified shape, else its full shape.
 
     In a `tile`, the simplified shape only while it's accurate at the tile's zoom: it strays up to 0.1% of the
-    shape's extent, which a big shape shows when zoomed in (a province from about z9)."""
+    shape's extent, which a big shape shows when zoomed in (a province from about z9). With `collapse_px`, a
+    shape smaller than that many pixels at the tile's zoom is drawn as a point (see `COLLAPSED_SHAPE_PX`)."""
     if tile is None:
         return Coalesce(*(as_geometry(column) for column in GEOGRAPHY_COLUMNS), output_field=GeometryField(srid=4326))
     simplified_is_enough = Q(simplified_geom__isnull=False) & (
@@ -70,6 +91,8 @@ def drawn_geometry(tile: Optional[Tile] = None) -> Coalesce:
         default=as_geometry("geom"),
         output_field=GeometryField(srid=4326),
     )
+    if collapse_px:
+        shape = _PointIfSmaller(shape, tile.pixel_size_degrees * collapse_px)
     return Coalesce(as_geometry("location"), shape, output_field=GeometryField(srid=4326))
 
 

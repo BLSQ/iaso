@@ -4,5 +4,5 @@ export { MapLibreMap } from './MapLibreMap';
 export { GeoJsonLayer } from './GeoJsonLayer';
 export { geometryLayers, geometryLayerIds } from './geometryLayers';
 export type { GeometryStyle } from './geometryLayers';
-export { getGeoJsonBounds } from './bounds';
+export { getGeoJsonBounds, unionBounds } from './bounds';
 export type { Bounds } from './bounds';

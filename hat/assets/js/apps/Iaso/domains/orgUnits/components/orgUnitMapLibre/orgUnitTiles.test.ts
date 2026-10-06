@@ -26,10 +26,29 @@ describe('tileJSONBounds', () => {
         minzoom: 0,
         maxzoom: 18,
         vector_layers: [],
+        count: 0,
+        located_count: 0,
+        outside_fit_bounds: 0,
     };
 
     it('turns TileJSON bounds into MapLibre bounds', () => {
         expect(tileJSONBounds({ ...tileJSON, bounds: [1, 2, 3, 4] })).toEqual([
+            [1, 2],
+            [3, 4],
+        ]);
+    });
+
+    it('reads fit_bounds too', () => {
+        expect(
+            tileJSONBounds(
+                {
+                    ...tileJSON,
+                    bounds: [1, 2, 30, 40],
+                    fit_bounds: [1, 2, 3, 4],
+                },
+                'fit_bounds',
+            ),
+        ).toEqual([
             [1, 2],
             [3, 4],
         ]);

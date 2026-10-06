@@ -5,10 +5,10 @@ import { useSafeIntl } from 'bluesquare-components';
 import type { Feature, FeatureCollection, GeoJSON } from 'geojson';
 import { MapLegend } from '../../../../components/maps/MapLegend';
 import {
-    Bounds,
     GeoJsonLayer,
     MapLibreMap,
     getGeoJsonBounds,
+    unionBounds,
 } from '../../../../components/maps/maplibre';
 import MESSAGES from '../../messages';
 import { OrgUnit } from '../../types/orgUnit';
@@ -65,24 +65,6 @@ const toFeatureCollection = ({
 const fromV3 = (orgUnit?: OrgUnitV3): FeatureCollection | undefined =>
     orgUnit &&
     toFeatureCollection({ ...orgUnit, shape: orgUnit.simplified_geom });
-
-/** The box around all `bounds` */
-const unionBounds = (bounds: (Bounds | undefined)[]): Bounds | undefined => {
-    const boxes = bounds.filter((box): box is Bounds => box !== undefined);
-    if (boxes.length === 0) {
-        return undefined;
-    }
-    return [
-        [
-            Math.min(...boxes.map(box => box[0][0])),
-            Math.min(...boxes.map(box => box[0][1])),
-        ],
-        [
-            Math.max(...boxes.map(box => box[1][0])),
-            Math.max(...boxes.map(box => box[1][1])),
-        ],
-    ];
-};
 
 type Props = {
     orgUnit: Partial<OrgUnit>;

@@ -259,3 +259,22 @@ class OrgUnitTileFeatureSerializerV3(DynamicFieldsMixin, serializers.Serializer)
         "null for its direct children",
     )
     via_name = serializers.CharField(allow_null=True, help_text="Name of `via_id`")
+
+
+class TileJSONSerializerV3(serializers.Serializer):
+    """TileJSON 3.0.0 of the org unit vector tiles (https://github.com/mapbox/tilejson-spec) - for the API docs."""
+
+    tilejson = serializers.CharField(help_text="TileJSON version")
+    tiles = serializers.ListField(
+        child=serializers.CharField(), help_text="Tile url template, with the query params of the request"
+    )
+    minzoom = serializers.IntegerField()
+    maxzoom = serializers.IntegerField(help_text="Past it, clients overzoom the tiles")
+    bounds = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        help_text="`[west, south, east, north]` of the matching org units, left out when none is located",
+    )
+    vector_layers = serializers.ListField(
+        child=serializers.DictField(), help_text="The tile layer: its `id` and `fields` (property -> description)"
+    )

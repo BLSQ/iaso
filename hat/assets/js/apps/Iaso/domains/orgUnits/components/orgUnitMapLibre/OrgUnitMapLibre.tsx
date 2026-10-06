@@ -14,15 +14,15 @@ import MESSAGES from '../../messages';
 import { OrgUnit } from '../../types/orgUnit';
 import { getAncestorWithGeojson } from '../orgUnitMap/OrgUnitMap/getAncestorWithGeojson';
 import { ApiSwitch, OrgUnitsApi } from './ApiSwitch';
+import { tileJSONBounds } from './orgUnitTiles';
 import { OrgUnitTilesLayer } from './OrgUnitTilesLayer';
 import { OrgUnitV3, useOrgUnitsV3 } from './useOrgUnitsV3';
+import { useOrgUnitTileJSON } from './useOrgUnitTileJSON';
 
 // as on the leaflet map
 const PARENT_COLOR = pink['300'];
 const SHAPE_STYLE = { fillOpacity: 0.3, lineWidth: 3 };
-// v3 has the shapes as GeoJSON - or only frames the map for the vector tiles, which can't tell where they are
 const V3_SHAPE_FIELDS = ['id', 'simplified_geom', 'latitude', 'longitude'];
-const V3_EXTENT_FIELDS = ['id', 'bbox'];
 
 type Located = {
     shape?: unknown;
@@ -66,22 +66,20 @@ const fromV3 = (orgUnit?: OrgUnitV3): FeatureCollection | undefined =>
     orgUnit &&
     toFeatureCollection({ ...orgUnit, shape: orgUnit.simplified_geom });
 
-/** The union of v3's `bbox`es */
-const extentFromV3 = (orgUnits?: OrgUnitV3[]): Bounds | undefined => {
-    const boxes = (orgUnits ?? []).flatMap(orgUnit =>
-        orgUnit.bbox ? [orgUnit.bbox] : [],
-    );
+/** The box around all `bounds` */
+const unionBounds = (bounds: (Bounds | undefined)[]): Bounds | undefined => {
+    const boxes = bounds.filter((box): box is Bounds => box !== undefined);
     if (boxes.length === 0) {
         return undefined;
     }
     return [
         [
-            Math.min(...boxes.map(box => box[0])),
-            Math.min(...boxes.map(box => box[1])),
+            Math.min(...boxes.map(box => box[0][0])),
+            Math.min(...boxes.map(box => box[0][1])),
         ],
         [
-            Math.max(...boxes.map(box => box[2])),
-            Math.max(...boxes.map(box => box[3])),
+            Math.max(...boxes.map(box => box[1][0])),
+            Math.max(...boxes.map(box => box[1][1])),
         ],
     ];
 };
@@ -112,8 +110,18 @@ export const OrgUnitMapLibre: FunctionComponent<Props> = ({ orgUnit }) => {
     );
     const { data: v3OrgUnits } = useOrgUnitsV3(
         ids,
-        api === 'mvt' ? V3_EXTENT_FIELDS : V3_SHAPE_FIELDS,
-        api !== 'v1',
+        V3_SHAPE_FIELDS,
+        api === 'v3',
+    );
+    // MVT stands on its own: the TileJSON of each source tells where its tiles are, and where to look
+    const isMvt = api === 'mvt';
+    const { data: currentTileJSON } = useOrgUnitTileJSON(
+        { id: orgUnit.id, fields: 'name' },
+        isMvt && orgUnit.id !== undefined,
+    );
+    const { data: parentTileJSON } = useOrgUnitTileJSON(
+        { id: ancestor?.id, fields: 'name' },
+        isMvt && ancestor !== undefined,
     );
 
     // v1 and v3 bring GeoJSON, drawn as is; MVT tiles are fetched by the map itself
@@ -137,14 +145,18 @@ export const OrgUnitMapLibre: FunctionComponent<Props> = ({ orgUnit }) => {
     }, [api, orgUnit, ancestor, v3OrgUnits]);
 
     const bounds = useMemo(() => {
-        if (api === 'mvt') {
-            return extentFromV3(v3OrgUnits && Object.values(v3OrgUnits));
+        if (isMvt) {
+            return unionBounds(
+                [currentTileJSON, parentTileJSON].map(
+                    tileJSON => tileJSON && tileJSONBounds(tileJSON),
+                ),
+            );
         }
         const features = [shapes?.current, shapes?.parent].flatMap(
             collection => collection?.features ?? [],
         );
         return getGeoJsonBounds({ type: 'FeatureCollection', features });
-    }, [api, shapes, v3OrgUnits]);
+    }, [isMvt, shapes, currentTileJSON, parentTileJSON]);
 
     const legend = useMemo(
         () => [
@@ -170,21 +182,19 @@ export const OrgUnitMapLibre: FunctionComponent<Props> = ({ orgUnit }) => {
             {/* clear of the attribution control */}
             <MapLegend bottom={40} top="auto" options={legend} />
             {/* each api its own layer ids: switching swaps sources, never reuses one of another type */}
-            {api === 'mvt' && orgUnit.id !== undefined && (
-                <>
-                    {ancestor && (
-                        <OrgUnitTilesLayer
-                            id="mvt-parent"
-                            filters={{ id: ancestor.id, fields: 'name' }}
-                            {...parentStyle}
-                        />
-                    )}
-                    <OrgUnitTilesLayer
-                        id="mvt-current"
-                        filters={{ id: orgUnit.id, fields: 'name' }}
-                        {...currentStyle}
-                    />
-                </>
+            {isMvt && parentTileJSON && ancestor && (
+                <OrgUnitTilesLayer
+                    id="mvt-parent"
+                    tileJSON={parentTileJSON}
+                    {...parentStyle}
+                />
+            )}
+            {isMvt && currentTileJSON && (
+                <OrgUnitTilesLayer
+                    id="mvt-current"
+                    tileJSON={currentTileJSON}
+                    {...currentStyle}
+                />
             )}
             {shapes?.parent && (
                 <GeoJsonLayer

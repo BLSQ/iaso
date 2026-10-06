@@ -1203,7 +1203,7 @@
     "iaso.orgUnits.mapLibre": "Map (MapLibre)",
     "iaso.orgUnits.mapLibreApiV1": "v1: the shapes of the page data, from /api/orgunits/:id/ (unsaved edits included)",
     "iaso.orgUnits.mapLibreApiV3": "v3: the shapes as GeoJSON, from /api/v3/orgunits/?id__in=…",
-    "iaso.orgUnits.mapLibreApiMvt": "MVT: vector tiles from /api/v3/orgunits/tiles/, framed with the extent from /api/v3/orgunits/",
+    "iaso.orgUnits.mapLibreApiMvt": "MVT: vector tiles from /api/v3/orgunits/tiles/, described (url, bounds) by /api/v3/orgunits/tilejson/",
     "iaso.orgUnits.modifyAndFollow": "Modify and follow",
     "iaso.orgUnits.closingDate": "Closing date",
     "iaso.orgUnits.code": "Code",

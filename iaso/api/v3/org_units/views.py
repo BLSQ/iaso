@@ -6,11 +6,13 @@ from time import gmtime, strftime
 from django.conf import settings
 from django.db.models import F, Func, IntegerField, Max, Q
 from django.http import HttpResponse, StreamingHttpResponse
+from django.urls import reverse
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+from rest_framework.response import Response
 from rest_framework_csv.renderers import CSVRenderer
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -24,10 +26,13 @@ from iaso.api.v3.common.mvt import (
     FirstRendererNegotiation,
     MVTRenderer,
     Tile,
+    extent_bounds,
     render_tile,
     set_tile_cache_headers,
+    tile_fields,
     tile_properties,
     tile_queryset,
+    tilejson,
 )
 from iaso.api.v3.common.pagination import V3PagePagination
 from iaso.api.v3.common.renderers import ParquetRenderer, XLSXRenderer
@@ -35,9 +40,9 @@ from iaso.api.v3.common.views import BaseV3ReadOnlyViewSet, V3FilterBackend
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import Group, OrgUnit
 
-from .expressions import GEOGRAPHY_COLUMNS, drawn_geometry
+from .expressions import GEOGRAPHY_COLUMNS, drawn_geometry, extent_geometry
 from .filters import OrgUnitFilterSetV3
-from .serializers import OrgUnitSerializerV3, OrgUnitTileFeatureSerializerV3
+from .serializers import OrgUnitSerializerV3, OrgUnitTileFeatureSerializerV3, TileJSONSerializerV3
 
 
 logger = logging.getLogger(__name__)
@@ -131,7 +136,7 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     pagination_class = V3PagePagination
     filter_backends = [V3FilterBackend, filters.OrderingFilter]
     #: query params only the tiles take (on top of the FilterSet's)
-    action_params = {"tiles": frozenset({"cache_key"})}
+    action_params = {"tiles": frozenset({"cache_key"}), "tilejson": frozenset({"cache_key"})}
     filterset_class = OrgUnitFilterSetV3
     extra_parameters = EXTRA_PARAMETERS
     ordering_fields = ORDERING_FIELDS
@@ -146,10 +151,10 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
     http_method_names = ["get", "options", "head", "trace"]
     documented_formats = frozenset({"json", "csv", "xlsx", "parquet"})
     #: actions whose `fields=` is documented by `V3AutoSchema` (on top of list/retrieve)
-    field_selector_actions = frozenset({"tiles"})
+    field_selector_actions = frozenset({"tiles", "tilejson"})
 
     def get_serializer_class(self):
-        if self.action == "tiles":
+        if self.action in ("tiles", "tilejson"):
             return OrgUnitTileFeatureSerializerV3
         return super().get_serializer_class()
 
@@ -214,13 +219,46 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
         """Built like `list()` - same scoping, same FilterSet - then encoded by postgres (see
         `iaso.api.v3.common.mvt`): nothing but the tile bytes goes through python."""
         tile = Tile.validated(z, x, y)
+        queryset, serializer = self._tile_source(request)
+        values = tile_queryset(
+            queryset, drawn_geometry(tile), tile_properties(serializer), tile, geography_columns=GEOGRAPHY_COLUMNS
+        )
+        response = HttpResponse(render_tile(values, TILE_LAYER), content_type=MVT_MEDIA_TYPE)
+        set_tile_cache_headers(response, request.query_params.get("cache_key"))
+        return response
+
+    @extend_schema(
+        summary="TileJSON of the org unit vector tiles",
+        description=(
+            "Describes the tiles of `tiles/{z}/{x}/{y}/` for the same query params, so a map client can use them on "
+            "their own: the tile url (those params included), the zoom range, the feature properties and `bounds`, "
+            "the extent of the matching org units (left out when none is located) - to fit the map to them, and "
+            "which MapLibre also uses to skip the tiles outside. Pass it as a vector source's `url`."
+        ),
+        parameters=TILE_EXTRA_PARAMETERS,
+        filters=True,
+        responses=TileJSONSerializerV3,
+    )
+    @action(detail=False, url_path="tilejson", renderer_classes=[JSONRenderer])
+    def tilejson(self, request):
+        queryset, serializer = self._tile_source(request)
+        # the tiles url, with every query param of this request (filters, `fields`, `cache_key`)
+        tiles_url = request.build_absolute_uri(reverse("orgunits_v3-tiles", kwargs={"z": 0, "x": 0, "y": 0}))
+        tiles_url = tiles_url.replace("/0/0/0/", "/{z}/{x}/{y}/")
+        if request.GET:
+            tiles_url += "?" + request.GET.urlencode(safe=",")
+        bounds = extent_bounds(queryset, extent_geometry())
+        response = Response(tilejson(tiles_url, TILE_LAYER, tile_fields(serializer), bounds))
+        set_tile_cache_headers(response, request.query_params.get("cache_key"))
+        return response
+
+    def _tile_source(self, request):
+        """The rows and the feature properties of the tiles - also described by their TileJSON."""
         queryset = self.filter_queryset(self.get_queryset())
         if "order" not in request.query_params:
             # the default `id` ordering is only for pagination: a tile would pay a sort for nothing
             queryset = queryset.order_by()
         serializer = self.get_serializer(field_tree=self.get_field_tree(request))
-        properties = tile_properties(serializer)
-
         missing_filter = [
             name for name in serializer.requires_closest_located if name in serializer.fields
         ] and "closest_located_via_id" not in queryset.query.annotations
@@ -229,11 +267,7 @@ class OrgUnitViewSetV3(BaseV3ReadOnlyViewSet):
                 "via_id/via_name need the ancestor_id__closest_located filter",
                 "They tell which child of that org unit a feature stands in for.",
             )
-
-        values = tile_queryset(queryset, drawn_geometry(tile), properties, tile, geography_columns=GEOGRAPHY_COLUMNS)
-        response = HttpResponse(render_tile(values, TILE_LAYER), content_type=MVT_MEDIA_TYPE)
-        set_tile_cache_headers(response, request.query_params.get("cache_key"))
-        return response
+        return queryset, serializer
 
     def _export_filename(self, extension: str) -> str:
         profile = getattr(self.request.user, "iaso_profile", None)

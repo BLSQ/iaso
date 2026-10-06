@@ -14,11 +14,12 @@ import math
 
 from typing import Dict, Iterable, NamedTuple, Optional
 
-from django.contrib.gis.db.models import GeometryField
+from django.contrib.gis.db.models import Extent, GeometryField
 from django.contrib.gis.db.models.functions import Transform
 from django.db import connection
 from django.db.models import BooleanField, Expression, F, Func, Q, Value
 from django.utils.cache import patch_vary_headers
+from rest_framework import serializers
 from rest_framework.negotiation import BaseContentNegotiation
 from rest_framework.renderers import BaseRenderer
 
@@ -41,6 +42,11 @@ WEB_MERCATOR_WIDTH = 2 * math.pi * 6378137
 #: from this zoom, a tile covers few enough rows for a geography index prefilter to pay off (below, postgres
 #: reads most of the scoped rows anyway and the extra test only costs time) - see `tile_queryset`
 INDEX_PREFILTER_MIN_ZOOM = 11
+#: zoom up to which clients should request tiles (past it they overzoom): tiles are simplified for their zoom up
+#: to the full shapes, so finer only shows sub-meter rounding while each level is 4 times more tiles
+TILE_SOURCE_MAX_ZOOM = 18
+#: web mercator's latitude limit: TileJSON `bounds` must stay within it
+MAX_MERCATOR_LATITUDE = 85.0511287798066
 #: how long a browser may reuse a tile requested with a `cache_key` (the frontend's tile cache key lives as long)
 TILE_CACHE_MAX_AGE = 15 * 60
 #: column holding the MVT feature id: postgres removes it from the properties
@@ -224,6 +230,50 @@ def set_tile_cache_headers(response, cache_key: Optional[str]):
     up to `TILE_CACHE_MAX_AGE` old: it changes the key (so the url) when it knows the data changed."""
     response["Cache-Control"] = f"private, max-age={TILE_CACHE_MAX_AGE}" if cache_key else "private, no-cache"
     patch_vary_headers(response, ("Cookie", "Authorization"))
+
+
+#: TileJSON's usual field descriptions, for the fields without `help_text`
+_TILEJSON_TYPES = {
+    serializers.IntegerField: "Number",
+    serializers.FloatField: "Number",
+    serializers.BooleanField: "Boolean",
+}
+
+
+def tile_fields(serializer) -> Dict[str, str]:
+    """MVT property name -> its description, for TileJSON's `vector_layers` (same names as `tile_properties`)."""
+    fields = {}
+    for name, field in serializer.fields.items():
+        description = str(field.help_text or _TILEJSON_TYPES.get(type(field), "String"))
+        for property_name in serializer.annotations.get(name, {name: None}):
+            fields[property_name] = description
+    return fields
+
+
+def extent_bounds(queryset, geometry: Expression) -> Optional[list]:
+    """`[west, south, east, north]` of `geometry` over the whole `queryset` (one aggregate), within web
+    mercator's latitudes - `None` when nothing is located."""
+    extent = queryset.order_by().aggregate(extent=Extent(geometry))["extent"]
+    if extent is None:
+        return None
+    west, south, east, north = extent
+    return [west, max(south, -MAX_MERCATOR_LATITUDE), east, min(north, MAX_MERCATOR_LATITUDE)]
+
+
+def tilejson(tiles_url: str, layer_name: str, fields: Dict[str, str], bounds: Optional[list]) -> dict:
+    """A TileJSON 3.0.0 document (https://github.com/mapbox/tilejson-spec): what a map client needs to use a tile
+    source on its own - where to fetch the tiles, up to which zoom, what their features hold and where they are.
+    `bounds` also spares the client the requests of tiles outside them."""
+    document = {
+        "tilejson": "3.0.0",
+        "tiles": [tiles_url],
+        "minzoom": 0,
+        "maxzoom": TILE_SOURCE_MAX_ZOOM,
+        "vector_layers": [{"id": layer_name, "fields": fields}],
+    }
+    if bounds is not None:
+        document["bounds"] = bounds
+    return document
 
 
 def render_tile(values_queryset, layer_name: str) -> bytes:

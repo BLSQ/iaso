@@ -1,3 +1,5 @@
+import { Bounds } from '../../../../components/maps/maplibre';
+
 /** `TILE_LAYER` of `iaso/api/v3/org_units/views.py`: the `source-layer` of every org unit tile */
 export const ORG_UNIT_TILES_SOURCE_LAYER = 'org_units';
 
@@ -10,14 +12,20 @@ export type OrgUnitTilesFilters = Record<
     string | number | boolean | undefined
 >;
 
-/**
- * The `{z}/{x}/{y}` url template of `/api/v3/orgunits/tiles/`, for a vector `<Source>`.
- * Absolute, like the MVT playground: MapLibre fetches tiles from web workers.
- */
-export const orgUnitTilesUrl = (
-    filters: OrgUnitTilesFilters,
-    origin: string = window.location.origin,
-): string => {
+/** What `/api/v3/orgunits/tilejson/` says about the tiles of a query (TileJSON 3.0.0) */
+export type TileJSON = {
+    tilejson: string;
+    /** the tile url template, absolute: MapLibre fetches tiles from web workers */
+    tiles: string[];
+    minzoom: number;
+    maxzoom: number;
+    /** `[west, south, east, north]`, left out when none of the org units is located */
+    bounds?: [number, number, number, number];
+    vector_layers: { id: string; fields: Record<string, string> }[];
+};
+
+/** The TileJSON of the org unit tiles matching `filters` */
+export const orgUnitTileJSONUrl = (filters: OrgUnitTilesFilters): string => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -26,5 +34,12 @@ export const orgUnitTilesUrl = (
     });
     // keep the commas of `fields=` readable in the network tab
     const query = params.toString().replaceAll('%2C', ',');
-    return `${origin}/api/v3/orgunits/tiles/{z}/{x}/{y}/${query ? `?${query}` : ''}`;
+    return `/api/v3/orgunits/tilejson/${query ? `?${query}` : ''}`;
 };
+
+/** TileJSON `bounds` as MapLibre's `[[west, south], [east, north]]` */
+export const tileJSONBounds = ({ bounds }: TileJSON): Bounds | undefined =>
+    bounds && [
+        [bounds[0], bounds[1]],
+        [bounds[2], bounds[3]],
+    ];

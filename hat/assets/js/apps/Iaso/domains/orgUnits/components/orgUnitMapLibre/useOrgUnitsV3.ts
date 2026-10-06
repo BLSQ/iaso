@@ -10,8 +10,6 @@ export type OrgUnitV3 = {
     simplified_geom?: Geometry | null;
     latitude?: number | null;
     longitude?: number | null;
-    /** `[xmin, ymin, xmax, ymax]` of the org unit itself */
-    bbox?: [number, number, number, number] | null;
 };
 
 /** Some org units from `/api/v3/orgunits/`, by id, with only the `fields` asked for. */

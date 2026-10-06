@@ -1,11 +1,19 @@
 import math
 import struct
 
+from unittest import mock
+
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db.models import Func, IntegerField
 
 from iaso import models as m
-from iaso.api.v3.common.mvt import INDEX_PREFILTER_MIN_ZOOM, MVT_MEDIA_TYPE, TILE_CACHE_MAX_AGE, Tile
+from iaso.api.v3.common.mvt import (
+    INDEX_PREFILTER_MIN_ZOOM,
+    MVT_MEDIA_TYPE,
+    TILE_CACHE_MAX_AGE,
+    TILE_SOURCE_MAX_ZOOM,
+    Tile,
+)
 from iaso.api.v3.org_units.expressions import drawn_geometry
 
 from .base import BASE_URL, OrgUnitV3TestCase
@@ -294,6 +302,55 @@ class OrgUnitV3TilesTestCase(TileRequestsMixin, OrgUnitV3TestCase):
         # resolution itself. The profile and account are already loaded on the test user.
         with self.assertNumQueries(4):
             self.get_tile({"fields": "name,has_children,bbox,via_id", "ancestor_id__closest_located": self.country.id})
+
+
+class OrgUnitV3TileJSONTestCase(OrgUnitV3TestCase):
+    """`GET /api/v3/orgunits/tilejson/`: what a map needs to use the tiles on their own."""
+
+    def get_tilejson(self, params=None):
+        return self.get_json(params, url=f"{BASE_URL}tilejson/")
+
+    def test_describes_the_tiles_of_the_same_query(self):
+        tilejson = self.get_tilejson({"org_unit_type_id": self.country_type.id, "fields": "name,bbox"})
+        self.assertEqual(tilejson["tilejson"], "3.0.0")
+        self.assertEqual(
+            tilejson["tiles"],
+            [
+                f"http://testserver{BASE_URL}tiles/{{z}}/{{x}}/{{y}}/"
+                f"?org_unit_type_id={self.country_type.id}&fields=name,bbox"
+            ],
+        )
+        self.assertEqual((tilejson["minzoom"], tilejson["maxzoom"]), (0, TILE_SOURCE_MAX_ZOOM))
+        self.assertEqual(
+            tilejson["vector_layers"][0]["fields"],
+            {
+                "name": "String",
+                **dict.fromkeys(("bbox_xmin", "bbox_ymin", "bbox_xmax", "bbox_ymax"), mock.ANY),
+            },
+        )
+        self.assertEqual(tilejson["vector_layers"][0]["id"], "org_units")
+
+    def test_bounds_are_the_extent_of_the_matching_org_units(self):
+        # the country square and the region point in it - not the other account's Wakanda
+        self.assertEqual(self.get_tilejson()["bounds"], [0, 0, 10, 10])
+        self.assertEqual(self.get_tilejson({"id": self.region.id})["bounds"], [5, 5, 5, 5])
+        # none located: no bounds, TileJSON's default is the whole world
+        self.assertNotIn("bounds", self.get_tilejson({"id": self.district.id}))
+
+    def test_cache_key_is_passed_on_to_the_tiles(self):
+        response = self.client.get(f"{BASE_URL}tilejson/", {"id": self.region.id, "cache_key": "k1"})
+        self.assertEqual(response["Cache-Control"], f"private, max-age={TILE_CACHE_MAX_AGE}")
+        self.assertTrue(response.json()["tiles"][0].endswith(f"?id={self.region.id}&cache_key=k1"))
+
+    def test_validates_like_the_tiles(self):
+        self.assertIn("suggestions", self.get_json({"not_a_param": "1"}, 400, url=f"{BASE_URL}tilejson/"))
+        self.get_json({"fields": "groups"}, 400, url=f"{BASE_URL}tilejson/")
+        self.get_json({"fields": "via_id"}, 400, url=f"{BASE_URL}tilejson/")
+
+    def test_query_count(self):
+        # the extent is one aggregate; the other one is `filter_for_user`
+        with self.assertNumQueries(2):
+            self.get_tilejson({"version_id": self.sw_version_1.id})
 
 
 def zigzag_square(teeth=100, amplitude=0.1):

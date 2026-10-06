@@ -4,41 +4,26 @@ import {
     GeometryStyle,
     geometryLayers,
 } from '../../../../components/maps/maplibre';
-import {
-    ORG_UNIT_TILES_SOURCE_LAYER,
-    OrgUnitTilesFilters,
-    orgUnitTilesUrl,
-} from './orgUnitTiles';
-import { useOrgUnitTilesCacheKey } from './useOrgUnitTilesCacheKey';
-
-// Tiles are simplified for their zoom, up to the full shapes: overzooming past this only shows half a meter
-// rounding, while each zoom level more is 4 times more tile requests for the same area.
-const TILES_MAX_ZOOM = 18;
+import { ORG_UNIT_TILES_SOURCE_LAYER, TileJSON } from './orgUnitTiles';
 
 type Props = GeometryStyle & {
     id: string;
-    filters: OrgUnitTilesFilters;
+    /** from `useOrgUnitTileJSON` */
+    tileJSON: TileJSON;
 };
 
 /**
- * Org units streamed as vector tiles from `/api/v3/orgunits/tiles/`, filtered server side, and kept by the
- * browser as long as the `useOrgUnitTilesCacheKey` key.
- * The MVT feature id is the org unit id: `event.features[0].id` in click handlers.
+ * Org units streamed as vector tiles from `/api/v3/orgunits/tiles/`, as their TileJSON describes them: its
+ * `bounds` spare the requests of the tiles outside. The MVT feature id is the org unit id
+ * (`event.features[0].id` in click handlers).
  */
 export const OrgUnitTilesLayer: FunctionComponent<Props> = ({
     id,
-    filters,
+    tileJSON,
     color,
     fillOpacity,
     lineWidth,
 }) => {
-    const cacheKey = useOrgUnitTilesCacheKey();
-    const filtersKey = JSON.stringify(filters);
-    const tilesUrl = useMemo(
-        () => orgUnitTilesUrl({ ...filters, cache_key: cacheKey }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [filtersKey, cacheKey],
-    );
     const layers = useMemo(
         () =>
             geometryLayers(id, {
@@ -53,8 +38,10 @@ export const OrgUnitTilesLayer: FunctionComponent<Props> = ({
         <Source
             id={id}
             type="vector"
-            tiles={[tilesUrl]}
-            maxzoom={TILES_MAX_ZOOM}
+            tiles={tileJSON.tiles}
+            bounds={tileJSON.bounds}
+            minzoom={tileJSON.minzoom}
+            maxzoom={tileJSON.maxzoom}
         >
             {layers.map(layer => (
                 <Layer key={layer.id} {...layer} />

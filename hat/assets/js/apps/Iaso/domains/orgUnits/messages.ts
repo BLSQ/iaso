@@ -129,7 +129,7 @@ const MESSAGES = defineMessages({
     },
     mapLibreApiMvt: {
         defaultMessage:
-            'MVT: vector tiles from /api/v3/orgunits/tiles/, framed with the extent from /api/v3/orgunits/',
+            'MVT: vector tiles from /api/v3/orgunits/tiles/, described (url, bounds) by /api/v3/orgunits/tilejson/',
         id: 'iaso.orgUnits.mapLibreApiMvt',
     },
     parents: {

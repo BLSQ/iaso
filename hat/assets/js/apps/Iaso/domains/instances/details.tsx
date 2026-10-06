@@ -4,16 +4,16 @@ import { Box, Grid } from '@mui/material';
 
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
-import { MainWrapper } from '../../components/MainWrapper';
-import TopBar from '../../components/nav/TopBarComponent';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 
-import { baseUrls } from '../../constants/urls';
-import { getRequest } from '../../libs/Api';
-import { useSnackQuery } from '../../libs/apiHooks';
+import { baseUrls } from 'Iaso/constants/urls';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import {
     ParamsWithAccountId,
     useParamsObject,
-} from '../../routing/hooks/useParamsObject';
+} from 'Iaso/routing/hooks/useParamsObject';
+import TopBar from '../../components/nav/TopBarComponent';
 import { useGetEntityFields } from '../entities/hooks/useGetEntityFields';
 import { Descriptor } from './components/InstanceFileContentRich';
 import SpeedDialInstance from './components/SpeedDialInstance';
@@ -144,6 +144,9 @@ const InstanceDetails: FunctionComponent = () => {
                                 <SubmissionRail
                                     currentInstance={currentInstance}
                                     showHistoryLink={showHistoryLink}
+                                    showValidation={
+                                        params.isValidating === 'true'
+                                    }
                                     onLightBoxToggled={open =>
                                         setShowDial(!open)
                                     }

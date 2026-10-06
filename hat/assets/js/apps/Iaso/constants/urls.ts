@@ -133,7 +133,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     instanceDetail: {
         url: 'forms/submission',
-        params: ['accountId', 'instanceId', 'referenceFormId'],
+        params: ['accountId', 'instanceId', 'referenceFormId', 'isValidating'],
     },
     instanceValidation: {
         url: 'forms/submission/validate',

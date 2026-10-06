@@ -1,6 +1,6 @@
 import React from 'react';
 import Add from '@mui/icons-material/Add';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
@@ -22,7 +22,7 @@ import { Filters } from './components/Filters';
 import { useWorkflowsTableColumns } from './config';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles((theme: any) => {
+const useStyles = makeStyles((theme: Theme) => {
     return { ...commonStyles(theme) };
 });
 

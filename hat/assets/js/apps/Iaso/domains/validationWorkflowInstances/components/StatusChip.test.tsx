@@ -50,8 +50,8 @@ describe('StatusChip', () => {
     });
 
     it('renders any other option with primary color', () => {
-        // @ts-ignore
         const word = faker.word.noun();
+        // @ts-ignore
         render(<StatusChip status={word} />);
 
         expect(screen.getByTestId('chip')).toHaveAttribute(

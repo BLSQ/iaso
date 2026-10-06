@@ -1,4 +1,5 @@
 import React from 'react';
+import { Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/system';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
@@ -14,7 +15,7 @@ import {
 import { ValidationWorkflowInstanceSearchFilter } from './components/ValidationWorkflowInstanceSearchFilter';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles((theme: any) => {
+const useStyles = makeStyles((theme: Theme) => {
     return { ...commonStyles(theme) };
 });
 

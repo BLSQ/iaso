@@ -125,8 +125,12 @@ export const OrgUnits: FunctionComponent = () => {
 
     const onSearch = useCallback(
         (newParams: OrgUnitParams) => {
+            // a new search, new results: the clustering picked for the last ones is dropped, so the maps go back
+            // to their default (the MapLibre map: the server's pick for these results)
+            const { isClusterActive: _isClusterActive, ...searchParams } =
+                newParams;
             const tempParams = {
-                ...newParams,
+                ...searchParams,
                 searches: JSON.stringify(newParams.searches),
             };
             navigate(makeRedirectionUrl(baseUrl, tempParams), {

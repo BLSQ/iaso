@@ -8,7 +8,7 @@ import {
     userHasPermission,
 } from 'Iaso/domains/users/utils';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
-import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
+import { SUBMISSIONS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 type ValidationWorkflowDropdownProps = Omit<
@@ -20,7 +20,7 @@ export const ValidationWorkflowDropdown = ({
     ...props
 }: ValidationWorkflowDropdownProps) => {
     const currentUser = useCurrentUser();
-    const hasPermission = userHasPermission(VALIDATION_WORKFLOWS, currentUser);
+    const hasPermission = userHasPermission(SUBMISSIONS, currentUser);
     const userHasModule = userHasAccessToModule(
         VALIDATION_WORKFLOW_MODULE,
         currentUser,

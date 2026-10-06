@@ -1,4 +1,5 @@
 from drf_spectacular.utils import extend_schema
+from rest_framework import filters
 
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission
 from plugins.polio.api.vaccines.stock_management.incidents.serializers import IncidentReportSerializer
@@ -23,3 +24,5 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
         )
     ]
     ordering_fields = ["doses_per_vial"]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["title", "stock_correction"]

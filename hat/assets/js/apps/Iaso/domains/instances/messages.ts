@@ -53,6 +53,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Version',
         id: 'iaso.label.version',
     },
+    formVersions: {
+        defaultMessage: 'Form versions',
+        id: 'iaso.instances.formVersions',
+    },
+    selectFormFirst: {
+        defaultMessage: 'You must select at least one form first',
+        id: 'iaso.instances.selectFormFirst',
+    },
     downloadXml: {
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
@@ -926,6 +934,11 @@ const MESSAGES = defineMessages({
         defaultMessage: '{count, plural, one {# field} other {# fields}}',
         id: 'iaso.instance.fieldsCount',
     },
+    repeatedCount: {
+        defaultMessage:
+            'Repeat · {count, plural, one {# entry} other {# entries}}',
+        id: 'iaso.instance.repeatedCount',
+    },
     matchingFieldsCount: {
         defaultMessage: '{count} of {total}',
         id: 'iaso.instance.matchingFieldsCount',
@@ -1005,6 +1018,10 @@ const MESSAGES = defineMessages({
     org_unit_status: {
         id: 'iaso.instance.org_unit_status',
         defaultMessage: 'Org Unit Status',
+    },
+    downloadAll: {
+        id: 'iaso.instance.downloadAll',
+        defaultMessage: 'Download all',
     },
 });
 

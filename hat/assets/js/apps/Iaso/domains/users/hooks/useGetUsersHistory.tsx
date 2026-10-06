@@ -14,7 +14,10 @@ const apiUrl = '/api/userlogs/';
 export const useGetUsersHistory = params => {
     const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
-    const queryString = new URLSearchParams(apiParams).toString();
+    // `fields` only drives column visibility in the UI, the API doesn't support it
+    const cleanApiParams = { ...(apiParams as Record<string, any>) };
+    delete cleanApiParams.fields;
+    const queryString = new URLSearchParams(cleanApiParams).toString();
     const url = `${apiUrl}?${queryString}`;
     return useSnackQuery({
         queryKey: ['usersHistoryList', url],

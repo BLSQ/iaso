@@ -1,0 +1,52 @@
+# Runs the background tasks like on the Elastic Beanstalk worker environment: through an SQS queue (ElasticMQ)
+# read by an sqsd daemon (simple-sqsd) that POSTs each task to /tasks/task/, instead of the Postgres worker.
+#
+#   docker compose -f docker-compose.yml -f docker/sqs/docker-compose.yml up iaso elasticmq sqsd
+#
+# See docs/pages/dev/reference/background_tasks.en.md
+services:
+  iaso:
+    environment:
+      BACKGROUND_TASK_SERVICE: SQS
+      WORKER: "true"
+      BEANSTALK_SQS_URL: http://elasticmq:9324/000000000000/iaso-tasks
+      BEANSTALK_SQS_REGION: elasticmq
+      AWS_ENDPOINT_URL_SQS: http://elasticmq:9324
+      # ElasticMQ ignores the credentials, but boto3 needs some
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-local}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-local}
+    depends_on:
+      - elasticmq
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:8081/_health/"]
+      interval: 5s
+      retries: 60
+
+  elasticmq:
+    image: softwaremill/elasticmq-native:1.6.12
+    volumes:
+      # relative to the project directory (the one of the first compose file)
+      - ./docker/sqs/elasticmq.conf:/opt/elasticmq.conf:ro
+    ports:
+      - "9324:9324" # SQS API
+      - "9325:9325" # web UI with the queue statistics: http://localhost:9325
+
+  sqsd:
+    image: ghcr.io/fterrag/simple-sqsd:latest
+    depends_on:
+      elasticmq:
+        condition: service_started
+      # a task sent before the dev server is up would only be retried after the visibility timeout
+      iaso:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      SQSD_AWS_ENDPOINT: http://elasticmq:9324
+      SQSD_QUEUE_REGION: elasticmq
+      SQSD_QUEUE_URL: http://elasticmq:9324/000000000000/iaso-tasks
+      SQSD_HTTP_URL: http://iaso:8081/tasks/task/
+      SQSD_HTTP_CONTENT_TYPE: application/json
+      # concurrent tasks, like the HttpConnections of the Elastic Beanstalk worker
+      SQSD_HTTP_MAX_CONNS: 10
+      SQSD_HTTP_TIMEOUT: 900

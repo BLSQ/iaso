@@ -72,7 +72,6 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
 
             <Grid item xs={12} md={3}>
                 <OrgUnitTreeviewModal
-                    toggleOnLabelClick={false}
                     titleMessage={MESSAGES.orgUnit}
                     source={dataSource.toString()}
                     version={sourceVersion.version.id}

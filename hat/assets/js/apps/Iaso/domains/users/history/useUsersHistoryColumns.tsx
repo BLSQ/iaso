@@ -75,7 +75,7 @@ export const useUsersHistoryColumns = () => {
                 },
             },
             {
-                Header: '', // This is to please the tS compiler
+                Header: formatMessage(MESSAGES.actions),
                 expander: true,
                 accessor: 'expander',
                 width: 65,

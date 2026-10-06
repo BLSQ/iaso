@@ -11,7 +11,7 @@ import {
     userHasAllPermissions,
 } from 'Iaso/domains/users/utils';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
-import { SUBMISSIONS, VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
+import { SUBMISSIONS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
 type InstanceValidationWidgetPaperProps = {
@@ -31,10 +31,7 @@ export const useValidationAvailability = ():
         return 'moduleDisabled';
     }
     if (
-        !userHasAllPermissions(
-            [VALIDATION_WORKFLOWS, SUBMISSIONS],
-            currentUser,
-        ) &&
+        !userHasAllPermissions([SUBMISSIONS], currentUser) &&
         !currentUser.is_superuser
     ) {
         return 'missingPermissions';
@@ -67,9 +64,6 @@ export const InstanceValidationContent = ({
             <Alert severity="warning">
                 {formatMessage(MESSAGES.missingPermissions, {
                     permissions: [
-                        formatMessage(
-                            PERMISSIONS_MESSAGES[VALIDATION_WORKFLOWS],
-                        ),
                         formatMessage(PERMISSIONS_MESSAGES[SUBMISSIONS]),
                     ].join(', '),
                 })}

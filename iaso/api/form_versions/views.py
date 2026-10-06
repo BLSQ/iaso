@@ -61,7 +61,8 @@ class FormVersionsViewSet(ModelViewSet):
                     raise exceptions.NotAuthenticated
                 raise exceptions.NotFound(f"Project not found for {app_id}")
             queryset = FormVersion.objects.filter(
-                Exists(Project.objects.filter(app_id=app_id, forms=OuterRef("form_id")))
+                Exists(Project.objects.filter(app_id=app_id, forms=OuterRef("form_id"))),
+                form__derived=False,
             )
         elif self.request.user.is_anonymous:
             raise exceptions.NotAuthenticated
@@ -87,6 +88,9 @@ class FormVersionsViewSet(ModelViewSet):
         form_id = self.request.query_params.get("form_id", None)
         if form_id:
             queryset = queryset.filter(form__id=form_id)
+        form_ids = self.request.query_params.get("form_ids", None)
+        if form_ids:
+            queryset = queryset.filter(form_id__in=form_ids.split(","))
         version_id = self.request.query_params.get("version_id", None)
         if version_id:
             queryset = queryset.filter(version_id=version_id)

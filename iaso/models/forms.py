@@ -288,6 +288,21 @@ def _reformat_questions(questions):
 
 # TODO: check if we really need a manager and a queryset for this model - some simplification would be good
 class FormVersionManager(models.Manager):
+    def find_for_form(self, form_id, version_id, cache: typing.Optional[dict] = None) -> "typing.Optional[FormVersion]":
+        """
+        FormVersion of `form_id` with `version_id`, or None. Pass the same `cache` dict for a whole
+        batch (e.g. a bulk upload, where many instances share a few (form, version) pairs) to look
+        each pair up only once - misses are cached too, so only share it for as long as no
+        FormVersion can be created in the meantime.
+        """
+        key = (form_id, version_id)
+        if cache is not None and key in cache:
+            return cache[key]
+        form_version = self.filter(form_id=form_id, version_id=version_id).first()
+        if cache is not None:
+            cache[key] = form_version
+        return form_version
+
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)  # type: ignore

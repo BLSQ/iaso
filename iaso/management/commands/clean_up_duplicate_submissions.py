@@ -104,6 +104,7 @@ class Command(BaseCommand):
                     first.device = file.device
                     if not first.correlation_id:
                         first.correlation_id = file.correlation_id
+                    first.resolve_form_version()
                     first.save()
                     self.stdout.write(self.style.WARNING(" - Deleting instances with file_name matching."))
                     file_name_qs.delete()

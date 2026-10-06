@@ -22,3 +22,105 @@ the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
 task.report_success() to mark its proper completion.
+
+## Throttling
+
+A task can limit how many of its runs happen at the same time, in total and per key (e.g. per account),
+with the `throttle` argument of `@task_decorator`:
+
+```python
+@task_decorator(
+    task_name="process_mobile_bulk_upload",
+    throttle=Throttle(
+        concurrency=[
+            Concurrency("global", limit=5),
+            Concurrency("account", limit=2, key=lambda task, **kwargs: task.account_id),
+        ]
+    ),
+)
+```
+
+The limits are checked when the worker is about to start the task. A task over a limit stays `QUEUED`
+and is sent back to the SQS queue with an exponential backoff. Only the SQS worker enforces them: the
+Postgres worker used in development runs one task at a time.
+
+A task still throttled 24 hours after its creation (`MAX_THROTTLE_WAIT`) is marked `ERRORED`, unless
+its task is paused in the config, and an error is logged (so it reaches Sentry): a slot may be held by a
+stuck task, see [Stuck tasks](#stuck-tasks). A task killed while it waits is marked `KILLED` without being
+started.
+
+The limits are checked under a Postgres advisory lock per task name. A worker that can't get it within
+10 seconds (`THROTTLE_LOCK_TIMEOUT`) logs an error and defers the task, instead of waiting forever.
+
+Every task also has the built-in limits `global`, `account` and `user` (per launching user), unlimited
+by default, so any task can be throttled without changing its code.
+
+The limits can be changed without deploying on the Django admin page **Configs › Task throttles**
+(`/admin/iaso/config/task-throttles/`), which also shows how many runs use each limit and lets you
+throttle any other task. It saves them in the `Config` of slug `task_throttles`, keyed by task name
+and `Concurrency` name. `null` means unlimited, `keys` overrides the limit for one key and `paused`
+keeps all the runs of the task waiting:
+
+```json
+{
+    "process_mobile_bulk_upload": {
+        "global": 5,
+        "account": {"default": 2, "keys": {"42": 4}},
+        "paused": false
+    }
+}
+```
+
+The Django admin page **Tasks › Monitor** (`/admin/iaso/task/monitor/`) shows, per task, how many are
+queued, throttled, running and finished (success, errored, killed), with the p50 / p90 / p99 / max execution
+time of the successful ones, over the last hour, day, week or month. For each limit set, it shows the runs using
+it and waiting for it, per key.
+
+## Lost tasks
+
+While a task runs, the worker refreshes a heartbeat in its `TaskLease` every 30 seconds. When a worker
+is killed, the heartbeat stops: after 3 minutes the task no longer occupies its throttle slot, and it is
+marked `ERRORED` by `/tasks/reap_lost_tasks/`, called every 5 minutes by sqsd (see `cron.yaml`).
+
+## Stuck tasks
+
+The heartbeat only proves that the worker process is alive, not that the task progresses. A task stuck
+in an infinite loop or on a call that never returns keeps its lease, so it holds its throttle slots and
+the next runs wait (and give up after 24 hours). Killing it from the web UI doesn't help: it only stops
+when the task next reports its progress.
+
+To unblock the next runs, select the task in the Django admin task list and run the action **Kill
+selected running tasks and free their throttle slots**: the task is marked `KILLED` and its lease is
+deleted. Its code may still run (and use the database) until it reports its progress, which then stops
+it, or until the worker restarts: restarting the worker is the only way to really stop it. Raising the
+limit in **Configs › Task throttles** also lets the next runs start.
+
+## Run the tasks through SQS locally
+
+By default the development environment runs the tasks with the Postgres worker. To run them like on the
+Elastic Beanstalk worker environment, through an SQS queue and an sqsd daemon (and so test the
+throttling), use `docker/sqs/docker-compose.yml`. It starts [ElasticMQ](https://github.com/softwaremill/elasticmq)
+(an SQS-compatible server) and [simple-sqsd](https://github.com/fterrag/simple-sqsd), which POSTs each
+queued task to `/tasks/task/` of the dev server:
+
+```bash
+docker compose -f docker-compose.yml -f docker/sqs/docker-compose.yml up iaso elasticmq sqsd
+```
+
+The queue statistics are at [http://localhost:9325](http://localhost:9325). `iaso.tasks.dummy_task`
+is a task that only waits, handy to test with. To queue 4 runs of 20 seconds, in the running `iaso`
+container so that they go through SQS, launched by the first user having an Iaso profile:
+
+```bash
+docker compose -f docker-compose.yml -f docker/sqs/docker-compose.yml exec iaso ./manage.py shell -c '
+from django.contrib.auth.models import User
+from iaso.tasks.dummy_task import dummy_task
+user = User.objects.filter(iaso_profile__isnull=False).order_by("id").first()
+for i in range(4):
+    print(dummy_task(duration=20, label=f"test {i}", user=user))
+'
+```
+
+Follow them in the task list of the web interface, or on the Task throttles admin page.
+
+The periodic tasks of `cron.yaml` are not run.

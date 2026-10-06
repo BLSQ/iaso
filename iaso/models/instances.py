@@ -5,7 +5,7 @@ import time
 import typing
 
 from functools import reduce
-from io import StringIO
+from io import BytesIO, StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -17,7 +17,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
@@ -236,6 +236,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
         self,
         form_id=None,
         form_ids=None,
+        form_version_ids=None,
         with_location=None,
         org_unit_type_id=None,
         device_id=None,
@@ -338,6 +339,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
+
+        if form_version_ids:
+            queryset = queryset.filter(form_version_id__in=form_version_ids.split(","))
 
         if show_deleted:
             queryset = queryset.filter(deleted=True)
@@ -501,7 +505,7 @@ class Instance(ValidationWorkflowArtefact):
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
     name = models.TextField(null=True, blank=True)  # form.name
-    file = SizedFileField(upload_to=instance_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=instance_upload_to, null=True, blank=True, max_length=255)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -592,7 +596,7 @@ class Instance(ValidationWorkflowArtefact):
     def get_absolute_url(self):
         return f"/dashboard/forms/submission/instanceId/{self.pk}"
 
-    def convert_location_from_field(self, field_name=None):
+    def convert_location_from_field(self, field_name=None, save=True):
         f = field_name
         if f is None:
             f = self.form.location_field
@@ -602,9 +606,10 @@ class Instance(ValidationWorkflowArtefact):
                 latitude, longitude, altitude = coords[:3]
                 self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 self.accuracy = coords[3] if len(coords) > 3 else None
-                self.save()
+                if save:
+                    self.save()
 
-    def convert_device(self):
+    def convert_device(self, save=True):
         if self.json and not self.device:
             device_field = self.form.device_field
             if not device_field:
@@ -613,11 +618,12 @@ class Instance(ValidationWorkflowArtefact):
             if imei is not None:
                 device, created = Device.objects.get_or_create(imei=imei)
                 self.device = device
-                self.save()
+                if save:
+                    self.save()
                 if self.project:
                     self.device.projects.add(self.project)
 
-    def convert_correlation(self):
+    def convert_correlation(self, save=True):
         if not self.correlation_id:
             identifier = str(self.id)
             if self.form.correlation_field and self.json:
@@ -627,9 +633,12 @@ class Instance(ValidationWorkflowArtefact):
             value = int(identifier + random_number)
             suffix = f"{value % 97:02d}"
             self.correlation_id = identifier + random_number + suffix
-            self.save()
+            if save:
+                self.save()
 
-    def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
+    def xml_file_to_json(
+        self, file: typing.IO, form_versions_cache: typing.Optional[dict] = None
+    ) -> typing.Dict[str, typing.Any]:
         raw_content = file.read().decode("utf-8")
         fixed_content = fix_emoji(raw_content).decode("utf-8")
         copy_io_utf8 = StringIO(fixed_content)
@@ -638,9 +647,12 @@ class Instance(ValidationWorkflowArtefact):
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
             # TODO: investigate: can self.form be None here? What's the expected behavior?
-            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
-            form_version = form_versions.first()
+            form_version = FormVersion.objects.find_for_form(self.form.id, form_version_id, form_versions_cache)  # type: ignore
             if form_version:
+                # Same (version_id, form) pair `resolve_form_version()` would otherwise look up
+                # again right after this method returns (see `get_and_save_json_of_xml`) - set
+                # it here directly instead of re-querying FormVersion for the same instance.
+                self.form_version = form_version
                 questions_by_path = form_version.questions_by_path()
                 allowed_paths = set(questions_by_path.keys())
                 allowed_paths.update(self.ALWAYS_ALLOWED_PATHS_XML)
@@ -657,13 +669,24 @@ class Instance(ValidationWorkflowArtefact):
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
         return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False, tries=3):
+    def get_and_save_json_of_xml(
+        self, force=False, tries=3, save=True, xml_content: typing.Optional[bytes] = None, form_versions_cache=None
+    ):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
 
         When downloading from S3, attempt `tries` times (3 by default) with
         exponential backoff.
+
+        `save=False` skips the save, for callers that will save `self` themselves right after
+        (e.g. together with other in-memory changes, to avoid a separate round-trip).
+
+        `xml_content`: the raw bytes of `self.file`, for callers that already hold them in memory
+        (e.g. just read from a bulk upload zip). They're parsed directly instead of downloading
+        `self.file` back from storage - on S3 that's a full extra HTTP round-trip per instance.
+
+        `form_versions_cache`: see `FormVersionManager.find_for_form()`.
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -672,7 +695,9 @@ class Instance(ValidationWorkflowArtefact):
             return self.json
         if self.file:
             # not converted yet, but we have a file, so we can convert it
-            if "amazonaws" in self.file.url:
+            if xml_content is not None:
+                file = BytesIO(xml_content)
+            elif "amazonaws" in self.file.url:
                 for i in range(tries):
                     try:
                         file = urlopen(self.file.url)
@@ -686,8 +711,9 @@ class Instance(ValidationWorkflowArtefact):
             else:
                 file = self.file
 
-            self.json = self.xml_file_to_json(file)
-            self.save()
+            self.json = self.xml_file_to_json(file, form_versions_cache)
+            if save:
+                self.save()
             return self.json
         # no file, no json, when/why does this happen?
         return {}
@@ -938,14 +964,21 @@ class Instance(ValidationWorkflowArtefact):
     def has_org_unit(self):
         return self.org_unit if self.org_unit else None
 
-    def save(self, *args, **kwargs):
+    def resolve_form_version(self, form_versions_cache=None):
+        """
+        Set `form_version` from `self.json["_version"]` + `form_id`, if a matching FormVersion
+        exists. Call this explicitly right after `self.json` is (re)computed from a submission's
+        XML/data -- it used to run on every single `save()` regardless of whether `json` had
+        changed, which meant a `FormVersion` lookup on every save in a save-heavy chain (location/
+        device/correlation conversions, etc.) even when nothing about the version could have
+        changed since the previous save.
+
+        `form_versions_cache`: see `FormVersionManager.find_for_form()`.
+        """
         if self.json is not None and self.json.get("_version"):
-            try:
-                form_version = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id)
+            form_version = FormVersion.objects.find_for_form(self.form.id, self.json["_version"], form_versions_cache)
+            if form_version is not None:
                 self.form_version = form_version
-            except ObjectDoesNotExist:
-                pass
-        return super(Instance, self).save(*args, **kwargs)
 
 
 class InstanceFileExtensionQuerySet(models.QuerySet):
@@ -1027,7 +1060,7 @@ class InstanceFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    file = SizedFileField(upload_to=instance_file_upload_to, null=True, blank=True)
+    file = SizedFileField(upload_to=instance_file_upload_to, null=True, blank=True, max_length=255)
     deleted = models.BooleanField(default=False)
 
     objects = models.Manager()

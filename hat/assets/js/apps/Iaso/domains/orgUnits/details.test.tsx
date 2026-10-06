@@ -30,11 +30,14 @@ vi.mock('./hooks', async importOriginal => {
     const actual = await importOriginal<typeof import('./hooks')>();
     return {
         ...actual,
-        useOrgUnitDetailData: mockUseOrgUnitDetailData,
         useSaveOrgUnit: mockUseSaveOrgUnit,
         useRefreshOrgUnit: mockUseRefreshOrgUnit,
     };
 });
+
+vi.mock('./details/useOrgUnitDetailData', () => ({
+    useOrgUnitDetailData: mockUseOrgUnitDetailData,
+}));
 
 vi.mock('../home/hooks/useGetOrgunitsExtraPath', () => ({
     useGetOrgunitsExtraPath: mockUseGetOrgunitsExtraPath,

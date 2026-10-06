@@ -161,10 +161,15 @@ export const searchOrgUnits = async ({
 
 export const useGetOrgUnit = (
     orgUnitId?: string,
+    // Optional `fields=` allow-list to skip the expensive instances_count.
+    fields?: string,
 ): UseQueryResult<OrgUnit, Error> =>
     useSnackQuery(
-        ['orgunits', `${orgUnitId}`],
-        () => getRequest(`/api/orgunits/${orgUnitId}/`),
+        ['orgunits', `${orgUnitId}`, fields],
+        () =>
+            getRequest(
+                `/api/orgunits/${orgUnitId}/${fields ? `?fields=${fields}` : ''}`,
+            ),
         undefined,
         {
             enabled: Boolean(orgUnitId),

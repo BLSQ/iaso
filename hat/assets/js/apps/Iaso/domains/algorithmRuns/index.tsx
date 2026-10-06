@@ -4,13 +4,13 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 import MESSAGES from '../links/messages';
-import { AlgoRunsFilters } from './AlgoRunsFilters';
+import { AlgoRunsFilters } from './components/AlgoRunsFilters';
 import {
     useGetAlgorithmRuns,
     tableDefaults,
@@ -40,7 +40,7 @@ export const Runs: FunctionComponent = () => {
         params,
         enabled: Boolean(params.searchActive),
     });
-    // declaring this here to have an easy access to isSaving
+    // declaring this here to have easy access to isSaving
     const { mutateAsync: launchRun, isLoading: isSaving } =
         useLaunchAlgorithmRun();
 

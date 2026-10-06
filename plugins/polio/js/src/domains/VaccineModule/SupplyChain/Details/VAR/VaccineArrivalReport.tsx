@@ -250,41 +250,24 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                     markedForDeletion ? classes.markedForDeletion : '',
                 )}
             >
-                <Grid container>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+                <Grid container columnSpacing={2}>
+                    <Grid item xs={12} md={3}>
                             {/* TODO Add errors */}
-                            <Box mb={2}>
-                                <Field
-                                    label={formatMessage(MESSAGES.po_number)}
-                                    name={`${VAR}[${index}].po_number`}
-                                    component={Select}
-                                    shrinkLabel={false}
-                                    freeSolo
-                                    options={poNumberOptions}
-                                    disabled={
-                                        markedForDeletion ||
-                                        !arrival_reports?.[index].can_edit
-                                    }
-                                    required
-                                    onChange={handleChangePoNumber}
-                                />
-                            </Box>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_shipped)}
-                                name={`${VAR}[${index}].vials_shipped`}
-                                component={NumberInput}
-                                disabled={
-                                    markedForDeletion ||
-                                    !arrival_reports?.[index].can_edit
-                                }
-                                onFocus={onVialsShippedFocused}
-                                onBlur={onVialsShippedBlur}
-                                onChange={handleVialsShippededUpdate}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
+                        <Field
+                            label={formatMessage(MESSAGES.po_number)}
+                            name={`${VAR}[${index}].po_number`}
+                            component={Select}
+                            shrinkLabel={false}
+                            freeSolo
+                            options={poNumberOptions}
+                            disabled={
+                                markedForDeletion ||
+                                !arrival_reports?.[index].can_edit
+                            }
+                            required
+                            onChange={handleChangePoNumber}
+                        />
+                        <Box mt={2}>
                             <Field
                                 label={formatMessage(
                                     MESSAGES.arrival_report_date,
@@ -297,36 +280,47 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 }
                                 required
                             />
-                            <Field
-                                label={formatMessage(MESSAGES.vials_received)}
-                                name={`${VAR}[${index}].vials_received`}
-                                component={NumberInput}
-                                disabled={
-                                    markedForDeletion ||
-                                    !arrival_reports?.[index].can_edit
-                                }
-                                onFocus={onVialsReceivedFocused}
-                                onBlur={onVialsReceivedBlur}
-                                onChange={handleVialsReceivedUpdate}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.doses_per_vial)}
-                                name={`arrival_reports[${index}].doses_per_vial`}
-                                component={SingleSelect}
-                                disabled={
-                                    markedForDeletion ||
-                                    !arrival_reports?.[index].can_edit ||
-                                    dosesForVaccineOptions.length === 1
-                                }
-                                onChange={handleDosesPerVialUpdate}
-                                options={dosesForVaccineOptions}
-                                clearable={false}
-                                required
-                            />
-                            <Box mt={2}>
+                        </Box>
+                    </Grid>
+
+                    <Grid container item xs={12} md={9}>
+                        <Grid container item xs={12} columnSpacing={2}>
+                            <Grid item xs={6} md={4}>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.vials_shipped,
+                                    )}
+                                    name={`${VAR}[${index}].vials_shipped`}
+                                    component={NumberInput}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !arrival_reports?.[index].can_edit
+                                    }
+                                    onFocus={onVialsShippedFocused}
+                                    onBlur={onVialsShippedBlur}
+                                    onChange={handleVialsShippededUpdate}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={6} md={4}>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.doses_per_vial,
+                                    )}
+                                    name={`arrival_reports[${index}].doses_per_vial`}
+                                    component={SingleSelect}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !arrival_reports?.[index].can_edit ||
+                                        dosesForVaccineOptions.length === 1
+                                    }
+                                    onChange={handleDosesPerVialUpdate}
+                                    options={dosesForVaccineOptions}
+                                    clearable={false}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={6} md={4}>
                                 <Field
                                     label={formatMessage(
                                         MESSAGES.doses_shipped,
@@ -342,23 +336,50 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                     onChange={handleDosesShippedUpdate}
                                     required
                                 />
-                            </Box>
+                            </Grid>
                         </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.doses_received)}
-                                name={`${VAR}[${index}].doses_received`}
-                                component={NumberInput}
-                                disabled={
-                                    markedForDeletion ||
-                                    !arrival_reports?.[index].can_edit
-                                }
-                                onFocus={onDosesReceivedFocused}
-                                onBlur={onDosesReceivedBlur}
-                                onChange={handleDosesReceivedUpdate}
-                                required
-                            />
+                        <Grid
+                            container
+                            item
+                            xs={12}
+                            columnSpacing={2}
+                            sx={{ mt: 2 }}
+                        >
+                            <Grid item xs={6} md={4}>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.vials_received,
+                                    )}
+                                    name={`${VAR}[${index}].vials_received`}
+                                    component={NumberInput}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !arrival_reports?.[index].can_edit
+                                    }
+                                    onFocus={onVialsReceivedFocused}
+                                    onBlur={onVialsReceivedBlur}
+                                    onChange={handleVialsReceivedUpdate}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={6} md={4}>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.doses_received,
+                                    )}
+                                    name={`${VAR}[${index}].doses_received`}
+                                    component={NumberInput}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !arrival_reports?.[index].can_edit
+                                    }
+                                    onFocus={onDosesReceivedFocused}
+                                    onBlur={onDosesReceivedBlur}
+                                    onChange={handleDosesReceivedUpdate}
+                                    required
+                                />
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>

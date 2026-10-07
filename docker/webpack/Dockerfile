@@ -1,4 +1,4 @@
-FROM node:22.18.0-bullseye-slim
+FROM node:22.18.0-bookworm-slim
 
 ENV PROJECT_ROOT /opt
 WORKDIR /opt/app

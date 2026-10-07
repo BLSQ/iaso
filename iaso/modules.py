@@ -42,6 +42,7 @@ MODULE_STOCK = IasoModule(name=_("Stock management"), codename="STOCK_MANAGEMENT
 MODULE_SNT_MALARIA = IasoModule(name=_("SNT Malaria"), codename="SNT_MALARIA", related_plugin="snt_malaria")
 MODULE_FORM_AI = IasoModule(name=_("Form AI"), codename="FORM_AI")
 MODULE_VALIDATION_WORKFLOW = IasoModule(name=_("Validation workflow"), codename="VALIDATION_WORKFLOW")
+MODULE_SAP = IasoModule(name=_("Système d'alerte précoce (SAP)"), codename="SAP", related_plugin="sap")
 
 MODULES = [
     module for name, module in globals().items() if name.startswith("MODULE_") and isinstance(module, IasoModule)

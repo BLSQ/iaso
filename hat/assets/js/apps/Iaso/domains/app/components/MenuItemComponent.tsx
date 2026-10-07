@@ -9,6 +9,7 @@ import {
     Collapse,
     List,
     Box,
+    Chip,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -77,6 +78,20 @@ const MenuItem: FunctionComponent<Props> = ({
     ) : (
         <ExpandMore color={color} />
     );
+    const formatLabel = label =>
+        typeof label === 'string'
+            ? label
+            : label?.defaultMessage && label.id && formatMessage(label);
+    const badge = menuItem.badge && (
+        <Chip
+            label={formatLabel(menuItem.badge)}
+            size="small"
+            variant="outlined"
+            color="secondary"
+            component="span"
+            sx={{ ml: 1, height: 18, fontSize: 11, verticalAlign: 'middle' }}
+        />
+    );
     const itemStyle = {
         paddingLeft: muiTheme.spacing(subMenuLevel * 2),
     };
@@ -101,11 +116,8 @@ const MenuItem: FunctionComponent<Props> = ({
                                 {/* type prop should be variant. Check impact on UI layout before changing */}
                                 {/* @ts-ignore */}
                                 <Typography type="body2" color={color}>
-                                    {menuItem.label.defaultMessage &&
-                                        menuItem.label.id &&
-                                        formatMessage(menuItem.label)}
-                                    {typeof menuItem.label === 'string' &&
-                                        menuItem.label}
+                                    {formatLabel(menuItem.label)}
+                                    {badge}
                                 </Typography>
                             </Box>
                         }
@@ -171,11 +183,8 @@ const MenuItem: FunctionComponent<Props> = ({
                             {/* type prop should be variant. Check impact on UI layout before changing */}
                             {/* @ts-ignore */}
                             <Typography type="body2" color={color}>
-                                {menuItem.label.defaultMessage &&
-                                    menuItem.label.id &&
-                                    formatMessage(menuItem.label)}
-                                {typeof menuItem.label === 'string' &&
-                                    menuItem.label}
+                                {formatLabel(menuItem.label)}
+                                {badge}
                             </Typography>
                         </Box>
                     }

@@ -13,6 +13,8 @@ export type MenuItem = {
     isActive?: (pathname: string) => boolean;
     dev?: boolean;
     featureFlag?: string;
+    // Small label shown after the item's name, e.g. "Beta"
+    badge?: string | IntlMessage;
 };
 export type MenuItems = MenuItem[];
 

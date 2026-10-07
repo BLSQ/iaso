@@ -30,7 +30,7 @@ const WEBPACK_PORT = process.env.WEBPACK_PORT;
 const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL;
 const WEBPACK_URL =
     WEBPACK_HOST && WEBPACK_PORT && WEBPACK_PROTOCOL
-        ? `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`
+        ? `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}/`
         : '';
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');

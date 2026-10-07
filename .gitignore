@@ -197,6 +197,7 @@ plugins/snt-malaria
 plugins/saas
 plugins/ginger
 plugins/active_list
+plugins/sap
 
 # some local env config to be ignored
 .direnv

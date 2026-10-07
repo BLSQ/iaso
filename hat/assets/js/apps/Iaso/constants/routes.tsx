@@ -21,7 +21,6 @@ import Completeness from '../domains/completeness';
 import { CompletenessStats } from '../domains/completenessStats';
 import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details';
-import Devices from '../domains/devices';
 import { Entities } from '../domains/entities';
 import { Details as EntityDetail } from '../domains/entities/details';
 import { DuplicateAnalyses } from '../domains/entities/duplicate-analyses/DuplicateAnalyses';
@@ -332,13 +331,6 @@ export const tasksPath = {
     element: <Tasks />,
 };
 
-export const devicesPath = {
-    baseUrl: baseUrls.devices,
-    routerUrl: `${baseUrls.devices}/*`,
-    permissions: [Permission.DATA_DEVICES],
-    element: <Devices />,
-};
-
 export const groupsPath = {
     baseUrl: baseUrls.groups,
     routerUrl: `${baseUrls.groups}/*`,
@@ -616,7 +608,6 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     dataSourcesPath,
     dataSourceDetailsPath,
     tasksPath,
-    devicesPath,
     groupsPath,
     groupSetsPath,
     groupSetDetailPath,

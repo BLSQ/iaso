@@ -6,8 +6,9 @@ import {
     textPlaceholder,
 } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { YesNoCell } from 'Iaso/components/Cells/YesNoCell';
 import { Instance } from 'Iaso/domains/instances/types/instance';
-import { YesNoCell } from '../../components/Cells/YesNoCell';
+import { useGetStatusLabel } from 'Iaso/domains/validationWorkflowInstances/components/StatusChip';
 import * as Permission from '../../utils/permissions';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 import { LinkToForm } from '../forms/components/LinkToForm';
@@ -307,7 +308,13 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'validation_status',
-        accessor: 'validation_status',
+        Cell: ({ row: { original: data } }: Setting<Instance>) => {
+            const label = useGetStatusLabel(data.validation_status);
+            if (label == null || label.length == 0) {
+                return textPlaceholder;
+            }
+            return label;
+        },
         type: 'info',
         sortable: false,
         active: false,

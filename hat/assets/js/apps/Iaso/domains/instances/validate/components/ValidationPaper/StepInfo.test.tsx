@@ -3,7 +3,11 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../../tests/helpers';
-import { mockWorkflow, mockWorkflowWithStepGap } from '../../testFixtures';
+import {
+    createTimelineStep,
+    mockWorkflow,
+    mockWorkflowWithStepGap,
+} from '../../testFixtures';
 import { StepInfo } from './StepInfo';
 
 const { mockUseParamsObject, mockRedirectToReplace } = vi.hoisted(() => ({
@@ -195,5 +199,79 @@ describe('StepInfo', () => {
             expect.anything(),
             expect.objectContaining({ selectedStep: '2' }),
         );
+    });
+
+    it('filter out steps the user cannot do', () => {
+        mockUseParamsObject.mockReturnValue({
+            ...baseParams,
+            selectedStep: '5',
+        });
+
+        renderWithThemeAndIntlProvider(
+            <StepInfo
+                formName="Test Form"
+                workflow={{
+                    workflow: 'test-workflow',
+                    total_steps: 4,
+                    validation_status: 'PENDING',
+                    submissions: [
+                        {
+                            created_at: '2024-01-01T09:00:00',
+                            created_by: 'test user',
+                            general_validation_status: 'PENDING',
+                            active_steps: 2,
+                            timeline: [
+                                createTimelineStep({
+                                    id: 5,
+                                    name: 'Step E',
+                                    type: 'NEXT_BYPASS',
+                                    node_template_slug: 'step-e',
+                                    order: 5,
+                                }),
+                                createTimelineStep({
+                                    id: 4,
+                                    name: 'Step D',
+                                    status: 'SKIPPED',
+                                    node_template_slug: 'step-d',
+                                    order: 4,
+                                }),
+                                createTimelineStep({
+                                    id: 3,
+                                    name: 'Step C',
+                                    user_can_do_actions: false,
+                                    status: 'ACCEPTED',
+                                    node_template_slug: 'step-c',
+                                    order: 3,
+                                }),
+                                createTimelineStep({
+                                    id: 2,
+                                    name: 'Step B',
+                                    node_template_slug: 'step-b',
+                                    type: 'NEXT_BYPASS',
+                                    status: undefined,
+                                    order: 2,
+                                }),
+                                createTimelineStep({
+                                    id: 1,
+                                    name: 'Step A',
+                                    node_template_slug: 'step-a',
+                                    type: 'TIMELINE',
+                                    status: 'UNKNOWN',
+                                    order: 1,
+                                }),
+                            ],
+                        },
+                    ],
+                }}
+                isLoading={false}
+            />,
+        );
+
+        const select = screen.getByTestId('input-selectedStep');
+        const options = select.querySelectorAll('option');
+        expect(options).toHaveLength(3);
+        expect(options[0]).toHaveTextContent('Step E');
+        expect(options[1]).toHaveTextContent('Step B');
+        expect(options[2]).toHaveTextContent('Step A');
     });
 });

@@ -9,11 +9,11 @@ import {
     ValidateNodeRejectByPassModal,
     ValidateNodeRejectModal,
 } from 'Iaso/domains/instances/components/ValidationWorkflow/ValidationModal';
+import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import {
     canBypass,
     canValidateOrBypass,
-    Timeline,
-} from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
+} from 'Iaso/domains/validationWorkflowsConfiguration/utils';
 import MESSAGES from '../../../messages';
 import { ValidateButton } from '../ValidateButton';
 

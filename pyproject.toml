@@ -93,6 +93,7 @@ dependencies = [
     "urllib3<2",
     "wrapt>=2.2.1",
     "xlsxwriter==3.1.9", # https://github.com/jmcnamara/XlsxWriter/tags
+    "django-oauth-toolkit==2.4.0", # MCP OAuth (OpenHEXA-compatible DCR / PKCE)
 ]
 # ------------------------------------------------------------------------------
 # Comments about some dependencies

@@ -1,0 +1,44 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block title %}Authorize{% endblock %}
+
+{% block body %}
+  {% if not error %}
+    <div>
+      <h2>Authorize {{ application.name }}</h2>
+      <p class="subtitle">This application is requesting access to your IASO account through MCP.</p>
+    </div>
+    {% if tools %}
+      <div class="scopes">
+        <h3>This application will be able to call:</h3>
+        <ul>
+          {% for tool in tools %}
+            <li>
+              <div>
+                <span class="tool-name">{{ tool.name }}</span>
+                {% if tool.description %}
+                  <span class="tool-desc"> — {{ tool.description|truncatechars:140 }}</span>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    <form method="post" class="actions">
+      {% csrf_token %}
+      {% for field in form %}
+        {% if field.is_hidden %}{{ field }}{% endif %}
+      {% endfor %}
+      {{ form.errors }}
+      {{ form.non_field_errors }}
+      <button type="submit" class="btn btn-secondary">Cancel</button>
+      <button type="submit" name="allow" value="Authorize" class="btn btn-primary">Authorize</button>
+    </form>
+  {% else %}
+    <div class="error-box">
+      <h3>Error: {{ error.error }}</h3>
+      <p>{{ error.description }}</p>
+    </div>
+  {% endif %}
+{% endblock %}

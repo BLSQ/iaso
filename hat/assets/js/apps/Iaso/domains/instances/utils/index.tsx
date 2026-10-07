@@ -658,6 +658,8 @@ export const getFilters = (
                 ? params.referenceInstances
                 : undefined,
         org_unit_status: params.org_unit_status,
+        workflow_ids: params.workflow_ids,
+        validation_status: params.validation_status,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

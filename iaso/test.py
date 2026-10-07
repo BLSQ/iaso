@@ -96,6 +96,17 @@ class IasoTestCaseMixin:
         )
 
     @staticmethod
+    def create_validation_workflow(
+        *, account: m.Account, forms: typing.Iterable[m.Form] = (), name: str = "Validation workflow"
+    ) -> m.ValidationWorkflow:
+        """Create a validation workflow and attach it to the given forms."""
+        workflow = m.ValidationWorkflow.objects.create(name=name, account=account)
+        for form in forms:
+            form.validation_workflow = workflow
+            form.save()
+        return workflow
+
+    @staticmethod
     def create_file_mock(**kwargs):
         file_mock = mock.MagicMock(spec=File)
 

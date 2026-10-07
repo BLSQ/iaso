@@ -48,6 +48,9 @@ USER_IDS = "userIds"
 WITH_LOCATION = "withLocation"
 ONLY_REFERENCE = "onlyReference"
 REFERENCE_INSTANCES = "referenceInstances"
+ORG_UNIT_STATUS = "org_unit_status"
+WORKFLOW_IDS = "workflow_ids"
+VALIDATION_STATUS = "validation_status"
 
 
 def parse_strict_boolean_param(value: Optional[str], field_name: str = "query_param") -> bool:

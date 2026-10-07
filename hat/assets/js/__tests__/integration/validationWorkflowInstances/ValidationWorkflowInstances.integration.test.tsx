@@ -124,7 +124,7 @@ describe('Validation workflow list UI integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        expect(screen.getByText('APPROVED')).toBeVisible();
+        expect(screen.getByText('Approved')).toBeVisible();
         expect(screen.getByText('some project')).toBeVisible();
         expect(screen.getByText('Some form')).toBeVisible();
 

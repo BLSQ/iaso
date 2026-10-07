@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso.api.query_params import APP_ID
 from iaso.models import Account, Project, StoragePassword
 from iaso.test import APITestCase
@@ -35,7 +37,7 @@ class StorageAPITestCase(APITestCase):
 
     def test_retrieve_passwords_without_authentication(self):
         response = self.client.get("/api/mobile/storage/passwords/", data={APP_ID: self.rebels.app_id})
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_passwords_without_authentication(self):
         response = self.client.post(
@@ -47,7 +49,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_passwords_with_authentication(self):
         self.client.force_authenticate(self.yoda)
@@ -60,7 +62,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_patch_passwords_without_authentication(self):
         response = self.client.patch(
@@ -71,7 +73,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_patch_passwords_with_authentication(self):
         self.client.force_authenticate(self.yoda)
@@ -83,31 +85,31 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_passwords_without_authentication(self):
         response = self.client.delete(f"/api/mobile/storage/passwords/{self.rebels_password1}/")
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_passwords_with_authentication(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/mobile/storage/passwords/{self.rebels_password1}/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve_passwords_without_app_id(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/storage/passwords/", data={})
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_passwords_with_wrong_app_id(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/storage/passwords/", data={APP_ID: "wrong"})
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_retrieve_passwords_with_correct_app_id(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/storage/passwords/", data={APP_ID: self.rebels.app_id})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         passwords = response.json()["passwords"]
         self.assertEqual(len(passwords), 3)
         self.assertEqual(passwords[0]["password"], "Truly wonderful, the mind of a child is.")

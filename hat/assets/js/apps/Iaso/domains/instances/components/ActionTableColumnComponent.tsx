@@ -54,7 +54,7 @@ const getUrlInstance = data => {
     return `${initialUrl}`;
 };
 
-const ActionTableColumnComponent = ({ settings }) => {
+export const ActionTableColumnComponent = ({ settings }) => {
     const user = useCurrentUser();
     const [, , setFieldErrors] = useFormState(
         initialFormState(

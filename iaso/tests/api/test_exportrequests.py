@@ -1,5 +1,6 @@
 from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
+from rest_framework import status
 
 from iaso import models as m
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
@@ -70,7 +71,7 @@ class ExportRequestsAPITestCase(APITestCase):
         """GET /exportrequests/ without auth should result in a 401"""
 
         response = self.client.get("/api/exportrequests/")
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_exportrequests_list(self):
@@ -90,7 +91,7 @@ class ExportRequestsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/exportrequests/")
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
 
@@ -112,7 +113,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         response = self.client.post("/api/exportrequests/", data={"period_ids": "201901,201902"})
 
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
         self.assertPartial(
@@ -157,7 +158,7 @@ class ExportRequestsAPITestCase(APITestCase):
             with self.subTest(param=param):
                 self.client.force_authenticate(self.user)
                 response = self.client.post("/api/exportrequests/", data={param: "2019-15-41"})
-                self.assertEqual(400, response.status_code)
+                self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
                 self.assertEqual("application/json", response["Content-Type"])
                 self.assertEqual(
                     response.json(),
@@ -182,7 +183,7 @@ class ExportRequestsAPITestCase(APITestCase):
         response = self.client.post(
             "/api/exportrequests/", data={"period_ids": "201901,201902", "dateFrom": "2019-01-11"}
         )
-        self.assertEqual(201, response.status_code)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
         self.assertPartial(
@@ -217,7 +218,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         response = self.client.post("/api/exportrequests/", data={"period_ids": "204112"})
 
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
         self.assertEqual(response_data["code"], "NothingToExportError")
@@ -231,7 +232,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         response = self.client.post("/api/exportrequests/", data={"period_ids": "201901"})
 
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
         self.assertEqual(

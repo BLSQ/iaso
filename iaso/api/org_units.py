@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import tempfile
 
 from copy import deepcopy
@@ -218,6 +219,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             count_instances = True
         else:
             count_instances = is_export or is_field_referenced("instances_count", requested_fields, order)
+
+        if parquet_format:
+            error_response = self.validate_parquet_request(request, order)
+            if error_response:
+                return error_response
 
         if with_shapes or as_location or parquet_format:
             count_instances = False
@@ -484,11 +490,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return response
 
-    def anwser_with_parquet_file(self, request, queryset, profile):
-        user_account_name = profile.account.name if profile else ""
-        environment = settings.ENVIRONMENT
-        filename = "org_units"
-        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+    def validate_parquet_request(self, request, order):
+        """Returns an error response if the request can't be served as a parquet export, None otherwise.
+
+        Only looks at the request, so it can be called before building the (potentially expensive) queryset.
+        """
         # validate no unsupported/extra params is passed
         allowed_params = {"parquet", "order", "searches", "extra_fields"}
         received_params = set(request.GET.keys())
@@ -502,8 +508,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        extra_fields_raw = request.GET.get("extra_fields", "")
-        extra_fields = [x for x in extra_fields_raw.split(",") if x]
+        extra_fields = [x for x in request.GET.get("extra_fields", "").split(",") if x]
 
         possible_extra_fields = [
             "geom_geojson",
@@ -526,6 +531,29 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        if any(field.lstrip("-") == "instances_count" for field in order):
+            # the instances aren't counted for the parquet export (too expensive on all the org units)
+            return JsonResponse(
+                {"error": "Ordering by instances_count is not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(json.loads(request.GET.get("searches", "[]"))) > 1:
+            # the searches are combined with a union, which the parquet export can't annotate
+            return JsonResponse(
+                {"error": "Multiple searches are not supported for parquet exports"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return None
+
+    def anwser_with_parquet_file(self, request, queryset, profile):
+        user_account_name = profile.account.name if profile else ""
+        environment = settings.ENVIRONMENT
+        filename = "org_units"
+        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        extra_fields = [x for x in request.GET.get("extra_fields", "").split(",") if x]
+
         try:
             export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
         except ValueError as e:
@@ -536,7 +564,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename + ".parquet")
-
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @action(methods=["GET"], detail=False)
@@ -1006,8 +1035,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
             self.get_queryset().select_related(*related_args).prefetch_related(*prefetch_args),
             pk=pk,
         )
-        # Count instances for the Org unit and its descendants.
-        org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
+        # Count instances for the Org unit and its descendants. For a high-level org unit (e.g. a
+        # country) this walks essentially the whole account's org unit tree and can take seconds, so
+        # mirror the `fields=` opt-in already used by list(): only compute it when explicitly asked
+        # for. `fields` absent keeps the historical (expensive) default, for callers that don't send
+        # it (e.g. the mobile app).
+        requested_fields = request.query_params.get("fields")
+        if is_field_referenced("instances_count", requested_fields, []):
+            org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
 
         self.check_object_permissions(request, org_unit)
 
@@ -1032,7 +1067,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res["geo_json"] = None
         res["catchment"] = None
 
-        if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+        # `or org_unit.catchment is not None` (rather than plain truthiness): `MultiPolygonField`
+        # values are `GeometryCollection`s, which define `__len__`, so a non-null but empty
+        # MultiPolygon is falsy -- using truthiness here would skip this whole block (and so skip
+        # serializing that empty catchment below) even when it's the only populated geometry field.
+        if org_unit.geom or org_unit.simplified_geom or org_unit.catchment is not None:
             can_edit_shape = False
             if request.user.is_authenticated:
                 can_edit_shape = request.user.iaso_profile.account.feature_flags.filter(
@@ -1046,10 +1085,27 @@ class OrgUnitViewSet(viewsets.ViewSet):
             elif org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
 
-            if org_unit.catchment:
+            # Catchment geometry serialization can be expensive (large polygon) and, like
+            # instances_count above, isn't always needed by the caller -- skip it unless asked for.
+            # `is not None` (not truthiness): an empty MultiPolygon is falsy but still a real,
+            # explicitly-requestable value -- see the comment above on the outer `if`.
+            if is_field_referenced("catchment", requested_fields, []) and org_unit.catchment is not None:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
         res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
+
+        # `fields=` also trims the response to just the requested top-level keys (in addition to
+        # skipping the `instances_count`/`catchment` computations above when they're not among
+        # them). This is a response-shaping step only: every value above is still computed/fetched
+        # unconditionally (prefetch_related/select_related, ancestors, geo_json, reference_instances)
+        # regardless of `fields` -- only the two known-expensive computations are actually skipped,
+        # and only the returned dict is narrowed here. `:all` (same sentinel as elsewhere, e.g.
+        # /api/group_sets/) opts back into the full response.
+        if requested_fields:
+            wanted_fields = set(requested_fields.split(","))
+            if ":all" not in wanted_fields:
+                res = {key: value for key, value in res.items() if key in wanted_fields}
+
         return Response(res)
 
 

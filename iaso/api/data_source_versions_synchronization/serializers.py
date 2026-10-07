@@ -92,14 +92,33 @@ class DataSourceVersionsSynchronizationSerializer(DynamicFieldsModelSerializerBa
             representation["created_by"] = UserNestedSerializer(instance.created_by, read_only=True).data
         return representation
 
+    def _get_account_id(self, source_version):
+        ds = source_version.data_source
+        account_ids = set(ds.projects.values_list("account_id", flat=True))
+        if len(account_ids) > 1:
+            raise serializers.ValidationError(f"Data source '{ds.name}' is linked to more than one account.")
+        return list(account_ids)[0] if account_ids else None
+
     def validate(self, validated_data):
         source_version_to_update = validated_data["source_version_to_update"]
         source_version_to_compare_with = validated_data["source_version_to_compare_with"]
 
-        if source_version_to_update.data_source_id != source_version_to_compare_with.data_source_id:
-            raise serializers.ValidationError("The two versions to compare must be linked to the same data source.")
         if source_version_to_update.pk == source_version_to_compare_with.pk:
             raise serializers.ValidationError("The two versions to compare must be different.")
+
+        account_id_to_update = self._get_account_id(source_version_to_update)
+        account_id_to_compare_with = self._get_account_id(source_version_to_compare_with)
+
+        if account_id_to_update and account_id_to_compare_with and account_id_to_update != account_id_to_compare_with:
+            raise serializers.ValidationError("The two versions to compare must belong to the same account.")
+
+        request = self.context.get("request")
+        if request:
+            account_id = request.user.iaso_profile.account_id
+            if account_id_to_update != account_id or account_id_to_compare_with != account_id:
+                raise serializers.ValidationError(
+                    "The data sources are not linked to the account of this synchronization."
+                )
 
         return validated_data
 

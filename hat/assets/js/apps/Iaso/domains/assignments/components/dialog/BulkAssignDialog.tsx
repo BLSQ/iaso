@@ -53,9 +53,7 @@ const styles: SxStyles = {
         },
     },
     tableContainer: {
-        borderTop: theme =>
-            // @ts-ignore
-            `1px solid ${theme.palette.ligthGray.border}`,
+        borderTop: theme => `1px solid ${theme.palette.lightGray.border}`,
         ...getStickyTableHeadStyles('60vh'),
     },
     multiSelectButtons: {

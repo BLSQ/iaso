@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from beanstalk_worker import task_decorator
 from iaso import models as m
 from iaso.test import APITestCase
@@ -18,14 +20,14 @@ class TaskLauncher(APITestCase):
 
     def test_with_wrong_username_should_fail(self):
         res = self.client.get("/tasks/launch_task/iaso.tests.test_task_launcher.fake_empty_task/test_wrong_user/")
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         assert res_json["status"] == "fail"
         assert "User not found" in res_json["error"]
 
     def test_with_ok_username_wrong_taskname_should_fail(self):
         res = self.client.get("/tasks/launch_task/iaso.tests.test_XXX_launcher.fake_empty_task/test_task_user/")
-        res_json = self.assertJSONResponse(res, 400)
+        res_json = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
         assert res_json["status"] == "fail"
         assert "Error while loading task" in res_json["error"]
@@ -33,7 +35,7 @@ class TaskLauncher(APITestCase):
 
     def test_with_ok_username_ok_taskname_should_succeed(self):
         res = self.client.get("/tasks/launch_task/iaso.tests.test_task_launcher.fake_empty_task/test_task_user/")
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         assert res_json["status"] == "success"
         assert res_json["task"]["id"] > 0
@@ -45,7 +47,7 @@ class TaskLauncher(APITestCase):
         res = self.client.get(
             "/tasks/launch_task/iaso.tests.test_task_launcher.fake_empty_task/test_task_user/?a=1&b=2"
         )
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         assert res_json["status"] == "success"
         assert res_json["task"]["id"] > 0
@@ -61,7 +63,7 @@ class TaskLauncher(APITestCase):
             data={"a": "1", "b": "2"},
         )
 
-        res_json = self.assertJSONResponse(res, 200)
+        res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         assert res_json["status"] == "success"
         assert res_json["task"]["id"] > 0

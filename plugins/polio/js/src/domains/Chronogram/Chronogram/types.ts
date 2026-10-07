@@ -10,6 +10,7 @@ export type ChronogramParams = {
     campaign?: string;
     country?: string;
     on_time?: string;
+    campaign_category?: string;
     search?: string;
 };
 

@@ -110,6 +110,7 @@ export type CampaignDropdowns = {
     vaccines: DropdownOptions<string>[];
     rounds: DropdownOptions<string>[];
     isFetching: boolean;
+    isFipvCampaign: boolean;
 };
 
 export type UseHandleSubmitArgs = {

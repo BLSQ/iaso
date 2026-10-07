@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from beanstalk_worker.services import TestTaskService
 from iaso.test import APITestCase
 
@@ -50,7 +52,7 @@ class CopyVersionTestCase(APITestCase):
         response = self.client.post("/api/copyversion/", data=data, format="json")
         body = response.json()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertHasField(body, "task", object)
         task = body["task"]
         self.assertEqual(task["status"], "QUEUED")
@@ -60,7 +62,9 @@ class CopyVersionTestCase(APITestCase):
         self.assertEqual(org_unit_copy.source_ref, "nomercy")
         response = self.client.post("/api/copyversion/", data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)  # you can't overwrite a version without setting force=true
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST
+        )  # you can't overwrite a version without setting force=true
 
         data = {
             "source_source_id": self.source.id,
@@ -71,30 +75,32 @@ class CopyVersionTestCase(APITestCase):
         }
         response = self.client.post("/api/copyversion/", data=data, format="json")
 
-        self.assertEqual(response.status_code, 200)  # you can overwrite a version when setting force=true
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK
+        )  # you can overwrite a version when setting force=true
 
         response = self.client.get("/api/tasks/%d/" % task["id"])
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         body = response.json()
         self.assertEqual(body["status"], "SUCCESS")
 
     def test_copy_version_unauthorized(self):
         self.client.force_authenticate(self.miguel)
         response = self.client.post("/api/copyversion/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_user_with_only_data_sources_permissions(self):
         # user needs  both data_sources and data_tasks permissions
         self.client.force_authenticate(self.user_with_data_sources_perms)
         response = self.client.post("/api/copyversion/", data={}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_with_only_data_tasks_permissions(self):
         # user needs  both data_sources and data_tasks permissions
         self.client.force_authenticate(self.user_with_data_sources_perms)
         response = self.client.post("/api/copyversion/", data={}, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_self_copy(self):
         self.client.force_authenticate(self.johnny)
@@ -108,7 +114,9 @@ class CopyVersionTestCase(APITestCase):
 
         response = self.client.post("/api/copyversion/", data=data, format="json")
 
-        self.assertEqual(response.status_code, 400)  # it's a bad idea to copy a version on itself
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST
+        )  # it's a bad idea to copy a version on itself
 
     def test_copy_version_kill(self):
         """Copying a version through the api"""
@@ -138,6 +146,6 @@ class CopyVersionTestCase(APITestCase):
 
         response = self.client.get("/api/tasks/%d/" % task["id"])
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         body = response.json()
         self.assertEqual(body["status"], "KILLED")

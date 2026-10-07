@@ -1,6 +1,7 @@
 import jsonschema
 
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.models import Profile
 from iaso.tests.api.profiles.test_views.common import PROFILE_LOG_SCHEMA, BaseProfileAPITestCase
@@ -11,20 +12,20 @@ class ProfileDeleteAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.delete(reverse("profiles-detail", kwargs={"pk": 1}))
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_log_on_user_delete(self):
         self.client.force_authenticate(self.john)
         data = self.get_new_user_data()
         response = self.client.post(reverse("profiles-list"), data=data, format="json")
-        response_data = self.assertJSONResponse(response, 201)
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         new_profile_id = response_data["id"]
         # todo : really needed in the response ?
         # new_user_id = response_data["user_id"]
         new_user_id = Profile.objects.get(pk=new_profile_id).user_id
 
         response = self.client.delete(reverse("profiles-detail", kwargs={"pk": new_profile_id}))
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         response = self.client.get(
             reverse("logs-list"),
@@ -34,7 +35,7 @@ class ProfileDeleteAPITestCase(BaseProfileAPITestCase):
                 "objectId": new_profile_id,
             },
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         log = logs[0]
 
@@ -97,4 +98,4 @@ class ProfileDeleteAPITestCase(BaseProfileAPITestCase):
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         response = self.client.delete(reverse("profiles-detail", kwargs={"pk": jum.id}))
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)

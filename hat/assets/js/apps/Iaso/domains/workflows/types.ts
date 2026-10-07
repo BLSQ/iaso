@@ -52,6 +52,7 @@ export type WorkflowVersionDetail = {
     created_at: string;
     updated_at: string;
     follow_ups: FollowUps[];
+    auto_first_step: boolean;
 };
 
 export type WorkflowVersion = {

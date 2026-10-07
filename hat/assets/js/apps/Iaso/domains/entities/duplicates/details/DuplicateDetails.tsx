@@ -72,21 +72,16 @@ const useStyles = makeStyles(theme => {
         hidden: { visibility: 'collapse' },
         diff: {
             backgroundColor: '#FFEB99',
-            // @ts-ignore
-            borderRight: `2px solid ${theme.palette.ligthGray.main}`,
+            borderRight: `2px solid ${theme.palette.lightGray.main}`,
         },
         dropped: {
-            // @ts-ignore
             backgroundColor: theme.palette.error.background,
-            // @ts-ignore
-            borderRight: `2px solid ${theme.palette.ligthGray.main}`,
+            borderRight: `2px solid ${theme.palette.lightGray.main}`,
             color: 'rgba(0,0,0,0.6)',
         },
         selected: {
-            // @ts-ignore
             backgroundColor: theme.palette.success.background,
-            // @ts-ignore
-            borderRight: `2px solid ${theme.palette.ligthGray.main}`,
+            borderRight: `2px solid ${theme.palette.lightGray.main}`,
             fontWeight: 'bold',
         },
         pointer: { cursor: 'pointer' },

@@ -31,26 +31,24 @@ export const useGetSubActivityShapes = (
         { topParentId: parentCountryId, orgUnitCategory: 'REGION' },
     );
 
-    const districtShapesForSubActivity = districtShapes?.filter(shape =>
-        roundScopes.includes(shape.id),
+    const districtShapesForSubActivity = useMemo(
+        () => districtShapes?.filter(shape => roundScopes.includes(shape.id)),
+        [districtShapes, roundScopes],
     );
-    const regionShapesForSubActivity = regionShapes?.filter(shape =>
-        (districtShapesForSubActivity ?? []).some(
-            district => district.parent_id === shape.id,
-        ),
+    const regionShapesForSubActivity = useMemo(
+        () =>
+            regionShapes?.filter(shape =>
+                districtShapesForSubActivity?.some(
+                    district => district.parent_id === shape.id,
+                ),
+            ),
+        [regionShapes, districtShapesForSubActivity],
     );
 
-    return useMemo(() => {
-        return {
-            districtShapes: districtShapesForSubActivity,
-            regionShapes: regionShapesForSubActivity,
-            isFetchingRegions,
-            isFetchingDistricts,
-        };
-    }, [
-        districtShapesForSubActivity,
-        isFetchingDistricts,
+    return {
+        districtShapes: districtShapesForSubActivity,
+        regionShapes: regionShapesForSubActivity,
         isFetchingRegions,
-        regionShapesForSubActivity,
-    ]);
+        isFetchingDistricts,
+    };
 };

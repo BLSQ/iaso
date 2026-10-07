@@ -390,6 +390,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.bulkChangeCount',
         defaultMessage: 'You are about to change {count} Org units',
     },
+    bulkChangeTaskHelp: {
+        id: 'iaso.orgUnits.bulkChangeTaskHelp',
+        defaultMessage:
+            'The modification runs in the background and can take a few minutes.',
+    },
+    modifyAndFollow: {
+        id: 'iaso.orgUnits.modifyAndFollow',
+        defaultMessage: 'Modify and follow',
+    },
     fetchAlgorithmsError: {
         id: 'iaso.snackBar.fetchAlgorithmsError',
         defaultMessage: 'An error occurred while fetching algorithms list',
@@ -629,9 +638,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.rejectOrgUnit',
         defaultMessage: 'Reject Org Unit',
     },
+    rejectOrgUnitQuestion: {
+        id: 'iaso.orgUnits.rejectOrgUnitQuestion',
+        defaultMessage:
+            'Are you sure you want to reject this org unit: {name}?',
+    },
+    yes: {
+        id: 'iaso.label.yes',
+        defaultMessage: 'Yes',
+    },
+    no: {
+        id: 'iaso.label.no',
+        defaultMessage: 'No',
+    },
     orgUnitRejected: {
         id: 'iaso.orgUnits.orgUnitRejected',
         defaultMessage: 'Org Unit rejected successfully',
+    },
+    yes: {
+        id: 'iaso.label.yes',
+        defaultMessage: 'Yes',
+    },
+    no: {
+        id: 'iaso.label.no',
+        defaultMessage: 'No',
     },
 });
 

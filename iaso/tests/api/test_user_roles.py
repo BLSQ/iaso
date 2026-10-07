@@ -58,7 +58,7 @@ class UserRoleAPITestCase(APITestCase):
         payload = {"name": "New user role name", "editable_org_unit_type_ids": [self.org_unit_type.id]}
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 201)
+        r = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         self.assertEqual(r["name"], payload["name"])
         self.assertIsNotNone(r["id"])
@@ -84,14 +84,14 @@ class UserRoleAPITestCase(APITestCase):
         payload = {"permissions": ["iaso_mappings"]}
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_user_role(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/userroles/{self.user_role.pk}/")
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["id"], self.user_role.pk)
         self.user_role.refresh_from_db()
         expected_name = self.user_role.group.name.removeprefix(f"{self.account.id}_")
@@ -103,7 +103,7 @@ class UserRoleAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/userroles/{self.user_role.pk}/")
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["id"], self.user_role.pk)
         self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id])
 
@@ -112,7 +112,7 @@ class UserRoleAPITestCase(APITestCase):
 
         response = self.client.get("/api/userroles/")
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r["results"]), 1)
 
     def test_list_with_search_on_user_role_name(self):
@@ -121,7 +121,7 @@ class UserRoleAPITestCase(APITestCase):
         payload = {"search": "user role"}
         response = self.client.get("/api/userroles/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(len(r["results"]), 1)
 
@@ -145,7 +145,7 @@ class UserRoleAPITestCase(APITestCase):
 
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             r["editable_org_unit_type_ids"],
             [
@@ -165,7 +165,7 @@ class UserRoleAPITestCase(APITestCase):
 
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["name"], payload["name"])
         self.assertCountEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id, new_org_unit_type.id])
 
@@ -175,7 +175,7 @@ class UserRoleAPITestCase(APITestCase):
         payload = {"name": self.user_role.group.name}
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 403)
+        r = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(r["detail"], "You do not have permission to perform this action.")
 
     def test_update_name_modification(self):
@@ -184,7 +184,7 @@ class UserRoleAPITestCase(APITestCase):
         payload = {"name": "user role modified"}
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
         self.group.refresh_from_db()
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         expected_name = self.user_role.group.name.removeprefix(f"{self.account.id}_")
         self.assertEqual(r["name"], expected_name)
         self.assertEqual(self.group.name, f"{self.account.id}_user role modified")
@@ -198,7 +198,7 @@ class UserRoleAPITestCase(APITestCase):
         }
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
-        r = self.assertJSONResponse(response, 200)
+        r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
             [r["permissions"][0], r["permissions"][1]],
             [self.permission1.codename, self.permission2.codename],
@@ -224,7 +224,7 @@ class UserRoleAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.delete(f"/api/userroles/{self.user_role.id}/")
-        r = self.assertJSONResponse(response, 204)
+        r = self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
     def test_delete_user_role_and_remove_users_in_it(self):
         self.client.force_authenticate(self.user)
@@ -244,7 +244,7 @@ class UserRoleAPITestCase(APITestCase):
             list(m.UserRole.objects.filter(id__in=[userRole_2.id, userRole_1.id])),
         )
         response = self.client.delete(f"/api/userroles/{userRole_1.id}/")
-        r = self.assertJSONResponse(response, 204)
+        r = self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         self.assertEqual(
             list(self.user.iaso_profile.user_roles.all()),

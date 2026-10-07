@@ -2,7 +2,7 @@ import uuid
 
 from datetime import datetime
 
-from submissions import submission2xml
+from submissions import APP_VERSION, submission2xml
 
 
 def setup_registry(account_name, iaso_client):
@@ -82,7 +82,7 @@ def setup_registry(account_name, iaso_client):
             "file": local_path,
             "name": file_name,
         }
-        iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+        iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=[instance_data])
         iaso_client.post(
             "/sync/form_upload/",
             files={

@@ -223,7 +223,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
                             titleMessage={MESSAGES.location}
                             onConfirm={handleOrgUnitChange}
                             multiselect

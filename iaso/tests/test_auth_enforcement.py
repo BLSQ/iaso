@@ -1,9 +1,11 @@
 import re
 
 from django.conf import settings
-from django.test import Client, TestCase, override_settings
+from django.test import Client, override_settings
 from django.urls import URLPattern, URLResolver, get_resolver
 from rest_framework import status
+
+from iaso.test import TestCase
 
 
 # clearly don't really know what todo
@@ -52,6 +54,7 @@ PUBLIC_ENDPOINTS = {
     *any_methods("/tasks/launch_task/export_task/my_user_name/"),
     *any_methods("/tasks/cron/"),
     *any_methods("/tasks/task/"),
+    *any_methods("/tasks/reap_lost_tasks/"),
     # reset password related
     *any_methods("/robots.txt"),
     *any_methods("/_health/"),
@@ -158,49 +161,97 @@ def list_all_real_paths(resolver=None, prefix=""):
             yield from list_all_real_paths(pattern, new_prefix)
 
 
-def supports_method(path, method):
-    # naive checker: try calling, accept 405 as "supported"
-    c = Client()
-    resp = getattr(c, method)(path)
-    return resp.status_code != 404
-
-
-def _sso_paths():
+def add_sso_paths_to_public_paths(public_paths: set):
     """Paths registered by the SSO plugin (login / callback / token) for each configured provider.
 
     These are third-party authentication endpoints (analogous to /wfp_auth/...) and are
     legitimately reachable without authentication, so they're out of scope for this check.
     The paths are configurable per provider, so we derive them from settings rather than hardcode.
     """
-    paths = set()
     for provider_id, config in getattr(settings, "SSO_PROVIDERS", {}).items():
-        paths.add("/" + config.get("login_path", f"{provider_id}/login/"))
-        paths.add("/" + config.get("callback_path", f"{provider_id}/login/callback/"))
-        paths.add("/" + config.get("token_path", f"{provider_id}/token/"))
-    return paths
+        token_path = "/" + config.get("token_path", f"{provider_id}/token/")
+        public_paths.add(("/" + config.get("login_path", f"{provider_id}/login/"), "GET"))
+        public_paths.add(("/" + config.get("callback_path", f"{provider_id}/login/callback/"), "GET"))
+        public_paths.add((token_path, "GET"))
+        public_paths.add((token_path, "POST"))
 
 
-SSO_PATHS = _sso_paths()
+add_sso_paths_to_public_paths(PUBLIC_ENDPOINTS)
+
+
+def add_mcp_paths_to_public_paths(public_paths: set):
+    """MCP OAuth discovery, DCR, catalog UI, and token endpoints.
+
+    JSON-RPC writes stay authenticated (POST /mcp requires Bearer). These paths
+    must be reachable before login, like /login/ and /api/token/.
+    """
+    if not getattr(settings, "MCP_ENABLED", False):
+        return
+    public_paths.update(
+        {
+            *any_methods("/.well-known/oauth-protected-resource"),
+            *any_methods("/.well-known/oauth-protected-resource/mcp"),
+            *any_methods("/.well-known/oauth-protected-resource/mcp/"),
+            *any_methods("/.well-known/oauth-authorization-server"),
+            *any_methods("/.well-known/oauth-authorization-server/mcp"),
+            *any_methods("/.well-known/oauth-authorization-server/mcp/"),
+            *any_methods("/.well-known/openid-configuration"),
+            *any_methods("/oauth/token/.well-known/openid-configuration"),
+            *any_methods("/oauth/.well-known/openid-configuration/"),
+            *any_methods("/oauth/.well-known/jwks.json"),
+            *any_methods("/register/"),
+            *any_methods("/register"),
+            *any_methods("/oauth/register/"),
+            *any_methods("/oauth/register"),
+            *any_methods("/oauth/token/"),
+            *any_methods("/oauth/revoke_token/"),
+            ("/mcp/tools.json", "GET"),
+            ("/mcp", "GET"),
+            ("/mcp/", "GET"),
+            *any_methods("/mcp/app/"),
+            *any_methods("/mcp/app/field"),
+            *any_methods("/mcp/field"),
+            ("/iaso-mark.png", "GET"),
+        }
+    )
+
+
+add_mcp_paths_to_public_paths(PUBLIC_ENDPOINTS)
 
 
 # polio endpoints are out of scope
 # and wfp auth / SSO auth urls
 def should_skip(path):
-    return (
-        path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/"))
-        or path == "/dashboard/home/"
-        or path in SSO_PATHS
-    )
+    return path.startswith(("/api/polio", "/wfp_auth", "/dashboard/polio/")) or path == "/dashboard/home/"
+
+
+AUTH_REQUIRED_STATUS_CODES = [
+    status.HTTP_302_FOUND,  # redirect to login
+    status.HTTP_401_UNAUTHORIZED,
+    status.HTTP_403_FORBIDDEN,
+    status.HTTP_404_NOT_FOUND,  # don't care if path does not exist
+    status.HTTP_405_METHOD_NOT_ALLOWED,
+]
+
+PUBLIC_STATUS_CODES = [
+    status.HTTP_200_OK,  # everything is fine
+    status.HTTP_204_NO_CONTENT,
+    status.HTTP_400_BAD_REQUEST,  # missing params
+    status.HTTP_404_NOT_FOUND,  # don't care if path does not exist
+    status.HTTP_405_METHOD_NOT_ALLOWED,
+]
 
 
 class TestAuthEnforcement(TestCase):
-    def setUp(self):
-        self.client = Client()
+    @classmethod
+    def setUpTestData(cls):
+        cls.client = Client()
+        cls.paths = list(list_all_real_paths())
 
     @override_settings(AUTHENTICATION_ENFORCED=True)
     def test_with_authentification_enforced_all_endpoints_require_auth_except_some_exceptions(self):
         unauthenticated_endpoints = []
-        for path in list_all_real_paths():
+        for path in self.paths:
             # polio endpoints are out of scope
             if should_skip(path):
                 continue
@@ -210,18 +261,12 @@ class TestAuthEnforcement(TestCase):
                 if key in PUBLIC_ENDPOINTS:
                     continue
                 try:
-                    if not supports_method(path, method):
-                        continue
                     resp = getattr(self.client, method)(path)
                     self.assertIn(
                         resp.status_code,
-                        [302, 401, 403, 405],
+                        AUTH_REQUIRED_STATUS_CODES,
                         msg=f"{method.upper()} {path} should require auth",
                     )
-                    # 401 Unauthorized
-                    # 403 Forbidden
-                    # 302 => redirect to login
-                    # 405 allowed: method exists but not for this view
 
                 except Exception as e:
                     print(key[0], "\t", key[1], "\t", str(e))
@@ -232,7 +277,7 @@ class TestAuthEnforcement(TestCase):
     @override_settings(AUTHENTICATION_ENFORCED=True)
     def test_with_authentification_enforced_all_public_endpoints_should_stay_public(self):
         public_endpoints = []
-        for path in list_all_real_paths():
+        for path in self.paths:
             if should_skip(path):
                 continue
 
@@ -243,26 +288,17 @@ class TestAuthEnforcement(TestCase):
                     continue
 
                 # skip task and sync/upload either need a less generic way to test
-                if path in ["/tasks/task/", "/sync/form_upload/"]:
+                if path in ["/tasks/task/", "/tasks/reap_lost_tasks/", "/sync/form_upload/"]:
                     continue
 
                 try:
-                    if not supports_method(path, method):
-                        continue
                     resp = getattr(self.client, method)(path)
                     # print(key, resp)
                     self.assertIn(
                         resp.status_code,
-                        [
-                            200,  # 200 everything is fine
-                            status.HTTP_204_NO_CONTENT,
-                            status.HTTP_400_BAD_REQUEST,  # 400 bad request missing params
-                            405,  # 405 unsupported method]
-                        ],
+                        PUBLIC_STATUS_CODES,
                         msg=f"{method.upper()} {path} should not require auth",
                     )
-                    # 302 => redirect to login
-                    # 405 allowed: method exists but not for this view
 
                 except Exception as e:
                     print(key[0], "\t", key[1], "\t", e.__class__.__name__, str(e))

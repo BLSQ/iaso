@@ -1,4 +1,5 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
+from rest_framework import status
 
 from hat.api_import.models import APIImport, api_import_upload_to
 from iaso.models import Account, FeatureFlag, Project, Task
@@ -33,7 +34,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
             format="multipart",
             HTTP_USER_AGENT="my_user_agent",
         )
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         self.assertEqual(APIImport.objects.count(), 1)
         api_import = APIImport.objects.first()
@@ -58,7 +59,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
             format="multipart",
             HTTP_USER_AGENT="my_user_agent",
         )
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
         self.assertEqual(APIImport.objects.count(), 1)
         api_import = APIImport.objects.first()
@@ -82,11 +83,11 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         self.project.feature_flags.add(self.require_authentication)
 
         response = self.client.post(f"{BASE_URL}?app_id={APP_ID}")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_fail_no_zip_file(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.post(f"{BASE_URL}?app_id={APP_ID}")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {"zip_file": ["No file was submitted."]})

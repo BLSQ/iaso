@@ -1,14 +1,18 @@
 from typing import Any, Protocol
+from urllib.parse import urlencode
 
 from django import forms as django_forms
 from django.contrib import admin, messages
-from django.contrib.admin import SimpleListFilter, widgets
+from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import PermissionDenied
 from django.db import connection, models, transaction
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.shortcuts import redirect, render
+from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
@@ -16,7 +20,17 @@ from lazy_services import LazyService
 
 import iaso.management.commands.unique_indexes as unique_indexes
 
+from beanstalk_worker.services import THROTTLE_CONFIG_SLUG
+from beanstalk_worker.throttle import discover_tasks, effective_throttle
 from hat.audit.models import DJANGO_ADMIN
+from iaso.admin import task_monitor
+from iaso.admin.task_throttles import (
+    TaskThrottlesForm,
+    config_version,
+    describe_content,
+    queued_counts,
+    running_throttle_keys,
+)
 from iaso.models.json_config import Config  # type: ignore
 from iaso.plugins import is_wfp_plugin_active
 from iaso.utils.admin.custom_filters import (
@@ -27,7 +41,9 @@ from iaso.utils.admin.custom_filters import (
 
 from ..models import (
     ERRORED,
+    KILLED,
     QUEUED,
+    RUNNING,
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
@@ -84,6 +100,7 @@ from ..models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLease,
     TaskLog,
     TenantUser,
     UserRole,
@@ -101,28 +118,6 @@ from ..utils.gis import convert_2d_point_to_3d
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
-
-
-class EntityAutocompleteFilter(SimpleListFilter):
-    """
-    Limit `entity` list_filter to only entities linked to at least one storage device.
-    """
-
-    title = "entity"
-    parameter_name = "entity"
-
-    def lookups(self, request, model_admin):
-        lookups = []
-        storage_device_ids = set(StorageDevice.objects.values_list("entity_id", flat=True))
-        entities = Entity.objects.filter(id__in=storage_device_ids).only("pk", "name")
-        for entity in entities:
-            lookups.append([entity.pk, entity.name])
-        return lookups
-
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(entity__id=self.value())
-        return queryset
 
 
 class IasoJSONEditorWidget(JSONEditorWidget):
@@ -205,11 +200,10 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
         "org_unit_type",
         "custom",
         "validation_status",
-        "sub_source",
         "version__data_source",
         "version__data_source__projects__account",
     )
-    search_fields = ("name", "source_ref", "uuid")
+    search_fields = ("name", "source_ref", "uuid", "sub_source")
     readonly_fields = ("path",)
     inlines = [
         OrgUnitReferenceInstanceInline,
@@ -286,8 +280,10 @@ class FormAdmin(admin.GeoModelAdmin):
 @admin.register(FormVersion)
 @admin_attr_decorator
 class FormVersionAdmin(admin.GeoModelAdmin):
-    search_fields = ("form__name", "form__form_id")
+    search_fields = ("form__name", "form__form_id", "version_id")
     ordering = ("form__name",)
+    autocomplete_fields = ("form", "created_by", "updated_by")
+    list_select_related = ("form",)
     list_display = ("form_name", "form_id", "version_id", "created_at", "updated_at")
 
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
@@ -313,14 +309,18 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 class FormPredefinedFilterAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_display = ("form", "name", "short_name", "json_logic")
-    list_filter = ("form", "name", "short_name")
+    autocomplete_fields = ("form",)
+    search_fields = ("name", "short_name", "form__name", "form__form_id")
+    list_select_related = ("form",)
 
 
 @admin.register(FormAttachment)
 class FormAttachmentAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_display = ("form", "name", "file", "md5")
-    list_filter = ("form", "name")
+    autocomplete_fields = ("form",)
+    search_fields = ("name", "form__name", "form__form_id")
+    list_select_related = ("form",)
 
 
 class InstanceFileAdminInline(admin.TabularInline):
@@ -335,14 +335,8 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
-    raw_id_fields = (
-        "org_unit",
-        "entity",
-        "form_version",
-        "last_modified_by",
-        "created_by",
-    )
-    search_fields = ("file_name", "uuid")
+    raw_id_fields = ("api_import",)
+    search_fields = ("file_name", "uuid", "form__name", "form__form_id")
     list_display = (
         "id",
         "uuid",
@@ -354,9 +348,19 @@ class InstanceAdmin(admin.GeoModelAdmin):
         "entity",
         "deleted",
     )
+    autocomplete_fields = (
+        "form",
+        "project",
+        "device",
+        "org_unit",
+        "entity",
+        "form_version",
+        "last_modified_by",
+        "created_by",
+        "planning",
+    )
     list_filter = (
         "project",
-        "form",
         "deleted",
         DuplicateUUIDFilter,
         has_relation_filter_factory("Entity ID", "entity_id"),
@@ -373,6 +377,8 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "name",
                     "org_unit",
                     "device",
+                    "app_version",
+                    "api_import",
                     "entity",
                     "last_modified_by",
                     "created_by",
@@ -419,6 +425,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
             "project",
             "form",
             "entity",
+            "entity__entity_type",  # Entity.__str__ renders its entity type
         )
         return queryset
 
@@ -428,6 +435,14 @@ class InstanceAdmin(admin.GeoModelAdmin):
                 Entity.objects_include_deleted.all()
             )  # use the manager that includes soft-deleted objects
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Device)
+@admin_attr_decorator
+class DeviceAdmin(admin.ModelAdmin):
+    list_display = ("id", "imei", "test_device", "created_at")
+    search_fields = ("imei",)
+    list_filter = ("test_device",)
 
 
 @admin.register(InstanceFile)
@@ -470,19 +485,30 @@ class FeatureFlagAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
+    autocomplete_fields = ("validator",)
 
 
 @admin.register(Mapping)
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
-    list_filter = ("form_id",)
-    autocomplete_fields = ["data_source"]
+    list_filter = ("mapping_type",)
+    search_fields = ("name", "form__name", "form__form_id")
+    list_display = ("id", "name", "form", "mapping_type", "data_source", "created_at")
+    list_display_links = ("id", "name")
+    list_select_related = ("form", "data_source")
+    autocomplete_fields = ["data_source", "form"]
 
 
 @admin.register(MappingVersion)
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
-    list_filter = ("form_version_id",)
+    search_fields = ("name", "form_version__form__name", "form_version__form__form_id", "form_version__version_id")
+    # `name` is very often empty, so it can't be the only clickable column.
+    list_display = ("id", "name", "form_version", "mapping", "created_at", "updated_at")
+    list_display_links = ("id", "name")
+    list_select_related = ("form_version__form", "mapping__form")
+    autocomplete_fields = ["form_version", "mapping"]
+    ordering = ("-id",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
@@ -511,8 +537,10 @@ class ProfileAdmin(admin.GeoModelAdmin):
 @admin.register(ExportRequest)
 @admin_attr_decorator
 class ExportRequestAdmin(admin.GeoModelAdmin):
-    list_filter = ("launcher", "status")
+    list_filter = ("status",)
+    search_fields = ("launcher__username", "launcher__email")
     list_display = ("status", "launcher", "params", "last_error_message")
+    list_select_related = ("launcher",)
     readonly_fields = list_display
 
 
@@ -569,6 +597,28 @@ def relaunch_task(_, request, queryset) -> None:
     messages.success(request, f"{task_to_relaunch.count()} task successfully relaunched.")
 
 
+@admin.action(description="Kill selected running tasks and free their throttle slots")
+def kill_running_task(_, request, queryset) -> None:
+    """For a task stuck while its worker is alive (e.g. an infinite loop): its heartbeat keeps its lease, so it
+    holds its throttle slots forever and the "Kill" of the web UI only works when the task reports its progress.
+
+    Its code may still run until the worker restarts: freeing the slots lets other runs start in the meantime."""
+    task_ids = list(queryset.filter(status=RUNNING, external=False).values_list("id", flat=True))
+    with transaction.atomic():
+        killed = Task.objects.filter(id__in=task_ids, status=RUNNING).update(
+            should_be_killed=True,
+            status=KILLED,
+            ended_at=timezone.now(),
+            result={"result": KILLED, "message": f"Killed from the Django admin by {request.user}"},
+        )
+        TaskLease.objects.filter(task_id__in=task_ids).delete()
+    messages.warning(
+        request,
+        f"{killed} running task(s) killed and their throttle slots freed. Their code may still run until it reports "
+        "its progress or the worker restarts.",
+    )
+
+
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
@@ -579,7 +629,7 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
     date_hierarchy = "created_at"
-    actions = (relaunch_task,)
+    actions = (relaunch_task, kill_running_task)
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")
@@ -593,11 +643,100 @@ class TaskAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("launcher")
 
+    def get_urls(self):
+        custom_urls = [
+            path("monitor/", self.admin_site.admin_view(self.monitor_view), name="iaso_task_monitor"),
+        ]
+        return custom_urls + super().get_urls()
+
+    def monitor_view(self, request):
+        if not self.has_view_permission(request):
+            raise PermissionDenied
+        window = request.GET.get("window") if request.GET.get("window") in task_monitor.WINDOWS else None
+        window = window or task_monitor.DEFAULT_WINDOW
+        refresh = request.GET.get("refresh", "")
+        refresh = refresh if refresh.isdigit() and int(refresh) >= 5 else ""
+        chart_task = request.GET.get("task", "")
+        account_param = request.GET.get("account", "")
+        account = Account.objects.filter(id=account_param).first() if account_param.isdigit() else None
+        account_id = account.id if account else None
+
+        all_accounts = request.GET.get("all_accounts") == "1"
+        params = {
+            "window": window,
+            "refresh": refresh,
+            "task": chart_task,
+            "account": account_id or "",
+            "all_accounts": "1" if all_accounts else "",
+        }
+
+        def link(**changes):
+            return "?" + urlencode({k: v for k, v in {**params, **changes}.items() if v})
+
+        since = timezone.now() - task_monitor.WINDOWS[window]
+        config = Config.objects.filter(slug=THROTTLE_CONFIG_SLUG).first()
+        tasks = discover_tasks()
+        rows = task_monitor.task_rows(since, account_id)
+        accounts = task_monitor.account_rows(since, chart_task)
+        tasks_url = reverse("admin:iaso_task_changelist")
+        filters_of_column = task_monitor.list_filters(since)
+
+        def list_links(**base):
+            """Links to the task list, per column: the counted tasks of the row"""
+            return {
+                column: f"{tasks_url}?{urlencode({**base, **filters})}"
+                for column, filters in {"all": {}, **filters_of_column}.items()
+            }
+
+        account_filter = {"account__id__exact": account_id} if account_id else {}
+        for row in rows:
+            row["links"] = list_links(name__exact=row["name"], **account_filter)
+        for row in accounts:
+            row["url"] = link(account=row["id"])
+            row["links"] = list_links(
+                **({"account__id__exact": row["id"]} if row["id"] else {"account__isnull": "True"}),
+                **({"name__exact": chart_task} if chart_task else {}),
+            )
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": "Task monitor",
+            "window": window,
+            "window_links": [(w, link(window=w)) for w in task_monitor.WINDOWS],
+            "refresh": refresh,
+            "refresh_url": link(refresh=10),
+            "stop_refresh_url": link(refresh=""),
+            "rows": rows,
+            "totals": task_monitor.totals(rows),
+            "duration_labels": task_monitor.DURATION_LABELS,
+            "accounts": accounts,
+            "shown_accounts": accounts if all_accounts else accounts[: task_monitor.MAX_ACCOUNTS],
+            "hidden_accounts": 0 if all_accounts else max(0, len(accounts) - task_monitor.MAX_ACCOUNTS),
+            "all_accounts_url": link(all_accounts="1") + "#by-account",
+            "account": account,
+            "clear_account_url": link(account=""),
+            "account_choices": sorted(
+                {(row["id"], str(row["name"])) for row in accounts}
+                | ({(account.id, account.name)} if account else set()),
+                key=lambda choice: choice[1].lower(),
+            ),
+            "throttles": task_monitor.throttle_rows(tasks, config.content if config else {}, account_id),
+            "chart_task": chart_task,
+            # all the tasks of the code, and the names found in the data (e.g. tasks since removed)
+            "chart_tasks": sorted(set(tasks) | {row["name"] for row in rows} | ({chart_task} if chart_task else set())),
+            "activity": task_monitor.activity(window, chart_task, account_id),
+            "bucket_minutes": int(task_monitor.BUCKETS[window].total_seconds() // 60),
+        }
+        return render(request, "admin/iaso/task/monitor.html", context)
+
 
 @admin.register(TaskLog)
 class TaskLogAdmin(admin.ModelAdmin):
     list_display = ("task", "created_at", "message")
-    list_filter = ["task"]
+    autocomplete_fields = ["task"]
+    search_fields = ["task__name", "message"]
+    # Task.__str__ renders created_by.
+    list_select_related = ["task", "task__created_by"]
     readonly_fields = ["created_at"]
 
 
@@ -701,6 +840,9 @@ class EntityTypeAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
+    autocomplete_fields = ("project", "forms", "team", "created_by")
+    search_fields = ("name", "description")
+    list_select_related = ("project", "org_unit", "team")
     list_display = (
         "id",
         "name",
@@ -750,6 +892,9 @@ class PlanningAdmin(admin.ModelAdmin):
 @admin.register(Team)
 @admin_attr_decorator
 class TeamAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("project", "parent", "users", "manager", "created_by")
+    search_fields = ("name", "description")
+    list_select_related = ("project", "parent")
     list_display = (
         "id",
         "name",
@@ -768,11 +913,13 @@ class TeamAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class AssignmentAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
+    autocomplete_fields = ("planning", "team", "user", "created_by")
+    search_fields = ("planning__name", "user__username")
+    list_select_related = ("planning", "user")
     list_display = (
         "id",
         "planning",
     )
-    list_filter = ("planning",)
     date_hierarchy = "created_at"
 
 
@@ -798,7 +945,9 @@ class PlanningSamplingResultAdmin(admin.ModelAdmin):
 @admin.register(InstanceLock)
 class InstanceLockAdmin(admin.ModelAdmin):
     raw_id_fields = ("top_org_unit",)
+    autocomplete_fields = ("instance", "locked_by", "unlocked_by")
     list_display = ("instance", "locked_by", "top_org_unit", "locked_at", "unlocked_by", "unlocked_at")
+    list_select_related = ("instance", "locked_by", "top_org_unit", "unlocked_by")
     date_hierarchy = "locked_at"
 
 
@@ -823,7 +972,10 @@ class StockItemRuleAdmin(admin.ModelAdmin):
     fields = ("sku", "form", "version", "impact", "question", "created_at", "updated_at", "created_by", "updated_by")
     readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
     list_display = ("sku", "form", "question", "impact", "version", "created_at")
-    list_filter = ("sku", "form", "impact")
+    autocomplete_fields = ("sku", "form")
+    search_fields = ("question", "form__name", "sku__name")
+    list_select_related = ("sku", "form", "version")
+    list_filter = ("sku", "impact")
 
 
 @admin.register(StockKeepingUnit)
@@ -844,8 +996,11 @@ class StockKeepingUnitAdmin(admin.ModelAdmin):
         "deleted_at",
     )
     readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    autocomplete_fields = ("account", "projects", "forms")
     list_display = ("name", "short_name", "account")
-    list_filter = ("account", "name", "short_name")
+    list_select_related = ("account",)
+    search_fields = ("name", "short_name")
+    list_filter = ("account",)
 
 
 @admin.register(StockKeepingUnitChildren)
@@ -871,7 +1026,9 @@ class StockLedgerItemAdmin(admin.ModelAdmin):
         "created_by",
     )
     list_display = ("rule", "sku", "org_unit", "question", "impact", "value", "created_at")
-    list_filter = ("sku", "impact", "rule")
+    list_filter = ("sku", "impact")
+    search_fields = ("question", "rule__question", "rule__form__name")
+    list_select_related = ("rule", "sku", "org_unit")
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -902,7 +1059,11 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("created_at", "updated_at", "status_updated_at")
     list_display = ("account", "type", "customer_chosen_id", "entity")
-    list_filter = ("account", "type", "status", EntityAutocompleteFilter)
+    list_filter = ("account", "type", "status")
+    # `Entity.name` is unused, the name lives in the attributes, so search on the uuid.
+    search_fields = ("customer_chosen_id", "entity__uuid")
+    # Entity.__str__ renders its entity type.
+    list_select_related = ("account", "entity", "entity__entity_type")
     raw_id_fields = ("org_unit",)
     autocomplete_fields = ["entity"]
     inlines = [
@@ -942,11 +1103,13 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 class WorkflowChangeInline(admin.TabularInline):
     model = WorkflowChange
+    autocomplete_fields = ("form",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 class WorkflowFollowupInline(admin.TabularInline):
     model = WorkflowFollowup
+    autocomplete_fields = ("forms",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
@@ -955,6 +1118,8 @@ class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     inlines = [WorkflowChangeInline, WorkflowFollowupInline]
     list_filter = ("workflow", "status")
+    # WorkflowVersion.__str__ walks workflow -> entity_type.
+    list_select_related = ("workflow", "workflow__entity_type")
 
     def get_queryset(self, request):
         return WorkflowVersion.objects_include_deleted.all()
@@ -962,13 +1127,16 @@ class WorkflowVersionAdmin(admin.ModelAdmin):
 
 @admin.register(AlgorithmRun)
 class AlgorithmRunAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("launcher",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    autocomplete_fields = ["account"]
+    autocomplete_fields = ["account", "users"]
+    search_fields = ("name", "slug")
+    list_select_related = ("account",)
     list_display = ("name", "slug", "type", "account")
 
 
@@ -1112,6 +1280,89 @@ class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "task-throttles/",
+                self.admin_site.admin_view(self.task_throttles_view),
+                name="iaso_config_task_throttles",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def get_readonly_fields(self, request, obj=None):
+        # the throttles are edited with the validated form of task_throttles_view
+        if obj and obj.slug == THROTTLE_CONFIG_SLUG:
+            return ("slug", "content", "task_throttles_page")
+        return super().get_readonly_fields(request, obj)
+
+    @admin.display(description="Edit")
+    def task_throttles_page(self, obj):
+        return format_html(
+            '<a href="{}">Edit on the task throttles page</a>', reverse("admin:iaso_config_task_throttles")
+        )
+
+    def task_throttles_view(self, request):
+        if not self.has_change_permission(request) or not self.has_add_permission(request):
+            raise PermissionDenied
+        tasks = discover_tasks()
+        config = Config.objects.filter(slug=THROTTLE_CONFIG_SLUG).first()
+        content = config.content if config else {}
+        if request.method == "POST":
+            # the tasks of the page that was submitted
+            shown = {name for name in request.POST.get("tasks", "").split(",") if name in tasks}
+        else:
+            # the tasks throttled in the code or in the config, and the one being added
+            shown = {name for name, throttle in tasks.items() if throttle}
+            shown |= {name for name in (content if isinstance(content, dict) else {}) if name in tasks}
+            if request.GET.get("add") in tasks:
+                shown.add(request.GET["add"])
+        throttled_tasks = [(name, effective_throttle(tasks[name])) for name in sorted(shown)]
+        form_kwargs = {"throttled_tasks": throttled_tasks, "content": content}
+
+        if request.method == "POST":
+            form = TaskThrottlesForm(request.POST, **form_kwargs)
+            if form.is_valid():
+                with transaction.atomic():
+                    current = Config.objects.select_for_update().filter(slug=THROTTLE_CONFIG_SLUG).first()
+                    if config_version(current) != form.cleaned_data["version"]:
+                        messages.error(
+                            request,
+                            "The throttles were changed by someone else since you opened this page. Your changes were "
+                            "not saved: here are the current values.",
+                        )
+                        return redirect("admin:iaso_config_task_throttles")
+                    content = form.cleaned_data["content"]
+                    change_message = f"Task throttles set to {describe_content(content)}"
+                    if current:
+                        current.content = content
+                        current.save()
+                        self.log_change(request, current, change_message)
+                    else:
+                        current = Config.objects.create(slug=THROTTLE_CONFIG_SLUG, content=content)
+                        self.log_addition(request, current, change_message)
+                messages.success(request, "The task throttles were saved, they apply to the next task starts.")
+                return redirect("admin:iaso_config_task_throttles")
+        else:
+            form = TaskThrottlesForm(
+                initial={"version": config_version(config), "tasks": ",".join(sorted(shown))}, **form_kwargs
+            )
+
+        task_names = [name for name, _ in throttled_tasks]
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": "Task throttles",
+            "form": form,
+            "sections": list(form.sections(running_throttle_keys(), queued_counts(task_names), tasks)),
+            "addable_tasks": sorted(name for name in tasks if name not in shown),
+            "unknown_entries": describe_content({k: v for k, v in form.content.items() if k not in tasks}),
+            "config": config,
+            "config_users": config.users.all() if config else [],
+            "saved_json": describe_content(config.content) if config else "",
+        }
+        return render(request, "admin/iaso/config/task_throttles.html", context)
+
 
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
@@ -1220,12 +1471,21 @@ class UserRoleAdmin(admin.ModelAdmin):
 
 @admin.register(OrgUnitChangeRequestConfiguration)
 class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
-    autocomplete_fields = ["project"]
+    autocomplete_fields = [
+        "project",
+        "editable_reference_forms",
+        "created_by",
+        "updated_by",
+        "other_groups",
+        "org_unit_type",
+        "possible_types",
+        "possible_parent_types",
+    ]
 
 
 @admin.register(ValidationNode)
 class ValidationNode(admin.ModelAdmin):
-    autocomplete_fields = ["instance"]
+    autocomplete_fields = ["instance", "created_by", "updated_by"]
 
 
 @admin.register(GroupSet)
@@ -1348,10 +1608,17 @@ class TemporaryFormAdmin(admin.ModelAdmin):
 
 admin.site.register(TemporaryForm, TemporaryFormAdmin)
 admin.site.register(AccountFeatureFlag)
-admin.site.register(Device)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
 admin.site.register(DevicePosition)
-admin.site.register(BulkCreateUserFile)
 admin.site.register(Report)
+
+
+@admin.register(BulkCreateUserFile)
+class BulkCreateUserFileAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("created_by", "account", "default_projects", "default_org_units")
+    raw_id_fields = ("default_permissions", "default_user_roles", "default_teams")
+    list_display = ("id", "file", "account", "created_by", "created_at")
+    list_select_related = ("account", "created_by")
+    search_fields = ("created_by__username", "account__name")

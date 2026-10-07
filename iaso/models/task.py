@@ -1,7 +1,9 @@
+import re
 import traceback
 
 from logging import getLogger
 from typing import Optional
+from urllib.parse import unquote
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -140,6 +142,9 @@ class Task(models.Model):
         self.create_log_entry_if_needed(message)
         self.save()
 
+    def decode_dhis2_url(self, message: str) -> str:
+        return re.sub(r"https?://[^\s,]+", lambda match: unquote(match.group(0)), message)
+
     def report_failure(self, e: Exception):
         self.status = ERRORED
         self.ended_at = timezone.now()
@@ -150,6 +155,9 @@ class Task(models.Model):
             "last_progress_message": self.progress_message,
         }
         self.progress_message = e.message if hasattr(e, "message") else str(e)
+        if self.name == "dhis2_ou_importer":
+            self.progress_message = self.decode_dhis2_url(self.result.get("message", ""))
+
         # Extra debug info
         if hasattr(e, "extra"):
             self.result["extra"] = e.extra
@@ -185,3 +193,18 @@ class TaskLog(models.Model):
         if self.id:
             raise ValueError("Cannot update a TaskLog")
         super().save(*args, **kwargs)
+
+
+class TaskLease(models.Model):
+    """Held by a task while a worker runs it, see `run` in beanstalk_worker/services.py.
+
+    The worker refreshes `heartbeat_at` from a side thread: a lease whose heartbeat stopped belongs to a worker that
+    was killed. `throttle_keys` are the throttle slots the run occupies (see beanstalk_worker/throttle.py).
+    This is a separate table so that `Task.save()` calls from the task code never overwrite the heartbeat."""
+
+    task = models.OneToOneField(Task, on_delete=models.CASCADE, related_name="lease")
+    throttle_keys = models.JSONField(default=list)
+    heartbeat_at = models.DateTimeField(db_index=True)
+
+    def __str__(self):
+        return f"Lease of task {self.task_id}, heartbeat at {self.heartbeat_at}"

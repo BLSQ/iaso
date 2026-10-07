@@ -1,8 +1,10 @@
 import json
 import logging
 import ntpath
+import os
 import tempfile
 
+from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
 from typing import Any, Dict, Optional, Union
@@ -17,7 +19,8 @@ from django.db.models import Case, Count, Exists, F, OuterRef, Prefetch, Q, Quer
 from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -48,10 +51,12 @@ from iaso.api.instances.serializers import (
     InstanceSerializer,
     UnlockSerializer,
 )
+from iaso.api.instances.zip import generate_zip
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.exports import CleaningFileResponse, parquet
+from iaso.exports import CleaningFileResponse, parquet, tabular
+from iaso.exports.submissions_tabular import build_submissions_tabular_queryset
 from iaso.models import (
     Account,
     Entity,
@@ -90,6 +95,9 @@ class InstancesViewSet(viewsets.ViewSet):
 
     GET /api/instances/
         Optional query referenceInstances=all|reference|not_reference (default: no filter) matches is_reference_instance.
+        Optional query fields=<comma-separated keys> (default: all fields) restricts the JSON search response
+        (not the csv/xlsx/parquet exports) to the requested keys, and skips the queries/computation needed
+        for any field that isn't requested (see `Instance.as_dict`).
     GET /api/instances/<id>
     DELETE /api/instances/<id>
     POST /api/instances/
@@ -246,8 +254,9 @@ class InstancesViewSet(viewsets.ViewSet):
             }
         )
 
-    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
-        """WIP: Helper function to divide the huge list method"""
+    @staticmethod
+    def _file_export_columns(form: Form, queryset: "QuerySet[Instance]"):
+        """Columns, sub columns (question labels) and answers keys shared by the csv/xlsx exports"""
         columns = [
             {"title": "ID du formulaire", "width": 20},
             {"title": "Soumission de référence", "width": 20},
@@ -269,22 +278,16 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
+            {"title": "OU Code", "width": 20},
+            {"title": "OU Status", "width": 20},
             {"title": "parent1", "width": 20},
             {"title": "parent2", "width": 20},
             {"title": "parent3", "width": 20},
             {"title": "parent4", "width": 20},
         ]
 
-        filename = "instances"
-
-        form = get_form_from_instance_filters(filters)
-
-        if form:
-            filename = "%s-%s" % (filename, form.id)
-            if form.correlatable:
-                columns.append({"title": "correlation id", "width": 20})
-        else:
-            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
+        if form.correlatable:
+            columns.append({"title": "correlation id", "width": 20})
 
         sub_columns = ["" for __ in columns]
         latest_form_version = form.latest_version
@@ -304,6 +307,21 @@ class InstancesViewSet(viewsets.ViewSet):
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
                 sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
+
+        return columns, sub_columns, file_content_template
+
+    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+        """WIP: Helper function to divide the huge list method"""
+        filename = "instances"
+
+        form = get_form_from_instance_filters(filters)
+
+        if form:
+            filename = "%s-%s" % (filename, form.id)
+        else:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
+
+        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
 
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
@@ -335,6 +353,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.org_unit.name,
                 instance.org_unit.id,
                 instance.org_unit.source_ref,
+                instance.org_unit.code,
+                instance.org_unit.validation_status,
             ]
 
             parent = org_unit.parent
@@ -407,6 +427,65 @@ class InstancesViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 
+    def list_file_export_duckdb(
+        self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
+    ):
+        """Same content as list_file_export, but the rows are computed by postgres and written by duckdb"""
+        # TODO once the legacy csv/xlsx exports (list_file_export, engine=legacy) are removed: also handle the
+        #  parquet export (anwser_with_parquet_file) here, all the duckdb exports in one place
+        form = get_form_from_instance_filters(filters)
+        if not form:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
+
+        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
+        export_queryset = build_submissions_tabular_queryset(queryset, form, file_content_template, columns)
+
+        filename = "instances-%s-%s" % (form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        if file_format == FileFormatEnum.XLSX:
+            filename = filename + ".xlsx"
+            content_type = CONTENT_TYPE_XLSX
+            tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+            tabular.export_django_query_to_xlsx_via_duckdb(export_queryset, tmp.name, "Forms", columns, sub_columns)
+        elif file_format == FileFormatEnum.CSV:
+            filename = filename + ".csv"
+            content_type = CONTENT_TYPE_CSV
+            tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+            tabular.export_django_query_to_csv_via_duckdb(export_queryset, tmp.name, columns)
+        else:
+            raise ValueError(f"Unknown file format requested: {file_format}")
+
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename, content_type=content_type)
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
+        return response
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="fields",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "A comma-separated list of field names (as returned by `Instance.as_dict()`, e.g. "
+                    "`id,org_unit,file_content`). When given, only these keys are included in the response, "
+                    "and the fields that aren't requested are neither queried for (e.g. `org_unit`, "
+                    "`project`) nor computed (e.g. `file_content`, which parses the submission's XML). Only "
+                    "applies to the JSON search responses (paginated or not); the csv/xlsx/parquet export "
+                    "branches always return every column regardless of this param. Defaults to returning "
+                    "every field, same as before this param existed."
+                ),
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="with_descriptor",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "'true' to also include the form's `form_descriptor` in each instance (also subject to "
+                    "`fields`, i.e. omitted if `fields` is given and doesn't list `form_descriptor`)."
+                ),
+                type=OpenApiTypes.BOOL,
+            ),
+        ]
+    )
     def list(self, request):
         """List instances: this endpoint is used for both searches and file exports"""
 
@@ -421,6 +500,14 @@ class InstancesViewSet(viewsets.ViewSet):
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
         with_descriptor = request.GET.get("with_descriptor", "false")
+        fields_param = request.GET.get("fields", None)
+        # Not (yet) applied to the csv/xlsx/parquet export branches below, only to the JSON
+        # "search" branches: restricting fields there doesn't change what a file export contains.
+        requested_fields = fields_param.split(",") if fields_param else None
+        requested_fields_set = set(requested_fields) if requested_fields is not None else None
+
+        def wants_field(field_name: str) -> bool:
+            return requested_fields_set is None or field_name in requested_fields_set
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -430,10 +517,33 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.select_related("org_unit__version__data_source", "project")
-        queryset = queryset.prefetch_related(
-            "created_by", "form", "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
+        queryset = queryset.prefetch_related("created_by", "form")
+
+        # Only pull in the org_unit/project relation chains when something downstream will
+        # actually read them: `filter()`/`order_by()`/`annotate()` (for_filters, with_lock_info,
+        # the `order` param below) are pure SQL and don't need select_related/prefetch_related to
+        # work correctly, so gating these on `fields` can't break filtering or ordering.
+        #
+        # `wants_field(...)` already returns True for org_unit/project whenever `fields` isn't
+        # given at all (requested_fields_set is None) -- which is the case for every real
+        # csv/xlsx/parquet/asSmallDict request today, since none of those pass `fields=`. So this
+        # gating alone preserves full eager-loading for those branches with no special-casing:
+        # neither get_row() (csv/xlsx, below), build_submissions_queryset() (parquet), nor
+        # as_small_dict() ever read org_unit_type/project in the first place -- verified by running
+        # the full csv/xlsx/parquet test suites with this exact gating (identical results, no
+        # special-case needed for those formats).
+        needs_org_unit_relation = wants_field("org_unit")
+        if needs_org_unit_relation:
+            queryset = queryset.select_related("org_unit__version__data_source", "org_unit__org_unit_type")
+            queryset = queryset.prefetch_related(
+                "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
+            )
+
+        needs_project_relation = (
+            wants_field("project_name") or wants_field("project_color") or wants_field("project_id")
         )
+        if needs_project_relation:
+            queryset = queryset.select_related("project")
 
         queryset = queryset.for_filters(**filters)
         queryset = queryset.order_by(*orders)
@@ -477,11 +587,19 @@ class InstancesViewSet(viewsets.ViewSet):
                 locked_page = queryset.filter(pk__in=page_ids).with_lock_info(user=request.user)
 
                 def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
-                    d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
-                    d["can_user_modify"] = instance.count_lock_applying_to_user == 0
-                    d["is_locked"] = instance.count_active_lock > 0
-                    d["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
-                    d["is_reference_instance"] = instance._is_reference_instance
+                    d = (
+                        instance.as_dict_with_descriptor(fields=requested_fields)
+                        if with_descriptor == "true"
+                        else instance.as_dict(fields=requested_fields)
+                    )
+                    if wants_field("can_user_modify"):
+                        d["can_user_modify"] = instance.count_lock_applying_to_user == 0
+                    if wants_field("is_locked"):
+                        d["is_locked"] = instance.count_active_lock > 0
+                    if wants_field("is_instance_of_reference_form"):
+                        d["is_instance_of_reference_form"] = instance._is_instance_of_reference_form
+                    if wants_field("is_reference_instance"):
+                        d["is_reference_instance"] = instance._is_reference_instance
                     return d
 
                 res["instances"] = map(as_dict_formatter, locked_page)
@@ -505,14 +623,18 @@ class InstancesViewSet(viewsets.ViewSet):
             return Response(
                 {
                     "instances": [
-                        instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                        instance.as_dict_with_descriptor(fields=requested_fields)
+                        if with_descriptor == "true"
+                        else instance.as_dict(fields=requested_fields)
                         for instance in queryset
                     ]
                 }
             )
 
-        # This is a CSV/XLSX file export
-        return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+        # This is a CSV/XLSX file export, done by duckdb unless the legacy (python, much slower) one is requested
+        if request.GET.get("engine") == "legacy":
+            return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+        return self.list_file_export_duckdb(filters=filters, queryset=queryset, file_format=file_format_export)
 
     def anwser_with_parquet_file(self, request, filters, queryset):
         # validate no unsupported/extra params is passed
@@ -539,6 +661,10 @@ class InstancesViewSet(viewsets.ViewSet):
             "planningIds",
             "userIds",
             "referenceInstances",
+            "deviceId",
+            "deviceOwnershipId",
+            "search",
+            "org_unit_status",  # NEW, VALID, REJECTED
         }
         received_params = set(request.GET.keys())
 
@@ -561,7 +687,8 @@ class InstancesViewSet(viewsets.ViewSet):
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name, mapping)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
-
+        # for the download progress in the UI: Content-Length is removed when the response is gzipped
+        response["X-File-Size"] = os.path.getsize(tmp.name)
         return response
 
     @action(detail=False, methods=["GET"])
@@ -622,8 +749,8 @@ class InstancesViewSet(viewsets.ViewSet):
         lock.save()
 
     @safe_api_import("instance")
-    def create(self, _, request):
-        import_data(request.data, request.user, request.query_params.get("app_id"))
+    def create(self, api_import, request):
+        import_data(request.data, request.user, request.query_params.get("app_id"), api_import=api_import)
 
         return Response({"res": "ok"})
 
@@ -647,6 +774,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__parent",
                 "org_unit__org_unit_type",
                 "org_unit__version__data_source__credentials",
+                "project",
             )
             .with_status(form_ids=resolve_status_form_ids(form_id))
         )
@@ -690,6 +818,7 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
+    @transaction.atomic
     def patch(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -703,7 +832,7 @@ class InstancesViewSet(viewsets.ViewSet):
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
         data_org_unit = request.data.get("org_unit", None)
 
-        if instance.org_unit not in access_ou:
+        if instance.org_unit_id is None or not access_ou.filter(pk=instance.org_unit_id).exists():
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
         # If the org unit change but the instance was marked as the reference_instance for this org unit,
@@ -943,6 +1072,20 @@ class InstancesViewSet(viewsets.ViewSet):
         log_dict["form_descriptor"] = instance.form_version.form_descriptor if instance.form_version else None
         return Response(log_dict)
 
+    @action(["GET"], detail=True)
+    def download_attachments(self, request, pk=None) -> StreamingHttpResponse:
+        instance = get_object_or_404(
+            Instance.objects.filter_for_user(request.user).prefetch_related("instancefile_set").filter(pk=pk)
+        )
+        return StreamingHttpResponse(
+            streaming_content=generate_zip(instance),
+            headers={
+                "Content-Type": "application/zip",
+                "Content-Disposition": f'attachment; filename="{instance.name}-{instance.id}.zip"',
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
+
 
 def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int] = None) -> Entity:
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
@@ -980,7 +1123,7 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id):
+def import_data(instances, user, app_id, api_import=None):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by
@@ -988,6 +1131,21 @@ def import_data(instances, user, app_id):
     """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     rtn_instances = []
+
+    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at
+    # the same few forms - fetch those once up front instead of lazily once per instance.
+    form_ids = {int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None}
+    forms_by_id = {form.id: form for form in Form.objects.filter(id__in=form_ids)}
+    # Same for entity types (typically a single one per batch): only their reference form is needed.
+    reference_form_ids_by_entity_type_id = {}
+
+    file_names = {ntpath.basename(instance_data["file"]) for instance_data in instances if instance_data.get("file")}
+    uuids_by_file_name = defaultdict(set)
+    for existing_file_name, existing_uuid in Instance.objects.filter(file_name__in=file_names).values_list(
+        "file_name", "uuid"
+    ):
+        if existing_uuid:
+            uuids_by_file_name[existing_file_name].add(existing_uuid)
 
     for instance_data in instances:
         uuid = instance_data.get("id", None)
@@ -1007,7 +1165,18 @@ def import_data(instances, user, app_id):
         # it is possible (although it won't happen often) that the instance has already been created by the
         # POST /sync/form_upload/ endpoint.
         file_name = ntpath.basename(instance_data.get("file", None))
+
+        # Workaround for mobile uploads containing multiple instances that reference the same file.
+        # The overlapping names caused a single reference Instance to be created that two entities tried to
+        # reference simultaneously as their attributes, causing an IntegrityError.
+        # refs: SLEEP-1634
+        if any(existing_uuid != uuid for existing_uuid in uuids_by_file_name[file_name]):
+            base, ext = os.path.splitext(file_name)
+            file_name = f"{base}_dup_{uuid}{ext}"
+
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
+        if uuid:
+            uuids_by_file_name[file_name].add(uuid)
 
         instance.uuid = uuid
         instance.project = project
@@ -1018,6 +1187,9 @@ def import_data(instances, user, app_id):
             accuracy_serializer = InstanceImportAccuracySerializer(data={"accuracy": accuracy_raw})
             accuracy_serializer.is_valid(raise_exception=True)
             instance.accuracy = accuracy_serializer.validated_data.get("accuracy")
+        if api_import is not None:
+            instance.api_import = api_import
+            instance.app_version = api_import.app_version
 
         tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():
@@ -1026,7 +1198,13 @@ def import_data(instances, user, app_id):
             org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id, version_id=project.account.default_version_id)
             instance.org_unit = org_unit
 
-        instance.form_id = instance_data.get("formId")
+        raw_form_id = instance_data.get("formId")
+        # Normalize to int: the mobile app sends this as a JSON string (e.g. "1"), which would make
+        # id comparisons (e.g. against `entity_type.reference_form_id`) silently fail ("1" != 1).
+        instance.form_id = int(raw_form_id) if raw_form_id is not None else None
+        if instance.form_id in forms_by_id:
+            # Share the prefetched Form across instances, so `instance.form` doesn't re-query it.
+            instance.form = forms_by_id[instance.form_id]
 
         instance.planning = resolve_planning(instance_data.get("planningId", None), project)
         instance.mission = resolve_mission(instance_data.get("missionId", None), project)
@@ -1059,7 +1237,11 @@ def import_data(instances, user, app_id):
             instance.entity = entity
 
             # If instance's form is the same as the type reference form, set the instance as reference_instance
-            if entity.entity_type.reference_form == instance.form:
+            # int(): entities created above by `find_entity()` keep the payload's string entityTypeId.
+            entity_type_id = int(entity.entity_type_id)
+            if entity_type_id not in reference_form_ids_by_entity_type_id:
+                reference_form_ids_by_entity_type_id[entity_type_id] = entity.entity_type.reference_form_id
+            if reference_form_ids_by_entity_type_id[entity_type_id] == instance.form_id:
                 entity.attributes = instance
                 entity.save()
 
@@ -1105,6 +1287,8 @@ def import_data(instances, user, app_id):
             except Exception as e:
                 # so we avoid the whole instance creation crashing
                 logger.error(e)
+
+    return rtn_instances
 
 
 def _entity_correctness_score(entity):

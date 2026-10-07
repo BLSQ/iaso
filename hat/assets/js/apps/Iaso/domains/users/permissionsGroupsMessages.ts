@@ -49,7 +49,7 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     },
     data_validation: {
         id: 'iaso.permissions.group.data_validation',
-        defaultMessage: 'Validation',
+        defaultMessage: 'Change requests:',
     },
     registry: {
         id: 'iaso.permissions.group.registry',

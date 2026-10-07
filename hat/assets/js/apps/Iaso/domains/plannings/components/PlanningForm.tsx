@@ -75,9 +75,7 @@ const styles: SxStyles = {
     paper: {
         px: 2,
         pb: 2,
-        border: theme =>
-            // @ts-ignore
-            `1px solid ${theme.palette.border.main}`,
+        border: theme => `1px solid ${theme.palette.border.main}`,
         borderRadius: 1,
     },
 };

@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 from iaso.test import APITestCase
@@ -48,17 +50,17 @@ class AlgorithmsAPITestCase(APITestCase):
 
     def test_list_unauthenticated(self):
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_list(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.BASE_URL)
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         algorithm_ids = {algorithm["id"] for algorithm in data}
         self.assertIn(self.algorithm.id, algorithm_ids)
@@ -72,17 +74,17 @@ class AlgorithmsAPITestCase(APITestCase):
 
     def test_retrieve_unauthenticated(self):
         response = self.client.get(f"{self.BASE_URL}{self.algorithm.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.get(f"{self.BASE_URL}{self.algorithm.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}{self.algorithm.id}/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(self.algorithm.id, data["id"])
         self.assertEqual(self.algorithm.name, data["name"])
@@ -92,7 +94,7 @@ class AlgorithmsAPITestCase(APITestCase):
     def test_retrieve_other_account_algorithm(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}{self.algorithm_other_account.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_create_unauthenticated(self):
         response = self.client.post(
@@ -104,7 +106,7 @@ class AlgorithmsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
@@ -117,7 +119,7 @@ class AlgorithmsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create(self):
         self.client.force_authenticate(self.user)
@@ -130,7 +132,7 @@ class AlgorithmsAPITestCase(APITestCase):
             },
             format="json",
         )
-        data = self.assertJSONResponse(response, 201)
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
         self.assertEqual("iaso.matching.new", data["name"])
         self.assertEqual("New algorithm", data["description"])
@@ -147,7 +149,7 @@ class AlgorithmsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
@@ -160,7 +162,7 @@ class AlgorithmsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_update(self):
         self.client.force_authenticate(self.user)
@@ -173,7 +175,7 @@ class AlgorithmsAPITestCase(APITestCase):
             },
             format="json",
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual("iaso.matching.updated", data["name"])
         self.assertEqual("Updated algorithm", data["description"])
@@ -183,15 +185,15 @@ class AlgorithmsAPITestCase(APITestCase):
 
     def test_delete_unauthenticated(self):
         response = self.client.delete(f"{self.BASE_URL}{self.algorithm.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.delete(f"{self.BASE_URL}{self.algorithm.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_delete(self):
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"{self.BASE_URL}{self.algorithm.id}/")
-        self.assertJSONResponse(response, 204)
+        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
         self.assertFalse(m.MatchingAlgorithm.objects.filter(id=self.algorithm.id).exists())

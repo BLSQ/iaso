@@ -10,6 +10,7 @@ from rest_framework import status
 
 from hat import settings
 from iaso.test import MockClamavScanResults
+from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.tests.api.vaccine_supply_chain.base import BaseVaccineSupplyChainAPITestCase
@@ -68,6 +69,7 @@ class VaccineRequestFormVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(vaccine_request_form.file_scan_status, VirusScanStatus.CLEAN)
         self.assertEqual(vaccine_request_form.file_last_scan, self.DT)
         self.assertEqual(vaccine_request_form.quantities_ordered_in_doses, 500)
+        self.assertEqual(len(vaccine_request_form.md5), 32)
 
     @time_machine.travel(DT, tick=False)
     @override_settings(CLAMAV_ACTIVE=True)
@@ -418,3 +420,63 @@ class VaccineRequestFormVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(vaccine_request_form_clean.file_scan_status, VirusScanStatus.ERROR)
         self.assertIsNone(vaccine_request_form_clean.file_last_scan)
         self.assertEqual(vaccine_request_form_clean.quantities_ordered_in_doses, 600)
+
+    @time_machine.travel(DT, tick=False)
+    @override_settings(CLAMAV_ACTIVE=True)
+    @patch("clamav_client.get_scanner")
+    def test_update_vaccine_request_form_skips_rescan_when_md5_unchanged(self, mock_get_scanner):
+        mock_scanner = MagicMock()
+        mock_scanner.scan.return_value = MockClamavScanResults(
+            state="FOUND",
+            details="Virus found :(",
+            passed=False,
+        )
+        mock_get_scanner.return_value = mock_scanner
+
+        previous_scan = datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
+        with open(self.SAFE_FILE_PATH, "rb") as safe_file:
+            safe_file_content = safe_file.read()
+
+        md5 = calculate_md5(SimpleUploadedFile("safe_file.pdf", safe_file_content))
+        vaccine_request_form = pm.VaccineRequestForm.objects.create(
+            campaign=self.campaign_rdc_1,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_signature="2024-01-01",
+            date_vrf_reception="2024-01-02",
+            date_dg_approval="2024-01-03",
+            quantities_ordered_in_doses=500,
+            file_scan_status=VirusScanStatus.CLEAN,
+            file_last_scan=previous_scan,
+            md5=md5,
+            file=SimpleUploadedFile(
+                name="safe_file.pdf",
+                content=safe_file_content,
+                content_type="application/pdf",
+            ),
+        )
+        vaccine_request_form.rounds.set([self.campaign_rdc_1_round_1])
+
+        data = {
+            "quantities_ordered_in_doses": 600,
+            "file": SimpleUploadedFile(
+                name="safe_file_renamed.pdf",
+                content=safe_file_content,
+                content_type="application/pdf",
+            ),
+        }
+
+        self.client.force_authenticate(self.user_rw_perm)
+        response = self.client.patch(
+            f"{self.BASE_URL}{vaccine_request_form.id}/",
+            data=data,
+            format="multipart",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        vaccine_request_form.refresh_from_db()
+        # Same content → no re-scan even if filename changed
+        self.assertEqual(vaccine_request_form.file_scan_status, VirusScanStatus.CLEAN)
+        self.assertEqual(vaccine_request_form.file_last_scan, previous_scan)
+        self.assertEqual(vaccine_request_form.md5, md5)
+        self.assertEqual(vaccine_request_form.quantities_ordered_in_doses, 600)
+        mock_scanner.scan.assert_not_called()

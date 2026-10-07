@@ -1,5 +1,6 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from 'Iaso/utils/usersUtils';
+import { GeoJson } from '../../../components/maps/types';
 import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 
@@ -104,7 +105,9 @@ export type OrgUnitChangeRequestDetails = {
     rejection_comment?: string;
     org_unit: OrgUnitForChangeRequest;
     new_closed_date?: string;
+    new_code?: string;
     new_groups: NestedGroup[];
+    new_geom?: GeoJson;
     new_location?: NestedLocation;
     new_location_accuracy?: number;
     new_name?: string;
@@ -113,7 +116,9 @@ export type OrgUnitChangeRequestDetails = {
     new_parent?: ShortOrgUnit;
     new_reference_instances: InstanceForChangeRequest[];
     old_closed_date?: string;
+    old_code?: string;
     old_groups: NestedGroup[];
+    old_geom?: GeoJson;
     old_location?: NestedLocation;
     old_location_accuracy?: number;
     old_name?: string;

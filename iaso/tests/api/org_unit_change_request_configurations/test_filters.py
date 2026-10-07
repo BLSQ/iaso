@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
 
@@ -29,14 +31,14 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
 
         # Filtering on the new project
         response = self.client.get(f"{self.OUCRC_API_URL}?project_id={new_project.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]["id"], new_oucrc.id)
 
         # Filtering on a project with multiple OUCRCs
         response = self.client.get(f"{self.OUCRC_API_URL}?project_id={self.project_johto.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(6, len(result))  # The 6 OUCRCs created in setup
 
@@ -49,7 +51,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         # Filtering on unknown project
         probably_not_a_valid_id = 1234567890
         response = self.client.get(f"{self.OUCRC_API_URL}?project_id={probably_not_a_valid_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual([], result)
 
@@ -60,7 +62,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
 
         # Filtering on an orgunit type with OUCRCs in multiple projects
         response = self.client.get(f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_water_pokemons.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(3, len(result))
         # Results should be ordered by ID by default, so the new one will always be last
@@ -69,7 +71,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         self.assertEqual(result[2]["id"], new_oucrc.id)
 
         response = self.client.get(f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_rock_pokemons.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(2, len(result))
         self.assertEqual(result[0]["id"], self.oucrc_type_rock.id)
@@ -78,7 +80,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         # Filtering on unknown orgunit type
         probably_not_a_valid_id = 1234567890
         response = self.client.get(f"{self.OUCRC_API_URL}?org_unit_type_id={probably_not_a_valid_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual([], result)
 
@@ -89,7 +91,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
 
         # Filtering on a single user, with OUCRCs in multiple projects
         response = self.client.get(f"{self.OUCRC_API_URL}?created_by={self.user_brock.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(3, len(result))
         # Results should be ordered by ID by default, so the new one will always be last
@@ -99,7 +101,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
 
         # Filtering on multiple users
         response = self.client.get(f"{self.OUCRC_API_URL}?created_by={self.user_brock.id},{self.user_ash_ketchum.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(5, len(result))
         self.assertEqual(result[0]["id"], self.oucrc_type_fire.id)
@@ -116,7 +118,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         # Filtering on unknown user
         probably_not_a_valid_id = 1234567890
         response = self.client.get(f"{self.OUCRC_API_URL}?created_by={probably_not_a_valid_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual([], result)
 
@@ -137,7 +139,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?project_id={new_project_1.id}&org_unit_type_id={self.ou_type_fire_pokemons.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]["id"], new_oucrc_1.id)
@@ -145,7 +147,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         # Filtering on a project and type -> no result
         new_type = m.OrgUnitType.objects.create(name="New Type")
         response = self.client.get(f"{self.OUCRC_API_URL}?project_id={new_project_3.id}&org_unit_type_id={new_type.id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(0, len(result))
 
@@ -153,7 +155,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?project_id={new_project_1.id}&created_by={self.user_ash_ketchum.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]["id"], new_oucrc_1.id)
@@ -162,7 +164,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?project_id={new_project_2.id}&created_by={self.user_misty.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(0, len(result))
 
@@ -170,7 +172,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_fire_pokemons.id}&created_by={self.user_ash_ketchum.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(2, len(result))
         self.assertEqual(result[0]["id"], self.oucrc_type_fire.id)
@@ -180,7 +182,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_rock_pokemons.id}&created_by={self.user_misty.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(0, len(result))
 
@@ -188,7 +190,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?project_id={new_project_3.id}&org_unit_type_id={self.ou_type_rock_pokemons.id}&created_by={self.user_ash_ketchum.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(1, len(result))
         self.assertEqual(result[0]["id"], new_oucrc_3.id)
@@ -197,6 +199,6 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(
             f"{self.OUCRC_API_URL}?project_id={new_project_3.id}&org_unit_type_id={self.ou_type_rock_pokemons.id}&created_by={self.user_brock.id}"
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         result = response.json()["results"]
         self.assertEqual(0, len(result))

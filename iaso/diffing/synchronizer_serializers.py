@@ -30,8 +30,14 @@ class GroupComparisonSerializer(BaseComparisonSerializer):
 
 
 class GeometryComparisonSerializer(BaseComparisonSerializer):
-    before = serializers.CharField(source="before.wkt", read_only=True)
-    after = serializers.CharField(source="after.wkt", read_only=True)
+    before = serializers.SerializerMethodField()
+    after = serializers.SerializerMethodField()
+
+    def get_before(self, obj):
+        return obj.before.wkt if obj.before is not None else None
+
+    def get_after(self, obj):
+        return obj.after.wkt if obj.after is not None else None
 
 
 class DiffOrgUnitSerializer(serializers.ModelSerializer):
@@ -42,6 +48,8 @@ class DiffOrgUnitSerializer(serializers.ModelSerializer):
             "version",
             "source_ref",
             "location",
+            "geom",
+            "code",
             "org_unit_type",
             "path",
             # Fields that can be synchronized via change requests.
@@ -76,6 +84,8 @@ class DataSourceVersionsSynchronizerDiffSerializer(serializers.Serializer):
                 serializers.append(DateComparisonSerializer(comparison).data)
             if comparison.field == "geometry":
                 serializers.append(GeometryComparisonSerializer(comparison).data)
+            if comparison.field == "code":
+                serializers.append(BaseComparisonSerializer(comparison).data)
             if comparison.field.startswith("group:"):
                 serializers.append(GroupComparisonSerializer(comparison).data)
         return serializers

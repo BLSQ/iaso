@@ -20,12 +20,12 @@ type Props = {
 const styles: SxStyles = {
     qrCode: {
         width: 40,
-        height: 40,
+        height: 49,
         cursor: 'pointer',
     },
     qrCodeLarge: {
         width: 300,
-        height: 300,
+        height: 368,
     },
     qrCodeContainer: {
         display: 'flex',

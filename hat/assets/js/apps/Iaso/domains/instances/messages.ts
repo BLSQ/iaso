@@ -53,6 +53,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Version',
         id: 'iaso.label.version',
     },
+    formVersions: {
+        defaultMessage: 'Form versions',
+        id: 'iaso.instances.formVersions',
+    },
+    selectFormFirst: {
+        defaultMessage: 'You must select at least one form first',
+        id: 'iaso.instances.selectFormFirst',
+    },
     downloadXml: {
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
@@ -76,7 +84,11 @@ const MESSAGES = defineMessages({
     },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
-        defaultMessage: 'DHIS mappings',
+        defaultMessage: 'DHIS2 mappings',
+    },
+    link: {
+        id: 'iaso.label.link',
+        defaultMessage: 'Link',
     },
     field: {
         id: 'iaso.label.field',
@@ -113,6 +125,10 @@ const MESSAGES = defineMessages({
     device_id: {
         id: 'iaso.instance.device',
         defaultMessage: 'IMEI device',
+    },
+    device_app_version: {
+        id: 'iaso.instance.device_app_version',
+        defaultMessage: 'Device App Version',
     },
     coordinate: {
         id: 'iaso.instance.coordinate',
@@ -892,6 +908,120 @@ const MESSAGES = defineMessages({
     review: {
         defaultMessage: 'Review',
         id: 'iaso.label.review',
+    },
+    searchQuestions: {
+        defaultMessage: 'Search',
+        id: 'iaso.instance.searchQuestions',
+    },
+    showQuestionIds: {
+        defaultMessage: 'Show question IDs',
+        id: 'iaso.instance.showQuestionIds',
+    },
+    clearSearch: {
+        defaultMessage: 'Clear search',
+        id: 'iaso.instance.clearSearch',
+    },
+    searchResultsCount: {
+        defaultMessage:
+            '{count, plural, one {# result} other {# results}} for "{query}"',
+        id: 'iaso.instance.searchResultsCount',
+    },
+    noQuestionsMatch: {
+        defaultMessage: 'No question name or ID matches "{query}"',
+        id: 'iaso.instance.noQuestionsMatch',
+    },
+    fieldsCount: {
+        defaultMessage: '{count, plural, one {# field} other {# fields}}',
+        id: 'iaso.instance.fieldsCount',
+    },
+    repeatedCount: {
+        defaultMessage:
+            'Repeat · {count, plural, one {# entry} other {# entries}}',
+        id: 'iaso.instance.repeatedCount',
+    },
+    matchingFieldsCount: {
+        defaultMessage: '{count} of {total}',
+        id: 'iaso.instance.matchingFieldsCount',
+    },
+    layoutDensity: {
+        defaultMessage: 'Layout density',
+        id: 'iaso.instance.layoutDensity',
+    },
+    oneColumn: {
+        defaultMessage: 'One column',
+        id: 'iaso.instance.oneColumn',
+    },
+    twoColumns: {
+        defaultMessage: 'Two columns',
+        id: 'iaso.instance.twoColumns',
+    },
+    questionLanguage: {
+        defaultMessage: 'Question language',
+        id: 'iaso.instance.questionLanguage',
+    },
+    defaultLanguage: {
+        defaultMessage: 'Default',
+        id: 'iaso.instance.defaultLanguage',
+    },
+    technicalDetails: {
+        defaultMessage: 'Technical details',
+        id: 'iaso.instance.technicalDetails',
+    },
+    general: {
+        defaultMessage: 'General',
+        id: 'iaso.instance.general',
+    },
+    locks: {
+        defaultMessage: 'Locks',
+        id: 'iaso.instance.locks',
+    },
+    notActivated: {
+        defaultMessage: 'Not activated',
+        id: 'iaso.instance.notActivated',
+    },
+    showExactValues: {
+        defaultMessage: 'Show exact values',
+        id: 'iaso.instance.showExactValues',
+    },
+    hideExactValues: {
+        defaultMessage: 'Hide exact values',
+        id: 'iaso.instance.hideExactValues',
+    },
+    restricted: {
+        defaultMessage: 'Restricted',
+        id: 'iaso.instance.restricted',
+    },
+    lockedState: {
+        defaultMessage: 'Locked',
+        id: 'iaso.instance.lockedState',
+    },
+    unlockedState: {
+        defaultMessage: 'Unlocked',
+        id: 'iaso.instance.unlockedState',
+    },
+    none: {
+        defaultMessage: 'None',
+        id: 'iaso.instance.none',
+    },
+    filesCount: {
+        defaultMessage: '{count, plural, one {# file} other {# files}}',
+        id: 'iaso.instance.filesCount',
+    },
+    referenceSubmission: {
+        defaultMessage: 'Reference',
+        id: 'iaso.instance.referenceSubmission',
+    },
+    notReferenceSubmission: {
+        defaultMessage: 'Not a reference',
+        id: 'iaso.instance.notReferenceSubmission',
+    },
+    org_unit_status: {
+        id: 'iaso.instance.org_unit_status',
+        defaultMessage: 'Org Unit Status',
+    },
+    downloadAll: {
+        id: 'iaso.instance.downloadAll',
+        defaultMessage: 'Download all',
     },
 });
 

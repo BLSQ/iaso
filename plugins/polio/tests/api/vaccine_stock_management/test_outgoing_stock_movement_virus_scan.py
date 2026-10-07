@@ -543,3 +543,47 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestBas
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         mock_get_scanner.assert_called_once()
+
+
+class OutgoingStockMovementOrderingAPITestCase(VaccineStockManagementAPITestBase):
+    """Ordering of the Form A list, as used by the Stock Management table."""
+
+    def setUp(self):
+        super().setUp()
+        for vials_used, days_ago in ((3, 6), (25, 5), (40, 4)):
+            pm.OutgoingStockMovement.objects.create(
+                campaign=self.campaign,
+                vaccine_stock=self.vaccine_stock,
+                report_date=self.now - datetime.timedelta(days=days_ago),
+                form_a_reception_date=self.now - datetime.timedelta(days=days_ago - 1),
+                usable_vials_used=vials_used,
+                doses_per_vial=20,
+            )
+        self.client.force_authenticate(self.user_rw_perms)
+
+    def _get_vials_used(self, order):
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/"
+            f"?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order={order}"
+        )
+        data = self.assertJSONResponse(response, 200)
+        return [result["usable_vials_used"] for result in data["results"]]
+
+    def test_list_ordered_by_vials_used_ascending(self):
+        self.assertEqual(self._get_vials_used("usable_vials_used"), [3, 10, 25, 40])
+
+    def test_list_ordered_by_vials_used_descending(self):
+        self.assertEqual(self._get_vials_used("-usable_vials_used"), [40, 25, 10, 3])
+
+    def test_unknown_ordering_field_is_ignored(self):
+        """An ordering field outside `ordering_fields` is dropped by DRF rather than raising.
+
+        This is why sorting on `usable_vials_used` silently did nothing while the column was
+        missing from the viewset's `ordering_fields`: the request still returns 200.
+        """
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/"
+            f"?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=not_a_field"
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data["results"]), 4)

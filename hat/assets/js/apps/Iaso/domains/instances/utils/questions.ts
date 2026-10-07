@@ -95,41 +95,82 @@ export const findDescriptor = (
 };
 
 /**
- * Translate the provided label if it is translatable
- * If the locale language matches the user language, we display it
- * if not, we display it in English by default
- * if there is no english version, we display the first one
+ * Extract the `xx` code out of a form language key such as "French (fr)".
+ * Returns undefined for keys without a parenthesised code (e.g. "default").
+ */
+const languageCode = (language: string): string | undefined =>
+    /\(([a-z]{2})\)\s*$/i.exec(language)?.[1]?.toLowerCase();
+
+/**
+ * Render a (possibly multilingual) label in the requested language.
+ *
+ * `language` may be an exact form language key ("French (fr)", "default") or a
+ * short UI locale ("fr", "en"). Resolution order: exact key, then a key whose
+ * parenthesised code matches (so "fr" picks "French (fr)"), then the base
+ * "default"/English translation, then the first one available.
  * @param label
+ * @param language
  * @returns {*}
  */
-
-const labelLocales = { fr: 'French', en: 'English' };
-
 export const translateLabel = (
     label: Record<string, string> | string,
-    activeLocale: string,
+    language: string,
 ): string => {
-    if (isPlainObject(label)) {
-        const correctKey = Object.keys(label as Record<string, string>).find(
-            key => {
-                if (
-                    labelLocales[
-                        activeLocale as keyof typeof labelLocales
-                    ]?.includes(key)
-                ) {
-                    return true;
-                }
-                return labelLocales.en.includes(key);
-            },
-        );
-
-        if (correctKey) {
-            return (label as Record<string, string>)[correctKey];
-        }
-        return (label as Record<string, string>)[
-            Object.keys(label as Record<string, string>)[0]
-        ];
+    if (!isPlainObject(label)) {
+        return label as string;
     }
+    const translations = label as Record<string, string>;
+    const keys = Object.keys(translations);
+    const match =
+        keys.find(key => key === language) ??
+        keys.find(key => languageCode(key) === language.toLowerCase()) ??
+        keys.find(key => key === 'default' || key.startsWith('English')) ??
+        keys[0];
+    return match !== undefined ? translations[match] : (label as string);
+};
 
-    return label as string;
+/**
+ * The languages a form offers, taken from the descriptor's `_translations`
+ * (keyed by language, e.g. "default", "French (fr)"). Falls back to the union
+ * of every `label`'s keys when `_translations` is absent, and to an empty list
+ * for a monolingual form.
+ */
+export const getFormLanguages = (descriptor?: Descriptor): string[] => {
+    if (!descriptor) return [];
+    const translations = descriptor._translations;
+    if (isPlainObject(translations)) {
+        return Object.keys(translations as Record<string, unknown>);
+    }
+    const languages = new Set<string>();
+    const walk = (node: Descriptor): void => {
+        if (isPlainObject(node.label)) {
+            Object.keys(node.label as Record<string, string>).forEach(key =>
+                languages.add(key),
+            );
+        }
+        node.children?.forEach(walk);
+    };
+    walk(descriptor);
+    return [...languages];
+};
+
+/**
+ * The language a submission should open in: the one matching the user's UI
+ * locale if the form offers it, otherwise the form's own default language,
+ * otherwise the first one. Undefined when the form has no languages at all.
+ */
+export const pickDefaultLanguage = (
+    languages: string[],
+    uiLocale: string,
+    defaultLanguage?: string,
+): string | undefined => {
+    if (languages.length === 0) return undefined;
+    const byLocale = languages.find(
+        language => languageCode(language) === uiLocale.toLowerCase(),
+    );
+    if (byLocale) return byLocale;
+    if (defaultLanguage && languages.includes(defaultLanguage)) {
+        return defaultLanguage;
+    }
+    return languages[0];
 };

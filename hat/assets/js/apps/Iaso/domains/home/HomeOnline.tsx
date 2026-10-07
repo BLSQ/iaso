@@ -32,7 +32,6 @@ const useStyles = makeStyles(theme => ({
         fontSize: 25,
         textAlign: 'center',
         textTransform: 'uppercase',
-        // @ts-ignore
         color: theme.palette.gray.main,
         width: '50vw',
     },

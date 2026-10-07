@@ -81,6 +81,10 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Cell: settings => getStatusMessage(settings.value),
             },
             {
+                Header: formatMessage(MESSAGES.code),
+                accessor: 'code',
+            },
+            {
                 Header: formatMessage(MESSAGES.instances_count),
                 accessor: 'instances_count',
             },

@@ -40,7 +40,11 @@ import {
     Options,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { apiUrl, singleVaccinesList } from '../../constants';
+import {
+    apiUrl,
+    fipvVaccineOptions,
+    singleVaccinesList,
+} from '../../constants';
 import MESSAGES from '../../messages';
 import {
     CampaignDropdowns,
@@ -157,9 +161,16 @@ export const useCampaignDropDowns = ({
     };
 
     const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);
-
+    const { data: fIPVData } = useGetCampaigns(
+        { ...options, campaignType: 'fIPV' },
+        CAMPAIGNS_ENDPOINT,
+    );
     return useMemo(() => {
-        const list = (data as Campaign[]) ?? [];
+        const list = [
+            ...((data as Campaign[]) ?? []),
+            ...((fIPVData as Campaign[]) ?? []),
+        ];
+
         const selectedCampaign = list.find(c => c.obr_name === campaign);
         const campaigns = list
             .filter(
@@ -170,17 +181,37 @@ export const useCampaignDropDowns = ({
                 label: c.obr_name,
                 value: c.obr_name,
             }));
-        const vaccines = selectedCampaign?.single_vaccines
-            ? selectedCampaign.single_vaccines.split(',').map(vaccineName => ({
-                  label: vaccineName.trim(),
-                  value: vaccineName.trim(),
-              }))
-            : singleVaccinesList;
+        const fipvCampaigns = (fIPVData as Campaign[]) ?? [];
+        const isFipvCampaign = Boolean(
+            selectedCampaign &&
+            fipvCampaigns.some(c => c.obr_name === selectedCampaign.obr_name),
+        );
+        let vaccines;
+        if (isFipvCampaign) {
+            vaccines = fipvVaccineOptions;
+        } else {
+            vaccines =
+                selectedCampaign?.single_vaccines
+                    ?.split(',')
+                    .map(vaccineName => vaccineName.trim())
+                    .filter(Boolean)
+                    .map(vaccineName => ({
+                        label: vaccineName,
+                        value: vaccineName,
+                    })) ?? [];
+            if (vaccines.length === 0) {
+                vaccines = singleVaccinesList;
+            }
+        }
 
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
-                  .filter(round =>
-                      round.vaccine_names_extended.includes(vaccine),
+                  .filter(
+                      round =>
+                          round.vaccine_names_extended.includes(vaccine) ||
+                          fipvCampaigns.some(
+                              c => c.obr_name === selectedCampaign?.obr_name,
+                          ),
                   )
                   .filter(
                       round =>
@@ -201,8 +232,9 @@ export const useCampaignDropDowns = ({
             rounds,
             isFetching,
             rndsParams,
+            isFipvCampaign,
         };
-    }, [data, vaccine, isFetching, campaign, rndsParams]);
+    }, [data, fIPVData, vaccine, isFetching, rndsParams, campaign]);
 };
 
 const getVrfDetails = (id?: string) => {

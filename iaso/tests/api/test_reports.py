@@ -1,4 +1,5 @@
 from django.core.files import File
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Report, ReportVersion
@@ -11,7 +12,8 @@ class ReportsAPITestCase(APITestCase):
     def setUpTestData(cls):
         kame_house = m.Account.objects.create(name="Kame House")
         rr_army = m.Account.objects.create(name="Red Ribbon Army")
-        cls.sayanj = m.Project.objects.create(account=kame_house, name="sayanJ")
+        cls.sayanj = m.Project.objects.create(account=kame_house, name="sayanJ", app_id="sayanj.app")
+        cls.freeza_project = m.Project.objects.create(account=kame_house, name="Freeza Force", app_id="freeza.app")
         cls.kefla = cls.create_user_with_profile(
             username="Kefla", account=kame_house, permissions=[CORE_REPORTS_PERMISSION]
         )
@@ -34,7 +36,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(response.json()[0]["name"], "TEST_REPORT_A")
 
     def test_must_have_report_permission(self):
@@ -52,7 +54,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
 
     def test_get_reports_munlti_tenancy(self):
         self.client.force_authenticate(self.tao)
@@ -69,7 +71,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(len(response.json()), 0)
 
     def test_get_reports_must_be_authenticated(self):
@@ -85,7 +87,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
 
     def test_get_reports_mobile(self):
         self.client.force_authenticate(self.kefla)
@@ -100,7 +102,61 @@ class ReportsAPITestCase(APITestCase):
 
         Report.objects.create(name="TEST_REPORT_A", published_version=report_version, project=self.sayanj)
 
+        response = self.client.get(f"/api/mobile/reports/?app_id={self.sayanj.app_id}")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(response.json()[0]["name"], "TEST_REPORT_A")
+
+    def test_get_reports_mobile_filters_by_project(self):
+        # IA-5422: /api/mobile/reports/ must only return the reports for the project
+        # matching `app_id`, not every report on the account.
+        self.client.force_authenticate(self.kefla)
+
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
+
+        sayanj_version = ReportVersion.objects.create(
+            file=file,
+            name="TEST_REPORT_VERSION_A",
+            status="published",
+        )
+        Report.objects.create(name="TEST_REPORT_A", published_version=sayanj_version, project=self.sayanj)
+
+        freeza_version = ReportVersion.objects.create(
+            file=file,
+            name="TEST_REPORT_VERSION_B",
+            status="published",
+        )
+        Report.objects.create(name="TEST_REPORT_B", published_version=freeza_version, project=self.freeza_project)
+
+        response = self.client.get(f"/api/mobile/reports/?app_id={self.sayanj.app_id}")
+
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        report_names = [report["name"] for report in response.json()]
+        self.assertEqual(report_names, ["TEST_REPORT_A"])
+
+    def test_get_reports_mobile_without_app_id_falls_back_to_account(self):
+        # Backward compatibility: a caller that doesn't pass `app_id` keeps the previous
+        # behaviour (every report on the account), instead of being rejected.
+        self.client.force_authenticate(self.kefla)
+
+        file = File(open("iaso/tests/fixtures/bulk_create_users/test_user_bulk_create_valid.csv", "rb"))
+
+        sayanj_version = ReportVersion.objects.create(
+            file=file,
+            name="TEST_REPORT_VERSION_A",
+            status="published",
+        )
+        Report.objects.create(name="TEST_REPORT_A", published_version=sayanj_version, project=self.sayanj)
+
+        freeza_version = ReportVersion.objects.create(
+            file=file,
+            name="TEST_REPORT_VERSION_B",
+            status="published",
+        )
+        Report.objects.create(name="TEST_REPORT_B", published_version=freeza_version, project=self.freeza_project)
+
         response = self.client.get("/api/mobile/reports/")
 
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(response.json()[0]["name"], "TEST_REPORT_A")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        report_names = {report["name"] for report in response.json()}
+        self.assertEqual(report_names, {"TEST_REPORT_A", "TEST_REPORT_B"})

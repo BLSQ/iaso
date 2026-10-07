@@ -174,6 +174,11 @@ describe('Accounts edit tests', () => {
         await waitFor(() => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
+        await waitFor(() => {
+            expect(
+                screen.getByRole('textbox', { name: /name */i }),
+            ).toHaveValue(mockAccount.name);
+        });
         await act(async () => {
             await userEvent.type(
                 screen.getByRole('textbox', { name: /name */i }),

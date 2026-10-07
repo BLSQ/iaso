@@ -60,7 +60,6 @@ export const usePaperStyles = makeStyles((theme: Theme) => ({
     paper: {
         padding: theme.spacing(4, 2, 2, 4),
         marginBottom: theme.spacing(4),
-        // @ts-ignore
         border: `1px solid ${theme.palette.mediumGray.main}`,
         width: 'calc(100% - 64px)',
         boxShadow:
@@ -78,7 +77,7 @@ export const usePaperStyles = makeStyles((theme: Theme) => ({
 export const grayText = { color: grey[500] };
 
 export const useDosesPerVialDropDownForVaccine = (
-    vaccine?: 'bOPV' | 'nOPV2' | 'mOPV2',
+    vaccine?: string,
 ): DropdownOptions<number>[] => {
     const { data: dosesPerVialReference } = useGetDosesPerVial();
     return useMemo(() => {

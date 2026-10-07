@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from rest_framework.status import HTTP_201_CREATED
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -214,16 +213,16 @@ class CampaignFiltersTestBase(APITestCase, IasoTestCaseMixin, PolioTestCaseMixin
         """Make sure we have a fresh client at the beginning of each test"""
         self.client = APIClient()
 
-    def _create_multiple_campaigns(self, count: int) -> None:
-        self.client.force_authenticate(self.user)
-        created_ids = []
+    def _create_multiple_campaigns(self, count: int) -> list[int]:
+        new_campaigns = []
         for n in range(count):
-            payload = {
-                "account": self.account.pk,
-                "obr_name": f"campaign_{n}",
-                "detection_status": "PENDING",
-            }
-            response = self.client.post("/api/polio/campaigns/", payload, format="json")
-            result = self.assertJSONResponse(response, HTTP_201_CREATED)
-            created_ids.append(result["id"])
-        return created_ids
+            new_campaign = Campaign(
+                obr_name=f"campaign_{n}",
+                account=self.account,
+                detection_status="PENDING",
+            )
+            new_campaigns.append(new_campaign)
+
+        result = Campaign.objects.bulk_create(new_campaigns)
+
+        return [campaign.id for campaign in result]

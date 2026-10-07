@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from rest_framework import status
 
 from iaso.models import Account
 from iaso.test import TestCase
@@ -23,23 +24,23 @@ class TestDRFSpectacular(TestCase):
                 with self.subTest(f"Accessing url {url} with user {user} should raise 403"):
                     self.client.force_login(user)
                     res = self.client.get(reverse(url))
-                    self.assertEqual(res.status_code, 403)
+                    self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
             with self.subTest(f"Accessing url {url} with anonymous user should raise 401"):
                 self.client.logout()
                 res = self.client.get(reverse(url))
-                self.assertEqual(res.status_code, 401)
+                self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
             for user in [self.superuser_with_profile, self.user_with_profile]:
                 with self.subTest(f"Accessing url {url} with user {user} should work"):
                     self.client.force_login(user)
                     res = self.client.get(reverse(url))
-                    self.assertEqual(res.status_code, 200)
+                    self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_swagger_schema_view_is_working(self):
         self.client.force_login(self.user_with_profile)
         response = self.client.get(reverse("swagger-schema"))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertIn(settings.SPECTACULAR_SETTINGS["TITLE"], response.content.decode())
         self.assertIn("openapi", response.content.decode())

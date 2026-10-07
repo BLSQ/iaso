@@ -8,6 +8,7 @@ app_name = "beanstalk_worker"
 urlpatterns = [
     path("task/", views.task, name="task"),
     path("cron/", views.cron, name="cron"),
+    path("reap_lost_tasks/", views.reap_lost_tasks_view, name="reap_lost_tasks"),
     path("launch_task/<task_name>/<user_name>/", views.task_launcher, name="launch_task"),
 ]
 

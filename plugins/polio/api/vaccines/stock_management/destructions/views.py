@@ -1,5 +1,5 @@
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -26,6 +26,8 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
         )
     ]
     ordering_fields = ["doses_per_vial"]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["action"]
 
     @action(detail=False, methods=["GET"])
     def check_duplicate(self, request):

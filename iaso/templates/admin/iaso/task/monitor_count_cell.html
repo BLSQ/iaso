@@ -1,0 +1,2 @@
+{# A count of the task monitor tables, linking to the task list of the counted tasks #}
+<td class="number{% if not count %} zero{% elif warning %} warning{% endif %}">{% if count %}<a href="{{ url }}"{% if title %} title="{{ title }}"{% endif %}>{{ count }}</a>{% else %}0{% endif %}</td>

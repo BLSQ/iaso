@@ -45,7 +45,9 @@ export const useGetDataSourceVersionsSynchronizationDropdown = (
         queryKey: ['dataSourceVersionsSynchronizationDropdown', id],
         queryFn: () => {
             if (!id) return [];
-            return getRequest(`/api/datasources/sync/${id}/?fields=id,name`);
+            return getRequest(
+                `/api/datasources/sync/${id}/?fields=id,name,source_version_to_update`,
+            );
         },
         snackErrorMsg: MESSAGES.error,
         options: {
@@ -57,6 +59,8 @@ export const useGetDataSourceVersionsSynchronizationDropdown = (
                     {
                         value: data.id,
                         label: data.name,
+                        sourceVersionToUpdateId:
+                            data.source_version_to_update?.id,
                     },
                 ];
             },

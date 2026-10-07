@@ -46,9 +46,9 @@ export const FormActions: FunctionComponent<Props> = ({
     deleteForm,
 }) => {
     // XLS and XML download states and functions
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
-    const handleClick = event => {
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
@@ -132,14 +132,8 @@ export const FormActions: FunctionComponent<Props> = ({
                                                     settings.row.original
                                                         .period_type,
                                             }}
-                                            onCreateOrReAssign={(
-                                                currentForm,
-                                                payload,
-                                            ) =>
-                                                createInstance(
-                                                    currentForm,
-                                                    payload,
-                                                )
+                                            onCreateOrReAssign={currentForm =>
+                                                createInstance(currentForm)
                                             }
                                             orgUnitTypes={
                                                 settings.row.original
@@ -184,11 +178,11 @@ export const FormActions: FunctionComponent<Props> = ({
                             >
                                 <DeleteDialog
                                     titleMessage={MESSAGES.deleteFormTitle}
-                                    onConfirm={closeDialog =>
+                                    onConfirm={() => {
                                         deleteForm({
                                             id: settings.row.original.id,
-                                        }).then(closeDialog)
-                                    }
+                                        });
+                                    }}
                                 />
                             </DisplayIfUserHasPerm>
                         </>

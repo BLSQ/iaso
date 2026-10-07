@@ -63,7 +63,6 @@ ENABLE_CORS = env.bool("ENABLE_CORS", default=True)
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 
 DNS_DOMAIN = env.str("DNS_DOMAIN", default="localhost:8081")
-TESTING = env.bool("TESTING", default=False)
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = env.list("PLUGINS", default=[], delimiter=",")
 ROOT_REDIRECT_PATTERN_NAME = env.str("ROOT_REDIRECT_PATTERN_NAME", default="dashboard:home_iaso")
@@ -86,6 +85,12 @@ ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 USE_S3 = env.bool("USE_S3", default=False)
+# MCP is a core app (iaso.mcp), not a plugin. Off unless MCP_ENABLED=true.
+# DEBUG must not turn it on: DEBUG is sometimes enabled in production to
+# collect SQL, and local runs should opt in explicitly (compose and
+# .env.example set MCP_ENABLED=true). Tests opt in so `manage test` still
+# mounts /mcp.
+MCP_ENABLED = env.bool("MCP_ENABLED", default=IN_TESTS)
 USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
 # Storage provider configuration
 STORAGE_PROVIDER = env.str("STORAGE_PROVIDER", default="local")  # local, s3, azure
@@ -118,7 +123,7 @@ try:
     version = pyproject_toml["project"]["version"]
 except Exception as e:
     version = "error - unknown version"
-IASO_VERSION = version
+IASO_VERSION = env.str("IASO_VERSION", default=version)
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
@@ -140,6 +145,10 @@ USE_CELERY = env.bool("USE_CELERY", default=False)
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
 DISABLE_PASSWORD_LOGINS = env.bool("DISABLE_PASSWORD_LOGINS", default=False)
+# Token/login tests need /api/token/ registered. Dedicated tests still cover the
+# disabled path via override_settings + URL reload.
+if IN_TESTS:
+    DISABLE_PASSWORD_LOGINS = False
 
 # env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
@@ -163,7 +172,7 @@ SITE_ID = 1
 
 LOGGING_LEVEL = env.str("DJANGO_LOGGING_LEVEL", default="INFO")
 HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
-if TESTING:
+if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
@@ -253,6 +262,8 @@ INSTALLED_APPS += [
     "hat.audit",
     "hat.menupermissions",
     "iaso",
+    "iaso.mcp",
+    "oauth2_provider",
     "django_extensions",
     "beanstalk_worker",
     "django_comments",
@@ -572,6 +583,7 @@ SIMPLE_JWT = {
 AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")
 AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID", default=None)
 AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY", default=None)
+AWS_PUBLIC_STORAGE_BUCKET_NAME = env.str("AWS_PUBLIC_STORAGE_BUCKET_NAME", default=None)
 
 MEDIA_URL_PREFIX = "/media/"
 if USE_S3:
@@ -988,6 +1000,11 @@ for plugin_name in PLUGINS:
 XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
 
+if MCP_ENABLED:
+    from iaso.mcp.conf import apply as apply_mcp_settings
+
+    apply_mcp_settings(globals())
+
 # Making sure that files are not stored on disk while running tests
 # This allows faster tests and easier clean up of test files
 if IN_TESTS:
@@ -1009,6 +1026,7 @@ SETUPER_SANDBOX_PASSWORD = env.str("SETUPER_SANDBOX_PASSSWORD", default="distric
 
 # Form AI
 FORM_AI_MODEL = env.str("FORM_AI_MODEL", default="claude-opus-4-7")
+FORM_AI_MAX_TOKENS = env.int("FORM_AI_MAX_TOKENS", default=32000)
 
 # TEST MODE
 TEST_MODE = env.bool("TEST_MODE", default=False)

@@ -220,7 +220,7 @@ def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
                 logger.warning("Unsupported feature tye")
 
         except Exception as bad_coord:
-            logger.error("Failed at parsing geo ", feature_type, coordinates, bad_coord, row)
+            logger.warning("Failed at parsing geo ", feature_type, coordinates, bad_coord, row)
 
 
 def get_or_create_group(dhis2_group: DhisGroup, group_dict: Dict[str, Group], source_version: SourceVersion):
@@ -343,7 +343,7 @@ def dhis2_ou_importer(
         Errors : {error_count}
     """
     if error_count:
-        logger.error(f"{error_count} import errors were ignored")
+        logger.warning(f"{error_count} import errors were ignored")
 
     # TODO: investigate type errors on next two lines
     the_task.report_success(message=res_string)  # type: ignore
@@ -433,10 +433,12 @@ def import_orgunits_and_groups(
             created_ou[org_unit.source_ref] = org_unit
 
         except Exception as e:
-            logger.exception(f"Error importing row {index:d}: {row}")
-            if not continue_on_error:
+            if continue_on_error:
+                logger.warning(f"Error importing row {index:d}: {row}", exc_info=True)
+                error_count += 1
+            else:
+                logger.exception(f"Error importing row {index:d}: {row}")
                 raise e
-            error_count += 1
 
         # log progress every 100 orgunits
         if index % 100 == 0:

@@ -3,6 +3,7 @@ from unittest import mock
 from unittest.mock import patch
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -91,13 +92,13 @@ class MetadataLastUpdatesTestCase(APITestCase):
         """GET /api/mobile/metadata/lastupdates/: returns 400 for missing app id"""
 
         response = self.client.get("/api/mobile/metadata/lastupdates/")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_last_updates_without_auth_but_app_id(self):
         """GET /api/mobile/metadata/lastupdates/?app_id=stars.empire.agriculture.land_speeder"""
 
         response = self.client.get(f"/api/mobile/metadata/lastupdates/?app_id={self.project_2.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(response.json()["forms"], 4.0)  # highest form for project 2
         self.assertEqual(response.json()["org_units"], 3.0)  # highest org unit for project 2
@@ -106,21 +107,21 @@ class MetadataLastUpdatesTestCase(APITestCase):
         """GET /api/mobile/metadata/lastupdates/?app_id=WRONG: returns 404 for invalid app id"""
 
         response = self.client.get("/api/mobile/metadata/lastupdates/?app_id=WRONG")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_last_updates_with_auth_but_no_app_id(self):
         """GET /api/mobile/metadata/lastupdates/: authenticated but returns 400 for missing app id"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/mobile/metadata/lastupdates/")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_last_updates_with_auth_and_app_id(self):
         """GET /api/mobile/metadata/lastupdates/: authenticated with app id"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/mobile/metadata/lastupdates/?app_id={self.project_2.app_id}")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(response.json()["forms"], 4.0)  # highest form for project 2
         self.assertEqual(response.json()["org_units"], 2.0)  # highest org unit in the ones available to the user

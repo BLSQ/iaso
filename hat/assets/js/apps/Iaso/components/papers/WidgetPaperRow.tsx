@@ -6,7 +6,7 @@ import { SxStyles } from 'Iaso/types/general';
 const styles: SxStyles = {
     leftCell: {
         // @ts-ignore
-        borderRight: theme => `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: theme => `1px solid ${theme.palette.lightGray.border}`,
         fontWeight: 'bold',
     },
     leftCellNoDivider: {

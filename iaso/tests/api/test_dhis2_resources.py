@@ -1,5 +1,7 @@
 import responses
 
+from rest_framework import status
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -39,7 +41,7 @@ class Dhis2APITestCase(APITestCase):
         """GET /dataElements/ without auth should result in a 401"""
 
         response = self.client.get("/api/datasources/" + str(self.source.id) + "/dataElements/")
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_data_element_list_with_auth_but_non_configured_credentials(self):
@@ -48,7 +50,7 @@ class Dhis2APITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/datasources/" + str(self.source.id) + "/dataElements/")
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         self.assertEqual({"error": "No credentials configured"}, response.json())
 
@@ -58,7 +60,7 @@ class Dhis2APITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/datasources/9999999/dataElements/")
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         self.assertEqual({"error": "Data source not available"}, response.json())
 
@@ -84,7 +86,7 @@ class Dhis2APITestCase(APITestCase):
         )
 
         response = self.client.get("/api/datasources/" + str(self.source.id) + "/dataElements/")
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_json = response.json()
         # nextPage should have disappeared
@@ -119,7 +121,7 @@ class Dhis2APITestCase(APITestCase):
             + str(self.source.id)
             + "/dataElements/?filter=name:ilike:flucid&pageSize=500&fields=id,name,optionSet[id,name]"
         )
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         respose_json = response.json()
         # nextPage should have disappeared

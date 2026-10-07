@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from allauth.socialaccount.models import SocialAccount
 from django.test import override_settings
+from django.urls import reverse
 
 from hat.sso_views import ExtraData
 from iaso import models as m
@@ -361,3 +362,48 @@ class SSOAuthTestCase(APITestCase):
         # The social account links to the tenant main_user, not one of the account users.
         social_account = SocialAccount.objects.get(uid="abc-123-def")
         self.assertEqual(social_account.user, main_user)
+
+    def test_web_callback_cancelled_login_does_not_crash(self):
+        """The provider's own 'user cancelled' error (?error=access_denied) must redirect
+        cleanly, not 500.
+
+        Regression test: allauth's render_authentication_error() reverses the URL name
+        'socialaccount_login_cancelled' for this case, which this project never registered
+        (it has its own login system, not allauth's account/socialaccount urls), causing a
+        NoReverseMatch crash instead of a redirect.
+        """
+        # hat.tests.urls (see its docstring) only registers the SSO provider urls, not
+        # the full app (e.g. no /login), so we only assert on the first redirect hop
+        # here rather than following the chain all the way to the login page.
+        response = self.client.get("/polio/login/callback/?error=access_denied")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("socialaccount_login_cancelled"))
+
+    def test_web_callback_error_page_renders_without_crashing(self):
+        """Any other SSO error on the web (browser) callback must render a page, not 500.
+
+        Regression test for a NoReverseMatch crash: allauth's default error page
+        template chain references 'account_login'/'account_signup' etc., which this
+        project never registers (it has its own login system, not allauth's). This
+        made every SSO error page crash instead of showing a message. Using an error
+        code other than the provider's cancelled-login one (?error=server_error)
+        reaches the template-rendering branch without needing to mock the OAuth2
+        token exchange.
+        """
+        response = self.client.get("/polio/login/callback/?error=server_error")
+        self.assertEqual(response.status_code, 200)
+
+
+@override_settings(SSO_PROVIDERS={})
+class SocialAccountCancelledUrlTestCase(APITestCase):
+    def test_cancelled_url_registered_when_sso_providers_empty(self):
+        """WFP is configured via WFP_AUTH_CLIENT_ID, not SSO_PROVIDERS.
+
+        Cancelling a WFP login still goes through allauth's render_authentication_error(),
+        which reverses socialaccount_login_cancelled. That name must exist even when
+        SSO_PROVIDERS is empty (WFP-only deployments).
+        """
+        from hat.urls import get_sso_urlpatterns
+
+        names = [getattr(pattern, "name", None) for pattern in get_sso_urlpatterns()]
+        self.assertIn("socialaccount_login_cancelled", names)

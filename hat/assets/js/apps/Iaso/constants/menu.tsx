@@ -19,7 +19,6 @@ import GroupIcon from '@mui/icons-material/Group';
 import GroupsIcon from '@mui/icons-material/Groups';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
-import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
@@ -184,12 +183,6 @@ const menuItems = (
                     icon: props => <Diversity3Icon {...props} />,
                 },
             ],
-        },
-        {
-            label: formatMessage(MESSAGES.monitoring),
-            key: 'devices',
-            permissions: paths.devicesPath.permissions,
-            icon: props => <ImportantDevicesRoundedIcon {...props} />,
         },
         {
             label: formatMessage(MESSAGES.apiImport),
@@ -567,6 +560,12 @@ export const useMenuItems = (): MenuItems => {
             menuItemsTemp.push(admin as MenuItem);
         }
         const authorizedItems = menuItemsTemp.filter(menuItem => {
+            if (
+                menuItem.featureFlag &&
+                !hasFeatureFlag(currentUser, menuItem.featureFlag)
+            ) {
+                return false;
+            }
             const permissionsList = listMenuPermission(menuItem);
             // If not permission set on the menuItem, we consider that everyone has access to it
             if (permissionsList.length === 0) {

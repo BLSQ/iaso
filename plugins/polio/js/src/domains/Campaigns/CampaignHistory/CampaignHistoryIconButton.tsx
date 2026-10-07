@@ -15,14 +15,11 @@ export const CampaignHistoryIconButton: FunctionComponent<Props> = ({
     if (!selectedCampaign) return null;
     return (
         <Grid item xs={12} md={4} className={classes.historyLink}>
-            <Box pr={4} alignItems="center">
+            <Box alignItems="center">
                 <IconButton
                     url={`/${baseUrls.campaignHistory}/campaignId/${selectedCampaign?.id}`}
                     icon="history"
                     tooltipMessage={MESSAGES.campaignHistory}
-                    classes={{
-                        linkButton: classes.linkButton,
-                    }}
                 />
             </Box>
         </Grid>

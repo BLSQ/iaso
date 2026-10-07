@@ -1,9 +1,24 @@
 import json
 
+from django_filters.rest_framework import FilterSet
+from django_filters.widgets import CSVWidget
 from rest_framework import filters
 
+from iaso.api.common import NumberInFilter
 from iaso.models import MetricValue
 from iaso.utils.jsonlogic import jsonlogic_to_exists_q_clauses, jsonlogic_to_q
+
+
+class MetricValueFilter(FilterSet):
+    metric_type_id = NumberInFilter(
+        field_name="metric_type_id",
+        widget=CSVWidget,
+        label="Metric type IDs (comma-separated)",
+    )
+
+    class Meta:
+        model = MetricValue
+        fields = ["metric_type_id", "org_unit_id"]
 
 
 class ValueFilterBackend(filters.BaseFilterBackend):

@@ -97,7 +97,7 @@ class Command(BaseCommand):
         iaso_logger.ok("================= Diffing =================")
         ignore_groups = options.get("ignore_groups")
         csv_export = file_name is not None
-        diffs, fields = Differ(iaso_logger).diff(
+        diffs, fields = Differ().diff(
             version_ref,
             version,
             ignore_groups,
@@ -111,7 +111,7 @@ class Command(BaseCommand):
             org_unit_group=org_unit_group,
             org_unit_group_ref=org_unit_group_ref,
         )
-        dumper = Dumper(iaso_logger)
+        dumper = Dumper()
         stats = dumper.dump_stats(diffs)
         if file_name:
             with open(file_name, "w") as csv_file:
@@ -123,7 +123,7 @@ class Command(BaseCommand):
 
         if export:
             iaso_logger.ok("================= Exporting =================")
-            Exporter(self.iaso_logger).export_to_dhis2(self.get_api(options), diffs, fields)
+            Exporter().export_to_dhis2(self.get_api(options), diffs, fields)
         else:
             iaso_logger.warning("not exporting, specify --export")
         end = time.time()

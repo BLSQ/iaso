@@ -83,7 +83,6 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
 
             <Grid item xs={12} md={4} lg={3}>
                 <OrgUnitTreeviewModal
-                    toggleOnLabelClick={false}
                     titleMessage={MESSAGES.parent}
                     onConfirm={orgUnit => {
                         handleChange('parent_id', orgUnit?.id);

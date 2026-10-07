@@ -862,12 +862,17 @@ class TestResubmitFeature(TestCase):
             artifact=self.instance,
         )
 
-        validations = self.instance.get_all_validation_nodes(self.workflow)
-        self.assertEqual(validations.count(), 4)
-        first_validation = validations.first()
+        validations = (
+            Instance.objects.filter(pk=self.instance.pk)
+            .with_all_validation_nodes(self.workflow)
+            .first()
+            .all_validation_nodes
+        )
+        self.assertEqual(len(validations), 4)
+        first_validation = validations[0]
         second_validation = validations[1]
         third_validation = validations[2]
-        last_validation = validations.last()
+        last_validation = validations[3]
 
         self.assertEqual(first_validation.comment, "Nope for the second time")
         self.assertEqual(first_validation.instance, self.instance)
@@ -902,8 +907,13 @@ class TestResubmitFeature(TestCase):
         self.instance.refresh_from_db()
 
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
-        validations = self.instance.get_all_validation_nodes(self.workflow)
-        self.assertEqual(validations.count(), 3)
+        validations = (
+            Instance.objects.filter(pk=self.instance.pk)
+            .with_all_validation_nodes(self.workflow)
+            .first()
+            .all_validation_nodes
+        )
+        self.assertEqual(len(validations), 3)
 
         first_validation_node = validations[0]
         second_validation_node = validations[1]
@@ -926,8 +936,13 @@ class TestResubmitFeature(TestCase):
         self.instance.refresh_from_db()
 
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
-        validations = self.instance.get_all_validation_nodes(self.workflow)
-        self.assertEqual(validations.count(), 4)
+        validations = (
+            Instance.objects.filter(pk=self.instance.pk)
+            .with_all_validation_nodes(self.workflow)
+            .first()
+            .all_validation_nodes
+        )
+        self.assertEqual(len(validations), 4)
 
         first_validation_node = validations[0]
         second_validation_node = validations[1]
@@ -972,8 +987,13 @@ class TestResubmitFeature(TestCase):
         self.instance.refresh_from_db()
 
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.APPROVED)
-        validations = self.instance.get_all_validation_nodes(self.workflow)
-        self.assertEqual(validations.count(), 3)
+        validations = (
+            Instance.objects.filter(pk=self.instance.pk)
+            .with_all_validation_nodes(self.workflow)
+            .first()
+            .all_validation_nodes
+        )
+        self.assertEqual(len(validations), 3)
 
         with self.assertRaisesMessage(
             ValidationWorkflowEngineException, "Artifact is already attached to a related workflow"
@@ -982,8 +1002,13 @@ class TestResubmitFeature(TestCase):
 
         self.instance.refresh_from_db()
 
-        validations = self.instance.get_all_validation_nodes(self.workflow)
-        self.assertEqual(validations.count(), 3)
+        validations = (
+            Instance.objects.filter(pk=self.instance.pk)
+            .with_all_validation_nodes(self.workflow)
+            .first()
+            .all_validation_nodes
+        )
+        self.assertEqual(len(validations), 3)
 
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.APPROVED)
 

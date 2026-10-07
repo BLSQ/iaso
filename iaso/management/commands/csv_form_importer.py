@@ -195,6 +195,7 @@ class Command(BaseCommand):
                                 # print(f_name)
                                 instance.file = f_name
                                 instance.file_name = f_name
+                                instance.resolve_form_version()
                                 instance.save()
                                 # print(instance.id)
                             except:

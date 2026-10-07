@@ -1,5 +1,4 @@
 from datetime import date
-from tempfile import NamedTemporaryFile
 
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
@@ -189,7 +188,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
             filename = f"{today}-{vaccine_stock.country.name}-{vaccine_stock.vaccine}-stock-card-export"
             workbook = download_xlsx_stock_variants(
                 request,
-                filename,
                 results,
                 {
                     "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
@@ -198,13 +196,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 vaccine_stock,
                 "Usable",
             )
-            with NamedTemporaryFile() as tmp:
-                workbook.save(tmp.name)
-                tmp.seek(0)
-                stream = tmp.read()
 
-            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response = HttpResponse(content_type=CONTENT_TYPE_XLSX)
             response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            workbook.save(response)
             return response
 
         paginator = Paginator()
@@ -251,7 +246,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
             filename = f"{today}-{vaccine_stock.country.name}-{vaccine_stock.vaccine}-stock-card-export"
             workbook = download_xlsx_stock_variants(
                 request,
-                filename,
                 results,
                 {
                     "Usable": lambda: calc.get_list_of_usable_vials(),
@@ -260,13 +254,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 vaccine_stock,
                 "Unusable",
             )
-            with NamedTemporaryFile() as tmp:
-                workbook.save(tmp.name)
-                tmp.seek(0)
-                stream = tmp.read()
 
-            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response = HttpResponse(content_type=CONTENT_TYPE_XLSX)
             response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            workbook.save(response)
             return response
 
         paginator = Paginator()

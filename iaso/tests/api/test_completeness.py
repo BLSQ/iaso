@@ -1,5 +1,6 @@
 from django.contrib.gis.geos import Point
 from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_COMPLETENESS_PERMISSION
@@ -61,7 +62,7 @@ class CompletenessAPITestCase(APITestCase):
         """GET /completeness/ without auth should result in a 401"""
 
         response = self.client.get("/api/completeness/")
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_completeness_list(self):
@@ -122,7 +123,7 @@ class CompletenessAPITestCase(APITestCase):
         ]
 
         response = self.client.get("/api/completeness/")
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
 
@@ -188,7 +189,7 @@ class CompletenessAPITestCase(APITestCase):
         ]
 
         response = self.client.get("/api/completeness/")
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
         self.assertEqual({"completeness": expected_counts}, response_data)

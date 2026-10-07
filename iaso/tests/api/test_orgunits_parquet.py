@@ -1,8 +1,10 @@
 import json
+import os
 import tempfile
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
@@ -209,7 +211,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/?order=id&parquet=true")
 
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assert_parquet_content_type(response)
 
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
@@ -252,7 +254,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         with self.assertNumQueries(4):  # +1 for the groups_exploded pre-query included in :all
             response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=:all")
 
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assert_parquet_content_type(response)
 
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
@@ -296,7 +298,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_parquet_content_type(response)
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
@@ -322,7 +324,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_parquet_content_type(response)
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
@@ -348,7 +350,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded_code")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_parquet_content_type(response)
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
@@ -370,9 +372,32 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(endor_row[elite_col], 0)
         self.assertEqual(endor_row[accented_col], 0)
 
+    def test_can_retrieve_org_units_of_a_search_in_parquet_format(self):
+        """the UI always sends its filters as a single search in `searches`"""
+        self.client.force_authenticate(self.yoda)
+
+        searches = [{"search": "Corruscant", "validation_status": "all"}]
+        response = self.client.get(f"/api/orgunits/?order=id&parquet=true&searches={json.dumps(searches)}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+            write_response_to_file(response, f)
+            # used by the UI for the download progress
+            self.assertEqual(int(response["X-File-Size"]), os.path.getsize(f.name))
+            names = [row["org_unit_name"] for row in read_parquet(f)]
+
+        self.assertIn("Corruscant Jedi Council", names)
+        self.assertNotIn("Endor Jedi Council", names)
+
+    def test_bad_request_parquet_with_several_searches(self):
+        self.client.force_authenticate(self.yoda)
+        searches = [{"search": "Corruscant"}, {"search": "Endor"}]
+        response = self.client.get(f"/api/orgunits/?order=id&parquet=true&searches={json.dumps(searches)}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {"error": "Multiple searches are not supported for parquet exports"})
+
     def test_bad_request_parquet_validates_unknown_extra_fields(self):
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=bad_param")
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.json(),
             {
@@ -380,9 +405,17 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             },
         )
 
+    def test_bad_request_parquet_ordered_by_instances_count(self):
+        for order in ("instances_count", "name,-instances_count"):
+            response = self.client.get(f"/api/orgunits/?order={order}&parquet=true")
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                response.json(), {"error": "Ordering by instances_count is not supported for parquet exports"}
+            )
+
     def test_bad_request_parquet_validates_unknown_query_param(self):
         response = self.client.get("/api/orgunits/?order=id&parquet=true&unknown_unsupported_filter=bad_param")
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
             response.json(),
             {
@@ -398,7 +431,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         collision_group.org_units.add(self.jedi_council_corruscant)
 
         response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded_code")
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         error = response.json()["error"]
         self.assertIn("elite_councils", error)
         self.assertIn("normalize to", error)

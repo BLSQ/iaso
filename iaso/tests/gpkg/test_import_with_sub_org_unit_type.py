@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.models import Account, DataSource, Project
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_TYPES_PERMISSION
@@ -28,7 +30,7 @@ class OrgUnitImportFromGPKG(APITestCase):
         )
         self.client.force_authenticate(self.user_test)
         response = self.client.get("/api/v2/orgunittypes/")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_data = response.json()
 
         updated_with_sub_types = update_org_unit_sub_type(
@@ -36,4 +38,4 @@ class OrgUnitImportFromGPKG(APITestCase):
         )
 
         for org_unit_type_with in updated_with_sub_types:
-            self.assertJSONResponse(org_unit_type_with, 200)
+            self.assertJSONResponse(org_unit_type_with, status.HTTP_200_OK)

@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from beanstalk_worker.services import TestTaskService
 from iaso.models import QUEUED, Task
 from iaso.test import APITestCase
@@ -12,7 +14,7 @@ class TaskAPITestCase(APITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
         response = self.client.get("/api/tasks/%d/" % task.id)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Task completion status
         return self.assertValidTaskAndInDB(response.json(), new_status)
 

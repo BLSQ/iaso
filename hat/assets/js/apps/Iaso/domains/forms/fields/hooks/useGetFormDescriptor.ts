@@ -59,7 +59,7 @@ export const useDynamicFormDescriptors = (formStates: FormState[]) => {
             snackErrorMsg: 'Error fetching form descriptor',
             options: {
                 enabled: Boolean(formId),
-                select: data => processResult(data),
+                select: (data: FormVersionsList) => processResult(data),
                 staleTime: 60000,
                 cacheTime: 1000 * 60 * 5,
             },

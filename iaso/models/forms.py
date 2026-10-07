@@ -13,6 +13,7 @@ from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
 from iaso.utils.encryption import calculate_md5
+from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from .. import periods
@@ -297,6 +298,21 @@ def _reformat_questions(questions):
 
 # TODO: check if we really need a manager and a queryset for this model - some simplification would be good
 class FormVersionManager(models.Manager):
+    def find_for_form(self, form_id, version_id, cache: typing.Optional[dict] = None) -> "typing.Optional[FormVersion]":
+        """
+        FormVersion of `form_id` with `version_id`, or None. Pass the same `cache` dict for a whole
+        batch (e.g. a bulk upload, where many instances share a few (form, version) pairs) to look
+        each pair up only once - misses are cached too, so only share it for as long as no
+        FormVersion can be created in the meantime.
+        """
+        key = (form_id, version_id)
+        if cache is not None and key in cache:
+            return cache[key]
+        form_version = self.filter(form_id=form_id, version_id=version_id).first()
+        if cache is not None:
+            cache[key] = form_version
+        return form_version
+
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)  # type: ignore
@@ -327,9 +343,9 @@ class FormVersion(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
-    file = models.FileField(upload_to=form_version_upload_to)
+    file = SizedFileField(upload_to=form_version_upload_to)
     md5 = models.CharField(blank=True, max_length=32)
-    xls_file = models.FileField(upload_to=form_version_upload_to, null=True, blank=True)
+    xls_file = SizedFileField(upload_to=form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
@@ -419,7 +435,7 @@ class FormAttachment(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_attachment_upload_to, max_length=512)
+    file = SizedFileField(upload_to=form_attachment_upload_to, max_length=512)
     file_last_scan = models.DateTimeField(blank=True, null=True)
     file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)

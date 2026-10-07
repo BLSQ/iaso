@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models.base import QUEUED, RUNNING, SUCCESS
+from iaso.models.base import ERRORED, QUEUED, RUNNING, SUCCESS
 from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from iaso.permissions.core_permissions import CORE_PIPELINE_MANAGEMENT_PERMISSION
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
@@ -79,6 +79,41 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
             self.assertIn("results", response.json())
             self.assertEqual(len(response.json()["results"]), 2)
             self.assertEqual(response.json()["results"][0]["name"], "test_pipeline_1")
+
+    def test_get_pipelines_follows_graphql_pages(self):
+        """OpenHexa pages are concatenated so the dropdown is not stuck on the first page."""
+        first_page = {
+            "pipelines": {
+                "pageNumber": 1,
+                "totalPages": 2,
+                "totalItems": 2,
+                "items": [{"id": "60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "name": "page_one"}],
+            }
+        }
+        second_page = {
+            "pipelines": {
+                "pageNumber": 2,
+                "totalPages": 2,
+                "totalItems": 2,
+                "items": [{"id": "70fcb048-a5f6-4a79-9529-1ccfa55e75d2", "name": "page_two"}],
+            }
+        }
+
+        with patch("iaso.api.openhexa.views.Client") as mock_client_class:
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_client.execute.side_effect = [first_page, second_page]
+
+            response = self.client.get("/api/openhexa/pipelines/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item["name"] for item in response.json()["results"]], ["page_one", "page_two"])
+        self.assertEqual(mock_client.execute.call_count, 2)
+        first_variables = mock_client.execute.call_args_list[0].kwargs["variable_values"]
+        second_variables = mock_client.execute.call_args_list[1].kwargs["variable_values"]
+        self.assertEqual(first_variables["page"], 1)
+        self.assertEqual(first_variables["perPage"], 100)
+        self.assertEqual(second_variables["page"], 2)
 
     def test_get_pipelines_config_not_found(self):
         """Test pipeline list when OpenHexa workspace is not found."""
@@ -617,6 +652,59 @@ class BackgroundTaskTestCase(OpenHexaAPITestCase):
 
         # Verify ExternalTaskModelViewSet.launch_task was called
         mock_launch.assert_called_once()
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_does_not_poll_when_openhexa_rejects_launch(self, mock_launch, mock_client_class):
+        """A failed OpenHEXA launch must not be marked SUCCESS from a previous run."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=True,
+            started_at=timezone.now(),
+        )
+
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.return_value = {
+            "pipeline": {
+                "runs": {
+                    "items": [
+                        {
+                            "run_id": "old-successful-run",
+                            "status": "success",
+                            "config": config,
+                            "logs": "Previous run",
+                        }
+                    ]
+                }
+            }
+        }
+        mock_launch.return_value = ERRORED
+
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, ERRORED)
+        mock_client.execute.assert_not_called()
 
     def test_launch_openhexa_pipeline_with_beanstalk_worker(self):
         """Test that the function works with beanstalk_worker decorator."""

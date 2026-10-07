@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -75,7 +77,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         """
         with self.assertNumQueries(2):
             response = self.client.get(f"/api/orgunits/tree/?data_source_id={self.data_source.pk}")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(2, len(response.data))
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
@@ -87,7 +89,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Burkina Faso")
 
@@ -99,7 +101,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/?force_full_tree=true")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(2, len(response.data))
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
@@ -111,7 +113,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_without_org_unit_for_profile)
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(2, len(response.data))
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
@@ -125,7 +127,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_without_org_unit_for_profile)
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(2, len(response.data))
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
@@ -137,7 +139,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             response = self.client.get(
                 f"/api/orgunits/tree/?parent_id={self.angola.pk}&data_source_id={self.data_source.pk}"
             )
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")
 
@@ -146,12 +148,12 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
 
         with self.assertNumQueries(2):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.angola.pk}")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(0, len(response.data))
 
         with self.assertNumQueries(2):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.burkina.pk}")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
 
@@ -160,13 +162,13 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.angola.pk}&force_full_tree=true")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")
 
         with self.assertNumQueries(3):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.burkina.pk}&force_full_tree=true")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
 
@@ -179,7 +181,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         url = f"/api/orgunits/tree/?parent_id={self.burkina.pk}&validation_status={m.OrgUnit.VALIDATION_VALID}"
 
         response = self.client.get(url)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data))
         self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
         self.assertEqual(response.data[0]["has_children"], True)
@@ -189,7 +191,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.burkina_district.save()
 
         response = self.client.get(url)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data))
         self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.
 
@@ -198,7 +200,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.burkina_district.save()
 
         response = self.client.get(url)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(1, len(response.data))
         self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.
 
@@ -207,7 +209,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/search/?search=b")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(3, len(response.data["results"]))
             self.assertEqual(response.data["results"][0]["name"], "Banwa")
             self.assertEqual(response.data["results"][1]["name"], "Boucle du Mouhon")
@@ -215,6 +217,6 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/search/?search=BURKINA")
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(1, len(response.data["results"]))
             self.assertEqual(response.data["results"][0]["name"], "Burkina Faso")

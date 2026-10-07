@@ -3,6 +3,7 @@ import jsonschema
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.db.models import Q
+from rest_framework import status
 
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
@@ -191,7 +192,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             data={"select_all": True, "language": "fr"},
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
@@ -205,7 +206,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         data = response.json()
         self.assertEqual(data["detail"], "You do not have permission to perform this action.")
 
@@ -225,7 +226,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -247,7 +248,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             data={"select_all": True, "language": "fr"},
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin_account3)
@@ -295,7 +296,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -406,7 +407,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, user)
@@ -452,7 +453,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, admin_user)
@@ -501,7 +502,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, admin_user)
@@ -524,7 +525,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_managed)
@@ -544,7 +545,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_managed)
@@ -580,7 +581,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_managed)
@@ -596,6 +597,14 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertIn(
             self.user_role,
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
+        )
+        self.assertIn(
+            self.user_role.group,
+            self.user_admin_no_task.groups.all(),
+        )
+        self.assertIn(
+            self.user_role.group,
+            self.user_admin_no_task2.groups.all(),
         )
 
     def test_profile_bulkupdate_user_managed_cannot_add_role_with_admin_permission(self):
@@ -626,7 +635,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_managed)
@@ -646,6 +655,8 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
     def test_profile_bulkupdate_user_managed_can_remove_role(self):
         """POST /api/tasks/create/profilesbulkupdate/ remove role as a user manager"""
+        self.user_admin_no_task.groups.add(self.user_role_2.group)
+        self.user_admin_no_task2.groups.add(self.user_role_2.group)
         self.client.force_authenticate(self.user_managed)
         operation_payload = {
             "select_all": True,
@@ -672,7 +683,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_managed)
@@ -688,6 +699,14 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertNotIn(
             self.user_role_2,
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
+        )
+        self.assertNotIn(
+            self.user_role_2.group,
+            self.user_admin_no_task.groups.all(),
+        )
+        self.assertNotIn(
+            self.user_role_2.group,
+            self.user_admin_no_task2.groups.all(),
         )
 
     def test_profile_bulkupdate_add_user_role_with_not_connected_account(self):
@@ -719,7 +738,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -762,7 +781,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -806,7 +825,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -843,7 +862,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -881,7 +900,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -920,7 +939,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -958,7 +977,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.user_admin)
@@ -995,7 +1014,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, user)
@@ -1025,7 +1044,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.add_users_team_launcher_1)
@@ -1064,7 +1083,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         }
         response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.add_users_team_launcher_1)
@@ -1096,7 +1115,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         self.assertValidTaskAndInDB(data["task"])
 
@@ -1131,7 +1150,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
         self.assertEqual(task.launcher, self.superuser)
@@ -1143,7 +1162,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={self.user_admin_no_task.iaso_profile.id}"
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         log = logs[0]
 
@@ -1198,7 +1217,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={self.user_admin_no_task2.iaso_profile.id}"
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         log = logs[0]
 
@@ -1253,7 +1272,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         response = self.client.get(
             f"/api/logs/?contentType=iaso.team&fields=past_value,new_value&objectId={self.team_1.pk}"
         )
-        response_data = self.assertJSONResponse(response, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         logs = response_data["list"]
         self.assertEqual(len(logs), 2)
         # Last log should contain both user_admin_no_task and user_admin_no_task2 id
@@ -1272,7 +1291,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         response = self.client.get("/api/tasks/%d/" % task.id)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Task completion status
         return self.assertValidTaskAndInDB(response.json(), new_status)
 

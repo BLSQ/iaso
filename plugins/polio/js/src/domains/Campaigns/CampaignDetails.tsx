@@ -12,14 +12,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { FormikProvider } from 'formik';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { Form } from '../../components/Form';
 import MESSAGES from '../../constants/messages';
 import { Campaign } from '../../constants/types';
 import { baseUrls } from '../../constants/urls';
-import { useStyles } from '../../styles/theme';
-import { CampaignHistoryIconButton } from './CampaignHistory/CampaignHistoryIconButton';
 import { useCampaignFormState } from './hooks/useCampaignFormState';
 import { useCampaignTabs } from './hooks/useCampaignTabs';
 import { PolioDialogTabs } from './MainDialog/PolioDialogTabs';
@@ -44,7 +43,6 @@ const useTitle = (
 };
 
 export const CampaignDetails: FunctionComponent = () => {
-    const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.campaignDetails);
     const { campaignId } = params;
     const campaignIdRef = useRef(campaignId);
@@ -65,6 +63,7 @@ export const CampaignDetails: FunctionComponent = () => {
         isFetching,
         saveDisabled,
         showObrInTitle,
+        isFormChanged,
     } = useCampaignFormState({
         campaignId,
     });
@@ -105,14 +104,12 @@ export const CampaignDetails: FunctionComponent = () => {
                 onConfirm={() => formik.handleSubmit()}
                 dataTestId={warningDataTestId}
             />
-            <Box className={classes.containerFullHeightPadded}>
-                <CampaignHistoryIconButton
-                    selectedCampaign={selectedCampaign}
-                />
+            <MainWrapper sx={{ px: 4, pb: 4 }}>
                 <PolioDialogTabs
                     tabs={tabs}
                     selectedTab={selectedTab}
                     handleChange={handleChangeTab}
+                    selectedCampaign={selectedCampaign}
                 />
                 <FormikProvider value={formik}>
                     <Form isModal={false}>
@@ -124,7 +121,7 @@ export const CampaignDetails: FunctionComponent = () => {
                         <Button
                             onClick={handleCancel}
                             color="primary"
-                            disabled={isSaving}
+                            disabled={isSaving || !isFormChanged}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>
@@ -139,7 +136,7 @@ export const CampaignDetails: FunctionComponent = () => {
                         {formatMessage(MESSAGES.save)}
                     </Button>
                 </Grid>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

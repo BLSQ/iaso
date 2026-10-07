@@ -1,5 +1,5 @@
 # ── Stage 1: JS / webpack build ───────────────────────────────────────────────
-FROM node:22.18.0-bullseye-slim AS npmbuilder
+FROM node:22.18.0-bookworm-slim AS npmbuilder
 
 # Set environment variables
 ENV PROJECT_ROOT=/opt
@@ -10,7 +10,7 @@ WORKDIR /opt/app
 
 # Copy package files
 COPY ../../package.json package-lock.json ./
-RUN npm install -g npm@11.13.0 && \
+RUN npm install -g npm@11.19.0 && \
     rm -rf node_modules && \
     npm cache clean --force && \
     npm ci
@@ -25,10 +25,18 @@ COPY ../../tsconfig.json ../../babel-register.js ./
 # Build webpack assets
 RUN npm run webpack-prod
 
+# MCP catalog UI (Vite). Served from iaso/mcp/frontend/dist at /mcp/app/.
+COPY ../../iaso/mcp/frontend/package.json ../../iaso/mcp/frontend/package-lock.json ./iaso/mcp/frontend/
+WORKDIR /opt/app/iaso/mcp/frontend
+RUN npm ci
+COPY ../../iaso/mcp/frontend/ ./
+RUN npm run build
+WORKDIR /opt/app
+
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
-# Full Bullseye image to compile C extensions
+# Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.
-FROM python:3.9-bullseye AS pybuilder
+FROM python:3.9-bookworm AS pybuilder
 
 # Set working directory
 WORKDIR /opt/app
@@ -58,21 +66,28 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM python:3.9-slim-bullseye AS prod
+FROM python:3.9-slim-bookworm AS prod
+
+ARG DEPLOYED_ON=unknown
+ARG DEPLOYED_BY=unknown
+ARG IASO_VERSION=
+ENV DEPLOYED_ON=$DEPLOYED_ON \
+    DEPLOYED_BY=$DEPLOYED_BY \
+    IASO_VERSION=$IASO_VERSION
 
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
 RUN groupadd --gid 1001 appuser && \
     useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Runtime-only dependencies:
-#  - libgdal28: GDAL shared library (runtime, no headers)
+#  - libgdal32: GDAL shared library on Bookworm (runtime, no headers)
 #  - libpq5: PostgreSQL client library (for psycopg2)
 #  - postgresql-client: psql CLI (used in wait_for_dbs.sh)
 #  - gettext-base: envsubst (used for config templating)
 #  - gettext: compilemessages needs msgfmt at build, but also useful at runtime
 #  - libmagic1: used by python-magic
 RUN apt-get update && apt-get install --yes --no-install-recommends \
-    libgdal28 \
+    libgdal32 \
     libpq5 \
     postgresql-client \
     gettext \
@@ -94,6 +109,8 @@ COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/
 # Copy project code (all owned by appuser, no separate chown layer needed)
 COPY --chown=appuser:appuser ../../hat ./hat
 COPY --chown=appuser:appuser ../../iaso ./iaso
+# Overlay the built MCP UI (local dist/ is dockerignored)
+COPY --from=npmbuilder --chown=appuser:appuser /opt/app/iaso/mcp/frontend/dist /opt/app/iaso/mcp/frontend/dist
 COPY --chown=appuser:appuser ../../setuper ./setuper
 COPY --chown=appuser:appuser ../../beanstalk_worker ./beanstalk_worker
 COPY --chown=appuser:appuser ../../dynamic_fields ./dynamic_fields

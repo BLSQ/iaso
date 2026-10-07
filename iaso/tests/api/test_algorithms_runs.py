@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 from iaso.test import APITestCase
@@ -61,17 +63,17 @@ class AlgorithmsRunsAPITestCase(APITestCase):
 
     def test_list_unauthenticated(self):
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_list(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.BASE_URL)
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(1, len(data))
         run = data[0]
@@ -84,7 +86,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
     def test_list_paginated(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.BASE_URL, {"limit": 10, "page": 1, "order": "created_at"})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(1, data["count"])
         self.assertEqual(1, data["page"])
@@ -105,50 +107,50 @@ class AlgorithmsRunsAPITestCase(APITestCase):
         )
 
         response = self.client.get(self.BASE_URL, {"algorithmId": self.algorithm.id})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual({self.algorithm_run.id, other_run.id}, {run["id"] for run in data})
 
         response = self.client.get(self.BASE_URL, {"origin": self.data_source_origin.id})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual({self.algorithm_run.id, other_run.id}, {run["id"] for run in data})
 
         response = self.client.get(self.BASE_URL, {"destination": self.data_source_destination.id})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual({self.algorithm_run.id, other_run.id}, {run["id"] for run in data})
 
         response = self.client.get(self.BASE_URL, {"originVersion": self.version_origin.number})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual({self.algorithm_run.id, other_run.id}, {run["id"] for run in data})
 
         response = self.client.get(self.BASE_URL, {"destinationVersion": self.version_destination_2.number})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([other_run.id], [run["id"] for run in data])
 
         response = self.client.get(self.BASE_URL, {"launcher": self.user.id})
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual({self.algorithm_run.id, other_run.id}, {run["id"] for run in data})
 
     def test_list_excludes_other_account_runs(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.BASE_URL)
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         run_ids = {run["id"] for run in data}
         self.assertIn(self.algorithm_run.id, run_ids)
         self.assertNotIn(self.run_other_account.id, run_ids)
 
     def test_retrieve_unauthenticated(self):
         response = self.client.get(f"{self.BASE_URL}{self.algorithm_run.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.get(f"{self.BASE_URL}{self.algorithm_run.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_retrieve(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}{self.algorithm_run.id}/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(self.algorithm_run.id, data["id"])
         self.assertEqual(self.algorithm.id, data["algorithm"]["id"])
@@ -167,7 +169,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
@@ -180,7 +182,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_create(self):
         self.client.force_authenticate(self.user)
@@ -193,7 +195,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         self.assertEqual(self.algorithm.id, data["algorithm"]["id"])
         self.assertEqual(self.version_destination.id, data["destination"]["id"])
@@ -212,21 +214,21 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_delete_unauthenticated(self):
         response = self.client.delete(f"{self.BASE_URL}{self.algorithm_run.id}/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
         response = self.client.delete(f"{self.BASE_URL}{self.algorithm_run.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_delete(self):
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"{self.BASE_URL}{self.algorithm_run.id}/")
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(data)
         self.assertFalse(m.AlgorithmRun.objects.filter(id=self.algorithm_run.id).exists())
 
@@ -242,7 +244,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_without_permission(self):
         self.client.force_authenticate(self.user_no_perms)
@@ -257,7 +259,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_update_launches_matching_algorithm(self):
         m.OrgUnit.objects.create(
@@ -285,7 +287,7 @@ class AlgorithmsRunsAPITestCase(APITestCase):
             },
             format="json",
         )
-        data = self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertTrue(data)
 
         launched_run = m.AlgorithmRun.objects.latest("id")

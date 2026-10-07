@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-10 19:43+0000\n"
+"POT-Creation-Date: 2026-08-27 20:22+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -69,6 +69,10 @@ msgstr "Erreur de connexion au compte"
 #: hat/sso_views.py
 msgid "Internal server error"
 msgstr "Erreur interne du serveur"
+
+#: hat/templates/account/base.html
+msgid "Messages:"
+msgstr "Messages :"
 
 #: hat/templates/iaso/forgot_password.html
 msgid "Forgot password?"
@@ -345,16 +349,6 @@ msgstr ""
 #, python-format
 msgid "Login via %(name)s"
 msgstr "Se connecter via %(name)s"
-
-#, python-brace-format
-#~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"
-#~ msgstr ""
-#~ "Les champs dynamiques ne peuvent pas contenir à la fois {all_fields} et "
-#~ "{default_fields}"
-
-#, python-brace-format
-#~ msgid "Invalid dynamic fields: {fields}"
-#~ msgstr "Champs dynamiques invalides : {fields}"
 
 #~ msgid "User ID"
 #~ msgstr "ID utilisateur"

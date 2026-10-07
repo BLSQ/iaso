@@ -1,7 +1,7 @@
 # Cómo se despliega Iaso en AWS
 
 en ElasticBeanstalk + RDS
-![schema archi iaso.svg](schema%20archi%20iaso.svg)
+![schema archi iaso.svg](./schema%20archi%20iaso.svg)
 ---
 ## Partes principales 
 - Creación del entorno HOST donde se desplegará el código de Iaso así como los servicios relacionados
@@ -25,8 +25,8 @@ El término técnico para esto es "Provisioning" si quieres buscarlo.
 Ver  
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html
 
-Tenemos comandos personalizados y configuración en [.ebextensions/](.ebextensions/) y en 
-y en [.platform/](.platform/) para extender la configuración de nginx.
+Tenemos comandos personalizados y configuración en [.ebextensions/](.ebextensions) y en 
+y en [.platform/](.platform) para extender la configuración de nginx.
 
 ## Ejecutando Django 3 en Elastic Beanstalk / AMI personalizada
 

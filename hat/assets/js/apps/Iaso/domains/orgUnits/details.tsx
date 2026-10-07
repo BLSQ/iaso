@@ -41,10 +41,10 @@ import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/Org
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks';
+import { useOrgUnitDetailData } from './details/useOrgUnitDetailData';
 import { Logs } from './history/LogsComponent';
 import { wktToGeoJSON } from './history/LogValue';
 import {
-    useOrgUnitDetailData,
     useOrgUnitTabParams,
     useRefreshOrgUnit,
     useSaveOrgUnit,
@@ -458,40 +458,46 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 }
                             >
                                 <Box className={classes.containerFullHeight}>
-                                    {!isFetchingDetail && (
-                                        <OrgUnitMap
-                                            loadingSelectedSources={
-                                                loadingSelectedSources
-                                            }
-                                            currentOrgUnit={currentOrgUnit}
-                                            sources={sources}
-                                            orgUnitTypes={orgUnitTypes}
-                                            sourcesSelected={sourcesSelected}
-                                            setSourcesSelected={
-                                                setSourcesSelected
-                                            }
-                                            setOrgUnitLocationModified={isModified =>
-                                                setOrgUnitLocationModified(
-                                                    isModified,
-                                                )
-                                            }
-                                            orgUnitLocationModified={
-                                                orgUnitLocationModified
-                                            }
-                                            resetOrgUnit={() =>
-                                                handleResetOrgUnit()
-                                            }
-                                            saveOrgUnit={() =>
-                                                handleSaveOrgUnit()
-                                            }
-                                            onChangeLocation={
-                                                handleChangeLocation
-                                            }
-                                            onChangeShape={(key, geoJson) =>
-                                                handleChangeShape(geoJson, key)
-                                            }
-                                        />
-                                    )}
+                                    {!isFetchingDetail &&
+                                        params.tab === 'map' && (
+                                            <OrgUnitMap
+                                                loadingSelectedSources={
+                                                    loadingSelectedSources
+                                                }
+                                                currentOrgUnit={currentOrgUnit}
+                                                sources={sources}
+                                                orgUnitTypes={orgUnitTypes}
+                                                sourcesSelected={
+                                                    sourcesSelected
+                                                }
+                                                setSourcesSelected={
+                                                    setSourcesSelected
+                                                }
+                                                setOrgUnitLocationModified={isModified =>
+                                                    setOrgUnitLocationModified(
+                                                        isModified,
+                                                    )
+                                                }
+                                                orgUnitLocationModified={
+                                                    orgUnitLocationModified
+                                                }
+                                                resetOrgUnit={() =>
+                                                    handleResetOrgUnit()
+                                                }
+                                                saveOrgUnit={() =>
+                                                    handleSaveOrgUnit()
+                                                }
+                                                onChangeLocation={
+                                                    handleChangeLocation
+                                                }
+                                                onChangeShape={(key, geoJson) =>
+                                                    handleChangeShape(
+                                                        geoJson,
+                                                        key,
+                                                    )
+                                                }
+                                            />
+                                        )}
                                 </Box>
                             </div>
 

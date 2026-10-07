@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
 from iaso.test import APITestCase
@@ -7,6 +9,8 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
     """
     Test actions on the ViewSet.
     """
+
+    BASE_URL = "/api/potential_payments/"
 
     @classmethod
     def setUpTestData(cls):
@@ -78,12 +82,12 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_perm)
 
         with self.assertNumQueries(18):
-            response = self.client.get("/api/potential_payments/")
-            self.assertJSONResponse(response, 200)
+            response = self.client.get(self.BASE_URL)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        response = self.client.get("/api/potential_payments/")
+        response = self.client.get(self.BASE_URL)
         self.assertIn("count", response.data)
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Check that the correct number of PotentialPayment objects were created
         self.assertEqual(2, len(response.data["results"]))
@@ -103,20 +107,20 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.assertEqual(1, potential_payment_2.change_requests.count())
 
     def test_list_without_auth(self):
-        response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 401)
+        response = self.client.get(self.BASE_URL)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_not_allowed(self):
         potential_payment = m.PotentialPayment.objects.create(user=self.user)
         self.client.force_authenticate(self.user_with_perm)
-        response = self.client.get(f"/api/potential_payments/{potential_payment.pk}/")
-        self.assertJSONResponse(response, 404)
+        response = self.client.get(f"{self.BASE_URL}{potential_payment.pk}/")
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data["detail"], "Retrieve operation is not allowed.")
 
     def test_retrieve_without_auth(self):
         potential_payment = m.PotentialPayment.objects.create(user=self.user)
-        response = self.client.get(f"/api/potential_payments/{potential_payment.pk}/")
-        self.assertJSONResponse(response, 401)
+        response = self.client.get(f"{self.BASE_URL}{potential_payment.pk}/")
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_clears_old_potential_payments(self):
         m.PotentialPayment.objects.create(user=self.user)
@@ -124,8 +128,8 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_perm)
 
-        response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 200)
+        response = self.client.get(self.BASE_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_creates_new_potential_payments(self):
@@ -140,8 +144,8 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_perm)
 
-        response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 200)
+        response = self.client.get(self.BASE_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(2, len(response.data["results"]))
 
     def test_list_does_not_create_potential_payments_for_existing_payments(self):
@@ -153,8 +157,8 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_perm)
 
-        response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 200)
+        response = self.client.get(self.BASE_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
@@ -167,11 +171,9 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
             created_by=self.user_with_perm,
         )
         self.client.force_authenticate(self.geo_limited_user)
-        response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 200)
-        data = response.json()
-        results = data["results"]
-        print("results", results)
+        response = self.client.get(self.BASE_URL)
+        json_result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        results = json_result["results"]
         self.assertEqual(len(results), 2)
         for result in results:
             self.assertFalse(result["can_see_change_requests"])

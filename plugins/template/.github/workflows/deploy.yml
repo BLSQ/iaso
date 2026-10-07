@@ -85,7 +85,7 @@ jobs:
                   node-version: '20.13.1'
             - name: upgrade npm
               run: |
-                  npm install --global npm@11.13.0
+                  npm install --global npm@11.19.0
             - name: Set up Python 3.9
               uses: actions/setup-python@v1
               with:

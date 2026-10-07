@@ -13,35 +13,25 @@ export type Field = {
 
 export const xlsQuestionsTypesLink = 'https://xlsform.org/en/#question-types';
 
+const TEXT_QUERY_BUILDER_EXCLUDED_OPERATORS = [
+    'proximity',
+    'ends_with',
+    'starts_with',
+];
+
 export const iasoFields: Field[] = [
     {
         type: 'text',
         queryBuilder: {
             type: 'text',
-            excludeOperators: [
-                'proximity',
-                'ends_with',
-                'starts_with',
-                'like',
-                'not_like',
-                'is_empty',
-                'is_not_empty',
-            ],
+            excludeOperators: TEXT_QUERY_BUILDER_EXCLUDED_OPERATORS,
         },
     },
     {
         type: 'note',
         queryBuilder: {
             type: 'text',
-            excludeOperators: [
-                'proximity',
-                'ends_with',
-                'starts_with',
-                'like',
-                'not_like',
-                'is_empty',
-                'is_not_empty',
-            ],
+            excludeOperators: TEXT_QUERY_BUILDER_EXCLUDED_OPERATORS,
         },
     },
     {
@@ -198,30 +188,14 @@ export const iasoFields: Field[] = [
         type: 'barcode',
         queryBuilder: {
             type: 'text',
-            excludeOperators: [
-                'proximity',
-                'ends_with',
-                'starts_with',
-                'like',
-                'not_like',
-                'is_empty',
-                'is_not_empty',
-            ],
+            excludeOperators: TEXT_QUERY_BUILDER_EXCLUDED_OPERATORS,
         },
     },
     {
         type: 'calculate',
         queryBuilder: {
             type: 'text',
-            excludeOperators: [
-                'proximity',
-                'ends_with',
-                'starts_with',
-                'like',
-                'not_like',
-                'is_empty',
-                'is_not_empty',
-            ],
+            excludeOperators: TEXT_QUERY_BUILDER_EXCLUDED_OPERATORS,
         },
     },
     {

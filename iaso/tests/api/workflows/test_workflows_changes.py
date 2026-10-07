@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso.models import WorkflowChange
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
@@ -13,7 +15,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
@@ -26,7 +28,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(
             response.data["detail"],
@@ -42,7 +44,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"].code, "permission_denied")
         self.assertEqual(
             response.data["detail"],
@@ -58,7 +60,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_cannot_add_changes_to_version_not_in_draft(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -68,7 +70,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "is not in draft status" in str(response.data[0])
         assert response.data[0].code == "invalid"
 
@@ -81,7 +83,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "Cannot create a WorkflowChange where form and reference form are the same" in str(
             response.data["form"][0]
         )
@@ -101,7 +103,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             },  # both forms have a mon_champ field
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "Question XXXX does not exist in source form" in str(response.data["mapping"][0])
         assert response.data["mapping"][0].code == "invalid"
 
@@ -109,7 +111,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
         response_delete = self.client.delete("/api/workflowchanges/1000/")
 
-        self.assertJSONResponse(response_delete, 404)
+        self.assertJSONResponse(response_delete, status.HTTP_404_NOT_FOUND)
         assert "Not found." in response_delete.data["detail"]
 
     def test_create_change_with_non_existing_form_should_fail(self):
@@ -120,7 +122,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": 1000, "mapping": {"mon_champ": "mon_champ"}},
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_create_update_delete(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -135,7 +137,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
 
         created_change = WorkflowChange.objects.get(pk=response.data["id"])
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         assert response.data["form"]["id"] == self.form_adults_blue_2.pk
         assert response.data["mapping"] == {"mon_champ": "mon_champ"}
 
@@ -145,13 +147,13 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue_2.pk, "mapping": {"mon_champ": "mon_champ_2"}},
         )
 
-        self.assertJSONResponse(response_change, 200)
+        self.assertJSONResponse(response_change, status.HTTP_200_OK)
         assert response_change.data["form"] == self.form_adults_blue_2.pk
         assert response_change.data["mapping"] == {"mon_champ": "mon_champ_2"}
 
         response_delete = self.client.delete(f"{BASE_API}{created_change.pk}/")
 
-        self.assertJSONResponse(response_delete, 204)
+        self.assertJSONResponse(response_delete, status.HTTP_204_NO_CONTENT)
         assert response_delete.data is None
 
     def test_should_fail_field_not_mapped_to_proper_type(self):
@@ -165,7 +167,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             },  # both forms have a mon_champ field
         )
 
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         assert "Question integer_field and mon_champ do not have the same type" in str(response.data["mapping"][0])
         assert response.data["mapping"][0].code == "invalid"
 
@@ -180,7 +182,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             },  # both forms have a mon_champ field
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         assert response.data["form"]["id"] == self.form_adults_blue_2.pk
         assert response.data["mapping"] == {"calculate_one": "integer_field"}
 
@@ -195,6 +197,6 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             },  # both forms have a mon_champ field
         )
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         assert response.data["form"]["id"] == self.form_adults_blue_2.pk
         assert response.data["mapping"] == {"integer_field": "calculate_two"}

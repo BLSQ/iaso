@@ -4,6 +4,7 @@ import jwt
 
 from django.contrib.auth.models import User
 from django.core.files import File
+from rest_framework import status
 
 from hat.settings import SECRET_KEY
 from iaso import models as m
@@ -26,7 +27,7 @@ class DisableLoginTokenAPITestCase(APITestCase):
         response = self.client.post(
             "/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_acquire_token_and_authenticate_when_passwords_disabled(self):
         """Test that token authentication is not possible when passwords are disabled"""
@@ -36,7 +37,7 @@ class DisableLoginTokenAPITestCase(APITestCase):
             response = self.client.post(
                 "/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
             )
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.reload_urls(urlconfs)
 
 
@@ -86,7 +87,7 @@ class TokenAPITestCase(APITestCase):
 
     def authenticate_using_token(self):
         response = self.client.post("/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_data = response.json()
 
         access_token = response_data.get("access")
@@ -102,7 +103,7 @@ class TokenAPITestCase(APITestCase):
         self.authenticate_using_token()
 
         response = self.client.get("/api/forms/?app_id=stars.empire.agriculture.hydroponics")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response_data = response.json()
 
@@ -112,7 +113,7 @@ class TokenAPITestCase(APITestCase):
 
     def test_incorrect_username_or_password(self):
         response = self.client.post("/api/token/", data={"username": "yoda", "password": "incorrect"}, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(
             response.json()["detail"],
             "No active account found with the given credentials",
@@ -142,7 +143,7 @@ class TokenAPITestCase(APITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertTrue(m.Instance.objects.filter(uuid=uuid).first() is not None)
 
@@ -170,7 +171,7 @@ class TokenAPITestCase(APITestCase):
         response = self.client.post(
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertIsNone(m.Instance.objects.filter(uuid=uuid).first())
         # The result is that the instance is not created, even though the api sent back a 200
@@ -190,7 +191,7 @@ class TokenAPITestCase(APITestCase):
         response_data = self.authenticate_using_token()
         refresh_token = response_data.get("refresh")
         response = self.client.post("/api/token/refresh/", data={"refresh": refresh_token}, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         response_data = response.json()
 
         access_token_2 = response_data.get("access")
@@ -199,7 +200,7 @@ class TokenAPITestCase(APITestCase):
         # test an endpoint that requires authentication
         response = self.client.get("/api/orgunits/?app_id=stars.empire.agriculture.hydroponics")
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def test_no_token(self):
         """Test invalid authentication tokens"""
@@ -210,14 +211,14 @@ class TokenAPITestCase(APITestCase):
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
         self.client.credentials(HTTP_AUTHORIZATION="Bearer  WRONG")
 
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_acquire_token_and_post_org_unit(self):
         """Test upload to a project that requires authentication"""
@@ -244,7 +245,7 @@ class TokenAPITestCase(APITestCase):
         response = self.client.post(
             "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=unit_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
         self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
@@ -273,7 +274,7 @@ class TokenAPITestCase(APITestCase):
         response = self.client.post(
             "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=unit_body, format="json"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertIsNone(m.OrgUnit.objects.filter(uuid=uuid).first())
         # The result is that the org unit is not created, even though the api sent back a 200
@@ -309,7 +310,7 @@ class TokenAPITestCase(APITestCase):
 
         # Login with main user and app_id for Account A
         response = self.client.post("/api/token/?app_id=account.a", data=login, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         access_token = response.json().get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         # returns token for account_user_a
@@ -317,7 +318,7 @@ class TokenAPITestCase(APITestCase):
 
         # Login with main user and app_id for Account B
         response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         access_token = response.json().get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         # returns token for account_user_a
@@ -343,7 +344,7 @@ class TokenAPITestCase(APITestCase):
 
         # Login with main user and app_id for Account B
         response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(
             response.json()["detail"],
             "No active account found with the given credentials.",
@@ -351,7 +352,7 @@ class TokenAPITestCase(APITestCase):
 
         # Login with main user and non-existent app_id
         response = self.client.post("/api/token/?app_id=account.c", data=login, format="json")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
         self.assertEqual(
             response.json()["detail"],
             "Unknown project.",
@@ -371,15 +372,15 @@ class TokenAPITestCase(APITestCase):
         # Without project restrictions.
         self.assertEqual(0, user.iaso_profile.projects.count())
         response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # With project restrictions.
         user.iaso_profile.projects.set([authorized_project])
         self.assertEqual(1, user.iaso_profile.projects.count())
 
         response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         response = self.client.post(f"/api/token/?app_id={unauthorized_project.app_id}", data=login, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"], "You don't have access to this project.")

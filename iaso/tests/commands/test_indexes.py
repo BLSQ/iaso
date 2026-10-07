@@ -1,5 +1,7 @@
 import re
 
+from io import StringIO
+
 from django.core.management import call_command
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
@@ -24,7 +26,7 @@ class IndexesAPITestCase(BaseAPITransactionTestCase):
     def test_unique_indexes_command_runs(self):
         """unique_indexes command runs without error"""
         with CaptureQueriesContext(connection) as ctx:
-            call_command("unique_indexes")
+            call_command("unique_indexes", stdout=StringIO(), stderr=StringIO())
         expected_queries = [
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS iaso_instance_uuid__idx ON iaso_instance (uuid);",
             "SELECT EXISTS( SELECT 1 FROM iaso_orgunit a JOIN iaso_orgunit b ON a.uuid = b.uuid AND a.id <> b.id WHERE a.uuid IS NOT NULL LIMIT 1 );",
@@ -43,7 +45,7 @@ class IndexesAPITestCase(BaseAPITransactionTestCase):
 
         # idempotency check
         with CaptureQueriesContext(connection) as ctx_second_run:
-            call_command("unique_indexes")
+            call_command("unique_indexes", stdout=StringIO(), stderr=StringIO())
 
         self.assert_queries(ctx_second_run.captured_queries, expected_queries)
 

@@ -1,3 +1,5 @@
+from rest_framework import status
+
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Payment, PaymentLot, SourceVersion
 from iaso.models.payments import PaymentStatuses
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
@@ -29,7 +31,7 @@ class TestPaymentLotsFilters(APITestCase):
     def test_filter_on_users(self):
         self.client.force_authenticate(self.user_with_perm)
         response = self.client.get("/api/payments/lots/" + f"?users={self.user.id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(payment_lot["created_by"]["id"] == self.user.id for payment_lot in response.data["results"])
         )
@@ -37,7 +39,7 @@ class TestPaymentLotsFilters(APITestCase):
     def test_filter_on_parent(self):
         self.client.force_authenticate(self.user_with_perm)
         response = self.client.get("/api/payments/lots/" + f"?parent_id={self.org_unit.id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
                 org_unit["id"] == self.org_unit.id
@@ -49,7 +51,7 @@ class TestPaymentLotsFilters(APITestCase):
     def test_filter_on_start_end_date(self):
         self.client.force_authenticate(self.user_with_perm)
         response = self.client.get("/api/payments/lots/" + "?created_at_after=2023-01-01&created_at_before=2023-12-31")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
                 "2023-01-01" <= payment_lot["created_at"][:10] <= "2023-12-31"
@@ -60,7 +62,7 @@ class TestPaymentLotsFilters(APITestCase):
     def test_filter_on_status(self):
         self.client.force_authenticate(self.user_with_perm)
         response = self.client.get("/api/payments/lots/" + "?status=PAID")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
             all(
                 payment["status"] == "PAID"

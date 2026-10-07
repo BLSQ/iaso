@@ -3,6 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIRequestFactory
 
 from iaso.api.metrics.serializers import (
+    ExportMetricValuesSerializer,
     ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
@@ -36,12 +37,14 @@ class MetricTypeSerializerTestCase(TestCase):
             "legend_type",
             "metric_kind",
             "origin",
+            "is_complete",
             "created_at",
             "updated_at",
         }
         readonly_fields = {
             "id",
             "account",
+            "is_complete",
             "created_at",
             "updated_at",
         }
@@ -92,6 +95,7 @@ class MetricTypeWriteSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeWriteSerializer()
         expected_fields = {
+            "id",
             "name",
             "category",
             "description",
@@ -101,8 +105,10 @@ class MetricTypeWriteSerializerTestCase(TestCase):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
+        self.assertEqual(set(serializer.Meta.read_only_fields), {"is_complete"})
 
     def test_update(self):
         serializer_context = {"request": self.request}
@@ -253,6 +259,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
     def test_fields(self):
         serializer = MetricTypeCreateSerializer()
         expected_fields = {
+            "id",
             "code",
             "name",
             "category",
@@ -263,6 +270,7 @@ class MetricTypeCreateSerializerTestCase(TestCase):
             "metric_kind",
             "origin",
             "legend_config",
+            "is_complete",
         }
         self.assertEqual(set(serializer.Meta.fields), expected_fields)
 
@@ -559,7 +567,7 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         self.assertIn("The CSV must contain at least one metric type column.", serializer.errors["file"][0])
 
     def test_validate_missing_required_headers(self):
-        csv_content = "MT1\nCOMOE,738,1"
+        csv_content = "MT1,SMTH\nCOMOE,738,1"
         invalid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
         serializer = ImportMetricValuesSerializer(
             data={"file": invalid_file, "year": 2024}, context={"request": self.request}
@@ -603,8 +611,17 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
         valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
         serializer = ImportMetricValuesSerializer(data={"file": valid_file}, context={"request": self.request})
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("This field is required.", serializer.errors["year"][0])
+        self.assertTrue(serializer.is_valid())
+
+    def test_save_without_year_creates_metric_value_with_year_none(self):
+        """Importing a CSV without a year should create MetricValues with year=None."""
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(data={"file": valid_file}, context={"request": self.request})
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        metric_values = serializer.save()
+        self.assertEqual(len(metric_values), 1)
+        self.assertIsNone(metric_values[0].year)
 
     def test_validate_year_not_integer(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
@@ -684,6 +701,26 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         self.assertEqual(mv_population_2.value, 20000)
         self.assertEqual(mv_population_2.string_value, "")
 
+    def test_save_marks_incomplete_metric_types_with_new_values_complete(self):
+        """A metric type isn't stuck incomplete forever just because its wizard was never
+        finished - a bulk CSV import giving it real values is enough on its own."""
+        MetricType.objects.filter(id__in=[self.mt_1.id, self.mt_2.id]).update(is_complete=False)
+
+        csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1\nDISTRICT,District 1,{self.district1.id},1"
+        valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
+        serializer = ImportMetricValuesSerializer(
+            data={"file": valid_file, "year": 2024}, context={"request": self.request}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+
+        self.mt_1.refresh_from_db()
+        self.mt_2.refresh_from_db()
+        self.assertTrue(self.mt_1.is_complete)
+        # MT2 got no column (and so no values) in this CSV - having other incomplete
+        # metric types in scope must not mark it complete too.
+        self.assertFalse(self.mt_2.is_complete)
+
     def test_save_other_year_doesnt_override(self):
         csv_content = f"ADM1_NAME,ADM2_NAME,ADM2_ID,MT1,MT2,POP\nDISTRICT,District 1,{self.district1.id},1,5,15000\nDISTRICT,District 2,{self.district2.id},20,15,20000"
         valid_file = SimpleUploadedFile("test.csv", csv_content.encode(), content_type="text/csv")
@@ -721,6 +758,203 @@ class ImportMetricValuesSerializerTestCase(TestCase):
         self.assertEqual(ou2_2024_population.value, 20000)
         self.assertEqual(ou1_2025_population.value, 12000)
         self.assertEqual(ou2_2025_population.value, 15000)
+
+
+class ExportMetricValuesSerializerTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="Account")
+        cls.other_account = Account.objects.create(name="Other Account")
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+        )
+
+        cls.request = APIRequestFactory().get("/")
+        cls.request.user = cls.user
+
+        cls.mt_1 = MetricType.objects.create(
+            account=cls.account,
+            code="MT1",
+            name="Metric Type 1",
+            category="Category 1",
+            legend_type="threshold",
+            legend_config={"domain": [10, 20, 30], "range": ["#A2CAEA", "#ACDF9B", "#F5F1A0"]},
+        )
+        cls.mt_2 = MetricType.objects.create(
+            account=cls.account,
+            code="MT2",
+            name="Metric Type 2",
+            category="Category 2",
+            legend_type="linear",
+            legend_config={"domain": [5, 15], "range": ["#A2CAEA", "#ACDF9B"]},
+        )
+        cls.mt_other_account = MetricType.objects.create(
+            account=cls.other_account,
+            code="MT3",
+            name="Other Account Metric Type",
+            category="Category 3",
+            legend_type="linear",
+            legend_config={"domain": [5, 15], "range": ["#A2CAEA", "#ACDF9B"]},
+        )
+
+        cls.project = Project.objects.create(name="Project", app_id="APP_ID", account=cls.account)
+        sw_source = DataSource.objects.create(name="data_source")
+        sw_source.projects.add(cls.project)
+        cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.account.default_version = sw_version_1
+        cls.account.save()
+        cls.out_district = OrgUnitType.objects.create(name="DISTRICT")
+        cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+
+        cls.region = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="Region 1",
+            version=sw_version_1,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district1 = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            parent=cls.region,
+            name="District 1",
+            version=sw_version_1,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            location=Point(x=4, y=50, z=100),
+            geom=cls.mock_multipolygon,
+        )
+        cls.district_no_location = OrgUnit.objects.create(
+            org_unit_type=cls.out_district,
+            name="District No Location",
+            version=sw_version_1,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            location=None,
+        )
+
+    def test_validate_metric_type_ids_required(self):
+        serializer = ExportMetricValuesSerializer(data={}, context={"request": self.request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("This field is required.", serializer.errors["metric_type_ids"][0])
+
+    def test_validate_metric_type_ids_blank(self):
+        serializer = ExportMetricValuesSerializer(data={"metric_type_ids": ""}, context={"request": self.request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("This field may not be blank.", serializer.errors["metric_type_ids"][0])
+
+    def test_validate_metric_type_ids_not_integers(self):
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": "abc,def"}, context={"request": self.request}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "metric_type_ids must be a comma-separated list of integers.", serializer.errors["metric_type_ids"][0]
+        )
+
+    def test_validate_metric_type_ids_ignores_ids_from_other_account(self):
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": f"{self.mt_1.id},{self.mt_other_account.id}"},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.get_metric_types(), [self.mt_1])
+
+    def test_validate_metric_type_ids_preserves_requested_order(self):
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": f"{self.mt_2.id},{self.mt_1.id}"},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.get_metric_types(), [self.mt_2, self.mt_1])
+
+    def test_get_csv_rows_headers_match_requested_metric_types(self):
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": f"{self.mt_2.id},{self.mt_1.id}"},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        headers, _ = serializer.get_csv_rows()
+        self.assertEqual(headers, ["ADM1_NAME", "ADM2_NAME", "ADM2_ID", "MT2", "MT1"])
+
+    def test_get_csv_rows_excludes_org_units_without_geography(self):
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id)},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        org_unit_ids_in_rows = [row[2] for row in rows]
+        self.assertNotIn(self.district_no_location.id, org_unit_ids_in_rows)
+
+    def test_get_csv_rows_row_shape(self):
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=2024, value=100.0)
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id), "year": 2024},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        row = next(row for row in rows if row[2] == self.district1.id)
+        self.assertEqual(row, [self.region.name, self.district1.name, self.district1.id, 100.0])
+
+    def test_get_csv_rows_uses_string_value_when_no_numeric_value(self):
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=2024, string_value="high")
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id), "year": 2024},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        row = next(row for row in rows if row[2] == self.district1.id)
+        self.assertEqual(row[3], "high")
+
+    def test_get_csv_rows_empty_string_when_no_value_exists(self):
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id), "year": 2024},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        row = next(row for row in rows if row[2] == self.district1.id)
+        self.assertEqual(row[3], "")
+
+    def test_get_csv_rows_falls_back_to_timeless_value_for_requested_year(self):
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=None, value=42.0)
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id), "year": 2024},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        row = next(row for row in rows if row[2] == self.district1.id)
+        self.assertEqual(row[3], 42.0)
+
+    def test_get_csv_rows_year_specific_value_takes_precedence_over_timeless(self):
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=None, value=42.0)
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=2024, value=100.0)
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id), "year": 2024},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        row = next(row for row in rows if row[2] == self.district1.id)
+        self.assertEqual(row[3], 100.0)
+
+    def test_get_csv_rows_without_year_only_uses_timeless_values(self):
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=2024, value=100.0)
+        MetricValue.objects.create(metric_type=self.mt_1, org_unit=self.district1, year=None, value=42.0)
+        serializer = ExportMetricValuesSerializer(
+            data={"metric_type_ids": str(self.mt_1.id)},
+            context={"request": self.request},
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        _, rows = serializer.get_csv_rows()
+        row = next(row for row in rows if row[2] == self.district1.id)
+        self.assertEqual(row[3], 42.0)
 
 
 class OrgUnitIdSerializerTestCase(TestCase):

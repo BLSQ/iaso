@@ -56,7 +56,7 @@ export const SubActivityScopeField: FunctionComponent<Props> = ({
 
     useSkipEffectOnMount(() => {
         setPage(0);
-    }, [filteredDistricts]);
+    }, [debouncedSearch, searchScope]);
 
     return (
         <ScopeField

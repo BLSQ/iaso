@@ -1,11 +1,6 @@
-import logging
-
 from iaso.diffing import Differ
 from iaso.diffing.exporter import assign_dhis2_ids
 from iaso.tests.diffing.utils import PyramidBaseTest
-
-
-test_logger = logging.getLogger(__name__)
 
 
 class ExporterTestCase(PyramidBaseTest):
@@ -29,7 +24,7 @@ class ExporterTestCase(PyramidBaseTest):
         self.angola_district_to_compare_with.source_ref = ""
         self.angola_district_to_compare_with.save()
 
-        diffs, fields = Differ(test_logger).diff(
+        diffs, fields = Differ().diff(
             version=self.source_version_to_update,
             version_ref=self.source_version_to_compare_with,
         )

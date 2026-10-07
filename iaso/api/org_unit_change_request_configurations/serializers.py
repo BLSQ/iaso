@@ -15,7 +15,6 @@ from iaso.api.org_unit_change_request_configurations.validation import (
 )
 from iaso.api.query_params import INCLUDE_CREATION, PROJECT_ID, TYPE
 from iaso.models import Form, Group, GroupSet, OrgUnitChangeRequestConfiguration, OrgUnitType, Project
-from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -240,7 +239,7 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(BaseOrgUnitChangeRequestC
     """
 
     id = serializers.IntegerField(read_only=True)
-    project_id = IdOrUuidRelatedField(source="project", queryset=Project.objects.all())
+    project_id = serializers.PrimaryKeyRelatedField(source="project", queryset=Project.objects.all())
     org_unit_type_id = serializers.PrimaryKeyRelatedField(source="org_unit_type", queryset=OrgUnitType.objects.all())
 
     class Meta(BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer.Meta):

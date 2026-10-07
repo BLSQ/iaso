@@ -1,21 +1,29 @@
 import csv
 
+from datetime import datetime
+
+from django.db import transaction
 from django.db.models import Q
+from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
-from iaso.api.metrics.filters import ValueAndTypeFilterBackend, ValueFilterBackend
-from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS
-from iaso.models import MetricType, MetricValue
+from iaso.api.metrics.filters import MetricValueFilter, ValueAndTypeFilterBackend, ValueFilterBackend
+from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_org_unit_row
+from iaso.models import ALIVE_STATUSES, MetricType, MetricValue, Task
+from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 from .permissions import MetricsPermissions
 from .serializers import (
+    ExportMetricValuesSerializer,
+    ImportMetricValuesJsonSerializer,
     ImportMetricValuesSerializer,
     MetricTypeCreateSerializer,
     MetricTypeSerializer,
@@ -52,11 +60,6 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
             else MetricTypeSerializer
         )
 
-    def perform_destroy(self, instance):
-        if instance.origin == MetricType.MetricTypeOrigin.OPENHEXA.value:
-            raise serializers.ValidationError("Cannot delete OpenHexa metric types")
-        return super().perform_destroy(instance)
-
     @action(detail=False, methods=["get"])
     def grouped_per_category(self, request):
         metric_types = self.get_queryset()
@@ -70,6 +73,36 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
         response_data = [{"name": key, "items": items} for key, items in grouped_data.items()]
 
         return Response(response_data)
+
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            if is_snt_malaria_plugin_active():
+                self._clean_up_openhexa_import_tasks(instance)
+            super().perform_destroy(instance)
+
+    @staticmethod
+    def _clean_up_openhexa_import_tasks(metric_type):
+        """Import tasks reference their metric type through `params.kwargs.metric_type_id`,
+        not an FK, so they must be handled explicitly: alive ones are asked to stop and
+        finished ones are removed."""
+        from plugins.snt_malaria.api.openhexa_data_layers.constants import IMPORT_TASK_NAME
+
+        import_tasks = (
+            Task.objects.filter(account=metric_type.account, name=IMPORT_TASK_NAME)
+            .annotate(mt_id=KeyTextTransform("metric_type_id", KeyTransform("kwargs", "params")))
+            .filter(mt_id=str(metric_type.id))
+        )
+        import_tasks.filter(status__in=ALIVE_STATUSES).update(should_be_killed=True)
+        import_tasks.exclude(status__in=ALIVE_STATUSES).delete()
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request, pk=None):
+        """Flip a wizard-created shell to `is_complete=True`, once it has usable
+        values/legend - called explicitly by the wizard's finalise step, instead of
+        implicitly bundled into a metadata PATCH."""
+        metric_type = self.get_object()
+        metric_type.mark_complete()
+        return Response(MetricTypeSerializer(metric_type).data)
 
     @action(
         detail=False,
@@ -88,7 +121,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     serializer_class = MetricValueSerializer
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueFilterBackend]
-    filterset_fields = ["metric_type_id", "org_unit_id"]
+    filterset_class = MetricValueFilter
     http_method_names = ["get", "options", "post"]
     permission_classes = [MetricsPermissions]
 
@@ -107,8 +140,11 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         account = request.user.iaso_profile.account
         # Get all custom metric types for the user's account
         metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
+        if is_snt_malaria_plugin_active():
+            # Composite metric types are computed from a graph, not meant to be filled in manually.
+            metric_types = metric_types.filter(composite_layer__isnull=True)
         # Get All org units for the user's account
-        org_units = get_valid_org_units_with_geography(account).order_by("name")
+        org_units = get_valid_org_units_with_geography(account).select_related("parent").order_by("name")
 
         # Prepare the CSV response
         headers = REQUIRED_METRIC_VALUES_HEADERS.copy()
@@ -118,12 +154,33 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         writer = csv.writer(response, delimiter=",")
         writer.writerow(headers)
         for ou in org_units:
-            row = [ou.parent.name if ou.parent else "", ou.name, ou.id]
+            row = get_org_unit_row(ou)
             for mt in metric_types:
                 row.append("")  # Empty value for the metric
             writer.writerow(row)
 
         filename = "metric_import_template.csv"
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+        return response
+
+    @action(
+        detail=False,
+        methods=["get"],
+        serializer_class=ExportMetricValuesSerializer,
+        renderer_classes=[JSONRenderer],
+    )
+    def export_csv(self, request):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        headers, rows = serializer.get_csv_rows()
+
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
+        writer = csv.writer(response, delimiter=",")
+        writer.writerow(headers)
+        writer.writerows(rows)
+
+        filename = f"metric_values_export_{datetime.now().strftime('%Y-%m-%d')}.csv"
+
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
@@ -138,6 +195,24 @@ class MetricValueViewSet(viewsets.ModelViewSet):
             {
                 "total_imported": len(metric_values),
                 "metric_type_import_count": len(metric_values),
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=False, methods=["post"], serializer_class=ImportMetricValuesJsonSerializer)
+    def import_values(self, request):
+        """Replaces one MetricType's values for a set of years from a JSON body
+        (the data-layer wizard's table), instead of a CSV file upload."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        metric_values = serializer.save()
+
+        return Response(
+            {
+                "total_imported": len(metric_values),
+                "suggested_legend_type": serializer.suggested_legend_type,
+                "suggested_legend_config": serializer.suggested_legend_config,
             },
             status=status.HTTP_201_CREATED,
         )

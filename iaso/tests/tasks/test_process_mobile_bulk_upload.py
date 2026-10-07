@@ -1,4 +1,5 @@
 import datetime
+import io
 import json
 import os
 import uuid
@@ -12,15 +13,22 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
+from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
-from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
+from iaso.tasks.process_mobile_bulk_upload import (
+    get_directory_handlers,
+    process_instance_attachments,
+    process_mobile_bulk_upload,
+)
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 CATT_TABLET_DIR = "catt_one_test_with_image"
@@ -120,6 +128,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             user=self.user,
             import_type="bulk",
             json_body={},
+            app_version="1.2.3",
         )
         self.account = m.Account.objects.first()
         self.task = m.Task.objects.create(
@@ -139,6 +148,16 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
         default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
 
+    def assertCorrelationIdFormat(self, instance):
+        """`convert_correlation()` always sets a correlation_id (str(id) + random digit + mod-97
+        checksum), regardless of whether the form configures a `correlation_field` -- assert on
+        the deterministic parts only, since one digit is random.
+        """
+        self.assertTrue(str(instance.correlation_id).startswith(str(instance.id)))
+        modulo = int(str(instance.correlation_id)[-2:])
+        base = int(str(instance.correlation_id)[0:-2])
+        self.assertEqual(base % 97, modulo)
+
     def _create_zip_file(self):
         # Create the zip file: we create it on the fly to be able to clearly
         # see the contents in our repo. We then mock the file download method
@@ -148,6 +167,95 @@ class ProcessMobileBulkUploadTest(TestCase):
             add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
         save_file_to_api_import(self.api_import, zip_path)
 
+    def _create_zip_file_at_scale(self, num_patients=25):
+        """
+        `num_patients` distinct *new* patients, each with exactly one registration + one CATT
+        follow-up - the realistic shape of a large bulk sync from one facility: broad (many
+        distinct entities), not deep (a few entities repeated many times, which would be a
+        rarer "lots of follow-ups for the same patient" case). Same org unit and same 2 forms/
+        versions throughout, reusing the base fixture's registration/CATT xml content as
+        byte templates under fresh uuids.
+        """
+        base_dir = zip_fixture_dir(CATT_TABLET_DIR)
+        with open(
+            os.path.join(
+                base_dir,
+                DISASI_MAKULO_REGISTRATION,
+                "20_56_bd75c228-ee48-4df6-9226-d6360d0e6b6c_2024-04-05_16-08-56.xml",
+            ),
+            "rb",
+        ) as f:
+            registration_xml_bytes = f.read()
+        with open(
+            os.path.join(
+                base_dir, DISASI_MAKULO_CATT, "16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
+            ),
+            "rb",
+        ) as f:
+            catt_xml_bytes = f.read()
+
+        with open(os.path.join(base_dir, "instances.json")) as f:
+            base_instances_data = json.load(f)
+        with open(os.path.join(base_dir, "orgUnits.json")) as f:
+            org_units_data = json.load(f)
+
+        org_unit_uuid = base_instances_data[0]["orgUnitId"]
+
+        zip_path = f"/tmp/{CATT_TABLET_DIR}_at_scale.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("orgUnits.json", json.dumps(org_units_data))
+
+            new_instances = []
+            for _ in range(num_patients):
+                # Matches the base fixture's convention: entityUuid == the registration
+                # instance's own uuid.
+                registration_uuid = str(uuid.uuid4())
+                catt_uuid = str(uuid.uuid4())
+
+                reg_file_name = f"registration_{registration_uuid}.xml"
+                catt_file_name = f"followup_{catt_uuid}.xml"
+                zipf.writestr(f"{registration_uuid}/{reg_file_name}", registration_xml_bytes)
+                zipf.writestr(f"{catt_uuid}/{catt_file_name}", catt_xml_bytes)
+
+                new_instances.append(
+                    {
+                        "id": registration_uuid,
+                        "created_at": 1.712326150005e9,
+                        "updated_at": 1.712326150005e9,
+                        "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{registration_uuid}/{reg_file_name}",
+                        "name": "Enregistrement",
+                        "formId": "1",
+                        "orgUnitId": org_unit_uuid,
+                        "entityUuid": registration_uuid,
+                        "entityTypeId": "1",
+                        "latitude": 50.6429429,
+                        "longitude": 4.6004524,
+                        "altitude": 128.3,
+                        "accuracy": 14.929,
+                    }
+                )
+                new_instances.append(
+                    {
+                        "id": catt_uuid,
+                        "created_at": 1.71232618245e9,
+                        "updated_at": 1.71232618245e9,
+                        "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{catt_uuid}/{catt_file_name}",
+                        "name": "CATT",
+                        "formId": "2",
+                        "orgUnitId": org_unit_uuid,
+                        "entityUuid": registration_uuid,
+                        "entityTypeId": "1",
+                        "latitude": 50.6429501,
+                        "longitude": 4.6004282,
+                        "altitude": 128.3,
+                        "accuracy": 12.74,
+                    }
+                )
+
+            zipf.writestr("instances.json", json.dumps(new_instances))
+
+        save_file_to_api_import(self.api_import, zip_path)
+
     def test_success(self):
         self._create_zip_file()
 
@@ -155,12 +263,13 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 0)
         self.assertEqual(m.InstanceFile.objects.count(), 0)
 
-        process_mobile_bulk_upload(
-            api_import_id=self.api_import.id,
-            project_id=self.project.id,
-            task=self.task,
-            _immediate=True,
-        )
+        with QueryProfiler() as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -169,6 +278,32 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.api_import.refresh_from_db()
         self.assertEqual(self.api_import.import_type, "bulk")
         self.assertFalse(self.api_import.has_problem)
+
+        # Storage (S3) operations: the zip is the only file read, and each file is uploaded once under its
+        # full `upload_to` path - one XML per instance + the single attachment, as its duplicate points to
+        # the same stored file instead of uploading it again. The XML paths are longer than Django's
+        # default `max_length` of 100, which used to truncate them and append a random suffix.
+        with open(os.path.join(zip_fixture_dir(CATT_TABLET_DIR), "instances.json")) as f:
+            instances_data = json.load(f)
+        expected_xml_names = [
+            instance_upload_to(
+                m.Instance.objects.get(uuid=data["id"]), os.path.join(data["id"], os.path.basename(data["file"]))
+            )
+            for data in instances_data
+        ]
+        self.assertTrue(all(len(name) > 100 for name in expected_xml_names))
+        disasi_image = m.InstanceFile.objects.get(instance__uuid=DISASI_MAKULO_CATT)
+        expected_attachment_name = instance_file_upload_to(disasi_image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
+        # `exists()`: the in-memory storage checks each name is available before saving it
+        profiler.assertStorageCalls(
+            {"_open": [self.api_import.file.name], "_save": expected_xml_names + [expected_attachment_name]},
+            exclude=["exists"],
+        )
+        self.assertCountEqual([i.file.name for i in m.Instance.objects.all()], expected_xml_names)
+        self.assertEqual(
+            list(m.InstanceFile.objects.values_list("file", flat=True)),
+            [expected_attachment_name, expected_attachment_name],
+        )
 
         # Org unit was created
         ou = m.OrgUnit.objects.get(name="New Org Unit")
@@ -187,31 +322,54 @@ class ProcessMobileBulkUploadTest(TestCase):
         reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
         self.assertEqual(reg_instance.json.get("_full_name"), "Disasi Makulo")
         self.assertEqual(reg_instance.entity, ent_disasi)
+        # The registration form is the entity type's reference form, so the entity's
+        # `attributes` should point back to this instance.
+        self.assertEqual(ent_disasi.attributes, reg_instance)
+        self.assertEqual(reg_instance.api_import, self.api_import)
+        self.assertEqual(reg_instance.app_version, "1.2.3")
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
+        # `location`/`accuracy` here come from the direct payload assignment in `import_data()`
+        # (latitude/longitude/altitude/accuracy in instances.json) -- form_registration has no
+        # `location_field` configured, so `convert_location_from_field()` is a no-op for it.
+        self.assertAlmostEqual(reg_instance.location.y, 50.6429429)  # latitude
+        self.assertAlmostEqual(reg_instance.location.x, 4.6004524)  # longitude
+        self.assertAlmostEqual(float(reg_instance.accuracy), 14.929, places=2)
+        # `convert_correlation()` (called via `process_instance_file()` for new instances) always
+        # assigns a correlation_id, even though neither form configures a `correlation_field`.
+        self.assertCorrelationIdFormat(reg_instance)
+        # No `deviceid`-like field in this fixture's XML, so `convert_device()` has nothing to
+        # convert and leaves this unset.
+        self.assertIsNone(reg_instance.device)
 
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
         self.assertEqual(catt_instance.json.get("result"), "positive")
         self.assertEqual(catt_instance.entity, ent_disasi)
+        self.assertEqual(catt_instance.api_import, self.api_import)
+        self.assertEqual(catt_instance.app_version, "1.2.3")
         self.assertEqual(catt_instance.instancefile_set.count(), 1)
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+        self.assertAlmostEqual(catt_instance.location.y, 50.6429501)  # latitude
+        self.assertAlmostEqual(catt_instance.location.x, 4.6004282)  # longitude
+        self.assertAlmostEqual(float(catt_instance.accuracy), 12.74, places=2)
+        self.assertCorrelationIdFormat(catt_instance)
+        self.assertIsNone(catt_instance.device)
 
         # Checking if files are uploaded to the correct location
-        generated_file_name = instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
-        # as the generated file name is longer than 100 chars, Django truncates it and adds a random suffix to it
-        # it's therefore impossible to strictly check for equality
-        expected_file_name = generated_file_name[:85]
-        self.assertTrue(catt_instance.file.name.startswith(expected_file_name))
-        # same issue about name length for InstanceFile
-        generated_attachment_name = instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
-        expected_attachment_name = generated_attachment_name[:85]
-        self.assertTrue(image.file.name.startswith(expected_attachment_name))
+        self.assertEqual(catt_instance.file.name, instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME))
+        self.assertEqual(image.file.name, instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME))
 
         # Entity 2: Patrice Akambu
         reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
         self.assertEqual(reg_instance.json.get("_full_name"), "Patrice Akambu")
         self.assertEqual(reg_instance.entity, entity_patrice)
+        self.assertEqual(entity_patrice.attributes, reg_instance)
         self.assertEqual(reg_instance.instancefile_set.count(), 0)
+        self.assertAlmostEqual(reg_instance.location.y, 50.6429429)  # latitude
+        self.assertAlmostEqual(reg_instance.location.x, 4.6004524)  # longitude
+        self.assertAlmostEqual(float(reg_instance.accuracy), 14.929, places=2)
+        self.assertCorrelationIdFormat(reg_instance)
+        self.assertIsNone(reg_instance.device)
 
         catt_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_CATT)
         self.assertEqual(catt_instance.json.get("result"), "positive")
@@ -220,6 +378,336 @@ class ProcessMobileBulkUploadTest(TestCase):
         # image from Disasi's CATT was duplicated to this test
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+        self.assertAlmostEqual(catt_instance.location.y, 50.6429501)  # latitude
+        self.assertAlmostEqual(catt_instance.location.x, 4.6004282)  # longitude
+        self.assertAlmostEqual(float(catt_instance.accuracy), 12.74, places=2)
+        self.assertCorrelationIdFormat(catt_instance)
+        self.assertIsNone(catt_instance.device)
+
+        # `duplicate_instance_files()`: both CATT instances share the same json["serie_id"]
+        # in their submitted XML, so the single uploaded attachment gets duplicated onto
+        # the other instance rather than each instance only keeping its own file (or none).
+        self.assertEqual(m.InstanceFile.objects.filter(name="1712326156339.webp").count(), 2)
+
+    def test_long_attachment_name_is_not_truncated(self):
+        """
+        Attachment paths longer than Django's default `max_length` of 100 used to be truncated
+        with a random suffix appended: they're now stored on S3 under their full `upload_to` path.
+        """
+        long_attachment_name = f"{'patient_photo_' * 6}1712326156339.webp"
+        zip_path = f"/tmp/{CATT_TABLET_DIR}_long_attachment_name.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        with zipfile.ZipFile(zip_path, "r") as zipf:
+            entries = {name: zipf.read(name) for name in zipf.namelist()}
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for name, content in entries.items():
+                zipf.writestr(name.replace("1712326156339.webp", long_attachment_name), content)
+        save_file_to_api_import(self.api_import, zip_path)
+
+        with QueryProfiler() as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        image = m.InstanceFile.objects.get(instance__uuid=DISASI_MAKULO_CATT)
+        self.assertEqual(image.name, long_attachment_name)
+        expected_name = instance_file_upload_to(image, f"{DISASI_MAKULO_CATT}/{long_attachment_name}")
+        self.assertGreater(len(expected_name), 100)
+        self.assertEqual(image.file.name, expected_name)
+        # Uploaded once, under that exact key - its duplicate on Patrice's CATT points to the same file.
+        self.assertEqual(profiler.storage_names("_save", suffix=".webp"), [expected_name])
+        self.assertEqual(
+            list(m.InstanceFile.objects.values_list("file", flat=True)),
+            [expected_name, expected_name],
+        )
+        with image.file.open("rb") as f:
+            self.assertEqual(f.read(), entries[f"{DISASI_MAKULO_CATT}/1712326156339.webp"])
+
+    def test_device_converted_from_configured_device_field_during_bulk_upload(self):
+        """`convert_device()` should actually assign a Device when the form's device_field
+        (or the default "deviceid") matches a field present in the submitted XML.
+
+        None of the CATT/registration fixture XMLs have a `deviceid` field, so `test_success`
+        only characterizes the no-op case. Point `form_catt.device_field` at `serie_id` (a field
+        both CATT instances' XML already carries, with the same shared value) to exercise the
+        actual assignment branch without needing a new fixture.
+        """
+        self.form_catt.device_field = "serie_id"
+        self.form_catt.save()
+
+        self._create_zip_file()
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        serie_id = "ad893d6d-355f-4ffe-a575-cea6bbe5914f"
+        self.assertEqual(m.Device.objects.count(), 1)
+        device = m.Device.objects.get(imei=serie_id)
+
+        for instance_uuid in (DISASI_MAKULO_CATT, PATRICE_AKAMBU_CATT):
+            catt_instance = m.Instance.objects.get(uuid=instance_uuid)
+            self.assertEqual(catt_instance.device, device)
+
+        # form_registration still has no device_field override: untouched.
+        for instance_uuid in (DISASI_MAKULO_REGISTRATION, PATRICE_AKAMBU_REGISTRATION):
+            reg_instance = m.Instance.objects.get(uuid=instance_uuid)
+            self.assertIsNone(reg_instance.device)
+
+    def test_change_request_created_via_bulk_upload(self):
+        """CR_MODE_IF_REFERENCE_FORM should create an OrgUnitChangeRequest per instance,
+        mirroring test_change_request_on_new_reference_form.py::test_instance_insertion
+        but driven through the mobile bulk-upload Celery task rather than POST /api/instances/.
+        """
+        self.form_registration.change_request_mode = CR_MODE_IF_REFERENCE_FORM
+        self.form_registration.save()
+        # The org unit created by the zip (org_unit_type_id=5) must recognize form_registration
+        # as one of its reference forms for the change-request branch to fire.
+        m.OrgUnitType.objects.filter(id=5).first().reference_forms.add(self.form_registration)
+
+        self._create_zip_file()
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        # One change request per registration-form instance (Disasi Makulo + Patrice Akambu).
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 2)
+        reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        change_request = m.OrgUnitChangeRequest.objects.get(new_reference_instances=reg_instance)
+        self.assertEqual(change_request.org_unit, reg_instance.org_unit)
+        self.assertEqual(change_request.requested_fields, ["new_reference_instances"])
+        self.assertEqual(list(change_request.new_reference_instances.all()), [reg_instance])
+
+    def test_validation_workflow_triggered_via_bulk_upload(self):
+        """A form with a validation_workflow should trigger ValidationWorkflowEngine.start()
+        for instances created through the mobile bulk-upload Celery task, mirroring
+        test_validation_workflow.py::test_trigger_validation_workflow.
+        """
+        validation_workflow = m.ValidationWorkflow.objects.create(name="validation-workflow", account=self.account)
+        validation_workflow.form_set.add(self.form_registration)
+        m.ValidationNodeTemplate.objects.create(name="First node", workflow=validation_workflow)
+
+        self._create_zip_file()
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        for reg_uuid in (DISASI_MAKULO_REGISTRATION, PATRICE_AKAMBU_REGISTRATION):
+            reg_instance = m.Instance.objects.get(uuid=reg_uuid)
+            self.assertEqual(reg_instance.general_validation_status, ValidationWorkflowArtefactStatus.PENDING)
+
+        # The CATT form has no validation_workflow: its instances should be untouched.
+        for catt_uuid in (DISASI_MAKULO_CATT, PATRICE_AKAMBU_CATT):
+            catt_instance = m.Instance.objects.get(uuid=catt_uuid)
+            self.assertEqual(catt_instance.validationnode_set.count(), 0)
+
+    def test_form_version_query_count_baseline(self):
+        """
+        Baseline for the FormVersion/Form N+1 investigation (see IA perf investigation notes):
+        the zip contains 4 instances for 2 distinct entities, sharing only 2 distinct (form,
+        version) pairs and 1 org unit - a well-optimized import should hit `iaso_orgunit`/
+        `iaso_form`/`iaso_entitytype` O(distinct org units/forms/entity types) via import_data()'s
+        batch caching, not O(instances). Same for `iaso_formversion`: `xml_file_to_json` looks up
+        each distinct (form, version) pair once per batch, via the bulk upload's shared
+        `form_versions_cache`.
+        """
+        m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
+        m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
+
+        self._create_zip_file()
+
+        with QueryProfiler(
+            trace_tables=[
+                "iaso_formversion",
+                "iaso_form",
+                "iaso_orgunit",
+                "iaso_entity",
+                "iaso_entitytype",
+                "iaso_instance",
+                "audit_modification",
+            ]
+        ) as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        # Org unit was created (from the zip's orgUnits.json, not pre-existing - see orgunit.yaml
+        # fixture in setUp, which seeds unrelated org units under different UUIDs).
+        self.assertIsNotNone(m.OrgUnit.objects.get(name="New Org Unit"))
+        self.assertEqual(m.Instance.objects.count(), 4)
+        self.assertEqual(m.Entity.objects.count(), 2)
+        # Unlike test_success, this test creates matching FormVersion rows above, which changes
+        # xml_file_to_json's json-field filtering (it restricts to the form version's declared
+        # fields) and in turn whether the attachment-duplication path in duplicate_instance_files
+        # (keyed on a "serie_id" json field) fires - hence 1 here instead of test_success's 2.
+        self.assertEqual(m.InstanceFile.objects.count(), 1)
+
+        # `iaso_form`: a single batch prefetch in import_data(), whose Form objects are then shared
+        # by every instance of the batch (so the later `instance.form` accesses in import_data(),
+        # xml_file_to_json and the conversions don't re-query it). `iaso_entitytype`: 1 query per
+        # distinct entity type, whose reference form import_data() caches for the batch.
+        # import_data()'s own org-unit/entity lookups are still done once per instance (no batch
+        # prefetch/caching yet), so `iaso_orgunit`/`iaso_entity` are O(instances) - bounded at
+        # their exact observed value, to be tightened once those lookups get cached. `iaso_formversion`: 1 query per distinct (form, version) pair (2
+        # here), from `xml_file_to_json` via the batch's `form_versions_cache` -
+        # `get_and_save_json_of_xml` reuses the FormVersion it already found there instead of
+        # looking it up again via `resolve_form_version()`. `iaso_instance`: 6/instance -
+        # `import_data()`'s dedup filter (1) + get_or_create (2) + final save (1), then
+        # `process_instance_file()`'s file-persisting save (1, required before
+        # `get_and_save_json_of_xml()` can fetch the file back on S3 storage) + one merged save (1,
+        # covers json/form_version and the location/device/correlation conversions together) -
+        # down from 8/instance, since the previous separate uuid re-fetch and the previous 3rd
+        # save are both gone - plus 1 per batch for `process_mobile_bulk_upload()`'s pre-existing
+        # uuids lookup. `iaso_instance`/`audit_modification` scale 1:1 with the batch (6 and
+        # 1 per instance) - a regression would push these to a multiple of the bounds below, not a
+        # small overshoot. The rest (`iaso_task`/`iaso_tasklog`/`iaso_project`/
+        # `vector_control_apiimport`/`auth_user`/`iaso_profile`/`iaso_account`/`iaso_datasource`/
+        # `iaso_instancefile`) are fixed per-run bookkeeping overhead, unrelated to instance count -
+        # bounded at their exact observed value so a new query pattern on any of them still gets
+        # caught. `django_content_type` is excluded rather than bounded: it's a one-time framework
+        # cache warm that only fires the very first time `ContentType` is touched in the whole test
+        # process, so it's 0 here but can be 1 if this test runs in isolation instead of as part of
+        # the full suite - excluded from the total below too, for the same reason.
+        with profiler.report_on_failure(
+            "mobile_bulk_upload_form_version.md", title="Mobile bulk upload — FormVersion/Form query report"
+        ):
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_orgunit": 9,
+                    "iaso_form": 1,
+                    "iaso_entity": 8,
+                    "iaso_formversion": 2,
+                    "iaso_instance": 27,
+                    "audit_modification": 4,
+                    "iaso_entitytype": 1,
+                    "iaso_task": 7,
+                    "iaso_tasklog": 4,
+                    "iaso_project": 3,
+                    "vector_control_apiimport": 2,
+                    "auth_user": 2,
+                    "iaso_profile": 2,
+                    "iaso_account": 2,
+                    "iaso_datasource": 1,
+                    "iaso_instancefile": 1,
+                },
+                exclude=["django_content_type"],
+            )
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 96)
+            # S3 round trips: the zip download, then 1 upload per instance XML + 1 for the attachment (its duplicate
+            # reuses the stored file), each preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False`. It was 9
+            # `exists()` when the 128-char XML paths were over Django's default `max_length` of 100, each also checking
+            # its truncated name.
+            profiler.assertStorageCounts({"_open": 1, "exists": 5, "_save": 5})
+
+        # form_version is no longer resolved on every save() - make sure the bulk upload path
+        # still sets it on every instance it creates.
+        expected_versions = {self.form_registration.id: "2024032701", self.form_catt.id: "2024031801"}
+        for instance in m.Instance.objects.select_related("form_version"):
+            self.assertEqual(instance.form_version.version_id, expected_versions[instance.form_id])
+
+    def test_form_version_query_count_at_scale(self):
+        """
+        Same investigation as test_form_version_query_count_baseline, but with 25 distinct new
+        patients, each with one registration + one CATT follow-up (50 instances total) - broad
+        (many entities), not deep (a few entities repeated many times), which is the more
+        realistic shape of a large bulk sync. Same org unit and 2 forms/versions throughout.
+        Exaggerates the per-instance query cost, to make any regression (or future caching win)
+        obvious.
+        """
+        m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
+        m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
+
+        self._create_zip_file_at_scale(num_patients=25)
+
+        with QueryProfiler(
+            trace_tables=[
+                "iaso_formversion",
+                "iaso_form",
+                "iaso_orgunit",
+                "iaso_entity",
+                "iaso_entitytype",
+                "iaso_instance",
+                "audit_modification",
+            ]
+        ) as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        self.assertIsNotNone(m.OrgUnit.objects.get(name="New Org Unit"))
+        self.assertEqual(m.Instance.objects.count(), 50)
+        self.assertEqual(m.Entity.objects.count(), 25)
+
+        # Same per-instance import_data() lookups as the baseline test (see comment there), at
+        # 12.5x the instance count (50 vs 4): `iaso_orgunit`/`iaso_entity` scale with the batch.
+        # `iaso_form`/`iaso_entitytype` stay at 1 query per distinct form/entity type, as in the baseline. `iaso_formversion`: same 2 distinct (form, version) pairs as the baseline, so still 2.
+        # `iaso_instance`: 6/instance as the baseline test (see comment there), at scale: 300, + 1 per batch.
+        # `audit_modification` scales 1:1 with the batch, at scale: 50. The rest is the same fixed
+        # per-run bookkeeping overhead as the baseline test (see comment there), still O(1) rather
+        # than scaling with the 12.5x larger batch - this zip has no attachments so
+        # `iaso_instancefile` never fires, unlike the baseline test.
+        with profiler.report_on_failure(
+            "mobile_bulk_upload_at_scale.md", title="Mobile bulk upload at scale — FormVersion/Form query report"
+        ):
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_orgunit": 55,
+                    "iaso_form": 1,
+                    "iaso_entity": 100,
+                    "iaso_formversion": 2,
+                    "iaso_instance": 302,
+                    "audit_modification": 50,
+                    "iaso_entitytype": 1,
+                    "iaso_task": 7,
+                    "iaso_tasklog": 4,
+                    "iaso_project": 3,
+                    "vector_control_apiimport": 2,
+                    "auth_user": 1,
+                    "iaso_profile": 1,
+                    "iaso_account": 1,
+                    "iaso_datasource": 1,
+                },
+                exclude=["django_content_type"],
+            )
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 643)
+            # S3 round trips: the zip download, then 1 upload per instance XML (no attachment in this zip), each
+            # preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False` makes it look for an available name -
+            # 100 when the XML paths were over the field's `max_length`, each also checking its truncated name.
+            profiler.assertStorageCounts({"_open": 1, "exists": 50, "_save": 50})
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()
@@ -464,6 +952,49 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-17")
 
+    def test_xml_is_parsed_from_the_zip_not_read_back_from_storage(self):
+        """
+        Each submission's XML is uploaded to storage but parsed from the bytes already read from the
+        zip, never downloaded back from storage (on S3, a full extra HTTP round-trip per instance) -
+        for new instances (CATT tablet) as for updated ones (LABO tablet updates Disasi Makulo).
+        The zips themselves are the only files the task reads from storage.
+        """
+        storage = m.Instance._meta.get_field("file").storage
+        self._create_zip_file()
+        labo_task = m.Task.objects.create(
+            name="process_mobile_bulk_upload", launcher=self.user, account=m.Account.objects.first()
+        )
+        labo_api_import = APIImport.objects.create(
+            user=self.user, import_type="bulk", json_body={"file": LABO_TABLET_DIR}
+        )
+        labo_zip_path = f"/tmp/{LABO_TABLET_DIR}.zip"
+        with zipfile.ZipFile(labo_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        save_file_to_api_import(labo_api_import, labo_zip_path)
+
+        with mock.patch.object(storage, "open", wraps=storage.open) as storage_open:
+            for api_import, task in [(self.api_import, self.task), (labo_api_import, labo_task)]:
+                process_mobile_bulk_upload(
+                    api_import_id=api_import.id, project_id=self.project.id, task=task, _immediate=True
+                )
+                task.refresh_from_db()
+                self.assertEqual(task.status, m.SUCCESS)
+
+        opened_names = [call.args[0] for call in storage_open.call_args_list]
+        self.assertEqual(opened_names, [self.api_import.file.name, labo_api_import.file.name])
+
+        # Parsed from the right content - Disasi Makulo was updated by the LABO tablet ...
+        instance_disasi = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        self.assertEqual(instance_disasi.source_updated_at.date().isoformat(), "2024-04-17")
+        self.assertEqual(instance_disasi.json["is_confirmed_positive"], "1")
+        # ... and the stored file is those same bytes, with its size recorded.
+        with zipfile.ZipFile(labo_zip_path) as zipf:
+            [disasi_data] = [d for d in json.load(zipf.open("instances.json")) if d["id"] == DISASI_MAKULO_REGISTRATION]
+            expected_xml = zipf.read(f"{DISASI_MAKULO_REGISTRATION}/{os.path.basename(disasi_data['file'])}")
+        with instance_disasi.file.open("rb") as f:
+            self.assertEqual(f.read(), expected_xml)
+        self.assertEqual(instance_disasi.file_size, len(expected_xml))
+
     def test_soft_deleted_entity(self):
         # Create soft-deleted entity Disasi with only registration form
         ent_disasi = create_entity_with_registration(
@@ -537,12 +1068,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
             self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
 
-        process_mobile_bulk_upload(
-            api_import_id=self.api_import.id,
-            project_id=self.project.id,
-            task=self.task,
-            _immediate=True,
-        )
+        storage = m.Instance._meta.get_field("file").storage
+        with mock.patch.object(storage, "open", wraps=storage.open) as storage_open:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -570,6 +1103,19 @@ class ProcessMobileBulkUploadTest(TestCase):
         catt_disasi_C = ent_disasi_C.instances.get(form=self.form_catt)
         self.assertEqual(catt_disasi_C.uuid, DISASI_MAKULO_CATT)
         self.assertFalse(catt_disasi_C.deleted)
+
+        # Both the uploaded instance and the merged entity's registration get the full incoming
+        # XML - the same in-memory file is saved twice - and are parsed from the zip's bytes, not
+        # read back from storage: the zip is the only file the task reads from storage.
+        self.assertEqual([call.args[0] for call in storage_open.call_args_list], [self.api_import.file.name])
+        with zipfile.ZipFile(zip_path) as zipf:
+            [disasi_data] = [d for d in json.load(zipf.open("instances.json")) if d["id"] == DISASI_MAKULO_REGISTRATION]
+            expected_xml = zipf.read(f"{DISASI_MAKULO_REGISTRATION}/{os.path.basename(disasi_data['file'])}")
+        for reg in [ent_disasi_A.attributes, reg_disasi_C]:
+            with reg.file.open("rb") as f:
+                self.assertEqual(f.read(), expected_xml)
+            self.assertEqual(reg.file_size, len(expected_xml))
+            self.assertEqual(reg.json["_full_name"], "Disasi Makulo")
 
         # Audit trail is logged on the uploaded instance (soft-deleted merged source)
         content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
@@ -770,6 +1316,31 @@ class ProcessMobileBulkUploadTest(TestCase):
         err_msg = f"Multiple non-deleted entities for UUID {ent1.uuid}, entity_type_id {self.default_entity_type.id}"
         mock_logger.exception.assert_called_once_with(err_msg)
 
+    def test_duplicate_instance_uuids_fail_the_import(self):
+        # Two existing instances with the same uuid as one in the zip: the import fails
+        # (MultipleObjectsReturned) rather than silently updating one of them.
+        ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)
+        ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4())
+        m.Instance.objects.filter(id=ent2.attributes_id).update(uuid=DISASI_MAKULO_REGISTRATION)
+
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.ERRORED)
+        self.api_import.refresh_from_db()
+        self.assertTrue(self.api_import.has_problem)
+        self.assertIn("MultipleObjectsReturned", self.api_import.exception)
+
+        # The instances transaction was rolled back
+        self.assertEqual(ent1.instances.count() + ent2.instances.count(), 2)
+
     def test_storage_logs(self):
         entity_uuid = "5475bfcf-5a3f-4170-9d88-245d89352362"
         files_for_zip = [
@@ -965,3 +1536,293 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Verify the instance was actually updated with the newer timestamp
         self.assertEqual(instance.source_updated_at, updated_timestamp)
         self.assertEqual(instance.last_modified_by, self.user)
+
+    def test_bulk_upload_duplicate_file_name_collision(self):
+        """
+        Test edge case where 2 instances reference the same file name in the zip upload.
+        refs: SLEEP-1634
+        """
+
+        zip_path = "/tmp/bulk_upload_duplicate_file_name_collision.zip"
+
+        instances_data = [
+            {
+                "id": "11111111-2222-3333-4444-555555555555",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/same_name.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "11111111-2222-3333-4444-555555555555",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+            {
+                "id": "77777777-8888-9999-aaaa-bbbbbbbbbbbb",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/same_name.xml",  # Same file name!
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "77777777-8888-9999-aaaa-bbbbbbbbbbbb",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                xml_content = xml_file.read()
+                zipf.writestr("11111111-2222-3333-4444-555555555555/same_name.xml", xml_content)
+                zipf.writestr("77777777-8888-9999-aaaa-bbbbbbbbbbbb/same_name.xml", xml_content)
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.assertEqual(m.Instance.objects.count(), 2)
+        instance1 = m.Instance.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        instance2 = m.Instance.objects.get(uuid="77777777-8888-9999-aaaa-bbbbbbbbbbbb")
+
+        self.assertEqual(m.Entity.objects.count(), 2)
+        entity1 = m.Entity.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        entity2 = m.Entity.objects.get(uuid="77777777-8888-9999-aaaa-bbbbbbbbbbbb")
+
+        self.assertEqual(instance1.file_name, "same_name.xml")
+        self.assertEqual(instance2.file_name, "same_name_dup_77777777-8888-9999-aaaa-bbbbbbbbbbbb.xml")
+
+        self.assertEqual(entity1.attributes, instance1)
+        self.assertEqual(entity2.attributes, instance2)
+
+        # Verify physical files are attached to both
+        self.assertTrue(instance1.file)
+        self.assertTrue(instance2.file)
+
+    def test_bulk_upload_file_name_collision_with_previous_upload(self):
+        """
+        Same as test_bulk_upload_duplicate_file_name_collision, but the file name is already used by
+        an instance from a previous upload rather than by another instance of the same zip.
+        refs: SLEEP-1634
+        """
+        previous_instance = m.Instance.objects.create(
+            file_name="same_name.xml", uuid="11111111-2222-3333-4444-555555555555", project=self.project
+        )
+
+        zip_path = "/tmp/bulk_upload_file_name_collision_with_previous_upload.zip"
+        uuid = "77777777-8888-9999-aaaa-bbbbbbbbbbbb"
+        instances_data = [
+            {
+                "id": uuid,
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/same_name.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": uuid,
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                zipf.writestr(f"{uuid}/same_name.xml", xml_file.read())
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.assertEqual(m.Instance.objects.count(), 2)
+        previous_instance.refresh_from_db()
+        self.assertEqual(previous_instance.file_name, "same_name.xml")
+        new_instance = m.Instance.objects.get(uuid=uuid)
+        self.assertEqual(new_instance.file_name, f"same_name_dup_{uuid}.xml")
+        self.assertEqual(m.Entity.objects.get(uuid=uuid).attributes, new_instance)
+
+    def test_bulk_upload_missing_file_key_error(self):
+        """
+        Test when an instance's XML file is missing from the zip archive
+        refs: SLEEP-1634
+        """
+        zip_path = "/tmp/bulk_upload_missing_file_key_error.zip"
+
+        instances_data = [
+            {
+                "id": "11111111-2222-3333-4444-555555555555",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/valid_instance.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "11111111-2222-3333-4444-555555555555",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+            {
+                "id": "88888888-9999-aaaa-bbbb-cccccccccccc",
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": "/storage/test/missing_instance.xml",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": "88888888-9999-aaaa-bbbb-cccccccccccc",
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                xml_content = xml_file.read()
+                # Only write the first (valid) file, do not write the missing_instance.xml file
+                zipf.writestr("11111111-2222-3333-4444-555555555555/valid_instance.xml", xml_content)
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.assertTrue(m.Instance.objects.filter(uuid="11111111-2222-3333-4444-555555555555").exists())
+        instance1 = m.Instance.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        self.assertTrue(instance1.file)
+
+        self.assertTrue(m.Entity.objects.filter(uuid="11111111-2222-3333-4444-555555555555").exists())
+        entity1 = m.Entity.objects.get(uuid="11111111-2222-3333-4444-555555555555")
+        self.assertEqual(entity1.attributes, instance1)
+        self.assertIsNone(entity1.deleted_at)
+
+        # The faulty instance should have been deleted
+        self.assertFalse(m.Instance.objects.filter(uuid="88888888-9999-aaaa-bbbb-cccccccccccc").exists())
+
+        # The faulty entity should have been soft-deleted
+        self.assertTrue(m.Entity.objects_include_deleted.filter(uuid="88888888-9999-aaaa-bbbb-cccccccccccc").exists())
+        entity2 = m.Entity.objects_include_deleted.get(uuid="88888888-9999-aaaa-bbbb-cccccccccccc")
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertIsNone(entity2.attributes)
+
+
+def in_memory_zip(entries):
+    """`entries`: {zip entry name: bytes}, written in the given order - a name ending with "/" is a directory entry."""
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zipf:
+        for name, content in entries.items():
+            zipf.writestr(name, content)
+    return zipfile.ZipFile(buffer)
+
+
+class GetDirectoryHandlersTest(SimpleTestCase):
+    def test_maps_each_top_level_directory_to_its_files_in_zip_order(self):
+        zip_ref = in_memory_zip(
+            {
+                "instances.json": b"[]",
+                "orgUnits.json": b"[]",
+                "uuid-1/": b"",
+                "uuid-1/form.xml": b"<x/>",
+                "uuid-1/photo.webp": b"img",
+                "uuid-1/scan.pdf": b"pdf",
+                "uuid-2/": b"",
+                "uuid-2/form.xml": b"<x/>",
+            }
+        )
+
+        self.assertEqual(
+            get_directory_handlers(zip_ref),
+            {
+                "uuid-1": ["uuid-1/form.xml", "uuid-1/photo.webp", "uuid-1/scan.pdf"],
+                "uuid-2": ["uuid-2/form.xml"],
+            },
+        )
+
+    def test_directory_without_explicit_directory_entry(self):
+        # Zips aren't required to contain "<uuid>/" entries (the mobile app writes them, other
+        # zip tools may not) - the directory is then only implied by its files' paths.
+        zip_ref = in_memory_zip({"uuid-1/form.xml": b"<x/>", "uuid-1/photo.webp": b"img"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": ["uuid-1/form.xml", "uuid-1/photo.webp"]})
+
+    def test_empty_directory_is_still_listed(self):
+        zip_ref = in_memory_zip({"uuid-1/": b""})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": []})
+
+    def test_nested_paths_are_ignored(self):
+        # Only direct children of "<uuid>/" are attachments - like `zipfile.Path.iterdir()` used to list.
+        zip_ref = in_memory_zip({"uuid-1/form.xml": b"<x/>", "uuid-1/nested/": b"", "uuid-1/nested/photo.webp": b"img"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {"uuid-1": ["uuid-1/form.xml"]})
+
+    def test_no_directories(self):
+        zip_ref = in_memory_zip({"instances.json": b"[]", "orgUnits.json": b"[]"})
+
+        self.assertEqual(get_directory_handlers(zip_ref), {})
+
+    def test_reads_the_zip_index_once_regardless_of_instance_count(self):
+        # Regression guard: listing each instance's directory with `zipfile.Path.iterdir()` scanned
+        # every entry of the zip per instance (O(instances²) - ~16s for a 5000-instance zip).
+        zip_ref = in_memory_zip({f"uuid-{i}/form.xml": b"<x/>" for i in range(100)})
+
+        with mock.patch.object(zip_ref, "namelist", wraps=zip_ref.namelist) as namelist:
+            handlers = get_directory_handlers(zip_ref)
+
+        self.assertEqual(len(handlers), 100)
+        namelist.assert_called_once()
+
+
+class ProcessInstanceAttachmentsTest(TestCase):
+    def test_creates_an_instance_file_per_non_xml_file(self):
+        instance = m.Instance.objects.create(file_name="form.xml")
+        zip_ref = in_memory_zip(
+            {
+                "uuid-1/": b"",
+                "uuid-1/form.xml": b"<x/>",
+                "uuid-1/photo.webp": b"img-content",
+                "uuid-1/scan.pdf": b"pdf-content",
+                "uuid-2/other.webp": b"not-mine",
+            }
+        )
+
+        instance_files = process_instance_attachments(zip_ref, get_directory_handlers(zip_ref)["uuid-1"], instance)
+
+        self.assertEqual([instance_file.name for instance_file in instance_files], ["photo.webp", "scan.pdf"])
+        self.assertEqual(
+            sorted(m.InstanceFile.objects.filter(instance=instance).values_list("name", flat=True)),
+            ["photo.webp", "scan.pdf"],
+        )
+        contents = {}
+        for instance_file in instance_files:
+            with instance_file.file.open("rb") as f:
+                contents[instance_file.name] = f.read()
+        self.assertEqual(contents, {"photo.webp": b"img-content", "scan.pdf": b"pdf-content"})
+
+    def test_no_attachments(self):
+        instance = m.Instance.objects.create(file_name="form.xml")
+        zip_ref = in_memory_zip({"uuid-1/": b"", "uuid-1/form.xml": b"<x/>"})
+
+        self.assertEqual(process_instance_attachments(zip_ref, get_directory_handlers(zip_ref)["uuid-1"], instance), [])
+        self.assertFalse(m.InstanceFile.objects.filter(instance=instance).exists())

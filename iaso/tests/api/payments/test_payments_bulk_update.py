@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from rest_framework import status
 
 from hat.audit import models as am
 from iaso import models as m
@@ -85,7 +86,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             data={"select_all": True, "status": PaymentStatuses.PAID},
             format="json",
         )
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
@@ -103,7 +104,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="payments_bulk_update")
         self.assertEqual(task.launcher, self.other_user)
@@ -126,7 +127,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def test_payment_bulkupdate_select_some(self):
         """POST /orgunits/bulkupdate happy path. Select some"""
@@ -140,7 +141,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         }
         response = self.client.post(self.url, data=operation_payload, format="json")
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="payments_bulk_update")
         self.assertEqual(task.launcher, self.user)
@@ -176,7 +177,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="payments_bulk_update")
         self.assertEqual(task.launcher, self.user)
@@ -206,7 +207,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="payments_bulk_update")
         self.assertEqual(task.launcher, self.user)
@@ -238,7 +239,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             format="json",
         )
 
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         data = response.json()
         self.assertValidTaskAndInDB(data["task"])
 

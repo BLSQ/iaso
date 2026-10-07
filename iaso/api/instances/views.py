@@ -361,11 +361,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.org_unit.source_ref,
                 instance.org_unit.code,
                 instance.org_unit.validation_status,
-                instance.form.validation_workflow.name
-                if instance.form.validation_workflow
-                else None
-                if instance.form
-                else None,
+                instance.form.validation_workflow.name if instance.form and instance.form.validation_workflow else None,
                 instance.general_validation_status,
             ]
 
@@ -510,16 +506,12 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         parquet_format = request.GET.get("parquet", None)
         filters = parse_instance_filters(request.GET)
-        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
         with_descriptor = request.GET.get("with_descriptor", "false")
         fields_param = request.GET.get("fields", None)
         # Not (yet) applied to the csv/xlsx/parquet export branches below, only to the JSON
         # "search" branches: restricting fields there doesn't change what a file export contains.
         requested_fields = fields_param.split(",") if fields_param else None
         requested_fields_set = set(requested_fields) if requested_fields is not None else None
-        workflow_ids_param = request.GET.get("workflow_ids", None)
-        workflow_ids = workflow_ids_param.split(",") if workflow_ids_param is not None else None
-        validation_status = request.GET.get("validation_status", None)
 
         def wants_field(field_name: str) -> bool:
             return requested_fields_set is None or field_name in requested_fields_set
@@ -571,15 +563,6 @@ class InstancesViewSet(viewsets.ViewSet):
         #       exports, paginated or not, as small dict or not)
         #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
         #       one, both or None and get predictable results)
-        if org_unit_status:
-            queryset = queryset.filter(org_unit__validation_status=org_unit_status)
-
-        if workflow_ids:
-            queryset = queryset.filter(form__validation_workflow_id__in=workflow_ids)
-
-        if validation_status:
-            queryset = queryset.filter(general_validation_status=validation_status)
-
         if parquet_format:
             return self.anwser_with_parquet_file(request, filters, queryset)
 

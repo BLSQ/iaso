@@ -15,7 +15,7 @@ import PageError from '../components/errors/PageError';
 import { Accounts } from '../domains/accounts';
 import AccountsDetails from '../domains/accounts/details';
 import { AccountsEdit } from '../domains/accounts/edit';
-import { Runs } from '../domains/algorithmRuns/Runs';
+import { Runs } from '../domains/algorithmRuns';
 import { Assignments } from '../domains/assignments';
 import Completeness from '../domains/completeness';
 import { CompletenessStats } from '../domains/completenessStats';

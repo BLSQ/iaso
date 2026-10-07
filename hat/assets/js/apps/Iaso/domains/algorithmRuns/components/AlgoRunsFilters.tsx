@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import { RefreshButton } from 'Iaso/components/Buttons/RefreshButton';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
-import { RefreshButton } from '../../components/Buttons/RefreshButton';
-import InputComponent from '../../components/forms/InputComponent';
-import { SearchButton } from '../../components/SearchButton';
-import { useFilterState } from '../../hooks/useFilterState';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
+import InputComponent from '../../../components/forms/InputComponent';
 import {
     useGetAlgorithmsOptions,
     useGetDataSources,
     useSourceOptions,
     useSourceVersionOptions,
-} from '../links/hooks/filters';
-import { MESSAGES } from './messages';
+} from '../../links/hooks/filters';
+import { MESSAGES } from '../messages';
 
 type Props = {
     baseUrl: string;

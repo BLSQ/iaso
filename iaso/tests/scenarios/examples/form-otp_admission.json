@@ -1,0 +1,22 @@
+{
+  "name": "data",
+  "type": "survey",
+  "title": "OTP admission",
+  "id_string": "otp_admission",
+  "version": "1",
+  "children": [
+    {
+      "name": "admitted",
+      "type": "select one",
+      "label": "Admitted to OTP?",
+      "bind": {"required": "yes"},
+      "choices": [{"name": "yes", "label": "Yes"}, {"name": "no", "label": "No"}]
+    },
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {"bodyless": true},
+      "children": [{"name": "instanceID", "type": "calculate", "bind": {"readonly": "true()", "jr:preload": "uid"}}]
+    }
+  ]
+}

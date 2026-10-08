@@ -1,0 +1,30 @@
+{
+  "$schema": "../scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Oedema forgotten: OTP isn't offered",
+  "description": "Deliberately failing: the nurse answers 'no' to oedema while the scenario expects the OTP referral.",
+  "steps": [
+    {
+      "form": "child_registration",
+      "description": "11-month-old boy registered at the health centre",
+      "answers": {"first_name": "Luke", "age_months": "11"},
+      "expect": {"next_forms": ["anthropometry"]}
+    },
+    {
+      "form": "anthropometry",
+      "description": "Back 2 weeks later; oedema answered 'no' by mistake",
+      "at": "2026-10-22T08:30:00+00:00",
+      "answers": {"muac": "12.0", "oedema": "no"},
+      "expect": {
+        "next_forms": ["anthropometry", "otp_admission"],
+        "attributes": {"oedema_status": "yes", "visits__int__": "1"}
+      }
+    },
+    {
+      "form": "otp_admission",
+      "description": "Admitted to OTP",
+      "answers": {"admitted": "yes"}
+    }
+  ]
+}

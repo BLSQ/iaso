@@ -1,0 +1,26 @@
+{
+  "name": "data",
+  "type": "survey",
+  "title": "Child registration",
+  "id_string": "child_registration",
+  "version": "1",
+  "children": [
+    {"name": "first_name", "type": "text", "label": "First name", "bind": {"required": "yes"}},
+    {"name": "age_months", "type": "integer", "label": "Age (months)", "bind": {"required": "yes", "constraint": ". >= 0 and . < 120"}},
+    {
+      "name": "oedema_status",
+      "type": "select one",
+      "label": "Oedema status",
+      "bind": {"readonly": "true()"},
+      "choices": [{"name": "yes", "label": "Yes"}, {"name": "no", "label": "No"}]
+    },
+    {"name": "last_muac", "type": "decimal", "label": "Last MUAC (cm)", "bind": {"readonly": "true()"}},
+    {"name": "visits__int__", "type": "calculate", "bind": {"calculate": "0"}},
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {"bodyless": true},
+      "children": [{"name": "instanceID", "type": "calculate", "bind": {"readonly": "true()", "jr:preload": "uid"}}]
+    }
+  ]
+}

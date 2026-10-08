@@ -1,0 +1,373 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IASO scenario",
+  "$defs": {
+    "EntityExpect": {
+      "additionalProperties": false,
+      "properties": {
+        "submission": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Question -> expected value in the form as filled (calculates included), as text; null: empty or not relevant.",
+          "title": "Submission",
+          "type": "object"
+        },
+        "refused": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Refusal"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The form must refuse the answers, for these reasons exactly; nothing is then saved, as in the app.",
+          "title": "Refused"
+        },
+        "next_forms": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The forms offered after this step, in the app's order.",
+          "title": "Next Forms"
+        },
+        "attributes": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Profile question -> expected answer after this step, as text; null: not answered.",
+          "title": "Attributes",
+          "type": "object"
+        }
+      },
+      "title": "EntityExpect",
+      "type": "object"
+    },
+    "EntityScenario": {
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The JSON Schema of this file, for editors.",
+          "title": "$Schema"
+        },
+        "format": {
+          "const": "iaso-scenarios/1",
+          "default": "iaso-scenarios/1",
+          "description": "The version of this file format.",
+          "title": "Format",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "description": "What this scenario checks, in plain words.",
+          "title": "Description",
+          "type": "string"
+        },
+        "kind": {
+          "const": "entity",
+          "default": "entity",
+          "title": "Kind",
+          "type": "string"
+        },
+        "steps": {
+          "description": "The first step registers the entity with the reference form (again if the form refused it); each next step fills a form the app offers.",
+          "items": {
+            "$ref": "#/$defs/EntityStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "steps"
+      ],
+      "title": "EntityScenario",
+      "type": "object"
+    },
+    "EntityStep": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "description": "What happens in this step, in plain words.",
+          "title": "Description",
+          "type": "string"
+        },
+        "answers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Question name -> answer, as text.",
+          "title": "Answers",
+          "type": "object"
+        },
+        "context": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Values given to the form's questions of the same name, as the app does for the org unit (current_ou_id...).",
+          "title": "Context",
+          "type": "object"
+        },
+        "form": {
+          "description": "The form filled, by its form_id (the XLSForm id).",
+          "title": "Form",
+          "type": "string"
+        },
+        "at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The step's clock (current_date... in the followup conditions), ISO 8601.",
+          "title": "At"
+        },
+        "force": {
+          "default": false,
+          "description": "Fill the form even if the app wouldn't offer it.",
+          "title": "Force",
+          "type": "boolean"
+        },
+        "expect": {
+          "$ref": "#/$defs/EntityExpect"
+        }
+      },
+      "required": [
+        "form"
+      ],
+      "title": "EntityStep",
+      "type": "object"
+    },
+    "FormExpect": {
+      "additionalProperties": false,
+      "properties": {
+        "submission": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Question -> expected value in the form as filled (calculates included), as text; null: empty or not relevant.",
+          "title": "Submission",
+          "type": "object"
+        },
+        "refused": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Refusal"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The form must refuse the answers, for these reasons exactly; nothing is then saved, as in the app.",
+          "title": "Refused"
+        }
+      },
+      "title": "FormExpect",
+      "type": "object"
+    },
+    "FormScenario": {
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The JSON Schema of this file, for editors.",
+          "title": "$Schema"
+        },
+        "format": {
+          "const": "iaso-scenarios/1",
+          "default": "iaso-scenarios/1",
+          "description": "The version of this file format.",
+          "title": "Format",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "description": "What this scenario checks, in plain words.",
+          "title": "Description",
+          "type": "string"
+        },
+        "kind": {
+          "const": "form",
+          "default": "form",
+          "title": "Kind",
+          "type": "string"
+        },
+        "form": {
+          "description": "The form tested, by its form_id (the XLSForm id); its latest version.",
+          "title": "Form",
+          "type": "string"
+        },
+        "context": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Context of every step, see the step's.",
+          "title": "Context",
+          "type": "object"
+        },
+        "steps": {
+          "description": "Independent fills of the form.",
+          "items": {
+            "$ref": "#/$defs/FormStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "form",
+        "steps"
+      ],
+      "title": "FormScenario",
+      "type": "object"
+    },
+    "FormStep": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "description": "What happens in this step, in plain words.",
+          "title": "Description",
+          "type": "string"
+        },
+        "answers": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Question name -> answer, as text.",
+          "title": "Answers",
+          "type": "object"
+        },
+        "context": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Values given to the form's questions of the same name, as the app does for the org unit (current_ou_id...).",
+          "title": "Context",
+          "type": "object"
+        },
+        "expect": {
+          "$ref": "#/$defs/FormExpect"
+        }
+      },
+      "title": "FormStep",
+      "type": "object"
+    },
+    "Refusal": {
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "description": "The question the form refuses, by name.",
+          "title": "Question",
+          "type": "string"
+        },
+        "code": {
+          "description": "Why: REQUIRED (left empty), CONSTRAINT (breaks the question's constraint), NOT_RELEVANT (answered while hidden), UNKNOWN_CHOICE, INVALID (not a value of the question's type), READ_ONLY.",
+          "enum": [
+            "REQUIRED",
+            "CONSTRAINT",
+            "NOT_RELEVANT",
+            "UNKNOWN_CHOICE",
+            "INVALID",
+            "READ_ONLY"
+          ],
+          "title": "Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question",
+        "code"
+      ],
+      "title": "Refusal",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "entity": "#/$defs/EntityScenario",
+      "form": "#/$defs/FormScenario"
+    },
+    "propertyName": "kind"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/EntityScenario"
+    },
+    {
+      "$ref": "#/$defs/FormScenario"
+    }
+  ]
+}

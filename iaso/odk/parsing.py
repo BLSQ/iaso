@@ -99,25 +99,20 @@ NOT_MAPPABLE_TYPES = ("survey", "group")
 SELECT_MULTIPLE_TYPE = "select all that apply"
 
 
-def _choices(node, form_descriptor):
-    if "children" in node:
-        return node["children"]
-    # recent pyxform versions only reference the choices list
-    return form_descriptor.get("choices", {}).get(node.get("itemset"), [])
-
-
-def visit_mappable(node, form_descriptor, mappable_questions):
-    if node.get("type") not in NOT_MAPPABLE_TYPES and "name" in node:
-        mappable_questions[node["name"]] = node
-        if node.get("type") == SELECT_MULTIPLE_TYPE:
+def visit_mappable(node, mappable_questions):
+    node_type = node.get("type")
+    node_name = node.get("name")
+    if node_type not in NOT_MAPPABLE_TYPES and node_name is not None:
+        mappable_questions[node_name] = node
+        if node_type == SELECT_MULTIPLE_TYPE:
             # one boolean data element per choice
-            for choice in _choices(node, form_descriptor):
-                mappable_questions[f"{node['name']}__{choice['name']}"] = choice
+            for choice in node.get("children", []):
+                mappable_questions[f"{node_name}__{choice['name']}"] = choice
             return
 
-    if node.get("type") in (*NOT_MAPPABLE_TYPES, "repeat"):
+    if node_type in (*NOT_MAPPABLE_TYPES, "repeat"):
         for child in node.get("children", []):
-            visit_mappable(child, form_descriptor, mappable_questions)
+            visit_mappable(child, mappable_questions)
 
 
 def to_mappable_questions_by_name(form_descriptor):
@@ -130,7 +125,7 @@ def to_mappable_questions_by_name(form_descriptor):
     mappable_questions = {}
     if not form_descriptor:
         return mappable_questions
-    visit_mappable(form_descriptor, form_descriptor, mappable_questions)
+    visit_mappable(form_descriptor, mappable_questions)
     return mappable_questions
 
 

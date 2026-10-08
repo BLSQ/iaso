@@ -185,8 +185,14 @@ class ParsingTestCase(SimpleTestCase):
                 {"name": "grp", "type": "group", "children": [{"name": "in_group", "type": "text"}]},
                 {"name": "household", "type": "repeat", "children": [{"name": "age", "type": "integer"}]},
                 {"name": "symptoms", "type": "select all that apply", "children": [{"name": "fever"}]},
-                # recent pyxform: choices only referenced through the itemset
-                {"name": "answers", "type": "select all that apply", "itemset": "yes_no"},
+                # pyxform 2.x: the choices list is referenced and still inlined as children
+                {
+                    "name": "answers",
+                    "type": "select all that apply",
+                    "itemset": "yes_no",
+                    "list_name": "yes_no",
+                    "children": [{"name": "yes"}, {"name": "no"}],
+                },
                 {"name": "sex", "type": "select one", "children": [{"name": "male"}]},
                 {"name": "meta", "type": "group", "children": [{"name": "instanceID", "type": "calculate"}]},
             ],

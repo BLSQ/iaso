@@ -89,7 +89,11 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 Cell: settings => (
                     <section>
                         <IconButton
-                            url={`/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}/instanceId/${settings.row.original.id}/accountId/${currentUser.account?.id}/`}
+                            url={
+                                `/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}` +
+                                `/instanceId/${settings.row.original.id}/accountId/${currentUser.account?.id}` +
+                                `/isValidating/true/`
+                            }
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
                         />

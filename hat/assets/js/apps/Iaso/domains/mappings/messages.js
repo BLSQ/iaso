@@ -250,21 +250,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.import.versionTitle',
         defaultMessage: 'Version {versionId}',
     },
-    importOtherFormTitle: {
-        id: 'iaso.mappings.import.otherFormTitle',
-        defaultMessage: '{formName} - {versionId}',
-    },
-    importSameFormMeta: {
-        id: 'iaso.mappings.import.sameFormMeta',
-        defaultMessage: 'Same form, last updated {date}',
-    },
-    importOtherFormDatasetMeta: {
-        id: 'iaso.mappings.import.otherFormDatasetMeta',
-        defaultMessage: 'Another form, same DHIS2 dataset, last updated {date}',
-    },
-    importOtherFormProgramMeta: {
-        id: 'iaso.mappings.import.otherFormProgramMeta',
-        defaultMessage: 'Another form, same DHIS2 program, last updated {date}',
+    importVersionMeta: {
+        id: 'iaso.mappings.import.versionMeta',
+        defaultMessage: 'Last updated {date}',
     },
     importFileMeta: {
         id: 'iaso.mappings.import.fileMeta',

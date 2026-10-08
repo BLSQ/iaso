@@ -14,25 +14,10 @@ const sortByVersionDesc = (a: MappingVersionRow, b: MappingVersionRow) =>
         `${a.form_version.version_id}`,
     );
 
-const isSameTarget = (
-    candidate: MappingVersionRow,
-    mappingVersion: MappingVersionRow,
-): boolean => {
-    const settings = mappingVersion.derivate_settings ?? {};
-    const candidateSettings = candidate.derivate_settings ?? {};
-    if (settings.data_set_id) {
-        return candidateSettings.data_set_id === settings.data_set_id;
-    }
-    return (
-        Boolean(settings.program_id) &&
-        candidateSettings.program_id === settings.program_id
-    );
-};
-
 /**
- * Other mapping versions of the same type and data source the wizard can
- * import from: first the versions of the same form, then the other forms
- * mapped to the same DHIS2 dataset or program.
+ * Other versions of the same form, with the same mapping type and data
+ * source, the wizard can import from. Mappings of another form go through an
+ * export / import of the JSON file.
  */
 export const useImportSources = (
     mappingVersion: MappingVersionRow,
@@ -41,64 +26,40 @@ export const useImportSources = (
 ): { sources: ImportSource[]; isLoading: boolean } => {
     const { formatMessage } = useSafeIntl();
     const { data, isLoading } = useGetMappingImportSources(
+        mappingVersion.form_version.form.id,
         mappingVersion.mapping.mapping_type,
         enabled,
     );
     const sources = useMemo(() => {
-        const formId = mappingVersion.form_version.form.id;
         const dataSourceId = mappingVersion.mapping.data_source.id;
-        const candidates = (data ?? []).filter(
-            candidate =>
-                candidate.id !== mappingVersion.id &&
-                candidate.mapping.data_source.id === dataSourceId,
-        );
-        const toImportSource = (
-            candidate: MappingVersionRow,
-            sameForm: boolean,
-        ): ImportSource => {
-            const questionMappings = getImportableMappings(
-                candidate.question_mappings,
-            );
-            const date = DateTimeCell({ value: candidate.updated_at });
-            const otherFormMeta = candidate.derivate_settings?.program_id
-                ? MESSAGES.importOtherFormProgramMeta
-                : MESSAGES.importOtherFormDatasetMeta;
-            return {
-                id: `${candidate.id}`,
-                title: sameForm
-                    ? formatMessage(MESSAGES.importVersionTitle, {
-                          versionId: candidate.form_version.version_id,
-                      })
-                    : formatMessage(MESSAGES.importOtherFormTitle, {
-                          formName: candidate.form_version.form.name,
-                          versionId: candidate.form_version.version_id,
-                      }),
-                meta: formatMessage(
-                    sameForm ? MESSAGES.importSameFormMeta : otherFormMeta,
-                    { date },
-                ),
-                mappingsCount: Object.keys(questionMappings).length,
-                matchingCount: countMatchingMappings(
-                    questionMappings,
-                    questions,
-                    mappingVersion.mapping.mapping_type,
-                ),
-                questionMappings,
-            };
-        };
-        const sameFormSources = candidates
-            .filter(c => c.form_version.form.id === formId)
-            .sort(sortByVersionDesc)
-            .map(c => toImportSource(c, true));
-        const otherFormSources = candidates
+        return (data ?? [])
             .filter(
-                c =>
-                    c.form_version.form.id !== formId &&
-                    isSameTarget(c, mappingVersion),
+                candidate =>
+                    candidate.id !== mappingVersion.id &&
+                    candidate.mapping.data_source.id === dataSourceId,
             )
             .sort(sortByVersionDesc)
-            .map(c => toImportSource(c, false));
-        return [...sameFormSources, ...otherFormSources];
+            .map(candidate => {
+                const questionMappings = getImportableMappings(
+                    candidate.question_mappings,
+                );
+                return {
+                    id: `${candidate.id}`,
+                    title: formatMessage(MESSAGES.importVersionTitle, {
+                        versionId: candidate.form_version.version_id,
+                    }),
+                    meta: formatMessage(MESSAGES.importVersionMeta, {
+                        date: DateTimeCell({ value: candidate.updated_at }),
+                    }),
+                    mappingsCount: Object.keys(questionMappings).length,
+                    matchingCount: countMatchingMappings(
+                        questionMappings,
+                        questions,
+                        mappingVersion.mapping.mapping_type,
+                    ),
+                    questionMappings,
+                };
+            });
     }, [data, mappingVersion, questions, formatMessage]);
     return { sources, isLoading };
 };

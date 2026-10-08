@@ -52,8 +52,15 @@ const sources = [
     },
 ];
 
+const { useGetMappingImportSources } = vi.hoisted(() => ({
+    useGetMappingImportSources: vi.fn(),
+}));
 vi.mock('../../hooks/requests/useGetMappingImportSources', () => ({
-    useGetMappingImportSources: () => ({ data: sources, isLoading: false }),
+    useGetMappingImportSources,
+}));
+useGetMappingImportSources.mockImplementation(() => ({
+    data: sources,
+    isLoading: false,
 }));
 
 const questions = getMappableQuestions({
@@ -80,6 +87,12 @@ describe('ImportMappingsDialog', () => {
             />,
         );
 
+        // only the versions of the current form are offered
+        expect(useGetMappingImportSources).toHaveBeenCalledWith(
+            form.id,
+            'AGGREGATE',
+            true,
+        );
         expect(screen.getByText('Version 2020100801')).toBeInTheDocument();
         expect(screen.queryByText('Version 2019')).not.toBeInTheDocument();
         expect(

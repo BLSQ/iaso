@@ -3,11 +3,12 @@ import tempfile
 from unittest import mock
 
 from django.core.files import File
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from rest_framework import status
 
 from hat.audit.models import MAPPING_VERSION_API, Modification
 from iaso import models as m
+from iaso.api.mapping_versions import get_question_mapping_shape_error
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 from iaso.test import APITestCase
 
@@ -264,13 +265,13 @@ class FormsVersionAPITestCase(APITestCase):
 
         resp = self.client.get("/api/mappingversions/")
 
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         resp = self.client.get("/api/mappingversions/?mappingTypes=EVENT")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+        self.assertMappingVersionsCount(resp, 0)
 
         resp = self.client.get("/api/mappingversions/?mappingTypes=AGGREGATE")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
     def test_mappingversions_list_filters_form_id(self):
         self.client.force_authenticate(self.yoda)
@@ -280,13 +281,13 @@ class FormsVersionAPITestCase(APITestCase):
 
         resp = self.client.get("/api/mappingversions/")
 
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         resp = self.client.get(f"/api/mappingversions/?formId={self.form_1.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+        self.assertMappingVersionsCount(resp, 0)
 
         resp = self.client.get(f"/api/mappingversions/?formId={self.form_2.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
     def test_mappingversions_list_filters_org_unit_type_ids(self):
         self.client.force_authenticate(self.yoda)
@@ -298,16 +299,16 @@ class FormsVersionAPITestCase(APITestCase):
 
         resp = self.client.get("/api/mappingversions/")
 
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         resp = self.client.get(f"/api/mappingversions/?orgUnitTypeIds={self.sith_council.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         resp = self.client.get(f"/api/mappingversions/?orgUnitTypeIds={other_org_unit_type.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+        self.assertMappingVersionsCount(resp, 0)
 
         resp = self.client.get(f"/api/mappingversions/?orgUnitTypeIds={other_org_unit_type.id},{self.sith_council.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
     def test_mappingversions_list_filters_project_ids(self):
         self.client.force_authenticate(self.yoda)
@@ -321,16 +322,16 @@ class FormsVersionAPITestCase(APITestCase):
 
         resp = self.client.get("/api/mappingversions/")
 
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         resp = self.client.get(f"/api/mappingversions/?projectsIds={self.project.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+        self.assertMappingVersionsCount(resp, 0)
 
         resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id},{self.project.id}")
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
     def test_mappingversions_not_visible_from_other_account(self):
         self.client.force_authenticate(self.yoda)
@@ -339,8 +340,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.batman)
         resp = self.client.get("/api/mappingversions/")
-        self.assertJSONResponse(resp, status.HTTP_200_OK)
-        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+        self.assertMappingVersionsCount(resp, 0)
 
         resp = self.client.get(f"/api/mappingversions/{mapping_version['id']}/")
         self.assertJSONResponse(resp, status.HTTP_404_NOT_FOUND)
@@ -359,8 +359,7 @@ class FormsVersionAPITestCase(APITestCase):
         other_project.forms.add(form_version.form)
 
         resp = self.client.get("/api/mappingversions/")
-        self.assertJSONResponse(resp, status.HTTP_200_OK)
-        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+        self.assertMappingVersionsCount(resp, 1)
 
         self.assertEqual(m.MappingVersion.objects.filter_for_user(self.yoda).count(), 1)
 
@@ -464,8 +463,8 @@ class FormsVersionAPITestCase(APITestCase):
         for mapping_version_id, question_mapping, error in cases:
             with self.subTest(question_mapping=question_mapping):
                 response = self.patch_question_mappings(mapping_version_id, {"question_1": question_mapping})
-                self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-                self.assertEqual(response.json(), {"question_mappings.question_1": error})
+                result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+                self.assertEqual(result, {"question_mappings.question_1": error})
 
         # never mapped markers and unmapping are valid for every mapping type
         for mapping_version_id in (aggregate_id, tracker_id):
@@ -493,10 +492,38 @@ class FormsVersionAPITestCase(APITestCase):
             },
         )
 
-        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {"question_mappings.question_3": "should have a valueType"})
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(result, {"question_mappings.question_3": "should have a valueType"})
         self.assertEqual(self.get_question_mappings(mapping_version_id), original)
         self.assertEqual(Modification.objects.filter(object_id=mapping_version_id).count(), 1)
+
+    def test_mappingversions_bulk_patch_reports_all_errors(self):
+        """PATCH /mappingversions/<id>: every invalid question mapping of an import is reported, not only the first"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        mapping_version_id = self.create_mapping_version(form_version, self.sw_source)["id"]
+
+        response = self.patch_question_mappings(
+            mapping_version_id,
+            {
+                "question_1": {"valueType": "NUMBER"},
+                "question_2": {"id": "de2", "valueType": "NUMBER"},
+                "question_3": {"id": "de3"},
+                "question_4": [{"dataElement": {"id": "de4"}}],
+            },
+        )
+
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            result,
+            {
+                "question_mappings.question_1": "should have a least an data element id",
+                "question_mappings.question_3": "should have a valueType",
+                "question_mappings.question_4": "should not be a list for AGGREGATE mappings",
+            },
+        )
+        self.assertEqual(self.get_question_mappings(mapping_version_id), {})
 
     def test_mappingversions_patch_logs_modification(self):
         """PATCH /mappingversions/<id>: each patch is audited with the question mappings before and after"""
@@ -572,8 +599,8 @@ class FormsVersionAPITestCase(APITestCase):
         data_element = {"id": "de1", "valueType": "NUMBER"}
 
         response = self.patch_question_mappings(mapping_version_id, {"unknown": data_element})
-        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {"question_mappings.unknown": "question does not exist in this form version"})
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(result, {"question_mappings.unknown": "question does not exist in this form version"})
 
         response = self.patch_question_mappings(mapping_version_id, {"unknown": {"type": "neverMapped"}})
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -581,10 +608,8 @@ class FormsVersionAPITestCase(APITestCase):
         # choice keys only exist for select all that apply questions (one boolean data element per choice),
         # even though copy_mappings_from_previous_version still copies the select one ones
         response = self.patch_question_mappings(mapping_version_id, {"sex__male": data_element})
-        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.json(), {"question_mappings.sex__male": "question does not exist in this form version"}
-        )
+        result = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(result, {"question_mappings.sex__male": "question does not exist in this form version"})
 
         valid = {
             "weight": data_element,
@@ -612,6 +637,10 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.patch_question_mappings(mapping_version_id, {"removed_question": {"action": "unmap"}})
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(self.get_question_mappings(mapping_version_id), valid)
+
+    def assertMappingVersionsCount(self, response, expected_count):
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(len(result["mapping_versions"]), expected_count)
 
     def patch_question_mappings(self, mapping_version_id, question_mappings):
         return self.client.patch(
@@ -663,3 +692,57 @@ class FormsVersionAPITestCase(APITestCase):
             format="json",
             headers={"accept": "application/json"},
         ).json()
+
+
+class QuestionMappingShapeErrorTestCase(SimpleTestCase):
+    """get_question_mapping_shape_error, without going through the API"""
+
+    def test_valid_shapes(self):
+        cases = [
+            (m.AGGREGATE, {"id": "de1", "valueType": "NUMBER"}),
+            (m.EVENT, {"id": "de1", "valueType": "NUMBER"}),
+            (m.AGGREGATE, {"type": "multiple", "values": {"a": {"id": "de1"}, "b": {"id": "de2"}}}),
+            (m.EVENT_TRACKER, [{"dataElement": {"id": "de1"}, "programStage": "stage1"}]),
+            (m.EVENT_TRACKER, [{"trackedEntityAttribute": {"id": "tea1"}}]),
+            (m.EVENT_TRACKER, [{"type": "repeat", "program_id": "program1"}]),
+            # never mapped markers are valid for every mapping type
+            (m.AGGREGATE, {"type": "neverMapped"}),
+            (m.EVENT_TRACKER, {"type": "neverMapped"}),
+        ]
+        for mapping_type, data_element in cases:
+            with self.subTest(mapping_type=mapping_type, data_element=data_element):
+                self.assertIsNone(get_question_mapping_shape_error(mapping_type, data_element))
+
+    def test_invalid_shapes(self):
+        cases = [
+            (m.AGGREGATE, [{"dataElement": {"id": "de1"}}], "should not be a list for AGGREGATE mappings"),
+            (m.EVENT, [{"dataElement": {"id": "de1"}}], "should not be a list for EVENT mappings"),
+            (m.AGGREGATE, {"type": "multiple"}, "should map each choice to a data element id"),
+            (m.AGGREGATE, {"type": "multiple", "values": []}, "should map each choice to a data element id"),
+            (
+                m.AGGREGATE,
+                {"type": "multiple", "values": {"a": {"id": "de1"}, "b": {"name": "no id"}}},
+                "should map each choice to a data element id",
+            ),
+            (m.EVENT_TRACKER, {"id": "de1", "valueType": "NUMBER"}, "should be a list for EVENT_TRACKER mappings"),
+            (m.EVENT_TRACKER, [], "should be a list for EVENT_TRACKER mappings"),
+            (m.EVENT_TRACKER, ["de1"], "should only contain objects"),
+            (
+                m.EVENT_TRACKER,
+                [{"dataElement": {"name": "no id"}}],
+                "should map a data element, a tracked entity attribute or a repeat group",
+            ),
+            (
+                m.EVENT_TRACKER,
+                [{"type": "repeat"}],
+                "should map a data element, a tracked entity attribute or a repeat group",
+            ),
+            (
+                m.EVENT_TRACKER,
+                [{"dataElement": {"id": "de1"}}, {"foo": 1}],
+                "should map a data element, a tracked entity attribute or a repeat group",
+            ),
+        ]
+        for mapping_type, data_element, error in cases:
+            with self.subTest(mapping_type=mapping_type, data_element=data_element):
+                self.assertEqual(get_question_mapping_shape_error(mapping_type, data_element), error)

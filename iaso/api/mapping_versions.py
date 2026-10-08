@@ -48,6 +48,39 @@ def get_question_mapping_shape_error(mapping_type, data_element):
     return None
 
 
+def is_unmap(data_element):
+    return isinstance(data_element, dict) and data_element.get("action") == "unmap"
+
+
+def get_question_mapping_error(question_name, data_element, mapping_type, mappable_questions):
+    """Why a question mapping of a PATCH can't be saved, or None if it is valid."""
+    # unmapping stays allowed, to clean up mappings of questions removed from the form
+    if is_unmap(data_element):
+        return None
+
+    if mappable_questions and question_name not in mappable_questions:
+        return "question does not exist in this form version"
+
+    if data_element is None:
+        return None
+
+    shape_error = get_question_mapping_shape_error(mapping_type, data_element)
+    if shape_error:
+        return shape_error
+
+    if (
+        isinstance(data_element, dict)
+        and data_element
+        and data_element.get("type")
+        not in (MappingVersion.QUESTION_MAPPING_MULTIPLE, MappingVersion.QUESTION_MAPPING_NEVER_MAPPED)
+    ):
+        if data_element.get("id") is None:
+            return "should have a least an data element id"
+        if data_element.get("valueType") is None:
+            return "should have a valueType"
+    return None
+
+
 class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = MappingVersion
@@ -178,39 +211,26 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
 
         # partial update only question mappings
         if "question_mappings" in validated_data:
+            question_mappings = validated_data["question_mappings"]
             # empty when the form version has no descriptor: nothing to check against
             mappable_questions = instance.form_version.mappable_questions_by_name()
-            for question_name, data_element in validated_data["question_mappings"].items():
-                path = "question_mappings." + question_name
 
-                # unmapping stays allowed, to clean up mappings of questions removed from the form
-                is_unmap = isinstance(data_element, dict) and data_element.get("action") == "unmap"
-                if mappable_questions and not is_unmap and question_name not in mappable_questions:
-                    raise serializers.ValidationError({path: "question does not exist in this form version"})
+            # validate every question mapping first, to report all the errors of an import at once
+            errors = {}
+            for question_name, data_element in question_mappings.items():
+                error = get_question_mapping_error(
+                    question_name, data_element, instance.mapping.mapping_type, mappable_questions
+                )
+                if error:
+                    errors["question_mappings." + question_name] = error
+            if errors:
+                raise serializers.ValidationError(errors)
 
-                if data_element is not None and not is_unmap:
-                    shape_error = get_question_mapping_shape_error(instance.mapping.mapping_type, data_element)
-                    if shape_error:
-                        raise serializers.ValidationError({path: shape_error})
-
-                if type(data_element) is list:
-                    instance.json["question_mappings"][question_name] = data_element
+            for question_name, data_element in question_mappings.items():
+                if is_unmap(data_element):
+                    instance.json["question_mappings"].pop(question_name, None)
                 else:
-                    if data_element and data_element.get("action") == "unmap":
-                        instance.json["question_mappings"].pop(question_name, None)
-                        continue
-
-                    if data_element and data_element.get("type") not in (
-                        MappingVersion.QUESTION_MAPPING_MULTIPLE,
-                        MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
-                    ):
-                        if data_element.get("id") is None:
-                            raise serializers.ValidationError({path: "should have a least an data element id"})
-
-                        if data_element.get("valueType") is None:
-                            raise serializers.ValidationError({path: "should have a valueType"})
-
-                instance.json["question_mappings"][question_name] = data_element
+                    instance.json["question_mappings"][question_name] = data_element
 
         if "event_date_source" in validated_data:
             instance.json["event_date_source"] = validated_data["event_date_source"]

@@ -79,7 +79,7 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
         },
     )
     def list(self, request: Request, *args, **kwargs) -> Response:
-        """Promptness of form submissions, per org unit: the rows of the table"""
+        """Promptness of form submissions, per org unit: rows of the table"""
         params, target_org_units, _ = self._validate_serializer_and_fetch_target_org_units(request)
 
         rows = get_rows(params["parent_org_unit"], params.get("org_unit_types"))
@@ -99,7 +99,7 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
     )
     @action(methods=["GET"], detail=False)
     def summary(self, request: Request, *args, **kwargs) -> Response:
-        """Period and totals for the parent org unit. They don't depend on the ordering or the page of the rows."""
+        """Period and totals for the parent org unit"""
         params, target_org_units, period = self._validate_serializer_and_fetch_target_org_units(request)
 
         totals = get_totals(params["parent_org_unit"], target_org_units)

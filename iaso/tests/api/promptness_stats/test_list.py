@@ -6,11 +6,12 @@ from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from iaso import models as m
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.promptness_stats.common import RESPONSE_KEYS, ROW_KEYS, PromptnessStatsTestCase, aware
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
-class PromptnessStatsListTestCase(PromptnessStatsTestCase):
+class PromptnessStatsListTestCase(PromptnessStatsTestCase, SwaggerTestCaseMixin):
     def result_names(self, data):
         return [row["name"] for row in data["results"]]
 
@@ -546,3 +547,9 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.ethiopia.id))
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("parent_org_unit_id", data)
+
+    def test_list_is_swagger_compliant(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params())
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "PaginatedPromptnessStatsRowList")

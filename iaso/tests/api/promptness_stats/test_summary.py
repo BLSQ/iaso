@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework import status
 
 from iaso import models as m
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.promptness_stats.common import (
     PERIOD_KEYS,
     SUMMARY_KEYS,
@@ -14,7 +15,7 @@ from iaso.tests.api.promptness_stats.common import (
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
-class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
+class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase, SwaggerTestCaseMixin):
     def test_num_queries(self):
         # The user is reloaded from the database, like in a real request: its profile and account are not cached yet
         user = User.objects.get(id=self.user.id)
@@ -280,3 +281,9 @@ class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=self.ethiopia.id))
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("parent_org_unit_id", data)
+
+    def test_summary_is_swagger_compliant(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.SUMMARY_URL, self.get_serializer_params())
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "PromptnessStatsSummary")

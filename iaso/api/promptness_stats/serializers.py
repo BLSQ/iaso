@@ -133,16 +133,21 @@ class PromptnessStatsCountsSerializer(serializers.Serializer):
     is_applicable = serializers.BooleanField()
     expected = serializers.IntegerField(allow_null=True)
     received = serializers.IntegerField(allow_null=True)
-    # `coerce_to_string=False`: rendered as numbers (`COERCE_DECIMAL_TO_STRING` is `True` by default)
     completeness_percent = serializers.DecimalField(
-        max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True
+        max_digits=4, decimal_places=1, min_value=0, max_value=100, coerce_to_string=False, allow_null=True
     )
     on_time = serializers.IntegerField(allow_null=True)
-    on_time_percent = serializers.DecimalField(max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True)
+    on_time_percent = serializers.DecimalField(
+        max_digits=4, decimal_places=1, min_value=0, max_value=100, coerce_to_string=False, allow_null=True
+    )
     late = serializers.IntegerField(allow_null=True)
-    late_percent = serializers.DecimalField(max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True)
+    late_percent = serializers.DecimalField(
+        max_digits=4, decimal_places=1, min_value=0, max_value=100, coerce_to_string=False, allow_null=True
+    )
     missing = serializers.IntegerField(allow_null=True)
-    missing_percent = serializers.DecimalField(max_digits=4, decimal_places=1, coerce_to_string=False, allow_null=True)
+    missing_percent = serializers.DecimalField(
+        max_digits=4, decimal_places=1, min_value=0, max_value=100, coerce_to_string=False, allow_null=True
+    )
 
     def to_representation(self, org_unit: OrgUnit) -> dict:
         if org_unit.expected == 0:

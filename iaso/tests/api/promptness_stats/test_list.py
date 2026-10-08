@@ -108,9 +108,45 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(
             data["results"],
             [
-                self.row(self.hf_a, False, 1, 1, 0, 0, 1, 100.0, 100.0, 0.0, 0.0),
-                self.row(self.hf_b, False, 1, 0, 1, 0, 1, 100.0, 0.0, 100.0, 0.0),
-                self.row(self.hf_c, False, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0),
+                self.row(
+                    self.hf_a,
+                    has_children=False,
+                    expected=1,
+                    received=1,
+                    completeness_percent=100.0,
+                    on_time=1,
+                    on_time_percent=100.0,
+                    late=0,
+                    late_percent=0.0,
+                    missing=0,
+                    missing_percent=0.0,
+                ),
+                self.row(
+                    self.hf_b,
+                    has_children=False,
+                    expected=1,
+                    received=1,
+                    completeness_percent=100.0,
+                    on_time=0,
+                    on_time_percent=0.0,
+                    late=1,
+                    late_percent=100.0,
+                    missing=0,
+                    missing_percent=0.0,
+                ),
+                self.row(
+                    self.hf_c,
+                    has_children=False,
+                    expected=1,
+                    received=0,
+                    completeness_percent=0.0,
+                    on_time=0,
+                    on_time_percent=0.0,
+                    late=0,
+                    late_percent=0.0,
+                    missing=1,
+                    missing_percent=100.0,
+                ),
             ],
         )
 
@@ -178,7 +214,22 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.awsi.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         hp_h = next(row for row in data["results"] if row["id"] == self.hp_h.id)
-        self.assertEqual(hp_h, self.row(self.hp_h, False, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0))
+        self.assertEqual(
+            hp_h,
+            self.row(
+                self.hp_h,
+                has_children=False,
+                expected=1,
+                received=0,
+                completeness_percent=0.0,
+                on_time=0,
+                on_time_percent=0.0,
+                late=0,
+                late_percent=0.0,
+                missing=1,
+                missing_percent=100.0,
+            ),
+        )
 
     def test_org_unit_not_expected_to_submit_is_not_applicable(self):
         # HP I is a health post (not a target type) and doesn't belong to any target group:
@@ -189,7 +240,19 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(
             data["results"],
             [
-                self.row(self.hp_h, False, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0),
+                self.row(
+                    self.hp_h,
+                    has_children=False,
+                    expected=1,
+                    received=0,
+                    completeness_percent=0.0,
+                    on_time=0,
+                    on_time_percent=0.0,
+                    late=0,
+                    late_percent=0.0,
+                    missing=1,
+                    missing_percent=100.0,
+                ),
                 self.not_applicable_row(self.hp_i, False),
             ],
         )

@@ -109,14 +109,40 @@ class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
+        self.assertEqual(
+            data["totals"],
+            self.counts(
+                expected=4,
+                received=3,
+                completeness_percent=75.0,
+                on_time=2,
+                on_time_percent=50.0,
+                late=1,
+                late_percent=25.0,
+                missing=1,
+                missing_percent=25.0,
+            ),
+        )
 
     def test_parent_org_unit_itself_is_counted(self):
         # HF A is a target itself: it is counted in its own totals
         self.client.force_authenticate(self.user)
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=self.hf_a.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(1, 1, 0, 0, 1, 100.0, 100.0, 0.0, 0.0))
+        self.assertEqual(
+            data["totals"],
+            self.counts(
+                expected=1,
+                received=1,
+                completeness_percent=100.0,
+                on_time=1,
+                on_time_percent=100.0,
+                late=0,
+                late_percent=0.0,
+                missing=0,
+                missing_percent=0.0,
+            ),
+        )
 
     def test_org_unit_without_target_is_not_applicable(self):
         # Somali has no org unit expected to submit the form
@@ -137,7 +163,20 @@ class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=self.awsi.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0))
+        self.assertEqual(
+            data["totals"],
+            self.counts(
+                expected=1,
+                received=0,
+                completeness_percent=0.0,
+                on_time=0,
+                on_time_percent=0.0,
+                late=0,
+                late_percent=0.0,
+                missing=1,
+                missing_percent=100.0,
+            ),
+        )
 
     def test_rejected_org_units_are_ignored(self):
         # North Gondar: HF E (late) and HF F (missing) are counted, HF G is rejected (its on time submission is ignored)
@@ -165,7 +204,20 @@ class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=region.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(16, 1, 0, 15, 1, 6.3, 6.3, 0.0, 93.8))
+        self.assertEqual(
+            data["totals"],
+            self.counts(
+                expected=16,
+                received=1,
+                completeness_percent=6.3,
+                on_time=1,
+                on_time_percent=6.3,
+                late=0,
+                late_percent=0.0,
+                missing=15,
+                missing_percent=93.8,
+            ),
+        )
 
     def test_percentages_are_json_numbers(self):
         # The percentages are `Decimal` values, rendered as numbers (not as strings)
@@ -207,7 +259,20 @@ class PromptnessStatsSummaryTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user_restricted)
         response = self.client.get(self.SUMMARY_URL, self.get_serializer_params(parent_org_unit_id=self.oromia.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(data["totals"], self.counts(4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0))
+        self.assertEqual(
+            data["totals"],
+            self.counts(
+                expected=4,
+                received=3,
+                completeness_percent=75.0,
+                on_time=2,
+                on_time_percent=50.0,
+                late=1,
+                late_percent=25.0,
+                missing=1,
+                missing_percent=25.0,
+            ),
+        )
 
     def test_user_restricted_to_org_units_cannot_see_parent(self):
         # user_restricted only has access to Oromia and its descendants

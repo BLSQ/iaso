@@ -264,18 +264,30 @@ class PromptnessStatsTestCase(APITestCase):
         return {key: value for key, value in params.items() if value is not None}
 
     @staticmethod
-    def counts(expected, on_time, late, missing, received, completeness_pct, on_time_pct, late_pct, missing_pct):
+    def counts(
+        *,
+        expected,
+        received,
+        completeness_percent,
+        on_time,
+        on_time_percent,
+        late,
+        late_percent,
+        missing,
+        missing_percent,
+    ):
+        """Counts of an applicable row or totals, as returned by the API"""
         return {
             "is_applicable": True,
             "expected": expected,
             "received": received,
-            "completeness_percent": completeness_pct,
+            "completeness_percent": completeness_percent,
             "on_time": on_time,
-            "on_time_percent": on_time_pct,
+            "on_time_percent": on_time_percent,
             "late": late,
-            "late_percent": late_pct,
+            "late_percent": late_percent,
             "missing": missing,
-            "missing_percent": missing_pct,
+            "missing_percent": missing_percent,
         }
 
     @staticmethod
@@ -302,39 +314,134 @@ class PromptnessStatsTestCase(APITestCase):
             "has_children": has_children,
         }
 
-    def row(self, org_unit, has_children, *counts):
-        return {**self.row_without_counts(org_unit, has_children), **self.counts(*counts)}
+    def row(self, org_unit, *, has_children, **counts):
+        """Applicable row, as returned by the API: `counts` are the keyword arguments of `counts()`"""
+        return {**self.row_without_counts(org_unit, has_children), **self.counts(**counts)}
 
     def not_applicable_row(self, org_unit, has_children):
         return {**self.row_without_counts(org_unit, has_children), **self.not_applicable_counts()}
 
     # Expected rows / totals, see the module docstring
     def expected_ethiopia_totals(self):
-        return self.counts(7, 2, 2, 3, 4, 57.1, 28.6, 28.6, 42.9)
+        return self.counts(
+            expected=7,
+            received=4,
+            completeness_percent=57.1,
+            on_time=2,
+            on_time_percent=28.6,
+            late=2,
+            late_percent=28.6,
+            missing=3,
+            missing_percent=42.9,
+        )
 
     def expected_afar_row(self):
-        return self.row(self.afar, True, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0)
+        return self.row(
+            self.afar,
+            has_children=True,
+            expected=1,
+            received=0,
+            completeness_percent=0.0,
+            on_time=0,
+            on_time_percent=0.0,
+            late=0,
+            late_percent=0.0,
+            missing=1,
+            missing_percent=100.0,
+        )
 
     def expected_amhara_row(self):
-        return self.row(self.amhara, True, 2, 0, 1, 1, 1, 50.0, 0.0, 50.0, 50.0)
+        return self.row(
+            self.amhara,
+            has_children=True,
+            expected=2,
+            received=1,
+            completeness_percent=50.0,
+            on_time=0,
+            on_time_percent=0.0,
+            late=1,
+            late_percent=50.0,
+            missing=1,
+            missing_percent=50.0,
+        )
 
     def expected_oromia_row(self):
-        return self.row(self.oromia, True, 4, 2, 1, 1, 3, 75.0, 50.0, 25.0, 25.0)
+        return self.row(
+            self.oromia,
+            has_children=True,
+            expected=4,
+            received=3,
+            completeness_percent=75.0,
+            on_time=2,
+            on_time_percent=50.0,
+            late=1,
+            late_percent=25.0,
+            missing=1,
+            missing_percent=25.0,
+        )
 
     def expected_somali_row(self):
         return self.not_applicable_row(self.somali, False)
 
     def expected_awsi_row(self):
-        return self.row(self.awsi, True, 1, 0, 0, 1, 0, 0.0, 0.0, 0.0, 100.0)
+        return self.row(
+            self.awsi,
+            has_children=True,
+            expected=1,
+            received=0,
+            completeness_percent=0.0,
+            on_time=0,
+            on_time_percent=0.0,
+            late=0,
+            late_percent=0.0,
+            missing=1,
+            missing_percent=100.0,
+        )
 
     def expected_north_gondar_row(self):
-        return self.row(self.north_gondar, True, 2, 0, 1, 1, 1, 50.0, 0.0, 50.0, 50.0)
+        return self.row(
+            self.north_gondar,
+            has_children=True,
+            expected=2,
+            received=1,
+            completeness_percent=50.0,
+            on_time=0,
+            on_time_percent=0.0,
+            late=1,
+            late_percent=50.0,
+            missing=1,
+            missing_percent=50.0,
+        )
 
     def expected_jimma_row(self):
-        return self.row(self.jimma, True, 3, 1, 1, 1, 2, 66.7, 33.3, 33.3, 33.3)
+        return self.row(
+            self.jimma,
+            has_children=True,
+            expected=3,
+            received=2,
+            completeness_percent=66.7,
+            on_time=1,
+            on_time_percent=33.3,
+            late=1,
+            late_percent=33.3,
+            missing=1,
+            missing_percent=33.3,
+        )
 
     def expected_east_shewa_row(self):
-        return self.row(self.east_shewa, True, 1, 1, 0, 0, 1, 100.0, 100.0, 0.0, 0.0)
+        return self.row(
+            self.east_shewa,
+            has_children=True,
+            expected=1,
+            received=1,
+            completeness_percent=100.0,
+            on_time=1,
+            on_time_percent=100.0,
+            late=0,
+            late_percent=0.0,
+            missing=0,
+            missing_percent=0.0,
+        )
 
     def expected_borena_row(self):
         return self.not_applicable_row(self.borena, True)

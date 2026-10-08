@@ -133,8 +133,6 @@ describe('Validation workflow list UI integration test', () => {
                 moment(date, apiDateTimeFormat).format('DD/MM/YYYY HH:mm'),
             ),
         ).toBeVisible();
-
-        // But can you tell me which data you'd need to construct your dashboard ? might be worth having a dedicated
     });
     it('displays the right icons', async () => {
         const date = moment(Date.now()).format(apiDateTimeFormat);

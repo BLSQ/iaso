@@ -141,7 +141,9 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
 
             # get latest new version to handle resubmit cases
             latest_new_version_create_at_query = Subquery(
-                ValidationNode.objects.filter(instance=OuterRef("pk"), status=ValidationNodeStatus.NEW_VERSION)
+                ValidationNode.objects.filter(
+                    instance=OuterRef(OuterRef("pk")), status=ValidationNodeStatus.NEW_VERSION
+                )
                 .order_by("-created_at")
                 .values("created_at")[:1]
             )
@@ -165,7 +167,9 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
 
             cutoff = Coalesce(
                 Subquery(
-                    ValidationNode.objects.filter(instance=OuterRef("pk"), status=ValidationNodeStatus.NEW_VERSION)
+                    ValidationNode.objects.filter(
+                        instance=OuterRef(OuterRef(OuterRef("pk"))), status=ValidationNodeStatus.NEW_VERSION
+                    )
                     .order_by("-created_at")
                     .values("created_at")[:1]
                 ),
@@ -174,25 +178,12 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
             # get all next bypass where user could take action in that workflow for that instance
             bypass_waiting_query = Exists(
                 validation_node_templates.filter(
-                    workflow__account=self.request.user.iaso_profile.account,
                     can_skip_previous_nodes=True,
                     workflow__form_set=OuterRef("form_id"),
                 ).filter(
-                    Q(
-                        ~Exists(
-                            ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
-                                instance=OuterRef("pk"),
-                                node=OuterRef("pk"),
-                            )
-                        )
-                    )
-                    & Q(
-                        ~Exists(
-                            ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
-                                instance=OuterRef("pk"),
-                                node=OuterRef("pk"),
-                                created_at__gt=cutoff,
-                            )
+                    ~Exists(
+                        ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
+                            instance=OuterRef(OuterRef("pk")), node=OuterRef("pk")
                         )
                     )
                 )

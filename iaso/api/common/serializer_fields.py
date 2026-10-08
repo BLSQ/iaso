@@ -109,22 +109,24 @@ class ManyRelatedFieldForMultiPart(ManyRelatedField):
         return data
 
 
+def split_comma_separated_string_from_query_params(dictionary, key):
+    if key not in dictionary:
+        return empty
+    return [item.strip() for item in dictionary[key].split(",")]
+
+
 class CommaSeparatedPrimaryKeysField(ManyRelatedField):
     """Primary keys given as a single query param, separated by ',' (e.g. `?ids=1,2,3`)"""
 
     def get_value(self, dictionary):
-        if self.field_name not in dictionary:
-            return empty
-        return dictionary[self.field_name].split(",")
+        return split_comma_separated_string_from_query_params(dictionary, self.field_name)
 
 
 class CommaSeparatedMultipleChoiceField(serializers.MultipleChoiceField):
     """Choices given as a single query param, separated by ',' (e.g. `?status=A,B`)"""
 
     def get_value(self, dictionary):
-        if self.field_name not in dictionary:
-            return empty
-        return dictionary[self.field_name].split(",")
+        return split_comma_separated_string_from_query_params(dictionary, self.field_name)
 
 
 class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):

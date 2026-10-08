@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -24,6 +24,19 @@ from iaso.permissions.core_permissions import (
 
 
 CSV_FILENAME_TEMPLATE = "promptness_{form_id}_{period}.csv"
+
+# Shared by the endpoints of the viewset: all of them validate the query params with the same serializer
+ERROR_RESPONSES = {
+    400: OpenApiResponse(
+        description=(
+            "Invalid query params, with a field-keyed body: a missing or inaccessible form, period or parent org unit, "
+            "an inaccessible org unit type, a form without period type or grace period, an invalid period or one "
+            "whose type does not match the form period type, an unknown or empty status"
+        )
+    ),
+    401: OpenApiResponse(description="Not authenticated"),
+    403: OpenApiResponse(description="Missing the completeness stats or registry permission"),
+}
 
 
 @extend_schema(tags=["Promptness statistics"])
@@ -59,7 +72,11 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
 
     @extend_schema(
         parameters=[PromptnessStatsQueryParamsSerializer],
-        responses=PromptnessStatsRowSerializer(many=True),
+        responses={
+            200: PromptnessStatsRowSerializer(many=True),
+            **ERROR_RESPONSES,
+            404: OpenApiResponse(description="The page is out of range"),
+        },
     )
     def list(self, request: Request, *args, **kwargs) -> Response:
         """Promptness of form submissions, per org unit: the rows of the table"""
@@ -78,7 +95,7 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
 
     @extend_schema(
         parameters=[PromptnessStatsQueryParamsSerializer],
-        responses=PromptnessStatsSummarySerializer,
+        responses={200: PromptnessStatsSummarySerializer, **ERROR_RESPONSES},
     )
     @action(methods=["GET"], detail=False)
     def summary(self, request: Request, *args, **kwargs) -> Response:

@@ -311,6 +311,10 @@ The period type mismatch is only checked once all the params are valid:
 
 - User does not have the proper permissions
 
+### 404 - Not found
+
+- `page` is out of range (`{"detail": "Invalid page."}`)
+
 # Get promptness summary
 
 `GET /api/promptness_stats/summary/`

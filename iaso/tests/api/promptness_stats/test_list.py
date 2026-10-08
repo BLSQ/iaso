@@ -485,6 +485,13 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertFalse(second_page["has_next"])
         self.assertTrue(second_page["has_previous"])
 
+    def test_page_out_of_range(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.URL, self.get_serializer_params(limit=2, page=3))
+        data = self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(data, {"detail": "Invalid page."})
+
     # access
     def test_user_restricted_to_org_units(self):
         # user_restricted only has access to Oromia and its descendants

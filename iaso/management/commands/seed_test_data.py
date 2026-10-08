@@ -3,7 +3,7 @@ import json
 import os
 
 from io import BytesIO
-from random import randint, random, sample
+from random import choice, randint, random, sample
 from uuid import uuid4
 
 import openpyxl
@@ -241,7 +241,7 @@ class Command(BaseCommand):
             credentials,
             user=user,
             mapping_type="AGGREGATE",
-            mapping_file="./testdata/seed-data-command-form-mapping.json",
+            mapping_file="./testdata/seed-data-command-quality-form-mapping.json",
             xls_file="testdata/seed-data-command-form-i18n.xlsx",
         )
         project.save()
@@ -652,6 +652,8 @@ class Command(BaseCommand):
         out = OrgUnitType.objects.filter(org_units__version=source_version).distinct()
         form.org_unit_types.set(out)
 
+        questions_by_name = mapping_version.form_version.questions_by_name() if mapping_version else {}
+
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:
@@ -686,7 +688,9 @@ class Command(BaseCommand):
                     if mapping_version and "question_mappings" in mapping_version.json:
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
-                            test_data[key] = randint(1, 10)
+                            # a choice of the select questions (0/1 for quality), a number for the others
+                            choices = questions_by_name.get(key, {}).get("children")
+                            test_data[key] = str(choice(choices)["name"]) if choices else randint(1, 10)
 
                     instance.json = test_data
                     instance.form = form

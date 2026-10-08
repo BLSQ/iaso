@@ -417,6 +417,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/payments.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/reference/API/promptness_stats.html</loc>
+        <lastmod>2026-10-08</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/promptness_stats.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/promptness_stats.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/promptness_stats.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/reference/campaigns/subactivities.html</loc>
         <lastmod>2026-10-08</lastmod>
         <changefreq>daily</changefreq>
@@ -1009,6 +1017,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/payments.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/reference/API/promptness_stats.html</loc>
+        <lastmod>2026-10-08</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/promptness_stats.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/promptness_stats.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/promptness_stats.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/reference/campaigns/subactivities.html</loc>
         <lastmod>2026-10-08</lastmod>
         <changefreq>daily</changefreq>
@@ -1599,6 +1615,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/payments.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/payments.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/payments.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/reference/API/promptness_stats.html</loc>
+        <lastmod>2026-10-08</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/promptness_stats.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/promptness_stats.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/promptness_stats.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/campaigns/subactivities.html</loc>

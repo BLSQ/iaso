@@ -367,6 +367,103 @@ describe('export / import', () => {
         );
     });
 
+    it.each([
+        [
+            'AGGREGATE',
+            {
+                q1: de('a'),
+                // select all that apply as a whole, and one boolean data element per choice
+                symptoms: {
+                    type: 'multiple',
+                    values: { fever: de('b'), cough: de('c') },
+                },
+                symptoms__fever: de('d', { valueType: 'BOOLEAN' }),
+                q2: { type: 'neverMapped' },
+            },
+        ],
+        [
+            'EVENT_TRACKER',
+            {
+                household: [
+                    {
+                        type: 'repeat',
+                        program_id: 'p1',
+                        tracked_entity_type: 'tet1',
+                        tracked_entity_identifier: 'uid',
+                        relationship_type: 'rel1',
+                    },
+                ],
+                // inside the repeat group
+                age: [
+                    {
+                        dataElement: { id: 'de1', name: 'Age' },
+                        programStage: 'stage1',
+                        parent: 'household',
+                    },
+                ],
+                q1: [
+                    {
+                        trackedEntityAttribute: { id: 'tea1', name: 'Name' },
+                        iaso_field: 'instance.uuid',
+                    },
+                ],
+            },
+        ],
+    ])(
+        're-importing its own %s export shows every mapping as identical',
+        (mappingType, questionMappings) => {
+            const formDescriptor = {
+                name: 'survey',
+                type: 'survey',
+                children: [
+                    {
+                        name: 'grp1',
+                        type: 'group',
+                        children: [{ name: 'q1', type: 'integer' }],
+                    },
+                    { name: 'q2', type: 'integer' },
+                    {
+                        name: 'symptoms',
+                        type: 'select all that apply',
+                        children: [{ name: 'fever' }, { name: 'cough' }],
+                    },
+                    {
+                        name: 'household',
+                        type: 'repeat',
+                        children: [{ name: 'age', type: 'integer' }],
+                    },
+                ],
+            };
+            const version = {
+                ...mappingVersion,
+                mapping: {
+                    ...mappingVersion.mapping,
+                    mapping_type: mappingType,
+                },
+                question_mappings: questionMappings,
+            };
+
+            const text = JSON.stringify(buildMappingExport(version));
+            const rows = computeMappingsDiff(
+                questionMappings,
+                parseMappingExport(text, mappingType).question_mappings,
+                getMappableQuestions(formDescriptor),
+                mappingType,
+            );
+
+            const kinds = Object.fromEntries(
+                rows.map(r => [r.questionKey, r.kind]),
+            );
+            // never mapped markers are not exported
+            const expected = Object.fromEntries(
+                Object.keys(questionMappings)
+                    .filter(key => key !== 'q2')
+                    .map(key => [key, 'identical']),
+            );
+            expect(kinds).toEqual(expected);
+        },
+    );
+
     it('accepts a bare question_mappings dictionary', () => {
         expect(
             parseMappingExport(JSON.stringify({ q1: de('a') }), 'AGGREGATE')

@@ -140,6 +140,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Projects',
         id: 'iaso.formAI.projects',
     },
+    orgUnitTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.label.orgUnitsTypes',
+    },
     cancel: {
         defaultMessage: 'Cancel',
         id: 'iaso.formAI.cancel',

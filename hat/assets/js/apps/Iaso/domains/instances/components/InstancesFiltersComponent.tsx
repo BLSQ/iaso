@@ -13,12 +13,14 @@ import {
 
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
+import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
 import { FormVersionsDropdown } from 'Iaso/domains/forms/components/FormVersionsDropdown';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
 import { getPrunedFormVersionIds } from 'Iaso/domains/forms/utils/getPrunedFormVersionIds';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
+import { useGetValidationWorkflowInstanceStatuses } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceStatuses';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -290,6 +292,8 @@ const InstancesFiltersComponent = ({
         },
         [handleFormChange],
     );
+    const validationWorkflowStatusOptions =
+        useGetValidationWorkflowInstanceStatuses();
 
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
@@ -587,6 +591,27 @@ const InstancesFiltersComponent = ({
                                     onChange={val =>
                                         handleFormChange('formVersionIds', val)
                                     }
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3} mt={-2}>
+                                <ValidationWorkflowDropdown
+                                    keyValue="workflow_ids"
+                                    onChange={handleFormChange}
+                                    value={formState.workflow_ids.value}
+                                    label={MESSAGES.workflow}
+                                    clearable
+                                    multi
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3} mt={-2}>
+                                <InputComponent
+                                    keyValue="validation_status"
+                                    clearable
+                                    onChange={handleFormChange}
+                                    value={formState.validation_status.value}
+                                    type="select"
+                                    options={validationWorkflowStatusOptions}
+                                    label={MESSAGES.validation_status}
                                 />
                             </Grid>
                         </Grid>

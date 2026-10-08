@@ -129,6 +129,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'isSearchActive',
             'referenceInstances',
             'org_unit_status',
+            'workflow_ids',
+            'validation_status',
         ],
     },
     instanceDetail: {

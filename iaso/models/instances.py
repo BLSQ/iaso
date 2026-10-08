@@ -263,6 +263,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
         project_ids=None,
         only_reference=None,
         reference_instances=None,
+        org_unit_status=None,
+        workflow_ids=None,
+        validation_status=None,
     ):
         queryset = self
 
@@ -315,6 +318,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
                 queryset = queryset.filter(Exists(ref_for_own_org_unit))
             else:
                 queryset = queryset.filter(~Exists(ref_for_own_org_unit))
+
+        if org_unit_status:
+            queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
+        if workflow_ids:
+            queryset = queryset.filter(form__validation_workflow_id__in=workflow_ids.split(","))
+
+        if validation_status:
+            queryset = queryset.filter(general_validation_status=validation_status)
 
         if org_unit_parent_id:
             # Local import to avoid loop
@@ -804,6 +816,13 @@ class Instance(ValidationWorkflowArtefact):
             "project_color": project.color if project else None,
             "project_id": project.id if project else None,
             "status": getattr(self, "status", None),
+            "validation_status": self.general_validation_status,
+            "workflow": {
+                "id": self.form.validation_workflow.id,
+                "name": self.form.validation_workflow.name,
+            }
+            if self.form and self.form.validation_workflow
+            else None,
             "correlation_id": self.correlation_id,
             "created_by": (
                 {
@@ -878,6 +897,13 @@ class Instance(ValidationWorkflowArtefact):
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),
+            "validation_status": self.general_validation_status,
+            "workflow": {
+                "id": self.form.validation_workflow.id,
+                "name": self.form.validation_workflow.name,
+            }
+            if self.form and self.form.validation_workflow
+            else None,
             "correlation_id": self.correlation_id,
             "last_export_success_at": self.last_export_success_at.timestamp() if self.last_export_success_at else None,
             "export_id": self.export_id,

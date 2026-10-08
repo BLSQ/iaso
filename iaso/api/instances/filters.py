@@ -82,6 +82,9 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "sent_from": req.get(query.SENT_DATE_FROM, None),
         "sent_to": req.get(query.SENT_DATE_TO, None),
         "json_content": json_content,
+        "org_unit_status": req.get(query.ORG_UNIT_STATUS, None),
+        "workflow_ids": req.get(query.WORKFLOW_IDS, None),
+        "validation_status": req.get(query.VALIDATION_STATUS, None),
     }
 
     # TODO discuss to enforce it stays json serialize/deserialiable to prevent future issues

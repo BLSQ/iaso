@@ -4,6 +4,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.test import APITestCase
 
 
@@ -211,6 +212,59 @@ class ExportRequestsAPITestCase(APITestCase):
             },
             response.json(),
         )
+
+    def test_exportrequests_create_filters_on_workflow_and_validation_status(self):
+        approved = self.build_instance(self.village_1, self.uuid(1), "201901")
+        rejected = self.build_instance(self.village_1, self.uuid(2), "201902")
+        no_status = self.build_instance(self.village_2, self.uuid(3), "201901")
+        approved.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+        approved.save()
+        rejected.general_validation_status = ValidationWorkflowArtefactStatus.REJECTED
+        rejected.save()
+        workflow = self.create_validation_workflow(account=self.project.account, forms=[self.form])
+        other_workflow = self.create_validation_workflow(account=self.project.account, name="Other workflow")
+        self.client.force_authenticate(self.user)
+
+        def exported_instance_ids(filters):
+            response = self.client.post("/api/exportrequests/", data=filters)
+            self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.json())
+            export_request = m.ExportRequest.objects.latest("id")
+            exported_ids = set(export_request.exportstatus_set.values_list("instance_id", flat=True))
+            # free the instances for the next export request
+            export_request.delete()
+            return exported_ids
+
+        self.assertEqual(
+            exported_instance_ids({"validation_status": ValidationWorkflowArtefactStatus.APPROVED}), {approved.id}
+        )
+        self.assertEqual(
+            exported_instance_ids({"workflow_ids": str(workflow.id)}), {approved.id, rejected.id, no_status.id}
+        )
+        self.assertEqual(
+            exported_instance_ids(
+                {"workflow_ids": str(workflow.id), "validation_status": ValidationWorkflowArtefactStatus.REJECTED}
+            ),
+            {rejected.id},
+        )
+
+        response = self.client.post("/api/exportrequests/", data={"workflow_ids": str(other_workflow.id)})
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(response.json()["code"], "NothingToExportError")
+
+    def test_exportrequests_create_filters_on_org_unit_status(self):
+        self.village_1.validation_status = m.OrgUnit.VALIDATION_REJECTED
+        self.village_1.save()
+        self.village_2.validation_status = m.OrgUnit.VALIDATION_VALID
+        self.village_2.save()
+        self.build_instance(self.village_1, self.uuid(1), "201901")
+        valid = self.build_instance(self.village_2, self.uuid(2), "201901")
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post("/api/exportrequests/", data={"org_unit_status": m.OrgUnit.VALIDATION_VALID})
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.json())
+        export_request = m.ExportRequest.objects.latest("id")
+        self.assertEqual(list(export_request.exportstatus_set.values_list("instance_id", flat=True)), [valid.id])
 
     def test_exportrequests_create_ko_when_bad_filter(self):
         self.build_instance(self.village_1, self.uuid(1), "201901")

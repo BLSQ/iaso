@@ -28,6 +28,8 @@ STANDARD_COLUMNS = [
     ["iaso_subm_export_id", "VARCHAR"],
     ["iaso_subm_correlation_id", "BIGINT"],
     ["iaso_subm_app_version", "VARCHAR"],
+    ["iaso_subm_general_validation_status", "VARCHAR"],
+    ["iaso_subm_form_validation_workflow_id", "INTEGER"],
     ["iaso_subm_is_reference", "BOOLEAN"],
     ["iaso_subm_form_version_id", "VARCHAR"],
     ["iaso_subm_longitude", "DOUBLE"],

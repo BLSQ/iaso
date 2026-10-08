@@ -1,10 +1,12 @@
 import csv
 import json
+import os
 
 from io import BytesIO
 from random import randint, random, sample
 from uuid import uuid4
 
+import openpyxl
 import requests
 
 from dhis2 import Api
@@ -516,6 +518,45 @@ class Command(BaseCommand):
 
         run_demo_sync_and_report(datasource, source_version, demo_version, swapped_pair, self.user, self.stdout)
 
+    @staticmethod
+    def xls_file_for_form(xls_file, form):
+        """The xlsform with settings matching the seeded form, so that it can be downloaded and uploaded back as
+        a new version: the odk form_id of the form (it contains the dhis2 version) and no version, generated on
+        upload."""
+        workbook = openpyxl.load_workbook(xls_file)
+        settings = workbook["settings"] if "settings" in workbook.sheetnames else workbook.create_sheet("settings")
+        headers = [cell.value for cell in settings[1]]
+        while headers and headers[-1] is None:
+            headers.pop()
+
+        def set_setting(names, value):
+            # pyxform also accepts the old id_string alias for form_id
+            column = next((i + 1 for i, header in enumerate(headers) if header in names), None)
+            if column is None:
+                if value is None:
+                    return
+                headers.append(names[0])
+                column = len(headers)
+                settings.cell(row=1, column=column, value=names[0])
+            # not cell(..., value=value): openpyxl ignores value=None there
+            settings.cell(row=2, column=column).value = value
+
+        set_setting(("form_id", "id_string"), form.form_id)
+        set_setting(("version",), None)
+
+        buffer = BytesIO()
+        workbook.save(buffer)
+        size = buffer.tell()
+        buffer.seek(0)
+        return InMemoryUploadedFile(
+            buffer,
+            field_name="xls_file",
+            name=os.path.basename(xls_file),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            size=size,
+            charset=None,
+        )
+
     def seed_form(
         self,
         form,
@@ -534,7 +575,7 @@ class Command(BaseCommand):
             # TODO: use better fixture
             open(xls_xml_file)
         )
-        form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
+        form_version.xls_file = self.xls_file_for_form(xls_file, form)
 
         form_version.save()
 

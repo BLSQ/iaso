@@ -1,5 +1,5 @@
+import { mapObject } from 'Iaso/utils/objectUtils';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
-import { mapObject } from '../../utils/objectUtils';
 
 // Get available locales from the generated config
 export const useAppLocales = () => {

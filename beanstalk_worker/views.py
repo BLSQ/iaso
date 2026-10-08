@@ -110,6 +110,9 @@ def task_launcher(request, task_name: str, user_name: str):
     ).count()
 
     if running_tasks_count > 0:
+        logger.warning(
+            f"Task {task_name} is already running for user {user_name} in the last 12 hours with the same parameters"
+        )
         return JsonResponse(
             {
                 "status": "fail",

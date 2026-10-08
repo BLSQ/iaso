@@ -11,6 +11,7 @@ from iaso import models as m
 from iaso.api.mapping_versions import get_question_mapping_shape_error
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 from iaso.test import APITestCase
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
@@ -578,6 +579,56 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(mapping_version["derivate_settings"]["data_set_id"], "ERTFDG")
         self.assertEqual(mapping_version["mapping"]["data_source"]["id"], self.sw_source.id)
         self.assertEqual(mapping_version["form_version"]["form"]["id"], form_version.form_id)
+
+    def test_mappingversions_list_query_count(self):
+        """GET /mappingversions/: no query per row, for the mapping list and the import wizard sources"""
+
+        mapping, _ = m.Mapping.objects.get_or_create(
+            form=self.form_1, data_source=self.sw_source, mapping_type=m.AGGREGATE
+        )
+        descriptor = {"name": "data", "type": "survey", "children": [{"name": "weight", "type": "decimal"}]}
+        for version_id in ("1", "2", "3"):
+            form_version = m.FormVersion.objects.create(
+                form=self.form_1, version_id=version_id, form_descriptor=descriptor
+            )
+            m.MappingVersion.objects.create(
+                mapping=mapping,
+                form_version=form_version,
+                name="aggregate",
+                json={"question_mappings": {"weight": {"id": "de1", "valueType": "NUMBER"}}, "data_set_id": "ds1"},
+            )
+        self.client.force_authenticate(self.yoda)
+
+        urls = {
+            "mapping list": f"/api/mappingversions/?formId={self.form_1.id}",
+            "import sources": (
+                f"/api/mappingversions/?formId={self.form_1.id}&mappingTypes=AGGREGATE"
+                "&fields=id,form_version,mapping,question_mappings,derivate_settings,updated_at"
+            ),
+        }
+        for label, url in urls.items():
+            with self.subTest(label):
+                with QueryProfiler(
+                    trace_tables=["iaso_formversion", "iaso_form", "iaso_mapping", "iaso_datasource"]
+                ) as profiler:
+                    response = self.client.get(url)
+                self.assertMappingVersionsCount(response, 3)
+
+                # a single query for the 3 rows: form version, form, mapping and data source are joined (the
+                # profiler only counts the FROM table), iaso_project is the EXISTS of filter_for_user in that
+                # same query. auth_permission is the permission check, not related to the rows.
+                with profiler.report_on_failure(f"mappingversions_{label.replace(' ', '_')}.md", title=label):
+                    profiler.assertLessEqualQueryCount(
+                        {
+                            "iaso_mappingversion": 1,
+                            "iaso_project": 1,
+                            "iaso_formversion": 0,
+                            "iaso_form": 0,
+                            "iaso_mapping": 0,
+                            "iaso_datasource": 0,
+                        },
+                        exclude=["auth_permission"],
+                    )
 
     def test_mappingversions_patch_checks_questions_exist(self):
         """PATCH /mappingversions/<id>: question mappings must target a question of the form version"""

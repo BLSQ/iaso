@@ -269,7 +269,10 @@ class MappingVersionsViewSet(ModelViewSet):
             "order", "form_version__form__name,form_version__version_id,mapping__mapping_type"
         ).split(",")
 
-        queryset = MappingVersion.objects.filter_for_user(self.request.user)
+        # the serializer reads form_version.form and mapping.data_source of each row
+        queryset = MappingVersion.objects.filter_for_user(self.request.user).select_related(
+            "form_version__form", "mapping__data_source"
+        )
 
         search_term = self.request.GET.get("search") or self.request.GET.get("search")
         if search_term:

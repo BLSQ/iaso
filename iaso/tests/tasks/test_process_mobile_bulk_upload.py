@@ -13,7 +13,9 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase, TestCase
+from django.utils import timezone
 
 from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
@@ -23,6 +25,7 @@ from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
+from iaso.models.stocks import StockImpacts
 from iaso.tasks.process_mobile_bulk_upload import (
     get_directory_handlers,
     process_instance_attachments,
@@ -56,7 +59,11 @@ CORRECT_FILES_FOR_DISASI_ONLY_ZIP = [
 ]
 
 DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
+# When the scale zips' registrations were last updated on the device (their `updated_at`, 1712326150.005)
+SCALE_REGISTRATION_UPDATED_AT = datetime.datetime(2024, 4, 5, 14, 9, 10, 5000, tzinfo=pytz.UTC)
 DEFAULT_CREATED_AT_STR = "2024-04-01"
+# A submission XML, for the zips built by the tests
+SUBMISSION_XML = "iaso/fixtures/instance_form_1_1.xml"
 
 DISASI_MAKULO_INSTANCE_FILE_NAME = (
     "a5362052-408f-44f8-8abc-2a520c01ea10/16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
@@ -118,6 +125,40 @@ def create_entity_with_registration(
     return entity
 
 
+def instance_state(instance_uuid):
+    """
+    What the tests check of the instance `instance_uuid`, as a dict (None if there is none): compared in one
+    assertion, a failure shows every field that differs.
+    """
+    instance = m.Instance.objects.filter(uuid=instance_uuid).first()
+    if instance is None:
+        return None
+    return {
+        "id": instance.id,
+        "entity": str(instance.entity.uuid) if instance.entity else None,
+        "form": instance.form_id,
+        "project": instance.project_id,
+        "org unit": instance.org_unit_id,
+        "created by": instance.created_by_id,
+        "file": instance.file.name,
+        "has data": instance.json is not None,
+        "updated at": instance.source_updated_at,
+        "validation status": instance.general_validation_status,
+        "deleted": instance.deleted,
+    }
+
+
+def entity_state(entity_uuid):
+    """What the tests check of the entity `entity_uuid` (even soft-deleted), as a dict - see `instance_state()`."""
+    entity = m.Entity.objects_include_deleted.get(uuid=entity_uuid)
+    return {
+        "deleted": entity.deleted_at is not None,
+        "merged to": str(entity.merged_to.uuid) if entity.merged_to else None,
+        "reference instance": entity.attributes.uuid if entity.attributes else None,
+        "instances": sorted(entity.instances.values_list("uuid", flat=True)),
+    }
+
+
 class ProcessMobileBulkUploadTest(TestCase):
     fixtures = ["user.yaml", "orgunit.yaml"]
 
@@ -144,6 +185,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.default_entity_type = m.EntityType.objects.create(
             id=1, name="Participant", reference_form=self.form_registration
         )
+        # From the orgunit.yaml fixture: an org unit without uuid, that submissions refer to by its id
+        self.org_unit = m.OrgUnit.objects.get(name="LaLaland")
 
         # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
         default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
@@ -167,7 +210,14 @@ class ProcessMobileBulkUploadTest(TestCase):
             add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
         save_file_to_api_import(self.api_import, zip_path)
 
-    def _create_zip_file_at_scale(self, num_patients=25):
+    def _create_zip_file_at_scale(
+        self,
+        num_patients=25,
+        registration_uuids=None,
+        with_followups=True,
+        api_import=None,
+        registrations_updated_at=SCALE_REGISTRATION_UPDATED_AT,
+    ):
         """
         `num_patients` distinct *new* patients, each with exactly one registration + one CATT
         follow-up - the realistic shape of a large bulk sync from one facility: broad (many
@@ -175,6 +225,12 @@ class ProcessMobileBulkUploadTest(TestCase):
         rarer "lots of follow-ups for the same patient" case). Same org unit and same 2 forms/
         versions throughout, reusing the base fixture's registration/CATT xml content as
         byte templates under fresh uuids.
+
+        `registration_uuids`: the registrations' uuids (one patient each), instead of `num_patients` fresh ones, e.g.
+        to send registrations already uploaded by a previous zip again. `with_followups=False` leaves the CATT
+        follow-ups out. The zip is saved to `api_import` (`self.api_import` by default). `registrations_updated_at`: the
+        registrations' `updated_at`, e.g. later than when they were first sent, as when an entity workflow updated them.
+        Returns the registrations' uuids.
         """
         base_dir = zip_fixture_dir(CATT_TABLET_DIR)
         with open(
@@ -206,22 +262,22 @@ class ProcessMobileBulkUploadTest(TestCase):
             zipf.writestr("orgUnits.json", json.dumps(org_units_data))
 
             new_instances = []
-            for _ in range(num_patients):
+            if registration_uuids is None:
+                registration_uuids = [str(uuid.uuid4()) for _ in range(num_patients)]
+            for registration_uuid in registration_uuids:
                 # Matches the base fixture's convention: entityUuid == the registration
                 # instance's own uuid.
-                registration_uuid = str(uuid.uuid4())
                 catt_uuid = str(uuid.uuid4())
 
                 reg_file_name = f"registration_{registration_uuid}.xml"
                 catt_file_name = f"followup_{catt_uuid}.xml"
                 zipf.writestr(f"{registration_uuid}/{reg_file_name}", registration_xml_bytes)
-                zipf.writestr(f"{catt_uuid}/{catt_file_name}", catt_xml_bytes)
 
                 new_instances.append(
                     {
                         "id": registration_uuid,
                         "created_at": 1.712326150005e9,
-                        "updated_at": 1.712326150005e9,
+                        "updated_at": registrations_updated_at.timestamp(),
                         "file": f"/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/{registration_uuid}/{reg_file_name}",
                         "name": "Enregistrement",
                         "formId": "1",
@@ -234,6 +290,9 @@ class ProcessMobileBulkUploadTest(TestCase):
                         "accuracy": 14.929,
                     }
                 )
+                if not with_followups:
+                    continue
+                zipf.writestr(f"{catt_uuid}/{catt_file_name}", catt_xml_bytes)
                 new_instances.append(
                     {
                         "id": catt_uuid,
@@ -254,7 +313,8 @@ class ProcessMobileBulkUploadTest(TestCase):
 
             zipf.writestr("instances.json", json.dumps(new_instances))
 
-        save_file_to_api_import(self.api_import, zip_path)
+        save_file_to_api_import(api_import or self.api_import, zip_path)
+        return registration_uuids
 
     def test_success(self):
         self._create_zip_file()
@@ -708,6 +768,274 @@ class ProcessMobileBulkUploadTest(TestCase):
             # preceded by an `exists()` HEAD as `AWS_S3_FILE_OVERWRITE = False` makes it look for an available name -
             # 100 when the XML paths were over the field's `max_length`, each also checking its truncated name.
             profiler.assertStorageCounts({"_open": 1, "exists": 50, "_save": 50})
+
+    def test_audit_trail_at_scale(self):
+        """
+        A batch of 50 new instances: one audit row each, with the instance as created by `import_data()` (no file nor
+        json yet) as past value, and the fully processed instance as new value.
+        """
+        # Setup: 25 patients, each with a registration and a follow-up
+        m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
+        m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
+        self._create_zip_file_at_scale(num_patients=25)
+
+        # Exercise
+        with QueryProfiler(trace_tables=["audit_modification"]) as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=self.api_import.id,
+                project_id=self.project.id,
+                task=self.task,
+                _immediate=True,
+            )
+
+        # Assert
+        instances = m.Instance.objects.all()
+        self.assertEqual(instances.count(), 50)
+        content_type = ContentType.objects.get_for_model(m.Instance)
+        modifications = Modification.objects.filter(source=BULK_UPLOAD)
+        self.assertEqual(modifications.count(), 50)
+        self.assertEqual(
+            sorted(modifications.values_list("object_id", flat=True)),
+            sorted(str(instance_id) for instance_id in instances.values_list("id", flat=True)),
+        )
+        self.assertEqual(set(modifications.values_list("content_type", flat=True)), {content_type.id})
+        self.assertEqual(set(modifications.values_list("user", flat=True)), {self.user.id})
+
+        for instance in [instances.order_by("id").first(), instances.order_by("id").last()]:
+            modification = modifications.get(object_id=instance.id)
+            self.assertIsNotNone(modification.created_at)
+            past, new = modification.past_value[0], modification.new_value[0]
+            self.assertEqual(
+                {
+                    "past": {"pk": past["pk"], **{k: past["fields"][k] for k in ["uuid", "file", "json"]}},
+                    "new": {"pk": new["pk"], **{k: new["fields"][k] for k in ["file", "json", "form_version"]}},
+                },
+                {
+                    # As created by `import_data()`: no file nor data yet
+                    "past": {"pk": instance.id, "uuid": instance.uuid, "file": "", "json": None},
+                    "new": {
+                        "pk": instance.id,
+                        "file": instance.file.name,
+                        "json": instance.json,
+                        "form_version": instance.form_version_id,
+                    },
+                },
+            )
+        # One INSERT per audit row
+        self.assertEqual(profiler.table_counts()["audit_modification"], 50)
+
+    def test_campaign_registrations_then_followups_query_count(self):
+        """
+        A campaign: a first zip registers 25 patients, then a second zip sends the same 25 registrations again, updated
+        a day later (as an entity workflow would), along with a new CATT follow-up for each - half of its instances
+        already exist. The existing registrations are updated in place.
+        """
+        m.FormVersion.objects.create(form=self.form_registration, version_id="2024032701")
+        m.FormVersion.objects.create(form=self.form_catt, version_id="2024031801")
+        registration_uuids = self._create_zip_file_at_scale(num_patients=25, with_followups=False)
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+        )
+        registrations = {instance.uuid: (instance.id, instance.file.name) for instance in m.Instance.objects.all()}
+        self.assertEqual(set(registrations), set(registration_uuids))
+
+        followups_import = APIImport.objects.create(
+            user=self.user, import_type="bulk", json_body={}, app_version="1.2.3"
+        )
+        self._create_zip_file_at_scale(
+            registration_uuids=registration_uuids,
+            api_import=followups_import,
+            registrations_updated_at=SCALE_REGISTRATION_UPDATED_AT + datetime.timedelta(days=1),
+        )
+        followups_task = m.Task.objects.create(
+            name="process_mobile_bulk_upload", launcher=self.user, account=self.account
+        )
+        with QueryProfiler(trace_tables=["iaso_instance"]) as profiler:
+            process_mobile_bulk_upload(
+                api_import_id=followups_import.id, project_id=self.project.id, task=followups_task, _immediate=True
+            )
+
+        # The batch's pre-existing uuids lookup and `import_data()`'s file names lookup (2), then 6 per new follow-up
+        # (see test_form_version_query_count_baseline) and 5 per updated registration: looked up by uuid 3 times (twice
+        # by `import_data()`, once by `process_mobile_bulk_upload()`), then its 2 saves (with the new file, then with
+        # its json).
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 2 + 25 * 6 + 25 * 5)
+
+        self.assertEqual(m.Instance.objects.count(), 50)
+        self.assertEqual(m.Entity.objects.count(), 25)
+        for registration_uuid in registration_uuids:
+            entity = m.Entity.objects.get(uuid=registration_uuid)
+            registration_id, registration_file = registrations[registration_uuid]
+            self.assertEqual(entity.attributes_id, registration_id)
+            # Updated in place: same instance, with the new upload's file and timestamp
+            self.assertNotEqual(entity.attributes.file.name, registration_file)
+            self.assertEqual(entity.attributes.source_updated_at.date().isoformat(), "2024-04-06")
+            self.assertEqual(
+                sorted(entity.instances.values_list("form_id", flat=True)),
+                [self.form_registration.id, self.form_catt.id],
+            )
+
+    def test_failed_validation_workflow_start_is_not_saved(self):
+        """
+        Re-sent (and updated) registrations whose validation workflow fails to start: `ValidationWorkflowEngine.start()`
+        sets them as PENDING before failing, and its savepoint rolls that back in the database: the rolled back status
+        must not be saved when they're updated later in the import.
+        """
+        registration_uuids = self._create_zip_file_at_scale(num_patients=2, with_followups=False)
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+        )
+        m.Instance.objects.update(general_validation_status=ValidationWorkflowArtefactStatus.REJECTED)
+        # 2 starting nodes: `get_starting_node()` fails, after the instance was set as PENDING
+        workflow = m.ValidationWorkflow.objects.create(name="Broken workflow", account=self.account)
+        m.ValidationNodeTemplate.objects.create(name="Start 1", workflow=workflow)
+        m.ValidationNodeTemplate.objects.create(name="Start 2", workflow=workflow)
+        self.form_registration.validation_workflow = workflow
+        self.form_registration.save()
+
+        resend_import = APIImport.objects.create(user=self.user, import_type="bulk", json_body={}, app_version="1.2.3")
+        self._create_zip_file_at_scale(
+            registration_uuids=registration_uuids,
+            with_followups=False,
+            api_import=resend_import,
+            registrations_updated_at=SCALE_REGISTRATION_UPDATED_AT + datetime.timedelta(days=1),
+        )
+        resend_task = m.Task.objects.create(name="process_mobile_bulk_upload", launcher=self.user, account=self.account)
+        process_mobile_bulk_upload(
+            api_import_id=resend_import.id, project_id=self.project.id, task=resend_task, _immediate=True
+        )
+
+        for registration in m.Instance.objects.filter(uuid__in=registration_uuids):
+            self.assertEqual(registration.source_updated_at.date().isoformat(), "2024-04-06")
+            self.assertEqual(registration.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
+
+    def _submission(self, instance_uuid, form, entity_uuid, updated_at=DEFAULT_CREATED_AT):
+        """One entry of a zip's instances.json, as the mobile app sends it. Its XML is `<instance uuid>.xml`."""
+        return {
+            "id": instance_uuid,
+            "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+            "updated_at": int(updated_at.timestamp()),
+            "file": f"/storage/emulated/0/odk/instances/{instance_uuid}.xml",
+            "name": form.name,
+            "formId": str(form.id),
+            "orgUnitId": str(self.org_unit.id),
+            "entityUuid": str(entity_uuid),
+            "entityTypeId": str(self.default_entity_type.id),
+        }
+
+    def _prepare_upload(self, submissions, without_xml=(), stock_ledger_items=None):
+        """
+        A new bulk upload (`APIImport` and its `Task`) of a zip with `submissions`, each with its XML except the ones
+        whose uuid is in `without_xml`, and the `stock_ledger_items` given.
+        """
+        with open(SUBMISSION_XML, "rb") as xml_file:
+            xml_content = xml_file.read()
+        zip_path = "/tmp/bulk_upload_submissions.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(submissions))
+            if stock_ledger_items is not None:
+                zipf.writestr("stockLedgerItems.json", json.dumps(stock_ledger_items))
+            for submission in submissions:
+                if submission["id"] not in without_xml:
+                    zipf.writestr(f"{submission['id']}/{os.path.basename(submission['file'])}", xml_content)
+        api_import = APIImport.objects.create(user=self.user, import_type="bulk", json_body={}, app_version="1.2.3")
+        save_file_to_api_import(api_import, zip_path)
+        task = m.Task.objects.create(name="process_mobile_bulk_upload", launcher=self.user, account=self.account)
+        return api_import, task
+
+    def _process(self, upload, project_id=None):
+        api_import, task = upload
+        process_mobile_bulk_upload(
+            api_import_id=api_import.id, project_id=project_id or self.project.id, task=task, _immediate=True
+        )
+
+    def _create_registration_zip(self, entity_uuid, instance_uuid):
+        """A zip with a single new registration (its own uuid) for the entity `entity_uuid`."""
+        zip_path = "/tmp/bulk_upload_new_registration.zip"
+        file_name = f"registration_{instance_uuid}.xml"
+        instances_data = [
+            {
+                "id": instance_uuid,
+                "created_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "updated_at": int(DEFAULT_CREATED_AT.timestamp()),
+                "file": f"/storage/test/{file_name}",
+                "name": "Enregistrement",
+                "formId": str(self.form_registration.id),
+                "orgUnitId": "1",
+                "entityUuid": str(entity_uuid),
+                "entityTypeId": str(self.default_entity_type.id),
+            },
+        ]
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                zipf.writestr(f"{instance_uuid}/{file_name}", xml_file.read())
+        save_file_to_api_import(self.api_import, zip_path)
+
+    def test_new_reference_instance_for_existing_entity(self):
+        """
+        A new registration (its own uuid) for an entity that already has one: it becomes the entity's reference
+        instance (`attributes`), the previous one is kept.
+        """
+        # Setup: a patient with a registration, then a zip with a new registration for them
+        patient = create_entity_with_registration(self, name="Patient", uuid=str(uuid.uuid4()))
+        previous_registration_uuid = patient.attributes.uuid
+        new_registration_uuid = str(uuid.uuid4())
+        self._create_registration_zip(patient.uuid, new_registration_uuid)
+
+        # Exercise
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+        )
+
+        # Assert
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+        self.assertEqual(
+            entity_state(patient.uuid),
+            {
+                "deleted": False,
+                "merged to": None,
+                "reference instance": new_registration_uuid,
+                "instances": sorted([previous_registration_uuid, new_registration_uuid]),
+            },
+        )
+        self.assertFalse(instance_state(previous_registration_uuid)["deleted"])
+
+    def test_new_reference_instance_for_merged_entity(self):
+        """
+        A new registration (its own uuid) for an entity soft-deleted by a merge: it's attached to, and becomes the
+        reference instance (`attributes`) of, the entity it was merged into. The merged one is left as is.
+        """
+        # Setup: patients A and B merged into C, then a zip with a new registration for A
+        ent_a = create_entity_with_registration(self, name="Patient A", uuid=str(uuid.uuid4()))
+        ent_b = create_entity_with_registration(self, name="Patient B", uuid=str(uuid.uuid4()))
+        ent_c = merge_entities(ent_a, ent_b, {}, self.user)
+        merged_a = entity_state(ent_a.uuid)
+        self.assertEqual((merged_a["deleted"], merged_a["merged to"]), (True, str(ent_c.uuid)))
+        ent_c_instances = entity_state(ent_c.uuid)["instances"]
+        new_registration_uuid = str(uuid.uuid4())
+        self._create_registration_zip(ent_a.uuid, new_registration_uuid)
+
+        # Exercise
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+        )
+
+        # Assert
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+        self.assertEqual(
+            entity_state(ent_c.uuid),
+            {
+                "deleted": False,
+                "merged to": None,
+                "reference instance": new_registration_uuid,
+                "instances": sorted(ent_c_instances + [new_registration_uuid]),
+            },
+        )
+        self.assertFalse(instance_state(new_registration_uuid)["deleted"])
+        self.assertEqual(entity_state(ent_a.uuid), merged_a)
 
     def test_org_unit_already_exists(self):
         self._create_zip_file()
@@ -1725,6 +2053,357 @@ class ProcessMobileBulkUploadTest(TestCase):
         entity2 = m.Entity.objects_include_deleted.get(uuid="88888888-9999-aaaa-bbbb-cccccccccccc")
         self.assertIsNotNone(entity2.deleted_at)
         self.assertIsNone(entity2.attributes)
+
+    def test_submission_already_received_by_one_by_one_upload(self):
+        """
+        A project uses either one-by-one uploads (POST /api/instances/ then POST /sync/form_upload/) or zips. While it
+        moves from the former to the latter, a device can have sent a submission's XML alone (its POST /api/instances/
+        having failed), then send that submission again in a zip. The instance, found by its file name, is completed by
+        the zip instead of duplicated.
+        """
+        # Setup: the XML alone, as an instance without uuid, entity nor data (no form to parse it with)
+        registration_uuid = str(uuid.uuid4())
+        with open(SUBMISSION_XML, "rb") as xml_file:
+            xml_upload = SimpleUploadedFile(f"{registration_uuid}.xml", xml_file.read())
+        self.client.post("/sync/form_upload/", {"xml_submission_file": xml_upload})
+        received_alone = m.Instance.objects.get(file_name=f"{registration_uuid}.xml")
+        self.assertEqual((received_alone.uuid, received_alone.entity, received_alone.json), (None, None, None))
+        upload = self._prepare_upload(
+            [self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)]
+        )
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert: the same instance, completed with the zip's metadata, and data parsed from its XML (stored again, in
+        # the account's folder). Its entity is created, with it as reference instance.
+        self.assertEqual(m.Instance.objects.count(), 1)
+        account_folder = f"{self.account.short_sanitized_name}_{self.account.id}"
+        self.assertEqual(
+            instance_state(registration_uuid),
+            {
+                "id": received_alone.id,
+                "entity": registration_uuid,
+                "form": self.form_registration.id,
+                "project": self.project.id,
+                "org unit": self.org_unit.id,
+                "created by": self.user.id,
+                "file": f"{account_folder}/instances/{timezone.now():%Y_%m}/{registration_uuid}/{registration_uuid}.xml",
+                "has data": True,
+                "updated at": DEFAULT_CREATED_AT,
+                "validation status": "",
+                "deleted": False,
+            },
+        )
+        self.assertEqual(
+            entity_state(registration_uuid),
+            {
+                "deleted": False,
+                "merged to": None,
+                "reference instance": registration_uuid,
+                "instances": [registration_uuid],
+            },
+        )
+        # Queries: the batch's uuids and file names lookups (2), its uuid looked up (1), found by its file name (1),
+        # saved by `import_data()` (1), then twice with its XML and data (2). S3: the zip, then the XML stored again.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 7)
+        profiler.assertStorageCounts({"_open": 1, "exists": 1, "_save": 1})
+
+    def test_approved_instance_sent_again(self):
+        """
+        An instance already approved, sent again with newer data (e.g. edited on the device): this documents the current
+        behaviour - it's updated with the new data, and stays approved, without its validation workflow being restarted.
+        """
+        # Setup: a registration, approved since, then sent again a day later
+        registration_uuid = str(uuid.uuid4())
+        submission = self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)
+        self._process(self._prepare_upload([submission]))
+        m.Instance.objects.filter(uuid=registration_uuid).update(
+            general_validation_status=ValidationWorkflowArtefactStatus.APPROVED
+        )
+        approved = instance_state(registration_uuid)
+        a_day_later = DEFAULT_CREATED_AT + datetime.timedelta(days=1)
+        upload = self._prepare_upload(
+            [self._submission(registration_uuid, self.form_registration, registration_uuid, updated_at=a_day_later)]
+        )
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert: updated in place with the new XML (stored next to the previous one), still approved
+        updated = instance_state(registration_uuid)
+        self.assertNotEqual(updated["file"], approved["file"])
+        self.assertEqual(updated, {**approved, "file": updated["file"], "updated at": a_day_later})
+        # Queries: the batch's uuids and file names lookups (2), its uuid looked up by `import_data()` (1) - which
+        # leaves it out, as approved - and by the task (1), then saved twice with its new XML and data (2). S3: the zip,
+        # then the new XML: its name is taken by the previous one, so a 2nd HEAD for the name it's stored under.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 6)
+        profiler.assertStorageCounts({"_open": 1, "exists": 2, "_save": 1})
+
+    def test_existing_instance_sent_again_without_its_xml(self):
+        """
+        An instance already received, sent again in a zip that lacks its XML: it's kept as it was, with its entity.
+        Unlike a new instance whose XML is missing, which is deleted (see test_bulk_upload_missing_file_key_error).
+        """
+        # Setup: a registration received with its XML, then sent again (updated) without it
+        registration_uuid = str(uuid.uuid4())
+        self._process(
+            self._prepare_upload(
+                [self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)]
+            )
+        )
+        received = instance_state(registration_uuid)
+        patient = entity_state(registration_uuid)
+        a_day_later = DEFAULT_CREATED_AT + datetime.timedelta(days=1)
+        upload = self._prepare_upload(
+            [self._submission(registration_uuid, self.form_registration, registration_uuid, updated_at=a_day_later)],
+            without_xml=[registration_uuid],
+        )
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert: nothing changed
+        self.assertEqual(instance_state(registration_uuid), received)
+        self.assertEqual(entity_state(registration_uuid), patient)
+        # Queries: the batch's uuids and file names lookups (2), its uuid looked up twice by `import_data()` (2) and once
+        # by the task (1). S3: only the zip, nothing stored.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 5)
+        profiler.assertStorageCounts({"_open": 1})
+
+    def test_new_followup_without_its_xml(self):
+        """
+        A new follow-up for a known patient, in a zip that lacks its XML: the follow-up is deleted, the patient's
+        entity and registration are left untouched (it isn't the entity's reference instance).
+        """
+        # Setup: a patient registered, then a follow-up without its XML
+        registration_uuid = str(uuid.uuid4())
+        self._process(
+            self._prepare_upload(
+                [self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)]
+            )
+        )
+        registration = instance_state(registration_uuid)
+        patient = entity_state(registration_uuid)
+        followup_uuid = str(uuid.uuid4())
+        upload = self._prepare_upload(
+            [self._submission(followup_uuid, self.form_catt, entity_uuid=registration_uuid)],
+            without_xml=[followup_uuid],
+        )
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert: no follow-up, the rest unchanged
+        self.assertIsNone(instance_state(followup_uuid))
+        self.assertEqual(instance_state(registration_uuid), registration)
+        self.assertEqual(entity_state(registration_uuid), patient)
+        # Queries: the batch's uuids and file names lookups (2), its uuid looked up (1), created by `import_data()` (2)
+        # and saved (1), then deleted (1). S3: only the zip, nothing stored.
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 7)
+        profiler.assertStorageCounts({"_open": 1})
+
+    def _sku(self):
+        """A stock keeping unit of the project, as the mobile app gets them."""
+        sku = m.StockKeepingUnit.objects.create(
+            name="Vaccine", short_name="VAC", account=self.user.iaso_profile.account
+        )
+        sku.projects.add(self.project)
+        return sku
+
+    def _stock_ledger_item(self, sku, submission_uuid, value, impact=StockImpacts.ADD):
+        """One entry of a zip's stockLedgerItems.json: a stock movement recorded by the submission `submission_uuid`."""
+        return {
+            "id": str(uuid.uuid4()),
+            "sku": sku.id,
+            "org_unit": self.org_unit.id,
+            "submission_id": submission_uuid,
+            "question": "quantity",
+            "value": value,
+            "impact": impact,
+        }
+
+    def _stock_state(self, sku):
+        """The stock of `sku` in `self.org_unit`: its ledger (sorted by value) and computed balance."""
+        stock_item = m.StockItem.objects.filter(org_unit=self.org_unit, sku=sku).first()
+        return {
+            "ledger": sorted(
+                m.StockLedgerItem.objects.filter(org_unit=self.org_unit, sku=sku).values_list(
+                    "submission__uuid", "impact", "value", "created_by"
+                ),
+                key=lambda item: item[2],
+            ),
+            "balance": stock_item.value if stock_item else None,
+        }
+
+    def test_stock_ledger_items(self):
+        """
+        Stock movements recorded by submissions of the same zip: imported once the submissions are, each referring to
+        its submission, and the org unit's stock balance computed.
+        """
+        # Setup: a registration and its follow-up, recording 10 vaccines received then 3 used
+        sku = self._sku()
+        registration_uuid, followup_uuid = str(uuid.uuid4()), str(uuid.uuid4())
+        upload = self._prepare_upload(
+            [
+                self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid),
+                self._submission(followup_uuid, self.form_catt, entity_uuid=registration_uuid),
+            ],
+            stock_ledger_items=[
+                self._stock_ledger_item(sku, registration_uuid, 10),
+                self._stock_ledger_item(sku, followup_uuid, 3, impact=StockImpacts.SUBTRACT),
+            ],
+        )
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert
+        api_import, task = upload
+        task.refresh_from_db()
+        self.assertEqual(task.status, m.SUCCESS)
+        self.assertEqual(
+            self._stock_state(sku),
+            {
+                "ledger": [
+                    (followup_uuid, StockImpacts.SUBTRACT, 3, self.user.id),
+                    (registration_uuid, StockImpacts.ADD, 10, self.user.id),
+                ],
+                "balance": 7,
+            },
+        )
+        # Queries, for each movement: is it already imported (1), saved - its `save()` checks again (2), then the
+        # balance computed from the ledger: last reset, then sum (2)
+        self.assertEqual(profiler.table_counts()["iaso_stockledgeritem"], 2 * 5)
+
+    def test_stock_ledger_item_sent_again(self):
+        """A stock movement already imported, sent again in another zip: it's skipped, the balance doesn't change."""
+        # Setup: 10 vaccines received, imported, then the same zip sent again
+        sku = self._sku()
+        registration_uuid = str(uuid.uuid4())
+        submissions = [self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)]
+        stock_ledger_items = [self._stock_ledger_item(sku, registration_uuid, 10)]
+        self._process(self._prepare_upload(submissions, stock_ledger_items=stock_ledger_items))
+        imported = self._stock_state(sku)
+        upload = self._prepare_upload(submissions, stock_ledger_items=stock_ledger_items)
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert
+        api_import, task = upload
+        task.refresh_from_db()
+        self.assertEqual(task.status, m.SUCCESS)
+        self.assertEqual(self._stock_state(sku), imported)
+        self.assertEqual(imported["balance"], 10)
+        # Queries: is it already imported (1) - yes, skipped
+        self.assertEqual(profiler.table_counts()["iaso_stockledgeritem"], 1)
+
+    def test_updated_followup_of_merged_entity(self):
+        """
+        A follow-up of a patient since merged into another, updated on a device that still has the merged patient: the
+        follow-up is updated, the active patient's registration isn't (the follow-up isn't the reference instance).
+        """
+        # Setup: patient A registered with a follow-up, merged with B into C, then A's follow-up updated a day later
+        registration_uuid, followup_uuid = str(uuid.uuid4()), str(uuid.uuid4())
+        followup = self._submission(followup_uuid, self.form_catt, entity_uuid=registration_uuid)
+        self._process(
+            self._prepare_upload(
+                [self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid), followup]
+            )
+        )
+        ent_b = create_entity_with_registration(self, name="Patient B", uuid=str(uuid.uuid4()))
+        ent_c = merge_entities(m.Entity.objects.get(uuid=registration_uuid), ent_b, {}, self.user)
+        active_registration_uuid = entity_state(ent_c.uuid)["reference instance"]
+        active_registration = instance_state(active_registration_uuid)
+        received_followup = instance_state(followup_uuid)
+        a_day_later = DEFAULT_CREATED_AT + datetime.timedelta(days=1)
+        upload = self._prepare_upload([{**followup, "updated_at": int(a_day_later.timestamp())}])
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert: the follow-up updated, C's registration unchanged
+        updated_followup = instance_state(followup_uuid)
+        self.assertEqual(
+            updated_followup, {**received_followup, "file": updated_followup["file"], "updated at": a_day_later}
+        )
+        self.assertEqual(instance_state(active_registration_uuid), active_registration)
+        # Queries: the batch's uuids and file names lookups (2), its uuid looked up twice by `import_data()` (2) and once
+        # by the task (1), saved twice with its new XML and data (2), then the merged patient's reference instance
+        # loaded, to see it's not this follow-up (1). S3: the zip, then the new XML (its name is taken: a 2nd HEAD).
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 8)
+        profiler.assertStorageCounts({"_open": 1, "exists": 2, "_save": 1})
+
+    def test_older_registration_update_of_merged_entity(self):
+        """
+        A registration of a patient since merged into another, updated on a device that still has the merged patient,
+        but less recently than the active patient's registration: it's updated, the active patient's registration is
+        kept (the most recent data wins).
+        """
+        # Setup: patient A merged with B into C, C's registration edited on the 5th, then A's registration updated on
+        # the 2nd
+        registration_uuid = str(uuid.uuid4())
+        registration = self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)
+        self._process(self._prepare_upload([registration]))
+        ent_b = create_entity_with_registration(self, name="Patient B", uuid=str(uuid.uuid4()))
+        ent_c = merge_entities(m.Entity.objects.get(uuid=registration_uuid), ent_b, {}, self.user)
+        active_registration_uuid = entity_state(ent_c.uuid)["reference instance"]
+        m.Instance.objects.filter(uuid=active_registration_uuid).update(
+            source_updated_at=DEFAULT_CREATED_AT + datetime.timedelta(days=4)
+        )
+        active_registration = instance_state(active_registration_uuid)
+        merged_registration = instance_state(registration_uuid)
+        a_day_later = DEFAULT_CREATED_AT + datetime.timedelta(days=1)
+        upload = self._prepare_upload([{**registration, "updated_at": int(a_day_later.timestamp())}])
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process(upload)
+
+        # Assert: A's registration updated, C's kept
+        updated = instance_state(registration_uuid)
+        self.assertEqual(updated, {**merged_registration, "file": updated["file"], "updated at": a_day_later})
+        self.assertEqual(instance_state(active_registration_uuid), active_registration)
+        # Queries: as in test_updated_followup_of_merged_entity (8), plus the active patient's registration loaded, to
+        # compare their dates (1). S3: the zip, then the new XML (its name is taken: a 2nd HEAD).
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 9)
+        profiler.assertStorageCounts({"_open": 1, "exists": 2, "_save": 1})
+
+    def test_unknown_project(self):
+        """
+        A bulk upload for a project that doesn't exist: the task fails and the import is flagged, nothing is imported.
+        """
+        # Setup
+        registration_uuid = str(uuid.uuid4())
+        api_import, task = self._prepare_upload(
+            [self._submission(registration_uuid, self.form_registration, entity_uuid=registration_uuid)]
+        )
+        unknown_project_id = m.Project.objects.order_by("-id").first().id + 1
+
+        # Exercise
+        with QueryProfiler() as profiler:
+            self._process((api_import, task), project_id=unknown_project_id)
+
+        # Assert
+        task.refresh_from_db()
+        api_import.refresh_from_db()
+        self.assertEqual((task.status, api_import.has_problem), (m.ERRORED, True))
+        self.assertIn("Project matching query does not exist", api_import.exception)
+        self.assertEqual(
+            {"instances": m.Instance.objects.count(), "entities": m.Entity.objects.count()},
+            {"instances": 0, "entities": 0},
+        )
+        # Stopped before reading the zip
+        self.assertEqual(profiler.table_counts()["iaso_instance"], 0)
+        profiler.assertStorageCounts({})
 
 
 def in_memory_zip(entries):

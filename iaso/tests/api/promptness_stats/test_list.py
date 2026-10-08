@@ -158,6 +158,16 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.assertEqual(data["results"], [])
         self.assertEqual(data["count"], 0)
 
+    def test_has_children_ignores_rejected_and_new_children(self):
+        # Somali only has a rejected and a new child: there is nothing to drill down into
+        self.create_ou("Rejected district", self.type_district, self.somali, m.OrgUnit.VALIDATION_REJECTED)
+        self.create_ou("New district", self.type_district, self.somali, m.OrgUnit.VALIDATION_NEW)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params())
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        somali = next(row for row in data["results"] if row["id"] == self.somali.id)
+        self.assertFalse(somali["has_children"])
+
     def test_earliest_submission_is_used(self):
         # HF A has an on time submission and a late one: it is on time
         self.client.force_authenticate(self.user)
@@ -173,6 +183,16 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.east_shewa.id))
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data["results"][0]["on_time"], 1)
+
+    def test_day_after_deadline_is_late(self):
+        # HF F (missing): a submission uploaded at exactly 00:00 on the day after the deadline day is late
+        self.create_submission(self.hf_f, created_at=aware(2026, 2, 11, 0, 0))
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.north_gondar.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        hf_f = next(row for row in data["results"] if row["id"] == self.hf_f.id)
+        self.assertEqual(hf_f["on_time"], 0)
+        self.assertEqual(hf_f["late"], 1)
 
     def test_upload_date_is_used(self):
         # HF F (missing): a submission created on the device before the deadline, but uploaded after it, is late
@@ -193,6 +213,16 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         hf_c = next(row for row in data["results"] if row["id"] == self.hf_c.id)
         self.assertEqual(hf_c["missing"], 1)
+
+    def test_submission_without_file_is_ignored(self):
+        # HF F (missing): an on time submission whose file is NULL (`create_submission()` always attaches a file)
+        submission = self.create_submission(self.hf_f, created_at=aware(2026, 1, 20, 10, 0))
+        m.Instance.objects.filter(pk=submission.pk).update(file=None)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.URL, self.get_serializer_params(parent_org_unit_id=self.north_gondar.id))
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        hf_f = next(row for row in data["results"] if row["id"] == self.hf_f.id)
+        self.assertEqual(hf_f["missing"], 1)
 
     def test_rejected_org_units_are_ignored(self):
         # HF G is rejected
@@ -288,6 +318,16 @@ class PromptnessStatsListTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         params = self.get_serializer_params(
             parent_org_unit_id=self.oromia.id, org_unit_type_ids=str(self.type_district.id)
+        )
+        response = self.client.get(self.URL, params)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(self.result_names(data), ["East Shewa", "Jimma"])
+
+    def test_org_unit_types_exclude_the_parent(self):
+        # Oromia is a region: it is not one of its own rows, even when the region type is requested
+        self.client.force_authenticate(self.user)
+        params = self.get_serializer_params(
+            parent_org_unit_id=self.oromia.id, org_unit_type_ids=f"{self.type_region.id},{self.type_district.id}"
         )
         response = self.client.get(self.URL, params)
         data = self.assertJSONResponse(response, status.HTTP_200_OK)

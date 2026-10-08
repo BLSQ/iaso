@@ -30,9 +30,7 @@ import { MissionFormItem } from './MissionFormItem';
 
 const styles: SxStyles = {
     tableContainer: {
-        border: theme =>
-            // @ts-ignore — ligthGray typo is in the theme
-            `1px solid ${theme.palette.ligthGray.border}`,
+        border: theme => `1px solid ${theme.palette.lightGray.border}`,
         borderRadius: 1,
     },
     headerCell: {

@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("contenttypes", "0002_remove_content_type_name"),
-        ("iaso", "0394_remove_show_pages_feature_flag"),
+        ("iaso", "0403_instance_file_max_length"),
     ]
 
     operations = [
@@ -366,5 +366,26 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name="planning",
             name="forms",
+        ),
+        migrations.AlterField(
+            model_name="planning",
+            name="org_unit",
+            field=models.ForeignKey(
+                help_text="The root org unit of the planning used to scope the assignments org units",
+                on_delete=django.db.models.deletion.PROTECT,
+                to="iaso.orgunit",
+            ),
+        ),
+        migrations.AddField(
+            model_name="instance",
+            name="mission",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="The mission this submission fulfills, within Instance.planning",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="instances",
+                to="iaso.mission",
+            ),
         ),
     ]

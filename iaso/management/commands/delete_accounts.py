@@ -73,6 +73,7 @@ from iaso.models import (
     CommentIaso,
     Form,
     MatchingAlgorithm,
+    MissionFormThroughForm,
     OpenHEXAInstance,
     OrgUnitType,
     RecordType,
@@ -125,6 +126,7 @@ _MAX_PROTECT_UNBLOCK_ATTEMPTS = 10
 class DiscoveredModel:
     """A model discovered via BFS from Account, and how to filter/delete it."""
 
+    name: str  # Name of the model
     account_lookup: str  # Django ORM lookup back to Account, e.g. 'project__account'
     on_delete_value: str  # on_delete of the edge that discovered this model, e.g. 'CASCADE'
     is_partial_coverage: bool  # True if any edge on the path is SET_NULL — filter may miss rows with a NULL FK
@@ -201,6 +203,9 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
         label="users_profile",
         reason="legacy table, no longer defined in the codebase — may still exist in older deployed databases",
     ),
+    OutOfGraphCleanupNote(
+        label="iaso.MissionFormThroughForm", reason="no direct FK to Account, need to go through MissionWithForms"
+    ),
 ]
 
 # represents the different modes this command can be run in
@@ -258,6 +263,7 @@ def build_fk_graph(root_model):
             field_name = related_object.field.name
 
             discovered_model = DiscoveredModel(
+                name=related_object.name,
                 account_lookup=field_name if current_lookup is None else f"{field_name}__{current_lookup}",
                 on_delete_value=_on_delete_name(related_object.on_delete),
                 # if we got here through a nullable FK at some point, any model discovered downstream is marked too
@@ -964,6 +970,7 @@ class Command(BaseCommand):
             DataSource,  # M2M gap, handled via _delete_datasource_tree
             Form,  # M2M gap
             OrgUnitType,  # M2M gap
+            MissionFormThroughForm,  # M2M
         }
 
         # ---- Step 1: Out-of-graph — DataSource tree (M2M gap) ----
@@ -985,6 +992,13 @@ class Command(BaseCommand):
                 label="CommentIaso",
             )
 
+        # ---- Step 1c: Out-of-graph - MissionFormThroughForm -----
+
+        with self._doing(f"account={account.id} MissionFormThroughFrom"):
+            self._delete_qs(
+                MissionFormThroughForm.objects.filter(mission_form__mission_ptr__account=account.id),
+                label="MissionFormThroughForm",
+            )
         # ---- Step 2: Break PROTECT cycles that topo sort can't handle ----
 
         # PlanningSamplingResult.planning = CASCADE(Planning) and

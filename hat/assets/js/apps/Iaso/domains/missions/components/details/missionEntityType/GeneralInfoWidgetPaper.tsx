@@ -26,7 +26,7 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
                 sx={{
                     border: theme =>
                         // @ts-ignore
-                        `1px solid ${theme.palette.ligthGray.border}`,
+                        `1px solid ${theme.palette.lightGray.border}`,
                 }}
             >
                 <TableBody>
@@ -73,7 +73,7 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
                 sx={{
                     border: theme =>
                         // @ts-ignore
-                        `1px solid ${theme.palette.ligthGray.border}`,
+                        `1px solid ${theme.palette.lightGray.border}`,
                 }}
             >
                 <TableBody>

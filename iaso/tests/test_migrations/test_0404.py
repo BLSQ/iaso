@@ -4,10 +4,10 @@ from django.utils.timezone import now
 from iaso.test import IasoMigratorTestCase
 
 
-class Test0395DirectMigration(IasoMigratorTestCase):
-    migrate_from = ("iaso", "0394_remove_show_pages_feature_flag")
-    migrate_to = ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more")
-    num_queries = 65
+class Test0404DirectMigration(IasoMigratorTestCase):
+    migrate_from = ("iaso", "0403_instance_file_max_length")
+    migrate_to = ("iaso", "0404_missionform_alter_corepermissionsupport_options_and_more")
+    num_queries = 67
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
@@ -110,11 +110,11 @@ class Test0395DirectMigration(IasoMigratorTestCase):
         )
 
 
-class Test0395ReverseMigration(IasoMigratorTestCase):
-    num_queries = 46
+class Test0404ReverseMigration(IasoMigratorTestCase):
+    num_queries = 50
 
-    migrate_from = ("iaso", "0395_missionform_alter_corepermissionsupport_options_and_more")
-    migrate_to = ("iaso", "0394_remove_show_pages_feature_flag")
+    migrate_from = ("iaso", "0404_missionform_alter_corepermissionsupport_options_and_more")
+    migrate_to = ("iaso", "0403_instance_file_max_length")
 
     def create_mission_form_with_form(self, name, account, user, *forms):
         MissionForm = self.old_state.apps.get_model("iaso", "MissionForm")

@@ -77,7 +77,7 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
                         sx={{
                             border: theme =>
                                 // @ts-ignore
-                                `1px solid ${theme.palette.ligthGray.border}`,
+                                `1px solid ${theme.palette.lightGray.border}`,
                         }}
                     >
                         <TableHead>

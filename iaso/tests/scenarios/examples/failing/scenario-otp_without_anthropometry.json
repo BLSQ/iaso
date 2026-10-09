@@ -1,0 +1,22 @@
+{
+  "$schema": "../scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "OTP admission straight after registration",
+  "description": "Deliberately failing: OTP admission is only offered after anthropometry finds oedema.",
+  "steps": [
+    {
+      "form": "child_registration",
+      "answers": {"first_name": "Leia", "age_months": "30"}
+    },
+    {
+      "form": "otp_admission",
+      "description": "The nurse wants to admit her directly",
+      "answers": {"admitted": "yes"}
+    },
+    {
+      "form": "anthropometry",
+      "answers": {"muac": "11.0"}
+    }
+  ]
+}

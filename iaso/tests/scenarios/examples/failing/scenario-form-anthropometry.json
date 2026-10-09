@@ -1,0 +1,29 @@
+{
+  "$schema": "../scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "form",
+  "name": "Anthropometry form",
+  "description": "Deliberately failing: a wrong expected calculate, an answer the form refuses, a refusal that doesn't happen.",
+  "form": "anthropometry",
+  "steps": [
+    {
+      "description": "First visit: visit_number should be 1, the scenario says 2",
+      "answers": {"muac": "12.5", "oedema": "no"},
+      "expect": {"submission": {"muac": "12.5", "visit_number": "2"}}
+    },
+    {
+      "description": "A MUAC of 0 (the constraint is . > 0)",
+      "answers": {"muac": "0"}
+    },
+    {
+      "description": "The scenario expects 5 cm to be refused, the form has no maximum",
+      "answers": {"muac": "5"},
+      "expect": {"refused": [{"question": "muac", "code": "CONSTRAINT"}]}
+    },
+    {
+      "description": "A choice the form doesn't have",
+      "answers": {"muac": "13", "oedema": "maybe"},
+      "expect": {"refused": [{"question": "oedema", "code": "UNKNOWN_CHOICE"}]}
+    }
+  ]
+}

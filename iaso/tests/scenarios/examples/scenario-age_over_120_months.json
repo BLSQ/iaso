@@ -1,0 +1,57 @@
+{
+  "$schema": "./scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "An age over 120 months is refused",
+  "description": "The registration form's constraint on age_months (. >= 0 and . < 120) refuses 130; with 119 the child is registered and anthropometry is offered, its MUAC must be positive.",
+  "steps": [
+    {
+      "form": "child_registration",
+      "description": "The nurse types 130 months: the form refuses it, nothing is saved",
+      "answers": {
+        "first_name": "Luke",
+        "age_months": "130"
+      },
+      "expect": {
+        "refused": [
+          {
+            "question": "age_months",
+            "code": "CONSTRAINT"
+          }
+        ]
+      }
+    },
+    {
+      "form": "child_registration",
+      "description": "She corrects it to 119 months",
+      "answers": {
+        "first_name": "Luke",
+        "age_months": "119"
+      },
+      "expect": {
+        "submission": {
+          "age_months": "119",
+          "visits__int__": "0"
+        },
+        "next_forms": [
+          "anthropometry"
+        ]
+      }
+    },
+    {
+      "form": "anthropometry",
+      "description": "A negative MUAC is refused too",
+      "answers": {
+        "muac": "-1"
+      },
+      "expect": {
+        "refused": [
+          {
+            "question": "muac",
+            "code": "CONSTRAINT"
+          }
+        ]
+      }
+    }
+  ]
+}

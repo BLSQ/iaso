@@ -1,0 +1,46 @@
+{
+  "$schema": "./scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Oedema leads to OTP",
+  "description": "Workflow: workflow-child.json (followup 1 always -> anthropometry; followup 2 oedema_status = yes and age < 60 -> otp_admission; copy rules of anthropometry: muac -> last_muac, oedema -> oedema_status, visit_number -> visits__int__; visit_number is computed by the form from the prefilled _visits__int__). Forms: form-child_registration.json, form-anthropometry.json, form-otp_admission.json.",
+  "steps": [
+    {
+      "form": "child_registration",
+      "description": "11-month-old boy registered at the health centre",
+      "answers": {
+        "first_name": "Luke",
+        "age_months": "11"
+      },
+      "expect": {
+        "next_forms": [
+          "anthropometry"
+        ]
+      }
+    },
+    {
+      "form": "anthropometry",
+      "description": "Back 2 weeks later with swelling on both feet",
+      "at": "2026-10-22T08:30:00+00:00",
+      "answers": {
+        "muac": "12.0",
+        "oedema": "yes"
+      },
+      "expect": {
+        "submission": {
+          "muac": "12.0",
+          "visit_number": "1"
+        },
+        "next_forms": [
+          "anthropometry",
+          "otp_admission"
+        ],
+        "attributes": {
+          "oedema_status": "yes",
+          "last_muac": "12.0",
+          "visits__int__": "1"
+        }
+      }
+    }
+  ]
+}

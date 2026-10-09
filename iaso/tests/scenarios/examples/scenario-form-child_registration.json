@@ -1,0 +1,47 @@
+{
+  "$schema": "./scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "form",
+  "name": "Child registration form",
+  "description": "The registration form alone, without the workflow: its required questions, its age constraint (. >= 0 and . < 120) and its calculate.",
+  "form": "child_registration",
+  "steps": [
+    {
+      "description": "A valid registration",
+      "answers": {"first_name": "Luke", "age_months": "11"},
+      "expect": {
+        "submission": {"first_name": "Luke", "age_months": "11", "visits__int__": "0", "oedema_status": null}
+      }
+    },
+    {
+      "description": "119 months is the oldest age accepted",
+      "answers": {"first_name": "Leia", "age_months": "119"},
+      "expect": {"submission": {"age_months": "119"}}
+    },
+    {
+      "description": "120 months is refused",
+      "answers": {"first_name": "Leia", "age_months": "120"},
+      "expect": {"refused": [{"question": "age_months", "code": "CONSTRAINT"}]}
+    },
+    {
+      "description": "A negative age is refused",
+      "answers": {"first_name": "Leia", "age_months": "-1"},
+      "expect": {"refused": [{"question": "age_months", "code": "CONSTRAINT"}]}
+    },
+    {
+      "description": "The name and the age are required",
+      "answers": {},
+      "expect": {
+        "refused": [
+          {"question": "first_name", "code": "REQUIRED"},
+          {"question": "age_months", "code": "REQUIRED"}
+        ]
+      }
+    },
+    {
+      "description": "An age must be a whole number",
+      "answers": {"first_name": "Leia", "age_months": "eleven"},
+      "expect": {"refused": [{"question": "age_months", "code": "INVALID"}]}
+    }
+  ]
+}

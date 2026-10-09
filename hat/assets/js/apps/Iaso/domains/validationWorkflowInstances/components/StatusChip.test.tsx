@@ -42,6 +42,7 @@ describe('StatusChip', () => {
     it('renders any other option with primary color', () => {
         // @ts-ignore
         const word = faker.word.noun();
+        // @ts-ignore
         renderWithThemeAndIntlProvider(<StatusChip status={word} />);
 
         expect(screen.getByTestId('validation-status-chip')).toHaveClass(

@@ -1,9 +1,9 @@
 import { UseQueryResult } from 'react-query';
 import { AssignmentParams } from 'Iaso/domains/assignments/types/assigment';
 import { PLANNINGS_API_URL } from 'Iaso/domains/plannings/constants';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { makeUrlWithParams } from '../../../../libs/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { PlanningOrgUnits } from '../../../plannings/types';
 
 import { PaginatedPlanningOrgUnits } from '../../../plannings/types';

@@ -1,13 +1,14 @@
 import { UseMutationResult } from 'react-query';
 import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
-import { baseUrls } from '../../../../constants/urls';
-import { deleteRequest } from '../../../../libs/Api';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import { baseUrls } from 'Iaso/constants/urls';
+import { TeamUrlParams } from 'Iaso/domains/teams/types/team';
+import { deleteRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
 import MESSAGES from '../../messages';
 
 type useDeleteArgs = {
-    params: any;
+    params: TeamUrlParams;
     count: number;
 };
 

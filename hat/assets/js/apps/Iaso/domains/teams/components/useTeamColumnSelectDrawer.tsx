@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRedirectToReplace, Column } from 'bluesquare-components';
 // Adjust this import path if your ColumnSelectDrawer is located elsewhere relative to this hook
-import { Option } from '../../../components/tables/ColumnSelectDrawer';
-import { TeamParams } from '../types/team';
+import { Option } from 'Iaso/components/tables/ColumnSelectDrawer';
+import { TeamUrlParams } from '../types/team';
 
 export const DEFAULT_TEAMS_COLUMNS = [
     'id',
@@ -17,7 +17,7 @@ const HIDDEN_COLUMNS = ['actions', 'selection'];
 
 export const useTeamsColumnSelectDrawer = (
     columns: Column[],
-    params: TeamParams & { fields?: string },
+    params: TeamUrlParams,
     baseUrl: string,
 ): {
     options: Option[];
@@ -84,7 +84,7 @@ export const useTeamsColumnSelectDrawer = (
     const redirectToReplace = useRedirectToReplace();
 
     const handleApplyOptions = useCallback(() => {
-        const newParams: any = {
+        const newParams: Record<string, any> = {
             ...params,
             fields: visibleColumnsKeys.join(','),
         };

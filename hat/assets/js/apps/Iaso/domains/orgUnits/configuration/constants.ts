@@ -33,3 +33,4 @@ export const editableFieldsManyToManyFields = [
 
 export const orgUnitChangeRequestConfigTypeCreation = 'creation';
 export const orgUnitChangeRequestConfigTypeEdition = 'edition';
+export const creationMandatoryEditableField = 'name';

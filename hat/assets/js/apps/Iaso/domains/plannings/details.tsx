@@ -36,6 +36,7 @@ export const Details: FunctionComponent = () => {
                 <PlanningProvider
                     planningId={planningId}
                     mode={params.mode as PageMode}
+                    newMissionId={params.newMissionId}
                 >
                     <PlanningDetails />
                 </PlanningProvider>

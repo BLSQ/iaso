@@ -380,6 +380,34 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
     },
+    add: {
+        defaultMessage: 'Add',
+        id: 'iaso.label.add',
+    },
+    addMissions: {
+        defaultMessage: 'Add missions',
+        id: 'iaso.plannings.label.addMissions',
+    },
+    addMissionsToPlanning: {
+        defaultMessage: 'Add missions to this planning',
+        id: 'iaso.plannings.label.addMissionsToPlanning',
+    },
+    searchMission: {
+        defaultMessage: 'Search a mission',
+        id: 'iaso.plannings.label.searchMission',
+    },
+    alreadyLinked: {
+        defaultMessage: 'Already linked',
+        id: 'iaso.plannings.label.alreadyLinked',
+    },
+    linkMission: {
+        defaultMessage: 'Link mission',
+        id: 'iaso.plannings.label.linkMission',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.label.type',
+    },
 });
 
 export default MESSAGES;

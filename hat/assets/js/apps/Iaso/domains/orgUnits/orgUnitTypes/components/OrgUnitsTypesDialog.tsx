@@ -24,6 +24,7 @@ import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetForms
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useFormState } from '../../../../hooks/form';
+import { isApiError400 } from '../../../../libs/Api';
 import { DropdownOptions } from '../../../../types/utils';
 import {
     commaSeparatedIdsToArray,
@@ -277,34 +278,27 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     }, [orgUnitType, setFormState]);
 
     const onConfirm = useCallback(
-        (closeDialog: () => void) => {
+        async (closeDialog: () => void) => {
             try {
-                saveType(
-                    mapValues(formState, v => v.value),
-                    {
-                        onSuccess: () => {
-                            closeDialog();
-                            resetForm();
-                        },
-                    },
-                );
+                await saveType(mapValues(formState, v => v.value));
+                closeDialog();
+                resetForm();
             } catch (error) {
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry => {
+                if (isApiError400(error)) {
+                    Object.entries(error.details).forEach(([key, errors]) => {
                         if (
-                            entry[0] === 'sub_unit_type_ids' ||
-                            entry[0] === 'allow_creating_sub_unit_type_ids'
+                            key === 'sub_unit_type_ids' ||
+                            key === 'allow_creating_sub_unit_type_ids'
                         ) {
-                            const typeName = (entry[1] as number[]).join(', ');
-                            const errorText: string = formatMessage(
-                                MESSAGES.subTypesErrors,
-                                {
+                            // errors are the names of the types creating a loop
+                            const typeName = (errors as string[]).join(', ');
+                            setFieldErrors(key, [
+                                formatMessage(MESSAGES.subTypesErrors, {
                                     typeName,
-                                },
-                            );
-                            setFieldErrors(entry[0], [errorText]);
+                                }),
+                            ]);
                         } else {
-                            setFieldErrors(entry[0], entry[1]);
+                            setFieldErrors(key, errors);
                         }
                     });
                 }

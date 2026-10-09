@@ -2,7 +2,7 @@ import React from 'react';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
+import { SUBMISSIONS } from 'Iaso/utils/permissions';
 import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 import { ValidationWorkflowDropdown } from './ValidationWorkflowDropdown';
 
@@ -69,7 +69,7 @@ describe('ValidationWorkflowDropdown', () => {
         expect(screen.getByRole('combobox')).not.toBeDisabled();
         expect(
             screen.queryByLabelText(
-                `You're missing the following permission(s): ${VALIDATION_WORKFLOWS}`,
+                `You're missing the following permission(s): ${SUBMISSIONS}`,
             ),
         ).not.toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();

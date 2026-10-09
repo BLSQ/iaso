@@ -985,6 +985,22 @@ wheels = [
 ]
 
 [[package]]
+name = "django-oauth-toolkit"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "jwcrypto" },
+    { name = "oauthlib" },
+    { name = "pytz" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/75/87/934fd9b320122415e408df3aa5e64ec6121071c4f2a9ff1d8cd89f440b6d/django_oauth_toolkit-2.4.0.tar.gz", hash = "sha256:8975eaf697413a8d54208ee068bc5ad6d1ed76f1df84e4882fbb25e7e6966e1b", size = 97126, upload-time = "2024-05-20T14:28:51.88Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/5f/9003a5d2373dc9eca1492060090362d019863b785c3333cdef5f66d5950d/django_oauth_toolkit-2.4.0-py3-none-any.whl", hash = "sha256:4931d6bf64b6aee32a42f989f218769d1876f3daa53c6bf883d8ab793fb302ee", size = 73913, upload-time = "2024-05-20T14:29:18.282Z" },
+]
+
+[[package]]
 name = "django-pg-utils"
 version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1219,6 +1235,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8e/53/5b2a002c5ebafd60dff1e1945a7d63dee40155830997439a9ba324f0fd50/djangorestframework-3.14.0.tar.gz", hash = "sha256:579a333e6256b09489cbe0a067e66abe55c6595d8926be6b99423786334350c8", size = 1055343, upload-time = "2022-09-22T11:38:44.245Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ff/4b/3b46c0914ba4b7546a758c35fdfa8e7f017fcbe7f23c878239e93623337a/djangorestframework-3.14.0-py3-none-any.whl", hash = "sha256:eb63f58c9f218e1a7d064d17a70751f528ed4e1d35547fdade9aaf4cd103fd08", size = 1062761, upload-time = "2022-09-22T11:38:41.825Z" },
+]
+
+[[package]]
+name = "djangorestframework-api-key"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/95/d9/d187626f67eec3d8c7fb170009ffc323e70553dbac8832ca051f4c7e0a53/djangorestframework_api_key-3.1.0.tar.gz", hash = "sha256:7e9c88360933b3c46467d80645a50cf36697674c7856a737a1c674d570860ac9", size = 36922, upload-time = "2025-04-04T08:53:19.422Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/60/50/29fd576a9162ff3fcd0423ae5a30e7f9610a438329dd20081a60c758f100/djangorestframework_api_key-3.1.0-py3-none-any.whl", hash = "sha256:1b6ed7d89308cf872b29084cf68f9b7171f7efd2b8f84f480c09aa4232f910c1", size = 15664, upload-time = "2025-04-04T08:53:18.228Z" },
 ]
 
 [[package]]
@@ -1802,7 +1830,7 @@ wheels = [
 
 [[package]]
 name = "iaso"
-version = "2026.10.6.dev0"
+version = "2026.10.20.dev0"
 source = { virtual = "." }
 dependencies = [
     { name = "anthropic" },
@@ -1830,6 +1858,7 @@ dependencies = [
     { name = "django-json-widget" },
     { name = "django-lazy-services" },
     { name = "django-ltree" },
+    { name = "django-oauth-toolkit" },
     { name = "django-pg-utils" },
     { name = "django-phonenumber-field", extra = ["phonenumberslite"] },
     { name = "django-qr-code" },
@@ -1843,6 +1872,7 @@ dependencies = [
     { name = "django-webpack-loader" },
     { name = "django-xlsform-validator" },
     { name = "djangorestframework" },
+    { name = "djangorestframework-api-key" },
     { name = "djangorestframework-csv" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-excel" },
@@ -1963,6 +1993,7 @@ requires-dist = [
     { name = "django-json-widget", specifier = "==1.1.1" },
     { name = "django-lazy-services", specifier = "==0.0.3" },
     { name = "django-ltree", specifier = "==0.5.3" },
+    { name = "django-oauth-toolkit", specifier = "==2.4.0" },
     { name = "django-pg-utils", specifier = "==0.1.5" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==7.3.0" },
     { name = "django-qr-code", specifier = "==4.0.1" },
@@ -1976,6 +2007,7 @@ requires-dist = [
     { name = "django-webpack-loader", url = "https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz" },
     { name = "django-xlsform-validator", url = "https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip" },
     { name = "djangorestframework", specifier = "==3.14.0" },
+    { name = "djangorestframework-api-key", specifier = "==3.1.0" },
     { name = "djangorestframework-csv", specifier = "==3.0.2" },
     { name = "djangorestframework-simplejwt", specifier = "==5.3.1" },
     { name = "drf-excel", specifier = "==2.5.3" },
@@ -2186,7 +2218,7 @@ name = "jinxed"
 version = "2.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ansicon", marker = "sys_platform == 'win32'" },
+    { name = "ansicon" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3c/5e/2eea62fd64689685b082f29e1dcd0e57a19009c90733318a4bc9ddb54b2c/jinxed-2.0.4.tar.gz", hash = "sha256:a92ac48923433c0a88577bb0479191788813fd5055ef17ff2b04a701a1b83f19", size = 135991, upload-time = "2026-05-23T16:30:58.304Z" }
 wheels = [
@@ -2278,6 +2310,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/19/74/a633ee74eb36c44aa6d1095e7cc5569bebf04342ee146178e2d36600708b/jsonschema_specifications-2025.9.1.tar.gz", hash = "sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d", size = 32855, upload-time = "2025-09-08T01:34:59.186Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl", hash = "sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe", size = 18437, upload-time = "2025-09-08T01:34:57.871Z" },
+]
+
+[[package]]
+name = "jwcrypto"
+version = "1.5.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/de/7e/53c14813521693e931e420d9db00efe317419ff194495903bce03402275e/jwcrypto-1.5.8.tar.gz", hash = "sha256:c3d7114b6f6e65b52f6b7da817eb8cb8423e1da31e1ef13508447c81ecbdcc34", size = 90772, upload-time = "2026-06-24T19:36:50.782Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6e/7c/f87c5db042c4f7b4476346fc0d22f1025a777fee08eebde3720d3b9c4eb5/jwcrypto-1.5.8-py3-none-any.whl", hash = "sha256:85aeb475f808d56bbc2f2ed1f6f73e6a317c4011a4321505f02f0aed695a3742", size = 96133, upload-time = "2026-06-24T19:36:49.519Z" },
 ]
 
 [[package]]

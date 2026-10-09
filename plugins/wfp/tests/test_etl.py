@@ -654,6 +654,8 @@ class BangladeshVisitDateTestCase(TestCase):
 class BangladeshJourneysTestCase(TestCase):
     """Journeys and visits built from a sequence of Bangladesh submissions."""
 
+    PBWG_REGISTRATION = ("wfp_coda_pbwg_registration", {"actual_birthday__date__": "2001-09-14T00:00:00.000+06:00"})
+
     @classmethod
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="WFP Bangladesh")
@@ -681,6 +683,11 @@ class BangladeshJourneysTestCase(TestCase):
         self.assertIsNotNone(result)
         _beneficiary, journeys, visits, _steps = result
         return journeys, visits
+
+    def _admission_criteria(self, entity_type, program_type, *forms):
+        journeys, _visits = self._process(entity_type, program_type, self._submissions(*forms))
+        self.assertEqual(len(journeys), 1)
+        return journeys[0].admission_criteria
 
     def test_nsep_child_follow_ups_and_exit(self):
         registration = {"gender": "M", "actual_birthday__date__": "2024-03-15T00:00:00.000+06:00"}
@@ -790,6 +797,13 @@ class BangladeshJourneysTestCase(TestCase):
         self.assertEqual(journeys[0].nutrition_programme, "BSFP")
         self.assertEqual(journeys[0].exit_type, "age_limit")
         self.assertEqual(len(visits), 3)
+
+    def test_pbwg_mother_muac_is_muac(self):
+        admission = {"_programme": "TSFP", "pregnant": "yes", "muac": "22.0", "admission_criteria": "mother_muac"}
+        admission_criteria = self._admission_criteria(
+            None, "PLW", self.PBWG_REGISTRATION, ("wfp_coda_pbwg_anthropometric", admission)
+        )
+        self.assertEqual(admission_criteria, "muac")
 
 
 class ETLFormScopingTestCase(TestCase):

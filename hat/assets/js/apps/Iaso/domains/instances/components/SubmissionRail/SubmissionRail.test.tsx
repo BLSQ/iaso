@@ -140,4 +140,30 @@ describe('SubmissionRail', () => {
         );
         expect(screen.getByText('Locked')).toBeInTheDocument();
     });
+
+    it('validation shutter is open when showValidation is true', async () => {
+        renderWithThemeAndIntlProvider(
+            <SubmissionRail
+                currentInstance={makeInstance()}
+                showHistoryLink={false}
+                showValidation={true}
+                onLightBoxToggled={vi.fn()}
+            />,
+        );
+        expect(screen.getByTestId('validation-content')).toBeInTheDocument();
+        expect(screen.getByTestId('validation-content')).toBeVisible();
+    });
+
+    it('validation shutter is closed when showValidation is false', async () => {
+        renderWithThemeAndIntlProvider(
+            <SubmissionRail
+                currentInstance={makeInstance()}
+                showHistoryLink={false}
+                showValidation={false}
+                onLightBoxToggled={vi.fn()}
+            />,
+        );
+        expect(screen.getByTestId('validation-content')).toBeInTheDocument();
+        expect(screen.getByTestId('validation-content')).not.toBeVisible();
+    });
 });

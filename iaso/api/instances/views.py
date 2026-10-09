@@ -121,7 +121,12 @@ class InstancesViewSet(viewsets.ViewSet):
             )
 
         else:
-            queryset = queryset.select_related("form", "created_by", "last_modified_by").annotate(
+            queryset = queryset.select_related(
+                "form",
+                "created_by",
+                "last_modified_by",
+                "form__validation_workflow",
+            ).annotate(
                 _is_reference_instance=Exists(
                     OrgUnitReferenceInstance.objects.filter(
                         org_unit_id=OuterRef("org_unit_id"),
@@ -280,6 +285,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Référence externe", "width": 20},
             {"title": "OU Code", "width": 20},
             {"title": "OU Status", "width": 20},
+            {"title": "Workflow", "width": 20},
+            {"title": "Validation Status", "width": 20},
             {"title": "parent1", "width": 20},
             {"title": "parent2", "width": 20},
             {"title": "parent3", "width": 20},
@@ -355,6 +362,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.org_unit.source_ref,
                 instance.org_unit.code,
                 instance.org_unit.validation_status,
+                instance.form.validation_workflow.name if instance.form and instance.form.validation_workflow else None,
+                instance.general_validation_status,
             ]
 
             parent = org_unit.parent
@@ -498,7 +507,6 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         parquet_format = request.GET.get("parquet", None)
         filters = parse_instance_filters(request.GET)
-        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
         with_descriptor = request.GET.get("with_descriptor", "false")
         fields_param = request.GET.get("fields", None)
         # Not (yet) applied to the csv/xlsx/parquet export branches below, only to the JSON
@@ -556,9 +564,6 @@ class InstancesViewSet(viewsets.ViewSet):
         #       exports, paginated or not, as small dict or not)
         #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
         #       one, both or None and get predictable results)
-        if org_unit_status:
-            queryset = queryset.filter(org_unit__validation_status=org_unit_status)
-
         if parquet_format:
             return self.anwser_with_parquet_file(request, filters, queryset)
 
@@ -664,6 +669,8 @@ class InstancesViewSet(viewsets.ViewSet):
             "deviceOwnershipId",
             "search",
             "org_unit_status",  # NEW, VALID, REJECTED
+            "workflow_ids",
+            "validation_status",
         }
         received_params = set(request.GET.keys())
 

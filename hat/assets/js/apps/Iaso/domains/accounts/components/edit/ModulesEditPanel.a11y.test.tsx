@@ -19,7 +19,7 @@ describe('ModulesEditPanel accessibility test', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
-    it('has no accessiblity violation when there is data', async () => {
+    it('has no accessibility violation when there is data', async () => {
         const { container } = renderWithThemeAndIntlProvider(
             <Formik
                 initialValues={{}}
@@ -27,6 +27,7 @@ describe('ModulesEditPanel accessibility test', () => {
                     return;
                 }}
             >
+                {/* @ts-ignore */}
                 <ModulesEditPanel modules={[{ label: 'a', value: 'a' }]} />
             </Formik>,
         );

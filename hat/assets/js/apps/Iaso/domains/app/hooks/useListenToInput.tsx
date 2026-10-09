@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
 
-const emptyArray = [];
+const emptyArray: string[] = [];
 
 const useListenToKeyboard = (): [
     string[],
@@ -10,7 +10,7 @@ const useListenToKeyboard = (): [
     const [keyList, setKeyList] = useState<string[]>(emptyArray);
 
     useEffect(() => {
-        const update = e => {
+        const update = (e: KeyboardEvent) => {
             setKeyList(value => {
                 return [...value, e.key];
             });

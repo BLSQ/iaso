@@ -23,7 +23,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         res = self.client.post(
             reverse("validation_workflow_nodes-complete-bypass", kwargs={"instance_id": self.instance.id})
@@ -39,7 +39,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
 
     def test_num_queries(self):
         instance_id = self.instance.id
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         # todo : optimize later
         with self.assertNumQueries(35):
             res = self.client.post(
@@ -50,7 +50,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
             self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
 
     def test_approve(self):
-        self.base_test_approve(self.john_wick)
+        self.base_test_approve(self.john_submission)
 
     def test_approve_as_superuser(self):
         self.base_test_approve(self.superuser)
@@ -78,7 +78,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         )
 
     def test_reject(self):
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         res = self.client.post(
             reverse("validation_workflow_nodes-complete-bypass", kwargs={"instance_id": self.instance.id}),
@@ -93,7 +93,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         self.assertEqual(self.instance.general_validation_status, ValidationWorkflowArtefactStatus.REJECTED)
 
         self.assertEqual(
-            self.instance.validationnode_set.filter(node__slug="third-node").first().updated_by, self.john_wick
+            self.instance.validationnode_set.filter(node__slug="third-node").first().updated_by, self.john_submission
         )
         self.assertEqual(self.instance.validationnode_set.filter(node__slug="third-node").first().comment, "Nope")
         self.assertEqual(
@@ -132,7 +132,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
 
         self.assertEqual(other_node.validationnode_set.count(), 2)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
 
         res = self.client.post(
             reverse("validation_workflow_nodes-complete-bypass", kwargs={"instance_id": other_instance.id}),
@@ -147,7 +147,7 @@ class ValidationNodeAPICompleteBypassTestCase(BaseAPITestCase):
         self.validation_workflow.refresh_from_db()
         self.assertIsNotNone(self.validation_workflow.deleted_at)
 
-        self.client.force_authenticate(self.john_wick)
+        self.client.force_authenticate(self.john_submission)
         res = self.client.post(
             reverse("validation_workflow_nodes-complete-bypass", kwargs={"instance_id": self.instance.id}),
             data={"node": "third-node", "approved": False, "comment": "Nope"},

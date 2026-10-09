@@ -96,6 +96,17 @@ class IasoTestCaseMixin:
         )
 
     @staticmethod
+    def create_validation_workflow(
+        *, account: m.Account, forms: typing.Iterable[m.Form] = (), name: str = "Validation workflow"
+    ) -> m.ValidationWorkflow:
+        """Create a validation workflow and attach it to the given forms."""
+        workflow = m.ValidationWorkflow.objects.create(name=name, account=account)
+        for form in forms:
+            form.validation_workflow = workflow
+            form.save()
+        return workflow
+
+    @staticmethod
     def create_file_mock(**kwargs):
         file_mock = mock.MagicMock(spec=File)
 
@@ -208,6 +219,14 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
                     schema.pop("allOf", None)
 
                 schema.pop("nullable", None)
+
+            # OpenAPI 3.0 exclusive bounds are flags on `minimum` / `maximum` (e.g. generated for DecimalFields),
+            # JSON Schema 2020-12 expects the bound itself (a validator would read `True` as `1`)
+            for exclusive_key, bound_key in (("exclusiveMinimum", "minimum"), ("exclusiveMaximum", "maximum")):
+                if schema.get(exclusive_key) is True and bound_key in schema:
+                    schema[exclusive_key] = schema.pop(bound_key)
+                elif schema.get(exclusive_key) is False:
+                    schema.pop(exclusive_key)
 
             for v in schema.get("properties", {}).values():
                 self.normalize_schema(v)

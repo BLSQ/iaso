@@ -1,15 +1,8 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { StatusChip } from './StatusChip';
-
-vi.mock('@mui/material', () => ({
-    Chip: ({ color, label }: { color: string; label: string }) => (
-        <div data-testid="chip" data-color={color}>
-            {label}
-        </div>
-    ),
-}));
 
 describe('StatusChip', () => {
     beforeAll(() => {
@@ -20,43 +13,40 @@ describe('StatusChip', () => {
     });
 
     it('renders APPROVED with success color', () => {
-        render(<StatusChip status="APPROVED" />);
+        renderWithThemeAndIntlProvider(<StatusChip status="APPROVED" />);
 
-        expect(screen.getByTestId('chip')).toHaveAttribute(
-            'data-color',
-            'success',
+        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
+            'MuiChip-colorSuccess',
         );
-        expect(screen.getByText('APPROVED')).toBeInTheDocument();
+        expect(screen.getByText('Approved')).toBeInTheDocument();
     });
 
     it('renders REJECTED with error color', () => {
-        render(<StatusChip status="REJECTED" />);
+        renderWithThemeAndIntlProvider(<StatusChip status="REJECTED" />);
 
-        expect(screen.getByTestId('chip')).toHaveAttribute(
-            'data-color',
-            'error',
+        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
+            'MuiChip-colorError',
         );
-        expect(screen.getByText('REJECTED')).toBeInTheDocument();
+        expect(screen.getByText('Rejected')).toBeInTheDocument();
     });
 
     it('renders PENDING with primary color', () => {
-        render(<StatusChip status="PENDING" />);
+        renderWithThemeAndIntlProvider(<StatusChip status="PENDING" />);
 
-        expect(screen.getByTestId('chip')).toHaveAttribute(
-            'data-color',
-            'primary',
+        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
+            'MuiChip-colorPrimary',
         );
-        expect(screen.getByText('PENDING')).toBeInTheDocument();
+        expect(screen.getByText('Pending')).toBeInTheDocument();
     });
 
     it('renders any other option with primary color', () => {
         // @ts-ignore
         const word = faker.word.noun();
-        render(<StatusChip status={word} />);
+        // @ts-ignore
+        renderWithThemeAndIntlProvider(<StatusChip status={word} />);
 
-        expect(screen.getByTestId('chip')).toHaveAttribute(
-            'data-color',
-            'primary',
+        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
+            'MuiChip-colorPrimary',
         );
         expect(screen.getByText(word)).toBeInTheDocument();
     });

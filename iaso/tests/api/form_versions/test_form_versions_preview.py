@@ -32,9 +32,12 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
+from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.form_versions.configuration_impacts.forms_impacts import forms_impacts
+from iaso.dhis2.form_mapping import mapped_question_names
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
@@ -288,6 +291,181 @@ class FormVersionPreviewAPITestCase(APITestCase):
         self.assertEqual(modified_by_name["age"]["old_type"], "integer")
         self.assertEqual(modified_by_name["age"]["new_type"], "text")
 
+    def test_preview_workflow_impacts(self):
+        """The entity workflows reading the removed (birth_date) or retyped (age) questions."""
+        account = self.yoda.iaso_profile.account
+        entity_type = m.EntityType.objects.create(
+            name="Patients", reference_form=self.form_with_version, account=account
+        )
+        version = m.WorkflowVersion.objects.create(
+            workflow=m.Workflow.objects.create(entity_type=entity_type), name="Follow-ups", status="PUBLISHED"
+        )
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=2, condition={">": [{"var": "age"}, 5]})
+        visit = m.Form.objects.create(name="Visit")
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=visit, mapping={"dob": "birth_date", "name": "full_name"}
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        common = {
+            "target_id": version.id,
+            "target_name": "Patients / Follow-ups (PUBLISHED)",
+            "entity_type_id": entity_type.id,
+        }
+        self.assertEqual(
+            data["configuration_impacts"],
+            [
+                {
+                    "kind": "follow_up_condition",
+                    "question": "age",
+                    **common,
+                    "follow_up_order": 2,
+                    "condition": {">": [{"var": "age"}, 5]},
+                    "mapping_source": None,
+                    "mapping_target": None,
+                },
+                # full_name is unchanged: not there
+                {
+                    "kind": "change_mapping",
+                    "question": "birth_date",
+                    **common,
+                    "follow_up_order": None,
+                    "condition": None,
+                    "mapping_source": "dob",
+                    "mapping_target": "birth_date",
+                },
+            ],
+        )
+
+    def test_preview_workflow_impacts_self_mapping_listed_once(self):
+        """A change of the reference form into itself mapping birth_date to birth_date: one entry, not one per side."""
+        entity_type = m.EntityType.objects.create(
+            name="Patients", reference_form=self.form_with_version, account=self.yoda.iaso_profile.account
+        )
+        version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=self.form_with_version, mapping={"birth_date": "birth_date"}
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [
+                (i["kind"], i["question"], i["mapping_source"], i["mapping_target"])
+                for i in data["configuration_impacts"]
+            ],
+            [("change_mapping", "birth_date", "birth_date", "birth_date")],
+        )
+
+    def test_preview_configuration_impacts(self):
+        """The form's fields, predefined filters, entity types and stock rules reading the removed (birth_date) or
+        retyped (age) questions - not the unchanged full_name, nor a deleted stock rules version."""
+        account = self.yoda.iaso_profile.account
+        form = self.form_with_version
+        form.location_field = "birth_date"
+        form.device_field = "full_name"
+        form.correlation_field = "age"
+        form.label_keys = ["full_name", "birth_date"]
+        form.save()
+        predefined_filter = m.FormPredefinedFilter.objects.create(
+            form=form, name="Toddlers", short_name="toddlers", json_logic={"<": [{"var": "age"}, 3]}
+        )
+        entity_type = m.EntityType.objects.create(
+            name="Patients",
+            reference_form=form,
+            account=account,
+            fields_list_view=["full_name", "age"],
+            fields_detail_info_view=["birth_date", "age"],
+            fields_duplicate_search=["full_name"],
+        )
+        sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
+        rules_version = m.StockRulesVersion.objects.create(account=account, name="2026 rules")
+        m.StockItemRule.objects.create(version=rules_version, sku=sku, form=form, question="age")
+        m.StockItemRule.objects.create(version=rules_version, sku=sku, form=form, question="full_name")
+        deleted_version = m.StockRulesVersion.objects.create(account=account, name="Old", deleted_at=timezone.now())
+        m.StockItemRule.objects.create(version=deleted_version, sku=sku, form=form, question="age")
+        data_source = m.DataSource.objects.create(name="DHIS2")
+        aggregate = m.MappingVersion.objects.create(
+            form_version=form.form_versions.get(),
+            name="v1",
+            mapping=m.Mapping.objects.create(form=form, data_source=data_source, name="HMIS", mapping_type="AGGREGATE"),
+            json={"question_mappings": {"birth_date": {"id": "de1"}, "full_name": {"id": "de2"}}},
+        )
+        derived = m.MappingVersion.objects.create(
+            form_version=form.form_versions.get(),
+            name="v1 stats",
+            mapping=m.Mapping.objects.create(form=form, data_source=data_source, name="Stats", mapping_type="DERIVED"),
+            json={
+                "aggregations": [
+                    {"id": "a1", "questionName": "age", "where": [{"questionName": "birth_date", "operator": "gt"}]}
+                ]
+            },
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": form.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [(i["kind"], i["question"], i["target_id"], i["target_name"]) for i in data["configuration_impacts"]],
+            [
+                ("location_field", "birth_date", form.id, "Form With Version"),
+                ("correlation_field", "age", form.id, "Form With Version"),
+                ("label_key", "birth_date", form.id, "Form With Version"),
+                ("predefined_filter", "age", predefined_filter.id, "Toddlers"),
+                ("entity_type_list_field", "age", entity_type.id, "Patients"),
+                ("entity_type_detail_field", "age", entity_type.id, "Patients"),
+                ("entity_type_detail_field", "birth_date", entity_type.id, "Patients"),
+                ("stock_rule", "age", rules_version.id, "2026 rules / Vaccine"),
+                ("dhis2_mapping", "birth_date", aggregate.id, "HMIS (AGGREGATE)"),
+                # age is retyped, not removed: still mapped
+                ("dhis2_mapping", "birth_date", derived.id, "Stats (DERIVED)"),
+            ],
+        )
+        conditions = {i["kind"]: i["condition"] for i in data["configuration_impacts"]}
+        self.assertEqual(conditions["predefined_filter"], {"<": [{"var": "age"}, 3]})
+        self.assertTrue(all(i["entity_type_id"] is None for i in data["configuration_impacts"]))
+
+    def test_dhis2_mapped_question_names(self):
+        self.assertEqual(
+            mapped_question_names(
+                {
+                    "question_mappings": {"age": {}, "colors__red": {}},
+                    "aggregations": [{"questionName": "weight", "where": [{"questionName": "sex"}]}, {"id": "x"}],
+                }
+            ),
+            {"age", "colors__red", "colors", "weight", "sex"},
+        )
+        self.assertEqual(mapped_question_names({}), set())
+
+    def test_preview_configuration_impacts_default_device_field(self):
+        """No device question set: `deviceid` is used, removing it drops the submissions' device."""
+        self.form_with_version.device_field = None
+        self.form_with_version.save()
+        impacts = forms_impacts(
+            self.form_with_version.form_versions.get(),
+            removed_question_names={"deviceid"},
+            modified_question_names={"age"},
+        )
+        self.assertEqual(
+            [(i["kind"], i["question"]) for i in impacts],
+            [("device_field", "deviceid")],
+        )
+
     def test_preview_unchanged_questions_absent_from_diff(self):
         """full_name and instanceID are identical in v1 and v2 → absent from all diff lists."""
         self.client.force_authenticate(self.yoda)
@@ -337,8 +515,11 @@ class FormVersionPreviewAPITestCase(APITestCase):
         """Preview endpoint should use a bounded number of database queries."""
         self.client.force_authenticate(self.yoda)
         with open(FIXTURE_V2, "rb") as xls_file:
-            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup
-            with self.assertNumQueries(5):
+            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup + the
+            # configuration reading the removed or modified questions: 1 for the form, 1 for its predefined filters, 1
+            # for its entity types, 1 for the stock rules, 1 for the DHIS2 mappings, 1 for the workflows' follow-ups, 1
+            # for their changes
+            with self.assertNumQueries(12):
                 response = self.client.post(
                     PREVIEW_URL,
                     data={"form_id": self.form_with_version.id, "xls_file": xls_file},

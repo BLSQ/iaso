@@ -10,22 +10,23 @@ vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
     return {
         ...actual,
-        useSafeIntl: () => ({
-            formatMessage: (
-                msg: { defaultMessage?: string },
-                values?: Record<string, unknown>,
-            ) => {
-                let text = msg?.defaultMessage ?? '';
-                if (values) {
-                    Object.entries(values).forEach(([key, val]) => {
-                        text = text.replace(`{${key}}`, String(val));
-                    });
-                }
-                return text;
-            },
-        }),
+        useSafeIntl: (await import('../../../../../tests/mocks/safeIntl'))
+            .mockUseSafeIntl,
     };
 });
+
+// fetches the form's questions and the current user: covered by FormVersionsConfigurationImpactsTable.test.tsx
+vi.mock('./FormVersionsConfigurationImpactsTable', () => ({
+    default: ({
+        formId,
+        configurationImpacts,
+    }: {
+        formId: number;
+        configurationImpacts: unknown[];
+    }) => (
+        <div>{`configuration impacts table: form ${formId}, ${configurationImpacts.length} rows`}</div>
+    ),
+}));
 
 const baseDiff: FormVersionDiff = {
     previous_version_id: '42',
@@ -39,12 +40,19 @@ const baseDiff: FormVersionDiff = {
             new_type: 'integer',
         },
     ],
+    configuration_impacts: [],
+};
+
+const impact = {
+    target_id: 9,
+    target_name: 'Patients / Follow-ups (PUBLISHED)',
+    entity_type_id: 3,
 };
 
 describe('FormVersionsDiffConfirmation', () => {
     it('renders the warning alert with the previous version id', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -54,6 +62,7 @@ describe('FormVersionsDiffConfirmation', () => {
     it('falls back to em-dash when previous_version_id is null', () => {
         renderWithThemeAndIntlProvider(
             <FormVersionsDiffConfirmation
+                formId={7}
                 diff={{ ...baseDiff, previous_version_id: null }}
             />,
         );
@@ -63,7 +72,7 @@ describe('FormVersionsDiffConfirmation', () => {
 
     it('renders the added questions chip with correct count', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByText(/^\+1 added$/)).toBeInTheDocument();
@@ -71,7 +80,7 @@ describe('FormVersionsDiffConfirmation', () => {
 
     it('renders the removed questions chip with correct count', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByText(/^-1 removed or renamed$/)).toBeInTheDocument();
@@ -79,7 +88,7 @@ describe('FormVersionsDiffConfirmation', () => {
 
     it('renders the modified questions chip with correct count', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(screen.getByText(/^~1 type changed$/)).toBeInTheDocument();
@@ -101,7 +110,7 @@ describe('FormVersionsDiffConfirmation', () => {
         };
 
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={diff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={diff} />,
         );
 
         expect(screen.getByText(/^\+2 added$/)).toBeInTheDocument();
@@ -109,9 +118,59 @@ describe('FormVersionsDiffConfirmation', () => {
         expect(screen.getByText(/^~0 type changed$/)).toBeInTheDocument();
     });
 
+    it('shows the configuration reading the changed questions', () => {
+        const diff: FormVersionDiff = {
+            ...baseDiff,
+            configuration_impacts: [
+                {
+                    ...impact,
+                    kind: 'follow_up_condition',
+                    question: 'q_changed',
+                    follow_up_order: 2,
+                    condition: { '==': [{ var: 'q_changed' }, 1] },
+                    mapping_source: null,
+                    mapping_target: null,
+                },
+                {
+                    ...impact,
+                    kind: 'change_mapping',
+                    question: 'q_gone',
+                    follow_up_order: null,
+                    condition: null,
+                    mapping_source: 'dob',
+                    mapping_target: 'q_gone',
+                },
+            ],
+        };
+
+        renderWithThemeAndIntlProvider(
+            <FormVersionsDiffConfirmation formId={7} diff={diff} />,
+        );
+
+        expect(
+            screen.getByText(/^2 used in the configuration$/),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('configuration impacts table: form 7, 2 rows'),
+        ).toBeInTheDocument();
+    });
+
+    it('shows no configuration chip when no configuration reads them', () => {
+        renderWithThemeAndIntlProvider(
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
+        );
+
+        expect(
+            screen.queryByText(/used in the configuration/),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/configuration impacts table/),
+        ).not.toBeInTheDocument();
+    });
+
     it('delegates table rendering to FormVersionsDiffTables', () => {
         renderWithThemeAndIntlProvider(
-            <FormVersionsDiffConfirmation diff={baseDiff} />,
+            <FormVersionsDiffConfirmation formId={7} diff={baseDiff} />,
         );
 
         expect(

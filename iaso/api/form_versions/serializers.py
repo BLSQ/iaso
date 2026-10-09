@@ -9,6 +9,7 @@ from rest_framework.fields import Field
 
 from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import TimestampField
+from iaso.api.form_versions.configuration_impacts.common import ConfigurationImpactKind
 from iaso.api.forms.permissions import HasFormPermission
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing, validate_xls_form
@@ -238,8 +239,26 @@ class ModifiedQuestionSerializer(serializers.Serializer):
     new_type = serializers.CharField()
 
 
+class ConfigurationImpactSerializer(serializers.Serializer):
+    """A removed or modified question some configuration reads (`configuration_impacts.common.impact()`)."""
+
+    kind = serializers.ChoiceField(choices=ConfigurationImpactKind.choices)
+    question = serializers.CharField()
+    target_id = serializers.IntegerField(
+        help_text="The form, predefined filter, entity type, stock rules version, DHIS2 mapping version or workflow "
+        "version to check"
+    )
+    target_name = serializers.CharField()
+    condition = serializers.JSONField(allow_null=True, help_text="The JsonLogic of a predefined filter or follow-up")
+    entity_type_id = serializers.IntegerField(allow_null=True, help_text="Workflows only")
+    follow_up_order = serializers.IntegerField(allow_null=True)
+    mapping_source = serializers.CharField(allow_null=True)
+    mapping_target = serializers.CharField(allow_null=True)
+
+
 class FormVersionDiffSerializer(serializers.Serializer):
     previous_version_id = serializers.CharField(allow_null=True)
     removed_questions = QuestionSerializer(many=True)
     added_questions = QuestionSerializer(many=True)
     modified_questions = ModifiedQuestionSerializer(many=True)
+    configuration_impacts = ConfigurationImpactSerializer(many=True)

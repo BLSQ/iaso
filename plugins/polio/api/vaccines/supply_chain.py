@@ -931,6 +931,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
             VaccineRequestForm.objects.filter(
                 campaign__account=self.request.user.iaso_profile.account,
                 campaign__country__id__in=accessible_org_units_ids,
+                campaign__deleted_at__isnull=True,
             )
             .prefetch_related("vaccineprealert_set", "vaccinearrivalreport_set", "rounds")
             .distinct()

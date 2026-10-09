@@ -1,5 +1,6 @@
 import datetime
 
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
@@ -989,3 +990,107 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         self.assertEqual(hold_vrf_data["campaign_category"], "CAMPAIGN_ON_HOLD")
         self.assertEqual(all_rounds_hold_vrf_data["campaign_category"], "ALL_ROUNDS_ON_HOLD")
         self.assertEqual(mixed_rounds_vrf_data["campaign_category"], "ROUND_ON_HOLD")
+
+
+class VaccineSupplyChainSoftDeletedCampaignAPITestCase(BaseVaccineSupplyChainAPITestCase):
+    VRF_DASHBOARD_URL = "/api/polio/dashboards/vaccine_request_forms/"
+    PRE_ALERTS_DASHBOARD_URL = "/api/polio/dashboards/pre_alerts/"
+    ARRIVAL_REPORTS_DASHBOARD_URL = "/api/polio/dashboards/arrival_reports/"
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        self.pre_alert_rdc_1 = pm.VaccinePreAlert.objects.create(
+            request_form=self.vaccine_request_form_rdc_1,
+            date_pre_alert_reception=datetime.date(2021, 1, 15),
+            po_number="PO-RDC-1",
+            doses_shipped=500,
+            doses_per_vial=20,
+        )
+        self.arrival_report_rdc_1 = pm.VaccineArrivalReport.objects.create(
+            request_form=self.vaccine_request_form_rdc_1,
+            arrival_report_date=datetime.date(2021, 1, 20),
+            po_number="PO-RDC-1",
+            doses_received=500,
+            doses_shipped=500,
+            doses_per_vial=20,
+        )
+
+        self.pre_alert_chad_1 = pm.VaccinePreAlert.objects.create(
+            request_form=self.vaccine_request_form_chad_1,
+            date_pre_alert_reception=datetime.date(2021, 1, 15),
+            po_number="PO-CHAD-1",
+            doses_shipped=500,
+            doses_per_vial=20,
+        )
+        self.arrival_report_chad_1 = pm.VaccineArrivalReport.objects.create(
+            request_form=self.vaccine_request_form_chad_1,
+            arrival_report_date=datetime.date(2021, 1, 20),
+            po_number="PO-CHAD-1",
+            doses_received=500,
+            doses_shipped=500,
+            doses_per_vial=20,
+        )
+
+    def _dashboard_ids(self, url):
+        # The VRF dashboard list is wrapped in `cache_page`, so a second call to the same URL
+        # inside one test would otherwise replay the pre-delete response.
+        cache.clear()
+        response = self.client.get(url)
+        return [item["id"] for item in self.assertJSONResponse(response, 200)["results"]]
+
+    def test_list_excludes_request_forms_of_a_soft_deleted_campaign(self):
+        response = self.client.get(self.BASE_URL)
+        res = self.assertJSONResponse(response, 200)["results"]
+        self.assertEqual(len(res), 3)
+
+        self.campaign_rdc_1.delete()  # soft delete
+
+        response = self.client.get(self.BASE_URL)
+        res = self.assertJSONResponse(response, 200)["results"]
+        self.assertEqual([item["id"] for item in res], [self.vaccine_request_form_chad_1.id])
+
+        # The request forms themselves are untouched — only the campaign was deleted.
+        self.assertEqual(pm.VaccineRequestForm.objects.filter(campaign=self.campaign_rdc_1).count(), 2)
+
+    def test_detail_of_a_request_form_of_a_soft_deleted_campaign_returns_404(self):
+        url = f"{self.BASE_URL}{self.vaccine_request_form_rdc_1.id}/"
+        self.assertJSONResponse(self.client.get(url), 200)
+
+        self.campaign_rdc_1.delete()
+
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_restoring_the_campaign_makes_its_request_forms_visible_again(self):
+        self.campaign_rdc_1.delete()
+        self.campaign_rdc_1.restore()
+
+        response = self.client.get(self.BASE_URL)
+        res = self.assertJSONResponse(response, 200)["results"]
+        self.assertEqual(len(res), 3)
+
+    def test_search_does_not_bring_back_a_soft_deleted_campaign(self):
+        self.campaign_rdc_1.delete()
+
+        response = self.client.get(f"{self.BASE_URL}?search={self.campaign_rdc_1.obr_name}")
+        res = self.assertJSONResponse(response, 200)["results"]
+        self.assertEqual(res, [])
+
+    def test_dashboards_exclude_a_soft_deleted_campaign(self):
+        self.assertEqual(len(self._dashboard_ids(self.VRF_DASHBOARD_URL)), 3)
+        self.assertIn(self.pre_alert_rdc_1.id, self._dashboard_ids(self.PRE_ALERTS_DASHBOARD_URL))
+        self.assertIn(self.arrival_report_rdc_1.id, self._dashboard_ids(self.ARRIVAL_REPORTS_DASHBOARD_URL))
+
+        self.campaign_rdc_1.delete()
+
+        self.assertEqual(self._dashboard_ids(self.VRF_DASHBOARD_URL), [self.vaccine_request_form_chad_1.id])
+        self.assertEqual(self._dashboard_ids(self.PRE_ALERTS_DASHBOARD_URL), [self.pre_alert_chad_1.id])
+        self.assertEqual(self._dashboard_ids(self.ARRIVAL_REPORTS_DASHBOARD_URL), [self.arrival_report_chad_1.id])
+
+    def test_dashboards_exclude_a_soft_deleted_request_form(self):
+        self.vaccine_request_form_rdc_1.delete()  # soft delete
+
+        self.assertNotIn(self.vaccine_request_form_rdc_1.id, self._dashboard_ids(self.VRF_DASHBOARD_URL))
+        self.assertNotIn(self.pre_alert_rdc_1.id, self._dashboard_ids(self.PRE_ALERTS_DASHBOARD_URL))
+        self.assertNotIn(self.arrival_report_rdc_1.id, self._dashboard_ids(self.ARRIVAL_REPORTS_DASHBOARD_URL))

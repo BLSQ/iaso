@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Grid, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, { useMemo, useState } from 'react';
+import { History } from '@mui/icons-material';
+import { Grid, Box, Typography, useTheme } from '@mui/material';
 
 import {
     commonStyles,
+    ExternalLink,
     LoadingSpinner,
     useRedirectToReplace,
     useSafeIntl,
@@ -12,8 +13,10 @@ import {
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { SxStyles } from '../../types/general';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
+import { MappingImportActions } from './components/ImportMappings/MappingImportActions';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import RecursiveTreeView from './components/RecursiveTreeView';
@@ -23,19 +26,25 @@ import {
     useApplyUpdate,
     useGetMappingVersionDetail,
 } from './hooks';
+import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.mappingDetail;
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    icon: {
-        width: 30,
-        height: 'auto',
-        display: 'block',
-        cursor: 'pointer',
+const styles: SxStyles = {
+    actions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        gap: 2,
+        mb: 2,
     },
-}));
+    linkWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5em',
+    },
+};
 
 const iasoFieldOptions = formatMessage => [
     { value: undefined, label: formatMessage(MESSAGES.useValueFromForm) },
@@ -55,7 +64,7 @@ const fieldTypeOptions = formatMessage => [
 
 const MappingDetails = () => {
     const redirectToReplace = useRedirectToReplace();
-    const classes = useStyles();
+    const theme = useTheme();
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrl);
     const currentMappingVersionQuery = useGetMappingVersionDetail(
@@ -72,6 +81,11 @@ const MappingDetails = () => {
     const indexedQuestions = currentFormVersion
         ? Descriptor.indexQuestions(currentFormVersion.descriptor)
         : {};
+
+    const mappableQuestions = useMemo(
+        () => getMappableQuestions(currentFormVersion?.descriptor),
+        [currentFormVersion],
+    );
 
     const [currentQuestion, setCurrentQuestion] = useState(
         indexedQuestions[params.questionName],
@@ -137,7 +151,7 @@ const MappingDetails = () => {
         currentMappingVersion.mapping.mapping_type !== 'DERIVED';
 
     return (
-        <section className={classes.relativeContainer}>
+        <Box component="section" sx={commonStyles(theme).relativeContainer}>
             <TopBar
                 title={
                     currentMappingVersion
@@ -157,7 +171,23 @@ const MappingDetails = () => {
             {fetching && <LoadingSpinner />}
 
             {currentMappingVersion && (
-                <Box className={classes.containerFullHeightNoTabPadded}>
+                <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                    <Box sx={styles.actions}>
+                        <ExternalLink
+                            url={`/${baseUrls.apiLogs}/?objectId=${currentMappingVersion.id}&contentType=iaso.mappingversion&fields=field_diffs`}
+                        >
+                            <Typography sx={styles.linkWithIcon}>
+                                <History />
+                                {formatMessage(MESSAGES.changeLog)}
+                            </Typography>
+                        </ExternalLink>
+                        {currentFormVersion && isDataElementMappable && (
+                            <MappingImportActions
+                                mappingVersion={currentMappingVersion}
+                                questions={mappableQuestions}
+                            />
+                        )}
+                    </Box>
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
                             <Grid item xs={4} md={3}>
@@ -227,7 +257,7 @@ const MappingDetails = () => {
                     </Grid>
                 </Box>
             )}
-        </section>
+        </Box>
     );
 };
 

@@ -42,11 +42,13 @@ def copy_mappings_from_previous_version(form_version, previous_form_version):
         mapping_version.form_version = form_version
 
         questions_by_name = form_version.questions_by_name()
+        # unlike questions_by_name, also has the questions inside repeat groups
+        mappable_questions = form_version.mappable_questions_by_name()
 
         if "question_mappings" in mapping_version.json:
             filtered_question_mappings = {}
             for k, v in mapping_version.json["question_mappings"].items():
-                if k in questions_by_name:
+                if k in mappable_questions:
                     # preserve all question mappings except the questions that don't exist in the newer version
                     filtered_question_mappings[k] = v
                 elif "__" in k:

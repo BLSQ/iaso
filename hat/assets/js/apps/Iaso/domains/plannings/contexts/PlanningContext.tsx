@@ -19,6 +19,7 @@ import { PageMode, Planning } from '../types';
 
 type PlanningContextValue = {
     planning: Planning;
+    isLoadingPlanning: boolean;
     mode: PageMode;
     missions: MissionPolymorphicList[];
     isFetchingMissions: boolean;
@@ -44,12 +45,14 @@ export const usePlanningContext = (): PlanningContextValue => {
 
 type LoadedPlanningProviderProps = {
     planning: Planning;
+    isFetchingPlanning: boolean;
     mode: PageMode;
     children: ReactNode;
 };
 
 const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     planning,
+    isFetchingPlanning,
     mode,
     children,
 }) => {
@@ -73,6 +76,8 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         !isSubmitting &&
         (mode === 'copy' || !isEqual(values, initialValues));
 
+    const isLoadingPlanning = isSubmitting || isFetchingPlanning;
+
     const savePlanning = useCallback(() => handleSubmit(), [handleSubmit]);
 
     const redirectTo = useRedirectTo();
@@ -86,6 +91,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     const value = useMemo(
         () => ({
             planning,
+            isLoadingPlanning,
             mode,
             missions,
             isFetchingMissions,
@@ -96,6 +102,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         }),
         [
             planning,
+            isLoadingPlanning,
             mode,
             missions,
             isFetchingMissions,
@@ -120,7 +127,11 @@ type Props = {
 };
 
 export const PlanningProvider: FC<Props> = ({ planningId, mode, children }) => {
-    const { data: planning, isLoading } = useGetPlanningDetails(planningId);
+    const {
+        data: planning,
+        isLoading,
+        isFetching,
+    } = useGetPlanningDetails(planningId);
 
     if (isLoading) {
         return <LoadingSpinner />;
@@ -129,7 +140,11 @@ export const PlanningProvider: FC<Props> = ({ planningId, mode, children }) => {
         return null;
     }
     return (
-        <LoadedPlanningProvider planning={planning} mode={mode}>
+        <LoadedPlanningProvider
+            planning={planning}
+            isFetchingPlanning={isFetching}
+            mode={mode}
+        >
             {children}
         </LoadedPlanningProvider>
     );

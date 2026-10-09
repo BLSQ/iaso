@@ -101,13 +101,18 @@ export const CompareStep: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const counts = useMemo(() => {
-        const result = { conflict: 0, add: 0, identical: 0, dropped: 0 };
+        const result = Object.fromEntries(
+            DIFF_KINDS.map(kind => [kind, 0]),
+        ) as Record<DiffKind, number>;
         rows.forEach(row => {
             result[row.kind] += 1;
         });
         return result;
     }, [rows]);
-    const bucketRows = rows.filter(row => row.kind === bucket);
+    const bucketRows = useMemo(
+        () => rows.filter(row => row.kind === bucket),
+        [rows, bucket],
+    );
     const bulk = BULK[bucket];
 
     const getCurrentLabel = (row: DiffRow): string => {

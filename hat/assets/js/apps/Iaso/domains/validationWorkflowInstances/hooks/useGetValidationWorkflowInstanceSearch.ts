@@ -11,7 +11,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { createSearchParamsWithArray } from 'Iaso/libs/utils';
 
-type UseGetValidationWorkflowInstanceSearchProps = {
+export type UseGetValidationWorkflowInstanceSearchProps = {
     params: Record<string, any>;
 };
 const defaults = {

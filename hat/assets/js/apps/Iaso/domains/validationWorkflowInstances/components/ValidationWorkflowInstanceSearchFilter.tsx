@@ -7,13 +7,18 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
 import { useGetRequiresUserActionOptions } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetRequiresUserActionOptions';
+import { UseGetValidationWorkflowInstanceSearchProps } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceSearch';
 import { useGetValidationWorkflowInstanceStatuses } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceStatuses';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 
 const baseUrl = baseUrls.validationWorkflowInstances;
 
-export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
+export const ValidationWorkflowInstanceSearchFilter = ({
+    params,
+}: {
+    params: UseGetValidationWorkflowInstanceSearchProps['params'];
+}) => {
     const { filters, filtersUpdated, handleChange, handleSearch } =
         useFilterState({ baseUrl, params, withPagination: true });
     const { data: formsList, isFetching: isFetchingForms } =

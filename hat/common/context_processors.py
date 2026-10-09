@@ -78,3 +78,7 @@ def default_app_id(request: HttpRequest) -> Dict[str, Any]:
 
 def dns_domain(request: HttpRequest) -> Dict[str, Any]:
     return {"DNS_DOMAIN": settings.DNS_DOMAIN}
+
+
+def site_announcement_message(request: HttpRequest) -> Dict[str, Any]:
+    return {"SITE_ANNOUNCEMENT_MESSAGE": settings.SITE_ANNOUNCEMENT_MESSAGE}

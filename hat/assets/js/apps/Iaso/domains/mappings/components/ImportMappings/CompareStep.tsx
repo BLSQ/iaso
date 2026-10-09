@@ -79,10 +79,15 @@ const styles: SxStyles = {
     tabs: { borderBottom: 1, borderColor: 'divider', mt: 1 },
     bulkRow: { display: 'flex', alignItems: 'center', gap: 1, minHeight: 44 },
     table: { maxHeight: '40vh' },
+    // fixed layout: long question names or mappings must not widen their column
+    tableLayout: { tableLayout: 'fixed' },
     questionColumn: { width: 240 },
+    questionCell: { overflow: 'hidden' },
+    mappingCell: { overflowWrap: 'anywhere' },
     decisionColumn: { width: 210 },
-    current: { color: 'text.primary' },
-    noCurrent: { color: 'text.disabled' },
+    current: { color: 'text.primary', overflowWrap: 'anywhere' },
+    noCurrent: { color: 'text.disabled', overflowWrap: 'anywhere' },
+    empty: { color: 'text.secondary', py: 3 },
     choices: { display: 'flex', gap: 0.75, justifyContent: 'flex-end' },
     summary: { mt: 1.5 },
 };
@@ -171,7 +176,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                 ))}
             </Box>
             <TableContainer sx={styles.table}>
-                <Table size="small" stickyHeader>
+                <Table size="small" stickyHeader sx={styles.tableLayout}>
                     <TableHead>
                         <TableRow>
                             <TableCell sx={styles.questionColumn}>
@@ -193,6 +198,18 @@ export const CompareStep: FunctionComponent<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
+                        {bucketRows.length === 0 && (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={4}
+                                    align="center"
+                                    sx={styles.empty}
+                                    data-test="import-bucket-empty"
+                                >
+                                    {formatMessage(MESSAGES.emptyBucket)}
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {bucketRows.map(row => {
                             const decision = decisions[row.questionKey];
                             const choices = CHOICES[row.kind];
@@ -202,7 +219,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                                     hover
                                     data-test={`import-row-${row.questionKey}`}
                                 >
-                                    <TableCell>
+                                    <TableCell sx={styles.questionCell}>
                                         {/* dropped questions have no label: the name alone is the title */}
                                         <Typography
                                             variant="body2"
@@ -224,6 +241,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                                                     color="textSecondary"
                                                     fontFamily="monospace"
                                                     component="div"
+                                                    noWrap
                                                 >
                                                     {row.questionKey}
                                                 </Typography>
@@ -239,7 +257,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                                     >
                                         {getCurrentLabel(row)}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell sx={styles.mappingCell}>
                                         {getMappingLabel(row.incoming)}
                                     </TableCell>
                                     <TableCell align="right">

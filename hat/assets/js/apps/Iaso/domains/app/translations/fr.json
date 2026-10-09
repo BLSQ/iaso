@@ -1138,6 +1138,7 @@
     "iaso.mappings.import.decision": "Décision",
     "iaso.mappings.import.done": "{added} mappings ajoutés, {overwritten} écrasés, {kept} gardés, {ignored} non importés",
     "iaso.mappings.import.droppedHint": "Ces mappings ne peuvent pas être importés : la question n'existe pas dans cette version, ou le mapping n'est pas valide pour ce type de mapping.",
+    "iaso.mappings.import.emptyBucket": "Aucune question dans cet onglet",
     "iaso.mappings.import.fileMeta": "Exporté depuis {formName} - {versionId}",
     "iaso.mappings.import.fromFile": "Ou importez un export de mapping (.json), par exemple depuis un autre compte.",
     "iaso.mappings.import.identicalHint": "Même cible DHIS2 des deux côtés. Rien à résoudre.",

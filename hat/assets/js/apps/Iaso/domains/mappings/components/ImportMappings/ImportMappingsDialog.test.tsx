@@ -143,6 +143,27 @@ describe('ImportMappingsDialog', () => {
         );
     };
 
+    it('shows a message in the tabs without any question', async () => {
+        renderAndChooseFile({
+            mapping_type: 'AGGREGATE',
+            question_mappings: { q3: de('d') },
+        });
+        expect(await screen.findByText('export.json')).toBeInTheDocument();
+        fireEvent.click(screen.getByText('Compare'));
+
+        // no conflict: opens on the additions
+        expect(
+            document.querySelector('[data-test="import-row-q3"]'),
+        ).not.toBeNull();
+        expect(screen.queryByText('No question in this tab')).toBeNull();
+
+        fireEvent.click(screen.getByText('Conflicts (0)'));
+        expect(screen.getByText('No question in this tab')).toBeInTheDocument();
+        expect(
+            document.querySelector('[data-test="import-row-q3"]'),
+        ).toBeNull();
+    });
+
     it('rejects a file of another mapping type', async () => {
         renderAndChooseFile({ mapping_type: 'EVENT', question_mappings: {} });
         expect(

@@ -7,7 +7,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import pandas as pd
 
@@ -39,6 +39,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
 from iaso.api.instances.permissions import PERMISSION_CLASSES_RW, HasInstanceBulkPermission, HasInstancePermission
 from iaso.api.instances.serializers import (
@@ -1092,7 +1093,16 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
 
-def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int] = None) -> Entity:
+def find_entity(
+    account: Account,
+    entity_uuid: str,
+    entity_type_id: Optional[int] = None,
+    existing_entities: Optional[List[Entity]] = None,
+) -> Entity:
+    """
+    `existing_entities`: the entities matching (even soft-deleted), when the caller already looked them up - see
+    `InstanceImportCache.entities()`.
+    """
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
     # If a non-deleted entity was found, ignore potential duplicates.
     if entity_type_id is not None:
@@ -1106,7 +1116,8 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
             "uuid": entity_uuid,
             "account": account,
         }
-    existing_entities = list(Entity.objects_include_deleted.filter(**filters))
+    if existing_entities is None:
+        existing_entities = list(Entity.objects_include_deleted.filter(**filters))
 
     if len(existing_entities) == 0:
         if entity_type_id is not None:
@@ -1128,21 +1139,16 @@ def find_entity(account: Account, entity_uuid: str, entity_type_id: Optional[int
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id, api_import=None):
+def import_data(instances, user, app_id, api_import=None, cache: Optional[InstanceImportCache] = None):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by
     the second endpoint (POST /sync/form_upload/).
+
+    `cache`: the batch's `InstanceImportCache`, when the caller shares it - the instances created here are added to it.
     """
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     rtn_instances = []
-
-    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at
-    # the same few forms - fetch those once up front instead of lazily once per instance.
-    form_ids = {int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None}
-    forms_by_id = {form.id: form for form in Form.objects.filter(id__in=form_ids)}
-    # Same for entity types (typically a single one per batch): only their reference form is needed.
-    reference_form_ids_by_entity_type_id = {}
 
     file_names = {ntpath.basename(instance_data["file"]) for instance_data in instances if instance_data.get("file")}
     uuids_by_file_name = defaultdict(set)
@@ -1152,10 +1158,26 @@ def import_data(instances, user, app_id, api_import=None):
         if existing_uuid:
             uuids_by_file_name[existing_file_name].add(existing_uuid)
 
+    if cache is None:
+        cache = InstanceImportCache([instance_data.get("id") for instance_data in instances])
+    # A batch commonly has several instances (e.g. a registration + follow-up forms) pointing at the same few forms
+    cache.prefetch_forms(
+        int(instance_data["formId"]) for instance_data in instances if instance_data.get("formId") is not None
+    )
+    cache.prefetch_entities(
+        project.account,
+        [
+            (instance_data["entityUuid"], instance_data["entityTypeId"])
+            for instance_data in instances
+            if instance_data.get("entityUuid") and instance_data.get("entityTypeId")
+        ],
+    )
+
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
-        existing_instances = Instance.objects.filter(uuid=uuid)
+        # A missing or empty uuid keeps its own lookup, as before
+        existing_instances = cache.instances(uuid) if uuid else Instance.objects.filter(uuid=uuid).order_by("id")
         if existing_instances:
             if all(
                 existing_instance.general_validation_status
@@ -1163,7 +1185,7 @@ def import_data(instances, user, app_id, api_import=None):
                 + Instance._meta.get_field("general_validation_status").empty_values
                 for existing_instance in existing_instances
             ):
-                rtn_instances.append(existing_instances.first())
+                rtn_instances.append(existing_instances[0])
             continue
 
         # Get or create instance based on file_name - this "get or create" logic is important:
@@ -1180,10 +1202,11 @@ def import_data(instances, user, app_id, api_import=None):
             file_name = f"{base}_dup_{uuid}{ext}"
 
         instance, _ = Instance.objects.get_or_create(file_name=file_name)
+        instance.uuid = uuid
         if uuid:
             uuids_by_file_name[file_name].add(uuid)
+            cache.add_instance(instance)
 
-        instance.uuid = uuid
         instance.project = project
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
@@ -1200,23 +1223,26 @@ def import_data(instances, user, app_id, api_import=None):
         if str(tentative_org_unit_id).isdigit():
             instance.org_unit_id = tentative_org_unit_id
         else:
-            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id, version_id=project.account.default_version_id)
-            instance.org_unit = org_unit
+            instance.org_unit = cache.org_unit(tentative_org_unit_id, project.account.default_version_id)
 
         raw_form_id = instance_data.get("formId")
         # Normalize to int: the mobile app sends this as a JSON string (e.g. "1"), which would make
         # id comparisons (e.g. against `entity_type.reference_form_id`) silently fail ("1" != 1).
         instance.form_id = int(raw_form_id) if raw_form_id is not None else None
-        if instance.form_id in forms_by_id:
-            # Share the prefetched Form across instances, so `instance.form` doesn't re-query it.
-            instance.form = forms_by_id[instance.form_id]
+        prefetched_form = cache.form(instance.form_id)
+        if prefetched_form:
+            # Shared by the batch's instances, so `instance.form` doesn't query it again
+            instance.form = prefetched_form
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
         entity_uuid = instance_data.get("entityUuid", None)
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:
-            entity = find_entity(project.account, entity_uuid, entity_type_id)
+            existing_entities = cache.entities(entity_uuid, entity_type_id)
+            entity = find_entity(project.account, entity_uuid, entity_type_id, existing_entities=existing_entities)
+            if existing_entities == []:  # none yet: `find_entity()` created it
+                cache.add_entity(entity)
 
             if entity.deleted_at:
                 logger.info(
@@ -1242,11 +1268,7 @@ def import_data(instances, user, app_id, api_import=None):
             instance.entity = entity
 
             # If instance's form is the same as the type reference form, set the instance as reference_instance
-            # int(): entities created above by `find_entity()` keep the payload's string entityTypeId.
-            entity_type_id = int(entity.entity_type_id)
-            if entity_type_id not in reference_form_ids_by_entity_type_id:
-                reference_form_ids_by_entity_type_id[entity_type_id] = entity.entity_type.reference_form_id
-            if reference_form_ids_by_entity_type_id[entity_type_id] == instance.form_id:
+            if cache.reference_form_id(entity) == instance.form_id:
                 entity.attributes = instance
                 entity.save()
 
@@ -1292,6 +1314,9 @@ def import_data(instances, user, app_id, api_import=None):
             except Exception as e:
                 # so we avoid the whole instance creation crashing
                 logger.error(e)
+                # `start()` may have set the status before failing: rolled back in the database, but not on this
+                # in-memory instance, which callers keep using and saving (see `InstanceImportCache`).
+                instance.refresh_from_db(fields=["general_validation_status"])
 
     return rtn_instances
 

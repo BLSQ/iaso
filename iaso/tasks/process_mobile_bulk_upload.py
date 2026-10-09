@@ -29,8 +29,9 @@ from beanstalk_worker import task_decorator
 from beanstalk_worker.throttle import Throttle
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
-from hat.audit.models import BULK_UPLOAD, log_modification
+from hat.audit.models import BULK_UPLOAD, Modification, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
+from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.views import import_data as import_instances
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
 from iaso.api.org_units import import_org_units
@@ -44,6 +45,8 @@ ORG_UNITS_JSON = "orgUnits.json"
 STORAGE_LOGS_JSON = "storageLogs.json"
 CHANGE_REQUESTS_JSON = "changeRequests.json"
 STOCK_LEDGER_ITEMS_JSON = "stockLedgerItems.json"
+# Audit rows are inserted in chunks: their past/new values hold each instance's whole json
+MODIFICATIONS_BATCH_SIZE = 500
 
 logger = logging.getLogger(__name__)
 
@@ -88,38 +91,31 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 if INSTANCES_JSON in zip_ref.namelist():
                     log_progress(the_task, 20, "Processing forms and files")
                     instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
-                    existing_uuids = set(
-                        Instance.objects.filter(uuid__in=[d["id"] for d in instances_data]).values_list(
-                            "uuid", flat=True
-                        )
-                    )
-                    imported_instances = import_instances(instances_data, user, project.app_id, api_import=api_import)
-                    # `import_instances` already built and saved the new instances in memory - reuse them
-                    # instead of re-querying by uuid below. Instances that already existed still go
-                    # through `.get()`: `import_data` returns (or skips) them without checking for
-                    # duplicate uuids, and `.get()` fails the import on duplicates instead of silently
-                    # picking one.
-                    instances_by_uuid = {
-                        instance.uuid: instance
-                        for instance in imported_instances
-                        if instance.uuid not in existing_uuids
-                    }
+                    # Shared with `import_instances`, which adds the instances it creates: below, both new and
+                    # pre-existing instances are reused from it instead of being re-queried by uuid. Except for
+                    # duplicated uuids: `import_data` returns (or skips) them without checking for duplicates, and
+                    # `.get()` fails the import on duplicates instead of silently picking one.
+                    cache = InstanceImportCache([d["id"] for d in instances_data])
+                    import_instances(instances_data, user, project.app_id, api_import=api_import, cache=cache)
                     new_instance_files = []
                     dirs = get_directory_handlers(zip_ref)
-                    # The batch's instances share a few (form, version) pairs: look each up once.
-                    form_versions_cache = {}
+                    # One INSERT per chunk of audit rows instead of one per instance
+                    modifications = []
 
                     for instance_data in instances_data:
                         uuid = instance_data["id"]
-                        instance = instances_by_uuid.get(uuid) or Instance.objects.get(uuid=uuid)
+                        instance = cache.instance(uuid) or Instance.objects.get(uuid=uuid)
                         original = copy(instance)
-                        instance = process_instance_xml(instance, instance_data, zip_ref, user, form_versions_cache)
+                        instance = process_instance_xml(instance, instance_data, zip_ref, user, cache.form_versions)
                         if instance is None:
                             continue
                         stats["new_instances"] += 1
                         if uuid in dirs:
                             new_instance_files += process_instance_attachments(zip_ref, dirs[uuid], instance)
-                        log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user)
+                        modifications.append(
+                            log_modification(v1=original, v2=instance, source=BULK_UPLOAD, user=user, save=False)
+                        )
+                    Modification.objects.bulk_create(modifications, batch_size=MODIFICATIONS_BATCH_SIZE)
 
                     duplicated_count = duplicate_instance_files(new_instance_files)
                     stats["new_instance_files"] = len(new_instance_files) + duplicated_count

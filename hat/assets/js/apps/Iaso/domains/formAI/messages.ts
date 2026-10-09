@@ -144,6 +144,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org unit types',
         id: 'iaso.label.orgUnitsTypes',
     },
+    orgUnitGroups: {
+        defaultMessage: 'Org unit groups',
+        id: 'iaso.label.orgUnitsGroups',
+    },
     cancel: {
         defaultMessage: 'Cancel',
         id: 'iaso.formAI.cancel',

@@ -20,6 +20,7 @@ import {
 import Autocomplete from '@mui/material/Autocomplete';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { useGetGroupDropdown } from '../../../domains/orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../../domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../../domains/projects/hooks/requests';
 import { useCreateForm } from '../hooks/requests/useCreateForm';
@@ -29,6 +30,25 @@ import { SaveVersionResponse } from '../types';
 
 const sanitizeOdkId = (value: string): string =>
     value.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+
+const canSaveNewForm = (
+    formName: string,
+    selectedProjects: unknown[],
+    selectedOrgUnitTypes: unknown[],
+    selectedOrgUnitGroups: unknown[],
+): boolean =>
+    formName.trim().length > 0 &&
+    selectedProjects.length > 0 &&
+    (selectedOrgUnitTypes.length > 0 || selectedOrgUnitGroups.length > 0);
+
+const options = <T extends { value: unknown }>(
+    current: T[],
+    options: { value: unknown }[],
+): T[] => {
+    const values = new Set(options.map(option => option.value));
+    const filtered = current.filter(option => values.has(option.value));
+    return filtered.length === current.length ? current : filtered;
+};
 
 const styles: SxStyles = {
     newFormFields: {
@@ -73,6 +93,9 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
     const [selectedOrgUnitTypes, setSelectedOrgUnitTypes] = useState<
         { value: string; label: string }[]
     >([]);
+    const [selectedOrgUnitGroups, setSelectedOrgUnitGroups] = useState<
+        { value: number; label: string }[]
+    >([]);
 
     const { data: projectOptions } = useGetProjectsDropdownOptions();
     const selectedProjectIds = selectedProjects.map(p => p.value);
@@ -84,16 +107,23 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (isFetchingOrgUnitTypes || !orgUnitTypeOptions) return;
-        const orgUnitTypeIds = new Set(
-            orgUnitTypeOptions.map(orgUnitType => orgUnitType.value),
+        setSelectedOrgUnitTypes(current =>
+            options(current, orgUnitTypeOptions),
         );
-        setSelectedOrgUnitTypes(current => {
-            const filtered = current.filter(orgUnitType =>
-                orgUnitTypeIds.has(orgUnitType.value),
-            );
-            return filtered.length === current.length ? current : filtered;
-        });
     }, [orgUnitTypeOptions, isFetchingOrgUnitTypes]);
+
+    const { data: orgUnitGroupOptions, isFetching: isFetchingOrgUnitGroups } =
+        useGetGroupDropdown(
+            { projectIds: selectedProjectIds.join(',') },
+            selectedProjectIds.length > 0,
+        );
+
+    useEffect(() => {
+        if (isFetchingOrgUnitGroups || !orgUnitGroupOptions) return;
+        setSelectedOrgUnitGroups(current =>
+            options(current, orgUnitGroupOptions),
+        );
+    }, [orgUnitGroupOptions, isFetchingOrgUnitGroups]);
 
     const { mutateAsync: createForm, isLoading: isCreating } = useCreateForm();
     const { mutateAsync: saveVersion, isLoading: isSavingVersion } =
@@ -121,9 +151,12 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
 
     const handleSaveNewForm = useCallback(async () => {
         if (
-            !formName.trim() ||
-            selectedProjects.length === 0 ||
-            selectedOrgUnitTypes.length === 0
+            !canSaveNewForm(
+                formName,
+                selectedProjects,
+                selectedOrgUnitTypes,
+                selectedOrgUnitGroups,
+            )
         )
             return;
         try {
@@ -132,6 +165,9 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                 project_ids: selectedProjects.map(p => p.value),
                 org_unit_type_ids: selectedOrgUnitTypes.map(orgUnitType =>
                     Number(orgUnitType.value),
+                ),
+                org_unit_group_ids: selectedOrgUnitGroups.map(
+                    orgUnitGroup => orgUnitGroup.value,
                 ),
                 periods_before_allowed: 0,
                 periods_after_allowed: 0,
@@ -148,6 +184,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
             setFormOdkId('');
             setSelectedProjects([]);
             setSelectedOrgUnitTypes([]);
+            setSelectedOrgUnitGroups([]);
         } catch {
             // error already displayed by useSnackMutation
         }
@@ -155,6 +192,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
         formName,
         selectedProjects,
         selectedOrgUnitTypes,
+        selectedOrgUnitGroups,
         xlsformUuid,
         formOdkId,
         createForm,
@@ -163,11 +201,15 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
         onClose,
     ]);
 
-    const canSaveNewForm =
-        formName.trim().length > 0 &&
-        selectedProjects.length > 0 &&
-        selectedOrgUnitTypes.length > 0 &&
-        !isSaving;
+    const isNewFormSaveEnabled =
+        canSaveNewForm(
+            formName,
+            selectedProjects,
+            selectedOrgUnitTypes,
+            selectedOrgUnitGroups,
+        ) && !isSaving;
+    const isOrgUnitTypeOrGroupMissing =
+        selectedOrgUnitTypes.length === 0 && selectedOrgUnitGroups.length === 0;
 
     return (
         <Dialog
@@ -225,6 +267,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                                 setSelectedProjects(newValue as any);
                                 if (newValue.length === 0) {
                                     setSelectedOrgUnitTypes([]);
+                                    setSelectedOrgUnitGroups([]);
                                 }
                             }}
                             renderInput={params => (
@@ -252,7 +295,30 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                                 <TextField
                                     {...params}
                                     label={formatMessage(MESSAGES.orgUnitTypes)}
-                                    required
+                                    required={isOrgUnitTypeOrGroupMissing}
+                                />
+                            )}
+                            isOptionEqualToValue={(option: any, value: any) =>
+                                option.value === value.value
+                            }
+                        />
+                        <Autocomplete
+                            multiple
+                            options={orgUnitGroupOptions ?? []}
+                            getOptionLabel={(option: any) => option.label ?? ''}
+                            value={selectedOrgUnitGroups}
+                            onChange={(_event, newValue) =>
+                                setSelectedOrgUnitGroups(newValue as any)
+                            }
+                            loading={isFetchingOrgUnitGroups}
+                            disabled={selectedProjects.length === 0}
+                            renderInput={params => (
+                                <TextField
+                                    {...params}
+                                    label={formatMessage(
+                                        MESSAGES.orgUnitGroups,
+                                    )}
+                                    required={isOrgUnitTypeOrGroupMissing}
                                 />
                             )}
                             isOptionEqualToValue={(option: any, value: any) =>
@@ -284,7 +350,7 @@ export const SaveFormDialog: FunctionComponent<Props> = ({
                     <Button
                         onClick={handleSaveNewForm}
                         variant="contained"
-                        disabled={!canSaveNewForm}
+                        disabled={!isNewFormSaveEnabled}
                         startIcon={
                             isSaving ? (
                                 <CircularProgress size={16} />

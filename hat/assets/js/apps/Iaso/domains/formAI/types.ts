@@ -40,6 +40,7 @@ export type CreateFormPayload = {
     name: string;
     project_ids: number[];
     org_unit_type_ids: number[];
+    org_unit_group_ids: number[];
     periods_before_allowed: number;
     periods_after_allowed: number;
     single_per_period: boolean;

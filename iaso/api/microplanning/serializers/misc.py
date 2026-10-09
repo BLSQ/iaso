@@ -2,14 +2,22 @@ from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 
-from iaso.api.common import DateTimestampField, ModelSerializer, TimestampField
+from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.microplanning.filters import (
     validate_planning_has_org_unit_scope,
     validate_planning_org_unit_type_ids,
 )
 from iaso.api.teams.serializers import NestedTeamSerializer
-from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project, Task
-from iaso.models.microplanning import Assignment, Planning, PlanningSamplingResult
+from iaso.models import (
+    Group,
+    Mission,
+    OrgUnit,
+    OrgUnitType,
+    Planning,
+    Project,
+    Task,
+)
+from iaso.models.microplanning import Assignment, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.models.team import Team
 
@@ -64,7 +72,7 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         self.fields["project"].queryset = account.project_set.all()
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
+        self.fields["missions"].child_relation.queryset = Mission.objects.filter_for_user(user)
         self.fields["target_org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter(
             projects__account=account
         ).distinct()
@@ -94,10 +102,13 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         if team.project != project:
             validation_errors["team"] = "planningAndTeams"
 
-        forms = validated_data.get("forms", list(self.instance.forms.all()) if self.instance else None)
-        project_forms = project.forms.all()
-        if forms and not all(f in project_forms for f in forms):
-            validation_errors["forms"] = "planningAndForms"
+        missions = validated_data.get("missions", list(self.instance.missions.all()) if self.instance else None)
+        if missions:
+            account = project.account
+            for mission in missions:
+                if mission.account != account:
+                    validation_errors["missions"] = "missionNotInAccount"
+                    break
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:
@@ -140,7 +151,7 @@ class PlanningReadSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "forms",
+            "missions",
             "description",
             "published_at",
             "started_at",
@@ -478,50 +489,6 @@ class BulkDeleteAssignmentResponseSerializer(serializers.Serializer):
     deleted_count = serializers.IntegerField(read_only=True)
     planning_id = serializers.IntegerField(read_only=True)
     user = serializers.IntegerField(allow_null=True, read_only=True)
-
-
-# noinspection PyMethodMayBeStatic
-class MobilePlanningSerializer(serializers.ModelSerializer):
-    "Only used to serialize for mobile"
-
-    def save(self):
-        # ensure that we can't save from here
-        raise NotImplementedError
-
-    class Meta:
-        model = Planning
-        fields = [
-            "id",
-            "name",
-            "description",
-            "created_at",
-            "started_at",
-            "ended_at",
-            "assignments",
-        ]
-
-    created_at = TimestampField()
-    started_at = DateTimestampField()
-    ended_at = DateTimestampField()
-
-    assignments = serializers.SerializerMethodField()
-
-    def get_assignments(self, planning: Planning):
-        user = self.context["request"].user
-        r = []
-        planning_form_set = set(planning.forms.values_list("id", flat=True))
-        forms_per_ou_type = {}
-        for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
-            out_set = set(out.form_set.values_list("id", flat=True))
-            intersection = out_set.intersection(planning_form_set)
-            forms_per_ou_type[out.id] = (
-                intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
-            )
-
-        for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
-            # TODO: investigate type error on next line
-            r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
-        return r
 
 
 class PlanningOrgUnitSerializer(serializers.ModelSerializer):

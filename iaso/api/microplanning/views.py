@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -21,9 +21,14 @@ from iaso.api.common import (
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
+from iaso.models.missions import MissionWithForms
 from iaso.models.org_unit import OrgUnit
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
 
+from ...models import (
+    MissionEntityType,
+    MissionOrgUnitType,
+)
 from .filters import (
     PlanningOrgUnitChildrenFilter,
     PlanningOrgUnitChildrenFilterBackend,
@@ -166,7 +171,16 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return (
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
-            .prefetch_related("forms", "target_org_unit_types")
+            .prefetch_related(
+                "target_org_unit_types",
+                Prefetch(
+                    "missions",
+                    queryset=MissionWithForms.objects.all()
+                    .prefetch_related("forms")
+                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                    .select_polymorphic_related(MissionEntityType, "entity_type"),
+                ),
+            )
             .annotate(assignments_count=Count("assignment", filter=Q(assignment__deleted_at__isnull=True)))
         )
 

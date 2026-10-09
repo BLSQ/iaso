@@ -20,11 +20,11 @@ from iaso.api.bulk_create_users.permissions import has_only_user_managed_permiss
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer_fields import (
     AccountPrefixedSlugRelatedField,
+    CurrentAccountDefault,
     PrimaryKeyRelatedFieldFromJSON,
     SlugOrPrimaryKeyRelatedField,
 )
 from iaso.api.common.validators import FileTypeValidator
-from iaso.api.validation_workflows.serializers.common import CurrentAccountDefault
 from iaso.models import BulkCreateUserFile, OrgUnit, OrgUnitType, Profile, Project, Team, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_MANAGED_PERMISSION
 from iaso.tasks.bulk_create_users_email import send_bulk_email_invitations

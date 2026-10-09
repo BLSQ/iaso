@@ -177,6 +177,30 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             metric_type=metric_type, org_unit=org_unit_child, year=2024, value=1.0
         )
 
+        mission_form = m.MissionForm.objects.create(name=f"mission_form_{suffix}", account=account)
+        mission_org_unit_type = m.MissionOrgUnitType.objects.create(
+            name=f"mission_out_{suffix}",
+            account=account,
+            org_unit_type=org_unit_type,
+            min_cardinality=1,
+            max_cardinality=3,
+        )
+        mission_entity_type = m.MissionEntityType.objects.create(
+            name=f"mission_et_{suffix}", account=account, entity_type=entity_type, min_cardinality=1, max_cardinality=3
+        )
+
+        mission_form_through_forms = m.MissionFormThroughForm.objects.bulk_create(
+            [
+                m.MissionFormThroughForm(mission_form=mission_form, form=form, min_cardinality=1, max_cardinality=3),
+                m.MissionFormThroughForm(
+                    mission_form=mission_org_unit_type, form=form, min_cardinality=1, max_cardinality=3
+                ),
+                m.MissionFormThroughForm(
+                    mission_form=mission_entity_type, form=form, min_cardinality=1, max_cardinality=3
+                ),
+            ]
+        )
+
         org_unit_reference_instance = m.OrgUnitReferenceInstance.objects.create(
             org_unit=org_unit_child, form=form, instance=instances[0]
         )
@@ -367,6 +391,10 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "export_request": export_request,
             "export_status": export_status,
             "export_log": export_log,
+            "mission_entity_type": mission_entity_type,
+            "mission_form": mission_form,
+            "mission_org_unit_type": mission_org_unit_type,
+            "mission_form_through_forms": mission_form_through_forms,
         }
 
     def _create_unscoped_data(self):
@@ -538,6 +566,15 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.WorkflowFollowup.objects.filter(pk=other_models["workflow_followup"].pk).exists())
         self.assertFalse(m.WorkflowVersion.objects.filter(pk=other_models["workflow_version"].pk).exists())
 
+        self.assertFalse(m.MissionEntityType.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertFalse(m.MissionForm.objects.filter(pk=other_models["mission_form"].pk).exists())
+        self.assertFalse(
+            m.MissionFormThroughForm.objects.filter(
+                pk__in=[x.pk for x in other_models["mission_form_through_forms"]]
+            ).exists()
+        )
+        self.assertFalse(m.MissionOrgUnitType.objects.filter(pk=other_models["mission_org_unit_type"].pk).exists())
+
         # Everything below depends on whether `_post_deletion_clean_up` ran, which is
         # exclusive to --account-to-keep mode.
         post_deletion_cleanup_ran = mode == MODE_KEEP_SINGLE_ACCOUNT
@@ -698,6 +735,16 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.WorkflowChange.objects.filter(pk=other_models["workflow_change"].pk).exists())
         self.assertTrue(m.WorkflowFollowup.objects.filter(pk=other_models["workflow_followup"].pk).exists())
         self.assertTrue(m.WorkflowVersion.objects.filter(pk=other_models["workflow_version"].pk).exists())
+
+        self.assertTrue(m.Mission.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertTrue(m.MissionEntityType.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertTrue(m.MissionForm.objects.filter(pk=other_models["mission_form"].pk).exists())
+        self.assertTrue(
+            m.MissionFormThroughForm.objects.filter(
+                pk__in=[x.pk for x in other_models["mission_form_through_forms"]]
+            ).exists()
+        )
+        self.assertTrue(m.MissionOrgUnitType.objects.filter(pk=other_models["mission_org_unit_type"].pk).exists())
 
         # some models have no FK to Account at all — `_post_deletion_clean_up`
         # wipes them in full whenever it runs, regardless of which account "owns" them in this
@@ -1054,6 +1101,12 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.MatchingAlgorithm",
             "iaso.MetricType",
             "iaso.MetricValue",
+            "iaso.MissionEntityType",
+            "iaso.MissionWithForms",
+            "iaso.MissionOrgUnitType",
+            "iaso.MissionFormThroughForm",
+            "iaso.MissionForm",
+            "iaso.Mission",
             "iaso.OpenHEXAInstance",
             "iaso.OpenHEXAWorkspace",
             "iaso.OrgUnit",

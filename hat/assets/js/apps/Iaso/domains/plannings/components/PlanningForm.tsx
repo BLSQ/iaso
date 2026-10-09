@@ -24,8 +24,7 @@ import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/requests/useBulkDeleteAssignments';
-import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { filterOrgUnitTypesByForms } from 'Iaso/domains/forms/utils';
+import { MissionDropdown } from 'Iaso/domains/missions/components/MissionDropdown';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {
@@ -34,18 +33,18 @@ import {
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { flattenOrgUnitTypeHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/utils';
 import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from 'Iaso/libs/validation';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
-import {
-    useApiErrorValidation,
-    useTranslatedErrors,
-} from '../../../libs/validation';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetPublishingStatusOptions } from '../constants';
@@ -87,6 +86,12 @@ type Props = {
     mode: PageMode;
 };
 
+function transformOrgUnitHierarchyIntoDropdownOptions(
+    data: OrgUnitTypeHierarchy,
+) {
+    return flattenOrgUnitTypeHierarchy(data.sub_unit_types || []);
+}
+
 export const PlanningForm: FunctionComponent<Props> = ({
     hasPipelineConfig,
     planning,
@@ -99,7 +104,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
         ended_at,
         org_unit_details,
         team_details,
-        forms,
+        missions,
         project_details,
         description,
         published_at,
@@ -176,7 +181,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
             endDate: endDate || undefined,
             selectedOrgUnit,
             selectedTeam,
-            forms,
+            missions,
             project,
             description,
             publishingStatus,
@@ -228,35 +233,14 @@ export const PlanningForm: FunctionComponent<Props> = ({
     }, [handleSubmit, shouldDisplayWarning]);
     const allowConfirm =
         isValid && (!isEqual(values, initialValues) || mode === 'copy');
-    const { data: formsDropdown, isFetching: isFetchingForms } =
-        useGetFormsDropdownOptions({
-            extraFields: ['project_ids', 'org_unit_type_ids'],
-            params: {
-                projectsIds: values?.project,
-            },
-            enabled: Boolean(values?.project),
-        });
-
-    const selectOrgUnitTypeByForm = useCallback(
-        (data: OrgUnitTypeHierarchy) => {
-            const types = flattenOrgUnitTypeHierarchy(
-                data.sub_unit_types || [],
-            );
-            return filterOrgUnitTypesByForms(
-                types,
-                formsDropdown,
-                values.forms,
-            );
-        },
-        [formsDropdown, values.forms],
-    );
 
     const { data: rootorgunit, isFetching: isFetchingRootOrgUnit } =
         useGetOrgUnit(values.selectedOrgUnit?.toString());
+
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypesHierarchy<DropdownOptions<number>[]>(
             rootorgunit?.org_unit_type_id,
-            selectOrgUnitTypeByForm,
+            transformOrgUnitHierarchyIntoDropdownOptions,
         );
 
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
@@ -274,9 +258,9 @@ export const PlanningForm: FunctionComponent<Props> = ({
     const onChange = (keyValue: string, value: any) => {
         if (keyValue === 'project') {
             setFieldTouched('selectedTeam', false);
-            setFieldTouched('forms', false);
+            setFieldTouched('missions', false);
             setFieldValue('selectedTeam', null);
-            setFieldValue('forms', null);
+            setFieldValue('missions', null);
         }
         if (keyValue === 'selectedOrgUnit') {
             setFieldTouched('targetOrgUnitTypes', false);
@@ -303,19 +287,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
         touched,
         messages: MESSAGES,
     });
-    const resetFormsOnProjectChange = useCallback(() => {
-        if (
-            formsDropdown &&
-            !formsDropdown?.find(
-                form =>
-                    values?.project &&
-                    form.original?.project_ids?.includes(values?.project),
-            )
-        ) {
-            setFieldTouched('forms', false);
-            setFieldValue('forms', null);
-        }
-    }, [formsDropdown, setFieldTouched, setFieldValue, values?.project]);
 
     const resetTeamsOnProjectChange = useCallback(() => {
         if (
@@ -329,7 +300,6 @@ export const PlanningForm: FunctionComponent<Props> = ({
         }
     }, [teamsDropdown, setFieldTouched, setFieldValue, values?.project]);
 
-    useSkipEffectUntilValue(formsDropdown, resetFormsOnProjectChange);
     useSkipEffectUntilValue(teamsDropdown, resetTeamsOnProjectChange);
 
     const publishingStatusOptions = useGetPublishingStatusOptions();
@@ -409,7 +379,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                             errors={getErrors('project')}
                                             label={MESSAGES.project}
                                             required
-                                            options={projectsDropdown}
+                                            options={projectsDropdown || []}
                                             loading={isFetchingProjects}
                                         />
                                     </Grid>
@@ -428,23 +398,19 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                         />
                                     </Grid>
                                 </Grid>
-                                <InputComponent
-                                    type="select"
-                                    keyValue="forms"
+                                <MissionDropdown
+                                    keyValue="missions"
                                     onChange={(keyValue, value) =>
                                         onChange(
                                             keyValue,
                                             commaSeparatedIdsToArray(value),
                                         )
                                     }
-                                    value={values.forms}
-                                    errors={getErrors('forms')}
-                                    label={MESSAGES.forms}
+                                    value={values.missions}
+                                    errors={getErrors('missions')}
+                                    label={MESSAGES.missions}
                                     required
                                     multi
-                                    options={formsDropdown}
-                                    loading={isFetchingForms}
-                                    disabled={!values.project}
                                 />
                             </Box>
                         </InputWithInfos>
@@ -461,7 +427,7 @@ export const PlanningForm: FunctionComponent<Props> = ({
                                     )
                                 }
                                 loading={isFetchingPipelineUuids}
-                                options={pipelineUuidsOptions}
+                                options={pipelineUuidsOptions || []}
                                 value={values.pipelineUuids}
                                 errors={getErrors('pipelineUuids')}
                                 label={MESSAGES.pipelines}

@@ -11,10 +11,13 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 
 if TYPE_CHECKING:
+    from django_filters.filterset import BaseFilterSet
     from rest_framework.generics import BaseFilterProtocol
+
 from rest_framework.pagination import BasePagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -41,6 +44,7 @@ from ...models import (
     MissionOrgUnitType,
 )
 from .filters import (
+    PlanningDropdownFilterSet,
     PlanningOrgUnitChildrenFilter,
     PlanningOrgUnitChildrenFilterBackend,
     PlanningSearchFilterBackend,
@@ -164,8 +168,14 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         "started_at": ["gte", "lte"],
         "ended_at": ["gte", "lte"],
     }
-
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     audit_serializer = AuditPlanningSerializer  # type: ignore
+
+    @property
+    def filterset_class(self) -> type[BaseFilterSet] | None:
+        if self.action == "dropdown":
+            return PlanningDropdownFilterSet
+        return None
 
     @property
     def pagination_class(self) -> type[BasePagination] | None:
@@ -184,7 +194,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     @property
     def filter_backends(self) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol]]:
         if self.action == "dropdown":
-            return [filters.OrderingFilter, PublishingStatusFilterBackend]
+            return [filters.OrderingFilter, DjangoFilterBackend]
         if self.action == "missions":
             return []
         return [

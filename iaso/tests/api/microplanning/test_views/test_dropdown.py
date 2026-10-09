@@ -1,7 +1,17 @@
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, OrgUnit, OrgUnitType, Planning, Project, Team
+from iaso.models import (
+    Account,
+    Form,
+    MissionForm,
+    MissionFormThroughForm,
+    OrgUnit,
+    OrgUnitType,
+    Planning,
+    Project,
+    Team,
+)
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -9,6 +19,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        super(APITestCase, cls).setUpClass()
         # create account
         cls.account = Account.objects.create(name="Account")
         cls.other_account = Account.objects.create(name="OtherAccount")
@@ -69,6 +80,38 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
             org_unit=cls.org_unit,
         )
 
+        # missions
+
+        # forms
+        cls.form_1 = Form.objects.create(name="form_1")
+        cls.form_2 = Form.objects.create(name="form_2")
+        cls.form_3 = Form.objects.create(name="form_3")
+
+        cls.form_1.projects.add(cls.project)
+        cls.form_2.projects.add(cls.project)
+        cls.form_3.projects.add(cls.project)
+
+        # missions
+        cls.mission_form_1 = MissionForm.objects.create(name="mission_form_1", account=cls.account)
+        cls.mission_form_2 = MissionForm.objects.create(name="mission_form_2", account=cls.account)
+
+        MissionFormThroughForm.objects.bulk_create(
+            [
+                MissionFormThroughForm(
+                    mission_form=cls.mission_form_1, form=cls.form_1, min_cardinality=1, max_cardinality=3
+                ),
+                MissionFormThroughForm(
+                    mission_form=cls.mission_form_1, form=cls.form_2, min_cardinality=2, max_cardinality=3
+                ),
+                MissionFormThroughForm(
+                    mission_form=cls.mission_form_2, form=cls.form_3, min_cardinality=3, max_cardinality=3
+                ),
+            ]
+        )
+
+        cls.planning.missions.add(cls.mission_form_1)
+        cls.planning_2.missions.add(cls.mission_form_2)
+
     def assertValidData(self, response, expected_length):
         self.assertEqual(len(response), expected_length)
         self.assertResponseCompliantToSwagger(response, "PlanningDropdown", True)
@@ -103,14 +146,47 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_filters(self):
         self.client.force_authenticate(user=self.superuser)
-        res = self.client.get(reverse("planning-dropdown"), data={"order": "-name"})
-        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidData(res_data, 4)
+        with self.subTest("ordering"):
+            res = self.client.get(reverse("planning-dropdown"), data={"order": "-name"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 4)
 
-        self.assertEqual(
-            res_data,
-            [{"id": p.id, "name": p.name} for p in [self.planning_4, self.planning_3, self.planning_2, self.planning]],
-        )
+            self.assertEqual(
+                res_data,
+                [
+                    {"value": p.id, "label": p.name}
+                    for p in [self.planning_4, self.planning_3, self.planning_2, self.planning]
+                ],
+            )
+
+        with self.subTest("form_ids"):
+            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": f"{self.form_1.pk}"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 1)
+
+            self.assertEqual(res_data, [{"value": self.planning.id, "label": self.planning.name}])
+
+            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": f"{self.form_1.pk},{self.form_2.pk}"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 1)
+
+            self.assertEqual(res_data, [{"value": self.planning.id, "label": self.planning.name}])
+
+            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": f"{self.form_1.pk},{self.form_3.pk}"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 2)
+
+            self.assertEqual(
+                res_data,
+                [
+                    {"value": self.planning.id, "label": self.planning.name},
+                    {"value": self.planning_2.id, "label": self.planning_2.name},
+                ],
+            )
+
+            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": "1000"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 0)
 
     def test_should_see_plannings_related_to_account(self):
         self.client.force_authenticate(self.user_other_account)
@@ -119,7 +195,9 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 1)
 
-        self.assertEqual(res_data, [{"id": self.planning_other_account.id, "name": self.planning_other_account.name}])
+        self.assertEqual(
+            res_data, [{"value": self.planning_other_account.id, "label": self.planning_other_account.name}]
+        )
 
     def test_response(self):
         self.client.force_authenticate(user=self.superuser)
@@ -129,5 +207,8 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.assertEqual(
             res_data,
-            [{"id": p.id, "name": p.name} for p in [self.planning, self.planning_2, self.planning_3, self.planning_4]],
+            [
+                {"value": p.id, "label": p.name}
+                for p in [self.planning, self.planning_2, self.planning_3, self.planning_4]
+            ],
         )

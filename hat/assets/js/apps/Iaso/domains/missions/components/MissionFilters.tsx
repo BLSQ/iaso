@@ -12,6 +12,7 @@ import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionTypeDropdown } from 'Iaso/domains/missions/components/MissionTypeDropdown';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { MISSION_WRITE } from 'Iaso/utils/permissions';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -52,7 +53,16 @@ export const MissionFilters: FunctionComponent<Props> = ({ params }) => {
                         value={filters.mission_type}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} justifyContent="flex-end">
+                <Grid item xs={12} md={4}>
+                    <PlanningsDropdown
+                        multi
+                        handleChange={handleChange}
+                        clearable
+                        keyValue={'planning_ids'}
+                        value={filters.planning_ids}
+                    />
+                </Grid>
+                <Grid item xs={12} justifyContent="flex-end">
                     <Box
                         sx={{
                             display: 'flex',

@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, serializers
 
 from iaso.api import query_params as query
-from iaso.api.common import parse_comma_separated_numeric_values
+from iaso.api.common import NumberInFilter, parse_comma_separated_numeric_values
 from iaso.models.microplanning import Planning
 from iaso.models.org_unit import OrgUnit
 
@@ -114,5 +114,9 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
         if status == "published":
             queryset = queryset.exclude(published_at__isnull=True)
         if form_ids:
-            queryset = queryset.filter(forms__id__in=form_ids.split(","))
+            queryset = queryset.filter(missions__missionwithforms__forms__id__in=form_ids.split(","))
         return queryset
+
+
+class PlanningDropdownFilterSet(django_filters.FilterSet):
+    form_ids = NumberInFilter(field_name="missions__missionwithforms__forms__id", distinct=True)

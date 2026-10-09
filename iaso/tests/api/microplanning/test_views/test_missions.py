@@ -24,6 +24,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 class PlanningMissionAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        super(APITestCase, cls).setUpClass()
         # create account
         cls.account = Account.objects.create(name="Account")
         cls.other_account = Account.objects.create(name="OtherAccount")

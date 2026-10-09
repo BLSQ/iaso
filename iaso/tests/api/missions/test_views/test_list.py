@@ -24,6 +24,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
+        super(APITestCase, cls).setUpTestData()
         cls.account = Account.objects.create(name="account")
         cls.other_account = Account.objects.create(name="other_account")
 

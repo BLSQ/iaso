@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { useSnackBars } from '../../components/snackBars/useSnackBars';
+import { useSnackBars } from 'Iaso/components/snackBars/useSnackBars';
 import ProductFruitsComponent from './components/ProductFruits';
 import { InputContextProvider } from './contexts/InputContext';
 import { SentryProvider } from './contexts/SentryProvider';

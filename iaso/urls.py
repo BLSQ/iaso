@@ -113,6 +113,7 @@ from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
+from .api.promptness_stats.views import PromptnessStatsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account.views import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
@@ -203,6 +204,7 @@ router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
 router.register(r"mobile/group_sets", MobileGroupSetsViewSet, basename="groupsetsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
+router.register(r"promptness_stats", PromptnessStatsViewSet, basename="promptness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
 router.register(r"permissions", PermissionsViewSet, basename="permissions")

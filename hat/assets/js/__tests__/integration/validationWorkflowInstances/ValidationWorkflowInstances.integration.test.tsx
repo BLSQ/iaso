@@ -183,7 +183,7 @@ describe('Validation workflow list UI integration test', () => {
             screen.getByTestId('RemoveRedEyeIcon').parentElement,
         ).toHaveAttribute(
             'href',
-            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/`,
+            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/isValidating/true/`,
         );
     });
 });

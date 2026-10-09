@@ -3,6 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import { Card, IconButton, Stack, Typography } from '@mui/material';
+import { LoadingSpinner } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../contexts/PlanningContext';
 import { MissionItem } from './MissionItem';
@@ -13,6 +14,7 @@ const styles = {
         ...planningPanelStyles.card,
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
     },
     list: {
         flex: 1,
@@ -22,9 +24,10 @@ const styles = {
 } satisfies SxStyles;
 
 export const MissionPanel: FC = () => {
-    const { missions } = usePlanningContext();
+    const { missions, isFetchingMissions } = usePlanningContext();
     return (
         <Card sx={styles.card} variant="outlined">
+            {isFetchingMissions && <LoadingSpinner absolute fixed={false} />}
             <Stack direction="row" justifyContent="space-between">
                 <Stack gap={1} direction="row" alignItems="center" my={2}>
                     <AssignmentOutlinedIcon

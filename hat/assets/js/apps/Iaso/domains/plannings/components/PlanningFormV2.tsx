@@ -1,20 +1,28 @@
 import React, { FC } from 'react';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import { Card, Stack, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider } from 'formik';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { ToggleButtonGroupInput } from 'Iaso/components/forms/ToggleButtonGroupInput';
 import { useGetProjectsDropDown } from 'Iaso/domains/projects/hooks/requests/useGetProjectsDropDown';
 import { useTranslatedErrors } from 'Iaso/libs/validation';
+import { SxStyles } from 'Iaso/types/general';
 import { useGetPublishingStatusOptions } from '../constants';
 import { usePlanningContext } from '../contexts/PlanningContext';
 import MESSAGES from '../messages';
 import { planningPanelStyles } from './styles';
 
+const styles = {
+    card: {
+        ...planningPanelStyles.card,
+        position: 'relative',
+    },
+} satisfies SxStyles;
+
 export const PlanningFormV2: FC = () => {
-    const { formik } = usePlanningContext();
+    const { formik, isLoadingPlanning } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
@@ -55,7 +63,8 @@ export const PlanningFormV2: FC = () => {
     });
 
     return (
-        <Card variant="outlined" sx={planningPanelStyles.card}>
+        <Card variant="outlined" sx={styles.card}>
+            {isLoadingPlanning && <LoadingSpinner absolute fixed={false} />}
             <Stack gap={1} direction="row" alignItems="center" py={2}>
                 <EditNoteIcon color="primary" />
                 <Typography fontWeight="bold">Planning details</Typography>

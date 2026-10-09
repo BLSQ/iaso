@@ -7,15 +7,17 @@ import {
     DiffRow,
     ImportPlan,
     MappingExport,
+    MappingImportErrorReason,
     QuestionMapping,
     QuestionMappings,
 } from './types';
 
+// in the order of the wizard tabs
 export const DIFF_KINDS: DiffKind[] = [
-    'conflict',
-    'add',
-    'identical',
-    'dropped',
+    DiffKind.CONFLICT,
+    DiffKind.ADD,
+    DiffKind.IDENTICAL,
+    DiffKind.DROPPED,
 ];
 
 export const EXPORT_FORMAT = 'iaso-mapping-export';
@@ -214,7 +216,7 @@ export const computeMappingsDiff = (
             const question = questions[questionKey];
             const current = currentMappings[questionKey];
             const row: DiffRow = {
-                kind: 'add',
+                kind: DiffKind.ADD,
                 questionKey,
                 questionLabel: question
                     ? Descriptor.getHumanLabel(question)
@@ -227,14 +229,14 @@ export const computeMappingsDiff = (
                 incoming,
             };
             if (!question) {
-                row.kind = 'dropped';
+                row.kind = DiffKind.DROPPED;
             } else if (!isValidForMappingType(incoming, mappingType)) {
-                row.kind = 'dropped';
+                row.kind = DiffKind.DROPPED;
                 row.invalid = true;
             } else if (row.current) {
                 row.kind = isSameMapping(row.current, incoming)
-                    ? 'identical'
-                    : 'conflict';
+                    ? DiffKind.IDENTICAL
+                    : DiffKind.CONFLICT;
             }
             return row;
         },
@@ -263,17 +265,17 @@ export const getDefaultDecision = (
     row: DiffRow,
     overwriteConflicts = false,
 ): Decision | undefined => {
-    if (row.kind === 'conflict') {
-        return overwriteConflicts ? 'overwrite' : 'keep';
+    if (row.kind === DiffKind.CONFLICT) {
+        return overwriteConflicts ? Decision.OVERWRITE : Decision.KEEP;
     }
-    if (row.kind === 'add') {
-        return 'apply';
+    if (row.kind === DiffKind.ADD) {
+        return Decision.APPLY;
     }
     return undefined;
 };
 
 export const willApply = (decision?: Decision) =>
-    decision === 'apply' || decision === 'overwrite';
+    decision === Decision.APPLY || decision === Decision.OVERWRITE;
 
 export const buildImportPlan = (
     rows: DiffRow[],
@@ -289,17 +291,20 @@ export const buildImportPlan = (
     };
     rows.forEach(row => {
         const decision = decisions[row.questionKey];
-        if (row.kind === 'dropped') {
+        if (row.kind === DiffKind.DROPPED) {
             plan.dropped += 1;
-        } else if (row.kind === 'conflict' && decision === 'overwrite') {
+        } else if (
+            row.kind === DiffKind.CONFLICT &&
+            decision === Decision.OVERWRITE
+        ) {
             plan.changes[row.questionKey] = row.incoming;
             plan.overwritten += 1;
-        } else if (row.kind === 'conflict') {
+        } else if (row.kind === DiffKind.CONFLICT) {
             plan.kept += 1;
-        } else if (row.kind === 'add' && decision === 'apply') {
+        } else if (row.kind === DiffKind.ADD && decision === Decision.APPLY) {
             plan.changes[row.questionKey] = row.incoming;
             plan.added += 1;
-        } else if (row.kind === 'add') {
+        } else if (row.kind === DiffKind.ADD) {
             plan.skipped += 1;
         }
     });
@@ -356,13 +361,7 @@ const isValidMapping = (mapping: unknown): boolean =>
     Array.isArray(mapping) ? mapping.every(isObject) : isObject(mapping);
 
 export class MappingImportError extends Error {
-    constructor(
-        public reason:
-            | 'invalidJson'
-            | 'invalidFormat'
-            | 'mappingTypeMismatch'
-            | 'noValidMapping',
-    ) {
+    constructor(public reason: MappingImportErrorReason) {
         super(reason);
     }
 }
@@ -379,10 +378,10 @@ export const parseMappingExport = (
     try {
         parsed = JSON.parse(text);
     } catch {
-        throw new MappingImportError('invalidJson');
+        throw new MappingImportError(MappingImportErrorReason.INVALID_JSON);
     }
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new MappingImportError('invalidFormat');
+        throw new MappingImportError(MappingImportErrorReason.INVALID_FORMAT);
     }
     const content =
         'question_mappings' in parsed ? parsed : { question_mappings: parsed };
@@ -393,10 +392,12 @@ export const parseMappingExport = (
         Array.isArray(questionMappings) ||
         Object.values(questionMappings).some(m => !isValidMapping(m))
     ) {
-        throw new MappingImportError('invalidFormat');
+        throw new MappingImportError(MappingImportErrorReason.INVALID_FORMAT);
     }
     if (content.mapping_type && content.mapping_type !== expectedMappingType) {
-        throw new MappingImportError('mappingTypeMismatch');
+        throw new MappingImportError(
+            MappingImportErrorReason.MAPPING_TYPE_MISMATCH,
+        );
     }
     if (
         countValidMappings(
@@ -404,7 +405,7 @@ export const parseMappingExport = (
             expectedMappingType,
         ) === 0
     ) {
-        throw new MappingImportError('noValidMapping');
+        throw new MappingImportError(MappingImportErrorReason.NO_VALID_MAPPING);
     }
     return content;
 };

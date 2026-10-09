@@ -34,42 +34,45 @@ type Props = {
 };
 
 const BUCKET_MESSAGES: Record<DiffKind, IntlMessage> = {
-    conflict: MESSAGES.bucketConflict,
-    add: MESSAGES.bucketAdd,
-    identical: MESSAGES.bucketIdentical,
-    dropped: MESSAGES.bucketDropped,
+    [DiffKind.CONFLICT]: MESSAGES.bucketConflict,
+    [DiffKind.ADD]: MESSAGES.bucketAdd,
+    [DiffKind.IDENTICAL]: MESSAGES.bucketIdentical,
+    [DiffKind.DROPPED]: MESSAGES.bucketDropped,
 };
 
 type Choice = { decision: Decision; message: IntlMessage };
 
 const CHOICES: Partial<Record<DiffKind, Choice[]>> = {
-    conflict: [
-        { decision: 'keep', message: MESSAGES.keep },
-        { decision: 'overwrite', message: MESSAGES.overwrite },
+    [DiffKind.CONFLICT]: [
+        { decision: Decision.KEEP, message: MESSAGES.keep },
+        { decision: Decision.OVERWRITE, message: MESSAGES.overwrite },
     ],
-    add: [
-        { decision: 'skip', message: MESSAGES.skip },
-        { decision: 'apply', message: MESSAGES.add },
+    [DiffKind.ADD]: [
+        { decision: Decision.SKIP, message: MESSAGES.skip },
+        { decision: Decision.APPLY, message: MESSAGES.add },
     ],
 };
 
 const BULK: Record<DiffKind, { message: IntlMessage; actions: Choice[] }> = {
-    conflict: {
+    [DiffKind.CONFLICT]: {
         message: MESSAGES.resolveAllConflicts,
         actions: [
-            { decision: 'keep', message: MESSAGES.keepEverywhere },
-            { decision: 'overwrite', message: MESSAGES.overwriteEverywhere },
+            { decision: Decision.KEEP, message: MESSAGES.keepEverywhere },
+            {
+                decision: Decision.OVERWRITE,
+                message: MESSAGES.overwriteEverywhere,
+            },
         ],
     },
-    add: {
+    [DiffKind.ADD]: {
         message: MESSAGES.allAdditions,
         actions: [
-            { decision: 'apply', message: MESSAGES.addAll },
-            { decision: 'skip', message: MESSAGES.skipAll },
+            { decision: Decision.APPLY, message: MESSAGES.addAll },
+            { decision: Decision.SKIP, message: MESSAGES.skipAll },
         ],
     },
-    identical: { message: MESSAGES.identicalHint, actions: [] },
-    dropped: { message: MESSAGES.droppedHint, actions: [] },
+    [DiffKind.IDENTICAL]: { message: MESSAGES.identicalHint, actions: [] },
+    [DiffKind.DROPPED]: { message: MESSAGES.droppedHint, actions: [] },
 };
 
 const styles: SxStyles = {
@@ -111,7 +114,7 @@ export const CompareStep: FunctionComponent<Props> = ({
         if (isNeverMapped(row.current)) {
             return formatMessage(MESSAGES.markedNeverMapped);
         }
-        if (row.kind !== 'dropped') {
+        if (row.kind !== DiffKind.DROPPED) {
             return getMappingLabel(row.current) || textPlaceholder;
         }
         return row.invalid
@@ -171,7 +174,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                             </TableCell>
                             <TableCell>
                                 {formatMessage(
-                                    bucket === 'dropped'
+                                    bucket === DiffKind.DROPPED
                                         ? MESSAGES.question
                                         : MESSAGES.currentMapping,
                                 )}
@@ -266,7 +269,8 @@ export const CompareStep: FunctionComponent<Props> = ({
                                                 color="textSecondary"
                                             >
                                                 {formatMessage(
-                                                    row.kind === 'identical'
+                                                    row.kind ===
+                                                        DiffKind.IDENTICAL
                                                         ? MESSAGES.noChange
                                                         : MESSAGES.notImportable,
                                                 )}

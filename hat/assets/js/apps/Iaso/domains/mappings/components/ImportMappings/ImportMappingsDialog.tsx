@@ -6,7 +6,7 @@ import {
     DialogContent,
     DialogTitle,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import { useImportSources } from '../../hooks/useImportSources';
 import {
@@ -25,6 +25,7 @@ import {
     DiffKind,
     ImportPlan,
     ImportSource,
+    MappingImportErrorReason,
     MappingVersionRow,
 } from '../../types';
 import { CompareStep } from './CompareStep';
@@ -40,11 +41,12 @@ type Props = {
 
 const FILE_SOURCE_ID = 'file';
 
-const IMPORT_ERROR_MESSAGES = {
-    invalidJson: MESSAGES.importInvalidJson,
-    invalidFormat: MESSAGES.importInvalidFormat,
-    mappingTypeMismatch: MESSAGES.importMappingTypeMismatch,
-    noValidMapping: MESSAGES.importNoValidMapping,
+const IMPORT_ERROR_MESSAGES: Record<MappingImportErrorReason, IntlMessage> = {
+    [MappingImportErrorReason.INVALID_JSON]: MESSAGES.importInvalidJson,
+    [MappingImportErrorReason.INVALID_FORMAT]: MESSAGES.importInvalidFormat,
+    [MappingImportErrorReason.MAPPING_TYPE_MISMATCH]:
+        MESSAGES.importMappingTypeMismatch,
+    [MappingImportErrorReason.NO_VALID_MAPPING]: MESSAGES.importNoValidMapping,
 };
 
 const OTHER_TARGET_MESSAGES = {
@@ -69,7 +71,7 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
     const [fileSource, setFileSource] = useState<ImportSource | undefined>();
     const [fileError, setFileError] = useState<string | undefined>();
     const [fileWarning, setFileWarning] = useState<string | undefined>();
-    const [bucket, setBucket] = useState<DiffKind>('conflict');
+    const [bucket, setBucket] = useState<DiffKind>(DiffKind.CONFLICT);
     const [decisions, setDecisions] = useState<
         Record<string, Decision | undefined>
     >({});
@@ -182,9 +184,9 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                 diff.map(row => [row.questionKey, getDefaultDecision(row)]),
             ),
         );
-        const firstBucket = diff.some(row => row.kind === 'conflict')
-            ? 'conflict'
-            : 'add';
+        const firstBucket = diff.some(row => row.kind === DiffKind.CONFLICT)
+            ? DiffKind.CONFLICT
+            : DiffKind.ADD;
         setBucket(firstBucket);
         setStep(2);
     };

@@ -5,8 +5,27 @@ export type MappingVersionRow = Record<string, any>;
 export type QuestionMapping = Record<string, any> | Record<string, any>[];
 export type QuestionMappings = Record<string, QuestionMapping>;
 
-export type DiffKind = 'conflict' | 'add' | 'identical' | 'dropped';
-export type Decision = 'keep' | 'overwrite' | 'apply' | 'skip';
+export enum DiffKind {
+    CONFLICT = 'conflict',
+    ADD = 'add',
+    IDENTICAL = 'identical',
+    DROPPED = 'dropped',
+}
+
+export enum Decision {
+    KEEP = 'keep',
+    OVERWRITE = 'overwrite',
+    APPLY = 'apply',
+    SKIP = 'skip',
+}
+
+// why an uploaded file can't be imported
+export enum MappingImportErrorReason {
+    INVALID_JSON = 'invalidJson',
+    INVALID_FORMAT = 'invalidFormat',
+    MAPPING_TYPE_MISMATCH = 'mappingTypeMismatch',
+    NO_VALID_MAPPING = 'noValidMapping',
+}
 
 export type DiffRow = {
     kind: DiffKind;

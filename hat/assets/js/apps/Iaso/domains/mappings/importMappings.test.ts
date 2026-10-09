@@ -12,6 +12,7 @@ import {
     MappingImportError,
     parseMappingExport,
 } from './importMappings';
+import { DiffKind, MappingImportErrorReason } from './types';
 
 const descriptor = {
     name: 'survey',
@@ -150,9 +151,9 @@ describe('mapping shapes', () => {
             ),
         ).toEqual({
             // a "multiple" mapping has no id but is a real mapping
-            symptoms: 'conflict',
+            symptoms: DiffKind.CONFLICT,
             // an empty list is not a mapping
-            empty: 'add',
+            empty: DiffKind.ADD,
         });
         expect(
             kindsOf(
@@ -168,7 +169,7 @@ describe('mapping shapes', () => {
                     'EVENT_TRACKER',
                 ),
             ),
-        ).toEqual({ age: 'identical', household: 'conflict' });
+        ).toEqual({ age: DiffKind.IDENTICAL, household: DiffKind.CONFLICT });
         expect(
             computeMappingsDiff(
                 { age: tracker('s1') },
@@ -176,7 +177,7 @@ describe('mapping shapes', () => {
                 questions,
                 'EVENT_TRACKER',
             )[0].kind,
-        ).toBe('conflict');
+        ).toBe(DiffKind.CONFLICT);
     });
 
     it.each([
@@ -218,7 +219,10 @@ describe('mapping shapes', () => {
             questions,
             'AGGREGATE',
         );
-        expect(kindsOf(rows)).toEqual({ symptoms: 'dropped', age: 'add' });
+        expect(kindsOf(rows)).toEqual({
+            symptoms: DiffKind.DROPPED,
+            age: DiffKind.ADD,
+        });
         expect(rows.find(r => r.questionKey === 'symptoms')?.invalid).toBe(
             true,
         );
@@ -265,12 +269,12 @@ describe('computeMappingsDiff', () => {
 
     it('classifies each incoming mapping', () => {
         expect(kinds).toEqual({
-            q1: 'identical',
-            q2: 'conflict',
-            q3: 'add',
+            q1: DiffKind.IDENTICAL,
+            q2: DiffKind.CONFLICT,
+            q3: DiffKind.ADD,
             // overwriting a never mapped marker is a decision to take
-            q4: 'conflict',
-            gone: 'dropped',
+            q4: DiffKind.CONFLICT,
+            gone: DiffKind.DROPPED,
         });
     });
 
@@ -299,7 +303,10 @@ describe('computeMappingsDiff', () => {
         );
         expect(
             Object.fromEntries(choiceRows.map(r => [r.questionKey, r.kind])),
-        ).toEqual({ symptoms__fever: 'add', sex__male: 'dropped' });
+        ).toEqual({
+            symptoms__fever: DiffKind.ADD,
+            sex__male: DiffKind.DROPPED,
+        });
     });
 
     it('builds the patch payload', () => {
@@ -458,7 +465,7 @@ describe('export / import', () => {
             const expected = Object.fromEntries(
                 Object.keys(questionMappings)
                     .filter(key => key !== 'q2')
-                    .map(key => [key, 'identical']),
+                    .map(key => [key, DiffKind.IDENTICAL]),
             );
             expect(kinds).toEqual(expected);
         },
@@ -472,22 +479,31 @@ describe('export / import', () => {
     });
 
     it.each([
-        ['not json', 'invalidJson'],
-        ['[]', 'invalidFormat'],
-        ['{"q1": 3}', 'invalidFormat'],
-        ['{"q1": [3]}', 'invalidFormat'],
+        ['not json', MappingImportErrorReason.INVALID_JSON],
+        ['[]', MappingImportErrorReason.INVALID_FORMAT],
+        ['{"q1": 3}', MappingImportErrorReason.INVALID_FORMAT],
+        ['{"q1": [3]}', MappingImportErrorReason.INVALID_FORMAT],
         [
             '{"mapping_type": "EVENT", "question_mappings": {}}',
-            'mappingTypeMismatch',
+            MappingImportErrorReason.MAPPING_TYPE_MISMATCH,
         ],
         // any JSON object whose values are objects, e.g. a tsconfig.json
-        ['{"compilerOptions": {"strict": true}}', 'noValidMapping'],
-        ['{"q1": [{"dataElement": {"id": "x"}}]}', 'noValidMapping'],
-        ['{"question_mappings": {}}', 'noValidMapping'],
+        [
+            '{"compilerOptions": {"strict": true}}',
+            MappingImportErrorReason.NO_VALID_MAPPING,
+        ],
+        [
+            '{"q1": [{"dataElement": {"id": "x"}}]}',
+            MappingImportErrorReason.NO_VALID_MAPPING,
+        ],
+        [
+            '{"question_mappings": {}}',
+            MappingImportErrorReason.NO_VALID_MAPPING,
+        ],
     ])('rejects %s', (text, reason) => {
         // the error message is the reason
         expect(() => parseMappingExport(text, 'AGGREGATE')).toThrow(
-            new MappingImportError(reason as any),
+            new MappingImportError(reason),
         );
     });
 });

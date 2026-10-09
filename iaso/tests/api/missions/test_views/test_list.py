@@ -10,8 +10,11 @@ from iaso.models import (
     MissionForm,
     MissionFormThroughForm,
     MissionOrgUnitType,
+    OrgUnit,
     OrgUnitType,
+    Planning,
     Project,
+    Team,
 )
 from iaso.models.missions import MissionType
 from iaso.permissions.core_permissions import CORE_MISSION_READ_PERMISSION, CORE_MISSION_WRITE_PERMISSION
@@ -21,6 +24,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
+        super(APITestCase, cls).setUpTestData()
         cls.account = Account.objects.create(name="account")
         cls.other_account = Account.objects.create(name="other_account")
 
@@ -171,6 +175,26 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
         cls.soft_deleted_mission = MissionForm.objects.create(name="soft_deleted_mission_form", account=cls.account)
         cls.soft_deleted_mission.delete()
 
+        # planning
+
+        cls.team = Team.objects.create(project=cls.project, name="team1", manager=cls.user_account_write_perm)
+        cls.org_unit = OrgUnit.objects.create(name="Test Country", org_unit_type=cls.out)
+
+        cls.planning = Planning.objects.create(
+            name="planning", org_unit=cls.org_unit, project=cls.project, team=cls.team
+        )
+        cls.planning.missions.add(cls.mission_form_1)
+        cls.planning.missions.add(cls.mission_out_1)
+
+        cls.planning_2 = Planning.objects.create(
+            name="planning_2", org_unit=cls.org_unit, project=cls.project, team=cls.team
+        )
+
+        cls.planning_3 = Planning.objects.create(
+            name="planning_3", org_unit=cls.org_unit, project=cls.project, team=cls.team
+        )
+        cls.planning_3.missions.add(cls.mission_et_1)
+
     def assertValidData(self, data, expected_length):
         self.assertValidListData(list_data=data, paginated=True, results_key="results", expected_length=expected_length)
         self.assertResponseCompliantToSwagger(data, "PaginatedMissionPolymorphicListList")
@@ -251,6 +275,32 @@ class MissionAPIListTestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertCountEqual(
                 [x["id"] for x in res_data["results"]], [self.mission_form_1.pk, self.mission_form_2.pk]
             )
+
+        with self.subTest("Planning ids"):
+            res = self.client.get(reverse("missions-list"), data={"planning_ids": f"{self.planning.pk}"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 2)
+            self.assertCountEqual(
+                [x["id"] for x in res_data["results"]], [self.mission_form_1.pk, self.mission_out_1.pk]
+            )
+
+            res = self.client.get(reverse("missions-list"), data={"planning_ids": f"{self.planning_2.pk}"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 0)
+
+            res = self.client.get(
+                reverse("missions-list"), data={"planning_ids": f"{self.planning.pk},{self.planning_3.pk}"}
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 3)
+            self.assertCountEqual(
+                [x["id"] for x in res_data["results"]],
+                [self.mission_form_1.pk, self.mission_out_1.pk, self.mission_et_1.pk],
+            )
+
+            res = self.client.get(reverse("missions-list"), data={"planning_ids": "10000"})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidData(res_data, 0)
 
     def test_should_see_missions_belonging_to_account(self):
         self.client.force_authenticate(self.user_account_read_perm)

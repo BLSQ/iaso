@@ -143,24 +143,29 @@ describe('ImportMappingsDialog', () => {
         );
     };
 
-    it('shows a message in the tabs without any question', async () => {
+    it('hides the tabs without any question', async () => {
         renderAndChooseFile({
             mapping_type: 'AGGREGATE',
-            question_mappings: { q3: de('d') },
+            question_mappings: { q1: de('a'), q3: de('d') },
         });
         expect(await screen.findByText('export.json')).toBeInTheDocument();
         fireEvent.click(screen.getByText('Compare'));
 
-        // no conflict: opens on the additions
+        expect(
+            screen.queryByText('Conflicts', { exact: false }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('Dropped', { exact: false }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('To add (1)')).toBeInTheDocument();
+        expect(screen.getByText('Identical (1)')).toBeInTheDocument();
+
+        // no conflict: opens on the first tab with rows, the additions
         expect(
             document.querySelector('[data-test="import-row-q3"]'),
         ).not.toBeNull();
-        expect(screen.queryByText('No question in this tab')).toBeNull();
-
-        fireEvent.click(screen.getByText('Conflicts (0)'));
-        expect(screen.getByText('No question in this tab')).toBeInTheDocument();
         expect(
-            document.querySelector('[data-test="import-row-q3"]'),
+            document.querySelector('[data-test="import-row-q1"]'),
         ).toBeNull();
     });
 

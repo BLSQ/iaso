@@ -935,7 +935,6 @@
     "iaso.mappings.import.decision": "Decisión",
     "iaso.mappings.import.done": "{added} mapeos añadidos, {overwritten} sobrescritos, {kept} mantenidos, {ignored} no importados",
     "iaso.mappings.import.droppedHint": "Estos mapeos no se pueden importar: la pregunta no existe en esta versión, o el mapeo no es válido para este tipo de mapeo.",
-    "iaso.mappings.import.emptyBucket": "Ninguna pregunta en esta pestaña",
     "iaso.mappings.import.fileMeta": "Exportado desde {formName} - {versionId}",
     "iaso.mappings.import.fromFile": "O importe una exportación de mapeo (.json), por ejemplo desde otra cuenta.",
     "iaso.mappings.import.identicalHint": "Mismo destino DHIS2 en ambos lados. Nada que resolver.",

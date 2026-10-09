@@ -13,6 +13,7 @@ import {
     buildImportPlan,
     computeMappingsDiff,
     countMatchingMappings,
+    DIFF_KINDS,
     getDefaultDecision,
     getImportableMappings,
     getOtherTarget,
@@ -184,10 +185,11 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                 diff.map(row => [row.questionKey, getDefaultDecision(row)]),
             ),
         );
-        const firstBucket = diff.some(row => row.kind === DiffKind.CONFLICT)
-            ? DiffKind.CONFLICT
-            : DiffKind.ADD;
-        setBucket(firstBucket);
+        // empty tabs are hidden: open on the first one with rows
+        const firstBucket = DIFF_KINDS.find(kind =>
+            diff.some(row => row.kind === kind),
+        );
+        setBucket(firstBucket ?? DiffKind.CONFLICT);
         setStep(2);
     };
 

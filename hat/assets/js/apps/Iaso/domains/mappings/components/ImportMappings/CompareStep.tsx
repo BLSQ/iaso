@@ -87,7 +87,6 @@ const styles: SxStyles = {
     decisionColumn: { width: 210 },
     current: { color: 'text.primary', overflowWrap: 'anywhere' },
     noCurrent: { color: 'text.disabled', overflowWrap: 'anywhere' },
-    empty: { color: 'text.secondary', py: 3 },
     choices: { display: 'flex', gap: 0.75, justifyContent: 'flex-end' },
     summary: { mt: 1.5 },
 };
@@ -114,6 +113,8 @@ export const CompareStep: FunctionComponent<Props> = ({
         });
         return result;
     }, [rows]);
+    // empty buckets are hidden: only offer the tabs with something to show
+    const visibleKinds = DIFF_KINDS.filter(kind => counts[kind] > 0);
     const bucketRows = useMemo(
         () => rows.filter(row => row.kind === bucket),
         [rows, bucket],
@@ -149,7 +150,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                 textColor="primary"
                 sx={styles.tabs}
             >
-                {DIFF_KINDS.map(kind => (
+                {visibleKinds.map(kind => (
                     <Tab
                         key={kind}
                         value={kind}
@@ -169,7 +170,6 @@ export const CompareStep: FunctionComponent<Props> = ({
                         key={action.decision}
                         size="small"
                         onClick={() => setBulkDecision(bucket, action.decision)}
-                        disabled={bucketRows.length === 0}
                     >
                         {formatMessage(action.message)}
                     </Button>
@@ -198,18 +198,6 @@ export const CompareStep: FunctionComponent<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {bucketRows.length === 0 && (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={4}
-                                    align="center"
-                                    sx={styles.empty}
-                                    data-test="import-bucket-empty"
-                                >
-                                    {formatMessage(MESSAGES.emptyBucket)}
-                                </TableCell>
-                            </TableRow>
-                        )}
                         {bucketRows.map(row => {
                             const decision = decisions[row.questionKey];
                             const choices = CHOICES[row.kind];

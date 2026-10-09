@@ -358,10 +358,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'These mappings cannot be imported: the question does not exist in this version, or the mapping is not valid for this mapping type.',
     },
-    emptyBucket: {
-        id: 'iaso.mappings.import.emptyBucket',
-        defaultMessage: 'No question in this tab',
-    },
     question: {
         id: 'iaso.label.question',
         defaultMessage: 'Question',

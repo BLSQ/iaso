@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { History } from '@mui/icons-material';
-import { Grid, Box, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Grid, Box, Typography, useTheme } from '@mui/material';
 
 import {
     commonStyles,
@@ -14,6 +13,7 @@ import {
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { SxStyles } from '../../types/general';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
 import { MappingImportActions } from './components/ImportMappings/MappingImportActions';
@@ -31,27 +31,20 @@ import MESSAGES from './messages';
 
 const baseUrl = baseUrls.mappingDetail;
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    icon: {
-        width: 30,
-        height: 'auto',
-        display: 'block',
-        cursor: 'pointer',
-    },
+const styles: SxStyles = {
     actions: {
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        gap: theme.spacing(2),
-        marginBottom: theme.spacing(2),
+        gap: 2,
+        mb: 2,
     },
     linkWithIcon: {
         display: 'flex',
         alignItems: 'center',
         gap: '0.5em',
     },
-}));
+};
 
 const iasoFieldOptions = formatMessage => [
     { value: undefined, label: formatMessage(MESSAGES.useValueFromForm) },
@@ -71,7 +64,7 @@ const fieldTypeOptions = formatMessage => [
 
 const MappingDetails = () => {
     const redirectToReplace = useRedirectToReplace();
-    const classes = useStyles();
+    const theme = useTheme();
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrl);
     const currentMappingVersionQuery = useGetMappingVersionDetail(
@@ -158,7 +151,7 @@ const MappingDetails = () => {
         currentMappingVersion.mapping.mapping_type !== 'DERIVED';
 
     return (
-        <section className={classes.relativeContainer}>
+        <Box component="section" sx={commonStyles(theme).relativeContainer}>
             <TopBar
                 title={
                     currentMappingVersion
@@ -178,12 +171,12 @@ const MappingDetails = () => {
             {fetching && <LoadingSpinner />}
 
             {currentMappingVersion && (
-                <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Box className={classes.actions}>
+                <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                    <Box sx={styles.actions}>
                         <ExternalLink
                             url={`/${baseUrls.apiLogs}/?objectId=${currentMappingVersion.id}&contentType=iaso.mappingversion&fields=field_diffs`}
                         >
-                            <Typography className={classes.linkWithIcon}>
+                            <Typography sx={styles.linkWithIcon}>
                                 <History />
                                 {formatMessage(MESSAGES.changeLog)}
                             </Typography>
@@ -264,7 +257,7 @@ const MappingDetails = () => {
                     </Grid>
                 </Box>
             )}
-        </section>
+        </Box>
     );
 };
 

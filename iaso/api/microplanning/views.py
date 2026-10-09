@@ -1,13 +1,23 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Sequence
+
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
-from rest_framework import filters, status
+from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
+
+
+if TYPE_CHECKING:
+    from rest_framework.generics import BaseFilterProtocol
+from rest_framework.pagination import BasePagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -17,13 +27,14 @@ from iaso.api.common import (
     DeletionFilterBackend,
     HasPermission,
     ModelViewSet,
+    Paginator,
     ReadOnlyOrHasPermission,
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.missions import MissionWithForms
 from iaso.models.org_unit import OrgUnit
-from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
+from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 
 from ...models import (
     MissionEntityType,
@@ -37,7 +48,7 @@ from .filters import (
     validate_planning_has_org_unit_scope,
 )
 from .mixins import PlanningOrgUnitChildrenQuerysetMixin
-from .pagination import PlanningOrgUnitChildrenPagination
+from .pagination import PlanningMissionPagination, PlanningOrgUnitChildrenPagination
 from .serializers import (
     AssignmentSerializer,
     AuditAssignmentSerializer,
@@ -54,6 +65,8 @@ from .serializers import (
     PlanningSamplingResultWriteSerializer,
     PlanningWriteSerializer,
 )
+from .serializers.dropdown import PlanningDropdownSerializer
+from .serializers.missions.base import PlanningMissionPolymorphicListSerializer
 
 
 @extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
@@ -143,31 +156,76 @@ class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewS
 
 @extend_schema(tags=["Micro plannings", "Plannings"])
 class PlanningViewSet(AuditMixin, ModelViewSet):
-    include_results_key_if_not_paginated = False
     permission_classes = [AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     queryset = Planning.objects.all()
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        PublishingStatusFilterBackend,
-        PlanningSearchFilterBackend,
-        DeletionFilterBackend,
-    ]
     ordering_fields = ["id", "name", "started_at", "ended_at", "project__name", "org_unit__name"]
     filterset_fields = {
         "name": ["icontains"],
         "started_at": ["gte", "lte"],
         "ended_at": ["gte", "lte"],
     }
+
     audit_serializer = AuditPlanningSerializer  # type: ignore
 
-    def get_serializer_class(self):
+    @property
+    def pagination_class(self) -> type[BasePagination] | None:
+        if self.action == "missions":
+            return PlanningMissionPagination
+        if self.action == "dropdown":
+            return None
+        return Paginator
+
+    @property
+    def include_results_key_if_not_paginated(self) -> bool:
+        if self.action == "missions":
+            return True
+        return False
+
+    @property
+    def filter_backends(self) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol]]:
+        if self.action == "dropdown":
+            return [filters.OrderingFilter, PublishingStatusFilterBackend]
+        if self.action == "missions":
+            return []
+        return [
+            filters.OrderingFilter,
+            DjangoFilterBackend,
+            PublishingStatusFilterBackend,
+            PlanningSearchFilterBackend,
+            DeletionFilterBackend,
+        ]
+
+    def get_serializer_class(self) -> type[serializers.BaseSerializer]:
         if self.action in ["create", "update", "partial_update"]:
             return PlanningWriteSerializer
+        if self.action == "dropdown":
+            return PlanningDropdownSerializer
+        if self.action == "missions":
+            return PlanningMissionPolymorphicListSerializer
         return PlanningReadSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         user = self.request.user
+        qs = self.queryset.filter_for_user(user)
+
+        if self.action == "dropdown":
+            return qs.only("id", "name")
+
+        if self.action == "missions":
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "missions",
+                    queryset=MissionWithForms.objects.all()
+                    .select_polymorphic_related(MissionOrgUnitType, "org_unit_type")
+                    .select_polymorphic_related(MissionEntityType, "entity_type"),
+                )
+            )
+            planning = get_object_or_404(
+                qs,
+                pk=self.kwargs["pk"],
+            )
+            return planning.missions.all()
+
         return (
             self.queryset.filter_for_user(user)
             .select_related("project", "org_unit", "team", "selected_sampling_result")
@@ -200,6 +258,26 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return self._read_response(instance)
+
+    @extend_schema(responses={200: PlanningDropdownSerializer(many=True)})
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+    )
+    def dropdown(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(responses={200: PlanningMissionPolymorphicListSerializer(many=True)})
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+    )
+    def missions(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+        return super().list(request, *args, **kwargs)
 
 
 @extend_schema(tags=["Micro plannings", "Planning samplings", "Plannings"])

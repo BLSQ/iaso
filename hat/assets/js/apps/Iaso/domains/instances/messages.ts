@@ -934,6 +934,11 @@ const MESSAGES = defineMessages({
         defaultMessage: '{count, plural, one {# field} other {# fields}}',
         id: 'iaso.instance.fieldsCount',
     },
+    repeatedCount: {
+        defaultMessage:
+            'Repeat · {count, plural, one {# entry} other {# entries}}',
+        id: 'iaso.instance.repeatedCount',
+    },
     matchingFieldsCount: {
         defaultMessage: '{count} of {total}',
         id: 'iaso.instance.matchingFieldsCount',
@@ -1017,6 +1022,14 @@ const MESSAGES = defineMessages({
     downloadAll: {
         id: 'iaso.instance.downloadAll',
         defaultMessage: 'Download all',
+    },
+    workflow: {
+        id: 'iaso.forms.validationWorkflow',
+        defaultMessage: 'Validation Workflow',
+    },
+    validation_status: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation Status',
     },
 });
 

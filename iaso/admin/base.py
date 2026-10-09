@@ -1,4 +1,5 @@
 from typing import Any, Protocol
+from urllib.parse import urlencode
 
 from django import forms as django_forms
 from django.contrib import admin, messages
@@ -6,9 +7,12 @@ from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import PermissionDenied
 from django.db import connection, models, transaction
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.shortcuts import redirect, render
+from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
@@ -16,9 +20,19 @@ from lazy_services import LazyService
 
 import iaso.management.commands.unique_indexes as unique_indexes
 
+from beanstalk_worker.services import THROTTLE_CONFIG_SLUG
+from beanstalk_worker.throttle import discover_tasks, effective_throttle
 from hat.audit.models import DJANGO_ADMIN
+from iaso.admin import task_monitor
+from iaso.admin.task_throttles import (
+    TaskThrottlesForm,
+    config_version,
+    describe_content,
+    queued_counts,
+    running_throttle_keys,
+)
 from iaso.models.json_config import Config  # type: ignore
-from iaso.plugins import is_wfp_plugin_active
+from iaso.plugins import is_saas_plugin_active, is_wfp_plugin_active
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
@@ -27,7 +41,9 @@ from iaso.utils.admin.custom_filters import (
 
 from ..models import (
     ERRORED,
+    KILLED,
     QUEUED,
+    RUNNING,
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
@@ -84,6 +100,7 @@ from ..models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLease,
     TaskLog,
     TenantUser,
     UserRole,
@@ -580,6 +597,28 @@ def relaunch_task(_, request, queryset) -> None:
     messages.success(request, f"{task_to_relaunch.count()} task successfully relaunched.")
 
 
+@admin.action(description="Kill selected running tasks and free their throttle slots")
+def kill_running_task(_, request, queryset) -> None:
+    """For a task stuck while its worker is alive (e.g. an infinite loop): its heartbeat keeps its lease, so it
+    holds its throttle slots forever and the "Kill" of the web UI only works when the task reports its progress.
+
+    Its code may still run until the worker restarts: freeing the slots lets other runs start in the meantime."""
+    task_ids = list(queryset.filter(status=RUNNING, external=False).values_list("id", flat=True))
+    with transaction.atomic():
+        killed = Task.objects.filter(id__in=task_ids, status=RUNNING).update(
+            should_be_killed=True,
+            status=KILLED,
+            ended_at=timezone.now(),
+            result={"result": KILLED, "message": f"Killed from the Django admin by {request.user}"},
+        )
+        TaskLease.objects.filter(task_id__in=task_ids).delete()
+    messages.warning(
+        request,
+        f"{killed} running task(s) killed and their throttle slots freed. Their code may still run until it reports "
+        "its progress or the worker restarts.",
+    )
+
+
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
@@ -590,7 +629,7 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
     date_hierarchy = "created_at"
-    actions = (relaunch_task,)
+    actions = (relaunch_task, kill_running_task)
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")
@@ -603,6 +642,92 @@ class TaskAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("launcher")
+
+    def get_urls(self):
+        custom_urls = [
+            path("monitor/", self.admin_site.admin_view(self.monitor_view), name="iaso_task_monitor"),
+        ]
+        return custom_urls + super().get_urls()
+
+    def monitor_view(self, request):
+        if not self.has_view_permission(request):
+            raise PermissionDenied
+        window = request.GET.get("window") if request.GET.get("window") in task_monitor.WINDOWS else None
+        window = window or task_monitor.DEFAULT_WINDOW
+        refresh = request.GET.get("refresh", "")
+        refresh = refresh if refresh.isdigit() and int(refresh) >= 5 else ""
+        chart_task = request.GET.get("task", "")
+        account_param = request.GET.get("account", "")
+        account = Account.objects.filter(id=account_param).first() if account_param.isdigit() else None
+        account_id = account.id if account else None
+
+        all_accounts = request.GET.get("all_accounts") == "1"
+        params = {
+            "window": window,
+            "refresh": refresh,
+            "task": chart_task,
+            "account": account_id or "",
+            "all_accounts": "1" if all_accounts else "",
+        }
+
+        def link(**changes):
+            return "?" + urlencode({k: v for k, v in {**params, **changes}.items() if v})
+
+        since = timezone.now() - task_monitor.WINDOWS[window]
+        config = Config.objects.filter(slug=THROTTLE_CONFIG_SLUG).first()
+        tasks = discover_tasks()
+        rows = task_monitor.task_rows(since, account_id)
+        accounts = task_monitor.account_rows(since, chart_task)
+        tasks_url = reverse("admin:iaso_task_changelist")
+        filters_of_column = task_monitor.list_filters(since)
+
+        def list_links(**base):
+            """Links to the task list, per column: the counted tasks of the row"""
+            return {
+                column: f"{tasks_url}?{urlencode({**base, **filters})}"
+                for column, filters in {"all": {}, **filters_of_column}.items()
+            }
+
+        account_filter = {"account__id__exact": account_id} if account_id else {}
+        for row in rows:
+            row["links"] = list_links(name__exact=row["name"], **account_filter)
+        for row in accounts:
+            row["url"] = link(account=row["id"])
+            row["links"] = list_links(
+                **({"account__id__exact": row["id"]} if row["id"] else {"account__isnull": "True"}),
+                **({"name__exact": chart_task} if chart_task else {}),
+            )
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": "Task monitor",
+            "window": window,
+            "window_links": [(w, link(window=w)) for w in task_monitor.WINDOWS],
+            "refresh": refresh,
+            "refresh_url": link(refresh=10),
+            "stop_refresh_url": link(refresh=""),
+            "rows": rows,
+            "totals": task_monitor.totals(rows),
+            "duration_labels": task_monitor.DURATION_LABELS,
+            "accounts": accounts,
+            "shown_accounts": accounts if all_accounts else accounts[: task_monitor.MAX_ACCOUNTS],
+            "hidden_accounts": 0 if all_accounts else max(0, len(accounts) - task_monitor.MAX_ACCOUNTS),
+            "all_accounts_url": link(all_accounts="1") + "#by-account",
+            "account": account,
+            "clear_account_url": link(account=""),
+            "account_choices": sorted(
+                {(row["id"], str(row["name"])) for row in accounts}
+                | ({(account.id, account.name)} if account else set()),
+                key=lambda choice: choice[1].lower(),
+            ),
+            "throttles": task_monitor.throttle_rows(tasks, config.content if config else {}, account_id),
+            "chart_task": chart_task,
+            # all the tasks of the code, and the names found in the data (e.g. tasks since removed)
+            "chart_tasks": sorted(set(tasks) | {row["name"] for row in rows} | ({chart_task} if chart_task else set())),
+            "activity": task_monitor.activity(window, chart_task, account_id),
+            "bucket_minutes": int(task_monitor.BUCKETS[window].total_seconds() // 60),
+        }
+        return render(request, "admin/iaso/task/monitor.html", context)
 
 
 @admin.register(TaskLog)
@@ -1155,6 +1280,89 @@ class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                "task-throttles/",
+                self.admin_site.admin_view(self.task_throttles_view),
+                name="iaso_config_task_throttles",
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def get_readonly_fields(self, request, obj=None):
+        # the throttles are edited with the validated form of task_throttles_view
+        if obj and obj.slug == THROTTLE_CONFIG_SLUG:
+            return ("slug", "content", "task_throttles_page")
+        return super().get_readonly_fields(request, obj)
+
+    @admin.display(description="Edit")
+    def task_throttles_page(self, obj):
+        return format_html(
+            '<a href="{}">Edit on the task throttles page</a>', reverse("admin:iaso_config_task_throttles")
+        )
+
+    def task_throttles_view(self, request):
+        if not self.has_change_permission(request) or not self.has_add_permission(request):
+            raise PermissionDenied
+        tasks = discover_tasks()
+        config = Config.objects.filter(slug=THROTTLE_CONFIG_SLUG).first()
+        content = config.content if config else {}
+        if request.method == "POST":
+            # the tasks of the page that was submitted
+            shown = {name for name in request.POST.get("tasks", "").split(",") if name in tasks}
+        else:
+            # the tasks throttled in the code or in the config, and the one being added
+            shown = {name for name, throttle in tasks.items() if throttle}
+            shown |= {name for name in (content if isinstance(content, dict) else {}) if name in tasks}
+            if request.GET.get("add") in tasks:
+                shown.add(request.GET["add"])
+        throttled_tasks = [(name, effective_throttle(tasks[name])) for name in sorted(shown)]
+        form_kwargs = {"throttled_tasks": throttled_tasks, "content": content}
+
+        if request.method == "POST":
+            form = TaskThrottlesForm(request.POST, **form_kwargs)
+            if form.is_valid():
+                with transaction.atomic():
+                    current = Config.objects.select_for_update().filter(slug=THROTTLE_CONFIG_SLUG).first()
+                    if config_version(current) != form.cleaned_data["version"]:
+                        messages.error(
+                            request,
+                            "The throttles were changed by someone else since you opened this page. Your changes were "
+                            "not saved: here are the current values.",
+                        )
+                        return redirect("admin:iaso_config_task_throttles")
+                    content = form.cleaned_data["content"]
+                    change_message = f"Task throttles set to {describe_content(content)}"
+                    if current:
+                        current.content = content
+                        current.save()
+                        self.log_change(request, current, change_message)
+                    else:
+                        current = Config.objects.create(slug=THROTTLE_CONFIG_SLUG, content=content)
+                        self.log_addition(request, current, change_message)
+                messages.success(request, "The task throttles were saved, they apply to the next task starts.")
+                return redirect("admin:iaso_config_task_throttles")
+        else:
+            form = TaskThrottlesForm(
+                initial={"version": config_version(config), "tasks": ",".join(sorted(shown))}, **form_kwargs
+            )
+
+        task_names = [name for name, _ in throttled_tasks]
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": "Task throttles",
+            "form": form,
+            "sections": list(form.sections(running_throttle_keys(), queued_counts(task_names), tasks)),
+            "addable_tasks": sorted(name for name in tasks if name not in shown),
+            "unknown_entries": describe_content({k: v for k, v in form.content.items() if k not in tasks}),
+            "config": config,
+            "config_users": config.users.all() if config else [],
+            "saved_json": describe_content(config.content) if config else "",
+        }
+        return render(request, "admin/iaso/config/task_throttles.html", context)
+
 
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
@@ -1254,6 +1462,10 @@ class AccountAdmin(admin.ModelAdmin):
         from plugins.wfp.admin import create_indexes_celery_action
 
         actions.append(create_indexes_celery_action)
+    if is_saas_plugin_active():
+        from plugins.saas.admin.actions import refresh_account_usage_action
+
+        actions.append(refresh_account_usage_action)
 
 
 @admin.register(UserRole)

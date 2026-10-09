@@ -159,18 +159,23 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
                         />
                     )}
                 </Grid>
-                <Table
-                    expanded={{}}
-                    getObjectId={obj => obj.id}
-                    data={data?.results ?? []}
-                    pages={1}
-                    defaultSorted={[{ id: 'sku', desc: false }]}
-                    columns={columns}
-                    count={data?.count ?? 0}
-                    baseUrl={baseUrl}
-                    params={params}
-                    onTableParamsChange={p => redirectTo(baseUrl, p)}
-                />
+                {/* `version` is used inside the `useRulesColumns`, if you remove
+                 this condition, it happens that the `version` is `undefined` when
+                  the `Cell` is rendered and stays this way. */}
+                {!isFetchingVersion && (
+                    <Table
+                        expanded={{}}
+                        getObjectId={obj => obj.id}
+                        data={data?.results ?? []}
+                        pages={1}
+                        defaultSorted={[{ id: 'sku', desc: false }]}
+                        columns={columns}
+                        count={data?.count ?? 0}
+                        baseUrl={baseUrl}
+                        params={params}
+                        onTableParamsChange={p => redirectTo(baseUrl, p)}
+                    />
+                )}
             </Box>
         </>
     );

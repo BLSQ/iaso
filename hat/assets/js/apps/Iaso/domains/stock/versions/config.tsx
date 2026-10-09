@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    Setting,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -79,8 +84,7 @@ export const useRulesColumns = (
                 Header: formatMessage(MESSAGES.form),
                 id: 'form__name',
                 accessor: 'form.name',
-                Cell: settings => {
-                    const rule = settings.row.original as StockItemRule;
+                Cell: ({ row: { original: rule } }: Setting<StockItemRule>) => {
                     return (
                         <LinkToForm
                             key={rule.form.id}
@@ -112,8 +116,7 @@ export const useRulesColumns = (
                 resizable: false,
                 sortable: false,
                 accessor: 'actions',
-                Cell: settings => {
-                    const rule = settings.row.original as StockItemRule;
+                Cell: ({ row: { original: rule } }: Setting<StockItemRule>) => {
                     if (version?.status !== 'DRAFT') {
                         return textPlaceholder;
                     }

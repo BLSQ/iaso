@@ -1,10 +1,13 @@
 import datetime
+import os
 import tempfile
 
 from unittest import mock
 from unittest.mock import patch
+from urllib.parse import quote
 from uuid import uuid4
 
+import duckdb
 import pytz
 
 from django.contrib.gis.geos import Point
@@ -15,6 +18,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.models import OrgUnitReferenceInstance
+from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
@@ -337,6 +341,79 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
 
         self.assertEqual(queries_for_0_extra, queries_for_6_extra)
 
+    def test_parquet_includes_validation_workflow(self):
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        self.client.force_authenticate(self.yoda)
+        workflow = self.create_validation_workflow(account=self.star_wars, forms=[self.form_1])
+        self.instance_1.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+        self.instance_1.save()
+
+        response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&order=id")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+            write_response_to_file(response, f)
+            with duckdb.connect() as con:
+                rows = con.execute(
+                    "SELECT iaso_subm_id, iaso_subm_form_validation_workflow_id, iaso_subm_general_validation_status"
+                    f" FROM '{f.name}' ORDER BY iaso_subm_id"
+                ).fetchall()
+
+        expected = [
+            (instance.id, workflow.id, ValidationWorkflowArtefactStatus.APPROVED if instance == self.instance_1 else "")
+            for instance in sorted(
+                (self.instance_1, self.instance_2, self.instance_3, self.instance_4), key=lambda i: i.id
+            )
+        ]
+        self.assertEqual(rows, expected)
+
+    def test_parquet_supports_the_ui_export_filters(self):
+        """the submissions page sends the same filters for the csv/xlsx/parquet exports"""
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        self.client.force_authenticate(self.yoda)
+
+        def parquet_ids(filters):
+            response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&{filters}")
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response)
+            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+                write_response_to_file(response, f)
+                # used by the UI for the download progress
+                self.assertEqual(int(response["X-File-Size"]), os.path.getsize(f.name))
+                with duckdb.connect() as con:
+                    return sorted(row[0] for row in con.execute(f"SELECT iaso_subm_id FROM '{f.name}'").fetchall())
+
+        all_ids = sorted(i.id for i in (self.instance_1, self.instance_2, self.instance_3, self.instance_4))
+        # all the form_1 submissions are in the "VALID" Coruscant Jedi Council
+        self.assertEqual(parquet_ids("org_unit_status=VALID"), all_ids)
+        self.assertEqual(parquet_ids("org_unit_status=NEW"), [])
+        self.assertEqual(parquet_ids("search=Coruscant"), all_ids)
+        self.assertEqual(parquet_ids(f"search=ids:{self.instance_1.id}"), [self.instance_1.id])
+        self.assertEqual(parquet_ids("deviceId=99999"), [])
+        # closes a $$ ... $$ quoted string: the search must not be able to end the sql given to duckdb
+        self.assertEqual(parquet_ids("search=" + quote("a$$) ; SELECT 42; --")), [])
+
+    def test_parquet_supports_the_validation_workflow_filters(self):
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        self.client.force_authenticate(self.yoda)
+        workflow = self.create_validation_workflow(account=self.star_wars, forms=[self.form_1])
+        other_workflow = self.create_validation_workflow(account=self.star_wars, name="Other workflow")
+        self.instance_1.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+        self.instance_1.save()
+
+        def parquet_ids(filters):
+            response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&{filters}")
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response)
+            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+                write_response_to_file(response, f)
+                with duckdb.connect() as con:
+                    return sorted(row[0] for row in con.execute(f"SELECT iaso_subm_id FROM '{f.name}'").fetchall())
+
+        all_ids = sorted(i.id for i in (self.instance_1, self.instance_2, self.instance_3, self.instance_4))
+        self.assertEqual(parquet_ids(f"workflow_ids={workflow.id}"), all_ids)
+        self.assertEqual(parquet_ids(f"workflow_ids={other_workflow.id}"), [])
+        self.assertEqual(parquet_ids("validation_status=APPROVED"), [self.instance_1.id])
+        self.assertEqual(parquet_ids("validation_status=REJECTED"), [])
+
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -346,6 +423,6 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(
             response.json(),
             {
-                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, parquet, planningIds, project_ids, referenceInstances, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, deviceId, deviceOwnershipId, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, org_unit_status, parquet, planningIds, project_ids, referenceInstances, search, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, validation_status, withLocation, workflow_ids"
             },
         )

@@ -266,6 +266,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         dataTestId={dataTestId}
                         onBlur={onBlur}
                         onFocus={onFocus}
+                        placeholder={placeholder}
                         {...localizedNumberOptions}
                     />
                 );

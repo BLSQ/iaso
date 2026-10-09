@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import TableRowsIcon from '@mui/icons-material/TableRows';
@@ -28,13 +33,10 @@ import MESSAGES from '../../messages';
 import { getFormLanguages, pickDefaultLanguage } from '../../utils/questions';
 import InstanceFileContentBasic from '../InstanceFileContentBasic';
 import { Descriptor } from '../InstanceFileContentRich';
-import { SubmissionContentHeader } from './SubmissionContentHeader';
-import { SubmissionFieldRow } from './SubmissionFieldRow';
-import { SubmissionField } from './types';
+import { SubmissionTreeSection } from './SubmissionTreeSection';
 import {
-    spansFullWidth,
-    useFilteredSubmission,
-    useSubmissionSections,
+    useFilteredSubmissionTree,
+    useSubmissionTree,
 } from './useSubmissionSections';
 
 const styles: SxStyles = {
@@ -104,18 +106,6 @@ const styles: SxStyles = {
         fontSize: 40,
         color: 'text.disabled',
     },
-    fields: {
-        display: 'block',
-        columnGap: 4.5,
-        px: 0,
-        py: 0,
-    },
-    fieldsTwoColumns: {
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-        px: 2.75,
-        py: 0.5,
-    },
     toggleButtonGroup: theme => ({
         // segmented control: blue icons, active filled blue
         '& .MuiToggleButton-root': {
@@ -133,27 +123,7 @@ const styles: SxStyles = {
         },
     }),
 };
-/**
- * Whether the field at `index` has no field rendered directly below it, so its
- * bottom divider would dangle at the edge of the section. In one column that is
- * only the last field; in two columns it is the last field of each column —
- * i.e. the last two, unless a full-width field sits between them.
- */
-const hasNothingBelow = (
-    fields: SubmissionField[],
-    index: number,
-    twoColumns: boolean,
-): boolean => {
-    const last = fields.length - 1;
-    if (index === last) return true;
-    if (!twoColumns || index !== last - 1) return false;
-    // the second-to-last only dangles when it shares the bottom row with the
-    // last field; a full-width field on either side takes its own row
-    return (
-        !spansFullWidth(fields[last].kind) &&
-        !spansFullWidth(fields[index].kind)
-    );
-};
+const NO_FILES: string[] = [];
 
 type Props = {
     formDescriptor?: Descriptor;
@@ -165,7 +135,7 @@ type Props = {
 export const SubmissionContent: FunctionComponent<Props> = ({
     formDescriptor,
     instanceData,
-    files = [],
+    files = NO_FILES,
     showNote = true,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -173,10 +143,13 @@ export const SubmissionContent: FunctionComponent<Props> = ({
     const [query, setQuery] = useState('');
     const [showQuestionIds, setShowQuestionIds] = useState(false);
     const [twoColumns, setTwoColumns] = useState(false);
+    const [toggledKeys, setToggledKeys] = useState<Set<string>>(
+        () => new Set(),
+    );
 
     // the languages the form offers, and the one currently displayed. Defaults
     // to the user's UI locale when the form provides it, else the form's own
-    // default language. Undefined leaves useSubmissionSections on the UI locale.
+    // default language. Undefined leaves useSubmissionTree on the UI locale.
     const languages = useMemo(
         () => getFormLanguages(formDescriptor),
         [formDescriptor],
@@ -189,17 +162,29 @@ export const SubmissionContent: FunctionComponent<Props> = ({
         ),
     );
 
-    const sections = useSubmissionSections(
+    const tree = useSubmissionTree(
         formDescriptor,
         instanceData,
         showNote,
         language,
     );
-    const { sections: shownSections, matchCount } = useFilteredSubmission(
-        sections,
+    const { tree: shownTree, matchCount } = useFilteredSubmissionTree(
+        tree,
         query,
     );
     const isSearching = Boolean(query.trim());
+
+    const toggleSection = useCallback((key: string) => {
+        setToggledKeys(previous => {
+            const next = new Set(previous);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    }, []);
 
     // without a form descriptor there is nothing to group or search on, so fall
     // back to the flat key/value rendering
@@ -338,7 +323,6 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                     </ToggleButtonGroup>
                 </Box>
             </Box>
-
             {isSearching && (
                 <Box sx={styles.searchResults}>
                     <Typography variant="body2" color="primary">
@@ -356,45 +340,20 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                     </Button>
                 </Box>
             )}
-
             <ErrorBoundary>
-                {shownSections.map(section => (
-                    <Box component="section" key={section.id ?? 'lead'}>
-                        {section.label && (
-                            <SubmissionContentHeader
-                                section={section}
-                                isSearching={isSearching}
-                                showQuestionIds={showQuestionIds}
-                            />
-                        )}
-                        <Box
-                            sx={
-                                [
-                                    styles.fields,
-                                    twoColumns && styles.fieldsTwoColumns,
-                                ] as unknown as SxStyles
-                            }
-                        >
-                            {section.fields.map((field, index) => (
-                                <SubmissionFieldRow
-                                    key={`${section.id ?? 'lead'}-${field.id}`}
-                                    field={field}
-                                    files={files}
-                                    showQuestionIds={showQuestionIds}
-                                    query={query}
-                                    twoColumns={twoColumns}
-                                    hideBorder={hasNothingBelow(
-                                        section.fields,
-                                        index,
-                                        twoColumns,
-                                    )}
-                                />
-                            ))}
-                        </Box>
-                    </Box>
-                ))}
+                {shownTree && (
+                    <SubmissionTreeSection
+                        section={shownTree}
+                        files={files}
+                        query={query}
+                        isSearching={isSearching}
+                        showQuestionIds={showQuestionIds}
+                        twoColumns={twoColumns}
+                        toggledKeys={toggledKeys}
+                        onToggle={toggleSection}
+                    />
+                )}
             </ErrorBoundary>
-
             {isSearching && matchCount === 0 && (
                 <Box sx={styles.noResults}>
                     <SearchIcon sx={styles.noResultsIcon} />

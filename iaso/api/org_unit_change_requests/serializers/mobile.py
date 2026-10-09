@@ -39,4 +39,5 @@ class MobileOrgUnitChangeRequestListSerializer(ModelSerializer):
             "new_opening_date",
             "new_closed_date",
             "new_reference_instances",
+            "new_code",
         ]

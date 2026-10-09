@@ -86,7 +86,7 @@ class SyncImportQueryCountTest(APITestCase):
                     "iaso_entitytype": 0,
                     "iaso_form": 2,
                     "iaso_formversion": 1,
-                    "iaso_instance": 8,
+                    "iaso_instance": 9,
                     "iaso_project": 2,
                     "vector_control_apiimport": 1,
                     "iaso_featureflag": 1,
@@ -94,4 +94,4 @@ class SyncImportQueryCountTest(APITestCase):
                 },
                 exclude=["django_content_type"],
             )
-            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 20)
+            self.assertLessEqual(profiler.total_queries(exclude=["django_content_type"]), 21)

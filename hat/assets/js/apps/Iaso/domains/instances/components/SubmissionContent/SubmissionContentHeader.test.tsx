@@ -11,7 +11,6 @@ describe('SubmissionContentHeader', () => {
             <SubmissionContentHeader
                 section={makeSection({
                     label: 'Introduction',
-                    fields: makeSection().fields,
                     totalFields: 3,
                 })}
                 isSearching={false}
@@ -45,5 +44,17 @@ describe('SubmissionContentHeader', () => {
             />,
         );
         expect(screen.getByText('intro_group')).toBeInTheDocument();
+    });
+
+    it('shows the repeat count instead of the field count on a repeat parent', () => {
+        renderWithThemeAndIntlProvider(
+            <SubmissionContentHeader
+                section={makeSection({ fields: [], repeatCount: 3 })}
+                isSearching={false}
+                showQuestionIds={false}
+            />,
+        );
+        expect(screen.getByText('Repeat · 3 entries')).toBeInTheDocument();
+        expect(screen.queryByText('0 fields')).not.toBeInTheDocument();
     });
 });

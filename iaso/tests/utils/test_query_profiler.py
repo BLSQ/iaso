@@ -8,6 +8,8 @@ from contextlib import redirect_stdout
 from unittest import mock
 
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db import connection
 from django.test import override_settings
 
@@ -452,3 +454,104 @@ class QueryProfilerTest(TestCase):
                 self.assertEqual(out.getvalue().count("Total queries: 1"), 1)
                 with open(os.path.join(tmp_media_root, "query_reports", "report.md")) as f:
                     self.assertEqual(f.read(), profiler.to_markdown(title="Forced report"))
+
+    def test_storage_counts_and_call_sites_of_the_default_storage(self):
+        with QueryProfiler() as profiler:
+            name = default_storage.save("query_profiler_test/file.txt", ContentFile(b"content"))
+            default_storage.exists(name)
+        default_storage.delete(name)
+
+        # save() checks that the name is available (exists) then writes the file (_save), plus the explicit exists()
+        self.assertEqual(profiler.storage_counts(), {"exists": 2, "_save": 1})
+        (frames, count), *_ = profiler.storage_call_sites("_save").most_common()
+        self.assertEqual(count, 1)
+        # Django's `Storage.save()` calls `_save()`: it's the direct caller, before the project frames (none here,
+        # test frames are skipped)
+        self.assertEqual(frames[0][2], "save")
+        self.assertEqual(len(frames), 1)
+
+    def test_storage_names_and_assert_storage_calls(self):
+        with QueryProfiler() as profiler:
+            name = default_storage.save("query_profiler_test/file.txt", ContentFile(b"content"))
+            default_storage.exists("query_profiler_test/missing.xml")
+        default_storage.delete(name)
+
+        self.assertEqual(profiler.storage_names("_save"), [name])
+        self.assertEqual(profiler.storage_names("exists"), [name, "query_profiler_test/missing.xml"])
+        self.assertEqual(profiler.storage_names("_open"), [])
+        self.assertEqual(profiler.storage_names("exists", suffix=".xml"), ["query_profiler_test/missing.xml"])
+        self.assertEqual(
+            profiler.storage_names("exists", suffix=(".txt", ".xml")), [name, "query_profiler_test/missing.xml"]
+        )
+        profiler.assertStorageCalls({"_save": [name]}, exclude=["exists"])
+        profiler.assertStorageCalls({"_save": [name], "_open": []}, exclude=["exists"])
+
+        # Wrong names and unaccounted methods are all reported at once
+        with self.assertRaises(AssertionError) as ctx:
+            profiler.assertStorageCalls({"_save": [name, name], "_open": ["other.txt"]})
+        message = str(ctx.exception)
+        self.assertIn(f"_save(): expected {[name, name]}, got {[name]}", message)
+        self.assertIn("_open(): expected ['other.txt'], got []", message)
+        self.assertIn("exists(): not in `expected` or `exclude`", message)
+
+    def test_assert_storage_counts(self):
+        with QueryProfiler() as profiler:
+            name = default_storage.save("query_profiler_test/file.txt", ContentFile(b"content"))
+            default_storage.exists(name)
+        default_storage.delete(name)
+
+        profiler.assertStorageCounts({"_save": 1, "exists": 2})
+        profiler.assertStorageCounts({"_save": 1, "_open": 0}, exclude=["exists"])
+
+        # Exact: fewer calls than expected fail too, and every violation is reported at once
+        with self.assertRaises(AssertionError) as ctx:
+            profiler.assertStorageCounts({"_save": 2, "_open": 1})
+        message = str(ctx.exception)
+        self.assertIn("_save(): expected 2, got 1", message)
+        self.assertIn("_open(): expected 1, got 0", message)
+        self.assertIn("exists(): not in `expected` or `exclude`, got 2", message)
+
+    def test_storage_methods_are_restored_after_the_block(self):
+        with QueryProfiler() as profiler:
+            pass
+        default_storage.exists("query_profiler_test/missing.txt")
+
+        self.assertEqual(profiler.storage_counts(), {})
+
+    def test_time_breakdown_adds_up_to_the_elapsed_time(self):
+        with QueryProfiler() as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+
+        breakdown = profiler.time_breakdown()
+        self.assertGreater(breakdown["db"], 0)
+        self.assertAlmostEqual(breakdown["db"] + breakdown["storage"] + breakdown["python"], breakdown["total"])
+
+    def test_time_report_estimates_the_s3_and_db_round_trips(self):
+        with QueryProfiler(db_latency_ms=2, storage_latency_ms=30) as profiler:
+            m.Account.objects.filter(pk=MISSING_PK).exists()
+            default_storage.exists("query_profiler_test/missing.txt")
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            profiler.print_time_report()
+
+        report = out.getvalue()
+        self.assertIn("If the storage was S3 (30 ms/call) and the db remote (2 ms/query)", report)
+        self.assertIn("S3: 1 exists() = 0.03 s", report)
+        self.assertIn("db round trips: 1 queries = 0.00 s", report)
+
+    def test_latencies_default_to_the_env_vars(self):
+        with mock.patch.dict(
+            os.environ, {"QUERY_PROFILER_DB_LATENCY_MS": "3", "QUERY_PROFILER_STORAGE_LATENCY_MS": "40"}
+        ):
+            profiler = QueryProfiler()
+
+        self.assertEqual((profiler.db_latency, profiler.storage_latency), (0.003, 0.04))
+
+    def test_to_markdown_includes_storage_call_sites(self):
+        with QueryProfiler() as profiler:
+            default_storage.exists("query_profiler_test/missing.txt")
+
+        markdown = profiler.to_markdown()
+        self.assertIn("## Storage `exists()`: 1 calls", markdown)
+        self.assertIn("## Time", markdown)

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common.permissions import HasModulePermission
-from iaso.api.validation_workflows_nodes.permissions import HasValidationWorkflowPermission
+from iaso.api.validation_workflows_nodes.permissions import HasSubmissionPermission
 from iaso.api.validation_workflows_nodes.serializers.complete import ValidationNodeCompleteSerializer
 from iaso.api.validation_workflows_nodes.serializers.complete_bypass import ValidationNodeCompleteBypassSerializer
 from iaso.api.validation_workflows_nodes.serializers.undo import ValidationNodeUndoSerializer
@@ -21,7 +21,7 @@ from iaso.modules import MODULE_VALIDATION_WORKFLOW
 class ValidationNodeViewSet(GenericViewSet):
     permission_classes = [
         IsAuthenticated,
-        HasValidationWorkflowPermission,
+        HasSubmissionPermission,
         HasModulePermission(MODULE_VALIDATION_WORKFLOW),
     ]
     http_method_names = ["get", "post"]

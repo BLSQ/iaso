@@ -24,7 +24,7 @@ export type ValidationNodeTemplateUpdateBody = {
     name: string;
     description?: string;
     roles_required?: number[];
-    can_skip_previous_nodes: boolean;
+    can_skip_previous_nodes?: boolean;
 };
 
 export type ValidationNodeTemplateRetrieveResponse = {

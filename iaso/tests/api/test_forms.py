@@ -28,6 +28,19 @@ from iaso.test import APITestCase
 MAX_QUERY_INSTANCE_UPDATED_AT = 'max("iaso_instance"."updated_at")'
 COUNT_QUERY_INSTANCE = 'count(distinct "iaso_instance"."id")'
 
+EXPORT_BASE_HEADERS = [
+    "ID du formulaire",
+    "Nom",
+    "Type",
+    "Groupes",
+    "Périodicité",
+    "Une seule réponse par période",
+    "Date de création",
+    "Date de modification",
+    "Projets",
+]
+EXPORT_OPTIONAL_HEADERS = ["Enregistrement(s)", "Dernière soumission"]
+
 
 class FormsAPITestCase(APITestCase):
     @classmethod
@@ -96,6 +109,7 @@ class FormsAPITestCase(APITestCase):
             period_type="QUARTER",
             single_per_period=True,
             created_at=cls.now,
+            promptness_grace_period_days=10,
         )
         form_version = cls.form_2.form_versions.create(
             file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
@@ -380,6 +394,65 @@ class FormsAPITestCase(APITestCase):
             CONTENT_TYPE_XLSX,
             expected_attachment_filename="forms.xlsx",
         )
+
+    def get_csv_export(self, query: str) -> typing.Tuple[typing.List[str], typing.List[typing.Dict[str, str]]]:
+        """returns the headers and the rows (keyed by header) of the forms csv export"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/forms/?csv=1&{query}")
+        headers, *rows = self.assertCsvFileResponse(
+            response, expected_name="forms.csv", streaming=True, return_as_lists=True
+        )
+        return headers, [dict(zip(headers, row)) for row in rows]
+
+    def test_forms_list_csv_default_columns(self):
+        """GET /forms/ csv only exports the base columns when no optional column is requested"""
+
+        headers, rows = self.get_csv_export("fields=name,created_at,updated_at,org_unit_types")
+
+        self.assertEqual(headers, EXPORT_BASE_HEADERS)
+        self.assertEqual(len(rows), 2)
+        hydroponic_survey, hydroponics_study = rows
+        self.assertEqual(hydroponic_survey["ID du formulaire"], "sample2")
+        self.assertEqual(hydroponic_survey["Nom"], "Hydroponic public survey")
+        self.assertEqual(hydroponic_survey["Type"], "Jedi Council, Jedi Academy")
+        self.assertEqual(hydroponic_survey["Groupes"], "Health facilities")
+        self.assertEqual(hydroponic_survey["Périodicité"], "QUARTER")
+        self.assertEqual(hydroponic_survey["Une seule réponse par période"], "True")
+        self.assertEqual(hydroponic_survey["Projets"], self.project_1.name)
+        self.assertEqual(hydroponics_study["Périodicité"], "")
+        self.assertEqual(hydroponics_study["Une seule réponse par période"], "False")
+
+    def test_forms_list_csv_optional_columns(self):
+        """GET /forms/ csv adds the optional columns requested in fields"""
+
+        headers, rows = self.get_csv_export("fields=name,instances_count,instance_updated_at")
+
+        self.assertEqual(headers, [*EXPORT_BASE_HEADERS, *EXPORT_OPTIONAL_HEADERS])
+        hydroponic_survey, hydroponics_study = rows
+        # the base columns are filled even when not requested in fields
+        self.assertEqual(hydroponic_survey["Type"], "Jedi Council, Jedi Academy")
+        self.assertEqual(hydroponic_survey["Groupes"], "Health facilities")
+        # the test device instance is not counted
+        self.assertEqual(hydroponic_survey["Enregistrement(s)"], "1")
+        self.assertNotEqual(hydroponic_survey["Dernière soumission"], "")
+        self.assertEqual(hydroponics_study["Enregistrement(s)"], "0")
+        self.assertEqual(hydroponics_study["Dernière soumission"], "")
+
+    def test_forms_list_csv_without_fields_exports_all_columns(self):
+        """GET /forms/ csv without fields keeps exporting every column"""
+
+        headers, _ = self.get_csv_export("")
+
+        self.assertEqual(headers, [*EXPORT_BASE_HEADERS, *EXPORT_OPTIONAL_HEADERS])
+
+    def test_forms_list_xlsx_optional_columns(self):
+        """GET /forms/ xlsx adds the optional columns requested in fields"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/?xlsx=1&fields=name,instances_count")
+        columns, _ = self.assertXlsxFileResponse(response, expected_name="forms.xlsx")
+
+        self.assertEqual(columns, [*EXPORT_BASE_HEADERS, "Enregistrement(s)"])
 
     def test_forms_retrieve_without_auth(self):
         """GET /forms/<form_id> without auth should result in a 404"""
@@ -778,6 +851,9 @@ class FormsAPITestCase(APITestCase):
         """PUT /forms/<form_id>: happy path (validation is already covered by create tests)"""
 
         """POST /forms/ happy path"""
+        # setting promptness_grace_period_days to a positive int to test that it is correctly updated to 0
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
 
         self.client.force_authenticate(self.yoda)
         response = self.client.put(
@@ -792,6 +868,7 @@ class FormsAPITestCase(APITestCase):
                 "location_field": "location",
                 "project_ids": [self.project_1.id, self.project_2.id],
                 "org_unit_type_ids": [self.jedi_council.id],
+                "promptness_grace_period_days": 0,
             },
             format="json",
         )
@@ -808,6 +885,108 @@ class FormsAPITestCase(APITestCase):
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(2, form.projects.count())
         self.assertEqual(1, form.org_unit_types.count())
+        self.assertEqual(form.promptness_grace_period_days, 0)
+
+    def test_forms_create_with_promptness_grace_period_days(self):
+        """POST /forms/ with a grace period for the promptness stats"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with grace period",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "promptness_grace_period_days": 10,
+            },
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(form.promptness_grace_period_days, 10)
+
+    def test_forms_create_with_promptness_grace_period_days_no_period_type(self):
+        """POST /forms/ with a grace period for the promptness stats but without a period type"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with grace period",
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "period_type": None,
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "promptness_grace_period_days": 10,
+            },
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("promptness_grace_period_days", response_data)
+        self.assertIn(
+            "Should not be set when period type is not specified", response_data["promptness_grace_period_days"]
+        )
+
+    def test_forms_patch_promptness_grace_period_days_to_null(self):
+        """PATCH /forms/<form_id>: the grace period can be removed"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/", data={"promptness_grace_period_days": None}, format="json"
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.form_1.refresh_from_db()
+        self.assertIsNone(self.form_1.promptness_grace_period_days)
+
+    def test_forms_patch_negative_promptness_grace_period_days(self):
+        """PATCH /forms/<form_id>: a negative grace period is rejected"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/", data={"promptness_grace_period_days": -1}, format="json"
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            response_data, "promptness_grace_period_days", "Ensure this value is greater than or equal to 0."
+        )
+        self.form_1.refresh_from_db()
+        self.assertEqual(self.form_1.promptness_grace_period_days, 5)
+
+    def test_forms_patch_too_large_promptness_grace_period_days(self):
+        """PATCH /forms/<form_id>: the grace period must fit in a `PositiveSmallIntegerField`"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/", data={"promptness_grace_period_days": 32768}, format="json"
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            response_data, "promptness_grace_period_days", "Ensure this value is less than or equal to 32767."
+        )
+        self.form_1.refresh_from_db()
+        self.assertEqual(self.form_1.promptness_grace_period_days, 5)
+
+    def test_forms_patch_without_promptness_grace_period_days_keeps_it(self):
+        """PATCH /forms/<form_id>: a client that doesn't send the grace period doesn't change it"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(f"/api/forms/{self.form_1.id}/", data={"name": "renamed form"}, format="json")
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_data["name"], "renamed form")
+        self.form_1.refresh_from_db()
+        self.assertEqual(self.form_1.promptness_grace_period_days, 5)
 
     def test_forms_destroy_ok(self):
         """DELETE /forms/<form_id> happy path"""
@@ -892,6 +1071,7 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "projects", list)
         self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "promptness_grace_period_days", int, optional=True)
 
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)

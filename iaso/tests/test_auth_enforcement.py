@@ -54,6 +54,7 @@ PUBLIC_ENDPOINTS = {
     *any_methods("/tasks/launch_task/export_task/my_user_name/"),
     *any_methods("/tasks/cron/"),
     *any_methods("/tasks/task/"),
+    *any_methods("/tasks/reap_lost_tasks/"),
     # reset password related
     *any_methods("/robots.txt"),
     *any_methods("/_health/"),
@@ -178,6 +179,46 @@ def add_sso_paths_to_public_paths(public_paths: set):
 add_sso_paths_to_public_paths(PUBLIC_ENDPOINTS)
 
 
+def add_mcp_paths_to_public_paths(public_paths: set):
+    """MCP OAuth discovery, DCR, catalog UI, and token endpoints.
+
+    JSON-RPC writes stay authenticated (POST /mcp requires Bearer). These paths
+    must be reachable before login, like /login/ and /api/token/.
+    """
+    if not getattr(settings, "MCP_ENABLED", False):
+        return
+    public_paths.update(
+        {
+            *any_methods("/.well-known/oauth-protected-resource"),
+            *any_methods("/.well-known/oauth-protected-resource/mcp"),
+            *any_methods("/.well-known/oauth-protected-resource/mcp/"),
+            *any_methods("/.well-known/oauth-authorization-server"),
+            *any_methods("/.well-known/oauth-authorization-server/mcp"),
+            *any_methods("/.well-known/oauth-authorization-server/mcp/"),
+            *any_methods("/.well-known/openid-configuration"),
+            *any_methods("/oauth/token/.well-known/openid-configuration"),
+            *any_methods("/oauth/.well-known/openid-configuration/"),
+            *any_methods("/oauth/.well-known/jwks.json"),
+            *any_methods("/register/"),
+            *any_methods("/register"),
+            *any_methods("/oauth/register/"),
+            *any_methods("/oauth/register"),
+            *any_methods("/oauth/token/"),
+            *any_methods("/oauth/revoke_token/"),
+            ("/mcp/tools.json", "GET"),
+            ("/mcp", "GET"),
+            ("/mcp/", "GET"),
+            *any_methods("/mcp/app/"),
+            *any_methods("/mcp/app/field"),
+            *any_methods("/mcp/field"),
+            ("/iaso-mark.png", "GET"),
+        }
+    )
+
+
+add_mcp_paths_to_public_paths(PUBLIC_ENDPOINTS)
+
+
 # polio endpoints are out of scope
 # and wfp auth / SSO auth urls
 def should_skip(path):
@@ -247,7 +288,7 @@ class TestAuthEnforcement(TestCase):
                     continue
 
                 # skip task and sync/upload either need a less generic way to test
-                if path in ["/tasks/task/", "/sync/form_upload/"]:
+                if path in ["/tasks/task/", "/tasks/reap_lost_tasks/", "/sync/form_upload/"]:
                     continue
 
                 try:

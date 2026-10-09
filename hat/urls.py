@@ -15,7 +15,15 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 from hat.sso_views import SSOCallbackView, SSOLoginView, get_adapter_class, make_token_view
 from iaso.auth.views import IasoLogoutView, IasoPasswordResetView
-from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
+from iaso.views import (
+    ModelDataView,
+    health,
+    health_clamav,
+    launch_page_pipeline,
+    page,
+    page_pipeline_status,
+    robots_txt,
+)
 
 
 def _sso_providers():
@@ -150,6 +158,8 @@ else:
         path("api/", include("iaso.urls")),
         path("api/etl/", include(("iaso.urls_etl", "api-etl"), namespace="api-etl")),
         path("pages/<page_slug>/", page, name="pages"),
+        path("pages/<page_slug>/launch-pipeline/", launch_page_pipeline, name="page_launch_pipeline"),
+        path("pages/<page_slug>/pipeline-status/", page_pipeline_status, name="page_pipeline_status"),
         path("i18n/", include("django.conf.urls.i18n")),
         path("logout-iaso", IasoLogoutView.as_view(), name="logout-iaso"),
         path(
@@ -183,6 +193,9 @@ else:
         path("sync/", include("hat.sync.urls")),
         path("models/", ModelDataView.as_view(), name="models"),
     ]
+
+    if getattr(settings, "MCP_ENABLED", False):
+        urlpatterns += [path("", include("iaso.mcp.urls"))]
 
     for plugin_name in settings.PLUGINS:
         urls_module_name = "plugins." + plugin_name + ".urls"

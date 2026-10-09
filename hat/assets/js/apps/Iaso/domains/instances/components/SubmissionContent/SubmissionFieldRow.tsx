@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, memo } from 'react';
 import { Box, Theme } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
 import { SubmissionValue } from '../SubmissionValue';
@@ -26,7 +26,6 @@ const getStyles = (
         px: twoColumns ? 0 : 2.75,
         borderBottom: hideBorder ? 0 : 1,
         borderColor: 'divider',
-        '&:hover': twoColumns ? undefined : { backgroundColor: 'action.hover' },
     },
     value: {
         minWidth: 0,
@@ -49,7 +48,7 @@ type Props = {
     hideBorder?: boolean;
 };
 
-export const SubmissionFieldRow: FunctionComponent<Props> = ({
+const FieldRow: FunctionComponent<Props> = ({
     field,
     files,
     showQuestionIds,
@@ -92,3 +91,6 @@ export const SubmissionFieldRow: FunctionComponent<Props> = ({
         </Box>
     );
 };
+
+// memoized so toggling a section doesn't re-render every row of the tree
+export const SubmissionFieldRow = memo(FieldRow);

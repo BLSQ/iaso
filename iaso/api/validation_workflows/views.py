@@ -11,7 +11,7 @@ from iaso.api.common import ModelViewSet
 from iaso.api.common.permissions import HasModulePermission
 from iaso.api.validation_workflows.filters import ValidationWorkflowListFilter
 from iaso.api.validation_workflows.pagination import ValidationWorkflowPagination
-from iaso.api.validation_workflows.permissions import HasValidationWorkflowPermission
+from iaso.api.validation_workflows.permissions import HasSubmissionPermission, HasValidationWorkflowPermission
 from iaso.api.validation_workflows.serializers.create import ValidationWorkflowCreateSerializer
 from iaso.api.validation_workflows.serializers.dropdown import ValidationWorkflowDropdownSerializer
 from iaso.api.validation_workflows.serializers.list import ValidationWorkflowListSerializer
@@ -85,7 +85,7 @@ class ValidationWorkflowViewSet(ModelViewSet):
         return qs
 
     @extend_schema(responses=ValidationWorkflowDropdownSerializer(many=True))
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], permission_classes=[HasSubmissionPermission])
     def dropdown(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)

@@ -248,7 +248,6 @@ module.exports = {
                 type: 'asset/resource',
                 generator: {
                     filename: 'fonts/[name].[hash][ext]',
-                    publicPath: '/static/',
                 },
             },
             {

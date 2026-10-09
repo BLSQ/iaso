@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>Org unit groups injectables</h:title>
+    <model odk:xforms-version="1.0.0">
+      <instance>
+        <data id="org_unit_groups_injectables" version="2026100803">
+          <current_ou_name/>
+          <current_ou_group_ids/>
+          <current_ou_group_names/>
+          <parent1_ou_name/>
+          <parent1_ou_group_ids/>
+          <parent1_ou_group_names/>
+          <parent2_ou_name/>
+          <parent2_ou_group_ids/>
+          <parent2_ou_group_names/>
+          <all_group_ids/>
+          <all_group_names/>
+          <current_ou_group_count/>
+          <campaign_partner/>
+          <in_southern_area/>
+          <current_ou_first_group_name/>
+          <parent1_ou_group_names_display/>
+          <groups_info/>
+          <amf_note/>
+          <gov_note/>
+          <no_partner_note/>
+          <southern_area_note/>
+          <milda_scanned/>
+          <milda_counted/>
+          <distribution_mode/>
+          <group_id_to_check/>
+          <in_group/>
+          <in_group_note/>
+          <not_in_group_note/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <instance id="distribution_mode">
+        <root>
+          <item>
+            <name>fixed_site</name>
+            <label>Fixed site</label>
+            <partners>all</partners>
+          </item>
+          <item>
+            <name>door_to_door</name>
+            <label>Door to door</label>
+            <partners>AMF</partners>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/current_ou_name" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/current_ou_group_ids" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/current_ou_group_names" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/parent1_ou_name" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/parent1_ou_group_ids" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/parent1_ou_group_names" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/parent2_ou_name" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/parent2_ou_group_ids" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/parent2_ou_group_names" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/all_group_ids" type="string" calculate="normalize-space(concat( /data/current_ou_group_ids , ' ',  /data/parent1_ou_group_ids , ' ',  /data/parent2_ou_group_ids ))"/>
+      <bind nodeset="/data/all_group_names" type="string" calculate="normalize-space(concat( /data/current_ou_group_names , ' ',  /data/parent1_ou_group_names , ' ',  /data/parent2_ou_group_names ))"/>
+      <bind nodeset="/data/current_ou_group_count" type="string" calculate="count-selected( /data/current_ou_group_ids )"/>
+      <bind nodeset="/data/campaign_partner" type="string" calculate="if(selected( /data/all_group_names , 'AMF'), 'AMF', if(selected( /data/all_group_names , 'GOV'), 'GOV', 'none'))"/>
+      <bind nodeset="/data/in_southern_area" type="string" calculate="if(selected( /data/all_group_names , 'Southern_Area'), 1, 0)"/>
+      <bind nodeset="/data/current_ou_first_group_name" type="string" calculate="translate(selected-at( /data/current_ou_group_names , 0), '_', ' ')"/>
+      <bind nodeset="/data/parent1_ou_group_names_display" type="string" calculate="translate( /data/parent1_ou_group_names , ' _', ', ')"/>
+      <bind nodeset="/data/groups_info" readonly="true()" type="string"/>
+      <bind nodeset="/data/amf_note" readonly="true()" type="string" relevant=" /data/campaign_partner  = 'AMF'"/>
+      <bind nodeset="/data/gov_note" readonly="true()" type="string" relevant=" /data/campaign_partner  = 'GOV'"/>
+      <bind nodeset="/data/no_partner_note" readonly="true()" type="string" relevant=" /data/campaign_partner  = 'none'"/>
+      <bind nodeset="/data/southern_area_note" readonly="true()" type="string" relevant=" /data/in_southern_area  = 1"/>
+      <bind nodeset="/data/milda_scanned" type="int" relevant=" /data/campaign_partner  = 'AMF'" required="true()"/>
+      <bind nodeset="/data/milda_counted" type="int" relevant=" /data/campaign_partner  = 'GOV'" required="true()"/>
+      <bind nodeset="/data/distribution_mode" type="string" relevant=" /data/campaign_partner  != 'none'"/>
+      <bind nodeset="/data/group_id_to_check" type="int" required="true()"/>
+      <bind nodeset="/data/in_group" type="string" calculate="if(selected( /data/all_group_ids , string( /data/group_id_to_check )), 1, 0)"/>
+      <bind nodeset="/data/in_group_note" readonly="true()" type="string" relevant=" /data/in_group  = 1"/>
+      <bind nodeset="/data/not_in_group_note" readonly="true()" type="string" relevant=" /data/group_id_to_check  != '' and  /data/in_group  = 0"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/groups_info">
+      <label> **<output value=" /data/current_ou_name "/>** groups: ids [<output value=" /data/current_ou_group_ids "/>] names [<output value=" /data/current_ou_group_names "/>]
+
+Parent 1 **<output value=" /data/parent1_ou_name "/>** groups: ids [<output value=" /data/parent1_ou_group_ids "/>] names [<output value=" /data/parent1_ou_group_names "/>]
+
+Parent 2 **<output value=" /data/parent2_ou_name "/>** groups: ids [<output value=" /data/parent2_ou_group_ids "/>] names [<output value=" /data/parent2_ou_group_names "/>]
+
+<output value=" /data/current_ou_name "/> is in <output value=" /data/current_ou_group_count "/> group(s), the first one is <output value=" /data/current_ou_first_group_name "/>
+
+Groups of <output value=" /data/parent1_ou_name "/>: <output value=" /data/parent1_ou_group_names_display "/> </label>
+    </input>
+    <input ref="/data/amf_note">
+      <label>AMF campaign: all the MILDA must be scanned</label>
+    </input>
+    <input ref="/data/gov_note">
+      <label>GOV campaign: MILDA are counted, not scanned</label>
+    </input>
+    <input ref="/data/no_partner_note">
+      <label> Neither <output value=" /data/current_ou_name "/> nor its parents are in the AMF or GOV group </label>
+    </input>
+    <input ref="/data/southern_area_note">
+      <label><output value=" /data/current_ou_name "/> is in the Southern Area </label>
+    </input>
+    <input ref="/data/milda_scanned">
+      <label>Number of MILDA scanned</label>
+    </input>
+    <input ref="/data/milda_counted">
+      <label>Number of MILDA distributed (counted)</label>
+    </input>
+    <select1 ref="/data/distribution_mode">
+      <label>Distribution mode</label>
+      <itemset nodeset="instance('distribution_mode')/root/item[partners = 'all' or selected(partners,  /data/campaign_partner )]">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+    <input ref="/data/group_id_to_check">
+      <label>Group id to check (e.g. the AMF group id)</label>
+    </input>
+    <input ref="/data/in_group_note">
+      <label> The org unit (or one of its 2 first parents) belongs to group <output value=" /data/group_id_to_check "/> </label>
+    </input>
+    <input ref="/data/not_in_group_note">
+      <label> Neither the org unit nor its 2 first parents belong to group <output value=" /data/group_id_to_check "/> </label>
+    </input>
+  </h:body>
+</h:html>

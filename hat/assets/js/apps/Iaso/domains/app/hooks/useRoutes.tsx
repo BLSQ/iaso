@@ -1,22 +1,21 @@
 import React, { ReactElement, useMemo } from 'react';
 import { Route, Routes } from 'react-router';
 
+import { baseUrls } from 'Iaso/constants/urls';
+import {
+    useHomeOnlineComponent,
+    useHomeOfflineComponent,
+    usePluginsRouteConfigs,
+} from 'Iaso/plugins/hooks/routes';
+import { useRedirections } from 'Iaso/routing/hooks/useRedirections';
+import { RouteCustom } from 'Iaso/routing/types';
+import { useCurrentUser, useHasNoAccount } from 'Iaso/utils/usersUtils';
 import {
     routeConfigs as appRoutes,
     page404,
     setupAccountPath,
     setupAccountSettingsPath,
 } from '../../../constants/routes';
-
-import { baseUrls } from '../../../constants/urls';
-import {
-    useHomeOnlineComponent,
-    useHomeOfflineComponent,
-    usePluginsRouteConfigs,
-} from '../../../plugins/hooks/routes';
-import { useRedirections } from '../../../routing/hooks/useRedirections';
-import { RouteCustom } from '../../../routing/types';
-import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import ProtectedRoute from '../../users/components/ProtectedRoute';
 
 type Result = {
@@ -64,14 +63,12 @@ const useGetProtectedRoutes = (
     return useMemo(() => {
         return routes.map(routeConfig => {
             const { allowAnonymous = false, element: Component } = routeConfig;
-            const ProtectedComponent = props => (
+            const ProtectedComponent = () => (
                 <ProtectedRoute
-                    {...props}
                     key={routeConfig.routerUrl}
                     routeConfig={routeConfig}
                     allRoutes={routes}
                     component={routeConfig.element}
-                    hasNoAccount={hasNoAccount}
                 />
             );
             const Page =

@@ -124,7 +124,7 @@ describe('Validation workflow list UI integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        expect(screen.getByText('APPROVED')).toBeVisible();
+        expect(screen.getByText('Approved')).toBeVisible();
         expect(screen.getByText('some project')).toBeVisible();
         expect(screen.getByText('Some form')).toBeVisible();
 
@@ -183,7 +183,7 @@ describe('Validation workflow list UI integration test', () => {
             screen.getByTestId('RemoveRedEyeIcon').parentElement,
         ).toHaveAttribute(
             'href',
-            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/`,
+            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/isValidating/true/`,
         );
     });
 });

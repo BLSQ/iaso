@@ -109,6 +109,26 @@ class ManyRelatedFieldForMultiPart(ManyRelatedField):
         return data
 
 
+def split_comma_separated_string_from_query_params(dictionary, key):
+    if key not in dictionary:
+        return empty
+    return [item.strip() for item in dictionary[key].split(",")]
+
+
+class CommaSeparatedPrimaryKeysField(ManyRelatedField):
+    """Primary keys given as a single query param, separated by ',' (e.g. `?ids=1,2,3`)"""
+
+    def get_value(self, dictionary):
+        return split_comma_separated_string_from_query_params(dictionary, self.field_name)
+
+
+class CommaSeparatedMultipleChoiceField(serializers.MultipleChoiceField):
+    """Choices given as a single query param, separated by ',' (e.g. `?status=A,B`)"""
+
+    def get_value(self, dictionary):
+        return split_comma_separated_string_from_query_params(dictionary, self.field_name)
+
+
 class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):
     """
     This field purpose is to make the classic PrimaryKeyRelatedField work with multipart/form-data in case of many=True

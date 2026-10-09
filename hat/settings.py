@@ -85,6 +85,12 @@ ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 USE_S3 = env.bool("USE_S3", default=False)
+# MCP is a core app (iaso.mcp), not a plugin. Off unless MCP_ENABLED=true.
+# DEBUG must not turn it on: DEBUG is sometimes enabled in production to
+# collect SQL, and local runs should opt in explicitly (compose and
+# .env.example set MCP_ENABLED=true). Tests opt in so `manage test` still
+# mounts /mcp.
+MCP_ENABLED = env.bool("MCP_ENABLED", default=IN_TESTS)
 USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
 # Storage provider configuration
 STORAGE_PROVIDER = env.str("STORAGE_PROVIDER", default="local")  # local, s3, azure
@@ -248,6 +254,7 @@ if ENABLE_CORS:
 
 INSTALLED_APPS += [
     "rest_framework",
+    "rest_framework_api_key",
     "webpack_loader",
     "django_ltree",
     "hat",
@@ -256,6 +263,8 @@ INSTALLED_APPS += [
     "hat.audit",
     "hat.menupermissions",
     "iaso",
+    "iaso.mcp",
+    "oauth2_provider",
     "django_extensions",
     "beanstalk_worker",
     "django_comments",
@@ -990,6 +999,11 @@ for plugin_name in PLUGINS:
 
 XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
+
+if MCP_ENABLED:
+    from iaso.mcp.conf import apply as apply_mcp_settings
+
+    apply_mcp_settings(globals())
 
 # Making sure that files are not stored on disk while running tests
 # This allows faster tests and easier clean up of test files

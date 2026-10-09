@@ -92,6 +92,7 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "has_mappings",
             "possible_fields_with_latest_version",
             "validation_workflow",
+            "promptness_grace_period_days",
         ]
         read_only_fields = [
             "id",
@@ -204,6 +205,10 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
                     tracker_errors["periods_before_allowed"] = "Should be 0 when period type is not specified"
                 if data["periods_after_allowed"] != 0:
                     tracker_errors["periods_after_allowed"] = "Should be 0 when period type is not specified"
+                if "promptness_grace_period_days" in data:
+                    tracker_errors["promptness_grace_period_days"] = (
+                        "Should not be set when period type is not specified"
+                    )
             else:
                 before = data.get("periods_before_allowed", 0)
                 after = data.get("periods_after_allowed", 0)

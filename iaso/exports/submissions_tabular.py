@@ -124,6 +124,8 @@ def build_submissions_tabular_queryset(
         F("org_unit__source_ref"),
         F("org_unit__code"),
         F("org_unit__validation_status"),
+        F("form__validation_workflow__name"),
+        F("general_validation_status"),
     ]
     annotations += [F("org_unit" + "__parent" * level + "__name") for level in range(1, PARENT_LEVELS + 1)]
     if form.correlatable:

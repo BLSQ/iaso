@@ -1,6 +1,6 @@
 from iaso.models import Account, ValidationWorkflow
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
-from iaso.permissions.core_permissions import CORE_VALIDATION_WORKFLOW_PERMISSION
+from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -11,8 +11,15 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
         self.john_doe = self.create_user_with_profile(
             username="john.doe", account=self.account, first_name="John", last_name="Doe"
         )
+        self.john_submission = self.create_user_with_profile(
+            username="john.submission",
+            account=self.account,
+            permissions=[CORE_SUBMISSIONS_PERMISSION],
+        )
         self.john_wick = self.create_user_with_profile(
-            username="john.wick", account=self.account, permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION]
+            username="john.wick",
+            account=self.account,
+            permissions=[CORE_VALIDATION_WORKFLOW_PERMISSION, CORE_SUBMISSIONS_PERMISSION],
         )
         self.superuser = self.create_user_with_profile(
             username="john.super",

@@ -8,6 +8,7 @@ import {
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
+import { canValidateOrBypass } from 'Iaso/domains/validationWorkflowsConfiguration/utils';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../messages';
 import { InstanceValidationParams } from '../../types';
@@ -36,10 +37,12 @@ export const StepInfo: FunctionComponent<Props> = ({
         const steps = getActiveSteps(workflow);
         return {
             activeSteps: steps,
-            stepOptions: steps.map(step => ({
-                label: step.name,
-                value: `${step.id}`,
-            })),
+            stepOptions: steps
+                .filter(step => canValidateOrBypass(step))
+                .map(step => ({
+                    label: step.name,
+                    value: `${step.id}`,
+                })),
         };
     }, [workflow]);
 

@@ -4,10 +4,15 @@ import React, {
     createContext,
     useCallback,
     useContext,
+    useEffect,
     useMemo,
 } from 'react';
-import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
-import { isEqual } from 'lodash';
+import {
+    LoadingSpinner,
+    useRedirectTo,
+    useRedirectToReplace,
+} from 'bluesquare-components';
+import { isEqual, union } from 'lodash';
 import {
     MissionPolymorphicList,
     useApiMicroplanningMissionsList,
@@ -23,6 +28,8 @@ type PlanningContextValue = {
     mode: PageMode;
     missions: MissionPolymorphicList[];
     isFetchingMissions: boolean;
+    addMissions: (missionIds: number[]) => void;
+    createMission: () => void;
     formik: PlanningFormik;
     canSave: boolean;
     savePlanning: () => void;
@@ -47,6 +54,7 @@ type LoadedPlanningProviderProps = {
     planning: Planning;
     isFetchingPlanning: boolean;
     mode: PageMode;
+    newMissionId?: string;
     children: ReactNode;
 };
 
@@ -54,23 +62,48 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     planning,
     isFetchingPlanning,
     mode,
+    newMissionId,
     children,
 }) => {
     // TODO Change to custom endpoint to get missions for given planning (this is just for testing)
     const { data: allMissions, isFetching: isFetchingMissions } =
         useApiMicroplanningMissionsList();
 
+    const formik = usePlanningForm(planning, mode);
+    const {
+        values,
+        initialValues,
+        isValid,
+        isSubmitting,
+        handleSubmit,
+        setFieldValue,
+    } = formik;
+
     const missions = useMemo(
         () =>
-            allMissions?.results?.filter(
-                mission => planning.missions.indexOf(mission.id) >= 0,
+            allMissions?.results?.filter(mission =>
+                values.missions?.includes(mission.id),
             ) ?? [],
-        [planning, allMissions],
+        [values.missions, allMissions],
     );
 
-    const formik = usePlanningForm(planning, mode);
-    const { values, initialValues, isValid, isSubmitting, handleSubmit } =
-        formik;
+    const addMissions = useCallback(
+        (missionIds: number[]) =>
+            setFieldValue('missions', union(values.missions, missionIds)),
+        [setFieldValue, values.missions],
+    );
+
+    // Drop the param once applied so a reload doesn't add the mission again.
+    const redirectToReplace = useRedirectToReplace();
+    useEffect(() => {
+        if (!newMissionId) return;
+        addMissions([Number(newMissionId)]);
+        redirectToReplace(baseUrls.planningDetails, {
+            planningId: `${planning.id}`,
+            mode,
+        });
+    }, [newMissionId, addMissions, redirectToReplace, planning.id, mode]);
+
     const canSave =
         isValid &&
         !isSubmitting &&
@@ -88,6 +121,13 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         });
     }, [redirectTo, planning.id]);
 
+    const createMission = useCallback(() => {
+        redirectTo(baseUrls.missionsCreate, {
+            planningId: `${planning.id}`,
+            planningMode: mode,
+        });
+    }, [redirectTo, planning.id, mode]);
+
     const value = useMemo(
         () => ({
             planning,
@@ -95,6 +135,8 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             mode,
             missions,
             isFetchingMissions,
+            addMissions,
+            createMission,
             formik,
             canSave,
             savePlanning,
@@ -106,6 +148,8 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             mode,
             missions,
             isFetchingMissions,
+            addMissions,
+            createMission,
             formik,
             canSave,
             savePlanning,
@@ -123,10 +167,16 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
 type Props = {
     planningId: string;
     mode: PageMode;
+    newMissionId?: string;
     children: ReactNode;
 };
 
-export const PlanningProvider: FC<Props> = ({ planningId, mode, children }) => {
+export const PlanningProvider: FC<Props> = ({
+    planningId,
+    mode,
+    newMissionId,
+    children,
+}) => {
     const {
         data: planning,
         isLoading,
@@ -144,6 +194,7 @@ export const PlanningProvider: FC<Props> = ({ planningId, mode, children }) => {
             planning={planning}
             isFetchingPlanning={isFetching}
             mode={mode}
+            newMissionId={newMissionId}
         >
             {children}
         </LoadedPlanningProvider>

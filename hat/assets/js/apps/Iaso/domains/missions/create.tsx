@@ -11,6 +11,7 @@ import {
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import { CreateMissionForm } from './components/CreateMissionForm';
 import { DetailsWrapper } from './components/DetailsWrapper';
@@ -21,13 +22,23 @@ export const MissionCreate: FunctionComponent = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const redirectTo = useRedirectTo();
+    const { planningId, planningMode } = useParamsObject(
+        baseUrls.missionsCreate,
+    );
 
-    const redirectBackUrl: string = `${baseUrls.missions}`;
+    const planningUrl = planningId
+        ? `${baseUrls.planningDetails}/planningId/${planningId}/mode/${planningMode}`
+        : undefined;
+    const redirectBackUrl: string = planningUrl ?? `${baseUrls.missions}`;
 
     const { mutateAsync: create } = useApiMicroplanningMissionsCreate({
         mutation: {
             onSuccess: (variables, _data) => {
-                redirectTo(`${baseUrls.missionsDetails}/id/${variables?.id}`);
+                redirectTo(
+                    planningUrl
+                        ? `${planningUrl}/newMissionId/${variables?.id}`
+                        : `${baseUrls.missionsDetails}/id/${variables?.id}`,
+                );
             },
             meta: {
                 ignoreErrorCodes: [400],
@@ -62,7 +73,7 @@ export const MissionCreate: FunctionComponent = () => {
                 actions={
                     <>
                         <LinkButton
-                            to={`/${baseUrls.missions}/`}
+                            to={`/${redirectBackUrl}/`}
                             color="primary"
                             variant="outlined"
                             size={isMobile ? 'small' : 'medium'}

@@ -55,7 +55,7 @@ export const MissionItem: FC<Props> = ({ mission }) => {
                     </IconButton>
                 </Stack>
             </Stack>
-            <Stack direction="row" gap="1" sx={styles.details}>
+            <Stack direction="row" gap={1} sx={styles.details}>
                 <MissionTypeChip missionType={mission.mission_type} />
                 <MissionInfoCaption mission={mission} />
             </Stack>

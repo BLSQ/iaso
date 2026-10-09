@@ -1,6 +1,6 @@
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { PLANNINGS_API_URL } from '../../constants';
+import { getPublishingStatus, PLANNINGS_API_URL } from '../../constants';
 import { Planning } from '../../types';
 
 export const useGetPlanningDetails = (
@@ -14,6 +14,10 @@ export const useGetPlanningDetails = (
             enabled: Boolean(planningId),
             retry: false,
             cacheTime: 60000,
+            select: (data: Planning) => ({
+                ...data,
+                status: getPublishingStatus(data),
+            }),
             onSuccess,
         },
     });

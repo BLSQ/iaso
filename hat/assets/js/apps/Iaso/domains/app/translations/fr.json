@@ -1174,6 +1174,7 @@
     "iaso.missions.label.editMission": "Modifier une mission",
     "iaso.missions.label.entityType": "Type d'entité",
     "iaso.missions.label.formInfo": "Ajouter un ou plusieurs formulaires. Pour chaque formulaire, définir le nombre de soumissions que chaque unité assignée doit collecter — min requis, max autorisé (laisser max vide pour aucune limite / ∞).",
+    "iaso.missions.label.formsCount": "{count, plural, one {# formulaire} other {# formulaires}}",
     "iaso.missions.label.max": "Max",
     "iaso.missions.label.maxCardinality": "Cardinalité max",
     "iaso.missions.label.min": "Min",

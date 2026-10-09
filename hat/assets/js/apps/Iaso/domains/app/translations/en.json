@@ -1173,6 +1173,7 @@
     "iaso.missions.label.editMission": "Edit mission",
     "iaso.missions.label.entityType": "Entity type",
     "iaso.missions.label.formInfo": "Add one or more forms. Per form, set how many submissions each assigned unit must collect — min required, max allowed (leave max empty for no limit / ∞).",
+    "iaso.missions.label.formsCount": "{count, plural, one {# form} other {# forms}}",
     "iaso.missions.label.max": "Max",
     "iaso.missions.label.maxCardinality": "Max cardinality",
     "iaso.missions.label.min": "Min",

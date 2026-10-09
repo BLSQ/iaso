@@ -51,6 +51,7 @@ export type Planning = {
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails[] | null;
     selected_sampling_result?: SamplingResult;
     assignments_count: number;
+    status?: 'draft' | 'published';
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 

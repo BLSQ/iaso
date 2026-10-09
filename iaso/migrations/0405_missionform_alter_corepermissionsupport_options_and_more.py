@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("contenttypes", "0002_remove_content_type_name"),
-        ("iaso", "0403_instance_file_max_length"),
+        ("iaso", "0404_form_promptness_grace_period_days_and_more"),
     ]
 
     operations = [

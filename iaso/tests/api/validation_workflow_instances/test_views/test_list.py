@@ -45,6 +45,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         # Node 1 => no perm
         # Node 2 => perm
         # Node 3 => skip
+        # Node 4 => skip with perm
         self.form = Form.objects.create(name="Form")
 
         self.validation_workflow = ValidationWorkflow.objects.create(
@@ -65,6 +66,13 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             name="Third node", workflow=self.validation_workflow, can_skip_previous_nodes=True
         )
         self.first_vf_third_node.previous_node_templates.add(self.first_vf_second_node)
+
+        self.first_vf_fourth_node = ValidationNodeTemplate.objects.create(
+            name="Fourth node", workflow=self.validation_workflow, can_skip_previous_nodes=True
+        )
+        self.first_vf_fourth_node.roles_required.add(self.user_role)
+
+        self.first_vf_fourth_node.previous_node_templates.add(self.first_vf_third_node)
 
         # VF 2
         # Node 1 => no perm
@@ -249,7 +257,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertValidVFInstanceListData(res_data, 1)
 
             # => for second VF : user has not been involved in any way and he does not have the perm to do next one (bypass or node 2)
-            # => for first VF :user has not been involved in any way but he can take action in node 3
+            # => for first VF : user has not been involved in any way but he can take action in node 3
 
             first_result = res_data["results"][0]
 
@@ -688,3 +696,68 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         res = self.client.get(reverse("validation_workflow_instances-list"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidListData(list_data=res_data, results_key="results", expected_length=1, paginated=True)
+
+    def test_previous_validated_nodes_with_bypass_should_not_return_user_requires_action(self):
+        """
+        Related JIRA ticket: IA-5493
+        """
+
+        ValidationWorkflowEngine.start(self.validation_workflow, self.john_doe, self.instance)
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes().first(), self.john_wick, self.instance, True, "Nope"
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes().first(), self.john_wick, self.instance, True, "Nope"
+        )
+        ValidationWorkflowEngine.complete_node(
+            self.instance.get_next_pending_nodes().first(), self.john_wick, self.instance, True, "Nope"
+        )
+
+        with self.subTest(self.superuser):
+            self.client.force_authenticate(self.superuser)
+            res = self.client.get(reverse("validation_workflow_instances-list"))
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 1)
+
+            first_result = res_data["results"][0]
+
+            self.assertEqual(first_result["id"], self.instance.id)
+
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+
+            self.assertFalse(first_result["user_has_been_involved"])
+
+            self.assertTrue(first_result["requires_user_action"])
+
+        with self.subTest(self.john_wick):
+            self.client.force_authenticate(self.john_wick)
+            res = self.client.get(reverse("validation_workflow_instances-list"))
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 1)
+
+            first_result = res_data["results"][0]
+
+            self.assertEqual(first_result["id"], self.instance.id)
+
+            self.assertEqual(first_result["general_validation_status"], ValidationWorkflowArtefactStatus.PENDING.label)
+
+            self.assertTrue(first_result["user_has_been_involved"])
+
+            self.assertTrue(first_result["requires_user_action"])
+
+            res = self.client.get(reverse("validation_workflow_instances-list"), data={"requires_user_action": False})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 0)
+
+        with self.subTest(self.john_wick_no_user_roles):
+            self.client.force_authenticate(self.john_wick_no_user_roles)
+            res = self.client.get(reverse("validation_workflow_instances-list"))
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 0)
+
+            # => for second VF : user has not been involved in any way and he does not have the perm to do next one (bypass or node 2)
+            # => for first VF :user has not been involved in any way and he cannot take action in node 4 since he doesn't have the roles
+
+            res = self.client.get(reverse("validation_workflow_instances-list"), data={"requires_user_action": True})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 0)

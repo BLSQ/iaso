@@ -507,6 +507,44 @@ class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
         self.assertTrue(all(i["entity_type_id"] is None for i in data["configuration_impacts"]))
 
+    def test_preview_configuration_impacts_of_other_forms_ignored(self):
+        """Another form's configuration reading questions of the same names (age, birth_date) is not listed."""
+        account = self.yoda.iaso_profile.account
+        other_form = m.Form.objects.create(name="France form")
+        m.FormPredefinedFilter.objects.create(
+            form=other_form, name="Toddlers", short_name="toddlers", json_logic={"<": [{"var": "age"}, 3]}
+        )
+        entity_type = m.EntityType.objects.create(
+            name="France patients", reference_form=other_form, account=account, fields_list_view=["age"]
+        )
+        sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
+        rules_version = m.StockRulesVersion.objects.create(account=account, name="2026 rules")
+        m.StockItemRule.objects.create(version=rules_version, sku=sku, form=other_form, question="age")
+        m.MappingVersion.objects.create(
+            form_version=m.FormVersion.objects.create(form=other_form, version_id="1"),
+            name="v1",
+            mapping=m.Mapping.objects.create(
+                form=other_form,
+                data_source=m.DataSource.objects.create(name="DHIS2"),
+                name="HMIS",
+                mapping_type="AGGREGATE",
+            ),
+            json={"question_mappings": {"birth_date": {"id": "de1"}}},
+        )
+        version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=1, condition={">": [{"var": "age"}, 5]})
+        m.WorkflowChange.objects.create(workflow_version=version, form=other_form, mapping={"birth_date": "birth_date"})
+
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["configuration_impacts"], [])
+
     def test_preview_configuration_impacts_default_device_field(self):
         """No device question set: `deviceid` is used, removing it drops the submissions' device."""
         self.form_with_version.device_field = None

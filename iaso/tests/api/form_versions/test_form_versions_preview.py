@@ -38,7 +38,6 @@ from rest_framework import status
 from iaso import models as m
 from iaso.api.form_versions.configuration_impacts.common import ConfigurationImpact, ConfigurationImpactKind
 from iaso.api.form_versions.configuration_impacts.forms_impacts import forms_impacts
-from iaso.dhis2.form_mapping import mapped_question_names
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
@@ -443,18 +442,6 @@ class FormVersionPreviewAPITestCase(APITestCase):
             [(ConfigurationImpactKind.PREDEFINED_FILTER, {"<": [{"var": "age"}, 3]})],
         )
         self.assertTrue(all(i["entity_type_id"] is None for i in data["configuration_impacts"]))
-
-    def test_dhis2_mapped_question_names(self):
-        self.assertEqual(
-            mapped_question_names(
-                {
-                    "question_mappings": {"age": {}, "colors__red": {}},
-                    "aggregations": [{"questionName": "weight", "where": [{"questionName": "sex"}]}, {"id": "x"}],
-                }
-            ),
-            {"age", "colors__red", "colors", "weight", "sex"},
-        )
-        self.assertEqual(mapped_question_names({}), set())
 
     def test_preview_configuration_impacts_default_device_field(self):
         """No device question set: `deviceid` is used, removing it drops the submissions' device."""

@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { Box, Grid } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
 import { MissionPanel } from './MissionPanel';
-import { PlanningFormV2 } from './PlanningFormV2';
+import { PlanningForm } from './PlanningForm';
 import { PlanningHeader } from './PlanningHeader';
 
 const styles = {
@@ -35,7 +35,7 @@ export const PlanningDetails: FC = () => (
             sx={styles.grid}
         >
             <Grid item md={6} xs={12}>
-                <PlanningFormV2 />
+                <PlanningForm />
             </Grid>
             <Grid item md={6} xs={12}>
                 <Box sx={styles.missionPanelContainer}>

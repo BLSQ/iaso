@@ -36,7 +36,7 @@ const toMissionListItem = ({
 });
 
 type PlanningContextValue = {
-    planning: Planning;
+    planning?: Planning;
     isLoadingPlanning: boolean;
     mode: PageMode;
     savedMissions?: PaginatedMissionPolymorphicListList;
@@ -68,7 +68,7 @@ export const usePlanningContext = (): PlanningContextValue => {
 };
 
 type LoadedPlanningProviderProps = {
-    planning: Planning;
+    planning?: Planning;
     isFetchingPlanning: boolean;
     mode: PageMode;
     newMissionId?: string;
@@ -95,8 +95,12 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     const [missionsPage, setMissionsPage] = useState(1);
     const { data: savedMissions, isFetching: isFetchingMissions } =
         useApiMicroplanningMissionsList(
-            { planning_ids: [planning.id], page: missionsPage, limit: 10 },
-            { query: { keepPreviousData: true } },
+            {
+                planning_ids: planning ? [planning.id] : [],
+                page: missionsPage,
+                limit: 10,
+            },
+            { query: { enabled: Boolean(planning), keepPreviousData: true } },
         );
 
     // Keep the data of missions picked before saving rather than refetching it.
@@ -155,10 +159,10 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         if (!newMission) return;
         addMissions([newMission]);
         redirectToReplace(baseUrls.planningDetails, {
-            planningId: `${planning.id}`,
+            planningId: planning && `${planning.id}`,
             mode,
         });
-    }, [newMission, addMissions, redirectToReplace, planning.id, mode]);
+    }, [newMission, addMissions, redirectToReplace, planning, mode]);
 
     const canSave =
         isValid &&
@@ -172,17 +176,17 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     const redirectTo = useRedirectTo();
     const duplicatePlanning = useCallback(() => {
         redirectTo(baseUrls.planningDetails, {
-            planningId: `${planning.id}`,
+            planningId: planning && `${planning.id}`,
             mode: 'copy',
         });
-    }, [redirectTo, planning.id]);
+    }, [redirectTo, planning]);
 
     const createMission = useCallback(() => {
         redirectTo(baseUrls.missionsCreate, {
-            planningId: `${planning.id}`,
+            planningId: planning && `${planning.id}`,
             planningMode: mode,
         });
-    }, [redirectTo, planning.id, mode]);
+    }, [redirectTo, planning, mode]);
 
     const value = useMemo(
         () => ({
@@ -250,7 +254,7 @@ export const PlanningProvider: FC<Props> = ({
     if (isLoading) {
         return <LoadingSpinner />;
     }
-    if (!planning) {
+    if (!planning && mode !== 'create') {
         return null;
     }
     return (

@@ -39,9 +39,9 @@ export const PlanningHeader: FC = () => {
             sx={styles.header}
         >
             <Typography variant="h6">
-                {planning.name}
+                {planning?.name}
                 <PlanningStatusChip
-                    status={planning.status ?? 'draft'}
+                    status={planning?.status ?? 'draft'}
                     sx={styles.statusChip}
                 />
             </Typography>

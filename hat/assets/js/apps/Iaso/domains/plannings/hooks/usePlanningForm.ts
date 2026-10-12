@@ -15,7 +15,10 @@ import { usePlanningValidation } from './validation';
 const toDatePickerFormat = (date?: string) =>
     date ? moment(date).format('L') : undefined;
 
-export const usePlanningForm = (planning: Planning, mode: PageMode) => {
+export const usePlanningForm = (
+    planning: Planning | undefined,
+    mode: PageMode,
+) => {
     const redirectToReplace = useRedirectToReplace();
     const onSaveSuccess = useCallback(
         (result: Planning) => {
@@ -42,14 +45,14 @@ export const usePlanningForm = (planning: Planning, mode: PageMode) => {
 
     return useFormik({
         initialValues: {
-            id: planning.id,
-            name: planning.name,
-            startDate: toDatePickerFormat(planning.started_at),
-            endDate: toDatePickerFormat(planning.ended_at),
-            project: planning.project_details?.id,
-            description: planning.description,
-            publishingStatus: planning.published_at ? 'published' : 'draft',
-            missions: planning.missions,
+            id: planning?.id,
+            name: planning?.name,
+            startDate: toDatePickerFormat(planning?.started_at),
+            endDate: toDatePickerFormat(planning?.ended_at),
+            project: planning?.project_details?.id,
+            description: planning?.description,
+            publishingStatus: planning?.published_at ? 'published' : 'draft',
+            missions: planning?.missions,
         },
         enableReinitialize: true,
         validateOnBlur: true,

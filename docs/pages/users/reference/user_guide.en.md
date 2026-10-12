@@ -309,13 +309,13 @@ In the Form view you can see details of:
 
 -   Versions
 
--   Type of the form :
+-   Type of the mapping (see [which mapping type to choose](../how_to/import_export_dhis2_mappings.md#which-mapping-type-to-choose)):
 
-    -   Aggregate : fix
+    -   Aggregate : one submission per org unit and period, exported to a DHIS2 dataset
 
-    -   Event : series of singular events
+    -   Event : several submissions per org unit and period, exported to an event program without registration
 
-    -   Event Tracker : continuous
+    -   Event Tracker : the same person followed over time, exported to a tracker program
 
 -   Number of questionnaire to be mapped
 

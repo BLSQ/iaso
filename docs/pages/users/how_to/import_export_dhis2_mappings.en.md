@@ -4,6 +4,20 @@ To export submissions to DHIS2, each question of a form is mapped to a DHIS2 dat
 "DHIS2 mappings" section of the [user guide](../reference/user_guide.md)). This page explains how to
 reuse those mappings instead of redoing them by hand.
 
+## Which mapping type to choose
+
+The mapping type depends on how many submissions the form gets, and on what they must become in
+DHIS2:
+
+| Mapping type | Use it when | Each submission becomes, in DHIS2 |
+|---|---|---|
+| **Aggregate** | there is **one submission per org unit and period** (monthly report, quantity form...). The form needs a period type. | a data value set of a **dataset**, for the org unit and period of the submission; the dataset is marked as complete. A second submission for the same org unit and period overwrites the values of the first one. |
+| **Event** | there are **several submissions per org unit and period**, with no person to follow (consultations, visits, surveys...) | an event of an **event program without registration**. Its date is the creation date or the start of the period of the submission (**Event date source**). |
+| **Event Tracker** | the **same person (or object) is followed over time** | a tracked entity of a **tracker program** (found by its identifier, or created), with its attributes, an enrollment and an event per program stage. A repeat group can create related tracked entities, linked by a relationship. |
+
+The **Derived** type does not export to DHIS2: it computes a statistics form from another form, see
+[Deduce a form from another form](deduce_form_from_another_form.md).
+
 ## A mapping per form version
 
 A mapping is attached to one **version** of a form, not to the form itself: questions can be added,

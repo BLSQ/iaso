@@ -270,10 +270,10 @@ Dans la vue du formulaire, vous pouvez consulter les détails suivants :
 - Actions
 - Nom des formulaires disponibles pour les correspondances
 - Versions
-- Type du formulaire :
-  - Aggregate : données fixes
-  - Event : série d'événements singuliers
-  - Event Tracker : continu
+- Type du mapping (voir [quel type de mapping choisir](../how_to/import_export_dhis2_mappings.md#quel-type-de-mapping-choisir)) :
+  - Aggregate : une soumission par unité d'organisation et par période, exportée vers un dataset DHIS2
+  - Event : plusieurs soumissions par unité d'organisation et par période, exportées vers un programme d'évènements sans enregistrement
+  - Event Tracker : la même personne suivie dans le temps, exportée vers un programme tracker
 - Nombre de questionnaires à mapper
 - Nombre total de questionnaires
 - Couverture des correspondances

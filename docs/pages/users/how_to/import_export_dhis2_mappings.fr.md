@@ -4,6 +4,20 @@ Pour exporter des soumissions vers DHIS2, chaque question d'un formulaire est ma
 element DHIS2 (voir la section « Correspondances avec DHIS2 » du [guide utilisateur](../reference/user_guide.md)).
 Cette page explique comment réutiliser ces mappings au lieu de les refaire à la main.
 
+## Quel type de mapping choisir
+
+Le type de mapping dépend du nombre de soumissions du formulaire, et de ce qu'elles doivent devenir
+dans DHIS2 :
+
+| Type de mapping | À utiliser quand | Chaque soumission devient, dans DHIS2 |
+|---|---|---|
+| **Aggregate** | il y a **une soumission par unité d'organisation et par période** (rapport mensuel, formulaire de quantités...). Le formulaire doit avoir un type de période. | un ensemble de valeurs d'un **dataset**, pour l'unité d'organisation et la période de la soumission ; le dataset est marqué comme complet. Une deuxième soumission pour la même unité d'organisation et la même période écrase les valeurs de la première. |
+| **Event** | il y a **plusieurs soumissions par unité d'organisation et par période**, sans personne à suivre (consultations, visites, enquêtes...) | un évènement d'un **programme d'évènements sans enregistrement** (event program without registration). Sa date est la date de création ou le début de la période de la soumission (**Source pour la date d'évènement**). |
+| **Event Tracker** | la **même personne (ou le même objet) est suivie dans le temps** | une entité suivie (tracked entity) d'un **programme tracker** (retrouvée par son identifiant, ou créée), avec ses attributs, une inscription (enrollment) et un évènement par étape du programme. Un groupe répété peut créer des entités suivies liées, reliées par une relation. |
+
+Le type **Derived** n'exporte pas vers DHIS2 : il calcule un formulaire de statistiques à partir
+d'un autre formulaire, voir [Déduire un formulaire à partir d'un autre formulaire](deduce_form_from_another_form.md).
+
 ## Un mapping par version de formulaire
 
 Un mapping est attaché à une **version** d'un formulaire, pas au formulaire lui-même : des questions

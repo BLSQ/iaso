@@ -238,5 +238,5 @@ class LogsAPITestCase(APITestCase):
                 r = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
                 self.assertEqual(r, {"error": "Unauthorized"})
                 response = self.client.get(list_url)
-                r = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
-                self.assertEqual(r, {"error": "Unauthorized"})
+                r = self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+                self.assertEqual(r, {"error": "Forbidden"})

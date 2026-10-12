@@ -25,8 +25,9 @@ const styles: SxStyles = {
     title: { fontSize: 17, fontWeight: 500 },
     row: {
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
+        gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)',
         alignItems: 'center',
+        columnGap: 1,
         borderBottom: '1px solid',
         borderColor: 'divider',
     },
@@ -37,6 +38,8 @@ const styles: SxStyles = {
         ml: 1,
     },
     secondary: { color: 'text.secondary' },
+    // long codes break rather than run out of a narrow column
+    value: { fontWeight: 500, overflowWrap: 'anywhere' },
 };
 
 type Props = {
@@ -199,7 +202,7 @@ export const StepChecks: FunctionComponent<Props> = ({
                                 </>
                             }
                         />
-                        <Typography fontWeight={500}>
+                        <Typography sx={styles.value}>
                             {displayValue(profile[name], showTechnicalNames)}
                         </Typography>
                     </Box>

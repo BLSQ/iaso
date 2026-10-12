@@ -10,6 +10,7 @@ import {
     formName,
     questionLabel,
 } from '../utils';
+import { FieldChange } from './FieldChange';
 
 const styles: SxStyles = {
     panel: { p: 2, display: 'flex', flexDirection: 'column', gap: 2 },
@@ -26,12 +27,7 @@ const styles: SxStyles = {
         backgroundColor: 'success.light',
         color: 'success.contrastText',
     },
-    changes: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-        gap: '6px 8px',
-        fontSize: 14,
-    },
+    changes: { display: 'flex', flexDirection: 'column', gap: 1 },
     secondary: { color: 'text.secondary' },
     rowNotOffered: {
         display: 'flex',
@@ -138,21 +134,21 @@ export const AppWillDo: FunctionComponent<Props> = ({
                     </Typography>
                     <Box sx={styles.changes}>
                         {result.changes.map(change => (
-                            <React.Fragment key={change.target}>
-                                <Box sx={styles.secondary}>
-                                    {questionLabel(
-                                        forms,
-                                        [referenceFormId],
-                                        change.target,
-                                    )}
-                                </Box>
-                                <Box sx={styles.secondary}>
-                                    {displayValue(change.before)}
-                                </Box>
-                                <Box fontWeight={500}>
-                                    {displayValue(change.after)}
-                                </Box>
-                            </React.Fragment>
+                            <FieldChange
+                                key={change.target}
+                                label={questionLabel(
+                                    forms,
+                                    [referenceFormId],
+                                    change.target,
+                                )}
+                                before={displayValue(change.before)}
+                                after={
+                                    displayValue(change.after) !==
+                                    displayValue(change.before)
+                                        ? displayValue(change.after)
+                                        : undefined
+                                }
+                            />
                         ))}
                     </Box>
                 </Box>

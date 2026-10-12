@@ -97,6 +97,12 @@ class EntityStep(FillStep):
         None, description="The step's clock (current_date... in the followup conditions), ISO 8601."
     )
     force: bool = Field(False, description="Fill the form even if the app wouldn't offer it.")
+    search: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Registration only: the search the app asks for before registering (the entity type's "
+        "fields_duplicate_search), question -> value typed or scanned; it prefills the registration form, read-only "
+        "questions too.",
+    )
     expect: EntityExpect = Field(default_factory=EntityExpect)
 
 

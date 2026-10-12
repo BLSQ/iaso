@@ -3,6 +3,8 @@
 refuses the answers.
 """
 
+import datetime
+
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
@@ -10,6 +12,7 @@ from django.db.models import Exists, OuterRef, QuerySet
 
 from iaso.models import Account, Form, FormVersion, Project, ScenarioStatus, StepStatus
 from iaso.scenarios import form_engine
+from iaso.scenarios.clock import xform_at
 from iaso.scenarios.form_engine import FormEngineError, FormFill, FormProblem
 from iaso.scenarios.runtime import prefill
 from iaso.scenarios.schema import EntityScenario, FillStep, FormExpect, FormScenario, Refusal
@@ -178,13 +181,19 @@ def refusals(expected: List[Refusal]) -> List[str]:
 
 
 def fill_and_check(
-    source: FormSource, form_id: str, result: StepResult, expect: FormExpect, prefilled: Dict[str, str]
+    source: FormSource,
+    form_id: str,
+    result: StepResult,
+    expect: FormExpect,
+    prefilled: Dict[str, str],
+    at: Optional[datetime.datetime] = None,
 ) -> Optional[FormFill]:
-    """Fills the form with the step's answers and checks `expect` (refusals, submission). The fill when the form
-    accepts the answers, None when it refuses them or can't be filled - `result` says why."""
+    """Fills the form with the step's answers and checks `expect` (refusals, submission); `at`: its clock (`today()`,
+    `now()`), none: now. The fill when the form accepts the answers, None when it refuses them or can't be filled -
+    `result` says why."""
     result.prefilled = prefilled
     try:
-        filled = form_engine.fill(source.xform(form_id), prefilled, result.step.answers)
+        filled = form_engine.fill(xform_at(source.xform(form_id), at), prefilled, result.step.answers)
     except FormEngineError as e:
         result.status = StepStatus.ERROR
         result.failures.append(str(e))

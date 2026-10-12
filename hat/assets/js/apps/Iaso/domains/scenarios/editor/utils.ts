@@ -15,6 +15,8 @@ export type EditorStep = {
     answers: Record<string, string>;
     expect: StepExpect;
     force?: boolean;
+    // registration only: the search the app asks for before the form, question -> value typed or scanned
+    search?: Record<string, string>;
 };
 
 /** The scenario file of the steps (`format` iaso-scenarios/1, entity scenario). */
@@ -27,10 +29,11 @@ export const toDefinition = (
     kind: 'entity',
     name,
     description,
-    steps: steps.map(({ at, force, ...step }) => ({
+    steps: steps.map(({ at, force, search, ...step }) => ({
         ...step,
         ...(at ? { at } : {}),
         ...(force ? { force } : {}),
+        ...(search && Object.keys(search).length > 0 ? { search } : {}),
     })),
 });
 
@@ -60,6 +63,7 @@ const FileSteps = zod.object({
                     .passthrough()
                     .default({}),
                 force: zod.boolean().optional(),
+                search: zod.record(zod.string(), zod.string()).optional(),
             }),
         )
         .default([]),
@@ -82,6 +86,7 @@ export const fromDefinition = (definition: unknown): EditorStep[] => {
             refused: step.expect.refused ?? undefined,
         },
         force: step.force,
+        search: step.search,
     }));
 };
 
@@ -110,3 +115,12 @@ export const answersFromSubmission = (
     });
     return answers;
 };
+
+/** The search lets the app register: every question answered when it prevents adding without them. */
+export const searchAllowsRegistering = (
+    questions: { name: string }[],
+    preventAdd: boolean,
+    search: Record<string, string>,
+): boolean =>
+    !preventAdd ||
+    questions.every(question => (search[question.name] ?? '').trim() !== '');

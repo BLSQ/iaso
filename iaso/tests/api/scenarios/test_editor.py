@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from lxml import etree
@@ -280,6 +282,7 @@ class ScenarioPrepareStepTestCase(ScenarioAPITestCase):
                 "offered": [],
                 "next": {"forms": [], "followups": []},
                 "profile": {"first_name": "Amina", "age_months": "11", "visits__int__": "0"},
+                "search": None,
             },
         )
 
@@ -320,3 +323,63 @@ class ScenarioPrepareStepTestCase(ScenarioAPITestCase):
 
         self.assertHasError(data, "definition")
         self.assertIn("'anthropometry' isn't the reference form of an entity type", " | ".join(data["definition"]))
+
+    def search_on_first_name(self, prevent_add=True):
+        entity_type = self.belgium.entity_type
+        entity_type.fields_duplicate_search = ["first_name", "not_a_question"]
+        entity_type.prevent_add_if_duplicate_found = prevent_add
+        entity_type.save()
+
+    def test_registration_asks_the_search_first(self):
+        self.search_on_first_name()
+
+        data = self.prepare([], "child_registration")
+
+        self.assertResponseCompliantToSwagger(data, "ScenarioStepPrepareResponse")
+        # the questions of the form only, as the app
+        self.assertEqual(
+            data["search"], {"questions": [{"name": "first_name", "label": "First name"}], "prevent_add": True}
+        )
+
+    def test_search_prefills_the_registration(self):
+        self.search_on_first_name(prevent_add=False)
+
+        data = self.prepare([], "child_registration", search={"first_name": " Amina "})
+
+        self.assertEqual(data["search"]["prevent_add"], False)
+        self.assertEqual(data["prefilled"], {"first_name": "Amina"})
+        self.assertEqual(self.instance_value(data["xform"], "first_name"), "Amina")
+        # not the entity's information yet: not registered
+        self.assertEqual(data["profile"], {})
+
+    def test_no_search_configured(self):
+        data = self.prepare([], "child_registration", search={"first_name": "Amina"})
+
+        self.assertEqual(data["search"], {"questions": [], "prevent_add": False})
+        self.assertEqual(data["prefilled"], {})
+
+    def test_no_search_after_registering(self):
+        self.search_on_first_name()
+        steps = [{"form": "child_registration", "search": {"first_name": "Amina"}, "answers": {"age_months": "11"}}]
+
+        data = self.prepare(steps, "anthropometry", search={"first_name": "Jules"})
+
+        self.assertIsNone(data["search"])
+        self.assertEqual(data["prefilled"], {"_first_name": "Amina", "_visits__int__": "0"})
+
+    def test_offered_on_the_steps_day(self):
+        # OTP admission offered from July 1st: the app evaluates the follow-ups when the entity is opened
+        july_1st = int(datetime.datetime(2026, 7, 1, tzinfo=datetime.timezone.utc).timestamp() * 1000)
+        followup = m.WorkflowFollowup.objects.create(
+            workflow_version=self.belgium.version,
+            order=3,
+            condition={">=": [{"var": "current_date"}, july_1st]},
+        )
+        followup.forms.add(self.belgium.project.forms.get(form_id="otp_admission"))
+        steps = [{"form": "child_registration", "answers": {"first_name": "Amina", "age_months": "11"}}]
+
+        june = self.prepare(steps, None, at="2026-06-15T09:00:00Z")
+        july = self.prepare(steps, None, at="2026-07-15T09:00:00Z")
+
+        self.assertEqual(june["offered"], ["anthropometry"])
+        self.assertEqual(july["offered"], ["anthropometry", "otp_admission"])

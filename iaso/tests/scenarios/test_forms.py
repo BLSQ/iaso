@@ -50,9 +50,9 @@ class FormScenarioRunnerTestCase(ScenarioExamplesTestCase):
 
         self.assertTrue(result.passed, result.failures)
         self.assertEqual(result.steps[0].prefilled, {"_visits__int__": "4"})
-        # known gap (form_engine): loading the form recomputes its calculates, _visits__int__ is back to its
-        # calculation (0) - on the device it would stay 4 and visit_number be 5; `odk_cli new` will fix it
-        self.assertEqual(result.steps[0].submission["visit_number"], "1")
+        # prefilled after the form is loaded, as on the device: _visits__int__ stays 4, visit_number follows
+        self.assertEqual(result.steps[0].submission["_visits__int__"], "4")
+        self.assertEqual(result.steps[0].submission["visit_number"], "5")
 
     def test_unknown_form(self):
         result = self.run_scenario("nothing", [{"answers": {}}])

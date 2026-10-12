@@ -155,6 +155,8 @@ class ScenarioViewSet(
                 data.get("answers", {}),
                 data.get("context", {}),
                 data.get("workflow_version"),
+                data.get("search", {}),
+                data.get("at"),
             )
         except FormNotFound as e:
             raise ValidationError({"form": [str(e)]})

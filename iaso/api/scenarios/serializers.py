@@ -242,6 +242,14 @@ class ScenarioStepPrepareSerializer(ScenarioPreviewRequestSerializer):
         child=serializers.CharField(allow_blank=True), required=False, help_text="When editing the step: its answers"
     )
     context = serializers.DictField(child=serializers.CharField(), required=False)
+    search = serializers.DictField(
+        child=serializers.CharField(allow_blank=True),
+        required=False,
+        help_text="Registering: the search before the form, question -> value typed or scanned",
+    )
+    at = serializers.DateTimeField(
+        required=False, allow_null=True, help_text="The step's clock: the forms offered on that day; none: now"
+    )
 
     def first_form(self, attrs: Dict[str, Any]) -> Optional[str]:
         # no step yet: this one registers the entity
@@ -382,6 +390,20 @@ class NextFormsSerializer(serializers.Serializer):
     followups = FollowupResultSerializer(many=True)
 
 
+class SearchFieldSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    label = serializers.CharField()
+
+
+class SearchStepSerializer(serializers.Serializer):
+    questions = SearchFieldSerializer(
+        many=True, help_text="The questions asked, the entity type's fields_duplicate_search in the reference form"
+    )
+    prevent_add = serializers.BooleanField(
+        help_text="prevent_add_if_duplicate_found: registering needs every field filled"
+    )
+
+
 class ScenarioStepPrepareResponseSerializer(serializers.Serializer):
     form = serializers.CharField(allow_null=True, help_text="None: the app offers no form there")
     xform = serializers.CharField(
@@ -396,6 +418,9 @@ class ScenarioStepPrepareResponseSerializer(serializers.Serializer):
     )
     profile = serializers.DictField(
         child=serializers.JSONField(), help_text="The entity's information at this point, as stored on the entity"
+    )
+    search = SearchStepSerializer(
+        allow_null=True, help_text="Registering: the search the app asks for before the form; none otherwise"
     )
 
 

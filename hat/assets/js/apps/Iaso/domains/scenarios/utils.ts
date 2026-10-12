@@ -144,6 +144,49 @@ export const displayValue = (value: unknown, typed = false): string => {
     return typed ? `${text} (${typeof value})` : text;
 };
 
+/** The entity type's configured fields (list, detail, duplicate search): what identifies an entity, shown first. */
+export const entityMainFields = (entityType?: {
+    fields_list_view?: string[];
+    fields_detail_info_view?: string[];
+    fields_duplicate_search?: string[];
+}): string[] =>
+    Array.from(
+        new Set([
+            ...(entityType?.fields_list_view ?? []),
+            ...(entityType?.fields_detail_info_view ?? []),
+            ...(entityType?.fields_duplicate_search ?? []),
+        ]),
+    );
+
+/**
+ * The entity's information to show: its main fields (those it has) then the ones the step changed; all of them when
+ * asked, or when the entity type has no main field.
+ */
+export const fieldsToShow = (
+    before: Record<string, unknown>,
+    after: Record<string, unknown> | undefined,
+    mainFields: string[],
+    showAll: boolean,
+): string[] => {
+    const names = Array.from(
+        new Set([...Object.keys(before), ...Object.keys(after ?? {})]),
+    );
+    if (showAll || mainFields.length === 0) {
+        return names;
+    }
+    const changed = names.filter(
+        name =>
+            after !== undefined &&
+            displayValue(before[name]) !== displayValue(after[name]),
+    );
+    return Array.from(
+        new Set([
+            ...mainFields.filter(name => names.includes(name)),
+            ...changed,
+        ]),
+    );
+};
+
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 

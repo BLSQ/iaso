@@ -36,6 +36,17 @@ submission (`"11"`, `"yes"`). Examples: `iaso/tests/scenarios/examples/`.
 ```
 
 The first step of an entity scenario fills the entity type's reference form. Forms are named by their `form_id`.
+A step's `at` is the day it happens: the app evaluates the follow-ups when the entity is opened, so a step is offered
+what that day offers (no `at`: the day of the run).
+The form is filled on that day too, as the app starts it (defaults, then the prefill, then the answers): its
+`today()` and `now()` - a default date included - are the step's date and time (rewritten in the XForm,
+for the runs and in the editor); the `today`, `start` and `end` metadata keep the real clock.
+
+When the entity type has a duplicate search (`fields_duplicate_search`), the app asks for it before the registration
+form, and the values typed or scanned (a card's QR code) prefill the form, read-only questions too. The first step
+gives them as `search`: `{"form": "registration", "search": {"qr_code": "CARD-0001"}, "answers": {...}}`. With
+`prevent_add_if_duplicate_found`, the app only registers when every search question is filled. Try it with
+`docker compose run --rm iaso manage seed_cps_workflow --account 1` (a registration on a QR card, four cycles).
 
 ## Running scenarios
 
@@ -52,5 +63,5 @@ Permission: `iaso_workflows`.
 ## Known limits
 
 - One entity per scenario; a scenario mixing several entity types and plain forms is planned.
+- The search finds nothing (the scenario's entity isn't registered before): finding an existing entity isn't tested yet.
 - No sync, no NFC cards, no role or org unit pickers yet (the step `context` sets values by question name).
-- A prefilled calculation loses its value when the form is loaded (`odk_cli edit` recalculates); `odk_cli new` will fix it.

@@ -1,13 +1,10 @@
 """Fills a form as the IASO app would, with its own form engine: JavaRosa, through `odk_cli`
 (https://github.com/BLSQ/odk_cli, installed by the Docker images).
 
-`odk_cli edit` edits a saved submission: here the saved submission is the form's blank one (its primary instance),
-with the prefill already in it. The answers are then set, calculates and relevance recomputed, required questions and
+`odk_cli new` fills the blank form as the app starts one, in its order: a new submission (the defaults that are
+expressions, `today()`..., and the preloads: `uid`, `start`), then the prefill (`PRE_FILLED_ANSWERS`, read-only
+questions and calculates too), then the answers; calculates and relevance recomputed, required questions and
 constraints checked - every problem reported, in the form's order, with the form's own constraint messages.
-
-Known gap: loading a submission recomputes the calculates, so a prefilled calculate (`_first_name`) whose own
-calculation gives something else loses the prefilled value; on the device the prefill comes after loading. A `new`
-command in `odk_cli` (fill a blank form, prefill after load) will close it.
 """
 
 import json
@@ -104,31 +101,26 @@ def _by_name(instance: etree._Element) -> Dict[str, tuple]:
 
 
 def fill(xform: bytes, prefilled: Dict[str, str], answers: Dict[str, str]) -> FormFill:
-    """Fills the form: `prefilled` written in the blank submission, `answers` set by odk_cli (both by question
-    name)."""
-    instance = blank_instance(xform)
-    by_name = _by_name(instance)
-    for name, value in prefilled.items():
-        if name in by_name:
-            by_name[name][1].text = value
-    # odk_cli takes paths below the root; a name the form doesn't have is left as is, odk_cli reports it
+    """Fills the blank form: `prefilled` then `answers`, both by question name."""
+    by_name = _by_name(blank_instance(xform))
+    # odk_cli takes the answers' paths below the root; a name the form doesn't have is left as is, odk_cli reports it
     answers_by_path = {by_name[name][0] if name in by_name else name: value for name, value in answers.items()}
 
     with tempfile.TemporaryDirectory() as directory:
         xform_path = os.path.join(directory, "form.xml")
-        instance_path = os.path.join(directory, "instance.xml")
+        prefilled_path = os.path.join(directory, "prefilled.json")
         answers_path = os.path.join(directory, "answers.json")
         with open(xform_path, "wb") as xform_file:
             xform_file.write(xform)
-        with open(instance_path, "wb") as instance_file:
-            instance_file.write(etree.tostring(instance, xml_declaration=True, encoding="UTF-8"))
+        with open(prefilled_path, "w") as prefilled_file:
+            json.dump(prefilled, prefilled_file)
         with open(answers_path, "w") as answers_file:
             json.dump(answers_by_path, answers_file)
         # ODK_CLI_TIMEOUT_SECONDS: a pathological form doesn't hold the run
         odk_cli, timeout = settings.ODK_CLI_PATH, settings.ODK_CLI_TIMEOUT_SECONDS
         try:
             completed = subprocess.run(
-                [odk_cli, "edit", "-x", xform_path, "-i", instance_path, "-af", answers_path],
+                [odk_cli, "new", "-x", xform_path, "-pf", prefilled_path, "-af", answers_path],
                 capture_output=True,
                 timeout=timeout,
             )

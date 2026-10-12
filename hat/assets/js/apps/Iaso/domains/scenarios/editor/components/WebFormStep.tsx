@@ -9,7 +9,13 @@ import { Box } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
-    frame: { width: '100%', height: 640, border: 'none', display: 'block' },
+    // as tall as the screen allows on large ones: real forms are long
+    frame: {
+        width: '100%',
+        height: { xs: 640, lg: 'max(640px, calc(100vh - 280px))' },
+        border: 'none',
+        display: 'block',
+    },
 };
 
 type Props = {

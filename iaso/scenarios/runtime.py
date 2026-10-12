@@ -9,11 +9,14 @@ a change; that is the form engine's job (`odk_cli`).
 import datetime
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from iaso.scenarios.device_values import DeviceValueError, device_data
 from iaso.scenarios.jsonlogic import ConditionResult, evaluate_condition
 
+
+# `GetFormStructure.IGNORED_QUESTIONS`: never part of the entity's information (each submission has its own)
+PROFILE_IGNORED = {"instanceID"}
 
 JSON_LOGIC_CURRENT_DATETIME = "current_datetime"
 JSON_LOGIC_CURRENT_TIME = "current_time"
@@ -95,6 +98,34 @@ def prefill(profile: Dict[str, Any], form_questions: Dict[str, dict], context: D
         if name in form_questions:
             prefilled[name] = value
     return prefilled
+
+
+def search_fields(fields_duplicate_search: Optional[List[str]], form_questions: Dict[str, dict]) -> List[str]:
+    """`DuplicateEntitySearchViewModel`: before registering, the app asks for the entity type's
+    `fields_duplicate_search` that are questions of the reference form, in that order; none: it opens the form
+    directly."""
+    return [name for name in fields_duplicate_search or [] if name in form_questions]
+
+
+def search_values(search: Dict[str, str]) -> Dict[str, str]:
+    """The search as the app keeps it: typed values trimmed, blank ones dropped."""
+    return {name: value.strip() for name, value in search.items() if value.strip()}
+
+
+def search_problem(search: Dict[str, str], fields: List[str], prevent_add: bool) -> Optional[str]:
+    """Why the app wouldn't register with this search: a value for a question it doesn't ask, or (with
+    `prevent_add_if_duplicate_found`) 'Add an entity' kept disabled until every search field is filled. The search
+    finds nothing here: the scenario's entity isn't registered yet."""
+    unknown = [name for name in search if name not in fields]
+    if unknown:
+        return f"The app doesn't search on {unknown} before registering, only on {fields}"
+    missing = [name for name in fields if name not in search_values(search)]
+    if prevent_add and missing:
+        return (
+            f"The app doesn't let you register before every search field is filled "
+            f"(prevent_add_if_duplicate_found), missing: {missing}"
+        )
+    return None
 
 
 @dataclass

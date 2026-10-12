@@ -176,6 +176,14 @@
           "title": "Force",
           "type": "boolean"
         },
+        "search": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Registration only: the search the app asks for before registering (the entity type's fields_duplicate_search), question -> value typed or scanned; it prefills the registration form, read-only questions too.",
+          "title": "Search",
+          "type": "object"
+        },
         "expect": {
           "$ref": "#/$defs/EntityExpect"
         }

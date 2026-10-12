@@ -25,6 +25,19 @@ toujours du texte, comme dans une soumission (`"11"`, `"yes"`). Exemples : `iaso
 
 La première étape d'un scénario d'entité remplit le formulaire de référence du type d'entité. Les formulaires sont
 désignés par leur `form_id`.
+Le `at` d'une étape est le jour où elle a lieu : l'application évalue les suivis à l'ouverture de l'entité, une étape
+se voit donc proposer ce que ce jour-là propose (sans `at` : le jour de l'exécution).
+Le formulaire est aussi rempli ce jour-là, comme l'application le démarre (valeurs par défaut, puis pré-remplissage,
+puis réponses) : ses `today()` et `now()` - une date par défaut comprise - valent la date et l'heure de l'étape (réécrits
+dans le XForm, pour les exécutions et dans l'éditeur) ; les métadonnées `today`, `start` et `end` gardent l'horloge réelle.
+
+Quand le type d'entité a une recherche de doublons (`fields_duplicate_search`), l'application la demande avant le
+formulaire d'enregistrement, et les valeurs saisies ou scannées (le QR code d'une carte) pré-remplissent le formulaire,
+questions en lecture seule comprises. La première étape les donne dans `search` :
+`{"form": "registration", "search": {"qr_code": "CARD-0001"}, "answers": {...}}`. Avec
+`prevent_add_if_duplicate_found`, l'application n'enregistre que si toutes les questions de recherche sont remplies.
+Pour essayer : `docker compose run --rm iaso manage seed_cps_workflow --account 1` (enregistrement sur carte QR, quatre
+cycles).
 
 ## Exécuter des scénarios
 
@@ -41,6 +54,6 @@ Permission : `iaso_workflows`.
 ## Limites connues
 
 - Une entité par scénario ; un scénario mêlant plusieurs types d'entités et des formulaires simples est prévu.
+- La recherche ne trouve rien (l'entité du scénario n'est pas enregistrée avant) : retrouver une entité existante n'est pas encore testé.
 - Pas encore de synchronisation, de cartes NFC, ni de choix de rôle ou d'unité d'organisation (le `context` d'une étape
   donne des valeurs par nom de question).
-- Un calcul pré-rempli perd sa valeur au chargement du formulaire (`odk_cli edit` recalcule) ; `odk_cli new` le corrigera.

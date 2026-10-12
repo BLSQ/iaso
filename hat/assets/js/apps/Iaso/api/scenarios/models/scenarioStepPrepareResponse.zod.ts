@@ -53,6 +53,28 @@ export const ScenarioStepPrepareResponse = zod.strictObject({
         .describe(
             "The entity's information at this point, as stored on the entity",
         ),
+    search: zod
+        .strictObject({
+            questions: zod
+                .array(
+                    zod.strictObject({
+                        name: zod.string(),
+                        label: zod.string(),
+                    }),
+                )
+                .describe(
+                    "The questions asked, the entity type's fields_duplicate_search in the reference form",
+                ),
+            prevent_add: zod
+                .boolean()
+                .describe(
+                    'prevent_add_if_duplicate_found: registering needs every field filled',
+                ),
+        })
+        .nullable()
+        .describe(
+            'Registering: the search the app asks for before the form; none otherwise',
+        ),
 });
 
 export type ScenarioStepPrepareResponse = zod.input<

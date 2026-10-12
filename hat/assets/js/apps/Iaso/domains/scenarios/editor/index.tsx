@@ -50,28 +50,23 @@ import {
 import { useTechnicalNames } from '../hooks/useTechnicalNames';
 import MESSAGES from '../messages';
 import { pageStyles } from '../styles';
+import { entityMainFields } from '../utils';
 import { ChecksPlaceholder } from './components/ChecksPlaceholder';
 import { JourneyNav } from './components/JourneyNav';
 import { NotOfferedHint } from './components/NotOfferedHint';
+import { SearchBeforeRegistering } from './components/SearchBeforeRegistering';
 import { defaultChecks, StepChecks } from './components/StepChecks';
 import { WebFormStep } from './components/WebFormStep';
 import {
     answersFromSubmission,
     EditorStep,
     fromDefinition,
+    searchAllowsRegistering,
     StepExpect,
     toDefinition,
 } from './utils';
 
 const styles: SxStyles = {
-    main: {
-        maxWidth: 1400,
-        mx: 'auto',
-        p: { xs: 2, md: 3 },
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
     header: {
         display: 'flex',
         flexWrap: 'wrap',
@@ -81,29 +76,8 @@ const styles: SxStyles = {
     },
     name: { flex: '1 1 420px' },
     version: { flex: '0 1 300px' },
-    columns: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 2,
-        alignItems: 'flex-start',
-    },
-    journey: {
-        flex: '1 1 220px',
-        maxWidth: { md: 260 },
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    form: {
-        flex: '999 1 460px',
-        minWidth: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
     stepCard: { p: 2, display: 'flex', flexDirection: 'column', gap: 2 },
     stepFields: { display: 'flex', flexWrap: 'wrap', gap: 2 },
-    side: { flex: '1 1 260px', maxWidth: { md: 320 } },
     prefilled: { fontSize: 14 },
     actions: {
         display: 'flex',
@@ -193,6 +167,8 @@ export const ScenarioEditor: FunctionComponent = () => {
     const [startingPoint, setStartingPoint] =
         useState<ScenarioStepPrepareResponse>();
     const [answers, setAnswers] = useState<Record<string, string>>();
+    // the registration's search before the form (undefined: not searched yet)
+    const [search, setSearch] = useState<Record<string, string>>();
     const [outcome, setOutcome] = useState<ScenarioOutcomeOutput>();
     const [expect, setExpect] = useState<StepExpect>({});
     // the workflow version the open step was prepared against (undefined: no step opened yet)
@@ -241,12 +217,19 @@ export const ScenarioEditor: FunctionComponent = () => {
         (index: number, allSteps: EditorStep[]) => {
             const step: EditorStep | undefined = allSteps[index];
             setCurrent(index);
+            // the step in the url: a link to share opens it (1 for the first)
+            redirectToReplace(baseUrls.scenarioEdit, {
+                ...params,
+                step: String(index + 1),
+            });
             setStepDescription(step?.description ?? '');
             setStepAt(step?.at ?? '');
             setPrepared(undefined);
             setStartingPoint(undefined);
             setAnswers(undefined);
             setOutcome(undefined);
+            // a step already recorded has searched
+            setSearch(step ? (step.search ?? {}) : undefined);
             setExpect(step?.expect ?? {});
             setStepForm(step?.form ?? '');
             setPreparedFor(versionId ?? null);
@@ -256,6 +239,8 @@ export const ScenarioEditor: FunctionComponent = () => {
                     // the first step registers the entity: the reference form
                     form: step?.form ?? (index === 0 ? referenceFormId : null),
                     answers: step?.answers,
+                    search: step?.search,
+                    at: step?.at ?? null,
                     workflow_version_id: versionId ?? null,
                 },
             }).then(response => {
@@ -275,7 +260,15 @@ export const ScenarioEditor: FunctionComponent = () => {
                 }).then(setOutcome);
             }
         },
-        [referenceFormId, prepareStep, preview, definitionOf, versionId],
+        [
+            referenceFormId,
+            prepareStep,
+            preview,
+            definitionOf,
+            versionId,
+            redirectToReplace,
+            params,
+        ],
     );
 
     // open the first step to fill once the forms are known; prepare the open step again when the version changes
@@ -284,7 +277,12 @@ export const ScenarioEditor: FunctionComponent = () => {
             return;
         }
         if (preparedFor === undefined) {
-            openStep(steps.length, steps);
+            // the step of a shared link, else a new one after the steps
+            const linked = Number(params.step) - 1;
+            openStep(
+                linked >= 0 && linked <= steps.length ? linked : steps.length,
+                steps,
+            );
         } else if (preparedFor !== (versionId ?? null)) {
             openStep(current, steps);
         }
@@ -296,6 +294,7 @@ export const ScenarioEditor: FunctionComponent = () => {
         openStep,
         current,
         steps,
+        params.step,
     ]);
 
     // another form picked for the step: prepared anew
@@ -307,6 +306,55 @@ export const ScenarioEditor: FunctionComponent = () => {
             data: {
                 definition: definitionOf(steps.slice(0, current)),
                 form,
+                search,
+                at: stepAt || null,
+                workflow_version_id: versionId ?? null,
+            },
+        }).then(setPrepared);
+    };
+
+    // the step's day set: the forms the app offers when the entity is opened that day
+    const handleAtCommit = () => {
+        if (current === 0) {
+            // the registration is offered any day
+            return;
+        }
+        setPrepared(undefined);
+        setOutcome(undefined);
+        prepareStep({
+            data: {
+                definition: definitionOf(steps.slice(0, current)),
+                form: stepForm || null,
+                answers: steps[current]?.answers,
+                at: stepAt || null,
+                workflow_version_id: versionId ?? null,
+            },
+        }).then(response => {
+            setStartingPoint(response);
+            setOffered(response.offered ?? []);
+            setStepForm(response.form ?? '');
+            setPrepared(response.xform ? response : undefined);
+        });
+    };
+
+    // searched before registering: the form prepared anew, prefilled with the search
+    const handleSearch = (values: Record<string, string>) => {
+        const applied = Object.fromEntries(
+            Object.entries(values)
+                .map(([question, value]) => [question, value.trim()])
+                .filter(([, value]) => value !== ''),
+        );
+        setSearch(applied);
+        setPrepared(undefined);
+        setAnswers(undefined);
+        setOutcome(undefined);
+        prepareStep({
+            data: {
+                definition: definitionOf(steps.slice(0, current)),
+                form: stepForm,
+                answers: steps[current]?.answers,
+                search: applied,
+                at: stepAt || null,
                 workflow_version_id: versionId ?? null,
             },
         }).then(setPrepared);
@@ -323,8 +371,9 @@ export const ScenarioEditor: FunctionComponent = () => {
             answers: stepAnswers,
             expect: stepExpect,
             force: !offered.includes(stepForm),
+            search,
         }),
-        [stepForm, stepDescription, stepAt, offered],
+        [stepForm, stepDescription, stepAt, offered, search],
     );
 
     // web-forms submitted: the step's answers, and what the app does with them
@@ -395,7 +444,20 @@ export const ScenarioEditor: FunctionComponent = () => {
         redirectTo(scenarioDetailUrl(saved.id, versionId).slice(1), {});
     };
 
-    const prefilledNames = Object.keys(prepared?.prefilled ?? {});
+    // registering: the search first, then the form if the app lets you register
+    const searchStep = prepared?.search ?? startingPoint?.search;
+    const searchQuestions = searchStep?.questions ?? [];
+    const canFill =
+        searchQuestions.length === 0 ||
+        (search !== undefined &&
+            searchAllowsRegistering(
+                searchQuestions,
+                searchStep?.prevent_add ?? false,
+                search,
+            ));
+    // the registration's prefill is the search, shown with it
+    const prefilledNames =
+        current > 0 ? Object.keys(prepared?.prefilled ?? {}) : [];
     const title = scenarioId
         ? formatMessage(MESSAGES.editScenario)
         : formatMessage(MESSAGES.newScenario);
@@ -403,7 +465,7 @@ export const ScenarioEditor: FunctionComponent = () => {
         <>
             <TopBar title={title} displayBackButton goBack={() => goBack()} />
             <Box sx={pageStyles.scroll}>
-                <Box sx={styles.main}>
+                <Box sx={pageStyles.main}>
                     <Box sx={styles.header}>
                         <TextField
                             sx={styles.name}
@@ -452,8 +514,8 @@ export const ScenarioEditor: FunctionComponent = () => {
                         />
                     </Box>
 
-                    <Box sx={styles.columns}>
-                        <Box sx={styles.journey}>
+                    <Box sx={pageStyles.columns}>
+                        <Box sx={pageStyles.left}>
                             <JourneyNav
                                 steps={steps}
                                 current={current}
@@ -467,12 +529,13 @@ export const ScenarioEditor: FunctionComponent = () => {
                                     after={result?.profile}
                                     forms={formDescriptions}
                                     referenceFormId={referenceFormId}
+                                    mainFields={entityMainFields(entityType)}
                                     showTechnicalNames={showTechnicalNames}
                                 />
                             )}
                         </Box>
 
-                        <Box sx={styles.form}>
+                        <Box sx={pageStyles.center}>
                             <Paper sx={styles.stepCard}>
                                 <Box sx={styles.stepFields}>
                                     <TextField
@@ -525,6 +588,7 @@ export const ScenarioEditor: FunctionComponent = () => {
                                                     : '',
                                             )
                                         }
+                                        onBlur={handleAtCommit}
                                         InputLabelProps={{ shrink: true }}
                                     />
                                 </Box>
@@ -590,27 +654,22 @@ export const ScenarioEditor: FunctionComponent = () => {
                                         {formatMessage(MESSAGES.nothingOffered)}
                                     </Alert>
                                 )}
-                                {prepared?.xform && (
+                                {searchStep && searchQuestions.length > 0 && (
+                                    <SearchBeforeRegistering
+                                        questions={searchQuestions}
+                                        preventAdd={searchStep.prevent_add}
+                                        search={search}
+                                        onSearch={handleSearch}
+                                        showTechnicalNames={showTechnicalNames}
+                                    />
+                                )}
+                                {prepared?.xform && canFill && (
                                     <WebFormStep
                                         xform={prepared.xform}
                                         onSubmit={handleSubmit}
                                     />
                                 )}
                             </Paper>
-
-                            {!result && prepared?.xform && (
-                                <ChecksPlaceholder />
-                            )}
-                            {result && (
-                                <StepChecks
-                                    result={result}
-                                    forms={outcome?.forms ?? {}}
-                                    referenceFormId={referenceFormId}
-                                    expect={expect}
-                                    onChange={setExpect}
-                                    showTechnicalNames={showTechnicalNames}
-                                />
-                            )}
 
                             <Box sx={styles.actions}>
                                 <Button
@@ -638,13 +697,26 @@ export const ScenarioEditor: FunctionComponent = () => {
                             </Box>
                         </Box>
 
-                        <Box sx={styles.side}>
+                        <Box sx={pageStyles.right}>
                             <AppWillDo
                                 result={result}
                                 forms={outcome?.forms ?? {}}
                                 referenceFormId={referenceFormId}
                                 isLoading={isPreviewing}
                             />
+                            {!result && prepared?.xform && canFill && (
+                                <ChecksPlaceholder />
+                            )}
+                            {result && (
+                                <StepChecks
+                                    result={result}
+                                    forms={outcome?.forms ?? {}}
+                                    referenceFormId={referenceFormId}
+                                    expect={expect}
+                                    onChange={setExpect}
+                                    showTechnicalNames={showTechnicalNames}
+                                />
+                            )}
                             {!referenceFormId && workflowForms && (
                                 <Typography color="error">
                                     {formatMessage(MESSAGES.noReferenceForm)}

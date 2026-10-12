@@ -292,14 +292,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.scenarios.label.entityInformation',
         defaultMessage: '{entityType} information',
     },
-    before: {
-        id: 'iaso.scenarios.label.before',
-        defaultMessage: 'Before',
-    },
-    after: {
-        id: 'iaso.scenarios.label.after',
-        defaultMessage: 'After',
-    },
     afterOnSubmit: {
         id: 'iaso.scenarios.label.afterOnSubmit',
         defaultMessage: 'Submit the form to see it after the step.',
@@ -312,6 +304,37 @@ const MESSAGES = defineMessages({
         id: 'iaso.scenarios.label.prefilledFromEntity',
         defaultMessage:
             "Already filled from the entity's information, as the phone does: {values}",
+    },
+    searchBeforeRegistering: {
+        id: 'iaso.scenarios.label.searchBeforeRegistering',
+        defaultMessage: 'Search before registering',
+    },
+    searchBeforeRegisteringHelp: {
+        id: 'iaso.scenarios.label.searchBeforeRegisteringHelp',
+        defaultMessage:
+            'As on the phone: the app first searches on these questions (typed, or a scanned QR code), then registers with them filled in the form.',
+    },
+    searchButton: {
+        id: 'iaso.scenarios.label.searchButton',
+        defaultMessage: 'Search',
+    },
+    searchNeedsEveryQuestion: {
+        id: 'iaso.scenarios.label.searchNeedsEveryQuestion',
+        defaultMessage:
+            'The app keeps “Add an entity” disabled until every question is filled.',
+    },
+    searchNothingFound: {
+        id: 'iaso.scenarios.label.searchNothingFound',
+        defaultMessage:
+            'Nothing found: the app lets you register, these values filled in the form.',
+    },
+    showAllFields: {
+        id: 'iaso.scenarios.label.showAllFields',
+        defaultMessage: 'Show all {count} fields',
+    },
+    showMainFields: {
+        id: 'iaso.scenarios.label.showMainFields',
+        defaultMessage: 'Show only the main and changed fields',
     },
     saveStepAndAddNext: {
         id: 'iaso.scenarios.label.saveStepAndAddNext',

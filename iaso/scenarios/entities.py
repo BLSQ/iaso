@@ -28,7 +28,18 @@ from django.utils import timezone
 
 from iaso.models import StepStatus, WorkflowVersion
 from iaso.scenarios.forms import FormSource, ScenarioResult, StepResult, fill_and_check
-from iaso.scenarios.runtime import Change, Followup, NextForms, apply_changes, next_forms, prefill
+from iaso.scenarios.runtime import (
+    PROFILE_IGNORED,
+    Change,
+    Followup,
+    NextForms,
+    apply_changes,
+    next_forms,
+    prefill,
+    search_fields,
+    search_problem,
+    search_values,
+)
 from iaso.scenarios.schema import EntityScenario, EntityStep
 
 
@@ -62,7 +73,8 @@ class EntityScenarioRunner:
         now: Optional[datetime.datetime] = None,
     ):
         self.workflow_version = workflow_version
-        self.reference_form = workflow_version.workflow.entity_type.reference_form
+        self.entity_type = workflow_version.workflow.entity_type
+        self.reference_form = self.entity_type.reference_form
         self.now = now or timezone.now()
         self.source = source
         # the app keeps the list as the API sends it, which has no ordering: by creation, here
@@ -93,9 +105,7 @@ class EntityScenarioRunner:
         result = EntityStepResult(index, step, offered_before=offered, profile=profile, next=offered)
         if self.reference_form is None:
             result.status = StepStatus.ERROR
-            result.failures.append(
-                f"The entity type '{self.workflow_version.workflow.entity_type}' has no reference form"
-            )
+            result.failures.append(f"The entity type '{self.entity_type}' has no reference form")
             return result
         reference_form_id = self.reference_form.form_id
         form_questions = self.source.questions(step.form)
@@ -111,6 +121,14 @@ class EntityScenarioRunner:
                 f"The entity isn't registered yet: the step must fill '{reference_form_id}', not '{step.form}'"
             )
             return result
+        if not registering:
+            # the app evaluates the follow-ups when the entity is opened: on this step's clock, not the last one's
+            offered = self.next_forms(result.profile, step.at)
+            result.offered_before = result.next = offered
+            if offered.errors:
+                result.status = StepStatus.ERROR
+                result.failures += [f"The app would fail: {error}" for error in offered.errors]
+                return result
         if not registering and not step.force and step.form not in offered.form_ids:
             result.status = StepStatus.NOT_OFFERED
             result.failures.append(
@@ -118,20 +136,33 @@ class EntityScenarioRunner:
             )
             return result
 
-        prefilled = prefill({} if registering else profile, form_questions, step.context)
-        filled = fill_and_check(self.source, step.form, result, step.expect, prefilled)
+        if registering:
+            # the search before registering: its values prefill the form, as PRE_FILLED_ANSWERS
+            fields = search_fields(self.entity_type.fields_duplicate_search, form_questions)
+            problem = search_problem(step.search, fields, self.entity_type.prevent_add_if_duplicate_found)
+            if problem:
+                result.status = StepStatus.NOT_OFFERED
+                result.failures.append(problem)
+                return result
+        elif step.search:
+            result.status = StepStatus.ERROR
+            result.failures.append("A search only comes before registering: the entity is registered already")
+            return result
+
+        prefilled = prefill(search_values(step.search) if registering else profile, form_questions, step.context)
+        filled = fill_and_check(self.source, step.form, result, step.expect, prefilled, step.at)
         if filled is None:
             return result
 
-        answered = {name: value for name, value in filled.values.items() if value is not None}
+        answered = {
+            name: value for name, value in filled.values.items() if value is not None and name not in PROFILE_IGNORED
+        }
         if registering or step.form == reference_form_id:
             result.profile = answered
         else:
             result.profile, result.changes = apply_changes(profile, self.mappings.get(step.form, {}), answered)
 
-        result.next = next_forms(
-            result.profile, self.source.questions(reference_form_id), self.followups, step.at or self.now
-        )
+        result.next = self.next_forms(result.profile, step.at)
         if result.next.errors:
             result.status = StepStatus.ERROR
             result.failures += [f"The app would fail: {error}" for error in result.next.errors]
@@ -139,6 +170,10 @@ class EntityScenarioRunner:
 
         self._check(result)
         return result
+
+    def next_forms(self, profile: Dict[str, Any], at: Optional[datetime.datetime]) -> NextForms:
+        """The forms the app offers for this profile when the entity is opened at `at` (none: now)."""
+        return next_forms(profile, self.source.questions(self.reference_form.form_id), self.followups, at or self.now)
 
     def _check(self, result: EntityStepResult):
         expect = result.step.expect

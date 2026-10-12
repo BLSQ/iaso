@@ -1,0 +1,66 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Not found at cycle 2, found back at cycle 3",
+  "description": "Registered and treated at cycle 1, the child can't be found during cycle 2 (no visit); found back in August, only cycle 3 is offered: cycle 2 is missed, not caught up.",
+  "steps": [
+    {
+      "form": "registre_de_denombrement_et_administration_cps_2026",
+      "description": "Card CARD-0004 scanned: nothing found, the child is registered in June (cycle 1)",
+      "at": "2026-06-15T09:00:00+00:00",
+      "search": {
+        "qr_code": "CARD-0004"
+      },
+      "answers": {
+        "code_menage": "56",
+        "nom_prenoms_parent_gardien": "MARIE MARTIN",
+        "nom_prenoms_enfant": "LEA MARTIN",
+        "age": "12_59_mois",
+        "sexe": "Feminin",
+        "resident_nonresident": "Resident(e)"
+      },
+      "expect": {
+        "attributes": {
+          "qr_code": "CARD-0004"
+        },
+        "next_forms": [
+          "cps_2026_cycle1"
+        ]
+      }
+    },
+    {
+      "form": "cps_2026_cycle1",
+      "description": "Cycle 1: first dose taken",
+      "at": "2026-06-15T09:30:00+00:00",
+      "answers": {
+        "date": "2026-06-15",
+        "prise_dose1": "Oui0"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_1_rempli": "cycle_rempli"
+        },
+        "next_forms": []
+      }
+    },
+    {
+      "form": "cps_2026_cycle3",
+      "description": "No visit in July (cycle 2): the child isn't found. Found back in August: cycle 3 only, first dose taken",
+      "at": "2026-08-15T09:30:00+00:00",
+      "answers": {
+        "date_cy3": "2026-08-15",
+        "age_actuel_enfant": "12_59_mois",
+        "prise_dose1": "Oui0",
+        "verification_carnet_enfant": "Carnet_absent"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_1_rempli": "cycle_rempli",
+          "cycle_2_rempli": "0",
+          "cycle_3_rempli": "cycle_rempli"
+        },
+        "next_forms": []
+      }
+    }
+  ]
+}

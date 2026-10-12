@@ -23,6 +23,18 @@ export const ScenarioStepPrepareRequest = zod
             .optional()
             .describe('When editing the step: its answers'),
         context: zod.record(zod.string(), zod.string().min(1)).optional(),
+        search: zod
+            .record(zod.string(), zod.string())
+            .optional()
+            .describe(
+                'Registering: the search before the form, question -> value typed or scanned',
+            ),
+        at: zod.iso
+            .datetime({ offset: true })
+            .nullish()
+            .describe(
+                "The step's clock: the forms offered on that day; none: now",
+            ),
     })
     .describe(
         'The next step of a scenario being written (`definition`: the steps before it): the form to fill in web-forms,\nprefilled as the phone would prefill it.',

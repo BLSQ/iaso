@@ -59,4 +59,6 @@ export * from './scenarioRunResponse.zod';
 export * from './scenarioStepPrepareRequest.zod';
 export * from './scenarioStepPrepareResponse.zod';
 export * from './scenarioWriteRequest.zod';
+export * from './searchField.zod';
+export * from './searchStep.zod';
 export * from './stepResult.zod';

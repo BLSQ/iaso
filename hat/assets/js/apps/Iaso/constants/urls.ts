@@ -583,11 +583,17 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     scenarioDetail: {
         url: 'entities/types/scenarios/detail',
-        params: ['accountId', 'scenarioId', 'versionId'],
+        params: ['accountId', 'scenarioId', 'versionId', 'step'],
     },
     scenarioEdit: {
         url: 'entities/types/scenarios/edit',
-        params: ['accountId', 'entityTypeId', 'scenarioId', 'versionId'],
+        params: [
+            'accountId',
+            'entityTypeId',
+            'scenarioId',
+            'versionId',
+            'step',
+        ],
     },
     potentialPayments: {
         url: 'payments/potential',

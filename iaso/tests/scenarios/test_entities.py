@@ -47,9 +47,8 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
                 ("visit_number", "visits__int__", "0", "1"),
             ],
         )
-        # known gap (form_engine): loading recomputes the calculates, the prefilled _first_name gets its calculation
-        # (''), on the device it would stay "Amina"
-        self.assertIsNone(anthropometry.submission["_first_name"])
+        # prefilled after the form is loaded, as on the device: the calculate keeps the entity's value
+        self.assertEqual(anthropometry.submission["_first_name"], "Amina")
         oedema_followup = anthropometry.next.followups[1].result
         self.assertEqual(oedema_followup.read, {"oedema_status": "yes", "age_months": 11})
 

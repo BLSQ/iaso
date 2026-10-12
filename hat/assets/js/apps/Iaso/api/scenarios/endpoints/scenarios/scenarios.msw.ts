@@ -791,6 +791,23 @@ export const getApiScenariosPrepareStepCreateResponseMock = (
             profile: {
                 [faker.string.alphanumeric(5)]: {},
             },
+            search: faker.helpers.arrayElement([
+                {
+                    questions: Array.from(
+                        { length: faker.number.int({ min: 1, max: 10 }) },
+                        (_, i) => i + 1,
+                    ).map(() => ({
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                        label: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                    })),
+                    prevent_add: faker.datatype.boolean(),
+                },
+                null,
+            ]),
             ...overrideResponse,
         },
         {
@@ -853,6 +870,23 @@ export const getApiScenariosPrepareStepCreateResponseMock = (
             profile: {
                 [faker.string.alphanumeric(5)]: {},
             },
+            search: faker.helpers.arrayElement([
+                {
+                    questions: Array.from(
+                        { length: faker.number.int({ min: 1, max: 10 }) },
+                        (_, i) => i + 1,
+                    ).map(() => ({
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                        label: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                    })),
+                    prevent_add: faker.datatype.boolean(),
+                },
+                null,
+            ]),
             ...overrideResponse,
         },
     ]);

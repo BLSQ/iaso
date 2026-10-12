@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -26,6 +26,7 @@ import { useApiScenariosRetrieve } from 'Iaso/api/scenarios';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useGetType } from 'Iaso/domains/entities/entityTypes/hooks/requests/entitiyTypes';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from 'Iaso/types/general';
 import { AppWillDo } from './components/AppWillDo';
@@ -45,41 +46,13 @@ import MESSAGES from './messages';
 import { pageStyles } from './styles';
 import {
     downloadJson,
+    entityMainFields,
     getSteps,
     parseLastRun,
     scenarioFileName,
 } from './utils';
 
 const styles: SxStyles = {
-    main: {
-        maxWidth: 1400,
-        mx: 'auto',
-        p: { xs: 2, md: 3 },
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    columns: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 2,
-        alignItems: 'flex-start',
-    },
-    journey: {
-        flex: '1 1 220px',
-        maxWidth: { md: 300 },
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    step: {
-        flex: '999 1 460px',
-        minWidth: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-    },
-    side: { flex: '1 1 260px', maxWidth: { md: 320 } },
     header: {
         display: 'flex',
         flexWrap: 'wrap',
@@ -108,13 +81,23 @@ export const ScenarioDetail: FunctionComponent = () => {
     const redirectToReplace = useRedirectToReplace();
     const redirectTo = useRedirectTo();
     const [showTechnicalNames, setShowTechnicalNames] = useTechnicalNames();
-    const [selected, setSelected] = useState<number>();
+    // the step shown, in the url: a link to share points at a step (1 for the first)
+    const selected = params.step ? Number(params.step) : undefined;
+    const setSelected = (index: number) =>
+        redirectToReplace(baseUrls.scenarioDetail, {
+            ...params,
+            step: String(index),
+        });
 
     const { data: scenario, isFetching } = useApiScenariosRetrieve(
         Number(params.scenarioId),
     );
     const { data: versions = [] } = useGetWorkflowVersionOptions(
         scenario?.entity_type_id,
+    );
+    const { data: entityType } = useGetType(
+        String(scenario?.entity_type_id),
+        Boolean(scenario?.entity_type_id),
     );
     const versionId =
         getDefaultVersionId(versions, params.versionId) ??
@@ -175,7 +158,7 @@ export const ScenarioDetail: FunctionComponent = () => {
                 goBack={() => goBack()}
             />
             <Box sx={pageStyles.scroll}>
-                <Box sx={styles.main}>
+                <Box sx={pageStyles.main}>
                     <Box sx={styles.header}>
                         <Box sx={styles.titleBlock}>
                             <Typography component="h1" sx={styles.title}>
@@ -246,6 +229,14 @@ export const ScenarioDetail: FunctionComponent = () => {
                                                     scenario.entity_type_id,
                                                 ),
                                                 scenarioId: String(scenario.id),
+                                                // edit the step being looked at
+                                                ...(shown
+                                                    ? {
+                                                          step: String(
+                                                              shown.index,
+                                                          ),
+                                                      }
+                                                    : {}),
                                                 ...(versionId
                                                     ? {
                                                           versionId:
@@ -292,8 +283,8 @@ export const ScenarioDetail: FunctionComponent = () => {
                         </Paper>
                     )}
 
-                    <Box sx={styles.columns}>
-                        <Box sx={styles.journey}>
+                    <Box sx={pageStyles.columns}>
+                        <Box sx={pageStyles.left}>
                             <JourneySteps
                                 steps={steps}
                                 selected={shown?.index}
@@ -308,13 +299,14 @@ export const ScenarioDetail: FunctionComponent = () => {
                                     after={shown.result?.profile}
                                     forms={forms}
                                     referenceFormId={referenceFormFormId}
+                                    mainFields={entityMainFields(entityType)}
                                     showTechnicalNames={showTechnicalNames}
                                     noAfter={MESSAGES.stepNotRun}
                                 />
                             )}
                         </Box>
 
-                        <Box sx={styles.step}>
+                        <Box sx={pageStyles.center}>
                             {shown && (
                                 <StepDetail
                                     step={shown}
@@ -336,7 +328,7 @@ export const ScenarioDetail: FunctionComponent = () => {
                         </Box>
 
                         {isEntity && (
-                            <Box sx={styles.side}>
+                            <Box sx={pageStyles.right}>
                                 <AppWillDo
                                     result={shown?.result}
                                     forms={forms}

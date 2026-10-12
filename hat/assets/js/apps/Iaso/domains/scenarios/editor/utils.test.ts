@@ -4,6 +4,7 @@ import {
     answersFromSubmission,
     EditorStep,
     fromDefinition,
+    searchAllowsRegistering,
     toDefinition,
 } from './utils';
 
@@ -70,6 +71,7 @@ describe('scenario file', () => {
             at: null,
             answers: { first_name: 'Amina' },
             expect: { next_forms: ['anthropometry'] },
+            search: { qr_code: 'CARD-0001' },
         },
         {
             form: 'otp_admission',
@@ -78,10 +80,11 @@ describe('scenario file', () => {
             answers: { admitted: 'yes' },
             expect: { refused: [{ question: 'admitted', code: 'CONSTRAINT' }] },
             force: true,
+            search: {},
         },
     ];
 
-    it('writes the steps as a scenario file: no date for the day of the run, force only when set', () => {
+    it('writes the steps as a scenario file: no date for the day of the run, force and search only when set', () => {
         const definition = toDefinition(
             'Oedema leads to OTP',
             'Checks OTP',
@@ -99,6 +102,7 @@ describe('scenario file', () => {
                     description: 'Registered',
                     answers: { first_name: 'Amina' },
                     expect: { next_forms: ['anthropometry'] },
+                    search: { qr_code: 'CARD-0001' },
                 },
                 {
                     form: 'otp_admission',
@@ -125,6 +129,10 @@ describe('scenario file', () => {
             ['child_registration', null, { first_name: 'Amina' }, undefined],
             ['otp_admission', '2026-10-22T08:30:00', { admitted: 'yes' }, true],
         ]);
+        expect(read.map(step => step.search)).toEqual([
+            { qr_code: 'CARD-0001' },
+            undefined,
+        ]);
         expect(read[1].expect.refused).toEqual([
             { question: 'admitted', code: 'CONSTRAINT' },
         ]);
@@ -133,5 +141,29 @@ describe('scenario file', () => {
     it("reads nothing from a file it can't read", () => {
         expect(fromDefinition({ steps: 'not a list' })).toEqual([]);
         expect(fromDefinition(null)).toEqual([]);
+    });
+});
+
+describe('searchAllowsRegistering', () => {
+    const questions = [{ name: 'qr_code' }, { name: 'code_menage' }];
+
+    it('needs every question answered when the app prevents adding without them', () => {
+        expect(
+            searchAllowsRegistering(questions, true, {
+                qr_code: 'CARD-0001',
+                code_menage: '12',
+            }),
+        ).toBe(true);
+        expect(
+            searchAllowsRegistering(questions, true, {
+                qr_code: 'CARD-0001',
+                code_menage: '  ',
+            }),
+        ).toBe(false);
+        expect(searchAllowsRegistering(questions, true, {})).toBe(false);
+    });
+
+    it('lets the app register with an empty search otherwise', () => {
+        expect(searchAllowsRegistering(questions, false, {})).toBe(true);
     });
 });

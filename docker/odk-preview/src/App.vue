@@ -8,6 +8,13 @@
         @submit="handleSubmit"
     />
     <div v-else class="loading">Waiting for form data...</div>
+    <!-- in place of the "Powered by" logo of web-forms: the credit, in words (Apache-2.0, no trademark use) -->
+    <p v-if="formXml && !loading && !error" class="credit">
+        Form displayed with
+        <a href="https://github.com/getodk/web-forms" target="_blank" rel="noopener noreferrer">ODK Web Forms</a>,
+        developed by
+        <a href="https://getodk.org" target="_blank" rel="noopener noreferrer">Get ODK</a>
+    </p>
 </template>
 
 <script setup>
@@ -34,9 +41,13 @@ const fetchAttachment = async url => {
     return new Blob([await response.arrayBuffer()]);
 };
 
-const handleSubmit = data => {
-    // Send submission data back to parent via postMessage
-    window.parent.postMessage({ type: 'odk-submit', data }, '*');
+// The submission back to the parent (the scenario editor): its status and the instance XML as text - the payload's
+// FormData can't be posted.
+const handleSubmit = async payload => {
+    const formData = Array.isArray(payload?.data) ? payload.data[0] : payload?.data;
+    const file = formData?.get?.('xml_submission_file');
+    const xml = file ? await file.text() : null;
+    window.parent.postMessage({ type: 'odk-submit', status: payload?.status, xml }, '*');
 };
 
 const loadFormFromUrl = async url => {
@@ -56,6 +67,8 @@ const loadFormFromUrl = async url => {
 };
 
 const loadFormFromXml = (xml, tooltipMessage) => {
+    // a preview without submission (Form AI) says why; without a message, submitting is allowed (scenario editor)
+    document.documentElement.classList.toggle('submit-disabled', Boolean(tooltipMessage));
     if (tooltipMessage) {
         setSubmitTooltip(tooltipMessage);
     }
@@ -73,6 +86,7 @@ const handleMessage = event => {
 };
 
 onMounted(() => {
+    document.documentElement.classList.add('submit-disabled');
     setSubmitTooltip(submitTooltip.value);
     window.addEventListener('message', handleMessage);
 
@@ -90,18 +104,39 @@ onUnmounted(() => {
 </script>
 
 <style>
-/* Always disabled; tooltip on hover (message via --preview-submit-tooltip from FormPreview) */
-.odk-form .form-wrapper .footer {
+.odk-form .powered-by-wrapper .anchor {
+    display: none;
+}
+
+/* a discreet credit: light grey, small */
+.credit {
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #9ca3af;
+}
+
+.credit a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.credit a:hover {
+    text-decoration: underline;
+}
+
+/* Disabled when the parent gives a reason; tooltip on hover (message via --preview-submit-tooltip from FormPreview) */
+.submit-disabled .odk-form .form-wrapper .footer {
     position: relative;
     cursor: not-allowed;
 }
 
-.odk-form .form-wrapper .footer button {
+.submit-disabled .odk-form .form-wrapper .footer button {
     opacity: 0.45;
     pointer-events: none;
 }
 
-.odk-form .form-wrapper .footer:hover::after {
+.submit-disabled .odk-form .form-wrapper .footer:hover::after {
     content: var(--preview-submit-tooltip);
     position: absolute;
     right: 0;

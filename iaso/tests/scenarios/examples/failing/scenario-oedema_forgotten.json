@@ -7,8 +7,8 @@
   "steps": [
     {
       "form": "child_registration",
-      "description": "11-month-old boy registered at the health centre",
-      "answers": {"first_name": "Luke", "age_months": "11"},
+      "description": "11-month-old child registered at the health centre",
+      "answers": {"first_name": "Amina", "age_months": "11"},
       "expect": {"next_forms": ["anthropometry"]}
     },
     {

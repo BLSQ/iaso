@@ -19,7 +19,10 @@ class ReportTestCase(ScenarioExamplesTestCase):
     """
 
     def run_directory(self, directory):
-        runners = {EntityScenario: EntityScenarioRunner(self.version, now=NOW), FormScenario: FormScenarioRunner()}
+        runners = {
+            EntityScenario: EntityScenarioRunner(self.version, self.form_source(), now=NOW),
+            FormScenario: FormScenarioRunner(self.form_source()),
+        }
         results = []
         for name in sorted(os.listdir(directory)):
             if name.startswith("scenario-"):

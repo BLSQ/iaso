@@ -8,6 +8,7 @@ import json
 
 from typing import Any, Dict, List, Optional
 
+from iaso.models import StepStatus
 from iaso.scenarios.entities import EntityStepResult
 from iaso.scenarios.forms import ScenarioResult, StepResult
 from iaso.scenarios.runtime import NextForms
@@ -96,7 +97,7 @@ def _step(result: StepResult, scenario_form: Optional[str], detailed: bool) -> L
         lines += ["<details><summary>Profile after the step</summary>", ""]
         lines += _values(result.profile, {change.target: change.before for change in result.changes})
         lines += ["</details>", ""]
-        if result.status == "not_offered" and result.offered_before is not None:
+        if result.status == StepStatus.NOT_OFFERED and result.offered_before is not None:
             lines += ["**Forms offered at this point**", ""] + _next_forms(result.offered_before)
         elif result.next is not None and result.next is not result.offered_before:
             lines += ["**Forms offered next**", ""] + _next_forms(result.next)
@@ -117,8 +118,7 @@ def markdown_report(results: List[ScenarioResult], now: Optional[datetime.dateti
     rows = []
     for result in results:
         scenario = result.scenario
-        stopped = next((step for step in result.steps if step.status != "ok"), None)
-        verdict = "passed" if result.passed else f"**failed** at step {stopped.index if stopped else '?'}"
+        verdict = "passed" if result.passed else f"**failed** at step {result.failed_step or '?'}"
         run = f"{len(result.steps)}/{len(scenario.steps)}"
         rows.append([scenario.name, scenario.kind, verdict, run])
     lines += _table(rows, ["scenario", "kind", "result", "steps run"])
@@ -133,7 +133,7 @@ def markdown_report(results: List[ScenarioResult], now: Optional[datetime.dateti
             lines += [f"> {scenario.description}", ""]
         scenario_form = getattr(scenario, "form", None)
         for step in result.steps:
-            lines += _step(step, scenario_form, detailed=step.status != "ok")
+            lines += _step(step, scenario_form, detailed=step.status != StepStatus.OK)
         not_run = scenario.steps[len(result.steps) :]
         for index, step in enumerate(not_run, start=len(result.steps) + 1):
             form = getattr(step, "form", None) or scenario_form

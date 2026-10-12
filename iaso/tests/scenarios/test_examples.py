@@ -17,7 +17,10 @@ class ExamplesTestCase(ScenarioExamplesTestCase):
         """Every examples/scenario-*.json passes, of either kind: a new example is a new file."""
         examples = sorted(name for name in os.listdir(EXAMPLES) if name.startswith("scenario-"))
         self.assertTrue(examples)
-        runners = {EntityScenario: EntityScenarioRunner(self.version, now=NOW), FormScenario: FormScenarioRunner()}
+        runners = {
+            EntityScenario: EntityScenarioRunner(self.version, self.form_source(), now=NOW),
+            FormScenario: FormScenarioRunner(self.form_source()),
+        }
         for name in examples:
             with self.subTest(example=name), open(os.path.join(EXAMPLES, name)) as example:
                 scenario = load_scenario(example.read())
@@ -39,7 +42,7 @@ class ExamplesTestCase(ScenarioExamplesTestCase):
 
     def test_answers_are_text(self):
         # in YAML, `oedema: yes` would have been the boolean True and never equal the choice "yes"
-        steps = [{"answers": {"first_name": "Luke", "age_months": 11}}]
+        steps = [{"answers": {"first_name": "Amina", "age_months": 11}}]
         scenario = {"kind": "form", "form": "child_registration", "name": "numbers", "steps": steps}
         with self.assertRaises(ValidationError):
             load_scenario(json.dumps(scenario))

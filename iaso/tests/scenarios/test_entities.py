@@ -1,3 +1,4 @@
+from iaso.models import StepStatus
 from iaso.models.workflow import WorkflowFollowup
 from iaso.scenarios.entities import EntityScenarioRunner
 from iaso.scenarios.schema import EntityScenario
@@ -6,14 +7,14 @@ from iaso.tests.scenarios.fixtures import NOW, ScenarioExamplesTestCase
 
 class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
     def run_scenario(self, steps):
-        return EntityScenarioRunner(self.version, now=NOW).run(
+        return EntityScenarioRunner(self.version, self.form_source(), now=NOW).run(
             EntityScenario.model_validate({"name": "test", "steps": steps})
         )
 
     def registration(self, **expect):
         return {
             "form": "child_registration",
-            "answers": {"first_name": "Luke", "age_months": "11"},
+            "answers": {"first_name": "Amina", "age_months": "11"},
             "expect": expect,
         }
 
@@ -36,7 +37,7 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
 
         self.assertTrue(result.passed, result.failures)
         anthropometry = result.steps[1]
-        self.assertEqual(anthropometry.prefilled, {"_first_name": "Luke", "_visits__int__": "0"})
+        self.assertEqual(anthropometry.prefilled, {"_first_name": "Amina", "_visits__int__": "0"})
         # visit_number is computed by the form: coalesce(${_visits__int__}, 0) + 1, from the prefilled profile value
         self.assertEqual(
             [(change.source, change.target, change.before, change.after) for change in anthropometry.changes],
@@ -47,7 +48,7 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
             ],
         )
         # known gap (form_engine): loading recomputes the calculates, the prefilled _first_name gets its calculation
-        # (''), on the device it would stay "Luke"
+        # (''), on the device it would stay "Amina"
         self.assertIsNone(anthropometry.submission["_first_name"])
         oedema_followup = anthropometry.next.followups[1].result
         self.assertEqual(oedema_followup.read, {"oedema_status": "yes", "age_months": 11})
@@ -93,7 +94,7 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
             [
                 {
                     "form": "child_registration",
-                    "answers": {"first_name": "Luke", "age_months": "130"},
+                    "answers": {"first_name": "Amina", "age_months": "130"},
                     "expect": {"refused": [{"question": "age_months", "code": "CONSTRAINT"}]},
                 },
             ]
@@ -122,7 +123,7 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
             [
                 {
                     "form": "child_registration",
-                    "answers": {"first_name": "Luke", "age_months": "119"},
+                    "answers": {"first_name": "Amina", "age_months": "119"},
                     "expect": {"refused": [{"question": "age_months", "code": "CONSTRAINT"}]},
                 },
             ]
@@ -134,7 +135,7 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
     def test_required_question_and_calculates(self):
         result = self.run_scenario(
             [
-                {"form": "child_registration", "answers": {"first_name": "Luke", "visits__int__": "3"}},
+                {"form": "child_registration", "answers": {"first_name": "Amina", "visits__int__": "3"}},
             ]
         )
 
@@ -147,7 +148,7 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
     def test_unknown_question(self):
         result = self.run_scenario(
             [
-                {"form": "child_registration", "answers": {"first_name": "Luke", "agemonths": "11"}},
+                {"form": "child_registration", "answers": {"first_name": "Amina", "agemonths": "11"}},
             ]
         )
 
@@ -162,3 +163,13 @@ class EntityScenarioRunnerTestCase(ScenarioExamplesTestCase):
         self.assertEqual(result.steps[0].status, "error")
         self.assertIn(f"Followup {broken.id} (order 3)", result.failures[0])
         self.assertIn("objects must have exactly 1 key defined", result.failures[0])
+
+    def test_entity_type_without_reference_form(self):
+        self.setup.entity_type.reference_form = None
+        self.setup.entity_type.save()
+        self.version.refresh_from_db()
+
+        result = self.run_scenario([self.registration()])
+
+        self.assertEqual(result.steps[0].status, StepStatus.ERROR)
+        self.assertEqual(result.failures, ["Step 1: The entity type 'Child' has no reference form"])

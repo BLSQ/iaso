@@ -7,7 +7,7 @@ offer and what the profile becomes - against a workflow version, as the IASO app
         "kind": "entity",
         "name": "Oedema leads to OTP",
         "steps": [
-            {"form": "child_registration", "answers": {"first_name": "Luke", "age_months": "11"},
+            {"form": "child_registration", "answers": {"first_name": "Amina", "age_months": "11"},
              "expect": {"next_forms": ["anthropometry"]}},
             {"form": "anthropometry", "answers": {"muac": "12.0", "oedema": "yes"},
              "expect": {"attributes": {"oedema_status": "yes"}, "next_forms": ["anthropometry", "otp_admission"]}}
@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 
 from django.utils import timezone
 
-from iaso.models import WorkflowVersion
+from iaso.models import StepStatus, WorkflowVersion
 from iaso.scenarios.forms import FormSource, ScenarioResult, StepResult, fill_and_check
 from iaso.scenarios.runtime import Change, Followup, NextForms, apply_changes, next_forms, prefill
 from iaso.scenarios.schema import EntityScenario, EntityStep
@@ -58,13 +58,13 @@ class EntityScenarioRunner:
     def __init__(
         self,
         workflow_version: WorkflowVersion,
+        source: FormSource,
         now: Optional[datetime.datetime] = None,
-        source: Optional[FormSource] = None,
     ):
         self.workflow_version = workflow_version
         self.reference_form = workflow_version.workflow.entity_type.reference_form
         self.now = now or timezone.now()
-        self.source = source or FormSource()
+        self.source = source
         # the app keeps the list as the API sends it, which has no ordering: by creation, here
         self.followups = [
             Followup(followup.id, followup.order, followup.condition, [form.form_id for form in followup.forms.all()])
@@ -81,7 +81,7 @@ class EntityScenarioRunner:
         for index, step in enumerate(scenario.steps, start=1):
             result = self._run_step(index, step, profile, offered)
             results.append(result)
-            if result.status in ("not_offered", "refused", "error"):
+            if result.status in (StepStatus.NOT_OFFERED, StepStatus.REFUSED, StepStatus.ERROR):
                 break
             profile, offered = result.profile, result.next
         return ScenarioResult(scenario, results)
@@ -91,22 +91,28 @@ class EntityScenarioRunner:
     ) -> EntityStepResult:
         # nothing saved unless the form accepts the answers: the profile and the forms offered stay as they were
         result = EntityStepResult(index, step, offered_before=offered, profile=profile, next=offered)
+        if self.reference_form is None:
+            result.status = StepStatus.ERROR
+            result.failures.append(
+                f"The entity type '{self.workflow_version.workflow.entity_type}' has no reference form"
+            )
+            return result
         reference_form_id = self.reference_form.form_id
         form_questions = self.source.questions(step.form)
         if not form_questions:
-            result.status = "error"
-            result.failures.append(f"No form '{step.form}' (or it has no version)")
+            result.status = StepStatus.ERROR
+            result.failures.append(self.source.not_found(step.form))
             return result
         # no entity yet (first step, or its registration refused): this step registers it
         registering = offered is None
         if registering and step.form != reference_form_id:
-            result.status = "error"
+            result.status = StepStatus.ERROR
             result.failures.append(
                 f"The entity isn't registered yet: the step must fill '{reference_form_id}', not '{step.form}'"
             )
             return result
         if not registering and not step.force and step.form not in offered.form_ids:
-            result.status = "not_offered"
+            result.status = StepStatus.NOT_OFFERED
             result.failures.append(
                 f"'{step.form}' isn't offered, the app offers {offered.form_ids}:\n{describe_next(offered)}"
             )
@@ -127,7 +133,7 @@ class EntityScenarioRunner:
             result.profile, self.source.questions(reference_form_id), self.followups, step.at or self.now
         )
         if result.next.errors:
-            result.status = "error"
+            result.status = StepStatus.ERROR
             result.failures += [f"The app would fail: {error}" for error in result.next.errors]
             return result
 
@@ -148,4 +154,4 @@ class EntityScenarioRunner:
                 origin = f" (copied from '{change.source}')" if change else " (no copy rule changed it in this step)"
                 result.failures.append(f"'{name}' should be {expected!r}, was {actual!r}{origin}")
         if result.failures:
-            result.status = "failed"
+            result.status = StepStatus.FAILED

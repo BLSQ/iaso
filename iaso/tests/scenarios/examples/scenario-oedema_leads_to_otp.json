@@ -7,9 +7,9 @@
   "steps": [
     {
       "form": "child_registration",
-      "description": "11-month-old boy registered at the health centre",
+      "description": "11-month-old child registered at the health centre",
       "answers": {
-        "first_name": "Luke",
+        "first_name": "Amina",
         "age_months": "11"
       },
       "expect": {
@@ -38,6 +38,23 @@
         "attributes": {
           "oedema_status": "yes",
           "last_muac": "12.0",
+          "visits__int__": "1"
+        }
+      }
+    },
+    {
+      "form": "otp_admission",
+      "description": "Admitted to the outpatient therapeutic programme the same day",
+      "at": "2026-10-22T09:00:00+00:00",
+      "answers": {
+        "admitted": "yes"
+      },
+      "expect": {
+        "submission": {
+          "admitted": "yes"
+        },
+        "attributes": {
+          "oedema_status": "yes",
           "visits__int__": "1"
         }
       }

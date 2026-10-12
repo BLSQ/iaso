@@ -7,7 +7,7 @@
   "steps": [
     {
       "form": "child_registration",
-      "answers": {"first_name": "Leia", "age_months": "30"}
+      "answers": {"first_name": "Jules", "age_months": "30"}
     },
     {
       "form": "otp_admission",

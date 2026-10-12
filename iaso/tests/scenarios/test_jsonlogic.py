@@ -66,7 +66,7 @@ class EvaluateConditionTestCase(SimpleTestCase):
         self.assertEqual(evaluate_condition({"and": []}, {}).error.code, "EVALUATION_ERROR")
 
     def test_read_variables(self):
-        result = evaluate_condition({"<": [{"var": "age"}, 24]}, {"age": 11, "name": "Luke"})
+        result = evaluate_condition({"<": [{"var": "age"}, 24]}, {"age": 11, "name": "Amina"})
         self.assertEqual(result.read, {"age": 11})
 
 

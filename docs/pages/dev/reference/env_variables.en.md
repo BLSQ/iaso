@@ -111,6 +111,17 @@ using login:
 - to connect to the admin
 - through /api/token , which is used by default by the mobile application
 
+## Scenario tests
+
+Scenarios fill forms with `odk_cli` (the IASO app's form engine), installed by the Docker images on linux/amd64. See
+[Scenario tests](scenario_tests.md).
+
+| name                     | optional | default value | description                                                        |
+|--------------------------|----------|---------------|--------------------------------------------------------------------|
+| ODK_CLI_PATH             | true     | `odk_cli`     | path of the `odk_cli` binary                                       |
+| ODK_CLI_TIMEOUT_SECONDS  | true     | `10`          | a form fill taking longer is stopped, the step is in error         |
+| SCENARIOS_SYNC_MAX_STEPS | true     | `200`         | runs are synchronous: a run with more steps is refused (HTTP 400)  |
+
 ## Sentry related
 
 If you don't provide a SENTRY_URL, sentry won't be configured

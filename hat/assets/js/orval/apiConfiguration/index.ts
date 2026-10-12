@@ -3,6 +3,7 @@ import { accountsOperations } from './accounts/configuration';
 import { apiImportsOperations } from './apiImports/configuration';
 import { instanceDiffOperations } from './instanceDiff/configuration';
 import { modulesOperations } from './modules/configuration';
+import { scenariosOperations } from './scenarios/configuration';
 import { workflowsOperations } from './validationWorkflows/configuration';
 
 export const OperationConfig: Record<string, any> = {
@@ -12,6 +13,7 @@ export const OperationConfig: Record<string, any> = {
         ...apiImportsOperations,
         ...instanceDiffOperations,
         ...modulesOperations,
+        ...scenariosOperations,
         ...workflowsOperations,
     },
 };

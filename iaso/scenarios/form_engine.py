@@ -19,13 +19,9 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from django.conf import settings
 from lxml import etree
 
-
-ODK_CLI = os.environ.get("ODK_CLI_PATH", "odk_cli")
-
-#: a pathological form doesn't hold the run
-TIMEOUT_SECONDS = 10
 
 XFORMS_NAMESPACE = "http://www.w3.org/2002/xforms"
 XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml"
@@ -59,16 +55,30 @@ def _local(tag) -> str:
     return etree.QName(tag).localname if isinstance(tag, str) else ""
 
 
-def blank_instance(xform: bytes) -> etree._Element:
-    """The form's primary instance: its blank submission."""
-    root = etree.fromstring(xform, parser=etree.XMLParser(huge_tree=True))
+def _primary_instance(root: etree._Element) -> etree._Element:
     model = root.find(f"{{{XHTML_NAMESPACE}}}head/{{{XFORMS_NAMESPACE}}}model")
     if model is None:
         raise FormEngineError("Not an XForm: no h:head/model")
     instance = next((child for child in model if _local(child.tag) == "instance" and not child.get("id")), None)
     if instance is None or len(instance) == 0:
         raise FormEngineError("Not an XForm: no primary instance")
-    return deepcopy(instance[0])
+    return instance[0]
+
+
+def blank_instance(xform: bytes) -> etree._Element:
+    """The form's primary instance: its blank submission."""
+    return deepcopy(_primary_instance(etree.fromstring(xform, parser=etree.XMLParser(huge_tree=True))))
+
+
+def with_defaults(xform: bytes, values: Dict[str, str]) -> bytes:
+    """The XForm with `values` (by question name) as the default answers of its primary instance - how the scenario
+    editor opens a form prefilled, in web-forms. A name the form doesn't have is ignored."""
+    root = etree.fromstring(xform, parser=etree.XMLParser(huge_tree=True))
+    by_name = _by_name(_primary_instance(root))
+    for name, value in values.items():
+        if name in by_name:
+            by_name[name][1].text = value
+    return etree.tostring(root, xml_declaration=True, encoding="UTF-8")
 
 
 def leaves(element: etree._Element, path: str = "") -> List[tuple]:
@@ -114,16 +124,18 @@ def fill(xform: bytes, prefilled: Dict[str, str], answers: Dict[str, str]) -> Fo
             instance_file.write(etree.tostring(instance, xml_declaration=True, encoding="UTF-8"))
         with open(answers_path, "w") as answers_file:
             json.dump(answers_by_path, answers_file)
+        # ODK_CLI_TIMEOUT_SECONDS: a pathological form doesn't hold the run
+        odk_cli, timeout = settings.ODK_CLI_PATH, settings.ODK_CLI_TIMEOUT_SECONDS
         try:
             completed = subprocess.run(
-                [ODK_CLI, "edit", "-x", xform_path, "-i", instance_path, "-af", answers_path],
+                [odk_cli, "edit", "-x", xform_path, "-i", instance_path, "-af", answers_path],
                 capture_output=True,
-                timeout=TIMEOUT_SECONDS,
+                timeout=timeout,
             )
         except FileNotFoundError:
-            raise FormEngineError(f"odk_cli isn't installed ({ODK_CLI}): forms can't be filled")
+            raise FormEngineError(f"odk_cli isn't installed ({odk_cli}): forms can't be filled")
         except subprocess.TimeoutExpired:
-            raise FormEngineError(f"odk_cli took more than {TIMEOUT_SECONDS}s")
+            raise FormEngineError(f"odk_cli took more than {timeout}s")
 
     if completed.returncode == 0:
         submission = etree.fromstring(completed.stdout)

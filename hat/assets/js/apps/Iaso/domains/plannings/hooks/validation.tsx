@@ -52,6 +52,14 @@ export const usePlanningValidation = (
                 publishingStatus: mixed()
                     .oneOf(['draft', 'published'])
                     .required('requiredField'),
+                selectedOrgUnit: number()
+                    .nullable()
+                    .required('requiredField')
+                    .test(apiValidator('selectedOrgUnit')),
+                selectedTeam: number()
+                    .nullable()
+                    .required('requiredField')
+                    .test(apiValidator('selectedTeam')),
                 pipelineUuids: array().nullable(),
             }),
         [apiValidator],

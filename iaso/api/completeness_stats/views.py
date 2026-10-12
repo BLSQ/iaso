@@ -30,7 +30,7 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
-from typing import List, Union
+from typing import Any, List, Union
 
 import rest_framework.renderers
 
@@ -83,7 +83,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         ),  # type: ignore
     ]  # type: ignore
 
-    def list(self, request: Request, *args, **kwargs) -> Response:
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Completeness of form submission"""
         paramsSerializer = ParamSerializer(data=request.query_params, context={"request": request})
         paramsSerializer.is_valid(raise_exception=True)
@@ -106,7 +106,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             instance_qs = instance_qs.filter(period=period)
         if planning:
             instance_qs = instance_qs.filter(planning=planning)
-            form_qs = form_qs.filter(plannings=planning)
+            form_qs = form_qs.filter(mission_forms__mission_ptr__plannings=planning)
 
         # filter instance_qs on users related to selected teams
         if teams:
@@ -339,7 +339,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         )
 
     @action(methods=["GET"], detail=False)
-    def types_for_version_ou(self, request):
+    def types_for_version_ou(self, request: Request) -> Response:
         """all the org unit type below this ou, or all in version.
 
         Used in the type dropdown to provide reasonable choices"""

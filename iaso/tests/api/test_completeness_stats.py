@@ -9,9 +9,10 @@ from io import StringIO
 from typing import Any
 
 from django.contrib.auth.models import Permission, User
+from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, Form, Group, Instance, OrgUnit, OrgUnitType
+from iaso.models import Account, Form, Group, Instance, OrgUnit, OrgUnitType, Planning
 from iaso.models.base import Profile
 from iaso.models.team import Team
 from iaso.test import APITestCase
@@ -168,6 +169,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         )
         cls.team_2.users.set([cls.user_2, cls.user_4])
         cls.team_2.save()
+
+        cls.org_unit = OrgUnit.objects.create(
+            name="Woodland",
+            org_unit_type=cls.org_unit_type_aire_sante,
+        )
+        cls.planning = Planning.objects.create(
+            name="planning", project=cls.project_1, team=cls.team_1, org_unit=cls.org_unit
+        )
 
     def assertAlmostEqualRecursive(self, first, second, msg: Any = None) -> None:
         "to use when float are the worst"
@@ -1148,3 +1157,15 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(root_stats["descendants"], 0)
         self.assertEqual(root_stats["descendants_ok"], 0)
         self.assertEqual(root_stats["total_instances"], 0)
+
+    def test_search_by_planning_does_not_cause_a_500(self):
+        """
+        Jira ticket : 5509
+        """
+
+        self.client.force_authenticate(self.user)
+
+        res = self.client.get(
+            reverse("completeness_stats-list"), data={"form_id": self.form_hs_1.id, "planning_id": self.planning.id}
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)

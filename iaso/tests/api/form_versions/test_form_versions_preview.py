@@ -24,6 +24,7 @@ Expected diff v1 → v2:
 import io
 import tempfile
 
+from collections import Counter
 from unittest import mock
 
 import openpyxl
@@ -626,6 +627,57 @@ class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     format="multipart",
                 )
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_preview_query_count_with_configuration(self):
+        """Same number of queries with two of each configuration reading the changed questions: no N+1."""
+        account = self.yoda.iaso_profile.account
+        form = self.form_with_version
+        data_source = m.DataSource.objects.create(name="DHIS2")
+        sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
+        for country in ("Belgium", "France"):
+            m.FormPredefinedFilter.objects.create(
+                form=form, name=country, short_name=country.lower(), json_logic={"<": [{"var": "age"}, 3]}
+            )
+            entity_type = m.EntityType.objects.create(
+                name=f"{country} patients", reference_form=form, account=account, fields_list_view=["age"]
+            )
+            version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+            m.WorkflowFollowup.objects.create(workflow_version=version, order=1, condition={">": [{"var": "age"}, 5]})
+            m.WorkflowChange.objects.create(
+                workflow_version=version, form=m.Form.objects.create(name="Visit"), mapping={"dob": "birth_date"}
+            )
+            rules_version = m.StockRulesVersion.objects.create(account=account, name=f"{country} rules")
+            m.StockItemRule.objects.create(version=rules_version, sku=sku, form=form, question="age")
+            m.MappingVersion.objects.create(
+                form_version=form.form_versions.get(),
+                name=country,
+                mapping=m.Mapping.objects.create(
+                    form=form, data_source=data_source, name=country, mapping_type="AGGREGATE"
+                ),
+                json={"question_mappings": {"birth_date": {"id": "de1"}}},
+            )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            # the 12 queries of test_preview_query_count: one per domain whatever the number of rows
+            with self.assertNumQueries(12):
+                response = self.client.post(
+                    PREVIEW_URL,
+                    data={"form_id": form.id, "xls_file": xls_file},
+                    format="multipart",
+                )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        # every configuration above was read
+        self.assertEqual(
+            Counter(i["kind"] for i in data["configuration_impacts"]),
+            {
+                ConfigurationImpactKind.PREDEFINED_FILTER: 2,
+                ConfigurationImpactKind.ENTITY_TYPE_LIST_FIELD: 2,
+                ConfigurationImpactKind.STOCK_RULE: 2,
+                ConfigurationImpactKind.DHIS2_MAPPING: 2,
+                ConfigurationImpactKind.FOLLOW_UP_CONDITION: 2,
+                ConfigurationImpactKind.CHANGE_MAPPING: 2,
+            },
+        )
 
     # -------------------------------------------------------------------------
     # IA-5214 — form assigned to multiple projects

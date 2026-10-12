@@ -520,6 +520,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'search',
             'mission_type',
+            'planning_ids',
             ...paginationPathParams,
         ],
     },

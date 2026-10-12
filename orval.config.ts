@@ -136,6 +136,7 @@ module.exports = {
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
     missions: createConfig('missions', ['Missions'], missionsMutationInvalidates),
     modules: createConfig('modules', ['Modules']),
+    plannings: createConfig('plannings', ['Plannings']),
     validationWorkflows: createConfig(
         'validationWorkflows',
         ['Validation workflows'],

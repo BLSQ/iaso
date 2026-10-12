@@ -1,11 +1,13 @@
 import django_filters
 
+from iaso.api.common import NumberInFilter
 from iaso.models.missions import MissionType
 
 
 class MissionFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(method="search_filter")
     mission_type = django_filters.ChoiceFilter(choices=MissionType.choices)
+    planning_ids = NumberInFilter(field_name="plannings__id")
 
     def search_filter(self, queryset, name, value):
         if value:

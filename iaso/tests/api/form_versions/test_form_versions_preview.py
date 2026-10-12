@@ -36,6 +36,7 @@ from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.form_versions.configuration_impacts.common import ConfigurationImpact, ConfigurationImpactKind
 from iaso.api.form_versions.configuration_impacts.forms_impacts import forms_impacts
 from iaso.dhis2.form_mapping import mapped_question_names
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
@@ -462,8 +463,15 @@ class FormVersionPreviewAPITestCase(APITestCase):
             modified_question_names={"age"},
         )
         self.assertEqual(
-            [(i["kind"], i["question"]) for i in impacts],
-            [("device_field", "deviceid")],
+            impacts,
+            [
+                ConfigurationImpact(
+                    ConfigurationImpactKind.DEVICE_FIELD,
+                    "deviceid",
+                    self.form_with_version.id,
+                    self.form_with_version.name,
+                )
+            ],
         )
 
     def test_preview_unchanged_questions_absent_from_diff(self):

@@ -240,7 +240,7 @@ class ModifiedQuestionSerializer(serializers.Serializer):
 
 
 class ConfigurationImpactSerializer(serializers.Serializer):
-    """A removed or modified question some configuration reads (`configuration_impacts.common.impact()`)."""
+    """A removed or modified question some configuration reads (`configuration_impacts.common.ConfigurationImpact`)."""
 
     kind = serializers.ChoiceField(choices=ConfigurationImpactKind.choices)
     question = serializers.CharField()

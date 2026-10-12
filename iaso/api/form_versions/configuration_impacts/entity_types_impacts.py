@@ -2,7 +2,7 @@ import typing
 
 from iaso.models import EntityType
 
-from .common import ConfigurationImpactKind, impact
+from .common import ConfigurationImpact, ConfigurationImpactKind
 
 
 if typing.TYPE_CHECKING:
@@ -13,7 +13,7 @@ def entity_types_impacts(
     previous_form_version: "FormVersion",
     removed_question_names: typing.Set[str],
     modified_question_names: typing.Set[str],
-) -> typing.List[dict]:
+) -> typing.List[ConfigurationImpact]:
     """`entity_type_list_field`, `entity_type_detail_field`, `entity_type_duplicate_field`: an entity type of which the
     form is the reference form shows it in its list, its detail or its duplicate search (target: the entity type)."""
     question_names = removed_question_names | modified_question_names
@@ -25,5 +25,5 @@ def entity_types_impacts(
             (ConfigurationImpactKind.ENTITY_TYPE_DUPLICATE_FIELD, entity_type.fields_duplicate_search),
         ):
             for name in sorted(set(names or []) & question_names):
-                impacts.append(impact(kind, name, entity_type.id, entity_type.name))
+                impacts.append(ConfigurationImpact(kind, name, entity_type.id, entity_type.name))
     return impacts

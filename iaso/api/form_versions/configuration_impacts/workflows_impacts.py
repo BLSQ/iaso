@@ -3,7 +3,7 @@ import typing
 from iaso.models import WorkflowChange, WorkflowFollowup
 from iaso.utils.jsonlogic import variables
 
-from .common import ConfigurationImpactKind, impact
+from .common import ConfigurationImpact, ConfigurationImpactKind
 
 
 if typing.TYPE_CHECKING:
@@ -14,7 +14,7 @@ def workflows_impacts(
     previous_form_version: "FormVersion",
     removed_question_names: typing.Set[str],
     modified_question_names: typing.Set[str],
-) -> typing.List[dict]:
+) -> typing.List[ConfigurationImpact]:
     """What in the entity workflows reads it (target: the workflow version):
     - `follow_up_condition`: a follow-up's condition (JsonLogic, `{"var": "age"}`) reads it, the form being the
       reference form of the workflow's entity type (the entity's attributes);
@@ -64,9 +64,9 @@ def workflows_impacts(
     return impacts
 
 
-def _workflow_impact(kind: str, question: str, workflow_version, **details) -> dict:
+def _workflow_impact(kind: str, question: str, workflow_version, **details) -> ConfigurationImpact:
     entity_type = workflow_version.workflow.entity_type
-    return impact(
+    return ConfigurationImpact(
         kind,
         question,
         workflow_version.id,

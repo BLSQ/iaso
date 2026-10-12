@@ -3,7 +3,7 @@ import typing
 from iaso.models import FormPredefinedFilter
 from iaso.utils.jsonlogic import variables
 
-from .common import ConfigurationImpactKind, impact
+from .common import ConfigurationImpact, ConfigurationImpactKind
 
 
 if typing.TYPE_CHECKING:
@@ -14,7 +14,7 @@ def forms_impacts(
     previous_form_version: "FormVersion",
     removed_question_names: typing.Set[str],
     modified_question_names: typing.Set[str],
-) -> typing.List[dict]:
+) -> typing.List[ConfigurationImpact]:
     """The form's own configuration:
     - `location_field`, `device_field`, `correlation_field`: its GPS, device (`deviceid` when not set) or correlation
       question (target: the form), the last one making the processing of new submissions fail;
@@ -34,14 +34,14 @@ def forms_impacts(
     )
     for kind, name in fields:
         if name in question_names:
-            impacts.append(impact(kind, name, form.id, form.name))
+            impacts.append(ConfigurationImpact(kind, name, form.id, form.name))
     for name in sorted(set(form.label_keys or []) & question_names):
-        impacts.append(impact(ConfigurationImpactKind.LABEL_KEY, name, form.id, form.name))
+        impacts.append(ConfigurationImpact(ConfigurationImpactKind.LABEL_KEY, name, form.id, form.name))
 
     for predefined_filter in FormPredefinedFilter.objects.filter(form=form).order_by("id"):
         for name in sorted(set(variables(predefined_filter.json_logic)) & question_names):
             impacts.append(
-                impact(
+                ConfigurationImpact(
                     ConfigurationImpactKind.PREDEFINED_FILTER,
                     name,
                     predefined_filter.id,

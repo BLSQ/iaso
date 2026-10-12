@@ -2,7 +2,7 @@ import typing
 
 from iaso.models import StockItemRule
 
-from .common import ConfigurationImpactKind, impact
+from .common import ConfigurationImpact, ConfigurationImpactKind
 
 
 if typing.TYPE_CHECKING:
@@ -13,7 +13,7 @@ def stock_impacts(
     previous_form_version: "FormVersion",
     removed_question_names: typing.Set[str],
     modified_question_names: typing.Set[str],
-) -> typing.List[dict]:
+) -> typing.List[ConfigurationImpact]:
     """`stock_rule`: a stock rule updates a stock from it (target: the rules version). Deleted rules versions left
     out."""
     rules = StockItemRule.objects.filter(
@@ -22,7 +22,7 @@ def stock_impacts(
         version__deleted_at=None,
     )
     return [
-        impact(
+        ConfigurationImpact(
             ConfigurationImpactKind.STOCK_RULE, rule.question, rule.version_id, f"{rule.version.name} / {rule.sku.name}"
         )
         for rule in rules.select_related("version", "sku").order_by("version_id", "order", "id")

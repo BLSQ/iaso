@@ -1,4 +1,11 @@
+import dataclasses
+import typing
+
 from django.db import models
+
+
+if typing.TYPE_CHECKING:
+    from iaso.models import FormVersion
 
 
 class ConfigurationImpactKind(models.TextChoices):
@@ -18,19 +25,24 @@ class ConfigurationImpactKind(models.TextChoices):
     CHANGE_MAPPING = "change_mapping", "Mapping of a workflow change"
 
 
-def impact(kind: ConfigurationImpactKind, question: str, target_id: int, target_name: str, **details) -> dict:
+@dataclasses.dataclass(frozen=True)
+class ConfigurationImpact:
     """A question of the form read by some configuration (`kind`), the object to check being `target_id`,
     `target_name`."""
-    return {
-        "kind": kind,
-        "question": question,
-        "target_id": target_id,
-        "target_name": target_name,
-        # the JsonLogic reading the question: a predefined filter's or a follow-up's
-        "condition": details.get("condition"),
-        # workflows only: the link to a workflow version needs its entity type, and what of it reads the question
-        "entity_type_id": details.get("entity_type_id"),
-        "follow_up_order": details.get("follow_up_order"),
-        "mapping_source": details.get("mapping_source"),
-        "mapping_target": details.get("mapping_target"),
-    }
+
+    kind: ConfigurationImpactKind
+    question: str
+    target_id: int
+    target_name: str
+    # the JsonLogic reading the question: a predefined filter's or a follow-up's
+    condition: typing.Optional[typing.Any] = None
+    # workflows only: the link to a workflow version needs its entity type, and what of it reads the question
+    entity_type_id: typing.Optional[int] = None
+    follow_up_order: typing.Optional[int] = None
+    mapping_source: typing.Optional[str] = None
+    mapping_target: typing.Optional[str] = None
+
+
+# What each domain's module implements: the configuration reading the removed or modified questions of the form of
+# the previous version
+ImpactFunction = typing.Callable[["FormVersion", typing.Set[str], typing.Set[str]], typing.List[ConfigurationImpact]]

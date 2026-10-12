@@ -1,10 +1,10 @@
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from lxml import etree
 
 from iaso import models as m
 from iaso.models import ScenarioStatus, StepStatus
 from iaso.scenarios import form_engine
-from iaso.scenarios.forms import FormScenarioRunner, FormSource, _label
+from iaso.scenarios.forms import FormScenarioRunner, FormSource, _label, fillable_questions
 from iaso.scenarios.schema import FormScenario
 from iaso.tests.scenarios.fixtures import ScenarioExamplesTestCase, create_form, create_nutrition_setup
 
@@ -169,3 +169,18 @@ class FormEngineDefaultsTestCase(ScenarioExamplesTestCase):
         self.assertEqual(values["first_name"], "Amina")
         self.assertIsNone(values["age_months"])
         self.assertNotIn("not_a_question", values)
+
+
+class FillableQuestionsTestCase(SimpleTestCase):
+    def test_a_barcode_is_typed_as_text(self):
+        questions = {
+            "milda_code": {"type": "barcode", "label": "MILDA", "bind": {"required": "yes"}},
+            "qr_code": {"type": "barcode", "label": "QR", "bind": {"readonly": "true()"}},
+            "total": {"type": "calculate", "bind": {"calculate": "1"}},
+        }
+
+        self.assertEqual(
+            [(question["name"], question["type"], question["required"]) for question in fillable_questions(questions)],
+            # a read-only one (filled by the search, or an app) isn't typed
+            [("milda_code", "text", True)],
+        )

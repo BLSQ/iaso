@@ -336,6 +336,53 @@ const MESSAGES = defineMessages({
         id: 'iaso.scenarios.label.showMainFields',
         defaultMessage: 'Show only the main and changed fields',
     },
+    pickOrgUnit: {
+        id: 'iaso.scenarios.label.pickOrgUnit',
+        defaultMessage: "Pick an org unit, as the app's org unit picker",
+    },
+    intentNotSupported: {
+        id: 'iaso.scenarios.label.intentNotSupported',
+        defaultMessage: "The editor can't launch this app yet ({action})",
+    },
+    scanQrCode: {
+        id: 'iaso.scenarios.label.scanQrCode',
+        defaultMessage: 'Scan a QR code',
+    },
+    scanQrCodeTitle: {
+        id: 'iaso.scenarios.label.scanQrCodeTitle',
+        defaultMessage: 'Scan the QR code',
+    },
+    pointCameraAtQrCode: {
+        id: 'iaso.scenarios.label.pointCameraAtQrCode',
+        defaultMessage:
+            "Point the camera at the QR code: it's read as soon as it's in view.",
+    },
+    cameraNotSupported: {
+        id: 'iaso.scenarios.label.cameraNotSupported',
+        defaultMessage: 'this browser has no camera access',
+    },
+    cameraUnavailable: {
+        id: 'iaso.scenarios.label.cameraUnavailable',
+        defaultMessage:
+            "The camera isn't available ({message}): choose a photo of the QR code instead.",
+    },
+    chooseQrCodeImage: {
+        id: 'iaso.scenarios.label.chooseQrCodeImage',
+        defaultMessage: 'Choose an image',
+    },
+    noQrCodeInImage: {
+        id: 'iaso.scenarios.label.noQrCodeInImage',
+        defaultMessage: 'No QR code found in this image.',
+    },
+    cancel: {
+        id: 'iaso.scenarios.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    cameraEffectsHint: {
+        id: 'iaso.scenarios.label.cameraEffectsHint',
+        defaultMessage:
+            "Image blurred, or its background replaced? Turn off your computer's camera effects (on Windows: Win + A, then Studio effects).",
+    },
     saveStepAndAddNext: {
         id: 'iaso.scenarios.label.saveStepAndAddNext',
         defaultMessage: 'Save the step and add the next one',

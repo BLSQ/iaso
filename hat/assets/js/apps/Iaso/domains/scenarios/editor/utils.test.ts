@@ -4,6 +4,8 @@ import {
     answersFromSubmission,
     EditorStep,
     fromDefinition,
+    isPickOrgUnit,
+    pickedOrgUnitResult,
     searchAllowsRegistering,
     toDefinition,
 } from './utils';
@@ -165,5 +167,46 @@ describe('searchAllowsRegistering', () => {
 
     it('lets the app register with an empty search otherwise', () => {
         expect(searchAllowsRegistering(questions, false, {})).toBe(true);
+    });
+});
+
+describe('pick_ou, as the app answers it', () => {
+    const bo = {
+        id: 2,
+        name: 'Bo',
+        parent_id: 1,
+        org_unit_type_id: 5,
+        latitude: 7.96,
+        longitude: null,
+        parent: { id: 1, name: 'Sierra Leone', parent: null },
+    };
+
+    it('recognises the action whatever the app id', () => {
+        expect(isPickOrgUnit('org.bluesquare.iaso.action.pick_ou')).toBe(true);
+        expect(isPickOrgUnit('iaso.action.pick_entity')).toBe(false);
+    });
+
+    it("renames the app's fields by map, the ancestors as path, the empty ones left out", () => {
+        expect(
+            pickedOrgUnitResult(bo, {
+                map: 'id:ou_id;name:ou_name;path:ou_path',
+            }),
+        ).toEqual({
+            ou_id: '2',
+            ou_name: 'Bo',
+            ou_path: 'Sierra Leone',
+            parentId: '1',
+            orgUnitTypeId: '5',
+            latitude: '7.96',
+        });
+    });
+
+    it("keeps the app's names without map", () => {
+        expect(
+            pickedOrgUnitResult({ id: 1, name: 'Sierra Leone' }, {}),
+        ).toEqual({
+            id: '1',
+            name: 'Sierra Leone',
+        });
     });
 });

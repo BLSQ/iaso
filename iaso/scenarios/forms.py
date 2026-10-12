@@ -39,6 +39,8 @@ _FILLABLE_TYPES = {
     "select_one": "select_one",
     "select all that apply": "select_multiple",
     "select_multiple": "select_multiple",
+    # scanned on the phone, typed (or pasted) in web-forms: its text
+    "barcode": "text",
 }
 
 

@@ -1,0 +1,28 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Toutes les MILDA distribuées sur place",
+  "description": "1 couchage, 1 MILDA scannée : rien à remettre au centre de santé.",
+  "steps": [
+    {
+      "form": "milda_2026_enregistrement",
+      "context": {
+        "cs_id": "2",
+        "cs_name": "Bo",
+        "cs_path": "Sierra Leone"
+      },
+      "answers": {
+        "nom_chef": "JULES MARTIN",
+        "nb_personnes": "4",
+        "nb_couchages": "1",
+        "milda_code": "MILDA-0003"
+      },
+      "expect": {
+        "attributes": {
+          "milda_restantes__int__": "0"
+        },
+        "next_forms": []
+      }
+    }
+  ]
+}

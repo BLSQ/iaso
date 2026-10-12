@@ -47,6 +47,8 @@ import {
     getDefaultVersionId,
     useGetWorkflowVersionOptions,
 } from '../hooks/requests/useGetWorkflowVersionOptions';
+import { useBarcodeScan } from '../hooks/useBarcodeScan';
+import { useIntentApps } from '../hooks/useIntentApps';
 import { useTechnicalNames } from '../hooks/useTechnicalNames';
 import MESSAGES from '../messages';
 import { pageStyles } from '../styles';
@@ -96,6 +98,10 @@ export const ScenarioEditor: FunctionComponent = () => {
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
     const [showTechnicalNames, setShowTechnicalNames] = useTechnicalNames();
+    // the phone's apps, for the form's external app questions
+    const { onIntent, intentDialog } = useIntentApps();
+    // the phone's scan button, for the form's barcode questions
+    const { onBarcode, barcodeDialog } = useBarcodeScan();
     const scenarioId = params.scenarioId
         ? Number(params.scenarioId)
         : undefined;
@@ -667,6 +673,8 @@ export const ScenarioEditor: FunctionComponent = () => {
                                     <WebFormStep
                                         xform={prepared.xform}
                                         onSubmit={handleSubmit}
+                                        onIntent={onIntent}
+                                        onBarcode={onBarcode}
                                     />
                                 )}
                             </Paper>
@@ -726,6 +734,8 @@ export const ScenarioEditor: FunctionComponent = () => {
                     </Box>
                 </Box>
             </Box>
+            {intentDialog}
+            {barcodeDialog}
         </>
     );
 };

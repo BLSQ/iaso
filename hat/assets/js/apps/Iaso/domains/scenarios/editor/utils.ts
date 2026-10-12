@@ -124,3 +124,66 @@ export const searchAllowsRegistering = (
 ): boolean =>
     !preventAdd ||
     questions.every(question => (search[question.name] ?? '').trim() !== '');
+
+/** An external app question to answer (`intent="ex:..."`), as web-forms asks for it. */
+export type IntentRequest = {
+    action: string;
+    parameters: Record<string, string>;
+    // the question's reference: a repeat instance's own
+    reference: string;
+};
+
+/** What the app returned, by name: web-forms puts each value in the question of that name. */
+export type IntentResult = Record<string, string>;
+
+/** The org unit picker's action (`${applicationId}.action.pick_ou`), whatever the app's id. */
+export const isPickOrgUnit = (action: string): boolean =>
+    action.endsWith('.action.pick_ou');
+
+type PickedOrgUnit = {
+    id: number;
+    name: string;
+    parent_id?: number | null;
+    org_unit_type_id?: number | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    // the ancestors, the closest first
+    parent?: PickedOrgUnit | null;
+};
+
+/**
+ * The app's `pick_ou` result (`OrgUnitFragment.onPickModeOUPicked`): its fields, each renamed by the `map` parameter
+ * (`id:ou_id;name:ou_name`, the app's field then the form's question) - the empty ones left out.
+ */
+export const pickedOrgUnitResult = (
+    orgUnit: PickedOrgUnit,
+    parameters: Record<string, string>,
+): IntentResult => {
+    const ancestors: string[] = [];
+    for (let parent = orgUnit.parent; parent; parent = parent.parent) {
+        ancestors.unshift(parent.name);
+    }
+    const fields: Record<string, unknown> = {
+        id: orgUnit.id,
+        name: orgUnit.name,
+        parentId: orgUnit.parent_id ?? orgUnit.parent?.id,
+        orgUnitTypeId: orgUnit.org_unit_type_id,
+        latitude: orgUnit.latitude,
+        longitude: orgUnit.longitude,
+        path: ancestors.join('/'),
+    };
+    const map = Object.fromEntries(
+        (parameters.map ?? '')
+            .split(';')
+            .map(pair => pair.split(':'))
+            .filter(pair => pair.length === 2),
+    );
+    return Object.fromEntries(
+        Object.entries(fields)
+            .filter(
+                ([, value]) =>
+                    value !== undefined && value !== null && value !== '',
+            )
+            .map(([field, value]) => [map[field] ?? field, String(value)]),
+    );
+};

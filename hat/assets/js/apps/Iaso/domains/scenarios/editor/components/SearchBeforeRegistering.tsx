@@ -1,11 +1,27 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SearchIcon from '@mui/icons-material/Search';
-import { Alert, Box, Button, TextField, Typography } from '@mui/material';
+import {
+    Alert,
+    Box,
+    Button,
+    IconButton,
+    InputAdornment,
+    TextField,
+    Tooltip,
+    Typography,
+} from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SearchField } from 'Iaso/api/scenarios';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { searchAllowsRegistering } from '../utils';
+import { QrScannerDialog } from './QrScannerDialog';
 
 const styles: SxStyles = {
     root: { display: 'flex', flexDirection: 'column', gap: 1.5 },
@@ -23,8 +39,8 @@ type Props = {
 };
 
 /**
- * The search the app asks for before registering (the entity type's duplicate search): typed here, a QR code's text
- * too. Nothing is found (the scenario's entity isn't registered yet): the values prefill the registration form.
+ * The search the app asks for before registering (the entity type's duplicate search): typed here, or a QR code
+ * scanned with the camera (or read from a photo), as the phone's scan button. Nothing is found (the scenario's entity isn't registered yet): the values prefill the registration form.
  */
 export const SearchBeforeRegistering: FunctionComponent<Props> = ({
     questions,
@@ -36,6 +52,17 @@ export const SearchBeforeRegistering: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [draft, setDraft] = useState<Record<string, string>>(search ?? {});
     useEffect(() => setDraft(search ?? {}), [search]);
+    // the question whose QR code is being scanned
+    const [scanning, setScanning] = useState<string>();
+    const handleDetect = useCallback(
+        (text: string) => {
+            if (scanning) {
+                setDraft(current => ({ ...current, [scanning]: text }));
+            }
+            setScanning(undefined);
+        },
+        [scanning],
+    );
 
     const allowed =
         search !== undefined &&
@@ -68,6 +95,28 @@ export const SearchBeforeRegistering: FunctionComponent<Props> = ({
                         // a QR code's text can be long, or on several lines
                         multiline
                         maxRows={4}
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <Tooltip
+                                        title={formatMessage(
+                                            MESSAGES.scanQrCode,
+                                        )}
+                                    >
+                                        <IconButton
+                                            aria-label={formatMessage(
+                                                MESSAGES.scanQrCode,
+                                            )}
+                                            onClick={() =>
+                                                setScanning(question.name)
+                                            }
+                                        >
+                                            <QrCodeScannerIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </InputAdornment>
+                            ),
+                        }}
                     />
                 ))}
             </Box>
@@ -88,6 +137,11 @@ export const SearchBeforeRegistering: FunctionComponent<Props> = ({
                     )}
                 </Alert>
             )}
+            <QrScannerDialog
+                open={scanning !== undefined}
+                onClose={() => setScanning(undefined)}
+                onDetect={handleDetect}
+            />
         </Box>
     );
 };

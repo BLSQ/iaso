@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { Box } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
+import { IntentRequest, IntentResult } from '../utils';
 
 const styles: SxStyles = {
     // as tall as the screen allows on large ones: real forms are long
@@ -21,10 +22,19 @@ const styles: SxStyles = {
 type Props = {
     xform: string;
     onSubmit: (instanceXml: string) => void;
+    // answers the form's external app questions (`intent`), as the phone's apps do; null: cancelled
+    onIntent?: (request: IntentRequest) => Promise<IntentResult | null>;
+    // scans a barcode question (camera, photo), as the phone's scan button; null: cancelled
+    onBarcode?: (request: { reference: string }) => Promise<string | null>;
 };
 
 /** The step's form in ODK web-forms (as in Form AI), prefilled as the phone would; submitting it records the step. */
-export const WebFormStep: FunctionComponent<Props> = ({ xform, onSubmit }) => {
+export const WebFormStep: FunctionComponent<Props> = ({
+    xform,
+    onSubmit,
+    onIntent,
+    onBarcode,
+}) => {
     const frame = useRef<HTMLIFrameElement>(null);
     // a new form (or the same form prefilled differently) is a new web-forms instance
     const [frameKey, setFrameKey] = useState(0);
@@ -35,11 +45,16 @@ export const WebFormStep: FunctionComponent<Props> = ({ xform, onSubmit }) => {
         setTimeout(() => {
             // no submitDisabledMessage: submitting is allowed
             frame.current?.contentWindow?.postMessage(
-                { type: 'load-form-xml', xml: xform },
+                {
+                    type: 'load-form-xml',
+                    xml: xform,
+                    intents: Boolean(onIntent),
+                    barcodes: Boolean(onBarcode),
+                },
                 '*',
             );
         }, 500);
-    }, [xform]);
+    }, [xform, onIntent, onBarcode]);
 
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
@@ -52,10 +67,30 @@ export const WebFormStep: FunctionComponent<Props> = ({ xform, onSubmit }) => {
             ) {
                 onSubmit(event.data.xml);
             }
+            // what the form asks this page: an app to launch, a barcode to scan
+            const answer =
+                (event.data?.type === 'odk-intent' && onIntent) ||
+                (event.data?.type === 'odk-barcode' && onBarcode);
+            if (answer) {
+                const reply = (outcome: Record<string, unknown>) =>
+                    frame.current?.contentWindow?.postMessage(
+                        {
+                            type: 'odk-host-result',
+                            id: event.data.id,
+                            ...outcome,
+                        },
+                        '*',
+                    );
+                answer(event.data.request)
+                    .then(result => reply({ result }))
+                    .catch(error =>
+                        reply({ error: String(error?.message ?? error) }),
+                    );
+            }
         };
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
-    }, [onSubmit]);
+    }, [onSubmit, onIntent, onBarcode]);
 
     return (
         <Box>

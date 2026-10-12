@@ -9,7 +9,7 @@
     "preview": "vite preview --host 0.0.0.0 --port 8009"
   },
   "dependencies": {
-    "@getodk/web-forms": "latest",
+    "@getodk/web-forms": "file:../../../central-frontend/getodk-web-forms-1.1.1-intent.tgz",
     "vue": "^3.4.0"
   },
   "devDependencies": {

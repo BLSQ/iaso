@@ -1,0 +1,60 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Aucune MILDA disponible lors du passage",
+  "description": "2 couchages, aucune MILDA avec l'équipe : le ménage en reçoit une au centre de santé, puis revient pour la dernière.",
+  "steps": [
+    {
+      "form": "milda_2026_enregistrement",
+      "context": {
+        "cs_id": "2",
+        "cs_name": "Bo",
+        "cs_path": "Sierra Leone"
+      },
+      "answers": {
+        "nom_chef": "JULES MARTIN",
+        "nb_personnes": "4",
+        "nb_couchages": "2"
+      },
+      "expect": {
+        "attributes": {
+          "milda_distribuees__int__": "0",
+          "milda_restantes__int__": "2"
+        },
+        "next_forms": [
+          "milda_2026_remise_cs"
+        ]
+      }
+    },
+    {
+      "form": "milda_2026_remise_cs",
+      "description": "Une seule MILDA au centre ce jour-là",
+      "answers": {
+        "milda_cs_code": "MILDA-0004"
+      },
+      "expect": {
+        "attributes": {
+          "milda_restantes__int__": "1",
+          "milda_distribuees__int__": "1"
+        },
+        "next_forms": [
+          "milda_2026_remise_cs"
+        ]
+      }
+    },
+    {
+      "form": "milda_2026_remise_cs",
+      "description": "Le ménage revient : la dernière MILDA",
+      "answers": {
+        "milda_cs_code": "MILDA-0005"
+      },
+      "expect": {
+        "attributes": {
+          "milda_restantes__int__": "0",
+          "milda_distribuees__int__": "2"
+        },
+        "next_forms": []
+      }
+    }
+  ]
+}

@@ -5,6 +5,8 @@
         v-else-if="formXml"
         :form-xml="formXml"
         :fetch-form-attachment="fetchAttachment"
+        :intent-handler="intentHandler"
+        :barcode-handler="barcodeHandler"
         @submit="handleSubmit"
     />
     <div v-else class="loading">Waiting for form data...</div>
@@ -22,6 +24,21 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { OdkWebForm } from '@getodk/web-forms';
 
 const formXml = ref(null);
+// the parent page answers the external app questions (`intent`) and scans the barcodes when it says so; else they
+// can't be launched, and barcodes are typed
+const intentHandler = ref(undefined);
+const barcodeHandler = ref(undefined);
+const pendingRequests = new Map();
+let lastRequestId = 0;
+
+// a request to the parent page (`odk-intent`, `odk-barcode`), answered by an `odk-host-result` of the same id
+const askParent = type => request =>
+    new Promise((resolve, reject) => {
+        lastRequestId += 1;
+        pendingRequests.set(lastRequestId, { resolve, reject });
+        window.parent.postMessage({ type, id: lastRequestId, request: { ...request } }, '*');
+    });
+
 const loading = ref(false);
 const error = ref(null);
 const submitTooltip = ref(
@@ -66,7 +83,9 @@ const loadFormFromUrl = async url => {
     }
 };
 
-const loadFormFromXml = (xml, tooltipMessage) => {
+const loadFormFromXml = (xml, tooltipMessage, intents, barcodes) => {
+    intentHandler.value = intents ? askParent('odk-intent') : undefined;
+    barcodeHandler.value = barcodes ? askParent('odk-barcode') : undefined;
     // a preview without submission (Form AI) says why; without a message, submitting is allowed (scenario editor)
     document.documentElement.classList.toggle('submit-disabled', Boolean(tooltipMessage));
     if (tooltipMessage) {
@@ -81,7 +100,20 @@ const handleMessage = event => {
     if (event.data?.type === 'load-form-url') {
         loadFormFromUrl(event.data.url);
     } else if (event.data?.type === 'load-form-xml') {
-        loadFormFromXml(event.data.xml, event.data.submitDisabledMessage);
+        loadFormFromXml(
+            event.data.xml,
+            event.data.submitDisabledMessage,
+            event.data.intents,
+            event.data.barcodes,
+        );
+    } else if (event.data?.type === 'odk-host-result' && pendingRequests.has(event.data.id)) {
+        const { resolve, reject } = pendingRequests.get(event.data.id);
+        pendingRequests.delete(event.data.id);
+        if (event.data.error) {
+            reject(new Error(event.data.error));
+        } else {
+            resolve(event.data.result ?? null);
+        }
     }
 };
 

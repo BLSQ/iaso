@@ -1,0 +1,48 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Une MILDA à remettre au centre de santé",
+  "description": "2 couchages, 1 MILDA scannée sur place : la 2e est remise au centre de santé de référence, scannée elle aussi.",
+  "steps": [
+    {
+      "form": "milda_2026_enregistrement",
+      "description": "2 couchages, l'équipe n'a qu'une MILDA ; centre de santé choisi : Bo",
+      "context": {
+        "cs_id": "2",
+        "cs_name": "Bo",
+        "cs_path": "Sierra Leone"
+      },
+      "answers": {
+        "nom_chef": "JULES MARTIN",
+        "nb_personnes": "4",
+        "nb_couchages": "2",
+        "milda_code": "MILDA-0001"
+      },
+      "expect": {
+        "attributes": {
+          "cs_name": "Bo",
+          "milda_requises__int__": "2",
+          "milda_distribuees__int__": "1",
+          "milda_restantes__int__": "1"
+        },
+        "next_forms": [
+          "milda_2026_remise_cs"
+        ]
+      }
+    },
+    {
+      "form": "milda_2026_remise_cs",
+      "description": "Le ménage vient au centre de santé : la MILDA restante est scannée",
+      "answers": {
+        "milda_cs_code": "MILDA-0002"
+      },
+      "expect": {
+        "attributes": {
+          "milda_restantes__int__": "0",
+          "milda_distribuees__int__": "2"
+        },
+        "next_forms": []
+      }
+    }
+  ]
+}

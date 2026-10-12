@@ -5,6 +5,22 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { SearchBeforeRegistering } from './SearchBeforeRegistering';
 
+// the camera: a scan that reads CARD-0042 at once
+vi.mock('./QrScannerDialog', () => ({
+    QrScannerDialog: ({
+        open,
+        onDetect,
+    }: {
+        open: boolean;
+        onDetect: (text: string) => void;
+    }) =>
+        open ? (
+            <button type="button" onClick={() => onDetect('CARD-0042')}>
+                fake camera
+            </button>
+        ) : null,
+}));
+
 const questions = [{ name: 'qr_code', label: 'Code QR' }];
 
 const renderSearch = (
@@ -64,5 +80,24 @@ describe('SearchBeforeRegistering', () => {
         expect(
             screen.getByRole('textbox', { name: /Code QR \(qr_code\)/ }),
         ).toBeInTheDocument();
+    });
+
+    it('fills the field with the QR code scanned', async () => {
+        const onSearch = renderSearch({});
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Scan a QR code' }),
+        );
+        await userEvent.click(
+            screen.getByRole('button', { name: 'fake camera' }),
+        );
+
+        expect(screen.getByRole('textbox', { name: /Code QR/ })).toHaveValue(
+            'CARD-0042',
+        );
+        // scanned, not searched yet: the person checks it, then searches
+        expect(onSearch).not.toHaveBeenCalled();
+        await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+        expect(onSearch).toHaveBeenCalledWith({ qr_code: 'CARD-0042' });
     });
 });

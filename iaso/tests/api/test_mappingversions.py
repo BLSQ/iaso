@@ -743,7 +743,8 @@ class FormsVersionAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
     def get_question_mappings(self, mapping_version_id):
-        return self.client.get(f"/api/mappingversions/{mapping_version_id}/?fields=:all").json()["question_mappings"]
+        response = self.client.get(f"/api/mappingversions/{mapping_version_id}/?fields=:all")
+        return self.assertJSONResponse(response, status.HTTP_200_OK)["question_mappings"]
 
     def create_form_version(self):
         with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:

@@ -39,7 +39,7 @@ from iaso import models as m
 from iaso.api.form_versions.configuration_impacts.common import ConfigurationImpact, ConfigurationImpactKind
 from iaso.api.form_versions.configuration_impacts.forms_impacts import forms_impacts
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 PREVIEW_URL = "/api/formversions/preview/"
@@ -49,7 +49,7 @@ INVALID_XLS = "iaso/tests/fixtures/odk_form_blatantly_invalid.xlsx"
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormVersionPreviewAPITestCase(APITestCase):
+class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -229,10 +229,12 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 format="multipart",
             )
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "FormVersionDiff")
         self.assertIsNone(data["previous_version_id"])
         self.assertEqual(data["removed_questions"], [])
         self.assertEqual(data["added_questions"], [])
         self.assertEqual(data["modified_questions"], [])
+        self.assertEqual(data["configuration_impacts"], [])
 
     # -------------------------------------------------------------------------
     # Diff content — v1 → v2
@@ -313,6 +315,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 format="multipart",
             )
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "FormVersionDiff")
         common = {
             "target_id": version.id,
             "target_name": "Patients / Follow-ups (PUBLISHED)",
@@ -420,6 +423,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 format="multipart",
             )
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "FormVersionDiff")
         self.assertEqual(
             [(i["kind"], i["question"], i["target_id"], i["target_name"]) for i in data["configuration_impacts"]],
             [

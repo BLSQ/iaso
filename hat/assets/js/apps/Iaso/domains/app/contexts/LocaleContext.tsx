@@ -32,7 +32,7 @@ const updateMomentLocale = (newLocale: LangOptions) => {
 };
 export const useLocale = () => useContext(LocaleContext);
 const defaultLanguage = 'en';
-export const LocaleProvider = ({ children }) => {
+export const LocaleProvider = ({ children }: { children: React.ReactNode }) => {
     const [locale, setLocale] = useState<LangOptions>(defaultLanguage);
 
     useEffect(() => {

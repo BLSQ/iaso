@@ -9,10 +9,10 @@ import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import MESSAGES from '../messages';
-import { TeamParams } from '../types/team';
+import { TeamUrlParams } from '../types/team';
 
 type Props = {
-    params: TeamParams;
+    params: TeamUrlParams;
 };
 
 const baseUrl = baseUrls.teams;

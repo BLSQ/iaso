@@ -34,7 +34,11 @@ const defaultContext: InputContextObject = {
 };
 const InputContext = createContext<InputContextObject>(defaultContext);
 
-const InputContextProvider: FunctionComponent = ({ children }) => {
+type Props = {
+    children: React.ReactNode;
+};
+
+const InputContextProvider: FunctionComponent<Props> = ({ children }) => {
     const redirectTo = useRedirectTo();
     const hasInputCode = useListenToInput(combination);
 

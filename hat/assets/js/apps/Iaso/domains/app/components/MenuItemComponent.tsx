@@ -16,9 +16,10 @@ import {
     theme as muiTheme,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Link } from 'react-router-dom';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { Link, useLocation } from 'react-router-dom';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
+import { MenuItem as MenuItemType } from '../types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -33,14 +34,25 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    location: Record<string, any>;
-    menuItem: Record<string, any>;
+    location: ReturnType<typeof useLocation>;
+    menuItem: MenuItemType;
     onClick: (path: string, url?: string) => void;
     subMenuLevel?: number;
     currentPath?: string;
     url?: string;
 };
 
+type MenuItemLabelProps = {
+    label: MenuItemType['label'];
+};
+const MenuItemLabel: FunctionComponent<MenuItemLabelProps> = ({ label }) => {
+    const { formatMessage } = useSafeIntl();
+
+    if (typeof label === 'string') {
+        return label;
+    }
+    return formatMessage(label);
+};
 const MenuItem: FunctionComponent<Props> = ({
     onClick,
     menuItem,
@@ -52,7 +64,6 @@ const MenuItem: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
     const urlLink = url;
-    const { formatMessage } = useSafeIntl();
     const path =
         urlLink || !menuItem.key
             ? `${currentPath}`
@@ -101,11 +112,7 @@ const MenuItem: FunctionComponent<Props> = ({
                                 {/* type prop should be variant. Check impact on UI layout before changing */}
                                 {/* @ts-ignore */}
                                 <Typography type="body2" color={color}>
-                                    {menuItem.label.defaultMessage &&
-                                        menuItem.label.id &&
-                                        formatMessage(menuItem.label)}
-                                    {typeof menuItem.label === 'string' &&
-                                        menuItem.label}
+                                    <MenuItemLabel label={menuItem.label} />
                                 </Typography>
                             </Box>
                         }
@@ -115,7 +122,7 @@ const MenuItem: FunctionComponent<Props> = ({
                 {hasSubMenu && (
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
-                            {menuItem.subMenu.map(subMenu => {
+                            {menuItem?.subMenu?.map(subMenu => {
                                 const permissionsList =
                                     listMenuPermission(subMenu);
                                 if (
@@ -171,11 +178,7 @@ const MenuItem: FunctionComponent<Props> = ({
                             {/* type prop should be variant. Check impact on UI layout before changing */}
                             {/* @ts-ignore */}
                             <Typography type="body2" color={color}>
-                                {menuItem.label.defaultMessage &&
-                                    menuItem.label.id &&
-                                    formatMessage(menuItem.label)}
-                                {typeof menuItem.label === 'string' &&
-                                    menuItem.label}
+                                <MenuItemLabel label={menuItem.label} />
                             </Typography>
                         </Box>
                     }

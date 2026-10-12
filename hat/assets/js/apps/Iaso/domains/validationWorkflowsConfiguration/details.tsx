@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Button, Grid, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ColumnWithAccessor,
@@ -24,7 +24,7 @@ import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { useSortableTableState } from './hooks/useSortableTableState';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles((theme: any) => {
+const useStyles = makeStyles((theme: Theme) => {
     return {
         ...commonStyles(theme),
         count: {
@@ -110,7 +110,13 @@ export const ValidationWorkflowConfigurationDetail = () => {
                     </Box>
                     <SortableTable
                         items={items}
-                        onChange={handleSortChange}
+                        onChange={newItems =>
+                            handleSortChange(
+                                newItems as NonNullable<
+                                    ValidationWorkflowRetrieve['node_templates']
+                                >[number][],
+                            )
+                        }
                         columns={columns as ColumnWithAccessor[]}
                         disabled={workflow?.has_processes}
                     />

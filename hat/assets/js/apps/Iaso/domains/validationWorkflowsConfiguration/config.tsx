@@ -10,6 +10,7 @@ import {
 import {
     PaginatedValidationWorkflowListList,
     useApiValidationWorkflowsDestroy,
+    ValidationWorkflowRetrieve,
 } from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
@@ -29,7 +30,7 @@ export const useWorkflowsTableColumns = (): Column[] => {
     const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
 
     return useMemo(() => {
-        const cols = [
+        const cols: Column[] = [
             {
                 Header: formatMessage(MESSAGES.name),
                 id: 'name',
@@ -47,7 +48,7 @@ export const useWorkflowsTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.forms),
                 id: 'formCount',
                 accessor: 'form_count',
-                Cell: NumberCell,
+                Cell: ({ value }) => <NumberCell value={value} />,
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),
@@ -127,7 +128,6 @@ export const useWorkflowNodesColumns = (
                 id: 'name',
                 accessor: 'name',
             },
-
             {
                 Header: formatMessage(MESSAGES.description),
                 id: 'description',
@@ -138,12 +138,16 @@ export const useWorkflowNodesColumns = (
                 Header: formatMessage(MESSAGES.rolesRequired),
                 id: 'rolesRequired',
                 accessor: 'roles_required',
-                Cell: value => {
+                Cell: ({
+                    value,
+                }: {
+                    value: NonNullable<
+                        ValidationWorkflowRetrieve['node_templates']
+                    >[number]['roles_required'];
+                }) => {
                     return (
                         <BreakWordCell
-                            value={value?.value
-                                ?.map(role => role.name)
-                                .join(', ')}
+                            value={value?.map(role => role.name).join(', ')}
                         />
                     );
                 },
@@ -154,7 +158,7 @@ export const useWorkflowNodesColumns = (
                 Header: formatMessage(MESSAGES.actions),
                 id: 'slug',
                 accessor: 'slug',
-                Cell: ({ value }: { value: string }) => {
+                Cell: ({ value }: { value?: string }) => {
                     return (
                         <>
                             <EditNode

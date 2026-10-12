@@ -16,12 +16,6 @@ export type MenuItem = {
 };
 export type MenuItems = MenuItem[];
 
-// TODO deprecate or update to react-router 6
-export type Redirection = {
-    path: string;
-    component: (args: any) => ReactNode;
-};
-
 export type PaginatedResponse<T> = {
     hasPrevious?: boolean;
     hasNext?: boolean;

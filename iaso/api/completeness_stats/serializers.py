@@ -1,6 +1,4 @@
-from typing import Any, List, Mapping, Optional, TypedDict, Union
-
-import rest_framework.fields
+from typing import List, Mapping, Optional, TypedDict, Union
 
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
@@ -8,6 +6,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
+from iaso.api.common.serializer_fields import CommaSeparatedPrimaryKeysField
 from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project
 
 from ...models.microplanning import Planning
@@ -53,17 +52,6 @@ class Params(TypedDict):
     teams: Optional[List[Team]]
 
 
-class PrimaryKeysRelatedField(serializers.ManyRelatedField):
-    """Primary key separated by , like we do often in iaso"""
-
-    def get_value(self, dictionary: Mapping[Any, str]) -> Union[Any, List[Any]]:
-        if self.field_name not in dictionary:
-            return rest_framework.fields.empty
-        value: str
-        value = dictionary[self.field_name]
-        return value.split(",")
-
-
 # noinspection PyMethodMayBeStatic
 class ParamSerializer(serializers.Serializer):
     """Serializer for the get params"""
@@ -96,7 +84,7 @@ class ParamSerializer(serializers.Serializer):
                 account=user.iaso_profile.account
             ).distinct("id")
 
-    org_unit_type_ids = PrimaryKeysRelatedField(
+    org_unit_type_ids = CommaSeparatedPrimaryKeysField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),
         source="org_unit_types",
         required=False,
@@ -108,7 +96,7 @@ class ParamSerializer(serializers.Serializer):
         required=False,
         help_text="Use this as the root. If not present will take the root per users",
     )
-    form_id = PrimaryKeysRelatedField(
+    form_id = CommaSeparatedPrimaryKeysField(
         required=False,
         source="forms",
         help_text="Filter on these form ids (list separated by ','",
@@ -138,21 +126,21 @@ class ParamSerializer(serializers.Serializer):
     )
     as_location = serializers.CharField(required=False, help_text="Filter only org units with geo locations")
 
-    team_ids = PrimaryKeysRelatedField(
+    team_ids = CommaSeparatedPrimaryKeysField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=Team.objects.none()),
         source="teams",
         required=False,
         help_text="filter on teams",
     )
 
-    project_ids = PrimaryKeysRelatedField(
+    project_ids = CommaSeparatedPrimaryKeysField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=Project.objects.none()),
         source="projects",
         required=False,
         help_text="filter on projects",
     )
 
-    user_ids = PrimaryKeysRelatedField(
+    user_ids = CommaSeparatedPrimaryKeysField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=User.objects.none()),
         source="users",
         required=False,

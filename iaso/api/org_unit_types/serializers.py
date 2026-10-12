@@ -11,36 +11,28 @@ from ..forms.serializers import FormSerializer
 from ..projects.serializers import ProjectSerializer
 
 
-def has_cycle_after_adding(node_id, proposed_children, relation_name):
+def get_parents(type_id, relation_name="sub_unit_types", parents_ids=None):
     """
-    Returns True if adding proposed_children to node_id's relation_name
-    creates a cycle/loop.
+    Returns the ids of all the ancestors of an org unit type through relation_name
+    ("sub_unit_types" or "allow_creating_sub_unit_types").
     """
-    if not node_id:
-        return False
+    if parents_ids is None:
+        parents_ids = []
+    if type_id is not None:
+        queryset = OrgUnitType.objects.filter(**{f"{relation_name}__id": type_id}).values_list("id", flat=True)
+        for parent_id in queryset:
+            if parent_id not in parents_ids:
+                parents_ids.append(parent_id)
+                get_parents(parent_id, relation_name, parents_ids)
+    return parents_ids
 
-    proposed_children_ids = [c.id for c in proposed_children]
-    if node_id in proposed_children_ids:
-        return True
 
-    visited = set(proposed_children_ids)
-    queue = list(proposed_children_ids)
-
-    while queue:
-        curr_id = queue.pop(0)
-        if curr_id == node_id:
-            return True
-        try:
-            curr_node = OrgUnitType.objects.get(pk=curr_id)
-            children_field = getattr(curr_node, relation_name)
-            for child_id in children_field.values_list("id", flat=True):
-                if child_id not in visited:
-                    visited.add(child_id)
-                    queue.append(child_id)
-        except OrgUnitType.DoesNotExist:
-            continue
-
-    return False
+def get_sub_types_errors(type_id, sub_types, relation_name):
+    """Returns the names of the sub types creating a loop: the type itself or one of its ancestors."""
+    if not sub_types:
+        return []
+    parents = get_parents(type_id, relation_name)
+    return [sub_type.name for sub_type in sub_types if sub_type.id == type_id or sub_type.id in parents]
 
 
 def validate_reference_forms(data):
@@ -129,23 +121,15 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializerBackwardCompatible):
     def validate(self, data: typing.Mapping):
         org_unit_type_id = self.instance.id if self.instance else self.context["request"].data.get("id")
         # validate sub org unit type
-        if "sub_unit_types" in data:
-            if has_cycle_after_adding(org_unit_type_id, data["sub_unit_types"], "sub_unit_types"):
-                raise serializers.ValidationError(
-                    {"sub_unit_type_ids": ["A loop was detected in the sub-unit types hierarchy."]}
-                )
+        sub_types_errors = get_sub_types_errors(org_unit_type_id, data.get("sub_unit_types", []), "sub_unit_types")
+        if len(sub_types_errors) > 0:
+            raise serializers.ValidationError({"sub_unit_type_ids": sub_types_errors})
         # validate sub org unit type allowed to be created
-        if "allow_creating_sub_unit_types" in data:
-            if has_cycle_after_adding(
-                org_unit_type_id, data["allow_creating_sub_unit_types"], "allow_creating_sub_unit_types"
-            ):
-                raise serializers.ValidationError(
-                    {
-                        "allow_creating_sub_unit_type_ids": [
-                            "A loop was detected in the allowed sub-unit types creation hierarchy."
-                        ]
-                    }
-                )
+        create_sub_types_errors = get_sub_types_errors(
+            org_unit_type_id, data.get("allow_creating_sub_unit_types", []), "allow_creating_sub_unit_types"
+        )
+        if len(create_sub_types_errors) > 0:
+            raise serializers.ValidationError({"allow_creating_sub_unit_type_ids": create_sub_types_errors})
         # validate projects (access check)
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
@@ -265,23 +249,15 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializerBackwardCompatible):
     def validate(self, data: typing.Mapping):
         org_unit_type_id = self.instance.id if self.instance else self.context["request"].data.get("id")
         # validate sub org unit type
-        if "sub_unit_types" in data:
-            if has_cycle_after_adding(org_unit_type_id, data["sub_unit_types"], "sub_unit_types"):
-                raise serializers.ValidationError(
-                    {"sub_unit_type_ids": ["A loop was detected in the sub-unit types hierarchy."]}
-                )
+        sub_types_errors = get_sub_types_errors(org_unit_type_id, data.get("sub_unit_types", []), "sub_unit_types")
+        if len(sub_types_errors) > 0:
+            raise serializers.ValidationError({"sub_unit_type_ids": sub_types_errors})
         # validate sub org unit type allowed to be created
-        if "allow_creating_sub_unit_types" in data:
-            if has_cycle_after_adding(
-                org_unit_type_id, data["allow_creating_sub_unit_types"], "allow_creating_sub_unit_types"
-            ):
-                raise serializers.ValidationError(
-                    {
-                        "allow_creating_sub_unit_type_ids": [
-                            "A loop was detected in the allowed sub-unit types creation hierarchy."
-                        ]
-                    }
-                )
+        create_sub_types_errors = get_sub_types_errors(
+            org_unit_type_id, data.get("allow_creating_sub_unit_types", []), "allow_creating_sub_unit_types"
+        )
+        if len(create_sub_types_errors) > 0:
+            raise serializers.ValidationError({"allow_creating_sub_unit_type_ids": create_sub_types_errors})
         # validate projects (access check)
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:

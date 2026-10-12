@@ -42,7 +42,9 @@ export const CampaignAsyncSelect: FunctionComponent<Props> = ({
     multi,
     clearable,
     initialValue,
-    campaignCategory = 'regular' as CampaignCategory,
+    // 'all' and not 'regular', which also hides on hold campaigns (incl. next round on hold).
+    // Test campaigns are hidden by showTest, deleted ones by the API default.
+    campaignCategory = 'all' as CampaignCategory,
     showTest = false,
     campaignType = 'polio',
     label = MESSAGES.campaign,

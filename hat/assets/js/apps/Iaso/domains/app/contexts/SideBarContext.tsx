@@ -15,7 +15,11 @@ const SidebarContext = createContext({
 
 export const useSidebar = () => useContext(SidebarContext);
 
-export const SidebarProvider = ({ children }) => {
+export const SidebarProvider = ({
+    children,
+}: {
+    children: React.ReactNode;
+}) => {
     const [isOpen, setIsOpen] = useState(false);
     const toggleSidebar = useCallback(() => setIsOpen(!isOpen), [isOpen]);
     const value = useMemo(

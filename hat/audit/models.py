@@ -186,7 +186,11 @@ def log_modification(
     source: Optional[str],
     user: User = None,
     org_unit_change_request_id: int = None,
+    save: bool = True,
 ) -> Modification:
+    """
+    `save=False` returns the modification without saving it, e.g. to `bulk_create` many of them at once.
+    """
     modification = Modification()
     modification.past_value = []
     modification.new_value = []
@@ -231,5 +235,6 @@ def log_modification(
         if not any([added, removed]) and len(modified.keys()) == 1 and "updated_at" in modified:
             logger.warning("log_modification() called with only `updated_at`.", extra={"modification": modification})
 
-    modification.save()
+    if save:
+        modification.save()
     return modification

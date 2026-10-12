@@ -2,7 +2,12 @@ from django.db.models import Q
 
 from iaso.models.metric import MetricValue
 from iaso.test import TestCase
-from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_exists_q_clauses, jsonlogic_to_q, variables
+from iaso.utils.jsonlogic import (
+    instance_jsonlogic_to_q,
+    jsonlogic_to_exists_q_clauses,
+    jsonlogic_to_q,
+    jsonlogic_variable_names,
+)
 
 
 class JsonLogicTests(TestCase):
@@ -274,9 +279,9 @@ class JsonLogicVariablesTests(TestCase):
                 {"!": {"var": "deceased"}},
             ]
         }
-        self.assertEqual(list(variables(condition)), ["age", "gender", "deceased"])
+        self.assertEqual(list(jsonlogic_variable_names(condition)), ["age", "gender", "deceased"])
 
     def test_no_variables(self):
         for condition in ({}, {"==": [1, 1]}, True, None, {"var": ""}, {"var": []}):
             with self.subTest(condition=condition):
-                self.assertEqual(list(variables(condition)), [])
+                self.assertEqual(list(jsonlogic_variable_names(condition)), [])

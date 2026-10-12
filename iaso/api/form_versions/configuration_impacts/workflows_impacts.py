@@ -1,7 +1,7 @@
 import typing
 
 from iaso.models import WorkflowChange, WorkflowFollowup
-from iaso.utils.jsonlogic import variables
+from iaso.utils.jsonlogic import jsonlogic_variable_names
 
 from .common import ConfigurationImpact, ConfigurationImpactKind
 
@@ -32,7 +32,7 @@ def workflows_impacts(
         workflow_version__workflow__entity_type__reference_form_id=form_id, **alive
     )
     for followup in followups.select_related(related).order_by("workflow_version_id", "order", "id"):
-        for name in sorted(set(variables(followup.condition)) & question_names):
+        for name in sorted(set(jsonlogic_variable_names(followup.condition)) & question_names):
             impacts.append(
                 _workflow_impact(
                     ConfigurationImpactKind.FOLLOW_UP_CONDITION,

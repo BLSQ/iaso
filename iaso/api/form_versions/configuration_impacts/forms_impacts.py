@@ -1,7 +1,7 @@
 import typing
 
 from iaso.models import FormPredefinedFilter
-from iaso.utils.jsonlogic import variables
+from iaso.utils.jsonlogic import jsonlogic_variable_names
 
 from .common import ConfigurationImpact, ConfigurationImpactKind
 
@@ -39,7 +39,7 @@ def forms_impacts(
         impacts.append(ConfigurationImpact(ConfigurationImpactKind.LABEL_KEY, name, form.id, form.name))
 
     for predefined_filter in FormPredefinedFilter.objects.filter(form=form).order_by("id"):
-        for name in sorted(set(variables(predefined_filter.json_logic)) & question_names):
+        for name in sorted(set(jsonlogic_variable_names(predefined_filter.json_logic)) & question_names):
             impacts.append(
                 ConfigurationImpact(
                     ConfigurationImpactKind.PREDEFINED_FILTER,

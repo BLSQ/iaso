@@ -698,9 +698,15 @@ def float_try_parse(value):
         return False
 
 
-def variables(jsonlogic: Any) -> Iterator[str]:
-    """The names a JsonLogic expression reads: `{"var": "age"}`, `{"var": ["age", 0]}` (with a default), at any
-    depth."""
+def jsonlogic_variable_names(jsonlogic: Any) -> Iterator[str]:
+    """Yield the variable names a JsonLogic expression reads, at any depth, in order of appearance (duplicates kept).
+
+    A variable is `{"var": "age"}` or, with a default value, `{"var": ["age", 0]}`; an empty name (`{"var": ""}`,
+    the whole data) is skipped.
+
+    >>> list(jsonlogic_variable_names({"and": [{">": [{"var": "age"}, 60]}, {"==": [{"var": ["gender", ""]}, "F"]}]}))
+    ['age', 'gender']
+    """
     if isinstance(jsonlogic, dict):
         for operator_name, operand in jsonlogic.items():
             if operator_name == "var":
@@ -708,7 +714,7 @@ def variables(jsonlogic: Any) -> Iterator[str]:
                 if isinstance(name, str) and name:
                     yield name
             else:
-                yield from variables(operand)
+                yield from jsonlogic_variable_names(operand)
     elif isinstance(jsonlogic, list):
         for item in jsonlogic:
-            yield from variables(item)
+            yield from jsonlogic_variable_names(item)

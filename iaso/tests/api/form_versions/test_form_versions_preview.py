@@ -323,7 +323,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
             data["configuration_impacts"],
             [
                 {
-                    "kind": "follow_up_condition",
+                    "kind": ConfigurationImpactKind.FOLLOW_UP_CONDITION,
                     "question": "age",
                     **common,
                     "follow_up_order": 2,
@@ -333,7 +333,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 },
                 # full_name is unchanged: not there
                 {
-                    "kind": "change_mapping",
+                    "kind": ConfigurationImpactKind.CHANGE_MAPPING,
                     "question": "birth_date",
                     **common,
                     "follow_up_order": None,
@@ -366,7 +366,7 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 (i["kind"], i["question"], i["mapping_source"], i["mapping_target"])
                 for i in data["configuration_impacts"]
             ],
-            [("change_mapping", "birth_date", "birth_date", "birth_date")],
+            [(ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "birth_date", "birth_date")],
         )
 
     def test_preview_configuration_impacts(self):
@@ -424,21 +424,24 @@ class FormVersionPreviewAPITestCase(APITestCase):
         self.assertEqual(
             [(i["kind"], i["question"], i["target_id"], i["target_name"]) for i in data["configuration_impacts"]],
             [
-                ("location_field", "birth_date", form.id, "Form With Version"),
-                ("correlation_field", "age", form.id, "Form With Version"),
-                ("label_key", "birth_date", form.id, "Form With Version"),
-                ("predefined_filter", "age", predefined_filter.id, "Toddlers"),
-                ("entity_type_list_field", "age", entity_type.id, "Patients"),
-                ("entity_type_detail_field", "age", entity_type.id, "Patients"),
-                ("entity_type_detail_field", "birth_date", entity_type.id, "Patients"),
-                ("stock_rule", "age", rules_version.id, "2026 rules / Vaccine"),
-                ("dhis2_mapping", "birth_date", aggregate.id, "HMIS (AGGREGATE)"),
+                (ConfigurationImpactKind.LOCATION_FIELD, "birth_date", form.id, "Form With Version"),
+                (ConfigurationImpactKind.CORRELATION_FIELD, "age", form.id, "Form With Version"),
+                (ConfigurationImpactKind.LABEL_KEY, "birth_date", form.id, "Form With Version"),
+                (ConfigurationImpactKind.PREDEFINED_FILTER, "age", predefined_filter.id, "Toddlers"),
+                (ConfigurationImpactKind.ENTITY_TYPE_LIST_FIELD, "age", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.ENTITY_TYPE_DETAIL_FIELD, "age", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.ENTITY_TYPE_DETAIL_FIELD, "birth_date", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.STOCK_RULE, "age", rules_version.id, "2026 rules / Vaccine"),
+                (ConfigurationImpactKind.DHIS2_MAPPING, "birth_date", aggregate.id, "HMIS (AGGREGATE)"),
                 # age is retyped, not removed: still mapped
-                ("dhis2_mapping", "birth_date", derived.id, "Stats (DERIVED)"),
+                (ConfigurationImpactKind.DHIS2_MAPPING, "birth_date", derived.id, "Stats (DERIVED)"),
             ],
         )
-        conditions = {i["kind"]: i["condition"] for i in data["configuration_impacts"]}
-        self.assertEqual(conditions["predefined_filter"], {"<": [{"var": "age"}, 3]})
+        # only the predefined filter carries its JsonLogic, and none of these is a workflow's (no entity type)
+        self.assertEqual(
+            [(i["kind"], i["condition"]) for i in data["configuration_impacts"] if i["condition"] is not None],
+            [(ConfigurationImpactKind.PREDEFINED_FILTER, {"<": [{"var": "age"}, 3]})],
+        )
         self.assertTrue(all(i["entity_type_id"] is None for i in data["configuration_impacts"]))
 
     def test_dhis2_mapped_question_names(self):

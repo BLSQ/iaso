@@ -68,7 +68,7 @@ type MissionRowProps = {
     mission: MissionPolymorphicList;
     isLinked: boolean;
     isSelected: boolean;
-    onToggle: (missionId: number) => void;
+    onToggle: (mission: MissionPolymorphicList) => void;
 };
 
 const MissionRow: FC<MissionRowProps> = ({
@@ -80,9 +80,9 @@ const MissionRow: FC<MissionRowProps> = ({
     const { formatMessage } = useSafeIntl();
     const handleClick = useCallback(() => {
         if (!isLinked) {
-            onToggle(mission.id);
+            onToggle(mission);
         }
-    }, [isLinked, onToggle, mission.id]);
+    }, [isLinked, onToggle, mission]);
     return (
         <TableRow
             hover={!isLinked}
@@ -131,7 +131,9 @@ const AddMissionsDialog: FC<Props> = ({ isOpen, closeDialog }) => {
     const [search, setSearch] = useState<string>('');
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [page, setPage] = useState<number>(0);
-    const [selectedMissionIds, setSelectedMissionIds] = useState<number[]>([]);
+    const [selectedMissions, setSelectedMissions] = useState<
+        MissionPolymorphicList[]
+    >([]);
 
     const applySearch = useMemo(
         () =>
@@ -166,17 +168,17 @@ const AddMissionsDialog: FC<Props> = ({ isOpen, closeDialog }) => {
     );
     const missions = data?.results ?? [];
 
-    const toggleMission = useCallback((missionId: number) => {
-        setSelectedMissionIds(previous =>
-            previous.includes(missionId)
-                ? previous.filter(id => id !== missionId)
-                : [...previous, missionId],
+    const toggleMission = useCallback((mission: MissionPolymorphicList) => {
+        setSelectedMissions(previous =>
+            previous.some(({ id }) => id === mission.id)
+                ? previous.filter(({ id }) => id !== mission.id)
+                : [...previous, mission],
         );
     }, []);
 
     const handleConfirm = useCallback(
-        () => addMissions(selectedMissionIds),
-        [addMissions, selectedMissionIds],
+        () => addMissions(selectedMissions),
+        [addMissions, selectedMissions],
     );
 
     return (
@@ -188,7 +190,7 @@ const AddMissionsDialog: FC<Props> = ({ isOpen, closeDialog }) => {
             onClose={noop}
             onCancel={noop}
             onConfirm={handleConfirm}
-            allowConfirm={selectedMissionIds.length > 0}
+            allowConfirm={selectedMissions.length > 0}
             titleMessage={formatMessage(MESSAGES.addMissionsToPlanning)}
             confirmMessage={MESSAGES.linkMission}
             cancelMessage={MESSAGES.cancel}
@@ -231,8 +233,8 @@ const AddMissionsDialog: FC<Props> = ({ isOpen, closeDialog }) => {
                                     linkedMissionIds?.includes(mission.id) ??
                                     false
                                 }
-                                isSelected={selectedMissionIds.includes(
-                                    mission.id,
+                                isSelected={selectedMissions.some(
+                                    ({ id }) => id === mission.id,
                                 )}
                                 onToggle={toggleMission}
                             />

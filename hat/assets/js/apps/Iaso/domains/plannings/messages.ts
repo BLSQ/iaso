@@ -404,6 +404,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Link mission',
         id: 'iaso.plannings.label.linkMission',
     },
+    notSavedYet: {
+        defaultMessage: 'Not saved yet',
+        id: 'iaso.plannings.label.notSavedYet',
+    },
+    willBeUnlinked: {
+        defaultMessage: 'Will be unlinked',
+        id: 'iaso.plannings.label.willBeUnlinked',
+    },
+    unlinkMission: {
+        defaultMessage: 'Unlink mission',
+        id: 'iaso.plannings.label.unlinkMission',
+    },
+    relinkMission: {
+        defaultMessage: 'Undo unlink',
+        id: 'iaso.plannings.label.relinkMission',
+    },
     type: {
         defaultMessage: 'Type',
         id: 'iaso.label.type',

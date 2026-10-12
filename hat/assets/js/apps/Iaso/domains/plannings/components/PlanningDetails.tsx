@@ -6,7 +6,13 @@ import { PlanningFormV2 } from './PlanningFormV2';
 import { PlanningHeader } from './PlanningHeader';
 
 const styles = {
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+    },
     grid: {
+        flex: { md: 1 },
         minHeight: { md: 486 },
     },
     missionPanelContainer: {
@@ -20,7 +26,7 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningDetails: FC = () => (
-    <>
+    <Box sx={styles.root}>
         <PlanningHeader />
         <Grid
             container
@@ -39,5 +45,5 @@ export const PlanningDetails: FC = () => (
                 </Box>
             </Grid>
         </Grid>
-    </>
+    </Box>
 );

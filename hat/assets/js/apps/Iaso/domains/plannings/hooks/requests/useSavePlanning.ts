@@ -144,6 +144,7 @@ export const useSavePlanning = ({
             'planningSamplingResults',
             'planningRootOrgUnit',
             'planningChildrenOrgUnits',
+            'apiMicroplanningMissionsList',
         ],
         options: { onSuccess },
         showSuccessSnackBar,

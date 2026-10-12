@@ -6,29 +6,46 @@ import React, {
     useContext,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import {
     LoadingSpinner,
     useRedirectTo,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { isEqual, union } from 'lodash';
+import { isEqual, union, unionBy, without } from 'lodash';
 import {
     MissionPolymorphicList,
+    MissionPolymorphicRetrieve,
+    PaginatedMissionPolymorphicListList,
     useApiMicroplanningMissionsList,
+    useApiMicroplanningMissionsRetrieve,
 } from 'Iaso/api/missions';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
 
+const toMissionListItem = ({
+    description: _description,
+    forms,
+    ...mission
+}: MissionPolymorphicRetrieve): MissionPolymorphicList => ({
+    ...mission,
+    forms_count: forms.length,
+});
+
 type PlanningContextValue = {
     planning: Planning;
     isLoadingPlanning: boolean;
     mode: PageMode;
-    missions: MissionPolymorphicList[];
+    savedMissions?: PaginatedMissionPolymorphicListList;
+    pendingMissions: MissionPolymorphicList[];
     isFetchingMissions: boolean;
-    addMissions: (missionIds: number[]) => void;
+    setMissionsPage: (page: number) => void;
+    addMissions: (missions: MissionPolymorphicList[]) => void;
+    unlinkMission: (missionId: number) => void;
+    relinkMission: (missionId: number) => void;
     createMission: () => void;
     formik: PlanningFormik;
     canSave: boolean;
@@ -65,10 +82,6 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     newMissionId,
     children,
 }) => {
-    // TODO Change to custom endpoint to get missions for given planning (this is just for testing)
-    const { data: allMissions, isFetching: isFetchingMissions } =
-        useApiMicroplanningMissionsList();
-
     const formik = usePlanningForm(planning, mode);
     const {
         values,
@@ -79,30 +92,73 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         setFieldValue,
     } = formik;
 
-    const missions = useMemo(
+    const [missionsPage, setMissionsPage] = useState(1);
+    const { data: savedMissions, isFetching: isFetchingMissions } =
+        useApiMicroplanningMissionsList(
+            { planning_ids: [planning.id], page: missionsPage, limit: 10 },
+            { query: { keepPreviousData: true } },
+        );
+
+    // Keep the data of missions picked before saving rather than refetching it.
+    const [addedMissions, setAddedMissions] = useState<
+        MissionPolymorphicList[]
+    >([]);
+    const pendingMissions = useMemo(
         () =>
-            allMissions?.results?.filter(mission =>
-                values.missions?.includes(mission.id),
-            ) ?? [],
-        [values.missions, allMissions],
+            addedMissions.filter(
+                mission =>
+                    values.missions?.includes(mission.id) &&
+                    !initialValues.missions?.includes(mission.id),
+            ),
+        [addedMissions, values.missions, initialValues.missions],
     );
 
     const addMissions = useCallback(
-        (missionIds: number[]) =>
-            setFieldValue('missions', union(values.missions, missionIds)),
+        (missions: MissionPolymorphicList[]) => {
+            setAddedMissions(previous => unionBy(previous, missions, 'id'));
+            setFieldValue(
+                'missions',
+                union(
+                    values.missions,
+                    missions.map(mission => mission.id),
+                ),
+            );
+        },
         [setFieldValue, values.missions],
+    );
+
+    const unlinkMission = useCallback(
+        (missionId: number) =>
+            setFieldValue('missions', without(values.missions, missionId)),
+        [setFieldValue, values.missions],
+    );
+
+    const relinkMission = useCallback(
+        (missionId: number) =>
+            setFieldValue('missions', union(values.missions, [missionId])),
+        [setFieldValue, values.missions],
+    );
+
+    const { data: newMission } = useApiMicroplanningMissionsRetrieve(
+        Number(newMissionId),
+        {
+            query: {
+                enabled: Boolean(newMissionId),
+                select: toMissionListItem,
+            },
+        },
     );
 
     // Drop the param once applied so a reload doesn't add the mission again.
     const redirectToReplace = useRedirectToReplace();
     useEffect(() => {
-        if (!newMissionId) return;
-        addMissions([Number(newMissionId)]);
+        if (!newMission) return;
+        addMissions([newMission]);
         redirectToReplace(baseUrls.planningDetails, {
             planningId: `${planning.id}`,
             mode,
         });
-    }, [newMissionId, addMissions, redirectToReplace, planning.id, mode]);
+    }, [newMission, addMissions, redirectToReplace, planning.id, mode]);
 
     const canSave =
         isValid &&
@@ -133,9 +189,13 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             planning,
             isLoadingPlanning,
             mode,
-            missions,
+            savedMissions,
+            pendingMissions,
             isFetchingMissions,
+            setMissionsPage,
             addMissions,
+            unlinkMission,
+            relinkMission,
             createMission,
             formik,
             canSave,
@@ -146,9 +206,13 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             planning,
             isLoadingPlanning,
             mode,
-            missions,
+            savedMissions,
+            pendingMissions,
             isFetchingMissions,
+            setMissionsPage,
             addMissions,
+            unlinkMission,
+            relinkMission,
             createMission,
             formik,
             canSave,

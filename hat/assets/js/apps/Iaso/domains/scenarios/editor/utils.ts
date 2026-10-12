@@ -17,6 +17,8 @@ export type EditorStep = {
     force?: boolean;
     // registration only: the search the app asks for before the form, question -> value typed or scanned
     search?: Record<string, string>;
+    // what the phone's apps gave the form's read-only questions (the org unit picked...), question -> value
+    context?: Record<string, string>;
 };
 
 /** The scenario file of the steps (`format` iaso-scenarios/1, entity scenario). */
@@ -29,11 +31,12 @@ export const toDefinition = (
     kind: 'entity',
     name,
     description,
-    steps: steps.map(({ at, force, search, ...step }) => ({
+    steps: steps.map(({ at, force, search, context, ...step }) => ({
         ...step,
         ...(at ? { at } : {}),
         ...(force ? { force } : {}),
         ...(search && Object.keys(search).length > 0 ? { search } : {}),
+        ...(context && Object.keys(context).length > 0 ? { context } : {}),
     })),
 });
 
@@ -64,6 +67,7 @@ const FileSteps = zod.object({
                     .default({}),
                 force: zod.boolean().optional(),
                 search: zod.record(zod.string(), zod.string()).optional(),
+                context: zod.record(zod.string(), zod.string()).optional(),
             }),
         )
         .default([]),
@@ -87,6 +91,7 @@ export const fromDefinition = (definition: unknown): EditorStep[] => {
         },
         force: step.force,
         search: step.search,
+        context: step.context,
     }));
 };
 
@@ -135,6 +140,23 @@ export type IntentRequest = {
 
 /** What the app returned, by name: web-forms puts each value in the question of that name. */
 export type IntentResult = Record<string, string>;
+
+/**
+ * The values an app gave the form, by question name: as the step's `context` the run gives them again (read-only
+ * questions can't be answered). An input's `value` is its own answer: the last name of its reference.
+ */
+export const intentContext = (
+    request: IntentRequest,
+    result: IntentResult,
+): Record<string, string> =>
+    Object.fromEntries(
+        Object.entries(result).map(([name, value]) => [
+            name === 'value'
+                ? (request.reference.split('/').pop() ?? name)
+                : name,
+            value,
+        ]),
+    );
 
 /** The org unit picker's action (`${applicationId}.action.pick_ou`), whatever the app's id. */
 export const isPickOrgUnit = (action: string): boolean =>

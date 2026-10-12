@@ -4,6 +4,7 @@ import {
     answersFromSubmission,
     EditorStep,
     fromDefinition,
+    intentContext,
     isPickOrgUnit,
     pickedOrgUnitResult,
     searchAllowsRegistering,
@@ -74,6 +75,7 @@ describe('scenario file', () => {
             answers: { first_name: 'Amina' },
             expect: { next_forms: ['anthropometry'] },
             search: { qr_code: 'CARD-0001' },
+            context: { cs_id: '2', cs_name: 'Bo' },
         },
         {
             form: 'otp_admission',
@@ -83,10 +85,11 @@ describe('scenario file', () => {
             expect: { refused: [{ question: 'admitted', code: 'CONSTRAINT' }] },
             force: true,
             search: {},
+            context: {},
         },
     ];
 
-    it('writes the steps as a scenario file: no date for the day of the run, force and search only when set', () => {
+    it('writes the steps as a scenario file: no date for the day of the run, force, search and context only when set', () => {
         const definition = toDefinition(
             'Oedema leads to OTP',
             'Checks OTP',
@@ -105,6 +108,7 @@ describe('scenario file', () => {
                     answers: { first_name: 'Amina' },
                     expect: { next_forms: ['anthropometry'] },
                     search: { qr_code: 'CARD-0001' },
+                    context: { cs_id: '2', cs_name: 'Bo' },
                 },
                 {
                     form: 'otp_admission',
@@ -133,6 +137,10 @@ describe('scenario file', () => {
         ]);
         expect(read.map(step => step.search)).toEqual([
             { qr_code: 'CARD-0001' },
+            undefined,
+        ]);
+        expect(read.map(step => step.context)).toEqual([
+            { cs_id: '2', cs_name: 'Bo' },
             undefined,
         ]);
         expect(read[1].expect.refused).toEqual([
@@ -208,5 +216,33 @@ describe('pick_ou, as the app answers it', () => {
             id: '1',
             name: 'Sierra Leone',
         });
+    });
+});
+
+describe('intentContext', () => {
+    it("keeps a group's values under their question names", () => {
+        expect(
+            intentContext(
+                {
+                    action: 'org.bluesquare.iaso.action.pick_ou',
+                    parameters: {},
+                    reference: '/data/cs',
+                },
+                { cs_id: '2', cs_name: 'Bo', cs_path: 'Sierra Leone' },
+            ),
+        ).toEqual({ cs_id: '2', cs_name: 'Bo', cs_path: 'Sierra Leone' });
+    });
+
+    it("gives an input's value to the input itself", () => {
+        expect(
+            intentContext(
+                {
+                    action: 'org.bluesquare.iaso.action.pick_ou',
+                    parameters: {},
+                    reference: '/data/cs/cs_id',
+                },
+                { value: '2' },
+            ),
+        ).toEqual({ cs_id: '2' });
     });
 });

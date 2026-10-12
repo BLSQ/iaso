@@ -63,6 +63,8 @@ import {
     answersFromSubmission,
     EditorStep,
     fromDefinition,
+    intentContext,
+    IntentRequest,
     searchAllowsRegistering,
     StepExpect,
     toDefinition,
@@ -99,7 +101,7 @@ export const ScenarioEditor: FunctionComponent = () => {
     const redirectToReplace = useRedirectToReplace();
     const [showTechnicalNames, setShowTechnicalNames] = useTechnicalNames();
     // the phone's apps, for the form's external app questions
-    const { onIntent, intentDialog } = useIntentApps();
+    const { onIntent: launchApp, intentDialog } = useIntentApps();
     // the phone's scan button, for the form's barcode questions
     const { onBarcode, barcodeDialog } = useBarcodeScan();
     const scenarioId = params.scenarioId
@@ -175,6 +177,21 @@ export const ScenarioEditor: FunctionComponent = () => {
     const [answers, setAnswers] = useState<Record<string, string>>();
     // the registration's search before the form (undefined: not searched yet)
     const [search, setSearch] = useState<Record<string, string>>();
+    // what the phone's apps gave the form (the org unit picked): read-only questions, given again on every run
+    const [stepContext, setStepContext] = useState<Record<string, string>>({});
+    const onIntent = useCallback(
+        (request: IntentRequest) =>
+            launchApp(request).then(result => {
+                if (result) {
+                    setStepContext(context => ({
+                        ...context,
+                        ...intentContext(request, result),
+                    }));
+                }
+                return result;
+            }),
+        [launchApp],
+    );
     const [outcome, setOutcome] = useState<ScenarioOutcomeOutput>();
     const [expect, setExpect] = useState<StepExpect>({});
     // the workflow version the open step was prepared against (undefined: no step opened yet)
@@ -236,6 +253,7 @@ export const ScenarioEditor: FunctionComponent = () => {
             setOutcome(undefined);
             // a step already recorded has searched
             setSearch(step ? (step.search ?? {}) : undefined);
+            setStepContext(step?.context ?? {});
             setExpect(step?.expect ?? {});
             setStepForm(step?.form ?? '');
             setPreparedFor(versionId ?? null);
@@ -246,6 +264,7 @@ export const ScenarioEditor: FunctionComponent = () => {
                     form: step?.form ?? (index === 0 ? referenceFormId : null),
                     answers: step?.answers,
                     search: step?.search,
+                    context: step?.context,
                     at: step?.at ?? null,
                     workflow_version_id: versionId ?? null,
                 },
@@ -306,6 +325,7 @@ export const ScenarioEditor: FunctionComponent = () => {
     // another form picked for the step: prepared anew
     const handleFormChange = (form: string) => {
         setStepForm(form);
+        setStepContext({});
         setPrepared(undefined);
         setOutcome(undefined);
         prepareStep({
@@ -332,6 +352,7 @@ export const ScenarioEditor: FunctionComponent = () => {
                 definition: definitionOf(steps.slice(0, current)),
                 form: stepForm || null,
                 answers: steps[current]?.answers,
+                context: stepContext,
                 at: stepAt || null,
                 workflow_version_id: versionId ?? null,
             },
@@ -360,6 +381,7 @@ export const ScenarioEditor: FunctionComponent = () => {
                 form: stepForm,
                 answers: steps[current]?.answers,
                 search: applied,
+                context: stepContext,
                 at: stepAt || null,
                 workflow_version_id: versionId ?? null,
             },
@@ -378,8 +400,9 @@ export const ScenarioEditor: FunctionComponent = () => {
             expect: stepExpect,
             force: !offered.includes(stepForm),
             search,
+            context: stepContext,
         }),
-        [stepForm, stepDescription, stepAt, offered, search],
+        [stepForm, stepDescription, stepAt, offered, search, stepContext],
     );
 
     // web-forms submitted: the step's answers, and what the app does with them

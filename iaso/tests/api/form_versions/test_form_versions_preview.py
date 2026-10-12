@@ -371,6 +371,65 @@ class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [(ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "birth_date", "birth_date")],
         )
 
+    def _create_workflow_version_reading_age_and_birth_date(self, workflow, name, deleted_at=None):
+        version = m.WorkflowVersion.objects.create(workflow=workflow, name=name, deleted_at=deleted_at)
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=1, condition={">": [{"var": "age"}, 5]})
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=m.Form.objects.create(name="Visit"), mapping={"dob": "birth_date"}
+        )
+        return version
+
+    def _preview_workflow_impact_targets(self):
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        return [(i["kind"], i["question"], i["target_name"]) for i in data["configuration_impacts"]]
+
+    def test_preview_workflow_impacts_ignore_deleted_workflow_versions(self):
+        entity_type = m.EntityType.objects.create(
+            name="Belgium patients", reference_form=self.form_with_version, account=self.yoda.iaso_profile.account
+        )
+        workflow = m.Workflow.objects.create(entity_type=entity_type)
+        self._create_workflow_version_reading_age_and_birth_date(workflow, "Current")
+        self._create_workflow_version_reading_age_and_birth_date(workflow, "Deleted", deleted_at=timezone.now())
+
+        self.assertEqual(
+            self._preview_workflow_impact_targets(),
+            [
+                (ConfigurationImpactKind.FOLLOW_UP_CONDITION, "age", "Belgium patients / Current (DRAFT)"),
+                (ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "Belgium patients / Current (DRAFT)"),
+            ],
+        )
+
+    def test_preview_workflow_impacts_ignore_deleted_workflows(self):
+        account = self.yoda.iaso_profile.account
+        belgium = m.EntityType.objects.create(
+            name="Belgium patients", reference_form=self.form_with_version, account=account
+        )
+        self._create_workflow_version_reading_age_and_birth_date(
+            m.Workflow.objects.create(entity_type=belgium), "Current"
+        )
+        france = m.EntityType.objects.create(
+            name="France patients", reference_form=self.form_with_version, account=account
+        )
+        # the version itself is not deleted, only its workflow
+        self._create_workflow_version_reading_age_and_birth_date(
+            m.Workflow.objects.create(entity_type=france, deleted_at=timezone.now()), "Current"
+        )
+
+        self.assertEqual(
+            self._preview_workflow_impact_targets(),
+            [
+                (ConfigurationImpactKind.FOLLOW_UP_CONDITION, "age", "Belgium patients / Current (DRAFT)"),
+                (ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "Belgium patients / Current (DRAFT)"),
+            ],
+        )
+
     def test_preview_configuration_impacts(self):
         """The form's fields, predefined filters, entity types and stock rules reading the removed (birth_date) or
         retyped (age) questions - not the unchanged full_name, nor a deleted stock rules version."""

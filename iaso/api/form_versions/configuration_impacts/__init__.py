@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
     from iaso.models import FormVersion
 
 
-IMPACTS = (forms_impacts, entity_types_impacts, stock_impacts, dhis2_impacts, workflows_impacts)
+IMPACT_FUNCTIONS = (forms_impacts, entity_types_impacts, stock_impacts, dhis2_impacts, workflows_impacts)
 
 
 def compute_configuration_impacts(
@@ -27,7 +27,7 @@ def compute_configuration_impacts(
     if not removed_question_names | modified_question_names:
         return []
     return [
-        impact
-        for impacts in IMPACTS
-        for impact in impacts(previous_form_version, removed_question_names, modified_question_names)
+        result
+        for impact_function in IMPACT_FUNCTIONS
+        for result in impact_function(previous_form_version, removed_question_names, modified_question_names)
     ]

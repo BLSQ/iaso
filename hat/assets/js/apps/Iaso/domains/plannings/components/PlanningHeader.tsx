@@ -19,8 +19,10 @@ const styles = {
         pb: 2,
         backgroundColor: 'white',
     },
-    statusChip: {
-        ml: 2,
+    title: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
     },
     buttonIcon: {
         ...planningPanelStyles.smallIcon,
@@ -39,12 +41,9 @@ export const PlanningHeader: FC = () => {
             alignItems="center"
             sx={styles.header}
         >
-            <Typography variant="h6">
+            <Typography variant="h6" sx={styles.title}>
                 {planning?.name}
-                <PlanningStatusChip
-                    status={planning?.status ?? 'draft'}
-                    sx={styles.statusChip}
-                />
+                <PlanningStatusChip status={planning?.status ?? 'draft'} />
             </Typography>
             <Stack direction="row" gap={1}>
                 <Button variant="outlined" size="small">

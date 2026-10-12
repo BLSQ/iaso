@@ -53,6 +53,8 @@ export const usePlanningForm = (
             description: planning?.description,
             publishingStatus: planning?.published_at ? 'published' : 'draft',
             missions: planning?.missions,
+            selectedOrgUnit: planning?.org_unit_details?.id,
+            selectedTeam: planning?.team_details?.id,
         },
         enableReinitialize: true,
         validateOnBlur: true,

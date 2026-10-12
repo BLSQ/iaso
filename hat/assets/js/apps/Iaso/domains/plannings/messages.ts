@@ -445,6 +445,35 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Open assignments',
         id: 'iaso.plannings.label.openAssignments',
     },
+    info: {
+        defaultMessage: 'Info',
+        id: 'iaso.plannings.label.info',
+    },
+    levelsAndTeams: {
+        defaultMessage: 'Levels & teams',
+        id: 'iaso.plannings.label.levelsAndTeams',
+    },
+    targetGeographyAndRootTeam: {
+        defaultMessage: 'Target geography and root team',
+        id: 'iaso.plannings.label.targetGeographyAndRootTeam',
+    },
+    targetGeographyAndRootTeamInfos: {
+        defaultMessage:
+            'Select the org unit this planning covers, then the team responsible for it. The team hierarchy defines the levels below.',
+        id: 'iaso.plannings.label.targetGeographyAndRootTeamInfos',
+    },
+    rootTeam: {
+        defaultMessage: 'Root team',
+        id: 'iaso.plannings.label.rootTeam',
+    },
+    createNewRootTeam: {
+        defaultMessage: 'Create new root team',
+        id: 'iaso.plannings.label.createNewRootTeam',
+    },
+    or: {
+        defaultMessage: 'or',
+        id: 'iaso.plannings.label.or',
+    },
 });
 
 export default MESSAGES;

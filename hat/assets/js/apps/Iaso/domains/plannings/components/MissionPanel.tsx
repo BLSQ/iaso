@@ -2,9 +2,11 @@ import React, { FC } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import { Card, IconButton, Stack, Typography } from '@mui/material';
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../contexts/PlanningContext';
+import MESSAGES from '../messages';
 import { AddMissionsDialog } from './AddMissionsDialog';
 import { MissionItem } from './MissionItem';
 import { planningPanelStyles } from './styles';
@@ -16,6 +18,9 @@ const styles = {
         flexDirection: 'column',
         position: 'relative',
     },
+    title: {
+        textTransform: 'uppercase',
+    },
     list: {
         flex: 1,
         minHeight: 0,
@@ -26,6 +31,7 @@ const styles = {
 export const MissionPanel: FC = () => {
     const { missions, isFetchingMissions, createMission } =
         usePlanningContext();
+    const { formatMessage } = useSafeIntl();
     return (
         <Card sx={styles.card} variant="outlined">
             {isFetchingMissions && <LoadingSpinner absolute fixed={false} />}
@@ -35,11 +41,18 @@ export const MissionPanel: FC = () => {
                         sx={planningPanelStyles.smallIcon}
                         color="primary"
                     />
-                    <Typography display="inline" fontWeight="bold">
-                        MISSIONS
+                    <Typography
+                        display="inline"
+                        fontWeight="bold"
+                        sx={styles.title}
+                    >
+                        {formatMessage(MESSAGES.missions)}
                     </Typography>
                     <Typography variant="caption" display="inline">
-                        3 linked
+                        {formatMessage(
+                            MESSAGES.linkedMissionsCount,
+                            numericValues({ count: missions.length }),
+                        )}
                     </Typography>
                 </Stack>
                 <Stack direction="row" gap={1} my={1}>

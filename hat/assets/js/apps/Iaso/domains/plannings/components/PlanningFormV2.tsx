@@ -67,7 +67,9 @@ export const PlanningFormV2: FC = () => {
             {isLoadingPlanning && <LoadingSpinner absolute fixed={false} />}
             <Stack gap={1} direction="row" alignItems="center" py={2}>
                 <EditNoteIcon color="primary" />
-                <Typography fontWeight="bold">Planning details</Typography>
+                <Typography fontWeight="bold">
+                    {formatMessage(MESSAGES.planningDetails)}
+                </Typography>
             </Stack>
             <FormikProvider value={formik}>
                 <InputComponent

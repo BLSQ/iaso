@@ -48,7 +48,7 @@ export const PlanningHeader: FC = () => {
             <Stack direction="row" gap={1}>
                 <Button variant="outlined" size="small">
                     <OpenInNewIcon sx={styles.buttonIcon} />
-                    Open assignments
+                    {formatMessage(MESSAGES.openAssignments)}
                 </Button>
                 {mode === 'edit' && (
                     <Button

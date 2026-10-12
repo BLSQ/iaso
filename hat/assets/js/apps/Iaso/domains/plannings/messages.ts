@@ -408,6 +408,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Type',
         id: 'iaso.label.type',
     },
+    linkedMissionsCount: {
+        defaultMessage: '{count} linked',
+        id: 'iaso.plannings.label.linkedMissionsCount',
+    },
+    planningDetails: {
+        defaultMessage: 'Planning details',
+        id: 'iaso.plannings.label.planningDetails',
+    },
+    openAssignments: {
+        defaultMessage: 'Open assignments',
+        id: 'iaso.plannings.label.openAssignments',
+    },
 });
 
 export default MESSAGES;

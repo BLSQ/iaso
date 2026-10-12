@@ -8,6 +8,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../contexts/PlanningContext';
 import MESSAGES from '../messages';
 import { PlanningStatusChip } from './PlanningStatusChip';
+import { SaveWarningDialog } from './SaveWarningDialog';
 import { planningPanelStyles } from './styles';
 
 const styles = {
@@ -69,6 +70,7 @@ export const PlanningHeader: FC = () => {
                     <SaveOutlinedIcon sx={styles.buttonIcon} />
                     {formatMessage(MESSAGES.save)}
                 </Button>
+                <SaveWarningDialog />
             </Stack>
         </Stack>
     );

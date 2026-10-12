@@ -25,6 +25,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
+import { shouldWarnBeforeSave } from '../utils';
 
 const toMissionListItem = ({
     description: _description,
@@ -50,6 +51,9 @@ type PlanningContextValue = {
     formik: PlanningFormik;
     canSave: boolean;
     savePlanning: () => void;
+    isSaveWarningOpen: boolean;
+    confirmSave: () => void;
+    closeSaveWarning: () => void;
     duplicatePlanning: () => void;
 };
 
@@ -171,7 +175,20 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
 
     const isLoadingPlanning = isSubmitting || isFetchingPlanning;
 
-    const savePlanning = useCallback(() => handleSubmit(), [handleSubmit]);
+    const [isSaveWarningOpen, setIsSaveWarningOpen] = useState(false);
+    const shouldWarn = shouldWarnBeforeSave(formik, mode);
+    const savePlanning = useCallback(() => {
+        if (shouldWarn) {
+            setIsSaveWarningOpen(true);
+        } else {
+            handleSubmit();
+        }
+    }, [shouldWarn, handleSubmit]);
+    const confirmSave = useCallback(() => {
+        setIsSaveWarningOpen(false);
+        handleSubmit();
+    }, [handleSubmit]);
+    const closeSaveWarning = useCallback(() => setIsSaveWarningOpen(false), []);
 
     const redirectTo = useRedirectTo();
     const duplicatePlanning = useCallback(() => {
@@ -204,6 +221,9 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             formik,
             canSave,
             savePlanning,
+            isSaveWarningOpen,
+            confirmSave,
+            closeSaveWarning,
             duplicatePlanning,
         }),
         [
@@ -221,6 +241,9 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             formik,
             canSave,
             savePlanning,
+            isSaveWarningOpen,
+            confirmSave,
+            closeSaveWarning,
             duplicatePlanning,
         ],
     );

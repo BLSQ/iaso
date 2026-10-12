@@ -449,7 +449,7 @@ class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             account=account,
             fields_list_view=["full_name", "age"],
             fields_detail_info_view=["birth_date", "age"],
-            fields_duplicate_search=["full_name"],
+            fields_duplicate_search=["full_name", "age"],
         )
         sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
         rules_version = m.StockRulesVersion.objects.create(account=account, name="2026 rules")
@@ -493,6 +493,7 @@ class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 (ConfigurationImpactKind.ENTITY_TYPE_LIST_FIELD, "age", entity_type.id, "Patients"),
                 (ConfigurationImpactKind.ENTITY_TYPE_DETAIL_FIELD, "age", entity_type.id, "Patients"),
                 (ConfigurationImpactKind.ENTITY_TYPE_DETAIL_FIELD, "birth_date", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.ENTITY_TYPE_DUPLICATE_FIELD, "age", entity_type.id, "Patients"),
                 (ConfigurationImpactKind.STOCK_RULE, "age", rules_version.id, "2026 rules / Vaccine"),
                 (ConfigurationImpactKind.DHIS2_MAPPING, "birth_date", aggregate.id, "HMIS (AGGREGATE)"),
                 # age is retyped, not removed: still mapped

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent } from 'react';
 import {
     Box,
     Table,
@@ -8,8 +8,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import { JsonLogicTree } from '@react-awesome-query-builder/mui';
-import { IntlMessage, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
@@ -18,29 +17,12 @@ import { userHasPermission } from '../../users/utils';
 import { useHumanReadableJsonLogicForForm } from '../../workflows/hooks/useHumanReadableJsonLogicForForm';
 import MESSAGES from '../messages';
 import { ConfigurationImpact } from '../requests';
+import { FormVersionsConfigurationImpactUsage } from './FormVersionsConfigurationImpactUsage';
 
 type Props = {
     // the form the new version is uploaded for
     formId: number;
     configurationImpacts: ConfigurationImpact[];
-};
-
-type Kind = ConfigurationImpact['kind'];
-
-// typed by kind: a kind missing here fails the build
-const KIND_MESSAGES: Record<Kind, IntlMessage> = {
-    location_field: MESSAGES.impactLocationField,
-    device_field: MESSAGES.impactDeviceField,
-    correlation_field: MESSAGES.impactCorrelationField,
-    label_key: MESSAGES.impactLabelKey,
-    predefined_filter: MESSAGES.impactPredefinedFilter,
-    entity_type_list_field: MESSAGES.impactEntityTypeListField,
-    entity_type_detail_field: MESSAGES.impactEntityTypeDetailField,
-    entity_type_duplicate_field: MESSAGES.impactEntityTypeDuplicateField,
-    stock_rule: MESSAGES.impactStockRule,
-    dhis2_mapping: MESSAGES.impactDhis2Mapping,
-    follow_up_condition: MESSAGES.impactFollowUpCondition,
-    change_mapping: MESSAGES.impactChangeMapping,
 };
 
 // The page to check the configuration on, and the permission it needs - none for a kind this bundle doesn't know
@@ -98,39 +80,6 @@ const FormVersionsConfigurationImpactsTable: FunctionComponent<Props> = ({
     const getHumanReadableJsonLogic = useHumanReadableJsonLogicForForm(formId);
     const user = useCurrentUser();
 
-    const usage = (impact: ConfigurationImpact): ReactNode => {
-        // a kind this bundle doesn't know (an older bundle against a newer backend): its raw name
-        const kindMessage: IntlMessage | undefined = KIND_MESSAGES[impact.kind];
-        const message = kindMessage
-            ? formatMessage(kindMessage, {
-                  order: `${impact.follow_up_order}`,
-                  source: impact.mapping_source ?? '',
-                  target: impact.mapping_target ?? '',
-              })
-            : impact.kind;
-        // breaks the processing of the submissions, not only what is shown
-        if (impact.kind === 'correlation_field') {
-            return (
-                <Typography variant="body2" color="error">
-                    {message}
-                </Typography>
-            );
-        }
-        if (!impact.condition) {
-            return message;
-        }
-        return (
-            <>
-                {message}
-                <Typography variant="body2" color="textSecondary">
-                    {getHumanReadableJsonLogic(
-                        impact.condition as JsonLogicTree,
-                    )}
-                </Typography>
-            </>
-        );
-    };
-
     return (
         <Box mt={2}>
             <Typography variant="subtitle2" gutterBottom color="warning.main">
@@ -160,7 +109,14 @@ const FormVersionsConfigurationImpactsTable: FunctionComponent<Props> = ({
                                 key={`${impact.kind}-${impact.target_id}-${impact.question}-${impact.follow_up_order ?? impact.mapping_source}`}
                             >
                                 <TableCell>{impact.question}</TableCell>
-                                <TableCell>{usage(impact)}</TableCell>
+                                <TableCell>
+                                    <FormVersionsConfigurationImpactUsage
+                                        impact={impact}
+                                        getHumanReadableJsonLogic={
+                                            getHumanReadableJsonLogic
+                                        }
+                                    />
+                                </TableCell>
                                 <TableCell>
                                     <LinkTo
                                         condition={

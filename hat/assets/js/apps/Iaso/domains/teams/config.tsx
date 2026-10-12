@@ -9,13 +9,13 @@ import { UsersTeamsCell } from './components/UsersTeamsCell';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { TeamList } from './hooks/requests/useGetTeams';
 import MESSAGES from './messages';
-import { TeamParams } from './types/team';
+import { TeamUrlParams } from './types/team';
 
 export const useTeamColumns = ({
     params,
     data,
 }: {
-    params: TeamParams;
+    params: TeamUrlParams;
     data?: TeamList;
 }): Column[] => {
     const { mutate: deleteTeam } = useDeleteTeam({

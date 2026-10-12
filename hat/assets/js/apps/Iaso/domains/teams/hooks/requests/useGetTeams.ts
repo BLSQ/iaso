@@ -1,14 +1,14 @@
 import { Paginated } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { makeUrlWithParams } from '../../../../libs/utils';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { makeUrlWithParams } from 'Iaso/libs/utils';
 import {
-    TeamParams,
-    TeamFilterParams,
     Team,
     DropdownTeamsOptions,
     TeamDropdown,
+    TeamUrlParams,
+    TeamDropdownFilterParams,
 } from '../../types/team';
 
 export const DEFAULT_TEAMS_COLUMNS = [
@@ -52,18 +52,11 @@ export const useGetTeam = (teamId?: number): UseQueryResult<Team, Error> => {
 
 export type TeamList = Paginated<Team>;
 
-const getTeams = async (
-    options: TeamParams | TeamFilterParams,
-): Promise<TeamList> => {
-    const { pageSize, ...params } = options as Record<string, any>;
-    if (pageSize) {
-        params.limit = pageSize;
-    }
-    if (params.select) {
-        delete params.select;
-    }
+const getTeams = async (options: TeamUrlParams): Promise<TeamList> => {
+    const { pageSize, ...params } = options;
     const apiParams = {
         ...params,
+        ...(pageSize ? { limit: pageSize } : {}),
         fields: getCleanFields(params.fields),
     };
 
@@ -72,36 +65,31 @@ const getTeams = async (
 };
 
 export const useGetTeams = (
-    options: TeamParams | TeamFilterParams,
+    options: TeamUrlParams,
 ): UseQueryResult<TeamList, Error> => {
-    const queryKey: any[] = ['teamsList', options];
-    const { select } = options as Record<string, any>;
+    const queryKey = ['teamsList', options];
     return useSnackQuery(queryKey, () => getTeams(options), undefined, {
-        select,
         staleTime: Infinity,
     });
 };
 
 const getTeamsDropdown = async (
-    options: TeamParams | TeamFilterParams,
+    options: TeamDropdownFilterParams,
     fullTeams = false,
 ): Promise<TeamDropdown[] | Team[]> => {
-    const { ...params } = (options as Record<string, any>) ?? {};
-    if (params.select) {
-        delete params.select;
-    }
     const path = fullTeams ? '/api/teams/' : '/api/teams/dropdown/';
-    const url = makeUrlWithParams(path, params);
-    return getRequest(url) as Promise<TeamDropdown[] | Team[]>;
+    const url = makeUrlWithParams(path, options);
+    return getRequest(url) as Promise<TeamDropdown[]>;
 };
+
 export const useGetTeamsDropdown = (
-    options: TeamParams | TeamFilterParams,
+    options: TeamDropdownFilterParams,
     currentTeamId?: number,
     enabled = true,
     // This should be removed after planning page is refactored
     fullTeams = false,
 ): UseQueryResult<DropdownTeamsOptions[], Error> => {
-    const queryKey: any[] = ['teamsDropdown', options];
+    const queryKey: Array<string | typeof options> = ['teamsDropdown', options];
     return useSnackQuery({
         queryKey,
         queryFn: () => getTeamsDropdown(options, fullTeams),

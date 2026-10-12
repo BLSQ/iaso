@@ -381,6 +381,21 @@ class TokenAPITestCase(APITestCase):
         response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
+        # Another project of the same account: allowed, so that multi-project mobile apps can
+        # switch to a project the user has access to.
         response = self.client.post(f"/api/token/?app_id={unauthorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        # A project of an account the user has no project in.
+        data_source_b = m.DataSource.objects.create(name="Source B")
+        version_b = m.SourceVersion.objects.create(data_source=data_source_b, number=1)
+        account_b = m.Account.objects.create(name="Account B", default_version=version_b)
+        other_account_project = m.Project.objects.create(
+            name="Other account project",
+            app_id="other.account.project",
+            account=account_b,
+            needs_authentication=True,
+        )
+        response = self.client.post(f"/api/token/?app_id={other_account_project.app_id}", data=login, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["detail"], "You don't have access to this project.")

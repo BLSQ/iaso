@@ -7,10 +7,10 @@ import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { ToggleButtonGroupInput } from 'Iaso/components/forms/ToggleButtonGroupInput';
 import { useGetProjectsDropDown } from 'Iaso/domains/projects/hooks/requests/useGetProjectsDropDown';
-import { useTranslatedErrors } from 'Iaso/libs/validation';
 import { SxStyles } from 'Iaso/types/general';
 import { useGetPublishingStatusOptions } from '../constants';
 import { usePlanningContext } from '../contexts/PlanningContext';
+import { usePlanningFieldHandlers } from '../hooks/usePlanningFieldHandlers';
 import MESSAGES from '../messages';
 import { planningPanelStyles } from './styles';
 
@@ -28,14 +28,8 @@ export const PlanningForm: FC = () => {
         useGetProjectsDropDown();
     const publishingStatusOptions = useGetPublishingStatusOptions();
 
-    const {
-        values,
-        setFieldValue,
-        touched,
-        setFieldTouched,
-        errors,
-        validateField,
-    } = formik;
+    const { values, setFieldValue, setFieldTouched } = formik;
+    const { onChange, getErrors } = usePlanningFieldHandlers(formik);
 
     // converting undefined to null for the API
     const onChangeDate = (keyValue: string, value: any) => {
@@ -46,21 +40,6 @@ export const PlanningForm: FC = () => {
             setFieldValue(keyValue, value);
         }
     };
-
-    const onChange = (keyValue: string, value: any) => {
-        setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
-        // Reset validation from server to not block the user.
-        // If this is not called, even changing a field won't mark the form as valid.
-        validateField(keyValue);
-    };
-
-    const getErrors = useTranslatedErrors({
-        errors,
-        formatMessage,
-        touched,
-        messages: MESSAGES,
-    });
 
     return (
         <Card variant="outlined" sx={styles.card}>

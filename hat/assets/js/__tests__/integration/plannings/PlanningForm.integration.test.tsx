@@ -87,6 +87,8 @@ const buildPublishedActivePlanning = (
         assignments_count: 0,
         pipeline_uuids: [],
         project_details: { id: 300, name: 'Project X' },
+        org_unit_details: { id: 400, name: 'Org unit X' },
+        team_details: { id: 500, name: 'Team X' },
         description: 'Initial description',
         ...overrides,
     };

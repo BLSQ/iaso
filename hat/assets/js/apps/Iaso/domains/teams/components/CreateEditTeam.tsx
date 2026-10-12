@@ -33,7 +33,7 @@ import {
     useSaveTeam,
 } from '../hooks/requests/useSaveTeam';
 import MESSAGES from '../messages';
-import { DropdownTeamsOptions } from '../types/team';
+import { DropdownTeamsOptions, Team } from '../types/team';
 import { useTeamValidation } from '../validation';
 
 type ModalMode = 'create' | 'edit';
@@ -43,6 +43,8 @@ type Props = {
     dialogType: ModalMode;
     isOpen: boolean;
     closeDialog: () => void;
+    defaultProject?: number;
+    onSuccess?: (team: Team) => void;
 };
 
 const formatTitle = (
@@ -64,6 +66,8 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     id,
     isOpen,
     closeDialog,
+    defaultProject,
+    onSuccess,
 }) => {
     const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
@@ -76,7 +80,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
         useGetTeamsDropdown(
             {
-                project: team?.project,
+                project: team?.project ?? defaultProject,
             },
             id,
         );
@@ -89,9 +93,10 @@ const CreateEditTeam: FunctionComponent<Props> = ({
         mutation: save,
     } = useApiErrorValidation<Partial<SaveTeamQuery>, any>({
         mutationFn: saveTeam,
-        onSuccess: () => {
+        onSuccess: (savedTeam: Team) => {
             closeDialog();
             formik.resetForm();
+            onSuccess?.(savedTeam);
         },
         convertError: convertAPIErrorsToState,
     });
@@ -303,4 +308,4 @@ const CreateEditTeam: FunctionComponent<Props> = ({
 const AddTeamModal = makeFullModal(CreateEditTeam, AddButton);
 const EditTeamModal = makeFullModal(CreateEditTeam, EditIconButton);
 
-export { AddTeamModal, EditTeamModal };
+export { AddTeamModal, CreateEditTeam, EditTeamModal };

@@ -289,6 +289,9 @@ Si la question doit être mappée, recherchez l'élément correspondant dans le 
 
 Une fois confirmée, la question deviendra verte et sera comptabilisée.
 
+Pour réutiliser les mappings d'une autre version du formulaire ou d'un fichier d'export, voir
+[Importer et exporter des mappings DHIS2](../how_to/import_export_dhis2_mappings.md).
+
 ### Complétude
 
 Cette fonctionnalité est destinée aux cas où des périodes ont été définies pour les formulaires de collecte de données.

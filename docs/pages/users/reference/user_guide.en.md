@@ -342,6 +342,9 @@ box by using the name, code or ID and then confirm.
 
 Once confirmed, the question will turn to green and be counted.
 
+To reuse the mappings of another form version or of an export file, see
+[Import and export DHIS2 mappings](../how_to/import_export_dhis2_mappings.md).
+
 <img src="./user_guide_attachments/image115.png"
 style="width:7.03646in;height:3.20249in" />
 

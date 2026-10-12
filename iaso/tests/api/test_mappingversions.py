@@ -10,12 +10,12 @@ from hat.audit.models import MAPPING_VERSION_API, Modification
 from iaso import models as m
 from iaso.api.mapping_versions import get_question_mapping_shape_error
 from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormsVersionAPITestCase(APITestCase):
+class FormsVersionAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.maxDiff = None
@@ -629,6 +629,47 @@ class FormsVersionAPITestCase(APITestCase):
                         },
                         exclude=["auth_permission"],
                     )
+
+    def test_mappingversions_responses_compliant_to_swagger(self):
+        """POST, PATCH, GET and list /mappingversions/ responses match the OpenAPI schema"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+        # the schema lists every field, the responses only the default ones unless asked for all
+        response = self.client.post(
+            "/api/mappingversions/?fields=:all",
+            data={
+                "form_version": {"id": form_version.id},
+                "mapping": {"type": "AGGREGATE", "datasource": {"id": self.sw_source.id}},
+                "dataset": {"id": "ERTFDG", "name": "My dataset name"},
+            },
+            format="json",
+        )
+        created = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertResponseCompliantToSwagger(created, "MappingVersion")
+
+        question_mappings = {
+            "question_1": {"id": "de1", "valueType": "NUMBER"},
+            "question_3": {"type": "multiple", "values": {"a": {"id": "de3a", "valueType": "BOOLEAN"}}},
+            "question_6": {"type": "neverMapped"},
+        }
+        response = self.client.patch(
+            f"/api/mappingversions/{created['id']}/?fields=:all",
+            data={"question_mappings": question_mappings},
+            format="json",
+        )
+        patched = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(patched, "MappingVersion")
+
+        response = self.client.get(f"/api/mappingversions/{created['id']}/?fields=:all")
+        retrieved = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(retrieved, "MappingVersion")
+        self.assertEqual(retrieved["question_mappings"], question_mappings)
+
+        response = self.client.get("/api/mappingversions/?fields=:all")
+        listed = self.assertJSONResponse(response, status.HTTP_200_OK)["mapping_versions"]
+        self.assertResponseCompliantToSwagger(listed, "MappingVersion", as_array=True)
+        self.assertEqual([mapping_version["id"] for mapping_version in listed], [created["id"]])
 
     def test_mappingversions_patch_checks_questions_exist(self):
         """PATCH /mappingversions/<id>: question mappings must target a question of the form version"""

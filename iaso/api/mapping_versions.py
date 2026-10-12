@@ -3,7 +3,8 @@ import typing
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import permissions, serializers
 
 import iaso.models as m
@@ -81,6 +82,33 @@ def get_question_mapping_error(question_name, data_element, mapping_type, mappab
     return None
 
 
+class MappingVersionFormSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    periodType = serializers.CharField(allow_null=True)
+
+
+class MappingVersionFormVersionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    form = MappingVersionFormSerializer()
+    version_id = serializers.CharField()
+
+
+class MappingVersionDataSourceSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class MappingVersionMappingSerializer(serializers.Serializer):
+    mapping_type = serializers.CharField()
+    data_source = MappingVersionDataSourceSerializer()
+
+
+class MappingVersionDatasetSerializer(serializers.Serializer):
+    id = serializers.CharField(allow_null=True)
+    name = serializers.CharField(allow_null=True)
+
+
 class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     class Meta:
         model = MappingVersion
@@ -117,23 +145,29 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
     total_questions = serializers.SerializerMethodField()
     derivate_settings = serializers.SerializerMethodField()
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_derivate_settings(self, mapping_version):
         return mapping_version.json
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_mapped_questions(self, mapping_version):
         return len(mapping_version.json.get("question_mappings", {}))
 
+    @extend_schema_field(OpenApiTypes.INT)
     def get_total_questions(self, mapping_version):
         questions_by_name = mapping_version.form_version.questions_by_name()
         return len(questions_by_name)
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_question_mappings(self, mapping_version):
         return mapping_version.json.get("question_mappings", {})
 
+    @extend_schema_field(MappingVersionMappingSerializer)
     def get_mapping(self, mapping_version):
         m = mapping_version.mapping
         return {"mapping_type": m.mapping_type, "data_source": {"id": m.data_source.id, "name": m.data_source.name}}
 
+    @extend_schema_field(MappingVersionFormVersionSerializer)
     def get_form_version(self, mapping_version):
         v = mapping_version.form_version
         return {
@@ -142,6 +176,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializerBackwardCompatible):
             "version_id": v.version_id,
         }
 
+    @extend_schema_field(MappingVersionDatasetSerializer)
     def get_dataset(self, mapping_version):
         return {
             "id": mapping_version.json.get("data_set_id", None),

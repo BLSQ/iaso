@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 
 from iaso.dhis2.form_mapping import mapped_question_names
+from iaso.models import MappingVersion
 
 
 class MappedQuestionNamesTests(SimpleTestCase):
@@ -17,6 +18,16 @@ class MappedQuestionNamesTests(SimpleTestCase):
         """`<question>__<choice>`: the choice and its question, whose removal drops every choice."""
         mapping_json = {"question_mappings": {"colors__red": {"id": "de1"}, "colors__blue": {"id": "de2"}}}
         self.assertEqual(mapped_question_names(mapping_json), {"colors__red", "colors__blue", "colors"})
+
+    def test_never_mapped_questions_left_out(self):
+        mapping_json = {
+            "question_mappings": {
+                "age": {"id": "de1"},
+                "comment": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
+                "colors__red": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
+            }
+        }
+        self.assertEqual(mapped_question_names(mapping_json), {"age"})
 
     def test_event_mapping(self):
         mapping_json = {

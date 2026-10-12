@@ -38,14 +38,17 @@ def seed_event_mapping(api, program_id):
 def mapped_question_names(mapping_json: dict) -> typing.Set[str]:
     """The questions a mapping version exports:
     - aggregate and event mappings: the keys of `question_mappings`, `<question>__<choice>` for a multiple select
-      exported as booleans;
+      exported as booleans, except the ones marked as never mapped;
     - derived mappings: the `questionName` of the `aggregations` and of their `where` conditions.
 
     A new form version copying the mappings of the previous one (`copy_mappings_from_previous_version()`), its
     removed questions are dropped from them - no more exported -, its retyped ones kept - maybe no more matching the
     DHIS2 value type."""
     names = set()
-    for key in (mapping_json or {}).get("question_mappings", {}):
+    for key, question_mapping in (mapping_json or {}).get("question_mappings", {}).items():
+        # `MappingVersion.QUESTION_MAPPING_NEVER_MAPPED`, not imported: `iaso.models` imports this module
+        if isinstance(question_mapping, dict) and question_mapping.get("type") == "neverMapped":
+            continue
         names.add(key)
         names.add(key.split("__")[0])
     for aggregation in (mapping_json or {}).get("aggregations", []):

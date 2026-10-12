@@ -20,7 +20,7 @@ vi.mock('bluesquare-components', async () => {
     };
 });
 
-vi.mock('../hooks/requests/previewFormAIVersion', () => ({
+vi.mock('../requests', () => ({
     previewFormAIVersion: mockPreview,
 }));
 

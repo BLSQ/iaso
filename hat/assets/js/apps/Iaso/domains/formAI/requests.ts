@@ -1,5 +1,5 @@
-import { iasoFetch } from '../../../../libs/Api';
-import { FormVersionDiff, previewFormVersion } from '../../../forms/requests';
+import { iasoFetch } from '../../libs/Api';
+import { FormVersionDiff, previewFormVersion } from '../forms/requests';
 
 // The diff the generated XLSForm would introduce as a new version of the form, as on a regular upload
 export const previewFormAIVersion = async (

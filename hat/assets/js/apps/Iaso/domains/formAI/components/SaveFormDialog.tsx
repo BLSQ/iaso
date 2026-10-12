@@ -25,10 +25,10 @@ import { useGetOrgUnitTypesDropdownOptions } from '../../../domains/orgUnits/org
 import { useGetProjectsDropdownOptions } from '../../../domains/projects/hooks/requests';
 import FormVersionsDiffConfirmation from '../../forms/components/FormVersionsDiffConfirmation';
 import { FormVersionDiff, hasStructuralChanges } from '../../forms/requests';
-import { previewFormAIVersion } from '../hooks/requests/previewFormAIVersion';
 import { useCreateForm } from '../hooks/requests/useCreateForm';
 import { useSaveFormVersion } from '../hooks/requests/useSaveFormVersion';
 import MESSAGES from '../messages';
+import { previewFormAIVersion } from '../requests';
 import { SaveVersionResponse } from '../types';
 
 const sanitizeOdkId = (value: string): string =>

@@ -3,7 +3,7 @@ import logging
 import django_filters
 
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from lazy_services import LazyService
@@ -30,6 +30,7 @@ from .serializers import (
     ExternalTaskPostSerializer,
     ExternalTaskSerializer,
     TaskLogSerializer,
+    TaskPresignedUrlSerializer,
     TaskSerializer,
 )
 
@@ -45,7 +46,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     GET /api/tasks/
     GET /api/tasks/<id>
-    GET /api/tasks/<id>/presigned-url/
+    GET /api/tasks/<id>/presigned-url/ (410 if the file has expired)
     GET /api/tasks/types/
     PATCH /api/tasks/<id>
     PATCH /api/tasks/<id>/relaunch/
@@ -99,19 +100,40 @@ class TaskSourceViewSet(ModelViewSet):
             return Response(serializer.data)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
+    @extend_schema(
+        responses={
+            status.HTTP_200_OK: TaskPresignedUrlSerializer,
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                description="The task did not produce a file, or the URL could not be generated."
+            ),
+            status.HTTP_410_GONE: OpenApiResponse(
+                response=TaskPresignedUrlSerializer,
+                description="The file has expired and can no longer be downloaded.",
+            ),
+        },
+    )
     @action(detail=True, methods=["get"], url_path="presigned-url")
     def generate_presigned_url(self, request, pk=None):
+        """Generate a temporary URL to download the file produced by a task."""
         task = get_object_or_404(Task, pk=pk)
 
-        if task.result and task.result["data"] and task.result["data"].startswith("file:"):
-            s3_object_name = task.result["data"].replace("file:", "")
+        s3_object_name = task.result_file
+        if s3_object_name:
+            if task.result_file_expired:
+                serializer = TaskPresignedUrlSerializer(
+                    {"presigned_url": None, "expires_at": task.result_file_expires_at}
+                )
+                return Response(serializer.data, status=status.HTTP_410_GONE)
 
             try:
-                response = generate_presigned_url_from_s3(s3_object_name)
+                presigned_url = generate_presigned_url_from_s3(s3_object_name)
             except Exception as e:
-                return Response({"error": str(e)}, status=400)
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"presigned_url": response})
+            serializer = TaskPresignedUrlSerializer(
+                {"presigned_url": presigned_url, "expires_at": task.result_file_expires_at}
+            )
+            return Response(serializer.data)
         raise serializers.ValidationError(
             {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
         )

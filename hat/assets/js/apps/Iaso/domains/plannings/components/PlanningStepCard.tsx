@@ -3,6 +3,9 @@ import { Avatar, Box, Card, Divider, Stack, Typography } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
 
 const styles = {
+    card: {
+        position: 'relative',
+    },
     header: {
         p: 2,
     },
@@ -13,6 +16,9 @@ const styles = {
         fontWeight: 'bold',
         bgcolor: 'primary.main',
     },
+    titleBlock: {
+        flex: 1,
+    },
     content: {
         p: 2,
     },
@@ -21,7 +27,9 @@ const styles = {
 type Props = {
     step: number;
     title: string;
-    description?: string;
+    description?: ReactNode;
+    actions?: ReactNode;
+    disableContentPadding?: boolean;
     children: ReactNode;
 };
 
@@ -29,12 +37,14 @@ export const PlanningStepCard: FC<Props> = ({
     step,
     title,
     description,
+    actions,
+    disableContentPadding = false,
     children,
 }) => (
-    <Card variant="outlined">
+    <Card variant="outlined" sx={styles.card}>
         <Stack direction="row" alignItems="center" gap={1.5} sx={styles.header}>
             <Avatar sx={styles.stepNumber}>{step}</Avatar>
-            <Box>
+            <Box sx={styles.titleBlock}>
                 <Typography variant="h6" component="h2">
                     {title}
                 </Typography>
@@ -44,8 +54,11 @@ export const PlanningStepCard: FC<Props> = ({
                     </Typography>
                 )}
             </Box>
+            {actions}
         </Stack>
         <Divider />
-        <Box sx={styles.content}>{children}</Box>
+        <Box sx={disableContentPadding ? undefined : styles.content}>
+            {children}
+        </Box>
     </Card>
 );

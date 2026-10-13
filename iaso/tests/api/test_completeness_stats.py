@@ -12,7 +12,7 @@ from django.contrib.auth.models import Permission, User
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, Form, Group, Instance, OrgUnit, OrgUnitType, Planning
+from iaso.models import Account, Form, Group, Instance, MissionForm, OrgUnit, OrgUnitType, Planning
 from iaso.models.base import Profile
 from iaso.models.team import Team
 from iaso.test import APITestCase
@@ -1169,3 +1169,69 @@ class CompletenessStatsAPITestCase(APITestCase):
             reverse("completeness_stats-list"), data={"form_id": self.form_hs_1.id, "planning_id": self.planning.id}
         )
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_search_by_planning_returns_only_forms_from_active_planning_missions(self):
+        """
+        Jira ticket : 5509
+        Filtering by planning returns its active missions' forms without duplicates.
+        """
+
+        self.client.force_authenticate(self.user)
+
+        shared_form = Form.objects.create(name="Shared mission form")
+        deleted_mission_form = Form.objects.create(name="Deleted mission form")
+        other_planning_form = Form.objects.create(name="Other planning form")
+        self.project_1.forms.add(shared_form, deleted_mission_form, other_planning_form)
+
+        def create_mission(name, form):
+            mission = MissionForm.objects.create(
+                name=name,
+                account=self.account,
+                created_by=self.user,
+            )
+            mission.forms.add(form)
+            return mission
+
+        # Two missions in the planning share the same form.
+        mission_1 = create_mission("Mission 1", shared_form)
+        mission_2 = create_mission("Mission 2", shared_form)
+
+        # A deleted mission must not contribute its form.
+        deleted_mission = create_mission("Deleted mission", deleted_mission_form)
+        deleted_mission.delete()
+        deleted_mission.refresh_from_db()
+        self.assertIsNotNone(deleted_mission.deleted_at)
+
+        # A mission in another planning must not contribute its form.
+        other_mission = create_mission("Other mission", other_planning_form)
+        other_planning = Planning.objects.create(
+            name="Other planning",
+            project=self.project_1,
+            team=self.team_1,
+            org_unit=self.org_unit,
+        )
+        other_planning.missions.add(other_mission)
+
+        self.planning.missions.add(mission_1, mission_2, deleted_mission)
+
+        # Request all candidate forms so the planning filter must exclude
+        # the deleted mission's form and the other planning's form.
+        response = self.client.get(
+            reverse("completeness_stats-list"),
+            data={
+                "form_id": (f"{shared_form.id},{deleted_mission_form.id},{other_planning_form.id}"),
+                "planning_id": self.planning.id,
+            },
+        )
+        res = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(
+            res["forms"],
+            [
+                {
+                    "id": shared_form.id,
+                    "name": shared_form.name,
+                    "slug": f"form_{shared_form.id}",
+                }
+            ],
+        )

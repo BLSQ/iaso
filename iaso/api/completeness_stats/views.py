@@ -45,7 +45,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from iaso.models import Instance, OrgUnit, OrgUnitType
+from iaso.models import Instance, MissionFormThroughForm, MissionWithForms, OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import (
     CORE_COMPLETENESS_STATS_PERMISSION,
     CORE_REGISTRY_READ_PERMISSION,
@@ -106,7 +106,11 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             instance_qs = instance_qs.filter(period=period)
         if planning:
             instance_qs = instance_qs.filter(planning=planning)
-            form_qs = form_qs.filter(mission_forms__mission_ptr__plannings=planning)
+            form_qs = form_qs.filter(
+                id__in=MissionFormThroughForm.objects.filter(
+                    mission_form__in=MissionWithForms.objects.filter(plannings=planning)
+                ).values("form_id")
+            ).distinct("id")
 
         # filter instance_qs on users related to selected teams
         if teams:

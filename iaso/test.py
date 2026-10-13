@@ -433,7 +433,10 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         if has_problems is False:
             self.assertEqual(last_api_import.exception, "")
         if exception_contains_string is not None:
-            self.assertTrue(exception_contains_string in last_api_import.exception)
+            self.assertTrue(
+                exception_contains_string in last_api_import.exception,
+                f"{exception_contains_string} not found in {last_api_import.exception}",
+            )
         if exception_contains_code is not None:
             self.assertTrue(exception_contains_code in last_api_import.exception)
 

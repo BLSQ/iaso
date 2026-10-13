@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.utils.functional import cached_property
 from rest_framework import serializers
 
@@ -28,7 +30,7 @@ class ReferenceInstancesSerializer(ModelSerializer):
 class MobileOrgUnitSerializer(ModelSerializer):
     app_id = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # Do not include the geo_json if not requested
         self.app_id = kwargs["context"].get("app_id")

@@ -1,8 +1,10 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import ModelSerializer
-from iaso.models import OrgUnit
+from iaso.models import MissionOrgUnitType, OrgUnit, Planning
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
 
@@ -14,6 +16,13 @@ class OrgUnitImportSerializer(ModelSerializer):
 
     name = serializers.CharField(required=False, allow_null=True)
     location = ThreeDimPointField(required=False, allow_null=True, write_only=True)
+
+    mission_id = serializers.PrimaryKeyRelatedField(
+        queryset=MissionOrgUnitType.objects.none(), write_only=True, required=False, source="mission", allow_null=True
+    )
+    planning_id = serializers.PrimaryKeyRelatedField(
+        queryset=Planning.objects.none(), write_only=True, required=False, source="planning", allow_null=True
+    )
 
     # internal non-model fields
     created_at = serializers.FloatField(required=False, allow_null=True, write_only=True)
@@ -31,11 +40,20 @@ class OrgUnitImportSerializer(ModelSerializer):
             "org_unit_type_id_lookup",
             "parent_id",
             "org_unit_type_id",
+            "mission_id",
+            "planning_id",
         ]
         extra_kwargs = {
             "parent_id": {"required": False},
             "org_unit_type_id": {"required": False},
         }
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        user = self.context.get("user", None)
+        if user:
+            self.fields["mission_id"].queryset = MissionOrgUnitType.objects_include_deleted.filter_for_user(user=user)
+            self.fields["planning_id"].queryset = Planning.objects_include_deleted.filter_for_user(user=user)
 
     def to_internal_value(self, data):
         """Pre-process the incoming dictionary and handle legacy data formats."""
@@ -66,6 +84,8 @@ class OrgUnitImportSerializer(ModelSerializer):
         processed_data["id"] = data.get("id")
         processed_data["name"] = data.get("name")
         processed_data["created_at"] = data.get("created_at")
+        processed_data["planning_id"] = data.get("planning_id", None)
+        processed_data["mission_id"] = data.get("mission_id", None)
 
         return super().to_internal_value(processed_data)
 

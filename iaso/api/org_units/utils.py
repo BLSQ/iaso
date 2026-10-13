@@ -28,7 +28,7 @@ def import_org_units(org_units: List[Dict], user, app_id) -> List[OrgUnit]:
         if OrgUnit.objects.filter(uuid=uuid, version=version).exists():
             continue  # skip existing org units
 
-        serializer = OrgUnitImportSerializer(data=org_unit_data)
+        serializer = OrgUnitImportSerializer(data=org_unit_data, context={"user": user})
         serializer.is_valid(raise_exception=True)
         new_org_unit = serializer.save(**extra_save_kwargs)
         new_org_units.append(new_org_unit)

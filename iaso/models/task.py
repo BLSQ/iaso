@@ -1,5 +1,6 @@
 import traceback
 
+from datetime import datetime
 from logging import getLogger
 from typing import Optional
 
@@ -130,6 +131,32 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "data": result_data}
         self.create_log_entry_if_needed(message)
         self.save()
+
+    @property
+    def result_file(self) -> Optional[str]:
+        """The S3 object name of the file produced by the task, if any.
+
+        A file is reported in `result["data"]` either as "file:<object name>", or as
+        {"file": "<object name>", "expires_at": "<ISO date>"} when it is only available for a limited time.
+        """
+        data = (self.result or {}).get("data")
+        if isinstance(data, str) and data.startswith("file:"):
+            return data.removeprefix("file:")
+        if isinstance(data, dict):
+            return data.get("file")
+        return None
+
+    @property
+    def result_file_expires_at(self) -> Optional[datetime]:
+        data = (self.result or {}).get("data")
+        if isinstance(data, dict) and data.get("expires_at"):
+            return datetime.fromisoformat(data["expires_at"])
+        return None
+
+    @property
+    def result_file_expired(self) -> bool:
+        expires_at = self.result_file_expires_at
+        return expires_at is not None and expires_at <= timezone.now()
 
     def report_success(self, message: Optional[str] = None):
         logger.info(f"Task {self} reported success with message {message}")

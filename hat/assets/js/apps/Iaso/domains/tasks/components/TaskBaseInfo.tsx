@@ -43,16 +43,21 @@ type Props = {
 };
 export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
     const { formatMessage } = useSafeIntl();
+    // A file is reported either as "file:<name>", or as { file, expires_at } when it expires.
+    const resultData = task.result?.data;
     const taskHasDownloadableFile =
-        task.result &&
-        task.result.data &&
-        (typeof task.result.data === 'string' ||
-            task.result.data instanceof String) &&
-        task.result.data.startsWith('file:');
+        ((typeof resultData === 'string' || resultData instanceof String) &&
+            resultData.startsWith('file:')) ||
+        Boolean(resultData?.file);
+    const fileExpiresAt =
+        taskHasDownloadableFile && resultData.expires_at
+            ? moment(resultData.expires_at)
+            : undefined;
+    const fileHasExpired = Boolean(fileExpiresAt?.isSameOrBefore(moment()));
     const { data } = useQuery(
         ['taskDetails', task.id],
         () => getRequest(`/api/tasks/${task.id}/presigned-url/`),
-        { enabled: Boolean(taskHasDownloadableFile) },
+        { enabled: Boolean(taskHasDownloadableFile) && !fileHasExpired },
     );
     return (
         <>
@@ -90,6 +95,18 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
                             value={task.progress_message}
                         />
                     )}
+                    {fileExpiresAt && (
+                        <Row
+                            label={formatMessage(MESSAGES.fileAvailableUntil)}
+                            value={
+                                fileHasExpired
+                                    ? formatMessage(MESSAGES.fileExpired, {
+                                          date: fileExpiresAt.format('LTS'),
+                                      })
+                                    : `${fileExpiresAt.format('LTS')} (${fileExpiresAt.fromNow()})`
+                            }
+                        />
+                    )}
                 </TableBody>
             </Table>
             {taskHasDownloadableFile && (
@@ -97,7 +114,7 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
                     variant="contained"
                     href={data?.presigned_url}
                     target="_blank"
-                    disabled={!data || !data.presigned_url}
+                    disabled={fileHasExpired || !data || !data.presigned_url}
                 >
                     {formatMessage(MESSAGES.exportMobileAppDownloadBtn)}
                 </Button>

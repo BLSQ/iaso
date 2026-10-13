@@ -1,5 +1,7 @@
 import datetime
 
+from unittest.mock import patch
+
 import time_machine
 
 from django.utils import timezone
@@ -586,3 +588,71 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(response.json()["logs"][0]["message"], "We have the best task.")
         self.assertEqual(response.json()["logs"][1]["message"], "Simply the best task.")
         self.assertEqual(response.json()["logs"][2]["message"], "You can't believe how good this task is.")
+
+    def create_task_with_file(self, expires_at=None):
+        task = m.Task.objects.create(account=self.account, created_by=self.johnny, name="Export", status=RUNNING)
+        if expires_at:
+            result_data = {"file": "export-files/export.zip", "expires_at": expires_at.isoformat()}
+        else:
+            result_data = "file:export-files/export.zip"
+        task.report_success_with_result(message="Exported", result_data=result_data)
+        return task
+
+    def test_result_file(self):
+        task = m.Task(account=self.account, name="Export")
+        for result, expected_file in [
+            (None, None),
+            ({"result": SUCCESS, "data": None}, None),
+            ({"result": SUCCESS, "data": "Some message"}, None),
+            ({"result": SUCCESS, "data": "file:export-files/export.zip"}, "export-files/export.zip"),
+            ({"result": SUCCESS, "data": {"file": "export-files/export.zip"}}, "export-files/export.zip"),
+            ({"result": SUCCESS, "data": {"rows": 12}}, None),
+        ]:
+            with self.subTest(result=result):
+                task.result = result
+                self.assertEqual(task.result_file, expected_file)
+                self.assertIsNone(task.result_file_expires_at)
+                self.assertFalse(task.result_file_expired)
+
+    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3", return_value="https://s3/export.zip?signed")
+    def test_presigned_url_without_expiry(self, mock_presign):
+        task = self.create_task_with_file()
+        self.assertFalse(task.result_file_expired)
+
+        self.client.force_authenticate(self.johnny)
+        response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"presigned_url": "https://s3/export.zip?signed", "expires_at": None})
+        mock_presign.assert_called_once_with("export-files/export.zip")
+
+    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3", return_value="https://s3/export.zip?signed")
+    def test_presigned_url_before_expiry(self, mock_presign):
+        task = self.create_task_with_file(expires_at=CREATED_AT + datetime.timedelta(days=7))
+        self.assertEqual(task.result_file_expires_at, CREATED_AT + datetime.timedelta(days=7))
+
+        self.client.force_authenticate(self.johnny)
+        with time_machine.travel(CREATED_AT + datetime.timedelta(days=6, hours=23), tick=False):
+            response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"presigned_url": "https://s3/export.zip?signed", "expires_at": "2023-12-27T15:00:00Z"},
+        )
+
+    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3")
+    def test_presigned_url_after_expiry(self, mock_presign):
+        task = self.create_task_with_file(expires_at=CREATED_AT + datetime.timedelta(days=7))
+
+        self.client.force_authenticate(self.johnny)
+        with time_machine.travel(CREATED_AT + datetime.timedelta(days=7), tick=False):
+            self.assertTrue(task.result_file_expired)
+            response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
+
+        self.assertEqual(response.status_code, 410)
+        self.assertEqual(
+            response.json(),
+            {"presigned_url": None, "expires_at": "2023-12-27T15:00:00Z"},
+        )
+        mock_presign.assert_not_called()

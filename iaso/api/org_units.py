@@ -45,7 +45,7 @@ from iaso.permissions.core_permissions import (
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
-from ..plugins import is_polio_plugin_active
+from ..plugins import extra_org_unit_permissions
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 from .serializers import OrgUnitImportSerializer
 
@@ -79,10 +79,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name()),
             request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name()),
         ]
-        if is_polio_plugin_active():
-            from plugins.polio.permissions import POLIO_PERMISSION
-
-            required_perms.append(request.user.has_perm(POLIO_PERMISSION.full_name()))
+        required_perms.extend(extra_org_unit_permissions(request.user))
 
         if not (request.user.is_authenticated and any(required_perms)):
             return False

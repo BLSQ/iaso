@@ -1384,7 +1384,8 @@ class BaseProfileAPITestCase(SwaggerTestCaseMixin, APITestCase):
 <p>Several environment variables are also available to control the generation process:</p>
 <ul>
 <li><code>ORVAL_TARGET_URL_PROTOCOL</code>: <code>http</code> or <code>https</code>, the protocol used in the URL to fetch the OpenAPI schema</li>
-<li><code>ORVAL_TARGET_URL_DOMAIN</code>: default <code>localhost:8000</code>, the host serving the OpenAPI schema</li>
+<li><code>ORVAL_TARGET_URL_DOMAIN</code>: default <code>localhost</code>, the host serving the OpenAPI schema</li>
+<li><code>ORVAL_TARGET_URL_PORT</code>: default <code>8000</code>, the port serving the OpenAPI schema</li>
 <li><code>ORVAL_API_BASE_URL</code>: the base url that will be appended to your generated hooks for the API.</li>
 <li><code>ORVAL_TARGET_FILE</code>: path to a local OpenAPI file, if used instead of a remote endpoint</li>
 <li><code>API_TOKEN</code>: bearer token used when fetching the schema from a protected /swagger/ endpoint</li>

@@ -43,7 +43,7 @@ type Props = {
     dialogType: ModalMode;
     isOpen: boolean;
     closeDialog: () => void;
-    defaultProject?: number;
+    defaultValues?: Pick<Partial<Team>, 'project' | 'parent'>;
     onSuccess?: (team: Team) => void;
 };
 
@@ -66,7 +66,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     id,
     isOpen,
     closeDialog,
-    defaultProject,
+    defaultValues,
     onSuccess,
 }) => {
     const { data: colors } = useGetColors();
@@ -80,7 +80,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
         useGetTeamsDropdown(
             {
-                project: team?.project ?? defaultProject,
+                project: team?.project ?? defaultValues?.project,
             },
             id,
         );
@@ -108,12 +108,12 @@ const CreateEditTeam: FunctionComponent<Props> = ({
             id,
             name: team?.name,
             description: team?.description,
-            project: team?.project,
+            project: team?.project ?? defaultValues?.project,
             manager: team?.manager || currentUser.user_id,
             subTeams: team?.sub_teams || [],
             type: team?.type,
             users: team?.users || [],
-            parent: team?.parent,
+            parent: team?.parent ?? defaultValues?.parent,
             color: team?.color,
         },
         enableReinitialize: true,

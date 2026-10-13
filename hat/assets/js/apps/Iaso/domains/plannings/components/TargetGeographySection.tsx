@@ -123,7 +123,7 @@ export const TargetGeographySection: FC = () => {
                     />
                     <CreateRootTeamModal
                         dialogType="create"
-                        defaultProject={values.project}
+                        defaultValues={{ project: values.project }}
                         onSuccess={onTeamCreated}
                     />
                 </Grid>

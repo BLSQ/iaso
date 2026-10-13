@@ -474,6 +474,84 @@ const MESSAGES = defineMessages({
         defaultMessage: 'or',
         id: 'iaso.plannings.label.or',
     },
+    teamHierarchy: {
+        defaultMessage: 'Team hierarchy',
+        id: 'iaso.plannings.label.teamHierarchy',
+    },
+    teamHierarchyInfos: {
+        defaultMessage:
+            'Build the hierarchy below the root team. Changes update the levels automatically.',
+        id: 'iaso.plannings.label.teamHierarchyInfos',
+    },
+    teamsCount: {
+        defaultMessage: '{count, plural, one {# team} other {# teams}}',
+        id: 'iaso.plannings.label.teamsCount',
+    },
+    usersCount: {
+        defaultMessage: '{count, plural, one {# user} other {# users}}',
+        id: 'iaso.plannings.label.usersCount',
+    },
+    searchTeamsAndUsers: {
+        defaultMessage: 'Search teams and users',
+        id: 'iaso.plannings.label.searchTeamsAndUsers',
+    },
+    expandAll: {
+        defaultMessage: 'Expand all',
+        id: 'iaso.plannings.label.expandAll',
+    },
+    collapseAll: {
+        defaultMessage: 'Collapse all',
+        id: 'iaso.plannings.label.collapseAll',
+    },
+    teamHierarchyDragHint: {
+        defaultMessage:
+            'Drag a team or user onto another team to move it. Use the actions menu for more options.',
+        id: 'iaso.plannings.label.teamHierarchyDragHint',
+    },
+    addTeam: {
+        defaultMessage: 'Add team',
+        id: 'iaso.plannings.label.addTeam',
+    },
+    addSubTeam: {
+        defaultMessage: 'Add sub-team',
+        id: 'iaso.plannings.label.addSubTeam',
+    },
+    editTeam: {
+        defaultMessage: 'Edit team',
+        id: 'iaso.plannings.label.editTeam',
+    },
+    removeFromHierarchy: {
+        defaultMessage: 'Remove from hierarchy',
+        id: 'iaso.plannings.label.removeFromHierarchy',
+    },
+    removeFromTeam: {
+        defaultMessage: 'Remove from team',
+        id: 'iaso.plannings.label.removeFromTeam',
+    },
+    moreActions: {
+        defaultMessage: 'More actions',
+        id: 'iaso.plannings.label.moreActions',
+    },
+    dragToMove: {
+        defaultMessage: 'Drag to move',
+        id: 'iaso.plannings.label.dragToMove',
+    },
+    teamOfTeams: {
+        defaultMessage: 'Team of teams',
+        id: 'iaso.plannings.label.teamOfTeams',
+    },
+    teamOfUsers: {
+        defaultMessage: 'Team of users',
+        id: 'iaso.plannings.label.teamOfUsers',
+    },
+    selectRootTeamFirst: {
+        defaultMessage: 'Select a root team to build its hierarchy.',
+        id: 'iaso.plannings.label.selectRootTeamFirst',
+    },
+    noTeamHierarchyMatch: {
+        defaultMessage: 'No team or user matches your search.',
+        id: 'iaso.plannings.label.noTeamHierarchyMatch',
+    },
 });
 
 export default MESSAGES;

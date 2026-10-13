@@ -1,5 +1,4 @@
 import React, {
-    ComponentProps,
     FC,
     useCallback,
     useDeferredValue,
@@ -23,7 +22,7 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { CreateEditTeam } from 'Iaso/domains/teams/components/CreateEditTeam';
 import { Team } from 'Iaso/domains/teams/types/team';
-import { canHaveSubTeams } from 'Iaso/domains/teams/utils';
+import { canHaveSubTeams, getToggledType } from 'Iaso/domains/teams/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
 import { PlanningStepCard } from '../components/PlanningStepCard';
@@ -31,14 +30,20 @@ import { usePlanningContext } from '../contexts/PlanningContext';
 import MESSAGES from '../messages';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
 import { HierarchyToolbar } from './HierarchyToolbar';
+import {
+    DeleteTeamDialog,
+    MoveToDialog,
+    RenameTeamDialog,
+} from './TeamActionDialogs';
 import { TeamRow } from './TeamRow';
-import { DraggedItem, HierarchyTeam, UserRowData } from './types';
+import { DraggedItem, HierarchyAction, HierarchyTeam } from './types';
 import { UserRow } from './UserRow';
 import {
     useGetTeamHierarchy,
-    useMoveTeam,
+    useDeleteHierarchyTeam,
     useMoveUser,
     useRefreshTeamHierarchy,
+    useUpdateTeam,
 } from './useTeamHierarchy';
 import {
     buildTeamTree,
@@ -46,6 +51,8 @@ import {
     collectTeamIds,
     countTeamsAndUsers,
     flattenTeamTree,
+    getDropExcludedTeamIds,
+    getMoveTargets,
     getSearchMatches,
 } from './utils';
 
@@ -71,10 +78,9 @@ const styles = {
     },
 } satisfies SxStyles;
 
-type TeamDialogProps = Pick<
-    ComponentProps<typeof CreateEditTeam>,
-    'dialogType' | 'id' | 'defaultValues'
->;
+type HierarchyDialog =
+    | { kind: 'create'; parent: HierarchyTeam }
+    | Extract<HierarchyAction, { kind: 'rename' | 'delete' | 'move' }>;
 
 type Props = {
     rootTeamId: number;
@@ -85,8 +91,9 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
     const { formatMessage } = useSafeIntl();
     const { data: teams = [], isLoading } = useGetTeamHierarchy(rootTeamId);
     const refreshHierarchy = useRefreshTeamHierarchy(rootTeamId);
-    const { mutate: moveTeam } = useMoveTeam(rootTeamId);
+    const { mutate: updateTeam } = useUpdateTeam(rootTeamId);
     const { mutate: moveUser } = useMoveUser(rootTeamId);
+    const { mutate: deleteTeam } = useDeleteHierarchyTeam(rootTeamId);
 
     const [search, setSearch] = useState('');
     const deferredSearch = useDeferredValue(search);
@@ -94,7 +101,7 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
         () => new Set([rootTeamId]),
     );
     const [draggedItem, setDraggedItem] = useState<DraggedItem>();
-    const [teamDialog, setTeamDialog] = useState<TeamDialogProps>();
+    const [dialog, setDialog] = useState<HierarchyDialog>();
 
     const tree = useMemo(
         () => buildTeamTree(teams, rootTeamId),
@@ -141,10 +148,20 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
         useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
         useSensor(KeyboardSensor),
     );
+    const dropExcludedTeamIds = useMemo(
+        () =>
+            tree && draggedItem
+                ? getDropExcludedTeamIds(tree, draggedItem)
+                : new Set<number>(),
+        [tree, draggedItem],
+    );
     const canDropOn = useCallback(
         (target: HierarchyTeam) =>
-            Boolean(tree && draggedItem && canDrop(tree, draggedItem, target)),
-        [tree, draggedItem],
+            Boolean(
+                draggedItem &&
+                canDrop(draggedItem, target, dropExcludedTeamIds),
+            ),
+        [draggedItem, dropExcludedTeamIds],
     );
     const handleDragStart = useCallback(
         ({ active }: DragStartEvent) =>
@@ -152,58 +169,70 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
         [],
     );
     const handleDragCancel = useCallback(() => setDraggedItem(undefined), []);
+    const moveItem = useCallback(
+        (item: DraggedItem, target: HierarchyTeam) => {
+            if (item.kind === 'team') {
+                updateTeam({
+                    teamId: item.team.id,
+                    changes: { parent: target.id },
+                });
+            } else {
+                moveUser({ userId: item.user.id, from: item.team, to: target });
+            }
+            expandTeam(target.id);
+        },
+        [updateTeam, moveUser, expandTeam],
+    );
     const handleDragEnd = useCallback(
         ({ over }: DragEndEvent) => {
             setDraggedItem(undefined);
             const target: HierarchyTeam | undefined = over?.data.current?.team;
-            if (!draggedItem || !target || !canDropOn(target)) return;
-            if (draggedItem.kind === 'team') {
-                moveTeam({ teamId: draggedItem.team.id, parentId: target.id });
-            } else {
-                moveUser({
-                    userId: draggedItem.user.id,
-                    from: draggedItem.team,
-                    to: target,
-                });
+            if (draggedItem && target && canDropOn(target)) {
+                moveItem(draggedItem, target);
             }
-            expandTeam(target.id);
         },
-        [draggedItem, canDropOn, moveTeam, moveUser, expandTeam],
+        [draggedItem, canDropOn, moveItem],
     );
 
     const openCreateDialog = useCallback(
-        (parent: HierarchyTeam) =>
-            setTeamDialog({
-                dialogType: 'create',
-                defaultValues: { project: projectId, parent: parent.id },
-            }),
-        [projectId],
-    );
-    const openEditDialog = useCallback(
-        (team: HierarchyTeam) =>
-            setTeamDialog({ dialogType: 'edit', id: team.id }),
+        (parent: HierarchyTeam) => setDialog({ kind: 'create', parent }),
         [],
     );
-    const closeTeamDialog = useCallback(() => setTeamDialog(undefined), []);
-    const handleTeamSaved = useCallback(
+    const openRootCreateDialog = useCallback(() => {
+        if (tree) openCreateDialog(tree.team);
+    }, [tree, openCreateDialog]);
+    const closeDialog = useCallback(() => setDialog(undefined), []);
+    const handleTeamCreated = useCallback(
         (team: Team) => {
             refreshHierarchy();
             if (team.parent) expandTeam(team.parent);
         },
         [refreshHierarchy, expandTeam],
     );
-    const openRootCreateDialog = useCallback(() => {
-        if (tree) openCreateDialog(tree.team);
-    }, [tree, openCreateDialog]);
 
-    const removeFromHierarchy = useCallback(
-        (team: HierarchyTeam) => moveTeam({ teamId: team.id, parentId: null }),
-        [moveTeam],
-    );
-    const removeFromTeam = useCallback(
-        ({ user, team }: UserRowData) =>
-            moveUser({ userId: user.id, from: team }),
-        [moveUser],
+    const handleAction = useCallback(
+        (action: HierarchyAction) => {
+            switch (action.kind) {
+                case 'addSubTeam':
+                    openCreateDialog(action.team);
+                    break;
+                case 'changeType':
+                    updateTeam({
+                        teamId: action.team.id,
+                        changes: { type: getToggledType(action.team) },
+                    });
+                    break;
+                case 'removeUser':
+                    moveUser({ userId: action.user.id, from: action.team });
+                    break;
+                case 'rename':
+                case 'delete':
+                case 'move':
+                    setDialog(action);
+                    break;
+            }
+        },
+        [openCreateDialog, updateTeam, moveUser],
     );
 
     return (
@@ -256,15 +285,13 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
                             row={row}
                             canDropOn={canDropOn}
                             onToggle={toggleTeam}
-                            onAddSubTeam={openCreateDialog}
-                            onEdit={openEditDialog}
-                            onRemoveFromHierarchy={removeFromHierarchy}
+                            onAction={handleAction}
                         />
                     ) : (
                         <UserRow
                             key={`user-${row.team.id}-${row.user.id}`}
                             row={row}
-                            onRemoveFromTeam={removeFromTeam}
+                            onAction={handleAction}
                         />
                     ),
                 )}
@@ -291,12 +318,43 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
                     </Button>
                 </HierarchyRowLayout>
             )}
-            {teamDialog && (
+            {dialog?.kind === 'create' && (
                 <CreateEditTeam
                     isOpen
-                    {...teamDialog}
-                    closeDialog={closeTeamDialog}
-                    onSuccess={handleTeamSaved}
+                    dialogType="create"
+                    defaultValues={{
+                        project: projectId,
+                        parent: dialog.parent.id,
+                    }}
+                    closeDialog={closeDialog}
+                    onSuccess={handleTeamCreated}
+                />
+            )}
+            {dialog?.kind === 'rename' && (
+                <RenameTeamDialog
+                    team={dialog.team}
+                    onConfirm={name =>
+                        updateTeam({
+                            teamId: dialog.team.id,
+                            changes: { name },
+                        })
+                    }
+                    closeDialog={closeDialog}
+                />
+            )}
+            {dialog?.kind === 'move' && tree && (
+                <MoveToDialog
+                    item={dialog.item}
+                    targets={getMoveTargets(tree, dialog.item)}
+                    onConfirm={target => moveItem(dialog.item, target)}
+                    closeDialog={closeDialog}
+                />
+            )}
+            {dialog?.kind === 'delete' && (
+                <DeleteTeamDialog
+                    team={dialog.team}
+                    onConfirm={() => deleteTeam(dialog.team.id)}
+                    closeDialog={closeDialog}
                 />
             )}
         </PlanningStepCard>

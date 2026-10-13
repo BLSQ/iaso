@@ -105,24 +105,46 @@ export const countTeamsAndUsers = (root: TeamNode) => {
     return { teamsCount: nodes.length - 1, usersCount: userIds.size };
 };
 
-export const canDrop = (
+// A team can never be dropped into its own subtree.
+export const getDropExcludedTeamIds = (
     root: TeamNode,
     item: DraggedItem,
+): Set<number> => {
+    const draggedNode =
+        item.kind === 'team' ? findNode(root, item.team.id) : undefined;
+    return new Set(draggedNode ? collectTeamIds(draggedNode) : []);
+};
+
+export const canDrop = (
+    item: DraggedItem,
     target: HierarchyTeam,
+    excludedTeamIds: Set<number>,
 ): boolean => {
+    if (excludedTeamIds.has(target.id)) return false;
     if (item.kind === 'team') {
-        const draggedNode = findNode(root, item.team.id);
-        const isOwnSubtree = draggedNode
-            ? collectTeamIds(draggedNode).includes(target.id)
-            : false;
-        return (
-            !isOwnSubtree &&
-            target.id !== item.team.parent &&
-            canHaveSubTeams(target)
-        );
+        return target.id !== item.team.parent && canHaveSubTeams(target);
     }
     const alreadyMember = (target.users_details ?? []).some(
         user => user.id === item.user.id,
     );
     return target.id !== item.team.id && !alreadyMember && canHaveUsers(target);
+};
+
+export type MoveTarget = { team: HierarchyTeam; path: string };
+
+export const getMoveTargets = (
+    root: TeamNode,
+    item: DraggedItem,
+): MoveTarget[] => {
+    const targets: MoveTarget[] = [];
+    const excludedTeamIds = getDropExcludedTeamIds(root, item);
+    const visit = (node: TeamNode, ancestorNames: string[]) => {
+        const names = [...ancestorNames, node.team.name];
+        if (canDrop(item, node.team, excludedTeamIds)) {
+            targets.push({ team: node.team, path: names.join(' / ') });
+        }
+        node.children.forEach(child => visit(child, names));
+    };
+    visit(root, []);
+    return targets;
 };

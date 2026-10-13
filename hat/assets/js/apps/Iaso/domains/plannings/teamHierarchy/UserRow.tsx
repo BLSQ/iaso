@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
 import { useDraggable } from '@dnd-kit/core';
+import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
@@ -8,8 +10,8 @@ import { getDisplayName } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
-import { RowActionsMenu } from './RowActionsMenu';
-import { DraggedItem, UserRowData } from './types';
+import { RowAction, RowActionsMenu } from './RowActionsMenu';
+import { DraggedItem, HierarchyAction, UserRowData } from './types';
 import { userKey } from './utils';
 
 const styles = {
@@ -21,13 +23,16 @@ const styles = {
 
 type Props = {
     row: UserRowData;
-    onRemoveFromTeam: (row: UserRowData) => void;
+    onAction: (action: HierarchyAction) => void;
 };
 
-export const UserRow: FC<Props> = ({ row, onRemoveFromTeam }) => {
+export const UserRow: FC<Props> = ({
+    row: { user, team, depth },
+    onAction,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const { user, team, depth } = row;
 
+    const draggedItem: DraggedItem = { kind: 'user', user, team };
     const {
         setNodeRef,
         setActivatorNodeRef,
@@ -36,14 +41,22 @@ export const UserRow: FC<Props> = ({ row, onRemoveFromTeam }) => {
         isDragging,
     } = useDraggable({
         id: userKey(team.id, user.id),
-        data: { kind: 'user', user, team } satisfies DraggedItem,
+        data: draggedItem,
     });
 
-    const actions = [
+    const actions: RowAction[] = [
+        {
+            key: 'move',
+            label: formatMessage(MESSAGES.moveTo),
+            icon: <DriveFileMoveIcon fontSize="small" />,
+            onClick: () => onAction({ kind: 'move', item: draggedItem }),
+        },
         {
             key: 'removeFromTeam',
             label: formatMessage(MESSAGES.removeFromTeam),
-            onClick: () => onRemoveFromTeam(row),
+            icon: <PersonRemoveIcon fontSize="small" />,
+            danger: true,
+            onClick: () => onAction({ kind: 'removeUser', user, team }),
         },
     ];
 

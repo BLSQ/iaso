@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { User } from 'Iaso/domains/teams/types/team';
-import { HierarchyTeam, TeamNode } from './types';
+import { DraggedItem, HierarchyTeam, TeamNode } from './types';
 import {
     buildTeamTree,
     canDrop,
     countTeamsAndUsers,
     flattenTeamTree,
+    getDropExcludedTeamIds,
+    getMoveTargets,
     getSearchMatches,
 } from './utils';
 
@@ -49,6 +51,8 @@ const TEAMS = [
 ];
 
 const buildTree = (): TeamNode => buildTeamTree(TEAMS, 1) as TeamNode;
+const canDropInTree = (item: DraggedItem, target: HierarchyTeam) =>
+    canDrop(item, target, getDropExcludedTeamIds(buildTree(), item));
 const teamById = (id: number) =>
     TEAMS.find(team => team.id === id) as HierarchyTeam;
 
@@ -129,38 +133,25 @@ describe('countTeamsAndUsers', () => {
 describe('canDrop', () => {
     it('rejects dropping a team into its own subtree', () => {
         expect(
-            canDrop(
-                buildTree(),
-                { kind: 'team', team: teamById(2) },
-                teamById(4),
-            ),
+            canDropInTree({ kind: 'team', team: teamById(2) }, teamById(4)),
         ).toBe(false);
     });
 
     it('rejects dropping a team onto its current parent', () => {
         expect(
-            canDrop(
-                buildTree(),
-                { kind: 'team', team: teamById(2) },
-                teamById(1),
-            ),
+            canDropInTree({ kind: 'team', team: teamById(2) }, teamById(1)),
         ).toBe(false);
     });
 
     it('allows dropping a team onto a sibling team of teams', () => {
         expect(
-            canDrop(
-                buildTree(),
-                { kind: 'team', team: teamById(2) },
-                teamById(3),
-            ),
+            canDropInTree({ kind: 'team', team: teamById(2) }, teamById(3)),
         ).toBe(true);
     });
 
     it('rejects dropping a user onto a team of teams', () => {
         expect(
-            canDrop(
-                buildTree(),
+            canDropInTree(
                 { kind: 'user', user: alice, team: teamById(4) },
                 teamById(3),
             ),
@@ -170,11 +161,20 @@ describe('canDrop', () => {
     it('allows dropping a user onto an empty team', () => {
         const emptyTeam = makeTeam(5, 'Empty', 3, undefined);
         expect(
-            canDrop(
-                buildTree(),
+            canDropInTree(
                 { kind: 'user', user: alice, team: teamById(4) },
                 emptyTeam,
             ),
         ).toBe(true);
+    });
+});
+
+describe('getMoveTargets', () => {
+    it('lists only valid destinations, labelled with their path', () => {
+        const targets = getMoveTargets(buildTree(), {
+            kind: 'team',
+            team: teamById(3),
+        });
+        expect(targets.map(({ path }) => path)).toEqual(['Root / Alpha']);
     });
 });

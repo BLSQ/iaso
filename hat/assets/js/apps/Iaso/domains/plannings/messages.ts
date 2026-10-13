@@ -513,16 +513,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.addTeam',
     },
     addSubTeam: {
-        defaultMessage: 'Add sub-team',
+        defaultMessage: 'Add subteam',
         id: 'iaso.plannings.label.addSubTeam',
-    },
-    editTeam: {
-        defaultMessage: 'Edit team',
-        id: 'iaso.plannings.label.editTeam',
-    },
-    removeFromHierarchy: {
-        defaultMessage: 'Remove from hierarchy',
-        id: 'iaso.plannings.label.removeFromHierarchy',
     },
     removeFromTeam: {
         defaultMessage: 'Remove from team',
@@ -551,6 +543,38 @@ const MESSAGES = defineMessages({
     noTeamHierarchyMatch: {
         defaultMessage: 'No team or user matches your search.',
         id: 'iaso.plannings.label.noTeamHierarchyMatch',
+    },
+    rename: {
+        defaultMessage: 'Rename',
+        id: 'iaso.plannings.label.rename',
+    },
+    renameTeam: {
+        defaultMessage: 'Rename team',
+        id: 'iaso.plannings.label.renameTeam',
+    },
+    changeToTeamOfUsers: {
+        defaultMessage: 'Change to team of users',
+        id: 'iaso.plannings.label.changeToTeamOfUsers',
+    },
+    changeToTeamOfTeams: {
+        defaultMessage: 'Change to team of teams',
+        id: 'iaso.plannings.label.changeToTeamOfTeams',
+    },
+    moveTo: {
+        defaultMessage: 'Move to…',
+        id: 'iaso.plannings.label.moveTo',
+    },
+    moveItemTo: {
+        defaultMessage: 'Move {name} to',
+        id: 'iaso.plannings.label.moveItemTo',
+    },
+    destinationTeam: {
+        defaultMessage: 'Destination team',
+        id: 'iaso.plannings.label.destinationTeam',
+    },
+    deleteTeam: {
+        defaultMessage: 'Delete team',
+        id: 'iaso.plannings.label.deleteTeam',
     },
 });
 

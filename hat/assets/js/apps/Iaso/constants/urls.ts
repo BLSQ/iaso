@@ -681,6 +681,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'status',
             'requires_user_action',
             'validation_workflows',
+            'projects',
             ...paginationPathParams,
         ],
     },

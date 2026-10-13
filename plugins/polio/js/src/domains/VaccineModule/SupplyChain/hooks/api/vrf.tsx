@@ -155,7 +155,10 @@ export const useCampaignDropDowns = ({
     const options: Options = {
         enabled: Boolean(countryId),
         countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
-        campaignCategory: 'regular' as CampaignCategory,
+        // Not 'regular': it also hides preventive, planned and on hold campaigns
+        // (incl. campaigns whose next round is on hold), which can still need a VRF.
+        // Deleted campaigns are excluded by default and test ones by show_test.
+        campaignCategory: 'all' as CampaignCategory,
         campaignType: 'polio',
         show_test: false,
     };

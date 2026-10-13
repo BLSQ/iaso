@@ -247,6 +247,15 @@ def extract_admission_criteria(data):
     )
 
 
+def extract_pbwg_admission_criteria(data):
+    """Extract admission criteria from a PBWG admission form.
+
+    PBWG forms may record the MUAC criteria as ``mother_muac``; it is normalized to ``muac``.
+    """
+    admission_criteria = extract_admission_criteria(data)
+    return "muac" if admission_criteria == "mother_muac" else admission_criteria
+
+
 def extract_exit_type(data):
     """Extract exit type from form JSON.
 
@@ -777,6 +786,12 @@ class ETL:
             return extract_bangladesh_exit_type(submission.get("form__form_id"), data)
         return extract_exit_type(data)
 
+    @staticmethod
+    def _extract_admission_criteria(program_type, data):
+        if program_type == "PLW":
+            return extract_pbwg_admission_criteria(data)
+        return extract_admission_criteria(data)
+
     def _extract_visit_date(self, submission):
         if self._is_bangladesh():
             return extract_form_visit_date(submission)
@@ -1056,7 +1071,7 @@ class ETL:
             programme = extract_programme(admission_data)
             physiology_status = extract_pbwg_physiology(admission_data)
             admission_type = extract_admission_type(admission_data)
-            admission_criteria = extract_admission_criteria(admission_data)
+            admission_criteria = self._extract_admission_criteria(program_type, admission_data)
             start_date = self._extract_visit_date(admission_sub)
             initial_weight = extract_weight(admission_data)
             instance_id = admission_sub["id"]

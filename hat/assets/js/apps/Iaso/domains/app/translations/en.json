@@ -1826,8 +1826,6 @@
     "iaso.tasks.message": "Message",
     "iaso.tasks.name": "Name",
     "iaso.tasks.no_logs_to_show": "No logs to show.",
-    "iaso.tasks.polioNotificationImport.details": "Polio Notifications Import Details",
-    "iaso.tasks.polioNotificationImport.errors": "{count} error(s). The following data couldn't be imported.",
     "iaso.tasks.progress": "Progress",
     "iaso.tasks.queued": "Queued",
     "iaso.tasks.relaunch": "Relaunch the task",

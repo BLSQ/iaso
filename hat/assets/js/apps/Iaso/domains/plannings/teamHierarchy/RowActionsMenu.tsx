@@ -1,18 +1,38 @@
-import React, { FC, MouseEvent, useCallback, useState } from 'react';
+import React, { FC, MouseEvent, ReactNode, useCallback, useState } from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { IconButton, Menu, MenuItem } from '@mui/material';
+import {
+    IconButton,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
+} from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
+
+const styles = {
+    danger: {
+        color: 'error.main',
+        '& .MuiListItemIcon-root': { color: 'error.main' },
+    },
+} satisfies SxStyles;
 
 export type RowAction = {
     key: string;
     label: string;
+    icon: ReactNode;
     onClick: () => void;
+    disabled?: boolean;
+    danger?: boolean;
 };
 
 type Props = {
-    actions: RowAction[];
+    actions: (RowAction | false)[];
 };
+
+const isRowAction = (action: RowAction | false): action is RowAction =>
+    Boolean(action);
 
 export const RowActionsMenu: FC<Props> = ({ actions }) => {
     const { formatMessage } = useSafeIntl();
@@ -37,15 +57,18 @@ export const RowActionsMenu: FC<Props> = ({ actions }) => {
                 open={Boolean(anchorEl)}
                 onClose={closeMenu}
             >
-                {actions.map(action => (
+                {actions.filter(isRowAction).map(action => (
                     <MenuItem
                         key={action.key}
+                        disabled={action.disabled}
+                        sx={action.danger ? styles.danger : undefined}
                         onClick={() => {
                             closeMenu();
                             action.onClick();
                         }}
                     >
-                        {action.label}
+                        <ListItemIcon>{action.icon}</ListItemIcon>
+                        <ListItemText>{action.label}</ListItemText>
                     </MenuItem>
                 ))}
             </Menu>

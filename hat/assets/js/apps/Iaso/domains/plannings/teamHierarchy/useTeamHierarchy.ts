@@ -1,12 +1,16 @@
 import { useCallback } from 'react';
 import { QueryKey, UseQueryResult, useQueryClient } from 'react-query';
+import { deleteTeam } from 'Iaso/domains/teams/hooks/requests/useDeleteTeam';
 import { patchTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
+import TEAM_MESSAGES from 'Iaso/domains/teams/messages';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { HierarchyTeam } from './types';
 
 const HIERARCHY_FIELDS = 'id,name,type,parent,color,project,users_details';
+
+const OTHER_TEAM_QUERY_KEYS = ['teamsList', 'teamsDropdown', 'team'];
 
 const getHierarchyQueryKey = (rootTeamId?: number): QueryKey => [
     'planningTeamHierarchy',
@@ -42,20 +46,24 @@ export const useRefreshTeamHierarchy = (rootTeamId?: number) => {
 const userIds = (team: HierarchyTeam) =>
     (team.users_details ?? []).map(user => user.id);
 
-type MoveTeamVariables = { teamId: number; parentId: number | null };
+type TeamChanges = Pick<Partial<HierarchyTeam>, 'name' | 'type' | 'parent'>;
+type UpdateTeamVariables = { teamId: number; changes: TeamChanges };
 type MoveUserVariables = {
     userId: number;
     from: HierarchyTeam;
     to?: HierarchyTeam;
 };
 
-const applyMoveTeam = (
+const applyUpdateTeam = (
     teams: HierarchyTeam[],
-    { teamId, parentId }: MoveTeamVariables,
+    { teamId, changes }: UpdateTeamVariables,
 ): HierarchyTeam[] =>
-    teams.map(team =>
-        team.id === teamId ? { ...team, parent: parentId ?? undefined } : team,
-    );
+    teams.map(team => (team.id === teamId ? { ...team, ...changes } : team));
+
+const applyDeleteTeam = (
+    teams: HierarchyTeam[],
+    teamId: number,
+): HierarchyTeam[] => teams.filter(team => team.id !== teamId);
 
 const applyMoveUser = (
     teams: HierarchyTeam[],
@@ -107,16 +115,30 @@ const useOptimisticHierarchyUpdate = <Variables>(
                 queryClient.setQueryData(queryKey, context.previous);
             }
         },
-        onSettled: () => queryClient.invalidateQueries(queryKey),
+        onSettled: () => {
+            queryClient.invalidateQueries(queryKey);
+            // Team dropdowns (e.g. the root team select) never go stale on their own.
+            OTHER_TEAM_QUERY_KEYS.forEach(key =>
+                queryClient.invalidateQueries(key),
+            );
+        },
     };
 };
 
-export const useMoveTeam = (rootTeamId?: number) =>
+export const useUpdateTeam = (rootTeamId?: number) =>
     useSnackMutation({
-        mutationFn: ({ teamId, parentId }: MoveTeamVariables) =>
-            patchTeam({ id: teamId, parent: parentId }),
+        mutationFn: ({ teamId, changes }: UpdateTeamVariables) =>
+            patchTeam({ id: teamId, ...changes }),
         showSuccessSnackBar: false,
-        options: useOptimisticHierarchyUpdate(rootTeamId, applyMoveTeam),
+        options: useOptimisticHierarchyUpdate(rootTeamId, applyUpdateTeam),
+    });
+
+export const useDeleteHierarchyTeam = (rootTeamId?: number) =>
+    useSnackMutation({
+        mutationFn: deleteTeam,
+        snackSuccessMessage: TEAM_MESSAGES.deleteSuccess,
+        snackErrorMsg: TEAM_MESSAGES.deleteError,
+        options: useOptimisticHierarchyUpdate(rootTeamId, applyDeleteTeam),
     });
 
 // Without a target team, the user is only removed from its current team.

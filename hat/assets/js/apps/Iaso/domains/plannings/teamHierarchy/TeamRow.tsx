@@ -2,19 +2,30 @@ import React, { FC, useCallback } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
+import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import GroupsIcon from '@mui/icons-material/Groups';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { IconButton, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from 'Iaso/domains/teams/constants';
-import { canHaveSubTeams } from 'Iaso/domains/teams/utils';
+import { TeamType } from 'Iaso/domains/teams/constants';
+import { canHaveSubTeams, getToggledType } from 'Iaso/domains/teams/utils';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
 import { RowAction, RowActionsMenu } from './RowActionsMenu';
-import { DraggedItem, HierarchyTeam, TeamNode, TeamRowData } from './types';
+import {
+    DraggedItem,
+    HierarchyAction,
+    HierarchyTeam,
+    TeamNode,
+    TeamRowData,
+} from './types';
 import { teamKey } from './utils';
 
 const styles = {
@@ -27,12 +38,12 @@ const styles = {
 } satisfies SxStyles;
 
 const TEAM_TYPE_DISPLAY = {
-    [TEAM_OF_TEAMS]: {
+    [TeamType.TEAM_OF_TEAMS]: {
         label: MESSAGES.teamOfTeams,
         countLabel: MESSAGES.teamsCount,
         getCount: (node: TeamNode) => node.children.length,
     },
-    [TEAM_OF_USERS]: {
+    [TeamType.TEAM_OF_USERS]: {
         label: MESSAGES.teamOfUsers,
         countLabel: MESSAGES.usersCount,
         getCount: (node: TeamNode) => node.team.users_details?.length ?? 0,
@@ -43,18 +54,14 @@ type Props = {
     row: TeamRowData;
     canDropOn: (team: HierarchyTeam) => boolean;
     onToggle: (teamId: number) => void;
-    onAddSubTeam: (team: HierarchyTeam) => void;
-    onEdit: (team: HierarchyTeam) => void;
-    onRemoveFromHierarchy: (team: HierarchyTeam) => void;
+    onAction: (action: HierarchyAction) => void;
 };
 
 export const TeamRow: FC<Props> = ({
     row: { node, depth, isExpanded },
     canDropOn,
     onToggle,
-    onAddSubTeam,
-    onEdit,
-    onRemoveFromHierarchy,
+    onAction,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { team, children } = node;
@@ -62,6 +69,7 @@ export const TeamRow: FC<Props> = ({
     const hasContent =
         children.length > 0 || (team.users_details?.length ?? 0) > 0;
     const typeDisplay = team.type ? TEAM_TYPE_DISPLAY[team.type] : undefined;
+    const draggedItem: DraggedItem = { kind: 'team', team };
 
     const {
         setNodeRef: setDraggableRef,
@@ -71,7 +79,7 @@ export const TeamRow: FC<Props> = ({
         isDragging,
     } = useDraggable({
         id: teamKey(team.id),
-        data: { kind: 'team', team } satisfies DraggedItem,
+        data: draggedItem,
         disabled: isRoot,
     });
     const { setNodeRef: setDroppableRef, isOver } = useDroppable({
@@ -90,23 +98,48 @@ export const TeamRow: FC<Props> = ({
         [onToggle, team.id],
     );
 
-    const actions = [
-        canHaveSubTeams(team) && {
-            key: 'addSubTeam',
-            label: formatMessage(MESSAGES.addSubTeam),
-            onClick: () => onAddSubTeam(team),
+    const actions: (RowAction | false)[] = [
+        {
+            key: 'rename',
+            label: formatMessage(MESSAGES.rename),
+            icon: <EditIcon fontSize="small" />,
+            onClick: () => onAction({ kind: 'rename', team }),
         },
         {
-            key: 'edit',
-            label: formatMessage(MESSAGES.editTeam),
-            onClick: () => onEdit(team),
+            key: 'addSubTeam',
+            label: formatMessage(MESSAGES.addSubTeam),
+            icon: <GroupAddIcon fontSize="small" />,
+            disabled: !canHaveSubTeams(team),
+            onClick: () => onAction({ kind: 'addSubTeam', team }),
+        },
+        {
+            key: 'changeType',
+            label: formatMessage(
+                getToggledType(team) === TeamType.TEAM_OF_TEAMS
+                    ? MESSAGES.changeToTeamOfTeams
+                    : MESSAGES.changeToTeamOfUsers,
+            ),
+            icon: <SwapHorizIcon fontSize="small" />,
+            // The API rejects a type that contradicts existing sub-teams or users.
+            disabled: hasContent,
+            onClick: () => onAction({ kind: 'changeType', team }),
         },
         !isRoot && {
-            key: 'removeFromHierarchy',
-            label: formatMessage(MESSAGES.removeFromHierarchy),
-            onClick: () => onRemoveFromHierarchy(team),
+            key: 'move',
+            label: formatMessage(MESSAGES.moveTo),
+            icon: <DriveFileMoveIcon fontSize="small" />,
+            onClick: () => onAction({ kind: 'move', item: draggedItem }),
         },
-    ].filter((action): action is RowAction => Boolean(action));
+        !isRoot && {
+            key: 'delete',
+            label: formatMessage(MESSAGES.deleteTeam),
+            icon: <DeleteIcon fontSize="small" />,
+            danger: true,
+            // Teams are soft-deleted: sub-teams would be orphaned out of the hierarchy.
+            disabled: children.length > 0,
+            onClick: () => onAction({ kind: 'delete', team }),
+        },
+    ];
 
     return (
         <HierarchyRowLayout
@@ -135,7 +168,7 @@ export const TeamRow: FC<Props> = ({
                 )
             }
         >
-            {team.type === TEAM_OF_USERS ? (
+            {team.type === TeamType.TEAM_OF_USERS ? (
                 <GroupsIcon color="primary" sx={styles.icon} />
             ) : (
                 <AccountTreeIcon color="primary" sx={styles.icon} />

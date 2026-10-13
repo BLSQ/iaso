@@ -36,6 +36,7 @@ from iaso.utils.models.soft_deletable import (
 )
 
 from .forms import Form
+from .missions import MissionArtefact
 
 
 # TODO: Remove blank=True, null=True on FK once the models are sets and validated
@@ -308,7 +309,7 @@ class EntityQuerySet(models.QuerySet):
         return self.filter_for_user(user).filter_for_app_id(user, app_id)
 
 
-class Entity(SoftDeletableModel):
+class Entity(MissionArtefact, SoftDeletableModel):
     """An entity represents a physical object or person with a known Entity Type
 
     Contrary to forms, they are not linked to a specific OrgUnit.

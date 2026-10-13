@@ -14,7 +14,7 @@ from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.api.org_units import OrgUnitViewSet
+from iaso.api.org_units.views import OrgUnitViewSet
 from iaso.models import OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase

@@ -64,6 +64,7 @@ class Planning(SoftDeletableModel):
         OrgUnit,
         on_delete=models.PROTECT,
         help_text="The root org unit of the planning used to scope the assignments org units",
+        related_name="plannings",
     )
     target_org_unit_types = models.ManyToManyField(
         OrgUnitType,

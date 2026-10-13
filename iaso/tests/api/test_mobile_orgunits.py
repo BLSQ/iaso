@@ -6,7 +6,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
 from rest_framework import status
 
-from iaso.api.mobile.org_units import SHAPE_RESULTS_MAX
+from iaso.api.org_units.pagination import SHAPE_RESULTS_MAX
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.models import (
     Account,

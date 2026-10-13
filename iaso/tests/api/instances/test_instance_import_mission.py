@@ -1,6 +1,9 @@
+import uuid
+
 from uuid import uuid4
 
 from iaso import models as m
+from iaso.models import Entity
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
@@ -259,6 +262,34 @@ class InstanceImportMissionTestCase(APITestCase):
         response, instance_uuid = self.post_instance(planningId=self.planning.id, missionId=self.mission_entity_type.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_entity_type.id)
+
+    def test_entity_is_created_and_linked_with_mission_and_planning(self):
+        self.client.force_authenticate(self.user)
+        response, instance_uuid = self.post_instance(
+            planningId=self.planning.id,
+            missionId=self.mission_entity_type.id,
+            entityTypeId=self.entity_type.id,
+            entityUuid=uuid.uuid4(),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_entity_type.id)
+        self.assertTrue(
+            Entity.objects.filter(planning_id=self.planning.id, mission_id=self.mission_entity_type.id).exists()
+        )
+
+    def test_entity_is_not_linked_to_mission_if_mission_is_wrong_type(self):
+        self.client.force_authenticate(self.user)
+        for mission_id in [self.mission_org_unit_type.id, self.mission_form.id]:
+            response, instance_uuid = self.post_instance(
+                planningId=self.planning.id,
+                missionId=mission_id,
+                entityTypeId=self.entity_type.id,
+                entityUuid=uuid.uuid4(),
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(self.get_instance(instance_uuid).mission_id, mission_id)
+            self.assertFalse(Entity.objects.filter(planning_id=self.planning.id, mission_id=mission_id).exists())
 
 
 class InstanceMissionReadTestCase(APITestCase):

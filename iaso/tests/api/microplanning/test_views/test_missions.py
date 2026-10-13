@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 
@@ -198,7 +199,8 @@ class PlanningMissionAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self) -> None:
         self.client.force_authenticate(self.superuser)
-        with self.assertNumQueries(6):
+        ContentType.objects.clear_cache()
+        with self.assertNumQueries(9):
             res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, expected_length=6)

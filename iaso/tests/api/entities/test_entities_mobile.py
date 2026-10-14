@@ -272,11 +272,13 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([len(result["instances"]) for result in response_json["results"]], [1, 1, 1])
-        self.assertEqual(serializer_init.call_count, 1, "the instance serializer is built once per entity")
+        self.assertEqual(serializer_init.call_count, 1, "expected a single instance serializer for the whole page")
 
     def test_list_entities_serializes_only_instances_of_a_known_form_version(self):
-        """Pins the `instances` of each entity: deleted instances, instances without json and instances of a
-        form version unknown to the account are left out; `form_version_id` matches each instance's version."""
+        """Pins the whole entity payload on the 3 endpoints sharing MobileEntitySerializer (list, detail, by entity
+        type). Deleted instances, instances without json and instances of a form version unknown to the account are
+        left out of `instances`; `form_version_id` matches each instance's version."""
+        self.maxDiff = None
         version_1 = m.FormVersion.objects.create(form=self.form_1, version_id="1")
         version_2 = m.FormVersion.objects.create(form=self.form_1, version_id="2")
         created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
@@ -301,33 +303,49 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         registration_france.entity = france
         registration_france.save()
 
+        expected_belgium = self.expected_entity(
+            belgium,
+            [
+                self.expected_instance(registration_belgium, version_1),
+                self.expected_instance(followup_belgium, version_2),
+            ],
+        )
+        expected_france = self.expected_entity(france, [self.expected_instance(registration_france, version_2)])
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
 
-        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
-        instances_by_entity = {
-            result["id"]: sorted(result["instances"], key=lambda instance: instance["id"])
-            for result in response_json["results"]
-        }
-        expected_by_entity = {
-            str(belgium.uuid): sorted(
-                [
-                    self.expected_instance(registration_belgium, version_1),
-                    self.expected_instance(followup_belgium, version_2),
-                ],
-                key=lambda instance: instance["id"],
-            ),
-            str(france.uuid): [self.expected_instance(registration_france, version_2)],
-        }
-        self.assertEqual(instances_by_entity, expected_by_entity)
+        for url in (self.BASE_URL, f"/api/mobile/entitytypes/{self.entity_type.pk}/entities/"):
+            with self.subTest(url=url):
+                response = self.client.get(url, {"app_id": self.project.app_id})
+
+                response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+                self.assertEqual(
+                    sorted(
+                        (self.normalized_entity(result) for result in response_json["results"]),
+                        key=lambda entity: entity["id"],
+                    ),
+                    sorted([expected_belgium, expected_france], key=lambda entity: entity["id"]),
+                )
 
         response = self.client.get(f"{self.BASE_URL}{belgium.uuid}/", {"app_id": self.project.app_id})
 
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(
-            sorted(response_json["instances"], key=lambda instance: instance["id"]),
-            expected_by_entity[str(belgium.uuid)],
-        )
+        self.assertEqual(self.normalized_entity(response_json), expected_belgium)
+
+    def expected_entity(self, entity, expected_instances):
+        entity.refresh_from_db()
+        return {
+            "id": str(entity.uuid),
+            "created_at": entity.created_at.timestamp(),
+            "updated_at": entity.updated_at.timestamp(),
+            "defining_instance_id": str(entity.attributes.uuid),
+            "entity_type_id": str(entity.entity_type_id),
+            "instances": sorted(expected_instances, key=lambda instance: instance["id"]),
+        }
+
+    @staticmethod
+    def normalized_entity(entity_json):
+        """The order of an entity's instances isn't part of the contract."""
+        return {**entity_json, "instances": sorted(entity_json["instances"], key=lambda instance: instance["id"])}
 
     def test_list_entities_filter_by_limit_date_ignores_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)

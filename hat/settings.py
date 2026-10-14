@@ -176,8 +176,13 @@ if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
+# Host:port the Enketo container uses to reach Iaso in local dev, e.g. "iaso:8081" when Iaso runs in docker compose,
+# "host.docker.internal:8081" when it runs on the host with docker desktop. Leave unset in deployed environments.
+ENKETO_DEV_IASO_HOST = env.str("ENKETO_DEV_IASO_HOST", default=None)
+
 ENKETO = {
-    "ENKETO_DEV": env.str("ENKETO_DEV", default=None),
+    "ENKETO_DEV": bool(ENKETO_DEV_IASO_HOST),
+    "ENKETO_DEV_IASO_HOST": ENKETO_DEV_IASO_HOST,
     "ENKETO_API_TOKEN": env.str("ENKETO_API_TOKEN", default=None),
     "ENKETO_URL": env.str("ENKETO_URL", default=None),
     "ENKETO_SIGNING_SECRET": env.str("ENKETO_SIGNING_SECRET", default=None) or SECRET_KEY,

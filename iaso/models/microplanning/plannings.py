@@ -123,7 +123,7 @@ class Planning(SoftDeletableModel):
 
 
 class PlanningConfig(models.Model):
-    planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name="configs")
 
     level = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=False)
 

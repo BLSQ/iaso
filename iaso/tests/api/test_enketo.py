@@ -14,11 +14,21 @@ from rest_framework import status
 
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
-from iaso.enketo.enketo_xml import build_substitutions
+from iaso.enketo.enketo_xml import (
+    MAX_PARENTS,
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES,
+    build_substitutions,
+    extract_xml_instance_from_form_xml,
+    group_name_token,
+    inject_instance_id_in_form,
+    inject_xml_find_uuid,
+    max_parent_index,
+)
 from iaso.models import Instance, InstanceFile
 from iaso.odk import parsing
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.test import APITestCase
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 enketo_test_settings = {
@@ -1119,6 +1129,8 @@ class EnketoAPITestCase(APITestCase):
                 ".//current_ou_name": "Corruscant Jedi Council",
                 ".//current_ou_type_id": "",
                 ".//current_ou_type_name": "",
+                ".//current_ou_group_ids": "",
+                ".//current_ou_group_names": "",
             },
         )
 
@@ -1152,8 +1164,129 @@ class EnketoAPITestCase(APITestCase):
                 ".//parent1_ou_name": "Meta Jedi",
                 ".//parent1_ou_type_id": "",
                 ".//parent1_ou_type_name": "",
+                ".//parent1_ou_group_ids": "",
+                ".//parent1_ou_group_names": "",
+                ".//current_ou_group_ids": "",
+                ".//current_ou_group_names": "",
             },
         )
+
+    def test_enketo_xml_substitutions_groups(self):
+        belgium = m.OrgUnit.objects.create(name="Belgium", version=self.jedi_council_corruscant.version)
+        self.jedi_council_corruscant.parent = belgium
+        self.jedi_council_corruscant.save()
+
+        version = self.jedi_council_corruscant.version
+        gov = m.Group.objects.create(name="GOV", source_version=version)
+        amf = m.Group.objects.create(name="AMF", source_version=version)
+        grand_est = m.Group.objects.create(name="Grand Est", source_version=version)
+        gov.org_units.add(self.jedi_council_corruscant)
+        amf.org_units.add(self.jedi_council_corruscant)
+        grand_est.org_units.add(belgium)
+
+        instance = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        substitutions = build_substitutions(instance=instance)
+
+        # space separated and ordered by id, so selected() can be used in the form
+        self.assertEqual(substitutions[".//current_ou_group_ids"], f"{gov.id} {amf.id}")
+        self.assertEqual(substitutions[".//current_ou_group_names"], "GOV AMF")
+        self.assertEqual(substitutions[".//parent1_ou_group_ids"], str(grand_est.id))
+        self.assertEqual(substitutions[".//parent1_ou_group_names"], "Grand_Est")
+
+    def test_enketo_xml_max_parent_index(self):
+        self.assertEqual(max_parent_index([]), 0)
+        self.assertEqual(max_parent_index(["current_ou_name"]), 0)
+        self.assertEqual(max_parent_index(["parent2_ou_name", "current_ou_id", "parent1_ou_group_ids"]), 2)
+        self.assertEqual(max_parent_index(ORG_UNIT_INJECTABLE_QUESTION_NAMES), MAX_PARENTS)
+
+    def test_enketo_xml_group_name_token(self):
+        self.assertEqual(group_name_token("AMF"), "AMF")
+        self.assertEqual(group_name_token("Southern Area"), "Southern_Area")
+        self.assertEqual(group_name_token("  Southern \t Area\u00a0Bo\n"), "Southern_Area_Bo")
+        self.assertEqual(group_name_token("Lie\u0300ge"), "Li\u00e8ge")
+        self.assertEqual(group_name_token("L'H\u00f4pital"), "L'H\u00f4pital")
+        self.assertEqual(group_name_token(""), "_")
+        self.assertEqual(group_name_token("   "), "_")
+        self.assertEqual(group_name_token(None), "_")
+
+    def test_enketo_xml_groups_injected_in_instance_xml(self):
+        belgium = m.OrgUnit.objects.create(name="Belgium", version=self.jedi_council_corruscant.version)
+        self.jedi_council_corruscant.parent = belgium
+        self.jedi_council_corruscant.save()
+        amf = m.Group.objects.create(name="AMF", source_version=self.jedi_council_corruscant.version)
+        amf.org_units.add(self.jedi_council_corruscant)
+
+        instance = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        with open("iaso/tests/fixtures/form_with_org_unit_groups_injectables.xml", "rb") as form_file:
+            form_xml = form_file.read()
+        instance_xml = extract_xml_instance_from_form_xml(form_xml, instance.uuid)
+        _, new_xml = inject_xml_find_uuid(instance_xml, instance.id, "2026100803", user_id=1, instance=instance)
+
+        new_xml = new_xml.decode("utf-8")
+        self.assertIn(f"<current_ou_group_ids>{amf.id}</current_ou_group_ids>", new_xml)
+        self.assertIn("<current_ou_group_names>AMF</current_ou_group_names>", new_xml)
+        self.assertIn("<parent1_ou_name>Belgium</parent1_ou_name>", new_xml)
+        self.assertIn("<parent1_ou_group_ids></parent1_ou_group_ids>", new_xml)
+
+        # trivial calculate binds are dropped so enketo doesn't overwrite the injected values
+        form_with_bind_removed = inject_instance_id_in_form(form_xml.decode("utf-8"), instance.id)
+        self.assertNotIn('nodeset="/data/current_ou_group_ids" type="string" calculate', form_with_bind_removed)
+        self.assertNotIn('nodeset="/data/parent1_ou_group_names" type="string" calculate', form_with_bind_removed)
+        self.assertIn('nodeset="/data/in_group" type="string" calculate', form_with_bind_removed)
+
+    def test_enketo_xml_groups_not_queried_when_not_in_form(self):
+        created = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        with open("iaso/tests/fixtures/form_rapide_1666691000_with_injectables.xml", "rb") as form_file:
+            instance_xml = extract_xml_instance_from_form_xml(form_file.read(), created.uuid)
+        # fresh instance from the db, like in the enketo api, so nothing of the pyramid is cached
+        # fresh instance from the db, like in the enketo api, the pyramid queries are covered by the baseline test
+        instance = m.Instance.objects.get(id=created.id)
+        with QueryProfiler() as profiler:
+            _, new_xml = inject_xml_find_uuid(instance_xml, instance.id, "1", user_id=1, instance=instance)
+        # 1 query to load the org unit (its parent, none here), iaso_group isn't in the list: any query on it fails
+        with profiler.report_on_failure():
+            profiler.assertLessEqualQueryCount({"iaso_orgunit": 1})
+        self.assertIn("<current_ou_name>Corruscant Jedi Council</current_ou_name>", new_xml.decode("utf-8"))
+
+    def test_enketo_xml_substitutions_num_queries_baseline(self):
+        # only the questions of the form are computed, and the parents walked up to the deepest one it uses
+        version = self.jedi_council_corruscant.version
+        country_type = m.OrgUnitType.objects.create(name="Country")
+        region_type = m.OrgUnitType.objects.create(name="Region")
+        district_type = m.OrgUnitType.objects.create(name="District")
+        belgium = m.OrgUnit.objects.create(name="Belgium", org_unit_type=country_type, version=version)
+        wallonia = m.OrgUnit.objects.create(name="Wallonia", org_unit_type=region_type, parent=belgium, version=version)
+        namur = m.OrgUnit.objects.create(name="Namur", org_unit_type=district_type, parent=wallonia, version=version)
+        m.Group.objects.create(name="GOV", source_version=version).org_units.add(namur, wallonia)
+
+        created = self.create_form_instance(form=self.form_1, period="202001", org_unit=namur, project=self.project)
+        with open("iaso/tests/fixtures/form_rapide_1666691000_with_injectables.xml", "rb") as form_file:
+            xml_without_groups = extract_xml_instance_from_form_xml(form_file.read(), created.uuid)
+        with open("iaso/tests/fixtures/form_with_org_unit_groups_injectables.xml", "rb") as form_file:
+            xml_with_groups = extract_xml_instance_from_form_xml(form_file.read(), created.uuid)
+
+        # fresh instance from the db, like in the enketo api, so nothing of the pyramid is cached
+        instance = m.Instance.objects.get(id=created.id)
+        with QueryProfiler() as profiler:
+            inject_xml_find_uuid(xml_without_groups, instance.id, "1", user_id=1, instance=instance)
+        # current_ou_name and current_ou_type_name: the org unit + its type, no parent loaded
+        with profiler.report_on_failure():
+            profiler.assertLessEqualQueryCount({"iaso_orgunit": 1, "iaso_orgunittype": 1})
+
+        instance = m.Instance.objects.get(id=created.id)
+        with QueryProfiler() as profiler:
+            _, new_xml = inject_xml_find_uuid(xml_with_groups, instance.id, "1", user_id=1, instance=instance)
+        # names and groups up to parent2: per level (Namur, Wallonia, Belgium) 1 org unit + 1 groups query, no type
+        with profiler.report_on_failure():
+            profiler.assertLessEqualQueryCount({"iaso_orgunit": 3, "iaso_group": 3})
+        self.assertIn("<parent1_ou_name>Wallonia</parent1_ou_name>", new_xml.decode("utf-8"))
+        self.assertIn("<parent2_ou_name>Belgium</parent2_ou_name>", new_xml.decode("utf-8"))
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate

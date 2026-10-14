@@ -115,7 +115,7 @@ class TaskSourceViewSet(ModelViewSet):
     @action(detail=True, methods=["get"], url_path="presigned-url")
     def generate_presigned_url(self, request, pk=None):
         """Generate a temporary URL to download the file produced by a task."""
-        task = get_object_or_404(Task, pk=pk)
+        task = self.get_object()
 
         s3_object_name = task.result_file
         if s3_object_name:

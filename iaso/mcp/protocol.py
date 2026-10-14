@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import ast
 import enum
 import inspect
 import json
 import logging
+import sys
 import types
 import typing
 
@@ -110,6 +112,37 @@ def tool(func=None, *, description=None):
     return register(func)
 
 
+class _BitOrToUnion(ast.NodeTransformer):
+    """Rewrite ``X | Y`` to ``Union[X, Y]`` so annotations eval on Python 3.9."""
+
+    def visit_BinOp(self, node):
+        self.generic_visit(node)
+        if not isinstance(node.op, ast.BitOr):
+            return node
+        return ast.Subscript(
+            value=ast.Name(id="Union", ctx=ast.Load()),
+            slice=ast.Tuple(elts=[node.left, node.right], ctx=ast.Load()),
+            ctx=ast.Load(),
+        )
+
+
+def _type_hints(func):
+    if sys.version_info >= (3, 10):
+        return typing.get_type_hints(func)
+    module = sys.modules.get(func.__module__)
+    globalns = dict(getattr(module, "__dict__", {}))
+    globalns.setdefault("Union", typing.Union)
+    hints = {}
+    for name, value in func.__annotations__.items():
+        if not isinstance(value, str):
+            hints[name] = value
+            continue
+        tree = _BitOrToUnion().visit(ast.parse(value, mode="eval"))
+        ast.fix_missing_locations(tree)
+        hints[name] = eval(compile(tree, "<annotation>", "eval"), globalns)
+    return hints
+
+
 def _base_type(annotation):
     origin = typing.get_origin(annotation)
     union_type = getattr(types, "UnionType", None)
@@ -148,7 +181,7 @@ def _property_schema(annotation):
 
 
 def _get_tool_schema(func):
-    hints = typing.get_type_hints(func)
+    hints = _type_hints(func)
     sig = inspect.signature(func)
     properties = {}
     required = []
@@ -232,7 +265,7 @@ def _coerce_scalar(value: Any, annotation: Any) -> Any:
 
 def coerce_tool_arguments(func, arguments: dict[str, Any]) -> dict[str, Any]:
     """Match incoming arguments to the tool signature."""
-    hints = typing.get_type_hints(func)
+    hints = _type_hints(func)
     signature = inspect.signature(func)
     coerced = dict(arguments)
     for name in signature.parameters:

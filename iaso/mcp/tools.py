@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Literal, Optional
+from typing import Any, Literal
 
 from iaso.mcp.client import IasoError
 from iaso.mcp.fill_account import (
@@ -71,7 +71,7 @@ def _filters(**kwargs: Any) -> dict[str, Any]:
 
 
 @tool()
-def get_help_or_doc(topic: Optional[str] = None, reason: Optional[str] = None) -> dict[str, Any]:
+def get_help_or_doc(topic: str | None = None, reason: str | None = None) -> dict[str, Any]:
     """Guidance and product docs. Empty topic = overview; topic = full page."""
     return get_help_or_doc_payload(topic=topic, reason=reason)
 
@@ -99,11 +99,11 @@ def iaso_openhexa_auth_params() -> dict[str, Any]:
 
 @tool()
 def list_org_units(
-    search: Optional[str] = None,
-    validation_status: Optional[str] = None,
-    parent_id: Optional[int] = None,
-    org_unit_type_id: Optional[int] = None,
-    source_id: Optional[int] = None,
+    search: str | None = None,
+    validation_status: str | None = None,
+    parent_id: int | None = None,
+    org_unit_type_id: int | None = None,
+    source_id: int | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
@@ -135,8 +135,8 @@ def get_org_unit(org_unit_id: int) -> dict[str, Any]:
 
 @tool()
 def list_org_unit_types(
-    search: Optional[str] = None,
-    project: Optional[int] = None,
+    search: str | None = None,
+    project: int | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
@@ -169,9 +169,9 @@ def get_org_unit_type_hierarchy(org_unit_type_id: int) -> dict[str, Any]:
 
 @tool()
 def list_forms(
-    search: Optional[str] = None,
-    org_unit_id: Optional[int] = None,
-    org_unit_type_id: Optional[int] = None,
+    search: str | None = None,
+    org_unit_id: int | None = None,
+    org_unit_type_id: int | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
@@ -194,9 +194,9 @@ def get_form(form_id: int) -> dict[str, Any]:
 
 @tool()
 def list_form_versions(
-    form_id: Optional[int] = None,
-    search_name: Optional[str] = None,
-    mapped: Optional[bool] = None,
+    form_id: int | None = None,
+    search_name: str | None = None,
+    mapped: bool | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
@@ -222,12 +222,12 @@ def get_form_version(form_version_id: int) -> dict[str, Any]:
 
 @tool()
 def list_instances(
-    org_unit_id: Optional[int] = None,
-    form_id: Optional[int] = None,
-    org_unit_status: Optional[str] = None,
-    status: Optional[str] = None,
-    search: Optional[str] = None,
-    show_deleted: Optional[bool] = None,
+    org_unit_id: int | None = None,
+    form_id: int | None = None,
+    org_unit_status: str | None = None,
+    status: str | None = None,
+    search: str | None = None,
+    show_deleted: bool | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
@@ -260,12 +260,12 @@ def get_instance(instance_id: int) -> dict[str, Any]:
 
 @tool()
 def list_instance_files(
-    form_id: Optional[int] = None,
-    org_unit_id: Optional[int] = None,
-    search: Optional[str] = None,
-    image_only: Optional[bool] = None,
-    video_only: Optional[bool] = None,
-    document_only: Optional[bool] = None,
+    form_id: int | None = None,
+    org_unit_id: int | None = None,
+    search: str | None = None,
+    image_only: bool | None = None,
+    video_only: bool | None = None,
+    document_only: bool | None = None,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
@@ -292,9 +292,9 @@ def list_instance_files(
 
 @tool()
 def count_instance_files(
-    form_id: Optional[int] = None,
-    org_unit_id: Optional[int] = None,
-    search: Optional[str] = None,
+    form_id: int | None = None,
+    org_unit_id: int | None = None,
+    search: str | None = None,
 ) -> dict[str, Any]:
     """Return instance counts for the given filters."""
     return dict(get_client().instance_files_count(**_filters(form_id=form_id, org_unit_id=org_unit_id, search=search)))
@@ -304,8 +304,8 @@ def count_instance_files(
 def iaso_raw(
     method: Literal["GET", "POST", "PATCH", "PUT", "DELETE"],
     path: str,
-    params: Optional[dict[str, Any]] = None,
-    json_body: Optional[dict[str, Any]] = None,
+    params: dict[str, Any] | None = None,
+    json_body: dict[str, Any] | None = None,
     confirm: bool = False,
 ) -> dict[str, Any]:
     """Call IASO /api/ as the logged-in user. Writes need confirm=true."""
@@ -353,8 +353,8 @@ def apply_reattach_instances(confirm: bool = False) -> dict[str, Any]:
 
 @tool()
 def preview_create_pyramid(
-    xlsx_path: Optional[str] = None,
-    xlsx_base64: Optional[str] = None,
+    xlsx_path: str | None = None,
+    xlsx_base64: str | None = None,
 ) -> dict[str, Any]:
     """Dry-run an org-unit list workbook. Hierarchy is read from the Excel columns."""
     try:
@@ -367,8 +367,8 @@ def preview_create_pyramid(
 @tool()
 def apply_create_pyramid(
     confirm: bool = False,
-    xlsx_path: Optional[str] = None,
-    xlsx_base64: Optional[str] = None,
+    xlsx_path: str | None = None,
+    xlsx_base64: str | None = None,
 ) -> dict[str, Any]:
     """Create org unit types and VALID org units from an org-unit list workbook."""
     try:
@@ -391,7 +391,7 @@ def apply_create_pyramid(
 
 
 @tool()
-def download_account_setup_template(save_path: Optional[str] = None) -> dict[str, Any]:
+def download_account_setup_template(save_path: str | None = None) -> dict[str, Any]:
     """Save the account-setup Excel template into MEDIA_ROOT/mcp (filename only)."""
     try:
         return download_template(save_path)
@@ -400,25 +400,25 @@ def download_account_setup_template(save_path: Optional[str] = None) -> dict[str
 
 
 @tool()
-def write_account_setup_template(xlsx_path: Optional[str] = None) -> dict[str, Any]:
+def write_account_setup_template(xlsx_path: str | None = None) -> dict[str, Any]:
     """Write the sample Demo Republic workbook into the MCP media jail."""
     return write_template(xlsx_path)
 
 
 @tool()
 def write_account_setup_workbook(
-    xlsx_path: Optional[str] = None,
-    settings: Optional[dict[str, Any]] = None,
-    org_unit_types: Optional[List[dict[str, Any]]] = None,
-    org_units: Optional[List[dict[str, Any]]] = None,
-    org_unit_geo: Optional[List[dict[str, Any]]] = None,
-    forms: Optional[List[dict[str, Any]]] = None,
-    entity_types: Optional[List[dict[str, Any]]] = None,
-    entities: Optional[List[dict[str, Any]]] = None,
-    instances: Optional[List[dict[str, Any]]] = None,
-    workflows: Optional[List[dict[str, Any]]] = None,
-    workflow_followups: Optional[List[dict[str, Any]]] = None,
-    workflow_changes: Optional[List[dict[str, Any]]] = None,
+    xlsx_path: str | None = None,
+    settings: dict[str, Any] | None = None,
+    org_unit_types: list[dict[str, Any]] | None = None,
+    org_units: list[dict[str, Any]] | None = None,
+    org_unit_geo: list[dict[str, Any]] | None = None,
+    forms: list[dict[str, Any]] | None = None,
+    entity_types: list[dict[str, Any]] | None = None,
+    entities: list[dict[str, Any]] | None = None,
+    instances: list[dict[str, Any]] | None = None,
+    workflows: list[dict[str, Any]] | None = None,
+    workflow_followups: list[dict[str, Any]] | None = None,
+    workflow_changes: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Write an account-setup Excel from JSON (AI-generated fake demo data)."""
     try:
@@ -442,8 +442,8 @@ def write_account_setup_workbook(
 
 @tool()
 def preview_fill_account(
-    xlsx_path: Optional[str] = None,
-    xlsx_base64: Optional[str] = None,
+    xlsx_path: str | None = None,
+    xlsx_base64: str | None = None,
 ) -> dict[str, Any]:
     """Dry-run fill of the connected IASO account from an uploaded Excel."""
     try:
@@ -454,8 +454,8 @@ def preview_fill_account(
 
 @tool()
 def apply_fill_account(
-    xlsx_path: Optional[str] = None,
-    xlsx_base64: Optional[str] = None,
+    xlsx_path: str | None = None,
+    xlsx_base64: str | None = None,
     confirm: bool = False,
 ) -> dict[str, Any]:
     """Apply a filled account-setup Excel to the connected IASO account."""

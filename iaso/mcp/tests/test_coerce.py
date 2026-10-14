@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from django.test import SimpleTestCase
 
 from iaso.mcp.protocol import coerce_tool_arguments
@@ -10,9 +8,9 @@ from iaso.mcp.protocol import coerce_tool_arguments
 class CoerceToolArgumentsTest(SimpleTestCase):
     def test_casts_optional_ints_bools_and_floats(self):
         def _probe(
-            parent_id: Optional[int] = None,
-            confirm: Optional[bool] = None,
-            ratio: Optional[float] = None,
+            parent_id: int | None = None,
+            confirm: bool | None = None,
+            ratio: float | None = None,
         ):
             return None
 
@@ -25,7 +23,7 @@ class CoerceToolArgumentsTest(SimpleTestCase):
         self.assertEqual(coerced["ratio"], 1.5)
 
     def test_negative_int_and_integral_float(self):
-        def _probe(parent_id: Optional[int] = None):
+        def _probe(parent_id: int | None = None):
             return None
 
         self.assertEqual(coerce_tool_arguments(_probe, {"parent_id": "-3"})["parent_id"], -3)
@@ -33,7 +31,7 @@ class CoerceToolArgumentsTest(SimpleTestCase):
         self.assertEqual(coerce_tool_arguments(_probe, {"parent_id": "--5"})["parent_id"], "--5")
 
     def test_rejects_unrecognised_confirm(self):
-        def _probe(confirm: Optional[bool] = None):
+        def _probe(confirm: bool | None = None):
             return None
 
         with self.assertRaises(ValueError):

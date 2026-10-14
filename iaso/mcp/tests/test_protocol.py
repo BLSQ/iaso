@@ -5,7 +5,7 @@ import json
 from django.test import SimpleTestCase
 
 from iaso.mcp.models import ToolCall
-from iaso.mcp.protocol import _TOOLS, call_tool, sanitize_tool_arguments
+from iaso.mcp.protocol import _TOOLS, call_tool, sanitize_tool_arguments, tools_catalog
 from iaso.test import TestCase
 
 
@@ -40,6 +40,27 @@ class SanitizeToolArgumentsTest(SimpleTestCase):
         self.assertNotIn("x" * 501, stored["note"])
 
 
+class ToolSchemaTest(SimpleTestCase):
+    def _properties(self, name):
+        import iaso.mcp.tools  # noqa: F401 — register tools
+
+        catalog = tools_catalog()
+        tool = next(item for item in catalog["tools"] if item["name"] == name)
+        return tool["inputSchema"]["properties"]
+
+    def test_list_org_units_limit_is_integer(self):
+        properties = self._properties("list_org_units")
+        self.assertEqual(properties["limit"]["type"], "integer")
+        self.assertEqual(properties["page"]["type"], "integer")
+        self.assertEqual(properties["parent_id"]["type"], "integer")
+
+    def test_iaso_raw_confirm_is_boolean(self):
+        properties = self._properties("iaso_raw")
+        self.assertEqual(properties["confirm"]["type"], "boolean")
+        self.assertEqual(properties["params"]["type"], "object")
+        self.assertEqual(properties["json_body"]["type"], "object")
+
+
 class ToolCallAuditTest(TestCase):
     def setUp(self):
         self.account, _source, _version, _project = self.create_account_datasource_version_project(
@@ -66,3 +87,19 @@ class ToolCallAuditTest(TestCase):
         self.assertNotIn("hunter2", dumped)
         self.assertIn("redacted", stored["xlsx_base64"])
         self.assertEqual(stored["json_body"], "[redacted]")
+
+    def test_call_tool_coerces_string_limit_before_invoke(self):
+        seen = {}
+
+        def _probe(limit: int = 10, confirm: bool = False):
+            seen["limit"] = limit
+            seen["confirm"] = confirm
+            return {"ok": True}
+
+        _TOOLS["_mcp_probe_coerce"] = _probe
+        try:
+            call_tool("_mcp_probe_coerce", {"limit": "10", "confirm": "false"}, self.user)
+        finally:
+            _TOOLS.pop("_mcp_probe_coerce", None)
+        self.assertEqual(seen["limit"], 10)
+        self.assertIs(seen["confirm"], False)

@@ -38,10 +38,11 @@ from django.core import serializers
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
+from django.db.models import Count
 from django.utils import timezone
 
 from hat.audit.models import Modification, log_modification
-from iaso.models import Instance
+from iaso.models import Instance, InstanceFile
 
 
 logger = logging.getLogger(__name__)
@@ -104,7 +105,7 @@ def find_collision_groups(created_from, created_to, form_id=None):
 def load_group(instance_ids):
     """
     The group as a dict, the same shape as the manifests of `collect_file_name_collisions.py`:
-        {"instances": [{"instance": {"id", "file", "created_by_id", "json"},
+        {"instances": [{"instance": {"id", "file", "created_by_id", "json", "attachments"},
                         "api_import": {"user_id"} | None,
                         "logs": [{"id", "created_at", "source", "user_id", "new_value"}]}],
          "xmls": [{"path", "content"}]}
@@ -114,6 +115,12 @@ def load_group(instance_ids):
     logs = Modification.objects.filter(
         content_type=instance_content_type, object_id__in=[str(instance_id) for instance_id in instance_ids]
     ).order_by("created_at", "id")
+    attachments_by_instance_id = dict(
+        InstanceFile.objects.filter(instance_id__in=instance_ids)
+        .values_list("instance_id")
+        .annotate(count=Count("id"))
+        .order_by()
+    )
 
     group = {"instances": [], "xmls": []}
     paths = set()
@@ -137,6 +144,7 @@ def load_group(instance_ids):
                     "file": instance.file.name or None,
                     "created_by_id": instance.created_by_id,
                     "json": instance.json,
+                    "attachments": attachments_by_instance_id.get(instance.id, 0),
                 },
                 "api_import": {"user_id": instance.api_import.user_id} if instance.api_import else None,
                 "logs": instance_logs,
@@ -170,8 +178,15 @@ def plan_group_repair(group) -> GroupRepair:
     - an xml received by `form_upload()` belongs to the instance its uploader created via POST /api/instances/
     - an xml edited on the web (Enketo) belongs to the instance of the xml it was edited from (`<deprecatedID>`)
     Each instance then gets its latest xml. Nothing is planned for a group with a problem.
+    Attachments (`InstanceFile`) are not handled: `form_upload()` also put the second phone's ones on the first
+    instance, so a group with attachments is skipped rather than half repaired.
     """
     plan = GroupRepair()
+    for entry in group["instances"]:
+        if entry["instance"]["attachments"]:
+            plan.problems.append(
+                f"instance {entry['instance']['id']} has {entry['instance']['attachments']} attachments, not handled"
+            )
     instance_id_by_user = {}
     for entry in group["instances"]:
         user_id = (entry["api_import"] or {}).get("user_id")

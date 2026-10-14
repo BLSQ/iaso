@@ -162,10 +162,13 @@ class FixFormUploadFileNameCollisionsTestCase(MarkdownReportMixin, APITestCase):
         response = self.client.post(f"/api/instances/?app_id={self.project.app_id}", data=body, format="json")
         self.assertJSONResponse(response, 200)
 
-    def upload_xml(self, user, xml_instance_id, file_name=FILE_NAME):
+    def upload_xml(self, user, xml_instance_id, file_name=FILE_NAME, attachment_names=()):
         self.client.force_authenticate(user)
         xml = SimpleUploadedFile(file_name, submission_xml(xml_instance_id, user.username), "text/xml")
-        response = self.client.post("/sync/form_upload/", {"xml_submission_file": xml}, format="multipart")
+        attachments = {name: SimpleUploadedFile(name, b"jpeg", "image/jpeg") for name in attachment_names}
+        response = self.client.post(
+            "/sync/form_upload/", {"xml_submission_file": xml, **attachments}, format="multipart"
+        )
         self.assertJSONResponse(response, 201)
 
     def call_command(self, *args):
@@ -492,6 +495,27 @@ class FixFormUploadFileNameCollisionsTestCase(MarkdownReportMixin, APITestCase):
         self.assertEqual(self.instance_state(FRANCE_UUID)["file_instance_id"], FRANCE_XML_ID)  # first file name
         self.assertEqual(self.instance_state(OTHER_FRANCE_UUID)["file_instance_id"], None)
 
+    def test_skips_group_with_attachments(self):
+        self.post_instance(self.belgium_user, BELGIUM_UUID, self.belgium)
+        self.upload_xml(self.belgium_user, BELGIUM_XML_ID)
+        self.post_instance(self.france_user, FRANCE_UUID, self.france)
+        self.upload_xml(self.france_user, FRANCE_XML_ID, attachment_names=["1760287791234.jpg"])
+        belgium_instance = m.Instance.objects.get(uuid=BELGIUM_UUID)
+        # form_upload() put the france photo on the belgium instance too
+        self.assertEqual(
+            list(m.InstanceFile.objects.values_list("instance_id", "name")),
+            [(belgium_instance.id, "1760287791234.jpg")],
+        )
+        before = [self.instance_state(BELGIUM_UUID), self.instance_state(FRANCE_UUID)]
+
+        out = self.call_command("--apply")
+
+        self.assertIn(f"instance {belgium_instance.id} has 1 attachments, not handled", out)
+        self.assertIn("1 groups: 0 repaired, 0 already fine, 1 skipped", out)
+        self.assertEqual([self.instance_state(BELGIUM_UUID), self.instance_state(FRANCE_UUID)], before)
+        self.assertFalse(Modification.objects.filter(source=REPAIR_SOURCE).exists())
+        self.assertNotIn("BACKUP", out)
+
     def test_ignores_other_forms(self):
         self.collide_second_phone_uploads_after_first()
 
@@ -518,13 +542,14 @@ def xml(path, instance_id, deprecated_id=None):
     return {"path": path, "content": f"<data><meta>{meta}</meta></data>"}
 
 
-def instance_entry(instance_id, file, created_by_id, json_xml_id, api_user_id, logs):
+def instance_entry(instance_id, file, created_by_id, json_xml_id, api_user_id, logs, attachments=0):
     return {
         "instance": {
             "id": instance_id,
             "file": file,
             "created_by_id": created_by_id,
             "json": {"instanceID": json_xml_id} if json_xml_id else None,
+            "attachments": attachments,
         },
         "api_import": {"user_id": api_user_id} if api_user_id else None,
         "logs": logs,
@@ -728,4 +753,29 @@ class PlanGroupRepairTestCase(MarkdownReportMixin, SimpleTestCase):
         plan = self.plan(group)
 
         self.assertEqual(plan.problems, ["no instance for xml second.xml (SYNC FORM UPLOAD by user 30)"])
+        self.assertEqual(plan.repairs, [])
+
+    def test_skips_group_when_an_instance_has_attachments(self):
+        group = {
+            "instances": [
+                instance_entry(
+                    1,
+                    "second.xml",
+                    20,
+                    "uuid:first",
+                    10,
+                    [
+                        log(1, "SYNC FORM UPLOAD", 10, "first.xml"),
+                        log(2, "SYNC FORM UPLOAD", 20, "second.xml"),
+                    ],
+                    attachments=2,
+                ),
+                instance_entry(2, None, None, None, 20, []),
+            ],
+            "xmls": [xml("first.xml", "uuid:first"), xml("second.xml", "uuid:second")],
+        }
+
+        plan = self.plan(group)
+
+        self.assertEqual(plan.problems, ["instance 1 has 2 attachments, not handled"])
         self.assertEqual(plan.repairs, [])

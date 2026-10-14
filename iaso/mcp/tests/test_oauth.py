@@ -186,6 +186,16 @@ class McpEndpointAuthTest(TestCase):
         self.assertEqual(payload["user_name"], "mcp-user")
         self.assertEqual(payload["account_name"], "MCP")
 
+    @override_settings(SECURE_SSL_REDIRECT=True)
+    def test_whoami_profile_survives_ssl_redirect(self):
+        from iaso.mcp.client import IasoClient
+        from iaso.mcp.recipes.fill_account.apply import current_account
+
+        identity = current_account(IasoClient.for_user(self.user))
+        self.assertEqual(identity["user_name"], "mcp-user")
+        self.assertEqual(identity["account_name"], "MCP")
+        self.assertEqual(identity["account_id"], self.account.id)
+
     def test_me_uses_django_session(self):
         self.client.force_login(self.user)
         response = self.client.get("/mcp/me/")

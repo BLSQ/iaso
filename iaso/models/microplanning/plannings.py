@@ -125,7 +125,7 @@ class Planning(SoftDeletableModel):
 class PlanningConfig(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
 
-    level = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    level = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=False)
 
     org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
     org_unit_groups = models.ManyToManyField("OrgUnit", blank=True)

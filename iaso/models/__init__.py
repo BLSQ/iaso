@@ -12,7 +12,7 @@ from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
 from .metric import MetricType, MetricValue
-from .microplanning import Assignment, Planning
+from .microplanning import Assignment, Planning, PlanningConfig
 from .missions import (
     Mission,
     MissionEntityType,
@@ -98,6 +98,7 @@ __all__ = [
     "Payment",
     "PaymentLot",
     "Planning",
+    "PlanningConfig",
     "PotentialPayment",
     "Profile",
     "Project",

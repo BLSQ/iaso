@@ -5,9 +5,11 @@ from functools import reduce
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
+from django.db.models import Value
+from django.db.models.functions import Length, Replace
 from django_ltree.fields import PathField  # type: ignore
 
-from iaso.models import Project
+from iaso.models import Account, Project
 from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.color import ColorField
@@ -17,6 +19,12 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         return self.filter(project__account=user.iaso_profile.account)
+
+    def filter_for_account(self, account: Account) -> "TeamQuerySet":
+        return self.filter(project__account=account)
+
+    def annotate_with_depth(self) -> "TeamQuerySet":
+        return self.annotate(depth=(Length("path") - Length(Replace("path", Value("."), Value("")))))
 
     def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
         """The Team and all their descendants"""

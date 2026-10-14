@@ -1,10 +1,19 @@
+import typing
+
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import CheckConstraint, Q
 
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.models.team import Team
+
+
+if typing:
+    from iaso.models.team import TeamQuerySet
+
 from iaso.utils.models.soft_deletable import (
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
@@ -111,3 +120,23 @@ class Planning(SoftDeletableModel):
     def get_pipeline_uuids(self) -> list:
         """Get the list of pipeline UUIDs for this planning."""
         return self.pipeline_uuids or []
+
+
+class PlanningConfig(models.Model):
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
+
+    level = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+
+    org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
+    org_unit_groups = models.ManyToManyField("OrgUnit", blank=True)
+
+    class Meta:
+        unique_together = (("planning", "level"),)
+        constraints = [CheckConstraint(check=Q(level__gte=1), name="level_gte_1")]
+
+    def get_related_teams(self) -> TeamQuerySet:
+        return (
+            Team.objects.filter_for_account(account=self.planning.project.account)
+            .annotate_with_depth()
+            .filter(depth__lte=self.level)
+        )

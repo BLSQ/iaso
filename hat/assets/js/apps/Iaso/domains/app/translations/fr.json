@@ -1668,6 +1668,7 @@
     "iaso.projets.featureflag.write_on_nfc_cards": "Utiliser la carte NFC pour enregistrer l'entité",
     "iaso.projets.label.appIdError": "Les symboles \", ?, /, %, &, - et les espaces ne sont pas autorisés dans l'app id",
     "iaso.province": "Province",
+    "iaso.promptness.title": "Promptitude",
     "iaso.queryBuilder.supportedTypeFields": "Type de champ supportés",
     "iaso.queryBuilder.title": "Query builder",
     "iaso.queryBuilder.xlsQuestionsTypesLink": "Types des questions possible",

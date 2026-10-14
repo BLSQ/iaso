@@ -1668,6 +1668,7 @@
     "iaso.projets.featureflag.transport_tracking": "GPS of journeys",
     "iaso.projets.featureflag.write_on_nfc_cards": "Use NFC card to save entity",
     "iaso.projets.label.appIdError": "\", ?, /, %, &, - and whitespace are not allowed in app id",
+    "iaso.promptness.title": "Prompteness",
     "iaso.province": "Province",
     "iaso.queryBuilder.supportedTypeFields": "Supported type of fields",
     "iaso.queryBuilder.title": "Query builder",

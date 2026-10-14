@@ -264,6 +264,13 @@ const menuItems = (
                             key: 'completenessStats',
                             icon: props => <DoneAll {...props} />,
                         },
+                        {
+                            label: formatMessage(MESSAGES.promptness),
+                            permissions:
+                                paths.completenessStatsPath.permissions,
+                            key: 'promptness',
+                            icon: props => <DoneAll {...props} />,
+                        },
                     ],
                 },
                 {

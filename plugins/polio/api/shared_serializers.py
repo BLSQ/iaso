@@ -28,15 +28,33 @@ class OrgUnitSerializer(serializers.ModelSerializer):
             self.fields.pop(field)
         super().__init__(*args, **kwargs)
 
+    def _cached_by_org_unit(self, instance: OrgUnit, key: str, compute):
+        """Memoise per org unit for the lifetime of the request."""
+        context = getattr(self, "context", None)
+        if not isinstance(context, dict) or instance.pk is None:
+            return compute()
+        cache = context.setdefault("polio_org_unit_ancestors", {})
+        cache_key = (key, instance.pk)
+        if cache_key not in cache:
+            cache[cache_key] = compute()
+        return cache[cache_key]
+
     def get_country_parent(self, instance: OrgUnit):
-        countries = instance.country_ancestors()
-        if countries is not None and len(countries) > 0:
-            country = countries[0]
-            return OrgUnitSerializer(instance=country, hidden_fields=["country_parent", "root"]).data
+        def compute():
+            countries = instance.country_ancestors()
+            if countries is not None and len(countries) > 0:
+                country = countries[0]
+                return OrgUnitSerializer(instance=country, hidden_fields=["country_parent", "root"]).data
+            return None
+
+        return self._cached_by_org_unit(instance, "country_parent", compute)
 
     def get_root(self, instance: OrgUnit):
-        root = instance.root()
-        return OrgUnitSerializer(instance=root, hidden_fields=["country_parent", "root"]).data if root else None
+        def compute():
+            root = instance.root()
+            return OrgUnitSerializer(instance=root, hidden_fields=["country_parent", "root"]).data if root else None
+
+        return self._cached_by_org_unit(instance, "root", compute)
 
     class Meta:
         model = OrgUnit

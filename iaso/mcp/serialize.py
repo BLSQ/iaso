@@ -6,12 +6,7 @@ from typing import Any
 _PAGE_LIMIT_MAX = 50
 
 
-def clamp_limit(limit: int | str) -> int:
-    """Cap a page size. MCP clients often send integers as strings."""
-    if isinstance(limit, str):
-        limit = int(limit.strip())
-    elif isinstance(limit, bool) or not isinstance(limit, int):
-        limit = int(limit)
+def clamp_limit(limit: int) -> int:
     return max(1, min(limit, _PAGE_LIMIT_MAX))
 
 

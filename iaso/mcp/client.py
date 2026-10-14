@@ -69,19 +69,13 @@ def _raise_if_error(response, url: str) -> Any:
 
 
 def _secure_request_extra() -> dict[str, Any]:
-    """Make in-process calls HTTPS when SSL redirect is on.
+    """In-process calls are HTTPS.
 
-    Staging sets SECURE_SSL_REDIRECT. APIClient otherwise uses http://testserver,
-    and SecurityMiddleware returns an empty 301. Callers then see a null body.
+    APIClient otherwise uses http://testserver. With SECURE_SSL_REDIRECT that
+    is an empty 301, and callers see a null body. ``secure=True`` sets
+    wsgi.url_scheme, which is enough when the proxy header is absent.
     """
-    if not getattr(settings, "SECURE_SSL_REDIRECT", False):
-        return {}
-    extra: dict[str, Any] = {"secure": True}
-    header = getattr(settings, "SECURE_PROXY_SSL_HEADER", None)
-    if header:
-        name, value = header
-        extra[name] = value
-    return extra
+    return {"secure": True}
 
 
 class DjangoUserTransport:
@@ -169,6 +163,8 @@ class DjangoUserTransport:
         for field, spec in (files or {}).items():
             payload[field] = _as_uploaded(spec)
         response = self._api.post(url, data=payload, **_secure_request_extra())
+        if 300 <= response.status_code < 400:
+            _raise_if_error(response, url)
         return response.status_code, _decode_response(response)
 
 

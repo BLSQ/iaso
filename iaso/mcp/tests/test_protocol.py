@@ -5,8 +5,7 @@ import json
 from django.test import SimpleTestCase
 
 from iaso.mcp.models import ToolCall
-from iaso.mcp.protocol import _TOOLS, call_tool, coerce_tool_arguments, sanitize_tool_arguments
-from iaso.mcp.serialize import clamp_limit
+from iaso.mcp.protocol import _TOOLS, call_tool, sanitize_tool_arguments, tools_catalog
 from iaso.test import TestCase
 
 
@@ -41,36 +40,25 @@ class SanitizeToolArgumentsTest(SimpleTestCase):
         self.assertNotIn("x" * 501, stored["note"])
 
 
-class ClampLimitTest(SimpleTestCase):
-    def test_accepts_numeric_strings(self):
-        self.assertEqual(clamp_limit("10"), 10)
-        self.assertEqual(clamp_limit("999"), 50)
-        self.assertEqual(clamp_limit("0"), 1)
+class ToolSchemaTest(SimpleTestCase):
+    def _properties(self, name):
+        import iaso.mcp.tools  # noqa: F401 — register tools
 
-    def test_keeps_ints(self):
-        self.assertEqual(clamp_limit(25), 25)
+        catalog = tools_catalog()
+        tool = next(item for item in catalog["tools"] if item["name"] == name)
+        return tool["inputSchema"]["properties"]
 
+    def test_list_org_units_limit_is_integer(self):
+        properties = self._properties("list_org_units")
+        self.assertEqual(properties["limit"]["type"], "integer")
+        self.assertEqual(properties["page"]["type"], "integer")
+        self.assertEqual(properties["parent_id"]["type"], "integer")
 
-class CoerceToolArgumentsTest(SimpleTestCase):
-    def test_casts_string_ints_and_bools(self):
-        def _probe(limit: int = 10, page: int = 1, confirm: bool = False, search: str | None = None):
-            return {"limit": limit, "page": page, "confirm": confirm, "search": search}
-
-        coerced = coerce_tool_arguments(
-            _probe,
-            {"limit": "10", "page": "2", "confirm": "false", "search": "clinic"},
-        )
-        self.assertEqual(coerced["limit"], 10)
-        self.assertEqual(coerced["page"], 2)
-        self.assertIs(coerced["confirm"], False)
-        self.assertEqual(coerced["search"], "clinic")
-
-    def test_true_string_becomes_bool(self):
-        def _probe(confirm: bool = False):
-            return confirm
-
-        coerced = coerce_tool_arguments(_probe, {"confirm": "true"})
-        self.assertIs(coerced["confirm"], True)
+    def test_iaso_raw_confirm_is_boolean(self):
+        properties = self._properties("iaso_raw")
+        self.assertEqual(properties["confirm"]["type"], "boolean")
+        self.assertEqual(properties["params"]["type"], "object")
+        self.assertEqual(properties["json_body"]["type"], "object")
 
 
 class ToolCallAuditTest(TestCase):

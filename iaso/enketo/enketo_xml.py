@@ -2,6 +2,7 @@ import unicodedata
 
 from typing import Tuple
 
+from django.utils.functional import SimpleLazyObject
 from lxml import etree  # type: ignore
 from lxml.etree import XMLParser
 
@@ -47,33 +48,30 @@ def group_name_token(name):
     return "_".join(unicodedata.normalize("NFC", name or "").split()) or "_"
 
 
-def group_substitutions(org_unit, prefix, question_names):
-    # a query per org unit, only done when the form has the questions
-    if f"{prefix}group_ids" not in question_names and f"{prefix}group_names" not in question_names:
-        return {}
-    # space separated, like a select_multiple answer, so the values can be used with selected() in the form
-    groups = list(org_unit.groups.order_by("id").values_list("id", "name"))
-    return {
-        f".//{prefix}group_ids": " ".join(str(group_id) for group_id, _ in groups),
-        f".//{prefix}group_names": " ".join(group_name_token(name) for _, name in groups),
-    }
+def substitutions_in_form(lazy_values, question_names):
+    """Only compute (and query) the values of the questions the form has"""
+    substitutions = {}
+    for question_name, value in lazy_values.items():
+        if question_name in question_names:
+            substitutions[f".//{question_name}"] = value()
+    return substitutions
 
 
 def org_unit_substitutions(org_unit, prefix, question_names):
-    substitutions = {}
-
-    # only compute (and query) what the form uses
-    def add_if_in_form(question_name, value):
-        if question_name in question_names:
-            substitutions[f".//{question_name}"] = value()
-
-    add_if_in_form(f"{prefix}id", lambda: org_unit.id)
-    add_if_in_form(f"{prefix}name", lambda: org_unit.name)
-    add_if_in_form(f"{prefix}type_id", lambda: org_unit.org_unit_type_id or "")
-    add_if_in_form(f"{prefix}type_name", lambda: deep_getattr(org_unit, "org_unit_type.name", ""))
-    add_if_in_form(f"{prefix}is_root", lambda: "0" if org_unit.parent_id else "1")
-    substitutions.update(group_substitutions(org_unit, prefix, question_names))
-    return substitutions
+    # a single query shared by group_ids and group_names, only done when the form uses one of them
+    groups = SimpleLazyObject(lambda: list(org_unit.groups.order_by("id").values_list("id", "name")))
+    # lazy so a value that hits the db (or will later) is only computed when the form uses it
+    lazy_values = {
+        f"{prefix}id": lambda: org_unit.id,
+        f"{prefix}name": lambda: org_unit.name,
+        f"{prefix}type_id": lambda: org_unit.org_unit_type_id or "",
+        f"{prefix}type_name": lambda: deep_getattr(org_unit, "org_unit_type.name", ""),
+        f"{prefix}is_root": lambda: "0" if org_unit.parent_id else "1",
+        # space separated, like a select_multiple answer, so the values can be used with selected() in the form
+        f"{prefix}group_ids": lambda: " ".join(str(group_id) for group_id, _ in groups),
+        f"{prefix}group_names": lambda: " ".join(group_name_token(name) for _, name in groups),
+    }
+    return substitutions_in_form(lazy_values, question_names)
 
 
 def max_parent_index(question_names):

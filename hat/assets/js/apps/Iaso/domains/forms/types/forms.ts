@@ -186,6 +186,7 @@ export type FormDataType = {
     single_per_period: FieldError<boolean | null>;
     periods_before_allowed: FieldError<number>;
     periods_after_allowed: FieldError<number>;
+    promptness_grace_period_days?: FieldError<number | null>;
     device_field: FieldError<string>;
     location_field: FieldError<string>;
     possible_fields: FieldError<PossibleField[]>;

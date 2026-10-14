@@ -81,6 +81,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             setFieldValue('single_per_period', false);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
+            setFieldValue('promptness_grace_period_days', null);
         } else {
             setFieldValue('single_per_period', originalSinglePerPeriod);
             setFieldValue('periods_before_allowed', 3);
@@ -399,6 +400,39 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 options={changeRequestModeOptions}
                                 label={MESSAGES.changeRequestMode}
                             />
+                            {displayPeriods && (
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.promptnessGracePeriodDaysInfo,
+                                    )}
+                                >
+                                    <InputComponent
+                                        keyValue="promptness_grace_period_days"
+                                        onChange={(key, value) =>
+                                            setFieldValue(
+                                                key,
+                                                value === '' || value == null
+                                                    ? null
+                                                    : value,
+                                            )
+                                        }
+                                        value={
+                                            currentForm
+                                                .promptness_grace_period_days
+                                                ?.value ?? undefined
+                                        }
+                                        errors={
+                                            currentForm
+                                                .promptness_grace_period_days
+                                                ?.errors ?? []
+                                        }
+                                        type="number"
+                                        label={
+                                            MESSAGES.promptnessGracePeriodDays
+                                        }
+                                    />
+                                </InputWithInfos>
+                            )}
 
                             <Box
                                 style={{

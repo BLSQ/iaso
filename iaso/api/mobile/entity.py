@@ -3,14 +3,15 @@ import math
 from django.db.models import Count, Window
 from django.utils.functional import cached_property
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_field
 from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
-from iaso.api.query_params import LIMIT, PAGE
+from iaso.api.common.pagination import get_page_without_count
+from iaso.api.query_params import LIMIT, PAGE, WITH_COUNT, is_count_requested
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, ProjectNotFoundError, UserNotAuthError
@@ -100,6 +101,7 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
 
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
     def get_form_version_id(self, obj):
         if obj.json is None:
             return None
@@ -134,6 +136,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
         # dominated get_instances. The ListSerializer reuses this child serializer for every entity.
         return MobileEntityAttributesSerializer(context=self.context)
 
+    @extend_schema_field(MobileEntityAttributesSerializer(many=True))
     def get_instances(self, entity):
         possible_form_versions = self.context.get("possible_form_versions")
         ok_instances = []
@@ -163,12 +166,32 @@ class MobileEntitiesSetPagination(Paginator):
     Postgres compute the total count and the page in the same query execution, roughly halving
     the DB cost -- measured ~2x fewer buffer blocks touched on both a narrow and a whole-country
     org unit scope, same query plan either way.
+
+    The Window still makes Postgres go through the whole filtered set on every page: a client that
+    already knows the total (from page 1) can pass `with_count=false`, `count` and `pages` are then null.
     """
 
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = 1000
     max_page_size = 1000
+
+    def get_schema_operation_parameters(self, view):
+        return super().get_schema_operation_parameters(view) + [
+            {
+                "name": WITH_COUNT,
+                "required": False,
+                "in": "query",
+                "description": "Set to false to skip the total count: `count` and `pages` are then null.",
+                "schema": {"type": "boolean", "default": True},
+            }
+        ]
+
+    def get_paginated_response_schema(self, schema):
+        response_schema = super().get_paginated_response_schema(schema)
+        for key in ("count", "pages"):
+            response_schema["properties"][key]["nullable"] = True
+        return response_schema
 
     def get_iaso_page_number(self, request):
         try:
@@ -186,6 +209,20 @@ class MobileEntitiesSetPagination(Paginator):
             raise NotFound(self.invalid_page_message)
 
         offset = (page_number - 1) * page_size
+        self.current_page_number = page_number
+        self.current_page_size = page_size
+        self.previous_exists = page_number > 1
+        self.request = request
+
+        if not is_count_requested(request):
+            # Without the Window count, Postgres can stop once it has the page.
+            results, self.next_exists = get_page_without_count(
+                queryset, page_number, page_size, self.invalid_page_message
+            )
+            self.count = None
+            self.num_pages = None
+            return results
+
         windowed_qs = queryset.annotate(_iaso_total_count=Window(expression=Count("id")))[offset : offset + page_size]
         results = list(windowed_qs)
 
@@ -207,11 +244,7 @@ class MobileEntitiesSetPagination(Paginator):
 
         self.count = total_count
         self.num_pages = num_pages
-        self.current_page_number = page_number
-        self.current_page_size = page_size
         self.next_exists = offset + page_size < total_count
-        self.previous_exists = page_number > 1
-        self.request = request
 
         return results
 
@@ -242,6 +275,8 @@ class MobileEntityViewSet(ModelViewSet):
     details = /api/mobile/entities/uuid
 
     sample usage: /api/mobile/entities/?limit_date=2022-12-29&{LIMIT}=1&{PAGE}=1
+
+    {WITH_COUNT}=false skips the total count (`count` and `pages` are null), follow `has_next` instead
 
     """
 

@@ -21,11 +21,16 @@ guess -- traced from the actual client code):
     whole sync stage, no automatic retry. This script surfaces that loudly instead
     of silently working around it, so a 404 here means a real device would break.
 
+With --count-once, only page 1 is counted: the next pages pass `with_count=false`
+(`count`/`pages` come back null) and the count of page 1 is kept for display. A server
+without `with_count` support ignores it and keeps counting every page.
+
 Usage:
     uv run setuper/emulate_mobile_sync.py --app-id myaccount
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --username bob --password secret
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --since 2026-08-24
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-deleted
+    uv run setuper/emulate_mobile_sync.py --app-id myaccount --count-once
 
 Credentials/server default to setuper/credentials.py (the same file setuper.py uses)
 when present; override with --server/--username/--password.
@@ -58,7 +63,7 @@ def authenticate(server, username, password):
     return {"Authorization": f"Bearer {token}"}
 
 
-def sync_paginated(server, headers, path, params, label, max_pages=None):
+def sync_paginated(server, headers, path, params, label, max_pages=None, count_once=False):
     """Follow `has_next` exactly like FetchEntities.kt's do-while loop: never uses
     count/pages to decide how many pages to request, only has_next."""
     page = 1
@@ -67,6 +72,8 @@ def sync_paginated(server, headers, path, params, label, max_pages=None):
     t0 = time.perf_counter()
     while True:
         page_params = {**params, "page": page}
+        if count_once and page > 1:
+            page_params["with_count"] = "false"
         page_t0 = time.perf_counter()
         r = requests.get(f"{server}{path}", params=page_params, headers=headers)
         page_elapsed = time.perf_counter() - page_t0
@@ -80,7 +87,8 @@ def sync_paginated(server, headers, path, params, label, max_pages=None):
         data = r.json()
         results = data.get("results", [])
         total += len(results)
-        server_count = data.get("count")
+        if data.get("count") is not None:
+            server_count = data["count"]
         has_next = data.get("has_next", False)
 
         print(
@@ -129,6 +137,11 @@ def main():
         "--since", default=None, help="limit_date (YYYY-MM-DD) for an incremental sync; omit for a full sync"
     )
     parser.add_argument("--skip-deleted", action="store_true", help="Skip the paired /entities/deleted/ fetch")
+    parser.add_argument(
+        "--count-once",
+        action="store_true",
+        help="Only count on page 1, pass with_count=false on the next pages",
+    )
     args = parser.parse_args()
 
     if not args.username or not args.password:
@@ -138,14 +151,21 @@ def main():
     headers = authenticate(args.server, args.username, args.password)
 
     sync_kind = f"limit_date={args.since}" if args.since else "limit_date omitted -- first/full sync"
-    print(f"\n=== Entity sync emulation: app_id={args.app_id} ({sync_kind}) ===")
+    count_kind = "count on page 1 only" if args.count_once else "count on every page"
+    print(f"\n=== Entity sync emulation: app_id={args.app_id} ({sync_kind}, {count_kind}) ===")
 
     entity_params = {"app_id": args.app_id}
     if args.since:
         entity_params["limit_date"] = args.since
 
     entities_total, entities_pages, entities_time = sync_paginated(
-        args.server, headers, "/api/mobile/entities/", entity_params, "entities", max_pages=args.max_pages
+        args.server,
+        headers,
+        "/api/mobile/entities/",
+        entity_params,
+        "entities",
+        max_pages=args.max_pages,
+        count_once=args.count_once,
     )
 
     deleted_total = deleted_pages = deleted_time = 0
@@ -157,6 +177,7 @@ def main():
             {"app_id": args.app_id},
             "deleted",
             max_pages=args.max_pages,
+            count_once=args.count_once,
         )
 
     print("=== Summary ===")

@@ -45,6 +45,7 @@ START_PERIOD = "startPeriod"
 STATUS = "status"
 TYPE = "type"
 USER_IDS = "userIds"
+WITH_COUNT = "with_count"
 WITH_LOCATION = "withLocation"
 ONLY_REFERENCE = "onlyReference"
 REFERENCE_INSTANCES = "referenceInstances"
@@ -65,3 +66,10 @@ def parse_strict_boolean_param(value: Optional[str], field_name: str = "query_pa
     raise serializers.ValidationError(
         {field_name: f"Invalid boolean value '{value}'. Expected 'true', 'false', '1' or '0'."}
     )
+
+
+def is_count_requested(request) -> bool:
+    """Paginated mobile endpoints count by default; `with_count=false` lets a client skip the count
+    (e.g. on the pages after the first one, following `has_next` instead)."""
+    value = request.query_params.get(WITH_COUNT)
+    return value is None or parse_strict_boolean_param(value, WITH_COUNT)

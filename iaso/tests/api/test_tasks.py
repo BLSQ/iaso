@@ -710,3 +710,14 @@ class IasoTasksTestCase(APITestCase):
         data = self.assertJSONResponse(response, status.HTTP_410_GONE)
         self.assertEqual(data, {"presigned_url": None, "expires_at": "2023-12-27T15:00:00Z"})
         mock_presign.assert_not_called()
+
+    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3")
+    def test_presigned_url_of_another_account(self, mock_presign):
+        other_account = m.Account.objects.create(name="Other-Account")
+        task = self.create_task_with_file(account=other_account)
+
+        self.client.force_authenticate(self.johnny)
+        response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
+
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+        mock_presign.assert_not_called()

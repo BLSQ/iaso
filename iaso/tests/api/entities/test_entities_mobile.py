@@ -2,12 +2,15 @@ import datetime
 import json
 import uuid
 
+from unittest import mock
+
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.mobile.entity import MobileEntityAttributesSerializer
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
@@ -220,6 +223,111 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         entity_ids = [e["id"] for e in response_json["results"]]
         self.assertEqual(entity_ids, [str(entity.uuid)], f"expected a single entity, got {entity_ids}")
         self.assertEqual(response_json["count"], 1)
+
+    def create_instance_for_serialization(self, entity, json, created_at, **kwargs):
+        return self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+            json=json,
+            entity=entity,
+            source_created_at=created_at,
+            source_updated_at=created_at + datetime.timedelta(hours=1),
+            **kwargs,
+        )
+
+    def expected_instance(self, instance, form_version):
+        return {
+            "id": str(instance.uuid),
+            "form_id": self.form_1.id,
+            "form_version_id": form_version.id,
+            "created_at": instance.source_created_at.timestamp(),
+            "updated_at": instance.source_updated_at.timestamp(),
+            "org_unit_id": str(self.ou_country.id),
+            "json": instance.json,
+        }
+
+    def test_list_entities_builds_the_instance_serializer_once_per_response(self):
+        """Building a serializer (its fields) costs far more than serializing an instance: it must not be built
+        again for every entity of the page."""
+        m.FormVersion.objects.create(form=self.form_1, version_id="1")
+        created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+        for name in ("Belgium", "France", "Luxembourg"):
+            registration = self.create_instance_for_serialization(None, {"_version": "1"}, created_at)
+            entity = m.Entity.objects.create(
+                name=name, entity_type=self.entity_type, attributes=registration, account=self.account
+            )
+            registration.entity = entity
+            registration.save()
+        self.client.force_authenticate(self.yoda)
+
+        with mock.patch.object(
+            MobileEntityAttributesSerializer,
+            "__init__",
+            autospec=True,
+            side_effect=MobileEntityAttributesSerializer.__init__,
+        ) as serializer_init:
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([len(result["instances"]) for result in response_json["results"]], [1, 1, 1])
+        self.assertEqual(serializer_init.call_count, 1, "the instance serializer is built once per entity")
+
+    def test_list_entities_serializes_only_instances_of_a_known_form_version(self):
+        """Pins the `instances` of each entity: deleted instances, instances without json and instances of a
+        form version unknown to the account are left out; `form_version_id` matches each instance's version."""
+        version_1 = m.FormVersion.objects.create(form=self.form_1, version_id="1")
+        version_2 = m.FormVersion.objects.create(form=self.form_1, version_id="2")
+        created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+
+        registration_belgium = self.create_instance_for_serialization(None, {"_version": "1"}, created_at)
+        belgium = m.Entity.objects.create(
+            name="Belgium", entity_type=self.entity_type, attributes=registration_belgium, account=self.account
+        )
+        registration_belgium.entity = belgium
+        registration_belgium.save()
+        followup_belgium = self.create_instance_for_serialization(
+            belgium, {"_version": "2", "weight": 12}, created_at + datetime.timedelta(days=1)
+        )
+        self.create_instance_for_serialization(belgium, {"_version": "2"}, created_at, deleted=True)
+        self.create_instance_for_serialization(belgium, None, created_at)
+        self.create_instance_for_serialization(belgium, {"_version": "unknown"}, created_at)
+
+        registration_france = self.create_instance_for_serialization(None, {"_version": "2"}, created_at)
+        france = m.Entity.objects.create(
+            name="France", entity_type=self.entity_type, attributes=registration_france, account=self.account
+        )
+        registration_france.entity = france
+        registration_france.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        instances_by_entity = {
+            result["id"]: sorted(result["instances"], key=lambda instance: instance["id"])
+            for result in response_json["results"]
+        }
+        expected_by_entity = {
+            str(belgium.uuid): sorted(
+                [
+                    self.expected_instance(registration_belgium, version_1),
+                    self.expected_instance(followup_belgium, version_2),
+                ],
+                key=lambda instance: instance["id"],
+            ),
+            str(france.uuid): [self.expected_instance(registration_france, version_2)],
+        }
+        self.assertEqual(instances_by_entity, expected_by_entity)
+
+        response = self.client.get(f"{self.BASE_URL}{belgium.uuid}/", {"app_id": self.project.app_id})
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            sorted(response_json["instances"], key=lambda instance: instance["id"]),
+            expected_by_entity[str(belgium.uuid)],
+        )
 
     def test_list_entities_filter_by_limit_date_ignores_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)

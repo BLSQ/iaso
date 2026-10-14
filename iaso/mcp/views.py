@@ -32,10 +32,23 @@ def _has_bearer(request: HttpRequest) -> bool:
     return raw.lower().startswith("bearer ")
 
 
+def _accept(request: HttpRequest) -> str:
+    return (request.headers.get("Accept") or "").lower()
+
+
 def _wants_html(request: HttpRequest) -> bool:
     """Browsers send text/html. MCP clients send JSON / event-stream (OpenHEXA split)."""
-    accept = (request.headers.get("Accept") or "").lower()
-    return "text/html" in accept
+    return "text/html" in _accept(request)
+
+
+def _wants_sse_only(request: HttpRequest) -> bool:
+    """Streamable HTTP GET listen (Claude). This process is WSGI and does not hold an SSE stream.
+
+    The spec says that request gets text/event-stream, or 405 so the client keeps using POST.
+    A JSON catalog here is what Claude's proxy reports as CLIENT_HTTP_NOT_IMPLEMENTED.
+    """
+    accept = _accept(request)
+    return "text/event-stream" in accept and "application/json" not in accept and "text/html" not in accept
 
 
 def _unauthorized(request: HttpRequest) -> JsonResponse:
@@ -71,6 +84,10 @@ def mcp_endpoint(request: HttpRequest) -> HttpResponse:
     the catalog UI; MCP clients get the tools JSON catalog.
     """
     if request.method == "GET":
+        if _wants_sse_only(request):
+            response = HttpResponse(status=405)
+            response["Allow"] = "POST"
+            return response
         if _wants_html(request):
             return spa(request)
         return tools_json(request)

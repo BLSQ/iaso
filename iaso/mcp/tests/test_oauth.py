@@ -204,6 +204,11 @@ class McpEndpointAuthTest(TestCase):
         self.assertEqual(slash.status_code, 200)
         self.assertEqual(slash.json()["server_name"], "IASO")
 
+    def test_get_sse_listen_is_not_allowed(self):
+        response = self.client.get("/mcp", HTTP_ACCEPT="text/event-stream")
+        self.assertEqual(response.status_code, 405)
+        self.assertIn("POST", response["Allow"])
+
     def test_get_mcp_html_for_browsers(self):
         response = self.client.get("/mcp", HTTP_ACCEPT="text/html,application/xhtml+xml")
         self.assertIn(response.status_code, {200, 302})

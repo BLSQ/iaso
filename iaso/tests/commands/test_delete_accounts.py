@@ -19,6 +19,7 @@ from iaso.management.commands.delete_accounts import MODE_DELETE_ACCOUNTS, MODE_
 from iaso.models.data_store import JsonDataStore
 from iaso.models.json_config import Config
 from iaso.models.microplanning import Assignment, PlanningSamplingResult
+from iaso.models.microplanning.plannings import PlanningConfig
 from iaso.test import IasoTestCaseMixin
 
 
@@ -86,6 +87,8 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         sampling_result = PlanningSamplingResult.objects.create(planning=planning, parameters={"k": "v"})
         planning.selected_sampling_result = sampling_result
         planning.save()
+
+        planning_config = PlanningConfig.objects.create(planning=planning, level=1)
         assignment = Assignment.objects.create(planning=planning, org_unit=org_unit_child, user=user, team=team)
 
         task = m.Task.objects.create(account=account, name=f"task_{suffix}", status=m.QUEUED)
@@ -318,6 +321,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "team_parent": team_parent,
             "team_grandparent": team_grandparent,
             "planning": planning,
+            "planning_config": planning_config,
             "sampling_result": sampling_result,
             "assignment": assignment,
             "task": task,
@@ -520,6 +524,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.Payment.objects.filter(pk=other_models["payment"].pk).exists())
         self.assertFalse(m.PaymentLot.objects.filter(pk=other_models["payment_lot"].pk).exists())
         self.assertFalse(m.Planning.objects.filter(pk=other_models["planning"].pk).exists())
+        self.assertFalse(m.PlanningConfig.objects.filter(pk=other_models["planning_config"].pk).exists())
         self.assertFalse(PlanningSamplingResult.objects.filter(pk=other_models["sampling_result"].pk).exists())
         self.assertFalse(m.PotentialPayment.objects.filter(pk=other_models["potential_payment"].pk).exists())
         self.assertFalse(m.Profile.objects.filter(pk=other_models["profile"].pk).exists())
@@ -689,6 +694,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.Payment.objects.filter(pk=other_models["payment"].pk).exists())
         self.assertTrue(m.PaymentLot.objects.filter(pk=other_models["payment_lot"].pk).exists())
         self.assertTrue(m.Planning.objects.filter(pk=other_models["planning"].pk).exists())
+        self.assertTrue(m.PlanningConfig.objects.filter(pk=other_models["planning_config"].pk).exists())
         self.assertTrue(PlanningSamplingResult.objects.filter(pk=other_models["sampling_result"].pk).exists())
         self.assertTrue(m.PotentialPayment.objects.filter(pk=other_models["potential_payment"].pk).exists())
         self.assertTrue(m.Profile.objects.filter(pk=other_models["profile"].pk).exists())
@@ -1119,6 +1125,7 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.PaymentLot",
             "iaso.Planning",
             "iaso.PlanningSamplingResult",
+            "iaso.PlanningConfig",
             "iaso.PotentialPayment",
             "iaso.Profile",
             "iaso.Project",

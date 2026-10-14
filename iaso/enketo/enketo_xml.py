@@ -1,5 +1,8 @@
+import unicodedata
+
 from typing import Tuple
 
+from django.utils.functional import SimpleLazyObject
 from lxml import etree  # type: ignore
 from lxml.etree import XMLParser
 
@@ -8,20 +11,27 @@ from iaso.utils.emoji import fix_emoji
 
 ENKETO_FORM_ID_SEPARATOR = "-"
 
+# parent1_ou_* up to parent9_ou_*
+MAX_PARENTS = 9
+
 ORG_UNIT_INJECTABLE_QUESTION_NAMES = [
     "current_ou_id",
     "current_ou_name",
     "current_ou_type_id",
     "current_ou_type_name",
     "current_ou_is_root",
+    "current_ou_group_ids",
+    "current_ou_group_names",
 ]
 
-for parent_index in range(1, 10):
+for parent_index in range(1, MAX_PARENTS + 1):
     ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_id")
     ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_name")
     ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_type_id")
     ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_type_name")
     ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_is_root")
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_group_ids")
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_group_names")
 
 
 def deep_getattr(obj, attr, default=None):
@@ -32,28 +42,63 @@ def deep_getattr(obj, attr, default=None):
     return obj
 
 
-def build_substitutions(instance):
+def group_name_token(name):
+    # selected() splits on spaces: turn any whitespace (tabs, nbsp, ...) into "_" so each group stays one token,
+    # NFC so "é" matches whatever way it was typed, "_" for blank names to keep names aligned with the ids
+    return "_".join(unicodedata.normalize("NFC", name or "").split()) or "_"
+
+
+def substitutions_in_form(lazy_values, question_names):
+    """Only compute (and query) the values of the questions the form has"""
+    substitutions = {}
+    for question_name, value in lazy_values.items():
+        if question_name in question_names:
+            substitutions[f".//{question_name}"] = value()
+    return substitutions
+
+
+def org_unit_substitutions(org_unit, prefix, question_names):
+    # a single query shared by group_ids and group_names, only done when the form uses one of them
+    groups = SimpleLazyObject(lambda: list(org_unit.groups.order_by("id").values_list("id", "name")))
+    # lazy so a value that hits the db (or will later) is only computed when the form uses it
+    lazy_values = {
+        f"{prefix}id": lambda: org_unit.id,
+        f"{prefix}name": lambda: org_unit.name,
+        f"{prefix}type_id": lambda: org_unit.org_unit_type_id or "",
+        f"{prefix}type_name": lambda: deep_getattr(org_unit, "org_unit_type.name", ""),
+        f"{prefix}is_root": lambda: "0" if org_unit.parent_id else "1",
+        # space separated, like a select_multiple answer, so the values can be used with selected() in the form
+        f"{prefix}group_ids": lambda: " ".join(str(group_id) for group_id, _ in groups),
+        f"{prefix}group_names": lambda: " ".join(group_name_token(name) for _, name in groups),
+    }
+    return substitutions_in_form(lazy_values, question_names)
+
+
+def max_parent_index(question_names):
+    """The deepest parent the questions use (2 for parent2_ou_name), 0 if none"""
+    return max(
+        (
+            parent_index
+            for parent_index in range(1, MAX_PARENTS + 1)
+            if any(question_name.startswith(f"parent{parent_index}_ou_") for question_name in question_names)
+        ),
+        default=0,
+    )
+
+
+def build_substitutions(instance, question_names=ORG_UNIT_INJECTABLE_QUESTION_NAMES):
     substitutions = {}
     if instance and instance.org_unit:
-        substitutions = {
-            ".//current_ou_id": deep_getattr(instance, "org_unit.id", ""),
-            ".//current_ou_name": deep_getattr(instance, "org_unit.name", ""),
-            ".//current_ou_type_id": deep_getattr(instance, "org_unit.org_unit_type.id", ""),
-            ".//current_ou_type_name": deep_getattr(instance, "org_unit.org_unit_type.name", ""),
-            ".//current_ou_is_root": "0" if deep_getattr(instance, "org_unit.parent", None) else "1",
-        }
+        substitutions = org_unit_substitutions(instance.org_unit, "current_ou_", question_names)
 
-        parent = instance.org_unit.parent
+        # walk up the parents only as far as the questions use them
+        last_parent_index = max_parent_index(question_names)
+        parent = instance.org_unit.parent if last_parent_index else None
         parent_index = 1
         while parent:
-            prefix = f"parent{parent_index}_ou_"
-            substitutions[f".//{prefix}id"] = deep_getattr(parent, "id", "")
-            substitutions[f".//{prefix}name"] = deep_getattr(parent, "name", "")
-            substitutions[f".//{prefix}type_id"] = deep_getattr(parent, "org_unit_type.id", "")
-            substitutions[f".//{prefix}type_name"] = deep_getattr(parent, "org_unit_type.name", "")
-            substitutions[f".//{prefix}is_root"] = "0" if parent.parent else "1"
+            substitutions.update(org_unit_substitutions(parent, f"parent{parent_index}_ou_", question_names))
 
-            parent = parent.parent
+            parent = parent.parent if parent_index < last_parent_index else None
             parent_index += 1
 
     return substitutions
@@ -210,7 +255,13 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
         edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
     edit_user_id_tag.text = str(user_id)
 
-    substitutions = build_substitutions(instance)
+    # the injectable questions of the form, so only what it uses is queried
+    question_names_to_include = [
+        question_name
+        for question_name in ORG_UNIT_INJECTABLE_QUESTION_NAMES
+        if root.xpath(f"boolean(.//*[local-name() = '{question_name}'])")
+    ]
+    substitutions = build_substitutions(instance, question_names_to_include)
 
     for xpath, value in substitutions.items():
         node = root.xpath(xpath)

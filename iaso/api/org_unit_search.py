@@ -11,6 +11,15 @@ from iaso.models import DataSource, Instance, OrgUnit
 from iaso.utils import search_by_ids_refs
 
 
+def _split_ids(value) -> list:
+    """`searches` is JSON, so ids can come as "1,2", 1 or [1, 2]"""
+    if isinstance(value, str):
+        return value.split(",")
+    if isinstance(value, int):
+        return [value]
+    return value
+
+
 def apply_org_unit_search(queryset: QuerySet, value: str, prefix: str = "") -> QuerySet:
     if value.startswith("ids:"):
         queryset = queryset.filter(**{f"{prefix}id__in": search_by_ids_refs.parse_ids("ids:", value)})
@@ -92,13 +101,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = apply_org_unit_search(queryset, search)
 
     if group:
-        if isinstance(group, str):
-            group_ids = group.split(",")
-        elif isinstance(group, int):
-            group_ids = [group]
-        else:
-            group_ids = group
-        queryset = queryset.filter(groups__in=group_ids).distinct()
+        queryset = queryset.filter(groups__in=_split_ids(group)).distinct()
 
     if source:
         source = DataSource.objects.get(id=source)
@@ -153,7 +156,7 @@ def build_org_units_queryset(queryset, params, profile):
             queryset = queryset.filter(id__in=ids_with_duplicate_instances)
 
     if org_unit_type_id:
-        queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
+        queryset = queryset.filter(org_unit_type__id__in=_split_ids(org_unit_type_id))
 
     # We need a few things for empty location comparisons:
     # 1. An annotated queryset (geography fields exposed as geometries)
@@ -207,12 +210,12 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.hierarchy(parent)
 
     if org_unit_parent_ids:
-        parent_ids = org_unit_parent_ids.split(",")
+        parent_ids = _split_ids(org_unit_parent_ids)
         parent = OrgUnit.objects.filter(id__in=parent_ids)
         queryset = queryset.hierarchy(parent)
 
     if excluded_org_unit_parent_ids:
-        excluded_parent_ids = excluded_org_unit_parent_ids.split(",")
+        excluded_parent_ids = _split_ids(excluded_org_unit_parent_ids)
         excluded_parents = OrgUnit.objects.filter(id__in=excluded_parent_ids)
         # Get all org units in the hierarchy of the excluded parents
         excluded_hierarchy = OrgUnit.objects.hierarchy(excluded_parents)

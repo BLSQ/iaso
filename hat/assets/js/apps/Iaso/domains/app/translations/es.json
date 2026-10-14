@@ -381,7 +381,6 @@
     "iaso.formversions.removedQuestionsSection": "Preguntas eliminadas o renombradas ({count})",
     "iaso.formversions.update": "Actualizar versión {version_id}",
     "iaso.group.dialog.deleteText": "Esta operación no se puede deshacer.",
-    "iaso.groups.blockOfCountries": "Bloque de países",
     "iaso.groups.create": "Crear grupo",
     "iaso.groups.dialog.delete": "¿Está seguro de que desea eliminar este grupo?",
     "iaso.groups.dialog.deleteText": "Esta operación no se puede deshacer.",

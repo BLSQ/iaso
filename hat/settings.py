@@ -524,12 +524,6 @@ AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
 ]
 
-# Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
-if "polio" in PLUGINS:
-    AUTH_CLASSES.append(
-        "rest_framework.authentication.BasicAuthentication",
-    )
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
@@ -995,6 +989,11 @@ for plugin_name in PLUGINS:
 
         if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
             REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)
+
+        # Same list object as REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"].
+        for auth_class in getattr(plugin_settings, "AUTHENTICATION_CLASSES", []):
+            if auth_class not in AUTH_CLASSES:
+                AUTH_CLASSES.append(auth_class)
 
     except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
         print(

@@ -126,10 +126,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Dashboard',
         id: 'iaso.label.dashboard',
     },
-    polio: {
-        defaultMessage: 'Polio',
-        id: 'iaso.label.polio',
-    },
     pages: {
         defaultMessage: 'Embedded links',
         id: 'iaso.label.pages',

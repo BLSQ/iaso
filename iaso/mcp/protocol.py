@@ -128,6 +128,10 @@ def _enum_schema(enum_cls):
 
 
 def _property_schema(annotation):
+    if isinstance(annotation, str):
+        scalar = _annotation_type(annotation)
+        if scalar is not None:
+            return {"type": TYPE_MAP[scalar]}
     base = _base_type(annotation)
     if isinstance(base, type) and issubclass(base, enum.Enum):
         return _enum_schema(base)
@@ -148,10 +152,7 @@ def _property_schema(annotation):
 
 
 def _get_tool_schema(func):
-    try:
-        hints = typing.get_type_hints(func)
-    except Exception:
-        hints = {}
+    hints = _resolved_annotations(func)
     sig = inspect.signature(func)
     properties = {}
     required = []
@@ -188,6 +189,86 @@ def tools_catalog() -> dict:
     }
 
 
+_TRUE_STRINGS = frozenset({"true", "1", "yes"})
+_FALSE_STRINGS = frozenset({"false", "0", "no"})
+
+
+def _annotation_type(annotation: Any):
+    """Scalar type for an annotation, including postponed ``X | None`` strings on Python 3.9."""
+    if isinstance(annotation, str):
+        text = annotation.replace(" ", "")
+        for prefix in ("Optional[",):
+            if text.startswith(prefix) and text.endswith("]"):
+                text = text[len(prefix) : -1]
+        text = text.replace("|None", "").replace("None|", "")
+        return {"int": int, "float": float, "bool": bool, "str": str}.get(text)
+    if annotation is None:
+        return None
+    base = _base_type(annotation)
+    if base in (int, float, bool, str):
+        return base
+    return None
+
+
+def _resolved_annotations(func) -> dict[str, Any]:
+    try:
+        return typing.get_type_hints(func)
+    except Exception:
+        # Python 3.9 cannot evaluate ``int | None`` even when postponed.
+        return dict(getattr(func, "__annotations__", {}))
+
+
+def _coerce_scalar(value: Any, annotation: Any) -> Any:
+    """Cast JSON/MCP values onto the annotated scalar. Leave unknown values as-is."""
+    if value is None:
+        return None
+    base = _annotation_type(annotation)
+    if base is int and not isinstance(value, bool):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.strip().lstrip("-").isdigit():
+            return int(value.strip())
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+    if base is float and not isinstance(value, bool):
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            try:
+                return float(value.strip())
+            except ValueError:
+                return value
+    if base is bool and not isinstance(value, bool):
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in _TRUE_STRINGS:
+                return True
+            if lowered in _FALSE_STRINGS:
+                return False
+        if isinstance(value, int) and value in (0, 1):
+            return bool(value)
+    return value
+
+
+def coerce_tool_arguments(func, arguments: dict[str, Any]) -> dict[str, Any]:
+    """Match incoming arguments to the tool signature.
+
+    Several MCP clients send integers and booleans as strings even when the
+    input schema says otherwise. ``"10" < 50`` then raises TypeError.
+    """
+    hints = _resolved_annotations(func)
+    signature = inspect.signature(func)
+    coerced = dict(arguments)
+    for name in signature.parameters:
+        if name not in coerced or name == "user":
+            continue
+        annotation = hints.get(name)
+        if annotation is None:
+            continue
+        coerced[name] = _coerce_scalar(coerced[name], annotation)
+    return coerced
+
+
 def call_tool(name, arguments, user):
     func = _TOOLS.get(name)
     if not func:
@@ -195,7 +276,8 @@ def call_tool(name, arguments, user):
     set_current_user(user)
     stored = sanitize_tool_arguments(arguments or {})
     try:
-        result = func(**(arguments or {}))
+        coerced = coerce_tool_arguments(func, arguments or {})
+        result = func(**coerced)
         ToolCall.objects.create(user=user, tool_name=name, arguments=stored, success=True)
         return result
     except Exception as exc:

@@ -12,7 +12,36 @@ import { mutationInvalidates as missionsMutationInvalidates } from './hat/assets
 
 require('dotenv').config();
 
-const ORVAL_TARGET = `${process.env.ORVAL_TARGET_URL_PROTOCOL || 'http'}://${process.env.ORVAL_TARGET_URL_DOMAIN || 'localhost:8000'}`;
+type BuildUrlProps = {
+    protocol: "http" | "https",
+    hostname: string;
+    port?: string;
+}
+
+function buildUrl({ protocol, hostname, port}: {
+    protocol: "http" | "https",
+    hostname: string;
+    port?: string;
+}): string {
+    if (!['http', 'https'].includes(protocol)) {
+        throw new Error(`Unsupported protocol: ${protocol}`);
+    }
+
+    let url = new URL(`${protocol}://${hostname}`);
+
+    if (port){
+        url.port = port;
+    }
+
+    return url.toString();
+}
+
+
+const ORVAL_TARGET = buildUrl({
+    protocol: process.env?.ORVAL_TARGET_URL_PROTOCOL as BuildUrlProps["protocol"] || "http",
+    hostname: process.env.ORVAL_TARGET_URL_DOMAIN || "localhost",
+    port: process.env.ORVAL_TARGET_URL_PORT
+})
 const ORVAL_TARGET_FILE = process.env?.ORVAL_TARGET_FILE;
 
 const createConfig = (

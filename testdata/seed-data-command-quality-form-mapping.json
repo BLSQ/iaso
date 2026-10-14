@@ -1,0 +1,60 @@
+{
+    "data_set_id": "EKWVBc5C0ms",
+    "data_set_name": "MNCH Quarterly Report",
+    "question_mappings": {
+        "PBF_PCA_qlt_8_1": {
+            "id": "ijIsjbvXFJL",
+            "name": "MNCH Breech/shoulder delivery",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_2": {
+            "id": "WQSdEl9xUMA",
+            "name": "MNCH ANC Attendance",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_3_1": {
+            "id": "g9Tso8plX88",
+            "name": "MNCH vacuum/forceps delivery",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_4": {
+            "id": "QhKQD2wHowC",
+            "name": "MNCH Cases of anaemia during ANC",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_5": {
+            "id": "DosHq4vnsYv",
+            "name": "MNCH Caesarean section deliveries",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_6_1": {
+            "id": "Q8lOv2CAUjf",
+            "name": "MNCH Destructive operations delivery",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_7_1": {
+            "id": "SqvCDfGBFzM",
+            "name": "MNCH Normal deliveries",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_8": {
+            "id": "aLF5wmCZrKF",
+            "name": "MNCH Heamoglobin checks performed during ANC",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        },
+        "PBF_PCA_qlt_8_10": {
+            "id": "iYCGteGcr6Q",
+            "name": "MNCH ANC registrants",
+            "valueType": "INTEGER",
+            "categoryOptionCombo": "HllvX50cXC0"
+        }
+    }
+}

@@ -8,10 +8,11 @@ from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
-class MobileEntityAPITestCase(EntityAPITestCase):
+class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
     BASE_URL = "/api/mobile/entities/"
 
     def test_list_entities_empty_does_not_issue_extra_query_for_queryset_truthiness(self):
@@ -103,6 +104,118 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         # 1 merged entity count+data query (asserted above), 1 instances prefetch, and 1 FormVersion
         # lookup for get_serializer_context's possible_form_versions dict.
         self.assertEqual(len(ctx.captured_queries), 8)
+
+    def create_entities(self, count: int) -> list:
+        entities = []
+        for i in range(count):
+            instance = self.create_form_instance(
+                project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=f"entity_{i}", entity_type=self.entity_type, attributes=instance, account=self.account
+            )
+            instance.entity = entity
+            instance.save()
+            entities.append(entity)
+        return entities
+
+    def get_entities_page(self, **params):
+        self.client.force_authenticate(self.yoda)
+        return self.client.get(self.BASE_URL, {"app_id": self.project.app_id, **params})
+
+    def assert_page(self, response_json, entities, count, pages, page, limit, has_next, has_previous):
+        self.assertEqual(
+            {
+                "uuids": [result["id"] for result in response_json["results"]],
+                "count": response_json["count"],
+                "pages": response_json["pages"],
+                "page": response_json["page"],
+                "limit": response_json["limit"],
+                "has_next": response_json["has_next"],
+                "has_previous": response_json["has_previous"],
+            },
+            {
+                "uuids": [str(entity.uuid) for entity in entities],
+                "count": count,
+                "pages": pages,
+                "page": page,
+                "limit": limit,
+                "has_next": has_next,
+                "has_previous": has_previous,
+            },
+        )
+
+    def test_list_entities_with_count_by_default(self):
+        entities = self.create_entities(3)
+
+        for params in ({}, {"with_count": "true"}):
+            with self.subTest(params=params):
+                response = self.get_entities_page(limit=2, page=1, **params)
+
+                response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+                self.assert_page(
+                    response_json,
+                    entities[:2],
+                    count=3,
+                    pages=2,
+                    page=1,
+                    limit=2,
+                    has_next=True,
+                    has_previous=False,
+                )
+                self.assertResponseCompliantToSwagger(response_json, "PaginatedMobileEntityList")
+
+    def test_list_entities_without_count(self):
+        entities = self.create_entities(3)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.get_entities_page(limit=2, page=1, with_count="false")
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities[:2], count=None, pages=None, page=1, limit=2, has_next=True, has_previous=False
+        )
+        self.assertResponseCompliantToSwagger(response_json, "PaginatedMobileEntityList")
+        entity_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_entity"' in q["sql"]]
+        self.assertEqual(len(entity_queries), 1, entity_queries)
+        self.assertNotIn("OVER (", entity_queries[0], "with_count=false must not compute the Window count")
+
+        response = self.get_entities_page(limit=2, page=2, with_count="false")
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities[2:], count=None, pages=None, page=2, limit=2, has_next=False, has_previous=True
+        )
+
+    def test_list_entities_without_count_last_page_full(self):
+        """The extra row fetched to detect a next page must not report one when the last page is exactly full."""
+        entities = self.create_entities(2)
+
+        response = self.get_entities_page(limit=2, page=1, with_count="false")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities, count=None, pages=None, page=1, limit=2, has_next=False, has_previous=False
+        )
+
+    def test_list_entities_without_count_empty(self):
+        response = self.get_entities_page(page=1, with_count="false")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, [], count=None, pages=None, page=1, limit=1000, has_next=False, has_previous=False
+        )
+
+    def test_list_entities_without_count_page_past_the_end_returns_404(self):
+        self.create_entities(2)
+
+        response = self.get_entities_page(limit=2, page=2, with_count="false")
+
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+    def test_list_entities_invalid_with_count_returns_400(self):
+        response = self.get_entities_page(with_count="maybe")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("with_count", response_json)
 
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):
         uuid_valid_instance = uuid.uuid4()

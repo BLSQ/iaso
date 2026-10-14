@@ -1,6 +1,6 @@
-import { UseMutationResult, useQueryClient } from 'react-query';
-import { patchRequest, postRequest } from '../../../../libs/Api';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import { useQueryClient } from 'react-query';
+import { patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { Team } from '../../types/team';
 
 type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
@@ -18,37 +18,43 @@ export type SaveTeamQuery = {
     color?: string;
 };
 
-const convertToApi = data => {
+type SaveTeamQueryAPIConverted = Partial<SaveTeamQuery> & {
+    sub_teams?: SaveTeamQuery['subTeams'];
+};
+
+const convertToApi = (
+    data: Partial<SaveTeamQuery>,
+): SaveTeamQueryAPIConverted => {
     const { subTeams, ...converted } = data;
-    if (subTeams !== undefined) {
-        converted.sub_teams = subTeams;
-    }
-    return converted;
+    return {
+        ...converted,
+        ...(subTeams !== undefined ? { sub_teams: subTeams } : {}),
+    };
 };
 
-export const convertAPIErrorsToState = data => {
+export const convertAPIErrorsToState = (data: Record<string, string>) => {
     const { sub_teams, ...converted } = data;
-    if (sub_teams !== undefined) {
-        converted.subTeams = sub_teams;
-    }
-    return converted;
+    return {
+        ...converted,
+        ...(sub_teams !== undefined ? { subTeams: sub_teams } : {}),
+    };
 };
 
-const endpoint = '/api/teams/';
+const ENDPOINT = '/api/teams/';
 
 const patchTeam = async (body: Partial<SaveTeamQuery>) => {
-    const url = `${endpoint}${body.id}/`;
+    const url = `${ENDPOINT}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };
 
 const postTeam = async (body: SaveTeamQuery) => {
-    return postRequest(endpoint, convertToApi(body));
+    return postRequest(ENDPOINT, convertToApi(body));
 };
 
 export const useSaveTeam = (
     type: 'create' | 'edit',
     showSuccessSnackBar = true,
-): UseMutationResult => {
+) => {
     const ignoreErrorCodes = [400];
     const queryClient = useQueryClient();
     const editTeam = useSnackMutation({

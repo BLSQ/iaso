@@ -1,19 +1,19 @@
 import { useMemo } from 'react';
-import { object, string, number, array, ObjectSchema } from 'yup';
-import { useAPIErrorValidator } from '../../libs/validation';
-import { ValidationError } from '../../types/utils';
+import { object, string, number, array } from 'yup';
+import { useAPIErrorValidator } from 'Iaso/libs/validation';
+import { ValidationError } from 'Iaso/types/utils';
 import { SaveTeamQuery } from './hooks/requests/useSaveTeam';
 
 export const useTeamValidation = (
     errors: ValidationError = {},
     payload: Partial<SaveTeamQuery>,
-): ObjectSchema<any> => {
+) => {
     const apiValidator = useAPIErrorValidator<Partial<SaveTeamQuery>>(
         errors,
         payload,
     );
 
-    const schema = useMemo(
+    return useMemo(
         () =>
             object().shape({
                 name: string().nullable().required('requiredField'),
@@ -26,5 +26,4 @@ export const useTeamValidation = (
             }),
         [apiValidator],
     );
-    return schema;
 };

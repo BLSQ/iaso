@@ -1,29 +1,29 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
+import { Box, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { ColumnsSelectDrawer } from 'Iaso/components/tables/ColumnSelectDrawer';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useActiveParams } from 'Iaso/routing/hooks/useActiveParams';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
-import { ColumnsSelectDrawer } from '../../components/tables/ColumnSelectDrawer/index';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../constants/urls';
-import { useActiveParams } from '../../routing/hooks/useActiveParams';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { AddTeamModal } from './components/CreateEditTeam';
 import { TeamFilters } from './components/TeamFilters';
 import { useTeamsColumnSelectDrawer } from './components/useTeamColumnSelectDrawer';
 import { useTeamColumns } from './config';
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import MESSAGES from './messages';
-import { TeamParams } from './types/team';
+import { TeamUrlParams } from './types/team';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
 const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent = () => {
     const params = useParamsObject(baseUrl);
-    const apiParams = useActiveParams(params) as unknown as TeamParams;
+    const apiParams = useActiveParams(params) as unknown as TeamUrlParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(apiParams);

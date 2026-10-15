@@ -122,6 +122,15 @@ class Planning(SoftDeletableModel):
         return self.pipeline_uuids or []
 
 
+class PlanningConfigQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User) -> "PlanningConfigQuerySet":
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+
+        return self.filter(planning__project__account=account)
+
+
 class PlanningConfig(models.Model):
     planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name="configs")
 
@@ -130,7 +139,10 @@ class PlanningConfig(models.Model):
     org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
     org_unit_groups = models.ManyToManyField("OrgUnit", blank=True)
 
+    objects = PlanningConfigQuerySet.as_manager()
+
     class Meta:
+        ordering = ("level",)
         unique_together = (("planning", "level"),)
         constraints = [CheckConstraint(check=Q(level__gte=1), name="level_gte_1")]
 

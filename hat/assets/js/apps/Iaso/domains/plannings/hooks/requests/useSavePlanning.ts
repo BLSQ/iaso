@@ -7,6 +7,7 @@ import {
     getApiParamDateTimeString,
 } from 'Iaso/utils/dates';
 import { PLANNINGS_API_URL } from '../../constants';
+import { PlanningLevel } from '../../components/orgUnitLevels/types';
 import { Planning } from '../../types';
 
 export type SavePlanningQuery = {
@@ -23,6 +24,7 @@ export type SavePlanningQuery = {
     pipelineUuids: string[];
     targetOrgUnitTypes: number[];
     selected_sampling_result_id?: number | null;
+    levels?: PlanningLevel[];
 };
 
 const convertToApi = data => {
@@ -34,6 +36,7 @@ const convertToApi = data => {
         publishingStatus,
         pipelineUuids,
         targetOrgUnitTypes,
+        levels: _levels,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {

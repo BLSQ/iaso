@@ -576,6 +576,64 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Delete team',
         id: 'iaso.plannings.label.deleteTeam',
     },
+    orgUnitsToAssign: {
+        defaultMessage: 'Org units to assign',
+        id: 'iaso.plannings.label.orgUnitsToAssign',
+    },
+    orgUnitLevelsInfos: {
+        defaultMessage:
+            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.',
+        id: 'iaso.plannings.label.orgUnitLevelsInfos',
+    },
+    levelNumber: {
+        defaultMessage: 'Level {number}',
+        id: 'iaso.plannings.label.levelNumber',
+    },
+    rootLevel: {
+        defaultMessage: 'Root level',
+        id: 'iaso.plannings.label.rootLevel',
+    },
+    deepestLevel: {
+        defaultMessage: 'Deepest level',
+        id: 'iaso.plannings.label.deepestLevel',
+    },
+    teamsAndUsers: {
+        defaultMessage: 'Teams and users',
+        id: 'iaso.plannings.label.teamsAndUsers',
+    },
+    orgUnitTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.plannings.label.orgUnitTypes',
+    },
+    orgUnitGroups: {
+        defaultMessage: 'Org unit groups',
+        id: 'iaso.plannings.label.orgUnitGroups',
+    },
+    orgUnits: {
+        defaultMessage: 'Org units',
+        id: 'iaso.plannings.label.orgUnits',
+    },
+    allOrgUnits: {
+        defaultMessage: 'All org units',
+        id: 'iaso.plannings.label.allOrgUnits',
+    },
+    selectGeographyAndRootTeamFirst: {
+        defaultMessage:
+            'Select a target geography and a root team to define the levels.',
+        id: 'iaso.plannings.label.selectGeographyAndRootTeamFirst',
+    },
+    mixedOrgUnitTypeDepths: {
+        defaultMessage: 'Org unit types of a level must be at the same depth',
+        id: 'iaso.plannings.label.mixedOrgUnitTypeDepths',
+    },
+    notDeeperThanLevelAbove: {
+        defaultMessage: 'Org unit types must be deeper than the level above',
+        id: 'iaso.plannings.label.notDeeperThanLevelAbove',
+    },
+    groupsWithoutLevelOrgUnits: {
+        defaultMessage: "No org units of this level's types in: {groups}",
+        id: 'iaso.plannings.label.groupsWithoutLevelOrgUnits',
+    },
 });
 
 export default MESSAGES;

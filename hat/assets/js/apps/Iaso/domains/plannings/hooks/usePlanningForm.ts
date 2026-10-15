@@ -4,6 +4,7 @@ import { useFormik } from 'formik';
 import moment from 'moment';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
+import { PlanningLevel } from '../components/orgUnitLevels/types';
 import { PageMode, Planning } from '../types';
 import {
     convertAPIErrorsToState,
@@ -55,6 +56,8 @@ export const usePlanningForm = (
             missions: planning?.missions,
             selectedOrgUnit: planning?.org_unit_details?.id,
             selectedTeam: planning?.team_details?.id,
+            // Not persisted yet: the planning levels API is still to be built.
+            levels: [] as PlanningLevel[],
         },
         enableReinitialize: true,
         validateOnBlur: true,

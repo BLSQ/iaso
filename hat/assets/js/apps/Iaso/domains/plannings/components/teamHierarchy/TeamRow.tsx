@@ -15,7 +15,7 @@ import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { canHaveSubTeams, getToggledType } from 'Iaso/domains/teams/utils';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
 import { RowAction, RowActionsMenu } from './RowActionsMenu';

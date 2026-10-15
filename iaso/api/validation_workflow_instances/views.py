@@ -203,7 +203,7 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
             )
 
             qs = (
-                qs.select_related("project", "form")
+                qs.select_related("project", "form", "org_unit")
                 .filter(Q(annotate_user_has_been_involved=True) | Q(annotate_requires_user_action=True))
                 .distinct()
             )

@@ -7,7 +7,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 const styles = {
     handle: {

@@ -25,9 +25,9 @@ import { Team } from 'Iaso/domains/teams/types/team';
 import { canHaveSubTeams, getToggledType } from 'Iaso/domains/teams/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
-import { PlanningStepCard } from '../components/PlanningStepCard';
-import { usePlanningContext } from '../contexts/PlanningContext';
-import MESSAGES from '../messages';
+import { PlanningStepCard } from '../PlanningStepCard';
+import { usePlanningContext } from '../../contexts/PlanningContext';
+import MESSAGES from '../../messages';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
 import { HierarchyToolbar } from './HierarchyToolbar';
 import {

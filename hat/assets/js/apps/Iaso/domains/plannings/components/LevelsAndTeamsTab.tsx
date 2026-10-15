@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Stack } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
-import { TeamHierarchySection } from '../teamHierarchy/TeamHierarchySection';
+import { TeamHierarchySection } from './teamHierarchy/TeamHierarchySection';
 import { OrgUnitLevelsSection } from './orgUnitLevels/OrgUnitLevelsSection';
 import { TargetGeographySection } from './TargetGeographySection';
 

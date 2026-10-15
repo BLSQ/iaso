@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { User } from 'Iaso/domains/teams/types/team';
-import { TeamNode } from '../../teamHierarchy/types';
+import { TeamNode } from '../teamHierarchy/types';
 import { LevelOrgUnitType, PlanningLevel } from './types';
 import {
     getLevelMembers,

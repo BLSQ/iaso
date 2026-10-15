@@ -427,18 +427,20 @@ GET /api/promptness_stats/export_csv/?form_id=42&period=202609&parent_org_unit_i
 
 - `Content-Type: text/csv`
 - `Content-Disposition: attachment; filename="promptness_<form_id>_<period>.csv"`
+- Streamed, UTF-8 encoded, starting with a BOM (so that Excel detects the encoding of the names)
 
-/!\ this is an example of formatting, the actual formatting has not been decided yet
-
-One line per row, with these columns:
+One line per row, in the same order as the rows of the list, with these columns:
 
 ```
-form_id,period,deadline,org_unit_id,org_unit_name,org_unit_type,parent_org_unit,expected,received,completeness_percent,on_time,on_time_percent,late,late_percent,missing,missing_percent
-42,202609,2026-10-10,12,Oromia,Region,Ethiopia,320,178,55.6,152,47.5,26,8.1,142,44.4
-42,202609,2026-10-10,13,Amhara,Region,Ethiopia,260,142,54.6,120,46.2,22,8.5,118,45.4
+org_unit_id,org_unit_name,org_unit_type,parent_org_unit,expected,received,completeness_percent,on_time,on_time_percent,late,late_percent,missing,missing_percent
+12,Oromia,Region,Ethiopia,320,178,55.6,152,47.5,26,8.1,142,44.4
+13,Amhara,Region,Ethiopia,260,142,54.6,120,46.2,22,8.5,118,45.4
+14,Somali,Region,Ethiopia,,,,,,,,,
 ```
 
-Columns of statuses excluded through the `status` param are omitted.
+- The selected form and period are in the file name.
+- Not applicable rows have empty counts and percentages.
+- Columns of statuses excluded through the `status` param are omitted.
 
 ### 400 / 401 / 403
 

@@ -207,6 +207,38 @@ class PromptnessStatsRowSerializer(PromptnessStatsCountsSerializer):
         }
 
 
+class PromptnessStatsCsvRowSerializer(PromptnessStatsRowSerializer):
+    """One line of the CSV export: a row of `results`, flattened.
+
+    Input: same as `PromptnessStatsRowSerializer`, plus an `org_unit_type_name` annotation (see the `export_csv` view).
+
+    The counts of the excluded statuses are still in the line (as `None`): `get_columns()` leaves them out of the CSV.
+    """
+
+    BASE_COLUMNS = ["org_unit_id", "org_unit_name", "org_unit_type", "parent_org_unit"]
+
+    def to_representation(self, org_unit: OrgUnit) -> dict:
+        row = super().to_representation(org_unit)
+        return {
+            "org_unit_id": row["id"],
+            "org_unit_name": row["name"],
+            "org_unit_type": org_unit.org_unit_type_name,
+            "parent_org_unit": row["parent_org_unit"]["name"] if row["parent_org_unit"] else None,
+            **{field_name: row[field_name] for field_name in self.COUNT_FIELDS},
+        }
+
+    @classmethod
+    def get_columns(cls, statuses) -> list:
+        """Columns of the CSV: the columns of the excluded statuses are left out"""
+        excluded_fields = {
+            field
+            for status, field_name in cls.STATUS_TO_FIELD.items()
+            if status not in statuses
+            for field in (field_name, f"{field_name}_percent")
+        }
+        return cls.BASE_COLUMNS + [field for field in cls.COUNT_FIELDS if field not in excluded_fields]
+
+
 class PromptnessStatsSummarySerializer(serializers.Serializer):
     """Serializes the response of the `summary` action.
 

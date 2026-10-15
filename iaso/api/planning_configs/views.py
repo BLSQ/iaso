@@ -22,7 +22,7 @@ class PlanningConfigViewSet(ProtectDestroyMixin, UpdateModelMixin, CreateModelMi
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
     def get_queryset(self) -> QuerySet[PlanningConfig]:
-        qs = PlanningConfig.objects.filter(user=self.request.user)
+        qs = PlanningConfig.objects.filter_for_user(self.request.user)
         return qs
 
     def get_serializer_class(self) -> type[BaseSerializer]:

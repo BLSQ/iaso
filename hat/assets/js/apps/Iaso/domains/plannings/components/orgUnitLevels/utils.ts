@@ -1,5 +1,5 @@
 import { uniq } from 'lodash';
-import { TeamNode } from '../../teamHierarchy/types';
+import { TeamNode } from '../teamHierarchy/types';
 import {
     LevelMembers,
     LevelOrgUnitType,

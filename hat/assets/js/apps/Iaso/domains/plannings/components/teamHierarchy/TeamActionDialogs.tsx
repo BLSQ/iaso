@@ -4,7 +4,7 @@ import { noop } from 'lodash';
 import { DeleteRestoreModal } from 'Iaso/components/DeleteRestoreModals/DeleteRestoreModal';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 import { DraggedItem, HierarchyTeam } from './types';
 import { MoveTarget } from './utils';
 

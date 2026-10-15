@@ -7,7 +7,7 @@ import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
 import { RowAction, RowActionsMenu } from './RowActionsMenu';

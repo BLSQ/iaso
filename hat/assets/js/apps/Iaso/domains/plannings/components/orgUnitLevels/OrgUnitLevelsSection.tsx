@@ -14,7 +14,7 @@ import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { SxStyles } from 'Iaso/types/general';
-import { PlanningStepCard } from '../PlanningStepCard';
+import { PlanningStepCard } from '../shared/PlanningStepCard';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { useGetTeamHierarchy } from '../teamHierarchy/useTeamHierarchy';

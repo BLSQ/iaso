@@ -6,7 +6,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { PlanningDetails } from './components/PlanningDetails';
+import { PlanningDetails } from './components/details/PlanningDetails';
 import { PlanningProvider } from './contexts/PlanningContext';
 import MESSAGES from './messages';
 import { PageMode } from './types';

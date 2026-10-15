@@ -11,7 +11,7 @@ import {
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
-import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/shared/PlanningsDropdown';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';

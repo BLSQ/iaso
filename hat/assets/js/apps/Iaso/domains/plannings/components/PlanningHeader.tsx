@@ -15,6 +15,7 @@ const styles = {
     header: {
         position: 'sticky',
         top: 0,
+        pt: 4,
         zIndex: 2,
         pb: 2,
         backgroundColor: 'white',

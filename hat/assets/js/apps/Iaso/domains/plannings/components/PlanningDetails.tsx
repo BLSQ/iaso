@@ -16,6 +16,7 @@ const styles = {
         height: '100%',
     },
     tabs: {
+        flexShrink: 0,
         marginBottom: 3,
     },
 } satisfies SxStyles;

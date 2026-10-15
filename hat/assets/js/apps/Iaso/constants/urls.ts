@@ -660,6 +660,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'requires_user_action',
             'validation_workflows',
             'projects',
+            'org_unit',
             ...paginationPathParams,
         ],
     },

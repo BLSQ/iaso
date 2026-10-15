@@ -202,16 +202,8 @@ describe('User detail view integration test', () => {
         });
 
         randomUser.permissions.forEach((perm: string) => {
-            // @ts-ignore
             expect(
-                screen.getByText(
-                    (
-                        PERMISSIONS_MESSAGES as Record<
-                            string,
-                            { id: string; defaultMessage: string }
-                        >
-                    )?.[perm]?.defaultMessage,
-                ),
+                screen.getByText(PERMISSIONS_MESSAGES?.[perm]?.defaultMessage),
             ).toBeInTheDocument();
         });
 

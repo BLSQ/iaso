@@ -33,7 +33,7 @@ from iaso.api.validation_workflow_instances.permissions import (
 )
 from iaso.api.validation_workflow_instances.serializers.list import ValidationWorkflowInstanceListSerializer
 from iaso.api.validation_workflow_instances.serializers.retrieve import ValidationWorkflowInstanceRetrieveSerializer
-from iaso.models import Instance, ValidationNode, ValidationNodeTemplate
+from iaso.models import Instance, OrgUnit, ValidationNode, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
@@ -202,8 +202,12 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
                 annotate_last_updated=Max("validationnode__updated_at"),
             )
 
+            deferred_fields = [
+                f"org_unit__{field.name}" for field in OrgUnit._meta.get_fields() if field.name not in ["id", "name"]
+            ]
             qs = (
                 qs.select_related("project", "form", "org_unit")
+                .defer(*deferred_fields)
                 .filter(Q(annotate_user_has_been_involved=True) | Q(annotate_requires_user_action=True))
                 .distinct()
             )

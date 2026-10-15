@@ -26,11 +26,12 @@ class OrgUnitNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name"]
+        read_only_fields = ["id", "name"]
 
 
 class ValidationWorkflowInstanceListSerializer(ModelSerializer):
     project = ProjectNestedSerializer(read_only=True)
-    org_unit = OrgUnitNestedSerializer(read_only=True)
+    org_unit = OrgUnitNestedSerializer(read_only=True, allow_null=True)
     user_has_been_involved = serializers.BooleanField(read_only=True, source="annotate_user_has_been_involved")
     requires_user_action = serializers.BooleanField(read_only=True, source="annotate_requires_user_action")
     last_updated = serializers.DateTimeField(read_only=True, source="annotate_last_updated")

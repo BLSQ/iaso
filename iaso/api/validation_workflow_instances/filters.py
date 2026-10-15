@@ -1,5 +1,8 @@
+from typing import Optional
+
 import django_filters
 
+from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import FilterSet
 from django_filters.widgets import QueryArrayWidget
@@ -24,7 +27,7 @@ class ValidationWorkflowInstancesListFilters(FilterSet):
         fields = []
 
     @staticmethod
-    def filter_org_unit_ids(queryset, name, value):
+    def filter_org_unit_ids(queryset: QuerySet, _: str, value: Optional[list[int]]) -> QuerySet:
         if value is None:
             return queryset
         org_units = OrgUnit.objects.hierarchy(OrgUnit.objects.filter(id__in=value))

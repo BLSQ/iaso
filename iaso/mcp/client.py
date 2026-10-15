@@ -58,10 +58,24 @@ def _decode_response(response) -> Any:
 
 def _raise_if_error(response, url: str) -> Any:
     payload = _decode_response(response)
+    if 300 <= response.status_code < 400:
+        location = response.get("Location", "")
+        message = f"{url} redirected with status {response.status_code} to {location}."
+        raise IasoHTTPError(message, status_code=response.status_code, payload=payload)
     if response.status_code >= 400:
         message = f"{url} failed with status {response.status_code}."
         raise IasoHTTPError(message, status_code=response.status_code, payload=payload)
     return payload
+
+
+def _secure_request_extra() -> dict[str, Any]:
+    """In-process calls are HTTPS.
+
+    APIClient otherwise uses http://testserver. With SECURE_SSL_REDIRECT that
+    is an empty 301, and callers see a null body. ``secure=True`` sets
+    wsgi.url_scheme, which is enough when the proxy header is absent.
+    """
+    return {"secure": True}
 
 
 class DjangoUserTransport:
@@ -101,16 +115,17 @@ class DjangoUserTransport:
         if params:
             url = url + ("&" if "?" in url else "?") + urlencode(params, doseq=True)
         verb = method.upper()
+        secure = _secure_request_extra()
         if verb == "GET":
-            response = self._api.get(url)
+            response = self._api.get(url, **secure)
         elif verb == "DELETE":
-            response = self._api.delete(url)
+            response = self._api.delete(url, **secure)
         elif verb == "POST":
-            response = self._api.post(url, data=json, format="json")
+            response = self._api.post(url, data=json, format="json", **secure)
         elif verb == "PATCH":
-            response = self._api.patch(url, data=json, format="json")
+            response = self._api.patch(url, data=json, format="json", **secure)
         elif verb == "PUT":
-            response = self._api.put(url, data=json, format="json")
+            response = self._api.put(url, data=json, format="json", **secure)
         else:
             message = f"Unsupported method {method}."
             raise IasoError(message)
@@ -130,7 +145,7 @@ class DjangoUserTransport:
         payload = dict(data or {})
         for field, spec in (files or {}).items():
             payload[field] = _as_uploaded(spec)
-        response = self._api.post(url, data=payload, format="multipart")
+        response = self._api.post(url, data=payload, format="multipart", **_secure_request_extra())
         return _raise_if_error(response, url)
 
     def post_root(
@@ -147,7 +162,9 @@ class DjangoUserTransport:
         payload = dict(data or {})
         for field, spec in (files or {}).items():
             payload[field] = _as_uploaded(spec)
-        response = self._api.post(url, data=payload)
+        response = self._api.post(url, data=payload, **_secure_request_extra())
+        if 300 <= response.status_code < 400:
+            _raise_if_error(response, url)
         return response.status_code, _decode_response(response)
 
 

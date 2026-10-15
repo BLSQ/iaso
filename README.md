@@ -478,7 +478,22 @@ To enable the Enketo editor in your local environment, include the additional do
 docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
 ```
 
-No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
+The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
+
+Set these variables in your `.env` (see `.env.example`):
+
+```
+ENKETO_API_TOKEN="enketo_dev_token"
+ENKETO_DEV_IASO_HOST="iaso:8081"
+ENKETO_SIGNING_SECRET="supersecret"
+ENKETO_URL="http://enketo:8005/"
+```
+
+`ENKETO_DEV_IASO_HOST` is the host:port the Enketo container uses to reach Iaso. Enketo's server downloads forms, media and attachments from Iaso, but it can't reach Iaso via `localhost:8081` like your browser does, so in local dev Iaso rewrites `localhost:8081` / `127.0.0.1:8081` to this value in the URLs it gives to Enketo. Use `iaso:8081` when Iaso runs in docker compose, or `host.docker.internal:8081` when Iaso runs on your host. Setting it also makes Iaso rewrite the form URL returned by Enketo from `enketo:8005` to `localhost:8005` so your browser can open it. Leave it unset in deployed environments.
+
+> `ENKETO_DEV` was replaced by `ENKETO_DEV_IASO_HOST`. If your `.env` still has `ENKETO_DEV="true"`, replace it, otherwise forms won't load in Enketo.
+
+If the Iaso UI shows "Enketo is not available", the Enketo container is not running or `ENKETO_URL` is wrong.
 
 You can check that the server is correctly launched. By going to http://localhost:8005
 

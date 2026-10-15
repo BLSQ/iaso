@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import ast
 import enum
 import inspect
 import json
 import logging
+import sys
 import types
 import typing
 
@@ -110,6 +112,37 @@ def tool(func=None, *, description=None):
     return register(func)
 
 
+class _BitOrToUnion(ast.NodeTransformer):
+    """Rewrite ``X | Y`` to ``Union[X, Y]`` so annotations eval on Python 3.9."""
+
+    def visit_BinOp(self, node):
+        self.generic_visit(node)
+        if not isinstance(node.op, ast.BitOr):
+            return node
+        return ast.Subscript(
+            value=ast.Name(id="Union", ctx=ast.Load()),
+            slice=ast.Tuple(elts=[node.left, node.right], ctx=ast.Load()),
+            ctx=ast.Load(),
+        )
+
+
+def _type_hints(func):
+    if sys.version_info >= (3, 10):
+        return typing.get_type_hints(func)
+    module = sys.modules.get(func.__module__)
+    globalns = dict(getattr(module, "__dict__", {}))
+    globalns.setdefault("Union", typing.Union)
+    hints = {}
+    for name, value in func.__annotations__.items():
+        if not isinstance(value, str):
+            hints[name] = value
+            continue
+        tree = _BitOrToUnion().visit(ast.parse(value, mode="eval"))
+        ast.fix_missing_locations(tree)
+        hints[name] = eval(compile(tree, "<annotation>", "eval"), globalns)
+    return hints
+
+
 def _base_type(annotation):
     origin = typing.get_origin(annotation)
     union_type = getattr(types, "UnionType", None)
@@ -148,10 +181,7 @@ def _property_schema(annotation):
 
 
 def _get_tool_schema(func):
-    try:
-        hints = typing.get_type_hints(func)
-    except Exception:
-        hints = {}
+    hints = _type_hints(func)
     sig = inspect.signature(func)
     properties = {}
     required = []
@@ -188,6 +218,66 @@ def tools_catalog() -> dict:
     }
 
 
+_TRUE_STRINGS = frozenset({"true", "1", "yes"})
+_FALSE_STRINGS = frozenset({"false", "0", "no"})
+
+
+def _coerce_scalar(value: Any, annotation: Any) -> Any:
+    """Cast a stringly JSON value onto the annotated scalar.
+
+    Safety net for clients that ignore the schema. Unknown booleans are
+    rejected so ``confirm="nope"`` cannot pass ``if not confirm``.
+    """
+    if value is None:
+        return None
+    base = _base_type(annotation)
+    if base is int and not isinstance(value, bool):
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float) and value.is_integer():
+            return int(value)
+        if isinstance(value, str):
+            try:
+                return int(value.strip())
+            except ValueError:
+                return value
+    if base is float and not isinstance(value, bool):
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            try:
+                return float(value.strip())
+            except ValueError:
+                return value
+    if base is bool and not isinstance(value, bool):
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in _TRUE_STRINGS:
+                return True
+            if lowered in _FALSE_STRINGS:
+                return False
+            raise ValueError(f"{value!r} is not a boolean.")
+        if isinstance(value, int) and value in (0, 1):
+            return bool(value)
+        raise ValueError(f"{value!r} is not a boolean.")
+    return value
+
+
+def coerce_tool_arguments(func, arguments: dict[str, Any]) -> dict[str, Any]:
+    """Match incoming arguments to the tool signature."""
+    hints = _type_hints(func)
+    signature = inspect.signature(func)
+    coerced = dict(arguments)
+    for name in signature.parameters:
+        if name not in coerced or name == "user":
+            continue
+        annotation = hints.get(name)
+        if annotation is None:
+            continue
+        coerced[name] = _coerce_scalar(coerced[name], annotation)
+    return coerced
+
+
 def call_tool(name, arguments, user):
     func = _TOOLS.get(name)
     if not func:
@@ -195,7 +285,8 @@ def call_tool(name, arguments, user):
     set_current_user(user)
     stored = sanitize_tool_arguments(arguments or {})
     try:
-        result = func(**(arguments or {}))
+        coerced = coerce_tool_arguments(func, arguments or {})
+        result = func(**coerced)
         ToolCall.objects.create(user=user, tool_name=name, arguments=stored, success=True)
         return result
     except Exception as exc:
@@ -247,21 +338,20 @@ def handle_jsonrpc(body: bytes, user) -> dict | None:
                 "id": req_id,
                 "result": {"content": [{"type": "text", "text": content}]},
             }
+        except ValueError as exc:
+            text = str(exc)
+            logger.info("Tool call rejected: %s: %s", tool_name, text)
         except Exception:
             logger.exception("Tool call failed: %s", tool_name)
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "An internal error occurred while running the tool.",
-                        }
-                    ],
-                    "isError": True,
-                },
-            }
+            text = "An internal error occurred while running the tool."
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {
+                "content": [{"type": "text", "text": text}],
+                "isError": True,
+            },
+        }
 
     if method == "ping":
         return {"jsonrpc": "2.0", "id": req_id, "result": {}}

@@ -1607,6 +1607,8 @@
     "iaso.plannings.label.duplicatePlanning": "Duplicate planning",
     "iaso.plannings.label.linkMission": "Link mission",
     "iaso.plannings.label.linkedMissionsCount": "{count} linked",
+    "iaso.plannings.label.noMissionLinked": "No mission linked yet",
+    "iaso.plannings.label.noMissionLinkedDescription": "Link an existing mission or create a new one to define what agents collect on the field.",
     "iaso.plannings.label.notSavedYet": "Not saved yet",
     "iaso.plannings.label.openAssignments": "Open assignments",
     "iaso.plannings.label.orgUnitsCount": "Org units count",

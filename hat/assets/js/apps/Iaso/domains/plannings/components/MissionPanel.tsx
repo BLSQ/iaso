@@ -9,6 +9,7 @@ import { usePlanningContext } from '../contexts/PlanningContext';
 import MESSAGES from '../messages';
 import { AddMissionsDialog } from './AddMissionsDialog';
 import { MissionItem } from './MissionItem';
+import { NoMissionPlaceholder } from './NoMissionPlaceholder';
 import { planningPanelStyles } from './styles';
 
 const styles = {
@@ -51,6 +52,10 @@ export const MissionPanel: FC = () => {
     );
     const pageCount = savedMissions?.pages ?? 0;
     const currentPage = savedMissions?.page ?? 1;
+    const hasNoMission =
+        !isFetchingMissions &&
+        pendingMissions.length === 0 &&
+        (savedMissions?.results?.length ?? 0) === 0;
     return (
         <Card sx={styles.card} variant="outlined">
             {isFetchingMissions && <LoadingSpinner absolute fixed={false} />}
@@ -85,6 +90,7 @@ export const MissionPanel: FC = () => {
                     </IconButton>
                 </Stack>
             </Stack>
+            {hasNoMission && <NoMissionPlaceholder />}
             <Stack direction="column" gap={1} sx={styles.list}>
                 {currentPage === 1 &&
                     pendingMissions.map(mission => (

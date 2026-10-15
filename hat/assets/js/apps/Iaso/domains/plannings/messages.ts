@@ -428,6 +428,15 @@ const MESSAGES = defineMessages({
         defaultMessage: '{count} linked',
         id: 'iaso.plannings.label.linkedMissionsCount',
     },
+    noMissionLinked: {
+        defaultMessage: 'No mission linked yet',
+        id: 'iaso.plannings.label.noMissionLinked',
+    },
+    noMissionLinkedDescription: {
+        defaultMessage:
+            'Link an existing mission or create a new one to define what agents collect on the field.',
+        id: 'iaso.plannings.label.noMissionLinkedDescription',
+    },
     planningDetails: {
         defaultMessage: 'Planning details',
         id: 'iaso.plannings.label.planningDetails',

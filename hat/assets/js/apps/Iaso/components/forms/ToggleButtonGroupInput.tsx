@@ -1,5 +1,6 @@
 import React, { ElementType, FC, useCallback } from 'react';
 import {
+    alpha,
     FormControl,
     FormHelperText,
     FormLabel,
@@ -28,8 +29,24 @@ type Props = {
 const styles = {
     control: { mt: 2 },
     label: { fontSize: 12, mb: 1 },
-    group: { width: 'fit-content' },
     button: { gap: 0.75, textTransform: 'none' },
+    toggleButtonGroup: theme => ({
+        width: 'fit-content',
+        // segmented control: blue icons, active filled blue
+        '& .MuiToggleButton-root': {
+            color: theme.palette.primary.main,
+            '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+            },
+            '&.Mui-selected': {
+                color: theme.palette.primary.contrastText,
+                backgroundColor: theme.palette.primary.main,
+                '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                },
+            },
+        },
+    }),
 } satisfies SxStyles;
 
 export const ToggleButtonGroupInput: FC<Props> = ({
@@ -64,7 +81,7 @@ export const ToggleButtonGroupInput: FC<Props> = ({
                 color="primary"
                 value={value}
                 onChange={handleChange}
-                sx={styles.group}
+                sx={styles.toggleButtonGroup}
             >
                 {options.map(({ icon: Icon, ...option }) => (
                     <ToggleButton

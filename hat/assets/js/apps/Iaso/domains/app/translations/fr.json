@@ -1606,6 +1606,8 @@
     "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
     "iaso.plannings.label.linkMission": "Lier la mission",
     "iaso.plannings.label.linkedMissionsCount": "{count, plural, one {# liée} other {# liées}}",
+    "iaso.plannings.label.noMissionLinked": "Aucune mission liée pour le moment",
+    "iaso.plannings.label.noMissionLinkedDescription": "Liez une mission existante ou créez-en une nouvelle pour définir ce que les agents collectent sur le terrain.",
     "iaso.plannings.label.notSavedYet": "Pas encore enregistrée",
     "iaso.plannings.label.openAssignments": "Ouvrir les assignations",
     "iaso.plannings.label.orgUnitsCount": "Nombre d'unités d'org.",

@@ -32,7 +32,7 @@ export const Details: FunctionComponent = () => {
     return (
         <>
             <TopBar title={titleMessage} displayBackButton goBack={goBack} />
-            <MainWrapper sx={{ p: 4 }}>
+            <MainWrapper sx={{ p: 4, pt: 0 }}>
                 <PlanningProvider
                     planningId={planningId}
                     mode={params.mode as PageMode}

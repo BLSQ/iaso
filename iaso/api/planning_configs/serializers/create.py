@@ -21,8 +21,9 @@ class PlanningConfigCreateSerializer(ModelSerializer):
 
     class Meta:
         model = PlanningConfig
-        fields = ("level", "planning", "org_unit_types", "org_unit_groups")
+        fields = ("id", "level", "planning", "org_unit_types", "org_unit_groups")
         extra_kwargs = {
+            "id": {"read_only": True},
             "level": {"required": True, "write_only": True},
             "planning": {"required": True, "write_only": True},
         }

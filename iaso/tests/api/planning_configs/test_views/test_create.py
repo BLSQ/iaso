@@ -101,6 +101,9 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def assertValidBody(self, body: Any) -> None:
         self.assertResponseCompliantToSwagger(body, "PlanningConfigCreateRequest")
 
+    def assertValidResponse(self, data: Any):
+        self.assertResponseCompliantToSwagger(data, "PlanningConfigCreate")
+
     def test_permissions(self):
         res = self.client.post(reverse("planning_configs-list"))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -133,11 +136,15 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         with self.assertNumQueries(24):
             res = self.client.post(reverse("planning_configs-list"), data=data)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
+
+        self.assertValidResponse(res_data)
 
         # check that the planning config was created
-        planning_config = PlanningConfig.objects.get(level=1, planning_id=self.planning.id)
+        planning_config = PlanningConfig.objects.get(pk=res_data["id"])
 
+        self.assertEqual(planning_config.level, 1)
+        self.assertEqual(planning_config.planning_id, self.planning.pk)
         self.assertCountEqual(
             planning_config.org_unit_types.values_list("id", flat=True),
             [self.org_unit_type.id, self.org_unit_type_2.id],
@@ -214,10 +221,15 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidBody(data)
         res = self.client.post(reverse("planning_configs-list"), data=data)
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
 
-        # check it has been created in db
-        planning_config = PlanningConfig.objects.get(level=1, planning_id=self.planning.id)
+        self.assertValidResponse(res_data)
+
+        # check that the planning config was created
+        planning_config = PlanningConfig.objects.get(pk=res_data["id"])
+
+        self.assertEqual(planning_config.level, 1)
+        self.assertEqual(planning_config.planning_id, self.planning.pk)
 
         self.assertCountEqual(
             planning_config.org_unit_types.values_list("id", flat=True),

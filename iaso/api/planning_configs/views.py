@@ -1,9 +1,14 @@
+from typing import Any
+
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer, Serializer
 from rest_framework.viewsets import GenericViewSet
 
@@ -35,6 +40,13 @@ class PlanningConfigViewSet(ProtectDestroyMixin, UpdateModelMixin, CreateModelMi
             return PlanningConfigBulkCreateSerializer
         raise NotImplementedError(f"Serializer for {self.action} not implemented")
 
-    @action(detail=False, methods=["post"])
-    def bulk_create(self):
-        pass
+    @extend_schema(
+        request=PlanningConfigBulkCreateSerializer(many=True), responses=PlanningConfigBulkCreateSerializer(many=True)
+    )
+    @action(detail=False, methods=["post"], pagination_class=None, url_path="bulk-create")
+    def bulk_create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

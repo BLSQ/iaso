@@ -22,13 +22,12 @@ class PlanningConfigViewSet(ProtectDestroyMixin, UpdateModelMixin, CreateModelMi
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
 
     def get_queryset(self) -> QuerySet[PlanningConfig]:
-        qs = PlanningConfig.objects.filter_for_user(self.request.user)
-        return qs
+        return PlanningConfig.objects.filter_for_user(self.request.user)
 
     def get_serializer_class(self) -> type[BaseSerializer]:
         if self.action == "create":
             return PlanningConfigCreateSerializer
-        if self.action == "update":
+        if self.action in ["update", "partial_update"]:
             return PlanningConfigUpdateSerializer
         if self.action == "delete":
             return Serializer

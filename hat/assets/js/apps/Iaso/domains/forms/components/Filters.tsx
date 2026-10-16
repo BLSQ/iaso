@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import Add from '@mui/icons-material/Add';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
@@ -55,7 +55,6 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
         withPagination: false,
         searchAlwaysEnabled: true,
     });
-    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentUser = useCurrentUser();
     const hasPlanningPermission = userHasOneOfPermissions(
         [PLANNING_READ, PLANNING_WRITE],
@@ -117,9 +116,7 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                         value={filters.search}
                         type="search"
                         label={MESSAGES.search}
-                        blockForbiddenChars
                         onEnterPressed={handleSearch}
-                        onErrorChange={setTextSearchError}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -200,10 +197,7 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
                                 {formatMessage(MESSAGES.addForm)}
                             </Button>
                         </DisplayIfUserHasPerm>
-                        <SearchButton
-                            disabled={textSearchError}
-                            onSearch={handleSearch}
-                        />
+                        <SearchButton onSearch={handleSearch} />
                     </Box>
                     <Box mt={2} display="flex" justifyContent="flex-end">
                         <DownloadMenuButton

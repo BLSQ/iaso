@@ -44,7 +44,6 @@ type Props = {
     setLocationLimit: Dispatch<React.SetStateAction<number>>;
     searchIndex: number;
     currentSearch: Search;
-    setTextSearchError: Dispatch<React.SetStateAction<boolean>>;
     onSearch: () => void;
     onChangeColor: (color: string, index: number) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
@@ -76,7 +75,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     currentSearch,
     onSearch,
     onChangeColor,
-    setTextSearchError,
     setSearches,
     currentTab,
     setHasLocationLimitError,
@@ -265,9 +263,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         value={filters.search}
                         type="search"
                         label={MESSAGES.search}
-                        blockForbiddenChars
                         onEnterPressed={onSearch}
-                        onErrorChange={hasError => setTextSearchError(hasError)}
                     />
                 </InputWithInfos>
                 <InputComponent

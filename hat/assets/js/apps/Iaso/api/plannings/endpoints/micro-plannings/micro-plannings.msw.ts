@@ -21,6 +21,7 @@ import type {
     MissionOrgUnitTypeListTyped,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
+    PaginatedPlanningConfigList,
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
     PaginatedPlanningSamplingResultReadList,
@@ -646,6 +647,52 @@ export const getApiMicroplanningPlanningsPartialUpdateResponseMock = (
             { length: faker.number.int({ min: 1, max: 10 }) },
             (_, i) => i + 1,
         ).map(() => faker.number.int()),
+        undefined,
+    ]),
+    ...overrideResponse,
+});
+
+export const getApiMicroplanningPlanningsConfigsListResponseMock = (
+    overrideResponse: Partial<
+        Extract<PaginatedPlanningConfigList, object>
+    > = {},
+): PaginatedPlanningConfigList => ({
+    count: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    has_next: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    has_previous: faker.helpers.arrayElement([
+        faker.datatype.boolean(),
+        undefined,
+    ]),
+    limit: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    page: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    pages: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    results: faker.helpers.arrayElement([
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
+            level: faker.number.int(),
+            org_unit_types: faker.helpers.arrayElement([
+                Array.from(
+                    { length: faker.number.int({ min: 1, max: 10 }) },
+                    (_, i) => i + 1,
+                ).map(() => ({
+                    id: faker.number.int(),
+                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                })),
+                null,
+            ]),
+            org_unit_groups: faker.helpers.arrayElement([
+                Array.from(
+                    { length: faker.number.int({ min: 1, max: 10 }) },
+                    (_, i) => i + 1,
+                ).map(() => ({
+                    id: faker.number.int(),
+                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                })),
+                null,
+            ]),
+        })),
         undefined,
     ]),
     ...overrideResponse,
@@ -1660,6 +1707,39 @@ export const getApiMicroplanningPlanningsDestroyMockHandler = (
     );
 };
 
+export const getApiMicroplanningPlanningsConfigsListMockHandler = (
+    overrideResponse?:
+        | PaginatedPlanningConfigList
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0],
+          ) =>
+              | Promise<PaginatedPlanningConfigList>
+              | PaginatedPlanningConfigList),
+    options?: RequestHandlerOptions,
+) => {
+    return http.get(
+        '*/api/microplanning/plannings/:id/configs/',
+        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningPlanningsConfigsListResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
 export const getApiMicroplanningPlanningsMissionsListMockHandler = (
     overrideResponse?:
         | PaginatedPlanningMissionPolymorphicListList
@@ -1898,6 +1978,7 @@ export const getMicroPlanningsMock = () => [
     getApiMicroplanningPlanningsUpdateMockHandler(),
     getApiMicroplanningPlanningsPartialUpdateMockHandler(),
     getApiMicroplanningPlanningsDestroyMockHandler(),
+    getApiMicroplanningPlanningsConfigsListMockHandler(),
     getApiMicroplanningPlanningsMissionsListMockHandler(),
     getApiMicroplanningPlanningsDropdownListMockHandler(),
     getApiMicroplanningSamplingsListMockHandler(),

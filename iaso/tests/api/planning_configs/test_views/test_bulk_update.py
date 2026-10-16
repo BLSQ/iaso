@@ -231,7 +231,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "id": self.planning_config_2.pk,
                 "level": 2,
                 "org_unit_types": [self.org_unit_type.pk, self.org_unit_type_2.pk],
-                "org_unit_groups": [self.org_unit.pk, self.org_unit_type_2.pk],
+                "org_unit_groups": [self.org_unit.pk, self.org_unit_2.pk],
             },
         ]
         self.assertValidBody(data)
@@ -277,7 +277,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "id": self.planning_config_2.pk,
                 "level": 1,
                 "org_unit_types": [self.org_unit_type.pk, self.org_unit_type_2.pk],
-                "org_unit_groups": [self.org_unit.pk, self.org_unit_type_2.pk],
+                "org_unit_groups": [self.org_unit.pk, self.org_unit_2.pk],
             },
         ]
         self.assertValidBody(data)
@@ -319,7 +319,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "id": self.planning_config_2.pk,
                 "level": 1,
                 "org_unit_types": [self.org_unit_type.pk, self.org_unit_type_2.pk],
-                "org_unit_groups": [self.org_unit.pk, self.org_unit_type_2.pk],
+                "org_unit_groups": [self.org_unit.pk, self.org_unit_2.pk],
             },
         ]
         self.assertValidBody(data)

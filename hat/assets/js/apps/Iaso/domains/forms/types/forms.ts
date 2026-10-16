@@ -90,6 +90,7 @@ export type Form = {
     single_per_period: boolean;
     periods_before_allowed: number;
     periods_after_allowed: number;
+    promptness_grace_period_days?: number | null;
     latest_form_version?: {
         id: number;
         version_id: string;

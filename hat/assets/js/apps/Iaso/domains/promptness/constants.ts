@@ -1,0 +1,28 @@
+import MESSAGES from './messages';
+import { PromptnessStatus } from './types';
+
+export const STATUS_ON_TIME: PromptnessStatus = 'ON_TIME';
+export const STATUS_LATE: PromptnessStatus = 'LATE';
+export const STATUS_MISSING: PromptnessStatus = 'MISSING';
+
+export const PROMPTNESS_STATUSES: PromptnessStatus[] = [
+    STATUS_ON_TIME,
+    STATUS_LATE,
+    STATUS_MISSING,
+];
+
+export const STATUS_MESSAGES = {
+    [STATUS_ON_TIME]: MESSAGES.onTime,
+    [STATUS_LATE]: MESSAGES.late,
+    [STATUS_MISSING]: MESSAGES.missing,
+};
+
+// Theme palette keys used to color each status (figures, cards, share bar)
+export const STATUS_COLORS = {
+    [STATUS_ON_TIME]: 'success.main',
+    [STATUS_LATE]: 'warning.main',
+    [STATUS_MISSING]: 'error.main',
+};
+
+export const DEFAULT_ORDER = '-missing';
+export const DEFAULT_PAGE_SIZE = 20;

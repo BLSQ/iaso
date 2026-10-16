@@ -9,7 +9,7 @@ type DropDownOption = {
     label: string;
     original: any;
 };
-const apiToDropDown = data => {
+const apiToDropDown = (data?: { id: number; name: string }[]) => {
     if (!data) return [];
     return data.map(orgUnitType => ({
         value: orgUnitType.id,

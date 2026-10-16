@@ -1,6 +1,7 @@
 import re
 import traceback
 
+from datetime import datetime
 from logging import getLogger
 from typing import Optional
 from urllib.parse import unquote
@@ -9,6 +10,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from iaso.models import (
     ERRORED,
@@ -132,6 +134,57 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "data": result_data}
         self.create_log_entry_if_needed(message)
         self.save()
+
+    def report_success_with_file(self, message: Optional[str], file_name: str, expires_at: Optional[datetime] = None):
+        """Report success for a task that produced a file on S3, optionally only available until `expires_at`."""
+        if expires_at is None:
+            result_data = f"file:{file_name}"
+        else:
+            if timezone.is_naive(expires_at):
+                expires_at = timezone.make_aware(expires_at)
+            result_data = {"file": file_name, "expires_at": expires_at.isoformat()}
+        self.report_success_with_result(message=message, result_data=result_data)
+
+    @property
+    def _result_data(self):
+        return (self.result or {}).get("data")
+
+    @property
+    def result_file(self) -> Optional[str]:
+        """The S3 object name of the file produced by the task, if any.
+
+        A file is reported in `result["data"]` either as "file:<path>", or as
+        {"file": "<path>", "expires_at": "<date>"} when it is only available for a limited time.
+        """
+        data = self._result_data
+        if isinstance(data, str) and data.startswith("file:"):
+            return data.removeprefix("file:")
+        if isinstance(data, dict):
+            return data.get("file")
+        return None
+
+    @property
+    def result_file_expires_at(self) -> Optional[datetime]:
+        """The date after which the file produced by the task can no longer be downloaded."""
+        data = self._result_data
+        if not (isinstance(data, dict) and data.get("expires_at")):
+            return None
+        # External tasks write their result through the API, so the date may use "Z" or lack an offset.
+        try:
+            expires_at = parse_datetime(data["expires_at"])
+        except ValueError:
+            expires_at = None
+        if expires_at is None:
+            logger.warning(f"Task {self.pk} has an invalid result file expiry date: {data['expires_at']!r}")
+            return None
+        if timezone.is_naive(expires_at):
+            expires_at = timezone.make_aware(expires_at)
+        return expires_at
+
+    @property
+    def result_file_expired(self) -> bool:
+        expires_at = self.result_file_expires_at
+        return expires_at is not None and expires_at <= timezone.now()
 
     def report_success(self, message: Optional[str] = None):
         logger.info(f"Task {self} reported success with message {message}")

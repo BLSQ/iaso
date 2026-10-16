@@ -1,0 +1,142 @@
+import typing
+
+from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinValueValidator
+from django.db import models
+from django.db.models import CheckConstraint, Q
+
+from iaso.models.org_unit import OrgUnit, OrgUnitType
+from iaso.models.project import Project
+from iaso.models.team import Team
+
+
+if typing:
+    from iaso.models.team import TeamQuerySet
+
+from iaso.utils.models.soft_deletable import (
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
+
+
+class PlanningSamplingResult(models.Model):
+    """Stores the results of sampling runs."""
+
+    planning = models.ForeignKey("Planning", on_delete=models.CASCADE, related_name="sampling_results")
+    task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="sampling_results")
+    pipeline_id = models.CharField(max_length=36, blank=True, help_text="OpenHexa pipeline UUID")
+    pipeline_version = models.CharField(max_length=100, blank=True, help_text="Pipeline version identifier")
+    pipeline_name = models.CharField(max_length=100, blank=True, help_text="Pipeline name")
+    group = models.ForeignKey(
+        "Group",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Created org unit group containing sampled units",
+    )
+    parameters = models.JSONField(help_text="Sampling parameters used for this run")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Sampling Result"
+        verbose_name_plural = "Sampling Results"
+
+
+class PlanningQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User):
+        return self.filter(project__account=user.iaso_profile.account)
+
+
+class Planning(SoftDeletableModel):
+    # Currently, does the same thing as `objects_include_deleted`, we should as some point,
+    # filter out the deleted plannings. `objects_include_deleted` and `objects_only_deleted` have been added to be
+    # explicit about what we want when we use them for when/if we'll change `objects`'s behavior.
+    objects = PlanningQuerySet.as_manager()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
+
+    class Meta:
+        ordering = ("name",)
+
+    name = models.CharField(max_length=100, null=False, blank=False)
+    description = models.TextField(blank=True)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    missions = models.ManyToManyField("Mission", blank=True, related_name="plannings")
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    org_unit = models.ForeignKey(
+        OrgUnit,
+        on_delete=models.PROTECT,
+        help_text="The root org unit of the planning used to scope the assignments org units",
+    )
+    target_org_unit_types = models.ManyToManyField(
+        OrgUnitType,
+        related_name="target_plannings",
+        blank=True,
+        help_text="Org unit types that can receive assignments in this planning",
+    )
+    published_at = models.DateTimeField(null=True, blank=True)
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
+    )
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    selected_sampling_result = models.OneToOneField(
+        PlanningSamplingResult,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="selected_by_planning",
+    )
+
+    def __str__(self):
+        return self.name
+
+    def add_pipeline_uuid(self, pipeline_uuid: str):
+        """Add a pipeline UUID to the planning if not already present."""
+        if pipeline_uuid not in self.pipeline_uuids:
+            self.pipeline_uuids.append(pipeline_uuid)
+            self.save(update_fields=["pipeline_uuids"])
+
+    def remove_pipeline_uuid(self, pipeline_uuid: str):
+        """Remove a pipeline UUID from the planning."""
+        if pipeline_uuid in self.pipeline_uuids:
+            self.pipeline_uuids.remove(pipeline_uuid)
+            self.save(update_fields=["pipeline_uuids"])
+
+    def has_pipeline_uuid(self, pipeline_uuid: str) -> bool:
+        """Check if the planning has a specific pipeline UUID."""
+        return pipeline_uuid in self.pipeline_uuids
+
+    def get_pipeline_uuids(self) -> list:
+        """Get the list of pipeline UUIDs for this planning."""
+        return self.pipeline_uuids or []
+
+
+class PlanningConfig(models.Model):
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
+
+    level = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=False)
+
+    org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
+    org_unit_groups = models.ManyToManyField("OrgUnit", blank=True)
+
+    class Meta:
+        unique_together = (("planning", "level"),)
+        constraints = [CheckConstraint(check=Q(level__gte=1), name="level_gte_1")]
+
+    def get_related_teams(self) -> TeamQuerySet:
+        return (
+            Team.objects.filter_for_account(account=self.planning.project.account)
+            .annotate_with_depth()
+            .filter(depth__lte=self.level)
+        )

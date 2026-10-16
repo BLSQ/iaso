@@ -75,6 +75,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
         id: 'iaso.label.no',
     },
+    orgUnits: {
+        defaultMessage: 'Org units',
+        id: 'iaso.label.orgUnit',
+    },
+    orgUnit: {
+        defaultMessage: 'Org unit',
+        id: 'iaso.label.orgUnitSingle',
+    },
 });
 
 export default MESSAGES;

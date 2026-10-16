@@ -122,7 +122,6 @@ const InstancesFiltersComponent = ({
     const [formState, setFormState] = useFormState(
         filterDefault(defaultFilters),
     );
-    const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     useSkipEffectOnMount(() => {
@@ -320,8 +319,6 @@ const InstancesFiltersComponent = ({
                             type="search"
                             label={MESSAGES.textSearch}
                             onEnterPressed={() => handleSearch()}
-                            onErrorChange={setTextSearchError}
-                            blockForbiddenChars
                         />
                     </InputWithInfos>
                     <InputComponent
@@ -658,11 +655,10 @@ const InstancesFiltersComponent = ({
                         )}
                         <Button
                             disabled={
-                                textSearchError ||
                                 // Disable search button if a search is already active AND there are no new changes to search for
                                 // This prevents unnecessary duplicate searches when filters haven't changed
-                                (params?.isSearchActive === 'true' &&
-                                    hasNoChangesToSearch)
+                                params?.isSearchActive === 'true' &&
+                                hasNoChangesToSearch
                             }
                             variant="contained"
                             className={classes.button}

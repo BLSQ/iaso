@@ -12,7 +12,6 @@ import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from 'Iaso/constants/urls';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
-import { encodeUriSearches } from '../orgUnits/utils';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/ActionsCell';
@@ -41,7 +40,7 @@ const ActionCell: FunctionComponent<Props> = ({ planning, samplingResult }) => {
             searchActive: true,
             tab: 'map',
             isClusterActive: false,
-            searches: encodeUriSearches([
+            searches: JSON.stringify([
                 {
                     validation_status: 'VALID',
                     color: purpleColor,

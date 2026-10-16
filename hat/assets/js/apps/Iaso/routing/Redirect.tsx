@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { getRawSplat } from './utils';
 
 type Props = {
     to: string; // redirection url
@@ -13,7 +14,7 @@ type Props = {
 
 export const Redirect: FunctionComponent<Props> = ({ to, path }) => {
     const params = useParams();
-    const { state } = useLocation();
+    const { state, pathname } = useLocation();
     let destination = to;
     const keysToConvert = Object.keys(path?.conversions ?? {});
     Object.entries(params).forEach(([key, value]) => {
@@ -29,7 +30,7 @@ export const Redirect: FunctionComponent<Props> = ({ to, path }) => {
     // After the params specified in the redirection have been matched and the values replaced,
     // append all other params (ie the rest of the url) as is
     if (params['*']) {
-        destination = `${destination}${params['*']}`;
+        destination = `${destination}${getRawSplat(pathname, path)}`;
     }
 
     return <Navigate to={`${destination}`} state={state} replace />;

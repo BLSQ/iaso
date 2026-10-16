@@ -262,7 +262,7 @@ export const completenessStatsPath = {
     element: <CompletenessStats />,
 };
 
-export const promptness = {
+export const promptnessPath = {
     baseUrl: baseUrls.promptness,
     routerUrl: `${baseUrls.promptness}/*`,
     permissions: [Permission.COMPLETENESS_STATS],
@@ -607,7 +607,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     algosPath,
     completenessPath,
     completenessStatsPath,
-    promptness,
+    promptnessPath,
     usersPath,
     userDetailsPath,
     usersHistoryPath,

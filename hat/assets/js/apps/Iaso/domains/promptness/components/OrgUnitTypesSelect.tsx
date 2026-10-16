@@ -10,10 +10,9 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { OrgUnitTypeOption } from './OrgUnitTypeOption';
 
-type Option = { value: number; label: string };
+type Option = { value: string; label: string };
 
 type Props = {
-    // Comma-separated org unit type ids, as stored in the url
     value?: string;
     onChange: (keyValue: string, value?: string) => void;
     options: Option[];
@@ -24,8 +23,6 @@ type Props = {
 
 const keyValue = 'orgUnitTypeIds';
 
-// The Select of bluesquare-components closes on each selection (unless shift is pressed):
-// this one stays open while selecting several types, and closes when clicking outside
 export const OrgUnitTypesSelect: FunctionComponent<Props> = ({
     value,
     onChange,
@@ -37,9 +34,7 @@ export const OrgUnitTypesSelect: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const selectedOptions = useMemo(() => {
         const selectedIds = value ? value.split(',') : [];
-        return options.filter(option =>
-            selectedIds.includes(`${option.value}`),
-        );
+        return options.filter(option => selectedIds.includes(option.value));
     }, [options, value]);
 
     return (
@@ -70,7 +65,7 @@ export const OrgUnitTypesSelect: FunctionComponent<Props> = ({
                         label={option.label}
                         selected={selected}
                         notApplicable={notApplicableTypeIds.includes(
-                            option.value,
+                            Number(option.value),
                         )}
                     />
                 )}
@@ -88,7 +83,6 @@ export const OrgUnitTypesSelect: FunctionComponent<Props> = ({
                     <TextField
                         {...params}
                         label={formatMessage(MESSAGES.orgUnitTypes)}
-                        // Only when nothing is selected, the chips are enough otherwise
                         placeholder={
                             selectedOptions.length === 0
                                 ? formatMessage(MESSAGES.allTypes)

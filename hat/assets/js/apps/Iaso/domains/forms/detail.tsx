@@ -121,7 +121,12 @@ const getFormWritePayload = (formState: FormDataType): FormWritePayload => ({
     legend_threshold: formState.legend_threshold?.value,
     change_request_mode: formState.change_request_mode.value,
     validation_workflow: formState.validation_workflow?.value,
-    promptness_grace_period_days: formState.promptness_grace_period_days?.value,
+    ...(formState.period_type.value
+        ? {
+              promptness_grace_period_days:
+                  formState.promptness_grace_period_days?.value,
+          }
+        : {}),
 });
 
 const FormDetail: FunctionComponent = () => {

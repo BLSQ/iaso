@@ -9,15 +9,16 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { FormsDropdownOptions } from '../../forms/hooks/useGetFormsDropdownOptions';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import PeriodPicker from '../../periods/components/PeriodPicker';
 import { PERIOD_TYPE_PLACEHOLDER } from '../../periods/constants';
 import PERIOD_MESSAGES from '../../periods/messages';
-import { PROMPTNESS_STATUSES, STATUS_MESSAGES } from '../constants';
-import { useGetOrgUnitTypesOptions } from '../hooks/api/useGetOrgUnitTypesOptions';
 import {
-    getPromptnessCsvUrl,
-    hasRequiredFilters,
-} from '../hooks/api/usePromptnessStats';
+    ORG_UNIT_FIELDS,
+    PROMPTNESS_STATUSES,
+    STATUS_MESSAGES,
+} from '../constants';
+import { getPromptnessCsvUrl } from '../hooks/api/usePromptnessStats';
 import MESSAGES from '../messages';
 import { PromptnessRouterParams } from '../types';
 import { getNotApplicableTypeIds } from '../utils';
@@ -27,7 +28,8 @@ type Props = {
     params: PromptnessRouterParams;
     forms?: FormsDropdownOptions;
     isFetchingForms: boolean;
-    orgUnitId: string;
+    orgUnitId?: string;
+    canExport: boolean;
 };
 
 const baseUrl = baseUrls.promptness;
@@ -43,7 +45,7 @@ const styles: SxStyles = {
         columnGap: 2,
         alignItems: 'start',
     },
-    // The period picker has a bottom margin, unlike the other inputs
+
     periodHelper: {
         display: 'block',
         color: 'text.secondary',
@@ -63,6 +65,7 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     forms,
     isFetchingForms,
     orgUnitId,
+    canExport,
 }) => {
     const { formatMessage } = useSafeIntl();
     const {
@@ -74,9 +77,9 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         setFiltersUpdated,
     } = useFilterState({ baseUrl, params, saveSearchInHistory: false });
 
-    const { data: initialParent } = useGetOrgUnit(orgUnitId);
+    const { data: initialParent } = useGetOrgUnit(orgUnitId, ORG_UNIT_FIELDS);
     const { data: orgUnitTypes, isFetching: isFetchingTypes } =
-        useGetOrgUnitTypesOptions(filters.parentId);
+        useGetOrgUnitTypesDropdownOptions();
 
     const onChangeStatus = useCallback(
         (keyValue: string, value?: string) => {
@@ -228,9 +231,7 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                     type="select"
                     keyValue="status"
                     onChange={onChangeStatus}
-                    // All the statuses by default
                     value={filters.status ?? PROMPTNESS_STATUSES.join(',')}
-                    // value={filters.status}
                     label={MESSAGES.status}
                     options={statusOptions}
                     helperText={formatMessage(MESSAGES.statusInfo)}
@@ -245,7 +246,7 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                     color="primary"
                     startIcon={<CsvSvg />}
                     href={getPromptnessCsvUrl(params)}
-                    disabled={!hasRequiredFilters(params)}
+                    disabled={!canExport}
                 >
                     {formatMessage(MESSAGES.exportCsv)}
                 </Button>

@@ -20,7 +20,7 @@ import {
     PromptnessRow,
     PromptnessStatus,
 } from '../types';
-import { formatPercent } from '../utils';
+import { formatPercent, getSelectedStatuses } from '../utils';
 
 type CellProps = { row: { original: PromptnessRow } };
 
@@ -41,9 +41,7 @@ export const usePromptnessColumns = (
     return useMemo(() => {
         const formatCount = (value: number | null) =>
             value === null ? textPlaceholder : formatNumber(value);
-        const selectedStatuses = params.status
-            ? params.status.split(',')
-            : PROMPTNESS_STATUSES;
+        const selectedStatuses = getSelectedStatuses(params.status);
 
         // Count + percentage columns of the statuses not excluded by the filter
         const statusColumns: Column[] = PROMPTNESS_STATUSES.filter(status =>

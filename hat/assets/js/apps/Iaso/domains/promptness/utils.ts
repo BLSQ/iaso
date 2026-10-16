@@ -1,4 +1,19 @@
 import { textPlaceholder } from 'bluesquare-components';
+import { DEFAULT_ORDERS, PROMPTNESS_STATUSES } from './constants';
+
+export const getSelectedStatuses = (status?: string): string[] =>
+    status ? status.split(',') : PROMPTNESS_STATUSES;
+
+export const getDefaultOrder = (status?: string): string => {
+    const selectedStatuses = getSelectedStatuses(status);
+    const firstStatus =
+        [...PROMPTNESS_STATUSES]
+            .reverse()
+            .find(promptnessStatus =>
+                selectedStatuses.includes(promptnessStatus),
+            ) ?? PROMPTNESS_STATUSES[PROMPTNESS_STATUSES.length - 1];
+    return DEFAULT_ORDERS[firstStatus];
+};
 
 // Percentages from the API have 1 decimal, the page displays them rounded
 export const formatPercent = (value?: number | null): string =>

@@ -17,12 +17,17 @@ export const STATUS_MESSAGES = {
     [STATUS_MISSING]: MESSAGES.missing,
 };
 
-// Theme palette keys used to color each status (figures, cards, share bar)
 export const STATUS_COLORS = {
     [STATUS_ON_TIME]: 'success.main',
     [STATUS_LATE]: 'warning.main',
     [STATUS_MISSING]: 'error.main',
 };
 
-export const DEFAULT_ORDER = '-missing';
+export const DEFAULT_ORDERS: Record<PromptnessStatus, string> = {
+    [STATUS_MISSING]: '-missing',
+    [STATUS_LATE]: '-late',
+    [STATUS_ON_TIME]: 'on_time',
+};
 export const DEFAULT_PAGE_SIZE = 20;
+
+export const ORG_UNIT_FIELDS = 'id,name,parent,parent_id,org_unit_type_id';

@@ -2,18 +2,19 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
-import { DEFAULT_ORDER, DEFAULT_PAGE_SIZE } from '../../constants';
+import { Form } from '../../../forms/types/forms';
+import { DEFAULT_PAGE_SIZE } from '../../constants';
 import {
     PromptnessRouterParams,
     PromptnessStatsApiResponse,
     PromptnessSummary,
 } from '../../types';
+import { getDefaultOrder } from '../../utils';
 
 const API_URL = '/api/promptness_stats/';
 
 type PromptnessApiParams = Record<string, string | undefined>;
 
-// The 3 endpoints of the API share the same filters, see docs/pages/dev/reference/API/promptness_stats.en.md
 const getFilterApiParams = (
     params: PromptnessRouterParams,
 ): PromptnessApiParams => ({
@@ -24,36 +25,47 @@ const getFilterApiParams = (
     status: params.status || undefined,
 });
 
+const getOrder = (params: PromptnessRouterParams): string =>
+    params.order ?? getDefaultOrder(params.status);
+
 const getListApiParams = (
     params: PromptnessRouterParams,
 ): PromptnessApiParams => ({
     ...getFilterApiParams(params),
-    order: params.order ?? DEFAULT_ORDER,
+    order: getOrder(params),
     page: params.page ?? '1',
     limit: params.pageSize ?? `${DEFAULT_PAGE_SIZE}`,
 });
 
-// The API answers with a 400 if one of these filters is missing
-export const hasRequiredFilters = (params: PromptnessRouterParams): boolean =>
-    Boolean(params.formId && params.period && params.parentId);
+export const canComputePromptness = (
+    params: PromptnessRouterParams,
+    form?: Partial<Pick<Form, 'period_type' | 'promptness_grace_period_days'>>,
+): boolean =>
+    Boolean(
+        params.formId &&
+        params.period &&
+        params.parentId &&
+        form?.period_type &&
+        typeof form.promptness_grace_period_days === 'number',
+    );
 
 export const getPromptnessCsvUrl = (params: PromptnessRouterParams): string =>
     makeUrlWithParams(`${API_URL}export_csv/`, {
         ...getFilterApiParams(params),
-        order: params.order ?? DEFAULT_ORDER,
+        order: getOrder(params),
     });
 
 export const useGetPromptnessStats = (
     params: PromptnessRouterParams,
+    enabled: boolean,
 ): UseQueryResult<PromptnessStatsApiResponse, Error> => {
     const apiParams = getListApiParams(params);
     return useSnackQuery({
         queryKey: ['promptnessStats', apiParams],
         queryFn: () => getRequest(makeUrlWithParams(API_URL, apiParams)),
         options: {
-            enabled: hasRequiredFilters(params),
+            enabled,
             retry: 0,
-            // Avoid blanking the table while changing page, order or parent
             keepPreviousData: true,
         },
     });
@@ -61,15 +73,15 @@ export const useGetPromptnessStats = (
 
 export const useGetPromptnessSummary = (
     params: PromptnessRouterParams,
+    enabled: boolean,
 ): UseQueryResult<PromptnessSummary, Error> => {
-    // Doesn't depend on the ordering nor the page of the table
     const apiParams = getFilterApiParams(params);
     return useSnackQuery({
         queryKey: ['promptnessStats', 'summary', apiParams],
         queryFn: () =>
             getRequest(makeUrlWithParams(`${API_URL}summary/`, apiParams)),
         options: {
-            enabled: hasRequiredFilters(params),
+            enabled,
             retry: 0,
             keepPreviousData: true,
         },

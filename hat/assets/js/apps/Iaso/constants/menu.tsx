@@ -266,8 +266,7 @@ const menuItems = (
                         },
                         {
                             label: formatMessage(MESSAGES.promptness),
-                            permissions:
-                                paths.completenessStatsPath.permissions,
+                            permissions: paths.promptnessPath.permissions,
                             key: 'promptness',
                             icon: props => <DoneAll {...props} />,
                         },

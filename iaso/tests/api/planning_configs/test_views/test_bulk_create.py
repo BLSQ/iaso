@@ -301,5 +301,5 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
         self.assertEqual(
             list(second_planning_config.org_unit_groups.values_list("id", flat=True)),
-            [self.org_unit.pk, self.org_unit_type_2.pk],
+            [self.org_unit.pk, self.org_unit_2.pk],
         )

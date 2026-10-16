@@ -303,7 +303,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
         self.assertEqual(
             list(self.planning_config_2.org_unit_groups.values_list("id", flat=True)),
-            [self.org_unit.pk, self.org_unit_type_2.pk],
+            [self.org_unit.pk, self.org_unit_2.pk],
         )
 
     def test_happy_path(self):
@@ -342,7 +342,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
         self.assertEqual(
             list(self.planning_config_2.org_unit_groups.values_list("id", flat=True)),
-            [self.org_unit.pk, self.org_unit_type_2.pk],
+            [self.org_unit.pk, self.org_unit_2.pk],
         )
 
     def test_update_same_values(self):

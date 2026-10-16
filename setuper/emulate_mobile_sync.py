@@ -6,8 +6,14 @@
 """
 Emulate the mobile app's entity sync against a running Iaso server.
 
-Reproduces the exact request pattern of FetchEntities.kt in iaso-mobile-app (not a
-guess -- traced from the actual client code):
+Reproduces the exact request pattern of GetOrgUnits.kt and FetchEntities.kt in iaso-mobile-app
+(not a guess -- traced from the actual client code). The pyramid comes first, like in the app:
+  - GET /api/mobile/orgunits/?app_id=...&limit=25000&page=N&shapes=true|false, starting at page 1,
+    following `has_next` (`roots` only on page 1). `shapes` is true when the app has the
+    SHOW_DETAIL_MAP_ON_MOBILE or MOBILE_ORG_UNIT_REGISTRY feature flag (read from /api/apps/<app_id>/),
+    the server then caps the page at 1000 org units. Always by page number: no cursor on org units
+    (measured: 6 pages of 25k without shapes, the count/offset it would save are negligible)
+Then the entities:
   - GET /api/mobile/entities/?app_id=...&page=N[&limit_date=...], starting at page 1
   - pagination is driven ONLY by `has_next` in the response body -- the client never
     uses `count`/`pages` to decide how many requests to make, they're display-only
@@ -33,6 +39,7 @@ Usage:
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --since 2026-08-24
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-deleted
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --no-cursor
+    uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-entities   # pyramid only
 
 Credentials/server default to setuper/credentials.py (the same file setuper.py uses)
 when present; override with --server/--username/--password.
@@ -65,7 +72,18 @@ def authenticate(server, username, password):
     return {"Authorization": f"Bearer {token}"}
 
 
-def sync_paginated(server, headers, path, params, label, max_pages=None, use_cursor=False):
+# GetOrgUnits.kt DEFAULT_LIMIT: the app always asks for 25k org units per page.
+ORG_UNITS_LIMIT = 25_000
+
+
+def get_feature_flags(server, headers, app_id):
+    """The app's feature flag codes, as the app reads them (RefreshFeatureFlags.kt)."""
+    r = requests.get(f"{server}/api/apps/{app_id}/", headers=headers)
+    r.raise_for_status()
+    return {flag["code"] for flag in r.json().get("feature_flags", [])}
+
+
+def sync_paginated(server, headers, path, params, label, max_pages=None, use_cursor=False, results_key="results"):
     """Follow `has_next` exactly like FetchEntities.kt's do-while loop: never uses
     count/pages to decide how many pages to request, only has_next.
 
@@ -94,7 +112,9 @@ def sync_paginated(server, headers, path, params, label, max_pages=None, use_cur
 
         r.raise_for_status()
         data = r.json()
-        results = data.get("results", [])
+        results = data.get(results_key, [])
+        if data.get("roots") is not None:
+            print(f"  [{label}] roots: {data['roots']}")
         total += len(results)
         if data.get("count") is not None:
             server_count = data["count"]
@@ -151,6 +171,14 @@ def main():
         "--since", default=None, help="limit_date (YYYY-MM-DD) for an incremental sync; omit for a full sync"
     )
     parser.add_argument("--skip-deleted", action="store_true", help="Skip the paired /entities/deleted/ fetch")
+    parser.add_argument("--skip-pyramid", action="store_true", help="Skip the /orgunits/ (pyramid) fetch")
+    parser.add_argument("--skip-entities", action="store_true", help="Skip the /entities/ (and deleted) fetch")
+    parser.add_argument(
+        "--shapes",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Request org unit shapes; defaults to what the app does, from the project's feature flags",
+    )
     parser.add_argument(
         "--cursor",
         action=argparse.BooleanOptionalAction,
@@ -166,41 +194,61 @@ def main():
     print(f"Authenticating as {args.username} on {args.server}")
     headers = authenticate(args.server, args.username, args.password)
 
-    sync_kind = f"limit_date={args.since}" if args.since else "limit_date omitted -- first/full sync"
-    count_kind = "cursor when the server supports it" if args.cursor else "page numbers, count on every page"
-    print(f"\n=== Entity sync emulation: app_id={args.app_id} ({sync_kind}, {count_kind}) ===")
+    timings = {}  # stage -> (rows, pages, seconds)
 
-    entity_params = {"app_id": args.app_id}
-    if args.since:
-        entity_params["limit_date"] = args.since
-
-    entities_total, entities_pages, entities_time = sync_paginated(
-        args.server,
-        headers,
-        "/api/mobile/entities/",
-        entity_params,
-        "entities",
-        max_pages=args.max_pages,
-        use_cursor=args.cursor,
-    )
-
-    deleted_total = deleted_pages = deleted_time = 0
-    if not args.skip_deleted:
-        deleted_total, deleted_pages, deleted_time = sync_paginated(
+    if not args.skip_pyramid:
+        shapes = args.shapes
+        if shapes is None:
+            shapes = bool(
+                get_feature_flags(args.server, headers, args.app_id)
+                & {"SHOW_DETAIL_MAP_ON_MOBILE", "MOBILE_ORG_UNIT_REGISTRY"}
+            )
+        print(f"\n=== Pyramid sync emulation: app_id={args.app_id} (limit={ORG_UNITS_LIMIT}, shapes={shapes}) ===")
+        timings["org units"] = sync_paginated(
             args.server,
             headers,
-            "/api/mobile/entities/deleted/",
-            {"app_id": args.app_id},
-            "deleted",
+            "/api/mobile/orgunits/",
+            # Retrofit sends the Boolean as "true"/"false", the server only checks for "true".
+            {"app_id": args.app_id, "limit": ORG_UNITS_LIMIT, "shapes": str(shapes).lower()},
+            "org units",
+            max_pages=args.max_pages,
+            results_key="orgUnits",
+        )
+
+    if not args.skip_entities:
+        sync_kind = f"limit_date={args.since}" if args.since else "limit_date omitted -- first/full sync"
+        count_kind = "cursor when the server supports it" if args.cursor else "page numbers, count on every page"
+        print(f"\n=== Entity sync emulation: app_id={args.app_id} ({sync_kind}, {count_kind}) ===")
+
+        entity_params = {"app_id": args.app_id}
+        if args.since:
+            entity_params["limit_date"] = args.since
+
+        timings["entities"] = sync_paginated(
+            args.server,
+            headers,
+            "/api/mobile/entities/",
+            entity_params,
+            "entities",
             max_pages=args.max_pages,
             use_cursor=args.cursor,
         )
 
+        if not args.skip_deleted:
+            timings["deleted"] = sync_paginated(
+                args.server,
+                headers,
+                "/api/mobile/entities/deleted/",
+                {"app_id": args.app_id},
+                "deleted",
+                max_pages=args.max_pages,
+                use_cursor=args.cursor,
+            )
+
     print("=== Summary ===")
-    print(f"entities: {entities_total} rows / {entities_pages} page(s) / {entities_time:.2f}s")
-    if not args.skip_deleted:
-        print(f"deleted:  {deleted_total} rows / {deleted_pages} page(s) / {deleted_time:.2f}s")
-    print(f"total wall time: {entities_time + deleted_time:.2f}s")
+    for stage, (rows, pages, seconds) in timings.items():
+        print(f"{stage + ':':10} {rows} rows / {pages} page(s) / {seconds:.2f}s")
+    print(f"total wall time: {sum(seconds for _, _, seconds in timings.values()):.2f}s")
 
 
 if __name__ == "__main__":

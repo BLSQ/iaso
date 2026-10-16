@@ -1,3 +1,4 @@
+import base64
 import datetime
 import json
 import uuid
@@ -12,6 +13,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.api.mobile.entity import MobileEntityAttributesSerializer
+from iaso.api.query_params import encode_cursor
 from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
@@ -193,7 +195,7 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
     def test_list_entities_next_cursor_is_the_last_row_id_until_the_last_page(self):
         entities = self.create_entities(3)
 
-        for page, expected_cursor in ((1, str(entities[1].pk)), (2, None)):
+        for page, expected_cursor in ((1, encode_cursor("entities", entities[1].pk)), (2, None)):
             with self.subTest(page=page):
                 response_json = self.assertJSONResponse(self.get_entities_page(limit=2, page=page), status.HTTP_200_OK)
                 self.assertEqual(response_json["next_cursor"], expected_cursor)
@@ -205,7 +207,7 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
 
         for page in (2, 5):
             with self.subTest(page=page):
-                response = self.get_entities_page(limit=2, page=page, cursor=entities[0].pk)
+                response = self.get_entities_page(limit=2, page=page, cursor=encode_cursor("entities", entities[0].pk))
 
                 response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
                 self.assert_page(
@@ -218,13 +220,13 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
                     has_next=True,
                     has_previous=True,
                 )
-                self.assertEqual(response_json["next_cursor"], str(entities[2].pk))
+                self.assertEqual(response_json["next_cursor"], encode_cursor("entities", entities[2].pk))
                 self.assertResponseCompliantToSwagger(response_json, "PaginatedMobileEntityList")
 
     def test_list_entities_with_cursor_on_the_last_page(self):
         entities = self.create_entities(3)
 
-        response = self.get_entities_page(limit=2, page=2, cursor=entities[0].pk)
+        response = self.get_entities_page(limit=2, page=2, cursor=encode_cursor("entities", entities[0].pk))
 
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assert_page(
@@ -235,24 +237,54 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
     def test_list_entities_with_cursor_past_the_end_returns_an_empty_page(self):
         entities = self.create_entities(2)
 
-        response = self.get_entities_page(limit=2, page=2, cursor=entities[1].pk)
+        response = self.get_entities_page(limit=2, page=2, cursor=encode_cursor("entities", entities[1].pk))
 
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assert_page(response_json, [], count=None, pages=None, page=2, limit=2, has_next=False, has_previous=True)
         self.assertIsNone(response_json["next_cursor"])
 
+    def test_list_entities_empty_cursor_pages_by_page_number(self):
+        entities = self.create_entities(4)
+
+        response = self.get_entities_page(limit=2, page=2, cursor="")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities[2:], count=4, pages=2, page=2, limit=2, has_next=False, has_previous=True
+        )
+
     def test_list_entities_invalid_cursor_returns_400(self):
-        for cursor in ("abc", "-1", "1.5"):
-            with self.subTest(cursor=cursor):
+        invalid_cursors = {
+            "not base64": "abc!",
+            "not json": "YWJj",  # "abc"
+            "raw id": "12",
+            "no model": base64.urlsafe_b64encode(b'{"after":1}').decode(),
+            "no after": base64.urlsafe_b64encode(b'{"model":"entities"}').decode(),
+            "string id": base64.urlsafe_b64encode(b'{"model":"entities","after":"1"}').decode(),
+            "boolean id": base64.urlsafe_b64encode(b'{"model":"entities","after":true}').decode(),
+            "negative id": encode_cursor("entities", -1),
+            "not an object": base64.urlsafe_b64encode(b"[1]").decode(),
+        }
+
+        for name, cursor in invalid_cursors.items():
+            with self.subTest(name):
                 response = self.get_entities_page(cursor=cursor)
 
                 response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-                self.assertIn("cursor", response_json)
+                self.assertEqual(response_json, {"cursor": f"Invalid cursor '{cursor}'."})
+
+    def test_list_entities_cursor_of_another_model_returns_400(self):
+        entities = self.create_entities(2)
+
+        response = self.get_entities_page(cursor=encode_cursor("orgunits", entities[0].pk))
+
+        response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response_json, {"cursor": "This cursor pages 'orgunits', not 'entities'."})
 
     def test_list_entities_cursor_with_order_returns_400(self):
         entities = self.create_entities(2)
 
-        response = self.get_entities_page(cursor=entities[0].pk, order="-created_at")
+        response = self.get_entities_page(cursor=encode_cursor("entities", entities[0].pk), order="-created_at")
 
         response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("cursor", response_json)
@@ -330,7 +362,7 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
             entity=entity, updated_at=now - datetime.timedelta(days=2)
         )
 
-        for params in ({}, {"cursor": entity.pk - 1}):
+        for params in ({}, {"cursor": encode_cursor("entities", entity.pk - 1)}):
             with self.subTest(params=params):
                 response = self.get_entities_page(limit_date=limit_date, page=1, **params)
 
@@ -342,7 +374,7 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
         self.yoda.iaso_profile.org_units.add(self.ou_country)
 
         with CaptureQueriesContext(connection) as ctx:
-            response = self.get_entities_page(cursor=entities[0].pk, limit_date="2020-01-01")
+            response = self.get_entities_page(cursor=encode_cursor("entities", entities[0].pk), limit_date="2020-01-01")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
         entity_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_entity"' in q["sql"]]

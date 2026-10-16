@@ -1,3 +1,6 @@
+import base64
+import json
+
 from typing import Optional
 
 from rest_framework import serializers
@@ -69,20 +72,35 @@ def parse_strict_boolean_param(value: Optional[str], field_name: str = "query_pa
     )
 
 
-def get_cursor_id(request) -> Optional[int]:
-    """Keyset pagination: the `cursor` a previous page returned as `next_cursor` (the id of its last row).
-    Only valid with the default id ordering: `id > cursor` under another `order` would skip rows."""
+def encode_cursor(model: str, after_id: int) -> str:
+    """Keyset pagination `next_cursor`: opaque on purpose (like a GraphQL cursor), clients pass it back
+    as is and never build it, so what it holds (the id of the page's last row) can change without a
+    client update. `model` (e.g. "entities") keeps a cursor from one endpoint from paging another.
+    Base64url without padding: nothing to escape in a query string."""
+    payload = json.dumps({"model": model, "after": after_id}, separators=(",", ":")).encode()
+    return base64.urlsafe_b64encode(payload).decode().rstrip("=")
+
+
+def get_cursor_id(request, model: str) -> Optional[int]:
+    """The id a `cursor` (from `encode_cursor` for the same `model`) pages after. Only valid with the
+    default id ordering: `id > cursor` under another `order` would skip rows.
+
+    An empty `cursor` is no cursor (the page is served by `page`, counted); a cursor that can't be
+    decoded, or was issued for another model, is a client bug: 400."""
     value = request.query_params.get(CURSOR)
-    if value is None:
+    if not value:
         return None
     if api_settings.ORDERING_PARAM in request.query_params:
         raise serializers.ValidationError(
             {CURSOR: f"'{CURSOR}' can't be combined with '{api_settings.ORDERING_PARAM}', it pages by id."}
         )
     try:
-        cursor_id = int(value)
-    except ValueError:
+        payload = json.loads(base64.urlsafe_b64decode(value + "=" * (-len(value) % 4)))
+        cursor_model, cursor_id = payload["model"], payload["after"]
+    except (ValueError, TypeError, KeyError):
         raise serializers.ValidationError({CURSOR: f"Invalid cursor '{value}'."})
-    if cursor_id < 0:
+    if cursor_model != model:
+        raise serializers.ValidationError({CURSOR: f"This cursor pages '{cursor_model}', not '{model}'."})
+    if type(cursor_id) is not int or cursor_id < 0:
         raise serializers.ValidationError({CURSOR: f"Invalid cursor '{value}'."})
     return cursor_id

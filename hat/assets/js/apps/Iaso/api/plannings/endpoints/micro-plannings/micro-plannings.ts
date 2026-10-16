@@ -24,6 +24,7 @@ import { getCustomQueryOptions } from '../../../../../../orval/mutator/custom-qu
 import {
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
+    PaginatedPlanningConfigList,
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
     PaginatedPlanningSamplingResultReadList,
@@ -35,6 +36,7 @@ import {
     PlanningWrite,
 } from '../../models';
 import type {
+    ApiMicroplanningPlanningsConfigsListParams,
     ApiMicroplanningPlanningsDropdownListParams,
     ApiMicroplanningPlanningsListParams,
     ApiMicroplanningPlanningsMissionsListParams,
@@ -1228,6 +1230,151 @@ export const useApiMicroplanningPlanningsDestroy = <
         useApiMicroplanningPlanningsDestroyMutationOptions(options),
     );
 };
+export const getApiMicroplanningPlanningsConfigsListUrl = (
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsListParams,
+) => {
+    const normalizedParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== undefined) {
+            normalizedParams.append(
+                key,
+                value === null ? 'null' : String(value),
+            );
+        }
+    });
+
+    const stringifiedParams = normalizedParams.toString();
+
+    return stringifiedParams.length > 0
+        ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/configs/?${stringifiedParams}`
+        : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/configs/`;
+};
+
+export const apiMicroplanningPlanningsConfigsList = async (
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsListParams,
+    options?: Parameters<typeof customFetchInstance>[1],
+): Promise<PaginatedPlanningConfigList> => {
+    return customFetchInstance<PaginatedPlanningConfigList>(
+        getApiMicroplanningPlanningsConfigsListUrl(id, params),
+        {
+            credentials: 'same-origin',
+            ...options,
+            method: 'GET',
+        },
+    );
+};
+
+export const getApiMicroplanningPlanningsConfigsListQueryKey = (
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsListParams,
+) => {
+    return [
+        'apiMicroplanningPlanningsConfigsList',
+        ...(id ? [id] : []),
+        ...(params ? [params] : []),
+    ] as const;
+};
+
+export const useApiMicroplanningPlanningsConfigsListQueryOptions = <
+    TData = Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>,
+    TError = unknown,
+>(
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+        queryOptions?.queryKey ??
+        getApiMicroplanningPlanningsConfigsListQueryKey(id, params);
+
+    const queryFn: QueryFunction<
+        Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>
+    > = ({ signal }) =>
+        apiMicroplanningPlanningsConfigsList(id, params, {
+            signal,
+            ...requestOptions,
+        });
+
+    const customOptions = getCustomQueryOptions({
+        queryKey,
+        queryFn,
+        enabled: id !== null && id !== undefined,
+        ...queryOptions,
+    });
+
+    return customOptions as UseQueryOptions<
+        Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>,
+        TError,
+        TData
+    > & { queryKey: QueryKey };
+};
+
+export type ApiMicroplanningPlanningsConfigsListQueryResult = NonNullable<
+    Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>
+>;
+export type ApiMicroplanningPlanningsConfigsListQueryError = unknown;
+
+export function useApiMicroplanningPlanningsConfigsList<
+    TData = Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>,
+    TError = unknown,
+>(
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsList>>,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    const queryOptions = useApiMicroplanningPlanningsConfigsListQueryOptions(
+        id,
+        params,
+        options,
+    );
+
+    const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+        queryKey: QueryKey;
+    };
+
+    return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const invalidateApiMicroplanningPlanningsConfigsList = async (
+    queryClient: QueryClient,
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsListParams,
+    options?: InvalidateOptions,
+): Promise<QueryClient> => {
+    await queryClient.invalidateQueries(
+        {
+            queryKey: getCustomQueryOptions({
+                queryKey: getApiMicroplanningPlanningsConfigsListQueryKey(
+                    id,
+                    params,
+                ),
+            }).queryKey,
+        },
+        options,
+    );
+
+    return queryClient;
+};
+
 export const getApiMicroplanningPlanningsMissionsListUrl = (
     id: number,
     params?: ApiMicroplanningPlanningsMissionsListParams,

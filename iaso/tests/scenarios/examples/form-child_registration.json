@@ -1,0 +1,21 @@
+{
+  "name": "data",
+  "type": "survey",
+  "title": "Child registration",
+  "id_string": "child_registration",
+  "version": "3",
+  "children": [
+    {"name": "first_name", "type": "text", "label": "First name", "bind": {"required": "yes"}},
+    {"name": "age_months", "type": "integer", "label": "Age (months)", "bind": {"required": "yes", "constraint": ". >= 0 and . < 120"}},
+    {"name": "oedema_status", "type": "calculate", "label": "Oedema status", "bind": {"calculate": "''"}},
+    {"name": "last_muac", "type": "calculate", "label": "Last MUAC (cm)", "bind": {"calculate": "''"}},
+    {"name": "visits__int__", "type": "calculate", "label": "Number of visits", "bind": {"calculate": "0"}},
+    {"name": "previous_measures", "type": "note", "label": "Already recorded: MUAC ${last_muac} cm, oedema ${oedema_status}", "bind": {"relevant": "${last_muac} != '' or ${oedema_status} != ''"}},
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {"bodyless": true},
+      "children": [{"name": "instanceID", "type": "calculate", "bind": {"readonly": "true()", "jr:preload": "uid"}}]
+    }
+  ]
+}

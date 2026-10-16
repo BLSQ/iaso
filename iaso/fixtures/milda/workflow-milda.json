@@ -1,0 +1,44 @@
+{
+  "entity_type": "Ménage MILDA",
+  "created_at": "2026-10-12T08:00:00+00:00",
+  "updated_at": "2026-10-12T08:00:00+00:00",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "versions": [
+    {
+      "name": "MILDA 2026",
+      "status": "PUBLISHED",
+      "created_at": "2026-10-12T08:00:00+00:00",
+      "updated_at": "2026-10-12T08:00:00+00:00",
+      "uuid": "00000000-0000-0000-0000-000000000000",
+      "follow_ups": [
+        {
+          "order": 0,
+          "condition": {
+            ">": [
+              {
+                "var": "milda_restantes__int__"
+              },
+              0
+            ]
+          },
+          "forms": [
+            "Remise MILDA au centre de santé"
+          ],
+          "created_at": "2026-10-12T08:00:00+00:00",
+          "updated_at": "2026-10-12T08:00:00+00:00"
+        }
+      ],
+      "changes": [
+        {
+          "form": "Remise MILDA au centre de santé",
+          "mapping": {
+            "milda_restantes_apres__int__": "milda_restantes__int__",
+            "milda_distribuees_total__int__": "milda_distribuees__int__"
+          },
+          "created_at": "2026-10-12T08:00:00+00:00",
+          "updated_at": "2026-10-12T08:00:00+00:00"
+        }
+      ]
+    }
+  ]
+}

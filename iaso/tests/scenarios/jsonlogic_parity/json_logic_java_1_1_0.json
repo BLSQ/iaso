@@ -1,0 +1,732 @@
+[
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=int:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"1\"]}",
+    "data": "x=int:1",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, \"-1\"]}",
+    "data": "x=int:-1",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, \"-1\"]}",
+    "data": "x=int:3",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=int:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, 1]}",
+    "data": "x=int:1",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=str:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=str:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, -1]}",
+    "data": "x=str:-1",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=str:11",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=str:100",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">=\": [{\"var\": \"x\"}, 6]}",
+    "data": "x=str:6",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, \"24\"]}",
+    "data": "x=str:100",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=str:abc",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=str:",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 12]}",
+    "data": "x=double:12.0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"12\"]}",
+    "data": "x=double:12.0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"12.0\"]}",
+    "data": "x=double:12.0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 11.5]}",
+    "data": "x=double:11.4",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, \"11.5\"]}",
+    "data": "x=double:11.4",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0.3]}",
+    "data": "x=double:0.30000000000000004",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=null",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, \"-1\"]}",
+    "data": "x=null",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=null",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">=\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=null",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, null]}",
+    "data": "x=null",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"\"]}",
+    "data": "x=null",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=null",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, \"yes\"]}",
+    "data": "",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"yes\"]}",
+    "data": "",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!\": {\"var\": \"x\"}}",
+    "data": "x=int:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!\": {\"var\": \"x\"}}",
+    "data": "x=str:0",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!\": {\"var\": \"x\"}}",
+    "data": "x=str:",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!\": {\"var\": \"x\"}}",
+    "data": "x=list:",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!!\": {\"var\": \"x\"}}",
+    "data": "x=str:false",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"and\": [{\"var\": \"x\"}, true]}",
+    "data": "x=str:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"or\": [{\"var\": \"x\"}, false]}",
+    "data": "x=int:0",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, true]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"true\"]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 1]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"1\"]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"yes\"]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [\"a\", {\"var\": \"x\"}]}",
+    "data": "x=list:a,b",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [\"c\", {\"var\": \"x\"}]}",
+    "data": "x=list:a,b",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [\"a\", {\"var\": \"x\"}]}",
+    "data": "x=str:a b",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [\"a\", {\"var\": \"x\"}]}",
+    "data": "x=null",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"a b\"]}",
+    "data": "x=list:a,b",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"a\"]}",
+    "data": "x=list:a",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"some\": [{\"var\": \"x\"}, {\"==\": [{\"var\": \"\"}, \"a\"]}]}",
+    "data": "x=list:a,b",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"all\": [{\"var\": \"x\"}, {\"==\": [{\"var\": \"\"}, \"a\"]}]}",
+    "data": "x=list:",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">=\": [{\"var\": \"x\"}, \"2026-01-01\"]}",
+    "data": "x=long:1791417600000",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"2026-10-08\"]}",
+    "data": "x=long:1791417600000",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">=\": [{\"var\": \"current_date\"}, {\"var\": \"x\"}]}",
+    "data": "x=long:1791417600000;current_date=long:1791417600000",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">\": [{\"var\": \"x\"}, 1791417600000]}",
+    "data": "x=long:1791417600001",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 1791417600001]}",
+    "data": "x=long:1791417600000",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [0, {\"var\": \"x\"}, 5]}",
+    "data": "x=int:3",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<=\": [0, {\"var\": \"x\"}, 5]}",
+    "data": "x=str:5",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"if\": [{\"==\": [{\"var\": \"x\"}, \"0\"]}, \"a\", \"b\"]}",
+    "data": "x=int:0",
+    "result": "a",
+    "result_type": "String",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": [\"x\", \"0\"]}, \"0\"]}",
+    "data": "",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"missing\": [\"x\", \"y\"]}",
+    "data": "y=int:1",
+    "result": [
+      "x"
+    ],
+    "result_type": "ArrayList",
+    "error": null
+  },
+  {
+    "logic": "{}",
+    "data": "",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicParseException"
+  },
+  {
+    "logic": "true",
+    "data": "",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "null",
+    "data": "",
+    "result": null,
+    "result_type": null,
+    "error": null
+  },
+  {
+    "logic": "{\"condition\": \"x\"}",
+    "data": "",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicEvaluationException"
+  },
+  {
+    "logic": "{\"contains\": [{\"var\": \"x\"}, \"a\"]}",
+    "data": "x=str:abc",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicEvaluationException"
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}]}",
+    "data": "x=int:1",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicEvaluationException"
+  },
+  {
+    "logic": "not json",
+    "data": "",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicParseException"
+  },
+  {
+    "logic": "{\"and\": []}",
+    "data": "",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicEvaluationException"
+  },
+  {
+    "logic": "{\"or\": []}",
+    "data": "",
+    "result": null,
+    "result_type": null,
+    "error": "JsonLogicEvaluationException"
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x.y\"}, 1]}",
+    "data": "x.y=int:1",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"1st_question\"}, 1]}",
+    "data": "1st_question=int:1",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"no\"]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=bool:true",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=bool:false",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"\"]}",
+    "data": "x=bool:false",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=bool:false",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 2]}",
+    "data": "x=bool:true",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"yes\"]}",
+    "data": "x=str:yes",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"Yes\"]}",
+    "data": "x=str:yes",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \" yes\"]}",
+    "data": "x=str:yes",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"1\"]}",
+    "data": "x=str:1.0",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"01\"]}",
+    "data": "x=int:1",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"1e0\"]}",
+    "data": "x=int:1",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"abc\"]}",
+    "data": "x=int:0",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, \"abc\"]}",
+    "data": "x=int:0",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">\": [{\"var\": \"x\"}, true]}",
+    "data": "x=int:2",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=list:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, \"12,5\"]}",
+    "data": "x=double:12.5",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"===\": [{\"var\": \"x\"}, \"0\"]}",
+    "data": "x=int:0",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"===\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=int:0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [{\"var\": \"x\"}, [\"a\",\"b\"]]}",
+    "data": "x=str:a",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [{\"var\": \"x\"}, [\"1\",\"2\"]]}",
+    "data": "x=int:1",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!\": [{\"var\": \"x\"}]}",
+    "data": "x=double:0.0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=str:",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, 0]}",
+    "data": "x=str: ",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [{\"var\": \"x\"}, [1, 2]]}",
+    "data": "x=int:1",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"in\": [{\"var\": \"x\"}, [1, 2]]}",
+    "data": "x=double:1.0",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"var\": \"x\"}",
+    "data": "x=int:1",
+    "result": 1.0,
+    "result_type": "Double",
+    "error": null
+  },
+  {
+    "logic": "{\"==\": [{\"var\": \"x\"}, true]}",
+    "data": "x=str:false",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=str: 11 ",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"<\": [{\"var\": \"x\"}, 24]}",
+    "data": "x=bool:true",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\"!=\": [{\"var\": \"x\"}, \"yes\"]}",
+    "data": "x=null",
+    "result": true,
+    "result_type": "Boolean",
+    "error": null
+  },
+  {
+    "logic": "{\">\": [{\"var\": \"x\"}, {\"var\": \"y\"}]}",
+    "data": "x=int:3",
+    "result": false,
+    "result_type": "Boolean",
+    "error": null
+  }
+]

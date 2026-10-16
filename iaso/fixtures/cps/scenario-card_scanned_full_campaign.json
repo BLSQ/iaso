@@ -1,0 +1,103 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Scanned card, full campaign (cycles 1 to 4)",
+  "description": "The card's QR code is scanned before registering (it fills the read-only qr_code); each cycle is offered in its window, and not again once done.",
+  "steps": [
+    {
+      "form": "registre_de_denombrement_et_administration_cps_2026",
+      "description": "Card CARD-0001 scanned: nothing found, the child is registered in June (cycle 1)",
+      "at": "2026-06-15T09:00:00+00:00",
+      "search": {
+        "qr_code": "CARD-0001"
+      },
+      "answers": {
+        "code_menage": "12",
+        "nom_prenoms_parent_gardien": "JULES MARTIN",
+        "nom_prenoms_enfant": "AMINA MARTIN",
+        "age": "12_59_mois",
+        "sexe": "Feminin",
+        "resident_nonresident": "Resident(e)"
+      },
+      "expect": {
+        "attributes": {
+          "qr_code": "CARD-0001"
+        },
+        "next_forms": [
+          "cps_2026_cycle1"
+        ]
+      }
+    },
+    {
+      "form": "cps_2026_cycle1",
+      "description": "Cycle 1: first dose taken",
+      "at": "2026-06-15T09:30:00+00:00",
+      "answers": {
+        "date": "2026-06-15",
+        "prise_dose1": "Oui0"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_1_rempli": "cycle_rempli"
+        },
+        "next_forms": []
+      }
+    },
+    {
+      "form": "cps_2026_cycle2",
+      "description": "Cycle 2: first dose taken, no vaccination card",
+      "at": "2026-07-15T09:30:00+00:00",
+      "answers": {
+        "date_cy2": "2026-07-15",
+        "age_actuel_enfant": "12_59_mois",
+        "prise_dose1": "Oui0",
+        "verification_carnet_enfant": "Carnet_absent"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_2_rempli": "cycle_rempli"
+        },
+        "next_forms": []
+      }
+    },
+    {
+      "form": "cps_2026_cycle3",
+      "description": "Cycle 3: first dose taken, no vaccination card",
+      "at": "2026-08-15T09:30:00+00:00",
+      "answers": {
+        "date_cy3": "2026-08-15",
+        "age_actuel_enfant": "12_59_mois",
+        "prise_dose1": "Oui0",
+        "verification_carnet_enfant": "Carnet_absent"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_3_rempli": "cycle_rempli"
+        },
+        "next_forms": []
+      }
+    },
+    {
+      "form": "cps_2026_cycle4",
+      "description": "Cycle 4: first dose taken, no vaccination card, TB screening of the child: no contact",
+      "at": "2026-09-15T09:30:00+00:00",
+      "answers": {
+        "date_cy4": "2026-09-15",
+        "age_actuel_enfant": "12_59_mois",
+        "prise_dose1": "Oui0",
+        "verification_carnet_enfant": "Carnet_absent",
+        "depistage_chez_enfant_ou_mere": "Dépistage_chez_l_enfant_administré",
+        "contact_proche_enfant": "Non"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_4_rempli": "cycle_rempli",
+          "cycle_1_rempli": "cycle_rempli",
+          "cycle_2_rempli": "cycle_rempli",
+          "cycle_3_rempli": "cycle_rempli"
+        },
+        "next_forms": []
+      }
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import {
     normalizeSchema,
 } from './hat/assets/js/orval/transformer/fakerTransformer';
 import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import { mutationInvalidates as scenariosMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/scenarios/configuration';
 
 require('dotenv').config();
 
@@ -157,6 +158,11 @@ module.exports = {
     apiImports: createConfig('apiImports', ['API import']),
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
     modules: createConfig('modules', ['Modules']),
+    scenarios: createConfig(
+        'scenarios',
+        ['Scenarios'],
+        scenariosMutationInvalidates,
+    ),
     validationWorkflows: createConfig(
         'validationWorkflows',
         ['Validation workflows'],

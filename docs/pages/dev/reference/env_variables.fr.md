@@ -77,6 +77,17 @@ Définissez la variable d'environnement `DISABLE_PASSWORD_LOGINS` à la valeur `
 * Pour se connecter à l'administration.
 * Via `/api/token`, qui est utilisé par défaut par l'application mobile.
 
+## Tests de scénarios
+
+Les scénarios remplissent les formulaires avec `odk_cli` (le moteur de formulaires de l'application IASO), installé par
+les images Docker sur linux/amd64. Voir [Tests de scénarios](scenario_tests.md).
+
+| Nom                        | Optionnel | Valeur par défaut | Description                                                                      |
+| :------------------------- | :-------- | :---------------- | :------------------------------------------------------------------------------- |
+| `ODK_CLI_PATH`             | true      | `odk_cli`         | Chemin du binaire `odk_cli`.                                                     |
+| `ODK_CLI_TIMEOUT_SECONDS`  | true      | `10`              | Un remplissage plus long est arrêté, l'étape est en erreur.                      |
+| `SCENARIOS_SYNC_MAX_STEPS` | true      | `200`             | Les exécutions sont synchrones : au-delà de ce nombre d'étapes, refus (HTTP 400). |
+
 ## Liées à Sentry
 
 Si vous ne fournissez pas de `SENTRY_URL`, **Sentry ne sera pas configuré**.

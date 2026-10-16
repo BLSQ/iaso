@@ -1,4 +1,5 @@
 import React, { ReactElement, useMemo } from 'react';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import {
     Column,
@@ -109,6 +110,17 @@ export const useColumns = ({
                                 tooltipMessage={MESSAGES.workflow}
                                 overrideIcon={Workflow}
                             />
+                            {userHasPermission(
+                                Permission.WORKFLOWS,
+                                currentUser,
+                            ) && (
+                                <IconButtonComponent
+                                    id={`scenarios-link-${type.id}`}
+                                    url={`/${baseUrls.scenarios}/entityTypeId/${type.id}`}
+                                    tooltipMessage={MESSAGES.scenarios}
+                                    overrideIcon={FactCheckIcon}
+                                />
+                            )}
                         </section>
                     );
                 },

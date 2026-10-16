@@ -40,6 +40,7 @@ PAYMENT_API_BULK = "payment_api_bulk"
 PAYMENT_LOT_API = "payment_lot_api"
 PROFILE_API = "profile_api"
 PROFILE_API_BULK = "profile_api_bulk"
+SCENARIO_API = "scenario_api"
 SETUP_ACCOUNT_API = "setup_account_api"
 
 

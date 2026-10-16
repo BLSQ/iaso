@@ -114,6 +114,7 @@ from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.promptness_stats.views import PromptnessStatsViewSet
 from .api.reports import ReportsViewSet
+from .api.scenarios.views import ScenarioViewSet
 from .api.setup_account.views import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.stocks.views import (
@@ -249,6 +250,7 @@ router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelo
 router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
 router.register(r"mobile/storages?/passwords", MobileStoragePasswordViewSet, basename="storagepasswords")
 
+router.register(r"scenarios", ScenarioViewSet, basename="scenarios")
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")

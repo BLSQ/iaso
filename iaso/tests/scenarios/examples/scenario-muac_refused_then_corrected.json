@@ -1,0 +1,59 @@
+{
+  "$schema": "./scenario.schema.json",
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "A wrong MUAC is refused, then corrected",
+  "description": "The anthropometry form's constraint on muac (. > 0) refuses -1: nothing is saved, the visit isn't counted; corrected to 12.5 without oedema, the child stays in the anthropometry follow-up.",
+  "steps": [
+    {
+      "form": "child_registration",
+      "description": "11-month-old child registered at the health centre",
+      "answers": {
+        "first_name": "Amina",
+        "age_months": "11"
+      },
+      "expect": {
+        "next_forms": [
+          "anthropometry"
+        ]
+      }
+    },
+    {
+      "form": "anthropometry",
+      "description": "The nurse types -1 cm: the form refuses it",
+      "answers": {
+        "muac": "-1"
+      },
+      "expect": {
+        "refused": [
+          {
+            "question": "muac",
+            "code": "CONSTRAINT"
+          }
+        ]
+      }
+    },
+    {
+      "form": "anthropometry",
+      "description": "She measures again: 12.5 cm, no oedema",
+      "answers": {
+        "muac": "12.5",
+        "oedema": "no"
+      },
+      "expect": {
+        "submission": {
+          "muac": "12.5",
+          "visit_number": "1"
+        },
+        "next_forms": [
+          "anthropometry"
+        ],
+        "attributes": {
+          "last_muac": "12.5",
+          "oedema_status": "no",
+          "visits__int__": "1"
+        }
+      }
+    }
+  ]
+}

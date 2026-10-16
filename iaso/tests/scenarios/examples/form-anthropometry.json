@@ -1,0 +1,26 @@
+{
+  "name": "data",
+  "type": "survey",
+  "title": "Anthropometry",
+  "id_string": "anthropometry",
+  "version": "1",
+  "children": [
+    {"name": "_first_name", "type": "calculate", "bind": {"calculate": "''"}},
+    {"name": "_visits__int__", "type": "calculate", "bind": {"calculate": "0"}},
+    {"name": "child", "type": "note", "label": "Child: ${_first_name}"},
+    {"name": "muac", "type": "decimal", "label": "MUAC (cm)", "bind": {"required": "yes", "constraint": ". > 0"}},
+    {
+      "name": "oedema",
+      "type": "select one",
+      "label": "Oedema",
+      "choices": [{"name": "yes", "label": "Yes"}, {"name": "no", "label": "No"}]
+    },
+    {"name": "visit_number", "type": "calculate", "bind": {"calculate": "coalesce(${_visits__int__}, 0) + 1"}},
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {"bodyless": true},
+      "children": [{"name": "instanceID", "type": "calculate", "bind": {"readonly": "true()", "jr:preload": "uid"}}]
+    }
+  ]
+}

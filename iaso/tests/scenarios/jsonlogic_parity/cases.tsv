@@ -1,0 +1,115 @@
+# --- typed int (calculate __int__ or integer question) compared to string constants, as in the nutrition workflow
+{"==": [{"var": "x"}, "0"]}	x=int:0
+{"==": [{"var": "x"}, "1"]}	x=int:1
+{"!=": [{"var": "x"}, "-1"]}	x=int:-1
+{"!=": [{"var": "x"}, "-1"]}	x=int:3
+{"==": [{"var": "x"}, 0]}	x=int:0
+{"!=": [{"var": "x"}, 1]}	x=int:1
+# --- the same variable left untyped (calculate without suffix => string)
+{"==": [{"var": "x"}, "0"]}	x=str:0
+{"==": [{"var": "x"}, 0]}	x=str:0
+{"!=": [{"var": "x"}, -1]}	x=str:-1
+{"<": [{"var": "x"}, 24]}	x=str:11
+{"<": [{"var": "x"}, 24]}	x=str:100
+{">=": [{"var": "x"}, 6]}	x=str:6
+{"<": [{"var": "x"}, "24"]}	x=str:100
+{"<": [{"var": "x"}, 24]}	x=str:abc
+{"<": [{"var": "x"}, 24]}	x=str:
+# --- decimals
+{"==": [{"var": "x"}, 12]}	x=double:12.0
+{"==": [{"var": "x"}, "12"]}	x=double:12.0
+{"==": [{"var": "x"}, "12.0"]}	x=double:12.0
+{"<": [{"var": "x"}, 11.5]}	x=double:11.4
+{"<": [{"var": "x"}, "11.5"]}	x=double:11.4
+{"==": [{"var": "x"}, 0.3]}	x=double:0.30000000000000004
+# --- missing answers (null: question not answered / not relevant)
+{"==": [{"var": "x"}, "0"]}	x=null
+{"!=": [{"var": "x"}, "-1"]}	x=null
+{"<": [{"var": "x"}, 24]}	x=null
+{">=": [{"var": "x"}, 0]}	x=null
+{"==": [{"var": "x"}, null]}	x=null
+{"==": [{"var": "x"}, ""]}	x=null
+{"==": [{"var": "x"}, 0]}	x=null
+{"!=": [{"var": "x"}, "yes"]}
+{"==": [{"var": "x"}, "yes"]}
+{"<": [{"var": "x"}, 24]}
+# --- truthiness / negation
+{"!": {"var": "x"}}	x=int:0
+{"!": {"var": "x"}}	x=str:0
+{"!": {"var": "x"}}	x=str:
+{"!": {"var": "x"}}	x=list:
+{"!!": {"var": "x"}}	x=str:false
+{"and": [{"var": "x"}, true]}	x=str:0
+{"or": [{"var": "x"}, false]}	x=int:0
+# --- booleans (calculate __bool__ => Boolean on the device)
+{"==": [{"var": "x"}, true]}	x=bool:true
+{"==": [{"var": "x"}, "true"]}	x=bool:true
+{"==": [{"var": "x"}, 1]}	x=bool:true
+{"==": [{"var": "x"}, "1"]}	x=bool:true
+{"==": [{"var": "x"}, "yes"]}	x=bool:true
+# --- select_multiple (List<String> on the device)
+{"in": ["a", {"var": "x"}]}	x=list:a,b
+{"in": ["c", {"var": "x"}]}	x=list:a,b
+{"in": ["a", {"var": "x"}]}	x=str:a b
+{"in": ["a", {"var": "x"}]}	x=null
+{"==": [{"var": "x"}, "a b"]}	x=list:a,b
+{"==": [{"var": "x"}, "a"]}	x=list:a
+{"some": [{"var": "x"}, {"==": [{"var": ""}, "a"]}]}	x=list:a,b
+{"all": [{"var": "x"}, {"==": [{"var": ""}, "a"]}]}	x=list:
+# --- dates (epoch ms on the device) vs date strings from a query builder
+{">=": [{"var": "x"}, "2026-01-01"]}	x=long:1791417600000
+{"==": [{"var": "x"}, "2026-10-08"]}	x=long:1791417600000
+{">=": [{"var": "current_date"}, {"var": "x"}]}	x=long:1791417600000;current_date=long:1791417600000
+{">": [{"var": "x"}, 1791417600000]}	x=long:1791417600001
+{"<": [{"var": "x"}, 1791417600001]}	x=long:1791417600000
+# --- between, if, var default, missing
+{"<": [0, {"var": "x"}, 5]}	x=int:3
+{"<=": [0, {"var": "x"}, 5]}	x=str:5
+{"if": [{"==": [{"var": "x"}, "0"]}, "a", "b"]}	x=int:0
+{"==": [{"var": ["x", "0"]}, "0"]}
+{"missing": ["x", "y"]}	y=int:1
+# --- shapes that reach the app from the server
+{}
+true
+null
+{"condition": "x"}
+{"contains": [{"var": "x"}, "a"]}	x=str:abc
+{"==": [{"var": "x"}]}	x=int:1
+not json
+{"and": []}
+{"or": []}
+{"==": [{"var": "x.y"}, 1]}	x.y=int:1
+{"==": [{"var": "1st_question"}, 1]}	1st_question=int:1
+{"==": [{"var": "x"}, "no"]}	x=bool:true
+{"==": [{"var": "x"}, "0"]}	x=bool:true
+{"==": [{"var": "x"}, "0"]}	x=bool:false
+{"==": [{"var": "x"}, ""]}	x=bool:false
+{"==": [{"var": "x"}, 0]}	x=bool:false
+{"==": [{"var": "x"}, 2]}	x=bool:true
+{"==": [{"var": "x"}, "yes"]}	x=str:yes
+{"==": [{"var": "x"}, "Yes"]}	x=str:yes
+{"==": [{"var": "x"}, " yes"]}	x=str:yes
+{"==": [{"var": "x"}, "1"]}	x=str:1.0
+{"==": [{"var": "x"}, "01"]}	x=int:1
+{"==": [{"var": "x"}, "1e0"]}	x=int:1
+{"==": [{"var": "x"}, "abc"]}	x=int:0
+{"<": [{"var": "x"}, "abc"]}	x=int:0
+{">": [{"var": "x"}, true]}	x=int:2
+{"!=": [{"var": "x"}, "0"]}	x=list:0
+{"==": [{"var": "x"}, "12,5"]}	x=double:12.5
+{"===": [{"var": "x"}, "0"]}	x=int:0
+{"===": [{"var": "x"}, 0]}	x=int:0
+{"in": [{"var": "x"}, ["a","b"]]}	x=str:a
+{"in": [{"var": "x"}, ["1","2"]]}	x=int:1
+{"!": [{"var": "x"}]}	x=double:0.0
+# --- more edge cases
+{"==": [{"var": "x"}, 0]}	x=str:
+{"==": [{"var": "x"}, 0]}	x=str: 
+{"in": [{"var": "x"}, [1, 2]]}	x=int:1
+{"in": [{"var": "x"}, [1, 2]]}	x=double:1.0
+{"var": "x"}	x=int:1
+{"==": [{"var": "x"}, true]}	x=str:false
+{"<": [{"var": "x"}, 24]}	x=str: 11 
+{"<": [{"var": "x"}, 24]}	x=bool:true
+{"!=": [{"var": "x"}, "yes"]}	x=null
+{">": [{"var": "x"}, {"var": "y"}]}	x=int:3

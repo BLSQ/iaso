@@ -5,13 +5,10 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.test import SwaggerTestCaseMixin
-from iaso.tests.api.promptness_stats.common import (
-    PERIOD_KEYS,
-    SUMMARY_KEYS,
-    TOTALS_KEYS,
-    PromptnessStatsTestCase,
-    aware,
-)
+from iaso.tests.api.promptness_stats.common import PERIOD_KEYS, TOTALS_KEYS, PromptnessStatsTestCase, aware
+
+
+SUMMARY_KEYS = {"period", "totals"}
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)

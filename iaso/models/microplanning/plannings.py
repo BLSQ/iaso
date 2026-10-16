@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import CheckConstraint, Q
+from django.db.models import CheckConstraint, Q, UniqueConstraint
 
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
@@ -143,8 +143,13 @@ class PlanningConfig(models.Model):
 
     class Meta:
         ordering = ("level",)
-        unique_together = (("planning", "level"),)
-        constraints = [CheckConstraint(check=Q(level__gte=1), name="level_gte_1")]
+        constraints = [
+            CheckConstraint(check=Q(level__gte=1), name="level_gte_1"),
+            UniqueConstraint(
+                fields=("planning", "level"),
+                name="planning_config_planning_level_uniq",
+            ),
+        ]
 
     def get_related_teams(self) -> TeamQuerySet:
         return (

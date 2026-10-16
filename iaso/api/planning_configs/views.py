@@ -15,6 +15,7 @@ from rest_framework.viewsets import GenericViewSet
 from iaso.api.common import HasPermission
 from iaso.api.common.mixin import ProtectDestroyMixin
 from iaso.api.planning_configs.serializers.bulk_create import PlanningConfigBulkCreateSerializer
+from iaso.api.planning_configs.serializers.bulk_update import PlanningConfigBulkUpdateSerializer
 from iaso.api.planning_configs.serializers.create import PlanningConfigCreateSerializer
 from iaso.api.planning_configs.serializers.update import PlanningConfigUpdateSerializer
 from iaso.models import PlanningConfig
@@ -38,6 +39,8 @@ class PlanningConfigViewSet(ProtectDestroyMixin, UpdateModelMixin, CreateModelMi
             return Serializer
         if self.action == "bulk_create":
             return PlanningConfigBulkCreateSerializer
+        if self.action == "bulk_update":
+            return PlanningConfigBulkUpdateSerializer
         raise NotImplementedError(f"Serializer for {self.action} not implemented")
 
     @extend_schema(
@@ -50,3 +53,15 @@ class PlanningConfigViewSet(ProtectDestroyMixin, UpdateModelMixin, CreateModelMi
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @extend_schema(
+        request=PlanningConfigBulkUpdateSerializer(many=True),
+        responses=PlanningConfigBulkUpdateSerializer(many=True),
+    )
+    @action(detail=False, methods=["put"], pagination_class=None, url_path="bulk-update")
+    def bulk_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(data=request.data, many=True, allow_empty=False, instance=self.get_queryset())
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(status=status.HTTP_204_NO_CONTENT, headers=headers)

@@ -1,6 +1,7 @@
 from typing import Any
 
 from rest_framework.relations import PrimaryKeyRelatedField
+from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
 from iaso.models import OrgUnit, OrgUnitType, Planning, PlanningConfig
@@ -27,6 +28,7 @@ class PlanningConfigCreateSerializer(ModelSerializer):
             "level": {"required": True, "write_only": True},
             "planning": {"required": True, "write_only": True},
         }
+        validators = [UniqueTogetherValidator(queryset=PlanningConfig.objects.all(), fields=("planning", "level"))]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
+from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
 from iaso.models import OrgUnit, OrgUnitType, Planning, PlanningConfig
@@ -89,6 +90,7 @@ class PlanningConfigBulkCreateSerializer(ModelSerializer):
             "planning": {"required": True, "write_only": True},
             "id": {"read_only": True},
         }
+        validators = [UniqueTogetherValidator(queryset=PlanningConfig.objects.all(), fields=("planning", "level"))]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

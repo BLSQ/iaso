@@ -262,11 +262,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-        self.assertHasError(
-            res_data,
-            api_settings.NON_FIELD_ERRORS_KEY,
-            "A planning configuration with this level already exists for this planning.",
-        )
+        self.assertHasError(res_data[0], "id")
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)

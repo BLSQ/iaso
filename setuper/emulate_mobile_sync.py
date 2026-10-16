@@ -21,16 +21,18 @@ guess -- traced from the actual client code):
     whole sync stage, no automatic retry. This script surfaces that loudly instead
     of silently working around it, so a 404 here means a real device would break.
 
-With --count-once, only page 1 is counted: the next pages pass `with_count=false`
-(`count`/`pages` come back null) and the count of page 1 is kept for display. A server
-without `with_count` support ignores it and keeps counting every page.
+By default the next pages pass the `next_cursor` of the previous page as `cursor`
+(keyset pagination): only page 1 is counted, `count`/`pages` come back null afterwards and
+the count of page 1 is kept for display. `page` is still sent: a server without cursor
+support returns no `next_cursor`, so the script keeps paging (and counting) by page number.
+--no-cursor pages by page number only, counting every page (the old app behaviour).
 
 Usage:
     uv run setuper/emulate_mobile_sync.py --app-id myaccount
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --username bob --password secret
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --since 2026-08-24
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-deleted
-    uv run setuper/emulate_mobile_sync.py --app-id myaccount --count-once
+    uv run setuper/emulate_mobile_sync.py --app-id myaccount --no-cursor
 
 Credentials/server default to setuper/credentials.py (the same file setuper.py uses)
 when present; override with --server/--username/--password.
@@ -63,17 +65,24 @@ def authenticate(server, username, password):
     return {"Authorization": f"Bearer {token}"}
 
 
-def sync_paginated(server, headers, path, params, label, max_pages=None, count_once=False):
+def sync_paginated(server, headers, path, params, label, max_pages=None, use_cursor=False):
     """Follow `has_next` exactly like FetchEntities.kt's do-while loop: never uses
-    count/pages to decide how many pages to request, only has_next."""
+    count/pages to decide how many pages to request, only has_next.
+
+    With use_cursor, the logic the app would follow: always send `page`, add `cursor` only
+    when the previous page returned a `next_cursor`. A server without cursor support returns
+    none, so the next page is fetched (and counted) by page number, the old way."""
     page = 1
     total = 0
     server_count = None
+    cursor = None
+    cursor_pages = 0
     t0 = time.perf_counter()
     while True:
         page_params = {**params, "page": page}
-        if count_once and page > 1:
-            page_params["with_count"] = "false"
+        if cursor:
+            page_params["cursor"] = cursor
+            cursor_pages += 1
         page_t0 = time.perf_counter()
         r = requests.get(f"{server}{path}", params=page_params, headers=headers)
         page_elapsed = time.perf_counter() - page_t0
@@ -90,11 +99,16 @@ def sync_paginated(server, headers, path, params, label, max_pages=None, count_o
         if data.get("count") is not None:
             server_count = data["count"]
         has_next = data.get("has_next", False)
+        if use_cursor:
+            cursor = data.get("next_cursor")
 
         print(
             f"  [{label}] page {page}: {len(results)} rows in {page_elapsed:.2f}s "
-            f"(running total {total}/{server_count}, has_next={has_next})"
+            f"(running total {total}/{server_count}, has_next={has_next}"
+            f"{f', next_cursor={cursor}' if use_cursor else ''})"
         )
+        if use_cursor and has_next and cursor is None and page == 1:
+            print(f"  [{label}] no next_cursor (server without cursor support): paging by page number, the old way")
 
         if not has_next:
             break
@@ -104,7 +118,7 @@ def sync_paginated(server, headers, path, params, label, max_pages=None, count_o
         page += 1
 
     elapsed = time.perf_counter() - t0
-    print(f"[{label}] done: {total} rows over {page} page(s) in {elapsed:.2f}s\n")
+    print(f"[{label}] done: {total} rows over {page} page(s) ({cursor_pages} by cursor) in {elapsed:.2f}s\n")
     return total, page, elapsed
 
 
@@ -138,9 +152,11 @@ def main():
     )
     parser.add_argument("--skip-deleted", action="store_true", help="Skip the paired /entities/deleted/ fetch")
     parser.add_argument(
-        "--count-once",
-        action="store_true",
-        help="Only count on page 1, pass with_count=false on the next pages",
+        "--cursor",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Follow next_cursor (keyset pagination) after page 1, only page 1 is counted; "
+        "--no-cursor pages by page number, counting every page",
     )
     args = parser.parse_args()
 
@@ -151,7 +167,7 @@ def main():
     headers = authenticate(args.server, args.username, args.password)
 
     sync_kind = f"limit_date={args.since}" if args.since else "limit_date omitted -- first/full sync"
-    count_kind = "count on page 1 only" if args.count_once else "count on every page"
+    count_kind = "cursor when the server supports it" if args.cursor else "page numbers, count on every page"
     print(f"\n=== Entity sync emulation: app_id={args.app_id} ({sync_kind}, {count_kind}) ===")
 
     entity_params = {"app_id": args.app_id}
@@ -165,7 +181,7 @@ def main():
         entity_params,
         "entities",
         max_pages=args.max_pages,
-        count_once=args.count_once,
+        use_cursor=args.cursor,
     )
 
     deleted_total = deleted_pages = deleted_time = 0
@@ -177,7 +193,7 @@ def main():
             {"app_id": args.app_id},
             "deleted",
             max_pages=args.max_pages,
-            count_once=args.count_once,
+            use_cursor=args.cursor,
         )
 
     print("=== Summary ===")

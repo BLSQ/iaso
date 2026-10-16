@@ -1,18 +1,5 @@
 from rest_framework import pagination
-from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-
-
-def get_page_without_count(queryset, page_number: int, page_size: int, invalid_page_message: str):
-    """Return `(results, has_next)` for a page without counting the queryset: one extra row tells
-    whether there is a next page. An empty page beyond the first one is out of range."""
-    if page_number < 1:
-        raise NotFound(invalid_page_message)
-    offset = (page_number - 1) * page_size
-    results = list(queryset[offset : offset + page_size + 1])
-    if not results and page_number > 1:
-        raise NotFound(invalid_page_message)
-    return results[:page_size], len(results) > page_size
 
 
 class Paginator(pagination.PageNumberPagination):

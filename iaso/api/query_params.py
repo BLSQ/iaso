@@ -1,6 +1,7 @@
 from typing import Optional
 
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 
 
 APP_ID = "app_id"
@@ -45,7 +46,7 @@ START_PERIOD = "startPeriod"
 STATUS = "status"
 TYPE = "type"
 USER_IDS = "userIds"
-WITH_COUNT = "with_count"
+CURSOR = "cursor"
 WITH_LOCATION = "withLocation"
 ONLY_REFERENCE = "onlyReference"
 REFERENCE_INSTANCES = "referenceInstances"
@@ -68,8 +69,20 @@ def parse_strict_boolean_param(value: Optional[str], field_name: str = "query_pa
     )
 
 
-def is_count_requested(request) -> bool:
-    """Paginated mobile endpoints count by default; `with_count=false` lets a client skip the count
-    (e.g. on the pages after the first one, following `has_next` instead)."""
-    value = request.query_params.get(WITH_COUNT)
-    return value is None or parse_strict_boolean_param(value, WITH_COUNT)
+def get_cursor_id(request) -> Optional[int]:
+    """Keyset pagination: the `cursor` a previous page returned as `next_cursor` (the id of its last row).
+    Only valid with the default id ordering: `id > cursor` under another `order` would skip rows."""
+    value = request.query_params.get(CURSOR)
+    if value is None:
+        return None
+    if api_settings.ORDERING_PARAM in request.query_params:
+        raise serializers.ValidationError(
+            {CURSOR: f"'{CURSOR}' can't be combined with '{api_settings.ORDERING_PARAM}', it pages by id."}
+        )
+    try:
+        cursor_id = int(value)
+    except ValueError:
+        raise serializers.ValidationError({CURSOR: f"Invalid cursor '{value}'."})
+    if cursor_id < 0:
+        raise serializers.ValidationError({CURSOR: f"Invalid cursor '{value}'."})
+    return cursor_id

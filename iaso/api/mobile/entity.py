@@ -8,23 +8,24 @@ from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
-from iaso.api.common.pagination import get_page_without_count
-from iaso.api.query_params import LIMIT, PAGE, WITH_COUNT, is_count_requested
+from iaso.api.query_params import CURSOR, LIMIT, PAGE, get_cursor_id
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import Entity, EntityType, FormVersion, Instance, Project
+from iaso.models import Entity, FormVersion, Instance
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, ProjectNotFoundError, UserNotAuthError
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
 
-def filter_for_mobile_entity(queryset, user, request):
+def filter_for_mobile_entity(queryset, user, request, after_id=None):
     if queryset is not None:
         try:
             queryset = queryset.filter_for_mobile_entity(
                 user,
                 limit_date=request.query_params.get("limit_date"),
                 json_content=request.query_params.get("json_content"),
+                after_id=after_id,
             )
         except InvalidLimitDateError as e:
             raise ParseError(e.message)
@@ -167,8 +168,11 @@ class MobileEntitiesSetPagination(Paginator):
     the DB cost -- measured ~2x fewer buffer blocks touched on both a narrow and a whole-country
     org unit scope, same query plan either way.
 
-    The Window still makes Postgres go through the whole filtered set on every page: a client that
-    already knows the total (from page 1) can pass `with_count=false`, `count` and `pages` are then null.
+    The Window still makes Postgres go through the whole filtered set on every page, and the offset
+    makes it walk past every row of the previous pages: each page returns a `next_cursor` (the id of its
+    last row), a client passing it back as `cursor` gets the next page with `id > cursor` instead (keyset
+    pagination, never counted: the client keeps the count of page 1). Clients keep sending `page` too, so
+    a server without `cursor` support still pages correctly.
     """
 
     page_size_query_param = LIMIT
@@ -179,18 +183,23 @@ class MobileEntitiesSetPagination(Paginator):
     def get_schema_operation_parameters(self, view):
         return super().get_schema_operation_parameters(view) + [
             {
-                "name": WITH_COUNT,
+                "name": CURSOR,
                 "required": False,
                 "in": "query",
-                "description": "Set to false to skip the total count: `count` and `pages` are then null.",
-                "schema": {"type": "boolean", "default": True},
-            }
+                "description": "`next_cursor` of the previous page: returns the rows after it, `count` and `pages` are then null.",
+                "schema": {"type": "string"},
+            },
         ]
 
     def get_paginated_response_schema(self, schema):
         response_schema = super().get_paginated_response_schema(schema)
         for key in ("count", "pages"):
             response_schema["properties"][key]["nullable"] = True
+        response_schema["properties"]["next_cursor"] = {
+            "type": "string",
+            "nullable": True,
+            "description": "Pass it as `cursor` to get the next page, null on the last page.",
+        }
         return response_schema
 
     def get_iaso_page_number(self, request):
@@ -214,14 +223,13 @@ class MobileEntitiesSetPagination(Paginator):
         self.previous_exists = page_number > 1
         self.request = request
 
-        if not is_count_requested(request):
-            # Without the Window count, Postgres can stop once it has the page.
-            results, self.next_exists = get_page_without_count(
-                queryset, page_number, page_size, self.invalid_page_message
-            )
+        cursor_id = get_cursor_id(request)
+        if cursor_id is not None:
+            results = list(queryset.filter(pk__gt=cursor_id)[: page_size + 1])
+            self.next_exists = len(results) > page_size
             self.count = None
             self.num_pages = None
-            return results
+            return self._with_next_cursor(results[:page_size])
 
         windowed_qs = queryset.annotate(_iaso_total_count=Window(expression=Count("id")))[offset : offset + page_size]
         results = list(windowed_qs)
@@ -246,6 +254,12 @@ class MobileEntitiesSetPagination(Paginator):
         self.num_pages = num_pages
         self.next_exists = offset + page_size < total_count
 
+        return self._with_next_cursor(results)
+
+    def _with_next_cursor(self, results):
+        # The cursor is an id: only meaningful for the default id ordering (see get_cursor_id).
+        is_ordered_by_id = api_settings.ORDERING_PARAM not in self.request.query_params
+        self.next_cursor = str(results[-1].pk) if self.next_exists and is_ordered_by_id else None
         return results
 
     def get_paginated_response(self, data):
@@ -258,6 +272,7 @@ class MobileEntitiesSetPagination(Paginator):
                 "page": self.current_page_number,
                 "pages": self.num_pages,
                 "limit": self.current_page_size,
+                "next_cursor": self.next_cursor,
             }
         )
 
@@ -276,7 +291,7 @@ class MobileEntityViewSet(ModelViewSet):
 
     sample usage: /api/mobile/entities/?limit_date=2022-12-29&{LIMIT}=1&{PAGE}=1
 
-    {WITH_COUNT}=false skips the total count (`count` and `pages` are null), follow `has_next` instead
+    {CURSOR}=<next_cursor of the previous page> pages by id instead of offset (no count)
 
     """
 
@@ -309,17 +324,15 @@ class MobileEntityViewSet(ModelViewSet):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        project = Project.objects.get_for_user_and_app_id(user, app_id)
-
-        entity_types = EntityType.objects.filter(reference_form__projects=project).only("id")
-
-        queryset = Entity.objects.filter(entity_type__in=entity_types)
-        queryset = filter_on_app_id(queryset, user, app_id)
+        # filter_on_app_id scopes to the project's entity types, as a concrete id list (see EntityQuerySet.filter_for_app_id).
+        queryset = filter_on_app_id(Entity.objects.all(), user, app_id)
 
         # filter_for_mobile_entity owns the org-unit scope and limit_date checks together, each as
         # its own independent Exists(...) subquery against iaso_instance -- see its docstring and
         # EntityQuerySet._filter_entities_with_instances' for why they stay independent.
-        queryset = filter_for_mobile_entity(queryset, user, self.request)
+        # The cursor bound is also pushed into the Exists(...) subqueries: Postgres can't derive it from
+        # the outer `id > cursor`, and without it each page re-probes the instances of every previous page.
+        queryset = filter_for_mobile_entity(queryset, user, self.request, after_id=get_cursor_id(self.request))
 
         # select_related (a JOIN) is right here, not prefetch_related: `filter_for_mobile_entity` already
         # filters on `attributes__deleted`, which forces Postgres to join iaso_instance into this query

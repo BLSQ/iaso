@@ -27,6 +27,7 @@ type Props = {
     params: PromptnessRouterParams;
     forms?: FormsDropdownOptions;
     isFetchingForms: boolean;
+    orgUnitId: string;
 };
 
 const baseUrl = baseUrls.promptness;
@@ -61,6 +62,7 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     params,
     forms,
     isFetchingForms,
+    orgUnitId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const {
@@ -72,7 +74,7 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         setFiltersUpdated,
     } = useFilterState({ baseUrl, params, saveSearchInHistory: false });
 
-    const { data: initialParent } = useGetOrgUnit(params.parentId);
+    const { data: initialParent } = useGetOrgUnit(orgUnitId);
     const { data: orgUnitTypes, isFetching: isFetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
 

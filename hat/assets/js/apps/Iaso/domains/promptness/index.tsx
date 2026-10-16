@@ -121,6 +121,7 @@ export const Promptness: FunctionComponent = () => {
                 <PromptnessFilters
                     // Reset the filters state when drilling down from the table
                     key={currentOrgUnitId}
+                    orgUnitId={currentOrgUnitId}
                     params={params}
                     forms={formsWithPeriod}
                     isFetchingForms={isFetchingForms}

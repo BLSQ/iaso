@@ -205,7 +205,7 @@ msgstr "L'année de chaque valeur doit faire partie des 'years' soumises."
 
 #: iaso/api/metrics/serializers.py
 msgid "metric_type_ids must be a comma-separated list of integers."
-msgstr "metric_type_ids doit être une liste d'integer séparé par une virgule"
+msgstr "metric_type_ids doit être une liste d'entiers séparés par une virgule"
 
 #: iaso/api/microplanning/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
@@ -225,7 +225,7 @@ msgstr "ID du parent de l'unité organisationnelle"
 
 #: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
 msgid "Org unit type IDs (comma-separated)"
-msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
+msgstr "IDs des types d'unité organisationnelle (séparés par des virgules)"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -564,7 +564,7 @@ msgstr ""
 
 #: iaso/api/stocks/filters.py
 msgid "SKUs - SKU IDs (comma-separated)"
-msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
+msgstr "SKUs - IDs des SKUs (séparés par des virgules)"
 
 #: iaso/api/stocks/filters.py
 msgid "SKU ID"
@@ -581,6 +581,10 @@ msgstr "ID de Formulaire"
 #: iaso/api/stocks/filters.py
 msgid "Form Version ID"
 msgstr "ID de Version de Formulaire"
+
+#: iaso/api/validation_workflow_instances/filters.py
+msgid "Org unit IDs (comma-separated)"
+msgstr "IDs des unités organisationnelles (séparés par des virgules)"
 
 #: iaso/auth/forms.py
 msgid "Too many login attempts. Please try again later."

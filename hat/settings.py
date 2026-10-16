@@ -24,7 +24,7 @@ import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-from environs import Env as _Env, EnvError
+from environs import Env, EnvError
 from requests.exceptions import HTTPError
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -32,16 +32,6 @@ from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
-
-
-class Env(_Env):
-    # Workaround because of docker compose converting missing vars to "".
-    # This override returns default value instead of blank string
-    def _get_from_environ(self, name, default, **kwargs):
-        envvar_key, envvar_value, proxied_key = super()._get_from_environ(name, default, **kwargs)
-        if envvar_value == "":
-            return envvar_key, default, proxied_key
-        return envvar_key, envvar_value, proxied_key
 
 
 env = Env()

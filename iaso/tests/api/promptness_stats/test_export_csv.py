@@ -20,7 +20,6 @@ COUNT_COLUMNS = [
     "missing",
     "missing_percent",
 ]
-HEADER = ["org_unit_id", "org_unit_name", "org_unit_type", "parent_org_unit", *COUNT_COLUMNS]
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)
@@ -35,15 +34,22 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
             return_as_lists=True,
         )
 
-    def result_row_to_csv_line(self, result_row):
+    @staticmethod
+    def get_header(levels_count):
+        """Header of the CSV with `levels_count` ancestor levels, and all the statuses"""
+        level_columns = [f"level_{level}" for level in range(1, levels_count + 1)]
+        return ["org_unit_id", "org_unit_name", "org_unit_type", *level_columns, *COUNT_COLUMNS]
+
+    def result_row_to_csv_line(self, result_row, levels):
         """Converts a row of the list results (as built by the `expected_*_row()` helpers) into the matching CSV line:
-        the same values as strings, the name of the org unit type instead of its id, empty cells instead of `None`"""
+        the same values as strings, the name of the org unit type instead of its id, empty cells instead of `None`.
+        `levels`: the cells of the level columns, i.e. the names of the ancestors from the root, then empty cells"""
         org_unit_type = m.OrgUnitType.objects.get(id=result_row["org_unit_type_id"])
         return [
             str(result_row["id"]),
             result_row["name"],
             org_unit_type.name,
-            result_row["parent_org_unit"]["name"],
+            *levels,
             *("" if result_row[column] is None else str(result_row[column]) for column in COUNT_COLUMNS),
         ]
 
@@ -56,27 +62,29 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         user = User.objects.get(id=self.user.id)
         self.client.force_authenticate(user)
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             # 1-2: PERMISSION (user and group permissions)
             # 3: SELECT PROFILE of the user
             # 4: SELECT ACCOUNT of the user
             # 5: EXISTS ORG UNITS of the user (restriction of the accessible org units)
             # 6: SELECT FORM (validation of form_id)
             # 7: SELECT PARENT ORG UNIT (validation of parent_org_unit_id)
-            # 8: SELECT the rows with their counts and the name of their org unit type (no query per row)
+            # 8: SELECT the ancestors of the rows (level columns)
+            # 9: SELECT the rows with their counts and the name of their org unit type (no query per row)
             self.get_csv()
 
     def test_export(self):
         self.client.force_authenticate(self.user)
         lines = self.get_csv()
 
+        # The rows are the regions: their only ancestor is Ethiopia (level 1)
         expected_lines = [
-            HEADER,
-            self.result_row_to_csv_line(self.expected_afar_row()),
-            self.result_row_to_csv_line(self.expected_amhara_row()),
-            self.result_row_to_csv_line(self.expected_oromia_row()),
+            self.get_header(levels_count=1),
+            self.result_row_to_csv_line(self.expected_afar_row(), levels=["Ethiopia"]),
+            self.result_row_to_csv_line(self.expected_amhara_row(), levels=["Ethiopia"]),
+            self.result_row_to_csv_line(self.expected_oromia_row(), levels=["Ethiopia"]),
             # Somali is not applicable: its counts are exported as empty cells
-            self.result_row_to_csv_line(self.expected_somali_row()),
+            self.result_row_to_csv_line(self.expected_somali_row(), levels=["Ethiopia"]),
         ]
         self.assertEqual(lines, expected_lines)
 
@@ -95,15 +103,15 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         self.client.force_authenticate(self.user)
         lines = self.get_csv()
 
-        expected_line = self.result_row_to_csv_line(self.not_applicable_row(tigray, False))
+        expected_line = self.result_row_to_csv_line(self.not_applicable_row(tigray, False), levels=["Ethiopia"])
         self.assertIn(expected_line, lines)
 
     def test_export_without_rows(self):
-        # Somali has no children: the header is still exported
+        # Somali has no children: the header is still exported, without level columns (no row, so no ancestor)
         self.client.force_authenticate(self.user)
         lines = self.get_csv(parent_org_unit_id=self.somali.id)
 
-        self.assertEqual(lines, [HEADER])
+        self.assertEqual(lines, [self.get_header(levels_count=0)])
 
     def test_export_is_not_paginated(self):
         self.client.force_authenticate(self.user)
@@ -139,8 +147,25 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         result_ids = self.get_org_unit_ids(lines)
         self.assertEqual(result_ids, expected_ids)
 
-        expected_line = self.result_row_to_csv_line(self.expected_jimma_row())
-        self.assertIn(expected_line, lines)
+        header = lines[0]
+        # The deepest ancestors are the regions (parents of the districts), at level 2
+        self.assertEqual(header, self.get_header(levels_count=2))
+
+        expected_afar_line = self.result_row_to_csv_line(self.expected_afar_row(), levels=["Ethiopia", ""])
+        self.assertIn(expected_afar_line, lines)
+        expected_jimma_line = self.result_row_to_csv_line(self.expected_jimma_row(), levels=["Ethiopia", "Oromia"])
+        self.assertIn(expected_jimma_line, lines)
+
+    def test_export_levels_go_up_to_the_root(self):
+        # Facilities under Oromia: the levels start at the root of the pyramid (Ethiopia), above the requested parent
+        self.client.force_authenticate(self.user)
+        lines = self.get_csv(parent_org_unit_id=self.oromia.id, org_unit_type_ids=str(self.type_facility.id))
+        header, *rows = lines
+
+        self.assertEqual(header, self.get_header(levels_count=3))
+        hf_a_line = next(line for line in rows if line[0] == str(self.hf_a.id))
+        hf_a_levels = {column: value for column, value in zip(header, hf_a_line) if column.startswith("level_")}
+        self.assertEqual(hf_a_levels, {"level_1": "Ethiopia", "level_2": "Oromia", "level_3": "Jimma"})
 
     def test_export_drill_down(self):
         """Try to export results of a region"""
@@ -148,10 +173,10 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
         lines = self.get_csv(parent_org_unit_id=self.oromia.id)
 
         expected_lines = [
-            HEADER,
-            self.result_row_to_csv_line(self.expected_borena_row()),
-            self.result_row_to_csv_line(self.expected_east_shewa_row()),
-            self.result_row_to_csv_line(self.expected_jimma_row()),
+            self.get_header(levels_count=2),
+            self.result_row_to_csv_line(self.expected_borena_row(), levels=["Ethiopia", "Oromia"]),
+            self.result_row_to_csv_line(self.expected_east_shewa_row(), levels=["Ethiopia", "Oromia"]),
+            self.result_row_to_csv_line(self.expected_jimma_row(), levels=["Ethiopia", "Oromia"]),
         ]
         self.assertEqual(lines, expected_lines)
 
@@ -169,7 +194,7 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
             "org_unit_id",
             "org_unit_name",
             "org_unit_type",
-            "parent_org_unit",
+            "level_1",
             "expected",
             "received",
             "completeness_percent",

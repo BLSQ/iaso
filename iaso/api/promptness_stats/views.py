@@ -13,7 +13,13 @@ from iaso.api.promptness_stats.csv_export import stream_csv
 from iaso.api.promptness_stats.filters import PromptnessStatsOrderingFilter
 from iaso.api.promptness_stats.pagination import PromptnessStatsPagination
 from iaso.api.promptness_stats.period import PromptnessPeriod
-from iaso.api.promptness_stats.queries import annotate_rows, get_rows, get_target_org_units, get_totals
+from iaso.api.promptness_stats.queries import (
+    annotate_rows,
+    get_rows,
+    get_rows_ancestors,
+    get_target_org_units,
+    get_totals,
+)
 from iaso.api.promptness_stats.serializers import (
     PromptnessStatsCsvRowSerializer,
     PromptnessStatsQueryParamsSerializer,
@@ -136,13 +142,17 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
         params, target_org_units, period = self._validate_serializer_and_fetch_target_org_units(request)
 
         rows = get_rows(params["parent_org_unit"], params.get("org_unit_types"))
+        # Fetched before streaming, on the rows without their counts: the number of levels is needed for the header
+        rows_ancestors = get_rows_ancestors(rows)
         annotated_rows = annotate_rows(rows, params["parent_org_unit"], target_org_units)
         # The CSV contains the name of the org unit type, the JSON rows only its id
         annotated_rows = annotated_rows.annotate(org_unit_type_name=F("org_unit_type__name"))
         ordered_rows = self.filter_queryset(annotated_rows)
 
-        row_serializer = PromptnessStatsCsvRowSerializer(context={"status": params["status"]})
-        columns = row_serializer.get_columns(params["status"])
+        row_serializer = PromptnessStatsCsvRowSerializer(
+            context={"status": params["status"], "ancestor_names": rows_ancestors.names}
+        )
+        columns = row_serializer.get_columns(params["status"], rows_ancestors.levels_count)
         file_name = CSV_FILENAME_TEMPLATE.format(form_id=params["form"].id, period=period.value)
         return StreamingHttpResponse(
             stream_csv(ordered_rows, row_serializer, columns),

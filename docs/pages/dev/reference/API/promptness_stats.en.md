@@ -432,13 +432,24 @@ GET /api/promptness_stats/export_csv/?form_id=42&period=202609&parent_org_unit_i
 One line per row, in the same order as the rows of the list, with these columns:
 
 ```
-org_unit_id,org_unit_name,org_unit_type,parent_org_unit,expected,received,completeness_percent,on_time,on_time_percent,late,late_percent,missing,missing_percent
+org_unit_id,org_unit_name,org_unit_type,level_1,expected,received,completeness_percent,on_time,on_time_percent,late,late_percent,missing,missing_percent
 12,Oromia,Region,Ethiopia,320,178,55.6,152,47.5,26,8.1,142,44.4
 13,Amhara,Region,Ethiopia,260,142,54.6,120,46.2,22,8.5,118,45.4
 14,Somali,Region,Ethiopia,,,,,,,,,
 ```
 
 - The selected form and period are in the file name.
+- `level_<n>` columns: the names of the ancestors of the rows, from the root of the pyramid (`level_1`, even above
+  `parent_org_unit_id`) down to their direct parent. Each column holds a single level of the pyramid. There are as many
+  columns as the levels of the deepest ancestor, so their number depends on the request. A row has no value in the
+  levels at or below its own. With `org_unit_type_ids` of regions and districts:
+
+  ```
+  org_unit_id,org_unit_name,org_unit_type,level_1,level_2,expected,...
+  12,Oromia,Region,Ethiopia,,320,...
+  120,Jimma,District,Ethiopia,Oromia,95,...
+  ```
+
 - Not applicable rows have empty counts and percentages.
 - Columns of statuses excluded through the `status` param are omitted.
 

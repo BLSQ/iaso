@@ -89,6 +89,8 @@ dependencies = [
     "snaql==0.4.2", # trypelim - https://github.com/zaiev/snaql/tags
     "sqlalchemy==2.0.23", # https://github.com/sqlalchemy/sqlalchemy/tags
     "stream-zip==0.0.84", # https://stream-zip.docs.trade.gov.uk/
+    "strawberry-graphql==0.283.3", # last release supporting python 3.9 - https://github.com/strawberry-graphql/strawberry/tags
+    "strawberry-graphql-django==0.65.1", # last release supporting python 3.9 - https://github.com/strawberry-graphql/strawberry-django/tags
     "tsp-solver2==0.4.1", # trypelim - https://github.com/dmishin/tsp-solver/tags
     "unidecode==1.3.7", # https://github.com/avian2/unidecode/tags
     "urllib3<2",

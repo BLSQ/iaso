@@ -53,7 +53,7 @@ from iaso.api.instances.serializers import (
     UnlockSerializer,
 )
 from iaso.api.instances.zip import generate_zip
-from iaso.api.org_units import HasCreateOrgUnitPermission
+from iaso.api.org_units.permissions import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.exports import CleaningFileResponse, parquet, tabular
@@ -74,6 +74,7 @@ from iaso.models import (
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import resolve_status_form_ids
+from iaso.models.missions import Mission, MissionType
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -1100,6 +1101,7 @@ def find_entity(
     entity_uuid: str,
     entity_type_id: Optional[int] = None,
     existing_entities: Optional[List[Entity]] = None,
+    mission: Optional[Mission] = None,
 ) -> Entity:
     """
     `existing_entities`: the entities matching (even soft-deleted), when the caller already looked them up - see
@@ -1107,22 +1109,33 @@ def find_entity(
     """
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
     # If a non-deleted entity was found, ignore potential duplicates.
+
+    filters = {
+        "uuid": entity_uuid,
+        "account": account,
+    }
+
     if entity_type_id is not None:
         filters = {
-            "uuid": entity_uuid,
+            **filters,
             "entity_type_id": entity_type_id,
-            "account": account,
         }
-    else:
-        filters = {
-            "uuid": entity_uuid,
-            "account": account,
-        }
+
     if existing_entities is None:
         existing_entities = list(Entity.objects_include_deleted.filter(**filters))
 
     if len(existing_entities) == 0:
         if entity_type_id is not None:
+            if mission and getattr(mission, "MISSION_TYPE", None) != MissionType.ENTITY_AND_FORM:
+                logger.warning(
+                    "Unexpected mission type",
+                    extra={
+                        "model": "Entity",
+                        "mission_id": mission.id,
+                        "mission_type": mission.MISSION_TYPE,
+                        "from": "instance_creation",
+                    },
+                )
             return Entity.objects.create(**filters)
 
         raise Entity.DoesNotExist()
@@ -1242,7 +1255,13 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:
             existing_entities = cache.entities(entity_uuid, entity_type_id)
-            entity = find_entity(project.account, entity_uuid, entity_type_id, existing_entities=existing_entities)
+            entity = find_entity(
+                project.account,
+                entity_uuid,
+                entity_type_id,
+                existing_entities=existing_entities,
+                mission=instance.mission,
+            )
             if existing_entities == []:  # none yet: `find_entity()` created it
                 cache.add_entity(entity)
 

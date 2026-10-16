@@ -89,7 +89,7 @@ class PlanningConfigBulkUpdateSerializer(ModelSerializer):
 
     def validate_id(self, value: int) -> int:
         if value not in self.instance.values_list("id", flat=True):
-            raise serializers.ValidationError(
-                _('Invalid pk "{pk_value}" - object does not exist.').format(pk_value=value)
-            )
+            # doing this so we can reuse the code and translations from drf
+            field = serializers.PrimaryKeyRelatedField(queryset=self.instance)
+            field.fail("does_not_exist", pk_value=value)
         return value

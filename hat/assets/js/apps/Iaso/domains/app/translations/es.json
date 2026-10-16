@@ -1382,7 +1382,7 @@
     "iaso.promptness.selectFiltersInfo": "La prontitud se calcula para un período, en la jerarquía de la unidad organizativa padre. Elíjalos arriba y busque.",
     "iaso.promptness.selectForm": "Seleccione un formulario",
     "iaso.promptness.selectFormFirst": "Seleccione primero un formulario",
-    "iaso.promptness.selectFormInfo": "La prontitud se calcula con respecto al plazo de un formulario. Venir desde la página de un formulario lo preselecciona; si no, elija un formulario arriba.",
+    "iaso.promptness.selectFormInfo": "La prontitud se calcula con respecto al plazo de un formulario. Elija un formulario arriba.",
     "iaso.promptness.share": "Reparto",
     "iaso.promptness.status": "Prontitud",
     "iaso.promptness.statusInfo": "Quite un estado para ocultarlo de los totales y de la tabla",

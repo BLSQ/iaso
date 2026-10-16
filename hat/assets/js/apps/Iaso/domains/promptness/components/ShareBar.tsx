@@ -3,11 +3,10 @@ import { Box, Tooltip, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import {
+    PROMPTNESS_STATUSES,
     STATUS_COLORS,
-    STATUS_LATE,
+    STATUS_FIELDS,
     STATUS_MESSAGES,
-    STATUS_MISSING,
-    STATUS_ON_TIME,
 } from '../constants';
 import { PromptnessCounts } from '../types';
 import { formatPercent } from '../utils';
@@ -40,11 +39,10 @@ const styles: SxStyles = {
 // Stacked bar of the on time / late / missing percentages, labelled with the on time one
 export const ShareBar: FunctionComponent<Props> = ({ counts }) => {
     const { formatMessage } = useSafeIntl();
-    const segments = [
-        { status: STATUS_ON_TIME, percent: counts.on_time_percent },
-        { status: STATUS_LATE, percent: counts.late_percent },
-        { status: STATUS_MISSING, percent: counts.missing_percent },
-    ];
+    const segments = PROMPTNESS_STATUSES.map(status => ({
+        status,
+        percent: counts[`${STATUS_FIELDS[status]}_percent`],
+    }));
     return (
         <Box sx={styles.root}>
             <Box sx={styles.bar}>

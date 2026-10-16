@@ -14,6 +14,7 @@ import PeriodPicker from '../../periods/components/PeriodPicker';
 import { PERIOD_TYPE_PLACEHOLDER } from '../../periods/constants';
 import PERIOD_MESSAGES from '../../periods/messages';
 import {
+    CSV_EXPORT_ENABLED,
     ORG_UNIT_FIELDS,
     PROMPTNESS_STATUSES,
     STATUS_MESSAGES,
@@ -241,15 +242,17 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                 />
             </Box>
             <Box sx={styles.buttons}>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<CsvSvg />}
-                    href={getPromptnessCsvUrl(params)}
-                    disabled={!canExport}
-                >
-                    {formatMessage(MESSAGES.exportCsv)}
-                </Button>
+                {CSV_EXPORT_ENABLED && (
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<CsvSvg />}
+                        href={getPromptnessCsvUrl(params)}
+                        disabled={!canExport}
+                    >
+                        {formatMessage(MESSAGES.exportCsv)}
+                    </Button>
+                )}
                 <SearchButton
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}

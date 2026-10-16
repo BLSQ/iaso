@@ -1714,7 +1714,7 @@
     "iaso.promptness.selectFiltersInfo": "La promptitude est calculée pour une période, dans la hiérarchie de l'unité d'organisation parente. Choisissez-les ci-dessus et lancez la recherche.",
     "iaso.promptness.selectForm": "Sélectionnez un formulaire",
     "iaso.promptness.selectFormFirst": "Sélectionnez d'abord un formulaire",
-    "iaso.promptness.selectFormInfo": "La promptitude est calculée par rapport à l'échéance d'un formulaire. Venir depuis la page d'un formulaire le présélectionne ; sinon choisissez un formulaire ci-dessus.",
+    "iaso.promptness.selectFormInfo": "La promptitude est calculée par rapport à l'échéance d'un formulaire. Choisissez un formulaire ci-dessus.",
     "iaso.promptness.share": "Répartition",
     "iaso.promptness.status": "Promptitude",
     "iaso.promptness.statusInfo": "Retirez un statut pour le masquer des totaux et du tableau",

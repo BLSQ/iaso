@@ -12,35 +12,24 @@ import { ShareBar } from '../components/ShareBar';
 import {
     PROMPTNESS_STATUSES,
     STATUS_COLORS,
+    STATUS_FIELDS,
     STATUS_MESSAGES,
 } from '../constants';
 import MESSAGES from '../messages';
-import {
-    PromptnessRouterParams,
-    PromptnessRow,
-    PromptnessStatus,
-} from '../types';
+import { PromptnessRouterParams, PromptnessRow } from '../types';
 import { formatPercent, getSelectedStatuses } from '../utils';
+import { useFormatCount } from './useFormatCount';
 
 type CellProps = { row: { original: PromptnessRow } };
-
-// Keys of the counts in a row, per status
-const STATUS_FIELDS: Record<PromptnessStatus, 'on_time' | 'late' | 'missing'> =
-    {
-        ON_TIME: 'on_time',
-        LATE: 'late',
-        MISSING: 'missing',
-    };
 
 export const usePromptnessColumns = (
     params: PromptnessRouterParams,
     orgUnitTypeNames: Record<number, string>,
 ): Column[] => {
-    const { formatMessage, formatNumber } = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
+    const formatCount = useFormatCount();
     const genUrl = useGenUrl();
     return useMemo(() => {
-        const formatCount = (value: number | null) =>
-            value === null ? textPlaceholder : formatNumber(value);
         const selectedStatuses = getSelectedStatuses(params.status);
 
         // Count + percentage columns of the statuses not excluded by the filter
@@ -151,5 +140,5 @@ export const usePromptnessColumns = (
                     ),
             },
         ];
-    }, [formatMessage, formatNumber, genUrl, orgUnitTypeNames, params.status]);
+    }, [formatCount, formatMessage, genUrl, orgUnitTypeNames, params.status]);
 };

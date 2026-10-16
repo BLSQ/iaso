@@ -163,7 +163,7 @@ const MESSAGES = defineMessages({
     },
     selectFormInfo: {
         defaultMessage:
-            'Promptness is computed against the deadline of one form. Coming from a form page pre-selects it; otherwise pick a form above.',
+            'Promptness is computed against the deadline of one form. Pick a form above.',
         id: 'iaso.promptness.selectFormInfo',
     },
     share: {

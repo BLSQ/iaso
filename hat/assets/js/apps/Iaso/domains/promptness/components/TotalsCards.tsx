@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import {
     CheckCircleOutline,
     InboxOutlined,
@@ -6,23 +6,29 @@ import {
     Schedule,
 } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import {
+    PROMPTNESS_STATUSES,
     STATUS_COLORS,
-    STATUS_LATE,
+    STATUS_FIELDS,
     STATUS_MESSAGES,
-    STATUS_MISSING,
-    STATUS_ON_TIME,
 } from '../constants';
+import { useFormatCount } from '../hooks/useFormatCount';
 import MESSAGES from '../messages';
-import { PromptnessCounts } from '../types';
+import { PromptnessCounts, PromptnessStatus } from '../types';
 import { formatPercent } from '../utils';
 import { StatCard } from './StatCard';
 
 type Props = {
     totals: PromptnessCounts;
     orgUnitName: string;
+};
+
+const STATUS_ICONS: Record<PromptnessStatus, ReactNode> = {
+    ON_TIME: <CheckCircleOutline />,
+    LATE: <Schedule />,
+    MISSING: <RemoveCircleOutline />,
 };
 
 const styles: SxStyles = {
@@ -41,7 +47,8 @@ export const TotalsCards: FunctionComponent<Props> = ({
     totals,
     orgUnitName,
 }) => {
-    const { formatMessage, formatNumber } = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
+    const formatCount = useFormatCount();
     if (!totals.is_applicable) {
         return (
             <Typography color="text.secondary">
@@ -49,30 +56,13 @@ export const TotalsCards: FunctionComponent<Props> = ({
             </Typography>
         );
     }
-    const formatCount = (value: number | null) =>
-        value === null ? textPlaceholder : formatNumber(value);
-
     // Excluded statuses (through the status filter) are returned as null
-    const statusCards = [
-        {
-            status: STATUS_ON_TIME,
-            count: totals.on_time,
-            percent: totals.on_time_percent,
-            icon: <CheckCircleOutline />,
-        },
-        {
-            status: STATUS_LATE,
-            count: totals.late,
-            percent: totals.late_percent,
-            icon: <Schedule />,
-        },
-        {
-            status: STATUS_MISSING,
-            count: totals.missing,
-            percent: totals.missing_percent,
-            icon: <RemoveCircleOutline />,
-        },
-    ].filter(card => card.count !== null);
+    const statusCards = PROMPTNESS_STATUSES.map(status => ({
+        status,
+        count: totals[STATUS_FIELDS[status]],
+        percent: totals[`${STATUS_FIELDS[status]}_percent`],
+        icon: STATUS_ICONS[status],
+    })).filter(card => card.count !== null);
 
     return (
         <Box sx={styles.root}>

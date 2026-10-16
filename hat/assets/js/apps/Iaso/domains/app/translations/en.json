@@ -1714,7 +1714,7 @@
     "iaso.promptness.selectFiltersInfo": "The promptness is computed for one period, in the hierarchy of the parent org unit. Pick them above and search.",
     "iaso.promptness.selectForm": "Select a form",
     "iaso.promptness.selectFormFirst": "Select a form first",
-    "iaso.promptness.selectFormInfo": "Promptness is computed against the deadline of one form. Coming from a form page pre-selects it; otherwise pick a form above.",
+    "iaso.promptness.selectFormInfo": "Promptness is computed against the deadline of one form. Pick a form above.",
     "iaso.promptness.share": "Share",
     "iaso.promptness.status": "Promptness",
     "iaso.promptness.statusInfo": "Remove a status to hide it from the totals and the table",

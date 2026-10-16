@@ -4,7 +4,7 @@ from typing import Any, List, Union
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Max, Min, Prefetch, Q
+from django.db.models import Exists, Max, Min, OuterRef, Prefetch, Q
 from django.db.models.query import QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -41,6 +41,7 @@ from plugins.polio.api.preparedness.serializers import (
     PreparednessPreviewSerializer,
 )
 from plugins.polio.api.preparedness.utils import get_current_preparedness
+from plugins.polio.budget.models import BudgetStep
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
     Campaign,
@@ -129,24 +130,39 @@ class CampaignViewSet(ModelViewSet):
             if account_id is not None:
                 campaigns = campaigns.filter(account_id=account_id)
 
+        # Avoid running one COUNT per campaign.
+        campaigns = campaigns.annotate(has_budget_steps=Exists(BudgetStep.objects.filter(campaign=OuterRef("pk"))))
+
         org_units_id_only_qs = OrgUnit.objects.only("id", "name")
         country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
         scopes_group_org_units_prefetch = Prefetch("scopes__group__org_units", queryset=org_units_id_only_qs)
         rounds_scopes_group_org_units_prefetch = Prefetch(
             "rounds__scopes__group__org_units", queryset=org_units_id_only_qs
         )
+        # The vaccine properties read sub-activity scopes for every round.
+        sub_activities_group_org_units_prefetch = Prefetch(
+            "rounds__sub_activities__scopes__group__org_units", queryset=org_units_id_only_qs
+        )
         campaigns = (
-            campaigns.prefetch_related(country_prefetch)
+            campaigns.select_related("initial_org_unit")
+            .prefetch_related(country_prefetch)
             .prefetch_related("grouped_campaigns")
+            .prefetch_related("campaign_types")
+            .prefetch_related("integrated_campaigns")
             .prefetch_related("scopes")
             .prefetch_related("scopes__group")
             .prefetch_related(scopes_group_org_units_prefetch)
             .prefetch_related("rounds")
             .prefetch_related("rounds__datelogs")
             .prefetch_related("rounds__datelogs__modified_by")
+            .prefetch_related("rounds__datelogs__reason_for_delay")
             .prefetch_related("rounds__scopes")
             .prefetch_related("rounds__scopes__group")
             .prefetch_related(rounds_scopes_group_org_units_prefetch)
+            .prefetch_related("rounds__sub_activities")
+            .prefetch_related("rounds__sub_activities__scopes")
+            .prefetch_related("rounds__sub_activities__scopes__group")
+            .prefetch_related(sub_activities_group_org_units_prefetch)
         )
         return campaigns.distinct()
 

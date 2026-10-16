@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 import time_machine
 
@@ -200,6 +201,14 @@ class MobileOrgUnitAPITestCase(APITestCase):
         cls.other_account_planning = Planning.objects.create(
             name="Other planning", project=cls.project_other_account, team=cls.team2, org_unit=cls.org_unit
         )
+
+    def setUp(self):
+        super().setUp()
+        logging.disable(logging.NOTSET)
+
+    def tearDown(self):
+        super().tearDown()
+        logging.disable(logging.CRITICAL)
 
     def test_orgunits_list_without_auth_for_project_requiring_auth(self):
         """GET /mobile/orgunits/ without auth for project which requires it: 401"""
@@ -1028,7 +1037,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.mission.id, self.mission_out_1.id)
         self.assertEqual(ou.planning.id, self.planning.id)
 
-    def test_create_with_wrong_mission_type(self):
+    def test_create_with_wrong_mission_type_assert_log(self):
         self.client.force_authenticate(self.user)
         data = [
             {
@@ -1040,11 +1049,18 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 "mission_id": self.mission_form_1.id,
             }
         ]
-        response = self.client.post(
-            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
-            data=data,
-        )
+        with self.assertLogs(logger="iaso.api.org_units.serializers.misc", level="WARNING") as l:
+            response = self.client.post(
+                f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+                data=data,
+            )
+
+        log_record = l.records[-1]
+        self.assertEqual(log_record.message, "Unexpected mission type")
+        self.assertEqual(log_record.mission_id, self.mission_form_1.id)
+        self.assertEqual(log_record.mission_type, self.mission_form_1.MISSION_TYPE)
+        self.assertEqual(vars(log_record)["from"], "org_unit_creation")
+        self.assertEqual(log_record.model, "OrgUnit")
         self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertAPIImport("orgUnit", request_body=data, has_problems=True, exception_contains_string="mission_id")
-        # todo: kind of odd that the api returns a 200 but nothing is created ...
-        self.assertFalse(OrgUnit.objects.filter(mission_id=self.mission_form_1.id).exists())
+
+        self.assertTrue(OrgUnit.objects.filter(mission_id=self.mission_form_1.id).exists())

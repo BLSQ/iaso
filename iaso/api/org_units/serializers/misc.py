@@ -1,11 +1,16 @@
+import logging
+
 from typing import Any
 
 from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import ModelSerializer
-from iaso.models import MissionOrgUnitType, OrgUnit, Planning
+from iaso.models import Mission, MissionOrgUnitType, OrgUnit, Planning
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
+
+
+logger = logging.getLogger(__name__)
 
 
 class OrgUnitImportSerializer(ModelSerializer):
@@ -52,8 +57,32 @@ class OrgUnitImportSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
         user = self.context.get("user", None)
         if user:
-            self.fields["mission_id"].queryset = MissionOrgUnitType.objects_include_deleted.filter_for_user(user=user)
+            self.fields["mission_id"].queryset = Mission.objects_include_deleted.filter_for_user(user=user)
             self.fields["planning_id"].queryset = Planning.objects_include_deleted.filter_for_user(user=user)
+
+    def validate_mission_id(self, data: Mission) -> Mission:
+        if not data:
+            return data
+
+        user = self.context.get("user", None)
+
+        if not user:
+            return data
+
+        if data.id not in MissionOrgUnitType.objects_include_deleted.filter_for_user(user=user).values_list(
+            "id", flat=True
+        ):
+            logger.warning(
+                "Unexpected mission type",
+                extra={
+                    "model": "OrgUnit",
+                    "mission_id": data.id,
+                    "mission_type": data.MISSION_TYPE,
+                    "from": "org_unit_creation",
+                },
+            )
+
+        return data
 
     def to_internal_value(self, data):
         """Pre-process the incoming dictionary and handle legacy data formats."""

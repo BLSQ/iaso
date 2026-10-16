@@ -12,29 +12,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="entity",
-            name="mission",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="%(class)ss",
-                to="iaso.mission",
-            ),
-        ),
-        migrations.AddField(
-            model_name="entity",
-            name="planning",
-            field=models.ForeignKey(
-                blank=True,
-                help_text="The mission it fulfills, within planning",
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                related_name="%(class)ss",
-                to="iaso.planning",
-            ),
-        ),
-        migrations.AddField(
             model_name="orgunit",
             name="mission",
             field=models.ForeignKey(

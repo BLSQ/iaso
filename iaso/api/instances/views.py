@@ -74,7 +74,7 @@ from iaso.models import (
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import resolve_status_form_ids
-from iaso.models.missions import MissionType
+from iaso.models.missions import Mission, MissionType
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -1101,8 +1101,7 @@ def find_entity(
     entity_uuid: str,
     entity_type_id: Optional[int] = None,
     existing_entities: Optional[List[Entity]] = None,
-    mission_id: Optional[int] = None,
-    planning_id: Optional[int] = None,
+    mission: Optional[Mission] = None,
 ) -> Entity:
     """
     `existing_entities`: the entities matching (even soft-deleted), when the caller already looked them up - see
@@ -1127,7 +1126,17 @@ def find_entity(
 
     if len(existing_entities) == 0:
         if entity_type_id is not None:
-            return Entity.objects.create(mission_id=mission_id, planning_id=planning_id, **filters)
+            if mission and getattr(mission, "MISSION_TYPE", None) != MissionType.ENTITY_AND_FORM:
+                logger.warning(
+                    "Unexpected mission type",
+                    extra={
+                        "model": "Entity",
+                        "mission_id": mission.id,
+                        "mission_type": mission.MISSION_TYPE,
+                        "from": "instance_creation",
+                    },
+                )
+            return Entity.objects.create(**filters)
 
         raise Entity.DoesNotExist()
 
@@ -1251,12 +1260,7 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
                 entity_uuid,
                 entity_type_id,
                 existing_entities=existing_entities,
-                mission_id=instance.mission_id
-                if getattr(instance.mission, "MISSION_TYPE", None) == MissionType.ENTITY_AND_FORM
-                else None,
-                planning_id=instance.planning_id
-                if getattr(instance.mission, "MISSION_TYPE", None) == MissionType.ENTITY_AND_FORM
-                else None,
+                mission=instance.mission,
             )
             if existing_entities == []:  # none yet: `find_entity()` created it
                 cache.add_entity(entity)

@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from uuid import uuid4
@@ -91,6 +92,14 @@ class InstanceImportMissionTestCase(APITestCase):
             team=other_team,
             org_unit=cls.org_unit,
         )
+
+    def setUp(self):
+        super().setUp()
+        logging.disable(logging.NOTSET)
+
+    def tearDown(self):
+        super().tearDown()
+        logging.disable(logging.CRITICAL)
 
     def post_instance(self, **extra):
         instance_uuid = str(uuid4())
@@ -263,33 +272,28 @@ class InstanceImportMissionTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_entity_type.id)
 
-    def test_entity_is_created_and_linked_with_mission_and_planning(self):
+    def test_entity_is_still_linked_to_mission_if_mission_is_wrong_type_with_log(self):
         self.client.force_authenticate(self.user)
-        response, instance_uuid = self.post_instance(
-            planningId=self.planning.id,
-            missionId=self.mission_entity_type.id,
-            entityTypeId=self.entity_type.id,
-            entityUuid=uuid.uuid4(),
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.get_instance(instance_uuid).mission_id, self.mission_entity_type.id)
-        self.assertTrue(
-            Entity.objects.filter(planning_id=self.planning.id, mission_id=self.mission_entity_type.id).exists()
-        )
 
-    def test_entity_is_not_linked_to_mission_if_mission_is_wrong_type(self):
-        self.client.force_authenticate(self.user)
-        for mission_id in [self.mission_org_unit_type.id, self.mission_form.id]:
-            response, instance_uuid = self.post_instance(
-                planningId=self.planning.id,
-                missionId=mission_id,
-                entityTypeId=self.entity_type.id,
-                entityUuid=uuid.uuid4(),
-            )
+        for mission in [self.mission_org_unit_type, self.mission_form]:
+            entity_uuid = uuid.uuid4()
+            with self.assertLogs(logger="iaso.api.instances.views", level="WARNING") as l:
+                response, instance_uuid = self.post_instance(
+                    planningId=self.planning.id,
+                    missionId=mission.id,
+                    entityTypeId=self.entity_type.id,
+                    entityUuid=entity_uuid,
+                )
+            log_record = l.records[-1]
+            self.assertEqual(log_record.message, "Unexpected mission type")
+            self.assertEqual(log_record.mission_id, mission.id)
+            self.assertEqual(log_record.mission_type, mission.MISSION_TYPE)
+            self.assertEqual(vars(log_record)["from"], "instance_creation")
+            self.assertEqual(log_record.model, "Entity")
 
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(self.get_instance(instance_uuid).mission_id, mission_id)
-            self.assertFalse(Entity.objects.filter(planning_id=self.planning.id, mission_id=mission_id).exists())
+            self.assertEqual(self.get_instance(instance_uuid).mission_id, mission.id)
+            self.assertTrue(Entity.objects.filter(uuid=entity_uuid).exists())
 
 
 class InstanceMissionReadTestCase(APITestCase):

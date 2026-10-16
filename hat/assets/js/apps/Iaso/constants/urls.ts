@@ -318,6 +318,19 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
         ],
     },
+    promptness: {
+        url: 'forms/stats/promptness',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'formId',
+            'period',
+            'parentId',
+            'orgUnitId',
+            'orgUnitTypeIds',
+            'status',
+        ],
+    },
     modules: {
         url: 'settings/modules',
         params: ['accountId', 'search'],
@@ -764,6 +777,7 @@ type IasoBaseUrls = {
     algos: string;
     completeness: string;
     completenessStats: string;
+    promptness: string;
     modules: string;
     users: string;
     userDetails: string;

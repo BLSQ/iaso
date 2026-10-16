@@ -76,6 +76,16 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     const { data: orgUnitTypes, isFetching: isFetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
 
+    const onChangeStatus = useCallback(
+        (keyValue: string, value?: string) => {
+            if (!value) {
+                return;
+            }
+            handleChange(keyValue, value);
+        },
+        [handleChange],
+    );
+
     const selectedForm = useMemo(
         () =>
             forms?.find(form => `${form.value}` === `${filters.formId ?? ''}`)
@@ -215,9 +225,10 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                 <InputComponent
                     type="select"
                     keyValue="status"
-                    onChange={handleChange}
+                    onChange={onChangeStatus}
                     // All the statuses by default
                     value={filters.status ?? PROMPTNESS_STATUSES.join(',')}
+                    // value={filters.status}
                     label={MESSAGES.status}
                     options={statusOptions}
                     helperText={formatMessage(MESSAGES.statusInfo)}

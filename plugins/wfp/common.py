@@ -117,6 +117,10 @@ BANGLADESH_MEDICAL_FORMS = frozenset(
         "wfp_coda_medical_follow_up_visit_PBWG",
     }
 )
+BANGLADESH_NSEP_ADMISSION_FORMS = frozenset({"nsep_child_visit"})
+BANGLADESH_NSEP_FOLLOWUP_FORMS = frozenset({"nsep_child_followup_visit"})
+BANGLADESH_NSEP_ASSISTANCE_FORMS = frozenset({"nsep_child_visit_assistance", "nsep_child_followup_visit_assistance"})
+
 BANGLADESH_ENTITY_TYPE_PREFIX = "bangladesh"
 # Program to exclude in the data to push to dhis2
 EXCLUDED_PROGRAMMES = [None, "", "Not Eligible", "OTP - Under 6"]
@@ -511,7 +515,7 @@ def extract_pbwg_physiology(data):
 # ---------------------------------------------------------------------------
 # Assistance / Step extraction
 # ---------------------------------------------------------------------------
-def extract_assistance(data):
+def extract_assistance(data, is_bangladesh=False):
     """Extract all assistance items from form data.
 
     Returns a list of dicts with keys: type, quantity, ration_size.
@@ -528,6 +532,11 @@ def extract_assistance(data):
 
     if data.get("ors_given") in ("Yes", "yes"):
         items.append({"type": "ORS", "quantity": 1})
+
+    if is_bangladesh:
+        from plugins.wfp.management.commands.bangladesh.assistance import extract_bangladesh_assistance
+
+        items.extend(extract_bangladesh_assistance(data))
 
     # --- Medicines ---
     med = data.get("medicine_given")
@@ -762,12 +771,16 @@ class ETL:
 
     @property
     def admission_forms(self):
-        return ADMISSION_FORMS | BANGLADESH_BSFP_FORMS if self._is_bangladesh() else ADMISSION_FORMS
+        return (
+            ADMISSION_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_NSEP_ADMISSION_FORMS
+            if self._is_bangladesh()
+            else ADMISSION_FORMS
+        )
 
     @property
     def assistance_forms(self):
         return (
-            ASSISTANCE_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_MEDICAL_FORMS
+            ASSISTANCE_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_MEDICAL_FORMS | BANGLADESH_NSEP_ASSISTANCE_FORMS
             if self._is_bangladesh()
             else ASSISTANCE_FORMS
         )
@@ -775,7 +788,11 @@ class ETL:
     @property
     def all_anthropometric_forms(self):
         return (
-            ALL_ANTHROPOMETRIC_FORMS | BANGLADESH_BSFP_FORMS | BANGLADESH_BSFP_FOLLOWUP_FORMS
+            ALL_ANTHROPOMETRIC_FORMS
+            | BANGLADESH_BSFP_FORMS
+            | BANGLADESH_BSFP_FOLLOWUP_FORMS
+            | BANGLADESH_NSEP_ADMISSION_FORMS
+            | BANGLADESH_NSEP_FOLLOWUP_FORMS
             if self._is_bangladesh()
             else ALL_ANTHROPOMETRIC_FORMS
         )
@@ -1330,12 +1347,13 @@ class ETL:
         steps = []
         for sub in submissions:
             data = sub.get("json", {})
-            for item in extract_assistance(data):
+            assistances = extract_assistance(data, is_bangladesh=self._is_bangladesh())
+            for assistance in assistances:
                 step = Step(
                     visit=visit,
-                    assistance_type=item["type"],
-                    quantity_given=_safe_float(item.get("quantity"), 0) or 0,
-                    ration_size=item.get("ration_size"),
+                    assistance_type=assistance["type"],
+                    quantity_given=_safe_float(assistance.get("quantity"), 0) or 0,
+                    ration_size=assistance.get("ration_size"),
                     instance_id=sub["id"],
                 )
                 steps.append(step)

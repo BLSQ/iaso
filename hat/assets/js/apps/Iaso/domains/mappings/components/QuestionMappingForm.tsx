@@ -8,7 +8,7 @@ import Descriptor from '../descriptor';
 import { getMappingLabel } from '../importMappings';
 import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
-import { isOrgUnitTarget, VALUE_FROM_FORM } from '../utils';
+import { buildQuestionMapping, isOrgUnitTarget } from '../utils';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
@@ -463,32 +463,15 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                             <Button
                                 variant="contained"
                                 color="primary"
-                                disabled={!newQuestionMapping}
-                                onClick={() => {
-                                    let item = newQuestionMapping;
-                                    if (
-                                        mapping.mapping.mapping_type ===
-                                        'EVENT_TRACKER'
-                                    ) {
-                                        item = [{ ...newQuestionMapping }];
-                                        if (
-                                            isOrgUnitTarget(
-                                                newQuestionMapping,
-                                            ) &&
-                                            iasoField &&
-                                            iasoField !== VALUE_FROM_FORM
-                                        ) {
-                                            item = [
-                                                {
-                                                    ...newQuestionMapping,
-                                                    iaso_field: iasoField,
-                                                },
-                                            ];
-                                        }
-                                    }
-
-                                    onConfirmedQuestionMapping(item);
-                                }}
+                                onClick={() =>
+                                    onConfirmedQuestionMapping(
+                                        buildQuestionMapping(
+                                            newQuestionMapping,
+                                            mapping.mapping.mapping_type,
+                                            iasoField,
+                                        ),
+                                    )
+                                }
                             >
                                 <FormattedMessage {...MESSAGES.confirm} />
                             </Button>

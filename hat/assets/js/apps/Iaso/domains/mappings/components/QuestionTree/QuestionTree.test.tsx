@@ -117,6 +117,30 @@ describe('QuestionTree', () => {
         );
     });
 
+    it('moves to the first visible question when the selected one is filtered out', () => {
+        const onSelect = renderTree('q2');
+        fireEvent.click(screen.getByRole('button', { name: 'Not mapped (1)' }));
+        expect(screen.queryByText(/ of /)).toBeNull();
+        // previous too: there is no position to go back from
+        fireEvent.keyDown(window, { key: 'ArrowUp', altKey: true });
+        expect(onSelect).toHaveBeenLastCalledWith(
+            expect.objectContaining({ name: 'q1' }),
+        );
+    });
+
+    it('keeps a group collapsed until the search or the filters change', () => {
+        renderTree();
+        const belgium = () =>
+            screen.getByRole('treeitem', { name: /Belgique/ });
+        expect(belgium()).toHaveAttribute('aria-expanded', 'true');
+        fireEvent.click(screen.getByText('Belgique'));
+        expect(belgium()).toHaveAttribute('aria-expanded', 'false');
+        fireEvent.change(screen.getByRole('textbox'), {
+            target: { value: 'ecoles' },
+        });
+        expect(belgium()).toHaveAttribute('aria-expanded', 'true');
+    });
+
     it('ignores the arrow keys without Alt', () => {
         const onSelect = renderTree('q2');
         fireEvent.keyDown(window, { key: 'ArrowDown' });

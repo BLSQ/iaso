@@ -4,7 +4,9 @@ import {
     buildQuestionTree,
     countByStatus,
     filterQuestionTree,
+    getFirstUnmappedNode,
     getGroupKeys,
+    getMappingProgress,
     getSelectableNodes,
 } from './questionTree';
 import { QuestionStatus, QuestionTreeNode } from './types';
@@ -179,6 +181,66 @@ describe('countByStatus', () => {
             [QuestionStatus.UNMAPPED]: 3,
             [QuestionStatus.NEVER]: 1,
         });
+    });
+});
+
+describe('getMappingProgress', () => {
+    it('counts the never mapped questions in the total, not as mapped', () => {
+        expect(getMappingProgress(countByStatus(buildTree()))).toEqual({
+            mapped: 3,
+            total: 7,
+            percent: (100 * 3) / 7,
+        });
+    });
+
+    it('is at 0% without questions', () => {
+        expect(getMappingProgress(countByStatus([]))).toEqual({
+            mapped: 0,
+            total: 0,
+            percent: 0,
+        });
+    });
+});
+
+describe('getFirstUnmappedNode', () => {
+    it('returns the first question not mapped, in display order', () => {
+        expect(getFirstUnmappedNode(buildTree())?.key).toBe('q2');
+    });
+
+    it('skips the never mapped questions', () => {
+        const tree = buildQuestionTree(descriptor, {
+            ...questionMappings,
+            q2: { type: 'neverMapped' },
+        });
+        expect(getFirstUnmappedNode(tree)?.key).toBe('services__power');
+    });
+
+    it('skips a repeat group for the questions inside it', () => {
+        const tree = buildQuestionTree(
+            {
+                name: 'survey',
+                type: 'survey',
+                children: [
+                    {
+                        name: 'children',
+                        type: 'repeat',
+                        children: [{ name: 'age', type: 'integer' }],
+                    },
+                ],
+            },
+            {},
+        );
+        expect(getFirstUnmappedNode(tree)?.key).toBe('age');
+    });
+
+    it('returns nothing once every question is mapped or never mapped', () => {
+        const tree = buildQuestionTree(descriptor, {
+            ...questionMappings,
+            q2: de('schools'),
+            q4: { type: 'neverMapped' },
+            services__power: de('power'),
+        });
+        expect(getFirstUnmappedNode(tree)).toBeUndefined();
     });
 });
 

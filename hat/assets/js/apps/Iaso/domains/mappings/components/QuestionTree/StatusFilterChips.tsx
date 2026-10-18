@@ -4,7 +4,7 @@ import { Box, Chip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import MESSAGES from '../../messages';
-import { ALL_STATUSES } from '../../questionTree';
+import { ALL_STATUSES, getMappingProgress } from '../../questionTree';
 import { QuestionStatus } from '../../types';
 import { QuestionStatusIcon } from './QuestionTreeLabel';
 
@@ -35,7 +35,7 @@ export const StatusFilterChips: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const allShown = statuses.length === ALL_STATUSES.length;
-    const total = ALL_STATUSES.reduce((sum, status) => sum + counts[status], 0);
+    const { total } = getMappingProgress(counts);
     const handleToggle = (status: QuestionStatus) => {
         onChange(
             statuses.includes(status)

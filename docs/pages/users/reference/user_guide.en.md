@@ -256,7 +256,7 @@ style="width:1.56771in;height:1.65794in" />
 
 **Export a submission**
 
-The export function allows you to export the form to DHIS2. Beforehand, it needs to have been mapped using the [DHIS2 mapping](./iaso_web/DHIS2) functionality. 
+The export function allows you to export the form to DHIS2. Beforehand, it needs to have been mapped using the [DHIS2 mapping](../how_to/map_a_form_to_dhis2.md) functionality. 
 
 **Edit the submission via Enketo**
 
@@ -325,28 +325,13 @@ In the Form view you can see details of:
 
 -   Date of last modification
 
-Click "Create" and a window will open allowing you to
-map each questionnaire of the xls forms to the correspondent DHIS2 data
-element<img src="./user_guide_attachments/image93.png"
-style="width:2.03704in;height:1.83333in" /><img src="./user_guide_attachments/image98.png"
-style="width:2.05729in;height:1.8085in" />
-
-The mapping process consists of selecting a question on the left and
-deciding whether it should be mapped to DHIS2 or not.
-
-Some questions may not need to be mapped like notes, metadata etc. in
-such a case click on never map.
-
-If the question is to be mapped, search for the correspondence DE in the
-box by using the name, code or ID and then confirm.
-
-Once confirmed, the question will turn to green and be counted.
+Click "Create" to map a form version, or open an existing mapping. Each question of the form is
+then linked to a DHIS2 data element, or marked as never mapped (notes, metadata...). The questions
+are listed in a tree with their status, a search and filters; see
+[Map a form to DHIS2](../how_to/map_a_form_to_dhis2.md).
 
 To reuse the mappings of another form version or of an export file, see
 [Import and export DHIS2 mappings](../how_to/import_export_dhis2_mappings.md).
-
-<img src="./user_guide_attachments/image115.png"
-style="width:7.03646in;height:3.20249in" />
 
 ### Completeness
 

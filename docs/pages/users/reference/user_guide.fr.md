@@ -235,7 +235,7 @@ En cliquant sur "Modifier la période et/ou l'unité d'organisation", une fenêt
 
 **Exporter une soumission**
 
-La fonction d'exportation permet d'exporter le formulaire vers DHIS2. Au préalable, il doit avoir été mappé à l'aide de la fonctionnalité de [mapping DHIS2](./iaso_web/DHIS2) functionality. 
+La fonction d'exportation permet d'exporter le formulaire vers DHIS2. Au préalable, il doit avoir été mappé à l'aide de la fonctionnalité de [mapping DHIS2](../how_to/map_a_form_to_dhis2.md). 
 
 **Modifier la soumission via Enketo**
 
@@ -279,15 +279,11 @@ Dans la vue du formulaire, vous pouvez consulter les détails suivants :
 - Couverture des correspondances
 - Date de la dernière modification
   
-Cliquez sur "Créer" et une fenêtre s'ouvrira, vous permettant de mapper chaque questionnaire des formulaires XLS à l'élément de données correspondant dans DHIS2.
-
-Le processus de correspondance consiste à sélectionner une question à gauche et à décider si elle doit être mappée à DHIS2 ou non.
-
-Certaines questions, comme des notes ou des métadonnées, peuvent ne pas nécessiter de correspondance. Dans ce cas, cliquez sur "Ne jamais mapper".
-
-Si la question doit être mappée, recherchez l'élément correspondant dans le champ en utilisant le nom, le code ou l'ID, puis confirmez.
-
-Une fois confirmée, la question deviendra verte et sera comptabilisée.
+Cliquez sur "Créer" pour mapper une version de formulaire, ou ouvrez un mapping existant. Chaque
+question du formulaire est alors liée à un élément de données DHIS2, ou marquée comme n'ayant
+jamais de correspondance (notes, métadonnées...). Les questions sont listées dans un arbre avec
+leur statut, une recherche et des filtres ; voir
+[Mapper un formulaire vers DHIS2](../how_to/map_a_form_to_dhis2.md).
 
 Pour réutiliser les mappings d'une autre version du formulaire ou d'un fichier d'export, voir
 [Importer et exporter des mappings DHIS2](../how_to/import_export_dhis2_mappings.md).

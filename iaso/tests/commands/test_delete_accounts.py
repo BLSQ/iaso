@@ -20,10 +20,10 @@ from iaso.models.data_store import JsonDataStore
 from iaso.models.json_config import Config
 from iaso.models.microplanning import Assignment, PlanningSamplingResult
 from iaso.models.microplanning.plannings import PlanningConfig
-from iaso.test import TransactionTestCase
+from iaso.test import FastFlushTransactionTestCase
 
 
-class DeleteAccountsCommandTestCase(TransactionTestCase):
+class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
     """
     Builds two fully-populated accounts (one to keep, one to delete) covering the
     auto-discovered FK graph, the out-of-graph M2M gaps (DataSource/SourceVersion/OrgUnit,

@@ -284,7 +284,7 @@ class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
 
 
-class TransactionTestCase(BaseTransactionTestCase, IasoTestCaseMixin):
+class FastFlushTransactionTestCase(BaseTransactionTestCase, IasoTestCaseMixin):
     """
     Empties the tables after each test with DELETE instead of Django's TRUNCATE of every table:
     on the ~200 mostly empty tables of the test database, TRUNCATE takes ~1.4s (new files for every

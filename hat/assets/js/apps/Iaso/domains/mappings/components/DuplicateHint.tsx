@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/lab/Alert';
+import { Alert } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 

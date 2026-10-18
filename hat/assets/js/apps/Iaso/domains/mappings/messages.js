@@ -431,6 +431,70 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.changeLog',
         defaultMessage: 'Link to changes log',
     },
+    questions: {
+        id: 'iaso.mappings.tree.questions',
+        defaultMessage: 'Questions',
+    },
+    searchQuestion: {
+        id: 'iaso.mappings.tree.search',
+        defaultMessage: 'Search a question',
+    },
+    statusAll: {
+        id: 'iaso.mappings.tree.statusAll',
+        defaultMessage: 'All',
+    },
+    statusMapped: {
+        id: 'iaso.mappings.tree.statusMapped',
+        defaultMessage: 'Mapped',
+    },
+    statusUnmapped: {
+        id: 'iaso.mappings.tree.statusUnmapped',
+        defaultMessage: 'Not mapped',
+    },
+    statusNever: {
+        id: 'iaso.mappings.tree.statusNever',
+        defaultMessage: 'Never mapped',
+    },
+    showStatus: {
+        id: 'iaso.mappings.tree.showStatus',
+        defaultMessage: 'Show or hide: {status}',
+    },
+    noQuestionMatches: {
+        id: 'iaso.mappings.tree.noMatch',
+        defaultMessage: 'No question matches the current filters.',
+    },
+    questionPosition: {
+        id: 'iaso.mappings.tree.position',
+        defaultMessage: '{position} of {total}',
+    },
+    previousQuestion: {
+        id: 'iaso.mappings.tree.previous',
+        defaultMessage: 'Previous question (Alt+↑)',
+    },
+    nextQuestion: {
+        id: 'iaso.mappings.tree.next',
+        defaultMessage: 'Next question (Alt+↓)',
+    },
+    mappedProgress: {
+        id: 'iaso.mappings.tree.mappedProgress',
+        defaultMessage: '{mapped} of {total} questions mapped',
+    },
+    mappedTo: {
+        id: 'iaso.mappings.tree.mappedTo',
+        defaultMessage: 'Mapped to: {target}',
+    },
+    questionMapped: {
+        id: 'iaso.mappings.status.mapped',
+        defaultMessage: 'Mapped',
+    },
+    questionUnmapped: {
+        id: 'iaso.mappings.status.unmapped',
+        defaultMessage: 'Not mapped',
+    },
+    questionNever: {
+        id: 'iaso.mappings.status.never',
+        defaultMessage: 'Never mapped',
+    },
 });
 
 export default MESSAGES;

@@ -5,10 +5,11 @@ import { Box, Button } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
 import { useSafeIntl } from 'bluesquare-components';
+import { UseMutationResult } from 'react-query';
 import InputComponent from '../../../components/forms/InputComponent';
 import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
-import { QuestionStatus } from '../types';
+import { ApplyUpdateVariables, QuestionStatus } from '../types';
 import { LabeledValue } from './QuestionPanel/LabeledValue';
 import { MappingCard } from './QuestionPanel/MappingCard';
 
@@ -111,7 +112,7 @@ function toGeneralFields(currentMappingVersion) {
 type Props = {
     // from the untyped /api/mappingversions/ serializer
     currentMappingVersion: Record<string, any>;
-    applyUpdate: Record<string, any>;
+    applyUpdate: UseMutationResult<unknown, unknown, ApplyUpdateVariables>;
     statusCounts: Record<QuestionStatus, number>;
     // undefined when every question is mapped
     onNextUnmapped?: () => void;

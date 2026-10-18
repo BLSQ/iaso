@@ -1,8 +1,9 @@
 import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
+import { UseMutationResult } from 'react-query';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
-import { QuestionStatus } from '../types';
+import { ApplyUpdateVariables, QuestionStatus } from '../types';
 import GeneraMappingInfo from './GeneraMappingInfo';
 
 const mappingVersion = {
@@ -31,17 +32,38 @@ const fieldTexts = () =>
 const nextUnmappedButton = () =>
     screen.getByRole('button', { name: 'Next not mapped question' });
 
-const renderInfo = (onNextUnmapped?: () => void) =>
+// only mutate is used by the component
+const mockApplyUpdate = () =>
+    ({ mutate: vi.fn() }) as unknown as UseMutationResult<
+        unknown,
+        unknown,
+        ApplyUpdateVariables
+    >;
+
+const renderInfo = (
+    onNextUnmapped?: () => void,
+    applyUpdate = mockApplyUpdate(),
+) =>
     renderWithThemeAndIntlProvider(
         <GeneraMappingInfo
             currentMappingVersion={mappingVersion}
-            applyUpdate={{ mutate: vi.fn() }}
+            applyUpdate={applyUpdate}
             statusCounts={statusCounts}
             onNextUnmapped={onNextUnmapped}
         />,
     );
 
 describe('GeneraMappingInfo', () => {
+    it('saves the event date source of the mapping version', () => {
+        const applyUpdate = mockApplyUpdate();
+        renderInfo(undefined, applyUpdate);
+        fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+        expect(applyUpdate.mutate).toHaveBeenCalledWith({
+            mappingVersionId: 12,
+            payload: { event_date_source: 'FROM_SUBMISSION_CREATED_AT' },
+        });
+    });
+
     it('shows the mapping and how many questions are in each status', () => {
         renderInfo(vi.fn());
         expect(fieldTexts().slice(-3)).toEqual([

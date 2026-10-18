@@ -1,10 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Block, CheckCircle, RadioButtonUnchecked } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
+import { QUESTION_STATUS_MESSAGES } from '../../config';
 import MESSAGES from '../../messages';
-import { QuestionStatus, QuestionTreeNode } from '../../types';
+import { QuestionTreeNode } from '../../types';
+import { QuestionStatusIcon } from '../QuestionStatusIcon';
 
 const styles: SxStyles = {
     root: {
@@ -37,49 +38,6 @@ const styles: SxStyles = {
         color: 'text.secondary',
         fontVariantNumeric: 'tabular-nums',
     },
-    icon: {
-        flex: '0 0 auto',
-        fontSize: 16,
-    },
-};
-
-// status of one question (the filter chips use the plural)
-export const STATUS_MESSAGES = {
-    [QuestionStatus.MAPPED]: MESSAGES.questionMapped,
-    [QuestionStatus.UNMAPPED]: MESSAGES.questionUnmapped,
-    [QuestionStatus.NEVER]: MESSAGES.questionNever,
-};
-
-const STATUS_ICONS = {
-    [QuestionStatus.MAPPED]: { Icon: CheckCircle, color: 'success.main' },
-    [QuestionStatus.UNMAPPED]: {
-        Icon: RadioButtonUnchecked,
-        color: 'text.disabled',
-    },
-    [QuestionStatus.NEVER]: { Icon: Block, color: 'gray.main' },
-};
-
-type StatusIconProps = {
-    status: QuestionStatus;
-    // next to a text already naming the status
-    decorative?: boolean;
-};
-
-export const QuestionStatusIcon: FunctionComponent<StatusIconProps> = ({
-    status,
-    decorative = false,
-}) => {
-    const { formatMessage } = useSafeIntl();
-    const { Icon, color } = STATUS_ICONS[status];
-    if (decorative) {
-        return <Icon sx={{ ...styles.icon, color }} />;
-    }
-    return (
-        <Icon
-            sx={{ ...styles.icon, color }}
-            titleAccess={formatMessage(STATUS_MESSAGES[status])}
-        />
-    );
 };
 
 type Props = {
@@ -107,7 +65,7 @@ export const QuestionTreeLabel: FunctionComponent<Props> = ({ node }) => {
     }
     const statusText = node.target
         ? formatMessage(MESSAGES.mappedTo, { target: node.target })
-        : formatMessage(STATUS_MESSAGES[node.status]);
+        : formatMessage(QUESTION_STATUS_MESSAGES[node.status]);
     return (
         <Box
             sx={styles.root}

@@ -3,16 +3,14 @@ import { ArrowBack } from '@mui/icons-material';
 import { Box, Chip, IconButton, Tooltip, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../types/general';
+import { QUESTION_STATUS_MESSAGES } from '../config';
 import Descriptor from '../descriptor';
 import MESSAGES from '../messages';
 import { QuestionStatus } from '../types';
 import { ChipsRow } from './QuestionPanel/ChipsRow';
 import { LabeledValue } from './QuestionPanel/LabeledValue';
 import { MappingCard } from './QuestionPanel/MappingCard';
-import {
-    QuestionStatusIcon,
-    STATUS_MESSAGES,
-} from './QuestionTree/QuestionTreeLabel';
+import { QuestionStatusIcon } from './QuestionStatusIcon';
 
 const styles: SxStyles = {
     status: {
@@ -84,7 +82,7 @@ const QuestionInfos: FunctionComponent<Props> = ({
                     size="small"
                     variant="outlined"
                     icon={<QuestionStatusIcon status={status} decorative />}
-                    label={formatMessage(STATUS_MESSAGES[status])}
+                    label={formatMessage(QUESTION_STATUS_MESSAGES[status])}
                 />
                 {groupLabel && (
                     <Typography

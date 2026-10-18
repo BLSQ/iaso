@@ -3,16 +3,11 @@ import { DoneAll, VisibilityOff } from '@mui/icons-material';
 import { Box, Chip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
+import { STATUS_FILTER_MESSAGES } from '../../config';
 import MESSAGES from '../../messages';
 import { ALL_STATUSES, getMappingProgress } from '../../questionTree';
 import { QuestionStatus } from '../../types';
-import { QuestionStatusIcon } from './QuestionTreeLabel';
-
-const FILTER_MESSAGES = {
-    [QuestionStatus.MAPPED]: MESSAGES.statusMapped,
-    [QuestionStatus.UNMAPPED]: MESSAGES.statusUnmapped,
-    [QuestionStatus.NEVER]: MESSAGES.statusNever,
-};
+import { QuestionStatusIcon } from '../QuestionStatusIcon';
 
 const styles: SxStyles = {
     root: {
@@ -58,7 +53,7 @@ export const StatusFilterChips: FunctionComponent<Props> = ({
             />
             {ALL_STATUSES.map(status => {
                 const shown = statuses.includes(status);
-                const label = formatMessage(FILTER_MESSAGES[status]);
+                const label = formatMessage(STATUS_FILTER_MESSAGES[status]);
                 return (
                     <Chip
                         key={status}

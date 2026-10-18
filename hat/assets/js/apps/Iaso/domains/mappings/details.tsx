@@ -31,10 +31,10 @@ import MESSAGES from './messages';
 import {
     buildQuestionTree,
     countByStatus,
+    getFirstUnmappedNode,
+    getMappingProgress,
     getQuestionStatus,
-    getSelectableNodes,
 } from './questionTree';
-import { QuestionStatus } from './types';
 import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from './utils';
 
 const baseUrl = baseUrls.mappingDetail;
@@ -121,17 +121,9 @@ const MappingDetails = () => {
         () => countByStatus(questionTree),
         [questionTree],
     );
-    const questionsCount = Object.values(statusCounts).reduce(
-        (sum, count) => sum + count,
-        0,
-    );
-    const mappedCount = statusCounts[QuestionStatus.MAPPED];
+    const progress = getMappingProgress(statusCounts);
     const firstUnmappedQuestion = useMemo(
-        () =>
-            getSelectableNodes(questionTree).find(
-                node =>
-                    !node.children && node.status === QuestionStatus.UNMAPPED,
-            )?.question,
+        () => getFirstUnmappedNode(questionTree)?.question,
         [questionTree],
     );
 
@@ -253,17 +245,13 @@ const MappingDetails = () => {
                         <Box sx={styles.progress}>
                             <Typography variant="body2" color="textSecondary">
                                 {formatMessage(MESSAGES.mappedProgress, {
-                                    mapped: mappedCount,
-                                    total: questionsCount,
+                                    mapped: progress.mapped,
+                                    total: progress.total,
                                 })}
                             </Typography>
                             <LinearProgress
                                 variant="determinate"
-                                value={
-                                    questionsCount
-                                        ? (100 * mappedCount) / questionsCount
-                                        : 0
-                                }
+                                value={progress.percent}
                                 sx={styles.progressBar}
                             />
                         </Box>

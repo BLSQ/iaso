@@ -105,6 +105,15 @@ export const countByStatus = (
     return counts;
 };
 
+/** Mapped questions out of all of them, never mapped included. */
+export const getMappingProgress = (
+    counts: Record<QuestionStatus, number>,
+): { mapped: number; total: number; percent: number } => {
+    const total = ALL_STATUSES.reduce((sum, status) => sum + counts[status], 0);
+    const mapped = counts[QuestionStatus.MAPPED];
+    return { mapped, total, percent: total ? (100 * mapped) / total : 0 };
+};
+
 const normalize = (text: string | undefined): string =>
     (text ?? '')
         .normalize('NFD')
@@ -170,6 +179,17 @@ const flattenSelectable = (nodes: QuestionTreeNode[]): QuestionTreeNode[] =>
 export const getSelectableNodes = (
     nodes: QuestionTreeNode[],
 ): QuestionTreeNode[] => uniqBy(flattenSelectable(nodes), node => node.key);
+
+/**
+ * First question still to map, in display order. Never mapped questions are
+ * done, and a repeat group is skipped for the questions inside it.
+ */
+export const getFirstUnmappedNode = (
+    nodes: QuestionTreeNode[],
+): QuestionTreeNode | undefined =>
+    getSelectableNodes(nodes).find(
+        node => !node.children && node.status === QuestionStatus.UNMAPPED,
+    );
 
 export const getGroupKeys = (nodes: QuestionTreeNode[]): string[] =>
     nodes.flatMap(node =>

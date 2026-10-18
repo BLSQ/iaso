@@ -30,6 +30,7 @@ import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
 import { buildQuestionTree, countByStatus } from './questionTree';
 import { QuestionStatus } from './types';
+import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from './utils';
 
 const baseUrl = baseUrls.mappingDetail;
 
@@ -60,9 +61,9 @@ const styles: SxStyles = {
 };
 
 const iasoFieldOptions = formatMessage => [
-    { value: undefined, label: formatMessage(MESSAGES.useValueFromForm) },
+    { value: VALUE_FROM_FORM, label: formatMessage(MESSAGES.useValueFromForm) },
     {
-        value: 'instance.org_unit.source_ref',
+        value: ORG_UNIT_IASO_FIELD,
         label: formatMessage(MESSAGES.instanceOrgUnit),
     },
 ];

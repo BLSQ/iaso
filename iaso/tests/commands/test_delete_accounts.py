@@ -739,41 +739,6 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
                 Modification.objects.filter(pk=post_deletion_only_orphans["modification_orphan"].pk).exists()
             )
 
-    def test_list_accounts_mode(self):
-        management.call_command("delete_accounts", list_accounts=True, verbosity=0)
-
-        self.assertTrue(m.Account.objects.filter(pk=self.account_to_keep.pk).exists())
-        self.assertTrue(m.Account.objects.filter(pk=self.account_to_delete.pk).exists())
-
-    def test_show_graph_mode_without_for_account_raises(self):
-        with self.assertRaises(ValueError):
-            management.call_command("delete_accounts", show_graph=True, verbosity=0)
-
-    def test_show_graph_mode_with_for_account(self):
-        # Should not raise and should not touch any data.
-        management.call_command("delete_accounts", show_graph=True, for_account=self.account_to_keep.pk, verbosity=0)
-
-        self.assertTrue(m.Account.objects.filter(pk=self.account_to_keep.pk).exists())
-        self.assertTrue(m.Account.objects.filter(pk=self.account_to_delete.pk).exists())
-
-    def test_delete_accounts_unknown_id_raises(self):
-        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
-
-        with self.assertRaises(SystemExit):
-            management.call_command("delete_accounts", accounts_to_delete=[missing_id], verbosity=0)
-
-    def test_keep_single_account_unknown_id_raises(self):
-        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
-
-        with self.assertRaises(SystemExit):
-            management.call_command("delete_accounts", account_to_keep=missing_id, verbosity=0)
-
-    def test_show_graph_mode_unknown_for_account_raises(self):
-        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
-
-        with self.assertRaises(SystemExit):
-            management.call_command("delete_accounts", show_graph=True, for_account=missing_id, verbosity=0)
-
     def test_dry_run_delete_accounts_mode_does_not_delete_anything(self):
         pre_deletion_orphans, post_deletion_only_orphans = self._create_unscoped_data()
         extra_models_to_keep = self._populate_account(
@@ -990,6 +955,57 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         remaining_credentials_section = output.split("Remaining credentials:", 1)[1]
         self.assertIn("cred_kept", remaining_credentials_section)  # kept account's credentials survive
         self.assertNotIn("cred_deleted", remaining_credentials_section)  # deleted account's are gone
+
+
+class DeleteAccountsCommandReadOnlyTestCase(TestCase, IasoTestCaseMixin):
+    """
+    Modes that don't delete anything (list, graph, unknown ids): unlike the deletion tests above,
+    they don't need TransactionTestCase and its slow flush of every table after each test.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account_to_keep, cls.data_source_to_keep, cls.version_to_keep, cls.project_to_keep = (
+            cls.create_account_datasource_version_project("source kept", "account kept", "project kept")
+        )
+        cls.account_to_delete, cls.data_source_to_delete, cls.version_to_delete, cls.project_to_delete = (
+            cls.create_account_datasource_version_project("source deleted", "account deleted", "project deleted")
+        )
+
+    def test_list_accounts_mode(self):
+        management.call_command("delete_accounts", list_accounts=True, verbosity=0)
+
+        self.assertTrue(m.Account.objects.filter(pk=self.account_to_keep.pk).exists())
+        self.assertTrue(m.Account.objects.filter(pk=self.account_to_delete.pk).exists())
+
+    def test_show_graph_mode_without_for_account_raises(self):
+        with self.assertRaises(ValueError):
+            management.call_command("delete_accounts", show_graph=True, verbosity=0)
+
+    def test_show_graph_mode_with_for_account(self):
+        # Should not raise and should not touch any data.
+        management.call_command("delete_accounts", show_graph=True, for_account=self.account_to_keep.pk, verbosity=0)
+
+        self.assertTrue(m.Account.objects.filter(pk=self.account_to_keep.pk).exists())
+        self.assertTrue(m.Account.objects.filter(pk=self.account_to_delete.pk).exists())
+
+    def test_delete_accounts_unknown_id_raises(self):
+        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
+
+        with self.assertRaises(SystemExit):
+            management.call_command("delete_accounts", accounts_to_delete=[missing_id], verbosity=0)
+
+    def test_keep_single_account_unknown_id_raises(self):
+        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
+
+        with self.assertRaises(SystemExit):
+            management.call_command("delete_accounts", account_to_keep=missing_id, verbosity=0)
+
+    def test_show_graph_mode_unknown_for_account_raises(self):
+        missing_id = m.Account.objects.order_by("-pk").first().pk + 1000
+
+        with self.assertRaises(SystemExit):
+            management.call_command("delete_accounts", show_graph=True, for_account=missing_id, verbosity=0)
 
 
 class DeleteAccountsModelCoverageTestCase(TestCase):

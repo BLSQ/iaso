@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { History } from '@mui/icons-material';
 import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
 
@@ -28,7 +28,12 @@ import {
 } from './hooks';
 import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
-import { buildQuestionTree, countByStatus } from './questionTree';
+import {
+    buildQuestionTree,
+    countByStatus,
+    getQuestionStatus,
+    getSelectableNodes,
+} from './questionTree';
 import { QuestionStatus } from './types';
 import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from './utils';
 
@@ -118,6 +123,14 @@ const MappingDetails = () => {
         0,
     );
     const mappedCount = statusCounts[QuestionStatus.MAPPED];
+    const firstUnmappedQuestion = useMemo(
+        () =>
+            getSelectableNodes(questionTree).find(
+                node =>
+                    !node.children && node.status === QuestionStatus.UNMAPPED,
+            )?.question,
+        [questionTree],
+    );
 
     const [currentQuestion, setCurrentQuestion] = useState(
         indexedQuestions[params.questionName],
@@ -150,6 +163,30 @@ const MappingDetails = () => {
             questionName: Descriptor.getKey(node),
         });
     };
+
+    const onClearSelection = useCallback(() => {
+        redirectToReplace(baseUrls.mappingDetail, {
+            mappingVersionId: params.mappingVersionId,
+        });
+        setCurrentQuestion(undefined);
+    }, [redirectToReplace, params.mappingVersionId]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const target = event.target as HTMLElement;
+            // Escape also closes dialogs and clears inputs
+            if (
+                event.key !== 'Escape' ||
+                !currentQuestion ||
+                target.closest('input, textarea, [role="dialog"]')
+            ) {
+                return;
+            }
+            onClearSelection();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [currentQuestion, onClearSelection]);
 
     const onConfirmedQuestionMapping = questionMapping => {
         applyPartialUpdate.mutate({
@@ -259,12 +296,36 @@ const MappingDetails = () => {
                                         currentMappingVersion={
                                             currentMappingVersion
                                         }
+                                        statusCounts={statusCounts}
+                                        onNextUnmapped={
+                                            firstUnmappedQuestion
+                                                ? () =>
+                                                      onQuestionSelected(
+                                                          firstUnmappedQuestion,
+                                                      )
+                                                : undefined
+                                        }
                                     />
                                 )}
                             {currentQuestion && (
                                 <>
-                                    <QuestionInfos question={currentQuestion} />
-                                    <br />
+                                    <QuestionInfos
+                                        question={currentQuestion}
+                                        status={getQuestionStatus(
+                                            currentMappingVersion
+                                                .question_mappings[
+                                                Descriptor.getKey(
+                                                    currentQuestion,
+                                                )
+                                            ],
+                                        )}
+                                        groupLabel={Descriptor.getHumanLabel(
+                                            indexedQuestions[
+                                                currentQuestion.parentName
+                                            ],
+                                        )}
+                                        onClose={onClearSelection}
+                                    />
                                     {isDataElementMappable && (
                                         <QuestionMappingForm
                                             key={currentQuestion.name}

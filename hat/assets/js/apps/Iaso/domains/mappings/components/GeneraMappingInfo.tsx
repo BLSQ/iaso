@@ -1,11 +1,50 @@
 import React, { useMemo } from 'react';
 
-import { Button } from '@mui/material';
+import { ArrowForward } from '@mui/icons-material';
+import { Box, Button } from '@mui/material';
 import Alert from '@mui/material/Alert';
 
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
+import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
+import { QuestionStatus } from '../types';
+import { LabeledValue } from './QuestionPanel/LabeledValue';
+import { MappingCard } from './QuestionPanel/MappingCard';
+
+const styles: SxStyles = {
+    hint: {
+        mb: 2,
+    },
+    fields: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 2,
+    },
+    stats: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 2,
+        mt: 2,
+        pt: 2,
+        borderTop: 1,
+        borderColor: 'divider',
+    },
+    section: {
+        mt: 2,
+        pt: 2,
+        borderTop: 1,
+        borderColor: 'divider',
+    },
+    eventDateSource: {
+        maxWidth: 400,
+    },
+    actions: {
+        display: 'flex',
+        gap: 1,
+        mt: 2,
+    },
+};
 
 const evenDateOptions = [
     {
@@ -69,7 +108,21 @@ function toGeneralFields(currentMappingVersion) {
     return fields;
 }
 
-const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
+type Props = {
+    // from the untyped /api/mappingversions/ serializer
+    currentMappingVersion: Record<string, any>;
+    applyUpdate: Record<string, any>;
+    statusCounts: Record<QuestionStatus, number>;
+    // undefined when every question is mapped
+    onNextUnmapped?: () => void;
+};
+
+const GeneraMappingInfo = ({
+    currentMappingVersion,
+    applyUpdate,
+    statusCounts,
+    onNextUnmapped,
+}: Props) => {
     const { formatMessage } = useSafeIntl();
     const [eventDateSource, setEventDateSource] = React.useState(
         currentMappingVersion.derivate_settings.event_date_source ||
@@ -80,65 +133,90 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
         () => toGeneralFields(currentMappingVersion),
         [currentMappingVersion],
     );
+    const hasEventDateSource = ['EVENT', 'EVENT_TRACKER'].includes(
+        currentMappingVersion.mapping.mapping_type,
+    );
     return (
-        <div>
-            <Alert severity="info">{formatMessage(MESSAGES.generalHint)}</Alert>
-            <h1>{formatMessage(MESSAGES.generalTitle)}</h1>
-
-            <table width="600px">
-                <tbody>
+        <>
+            <Alert severity="info" sx={styles.hint}>
+                {formatMessage(MESSAGES.generalHint)}
+            </Alert>
+            <MappingCard title={formatMessage(MESSAGES.generalTitle)}>
+                <Box sx={styles.fields}>
+                    <LabeledValue
+                        label={formatMessage(MESSAGES.formVersion)}
+                        value={currentMappingVersion.form_version.version_id}
+                    />
                     {fieldValues.map(fieldValue => (
-                        <tr key={fieldValue.name}>
-                            <td>
-                                {fieldValue.message
+                        <LabeledValue
+                            key={fieldValue.name}
+                            label={
+                                fieldValue.message
                                     ? formatMessage(fieldValue.message)
-                                    : fieldValue.name}
-                            </td>
-                            <td>{fieldValue.value}</td>
-                        </tr>
+                                    : fieldValue.name
+                            }
+                            value={fieldValue.value}
+                        />
                     ))}
-
-                    {currentMappingVersion &&
-                        ['EVENT', 'EVENT_TRACKER'].includes(
-                            currentMappingVersion.mapping.mapping_type,
-                        ) && (
-                            <tr>
-                                <td>
-                                    {formatMessage(MESSAGES.eventDateSource)}
-                                </td>
-                                <td>
-                                    <InputComponent
-                                        keyValue="event_period_source"
-                                        onChange={(key, value) =>
-                                            setEventDateSource(value)
-                                        }
-                                        value={eventDateSource}
-                                        type="select"
-                                        options={evenDateOptions}
-                                        label={MESSAGES.evenDateSource}
-                                    />
-                                </td>
-                            </tr>
-                        )}
-                </tbody>
-            </table>
-
-            <Button
-                className="button"
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                    applyUpdate.mutate({
-                        mappingVersionId: currentMappingVersion.id,
-                        payload: {
-                            event_date_source: eventDateSource,
-                        },
-                    });
-                }}
-            >
-                {formatMessage(MESSAGES.update)}
-            </Button>
-        </div>
+                </Box>
+                <Box sx={styles.stats}>
+                    <LabeledValue
+                        label={formatMessage(MESSAGES.statusMapped)}
+                        value={statusCounts[QuestionStatus.MAPPED]}
+                    />
+                    <LabeledValue
+                        label={formatMessage(MESSAGES.statusUnmapped)}
+                        value={statusCounts[QuestionStatus.UNMAPPED]}
+                    />
+                    <LabeledValue
+                        label={formatMessage(MESSAGES.statusNever)}
+                        value={statusCounts[QuestionStatus.NEVER]}
+                    />
+                </Box>
+                <Box sx={styles.section}>
+                    {hasEventDateSource && (
+                        <Box sx={styles.eventDateSource}>
+                            <InputComponent
+                                keyValue="event_period_source"
+                                onChange={(key, value) =>
+                                    setEventDateSource(value)
+                                }
+                                value={eventDateSource}
+                                type="select"
+                                options={evenDateOptions}
+                                label={MESSAGES.eventDateSource}
+                                withMarginTop={false}
+                            />
+                        </Box>
+                    )}
+                    <Box sx={styles.actions}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => {
+                                applyUpdate.mutate({
+                                    mappingVersionId: currentMappingVersion.id,
+                                    payload: {
+                                        event_date_source: eventDateSource,
+                                    },
+                                });
+                            }}
+                        >
+                            {formatMessage(MESSAGES.update)}
+                        </Button>
+                        <Button
+                            variant="text"
+                            color="primary"
+                            endIcon={<ArrowForward />}
+                            disabled={!onNextUnmapped}
+                            onClick={onNextUnmapped}
+                        >
+                            {formatMessage(MESSAGES.nextUnmapped)}
+                        </Button>
+                    </Box>
+                </Box>
+            </MappingCard>
+        </>
     );
 };
 

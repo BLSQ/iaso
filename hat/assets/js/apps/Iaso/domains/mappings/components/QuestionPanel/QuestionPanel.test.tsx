@@ -176,6 +176,21 @@ describe('MappingSummary', () => {
         expect(screen.queryByText('Luxembourg')).toBeNull();
     });
 
+    it('shows all the datasets without a "+" chip when they fit', () => {
+        const dataSetElements = ['Belgium', 'France'].map(name => ({
+            dataSet: { id: `ds${name}`, name },
+        }));
+        renderWithThemeAndIntlProvider(
+            <MappingSummary
+                mapping={{ id: 'de', valueType: 'NUMBER', dataSetElements }}
+                mappingType="AGGREGATE"
+            />,
+        );
+        expect(screen.getByText('Belgium')).toBeInTheDocument();
+        expect(screen.getByText('France')).toBeInTheDocument();
+        expect(screen.queryByText(/^\+\d/)).toBeNull();
+    });
+
     it('dumps a mapping it does not know', () => {
         renderWithThemeAndIntlProvider(
             <MappingSummary

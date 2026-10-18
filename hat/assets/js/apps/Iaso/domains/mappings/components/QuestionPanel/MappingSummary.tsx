@@ -28,9 +28,9 @@ export const MappingSummary: FunctionComponent<Props> = ({
     mappingType,
     emptyLabel,
 }) => {
-    const items = (Array.isArray(mapping) ? mapping : [mapping]).filter(
-        item => item && Object.keys(item).length > 0,
-    ) as Record<string, any>[];
+    const items = (Array.isArray(mapping) ? mapping : [mapping ?? {}]).filter(
+        item => Object.keys(item).length > 0,
+    );
     if (items.length === 0) {
         return mappingType === 'EVENT_TRACKER' ? (
             <TrackerItemSummary item={{}} emptyLabel={emptyLabel} />

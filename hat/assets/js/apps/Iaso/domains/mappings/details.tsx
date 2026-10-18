@@ -21,11 +21,9 @@ import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import { QuestionTree } from './components/QuestionTree/QuestionTree';
 import Descriptor from './descriptor';
-import {
-    useApplyPartialUpdate,
-    useApplyUpdate,
-    useGetMappingVersionDetail,
-} from './hooks';
+import { useGetMappingVersionDetail } from './hooks';
+import { useApplyPartialUpdate } from './hooks/requests/useApplyPartialUpdate';
+import { useApplyUpdate } from './hooks/requests/useApplyUpdate';
 import { useEscapeKey } from './hooks/useEscapeKey';
 import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';

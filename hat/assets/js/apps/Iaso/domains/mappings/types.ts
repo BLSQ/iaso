@@ -71,6 +71,19 @@ export type ImportSource = {
     questionMappings: QuestionMappings;
 };
 
+// useApplyUpdate: PATCH of mapping version settings, e.g. event_date_source
+export type ApplyUpdateVariables = {
+    mappingVersionId: number;
+    payload: Record<string, unknown>;
+};
+
+// useApplyPartialUpdate: the mapping of one question, or an unmap / never map action
+export type ApplyPartialUpdateVariables = {
+    mappingVersionId: number;
+    questionName: string;
+    mapping: QuestionMapping;
+};
+
 export type BulkUpdateVariables = {
     mappingVersionId: number;
     questionMappings: Record<string, unknown>;

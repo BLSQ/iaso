@@ -31,6 +31,6 @@ jobs:
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@IA-5549-no-double-migrate
     with:
       iaso_branch: ${{ github.head_ref || github.ref_name }}

@@ -39,6 +39,9 @@ import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from './utils';
 
 const baseUrl = baseUrls.mappingDetail;
 
+// grey canvas of the redesign, so the white cards stand out
+const PAGE_BACKGROUND = '#edf1f4';
+
 const styles: SxStyles = {
     actions: {
         display: 'flex',
@@ -240,7 +243,12 @@ const MappingDetails = () => {
             {fetching && <LoadingSpinner />}
 
             {currentMappingVersion && (
-                <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                <Box
+                    sx={{
+                        ...commonStyles(theme).containerFullHeightNoTabPadded,
+                        backgroundColor: PAGE_BACKGROUND,
+                    }}
+                >
                     <Box sx={styles.actions}>
                         <Box sx={styles.progress}>
                             <Typography variant="body2" color="textSecondary">

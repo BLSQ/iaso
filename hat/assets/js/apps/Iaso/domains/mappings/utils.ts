@@ -11,3 +11,20 @@ const ORG_UNIT_VALUE_TYPE = 'ORGANISATION_UNIT';
 export const isOrgUnitTarget = (item?: Record<string, any>): boolean =>
     (item?.dataElement ?? item?.trackedEntityAttribute)?.valueType ===
     ORG_UNIT_VALUE_TYPE;
+
+/**
+ * Question mapping to save for the proposed DHIS2 target: an EVENT_TRACKER
+ * mapping is a list, with the instance property when one is chosen.
+ */
+export const buildQuestionMapping = (
+    proposed: Record<string, any>,
+    mappingType: string,
+    iasoField?: string,
+): Record<string, any> | Record<string, any>[] => {
+    if (mappingType !== 'EVENT_TRACKER') {
+        return proposed;
+    }
+    const withIasoField =
+        isOrgUnitTarget(proposed) && iasoField && iasoField !== VALUE_FROM_FORM;
+    return [withIasoField ? { ...proposed, iaso_field: iasoField } : proposed];
+};

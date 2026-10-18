@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { History } from '@mui/icons-material';
 import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
 
@@ -26,6 +26,7 @@ import {
     useApplyUpdate,
     useGetMappingVersionDetail,
 } from './hooks';
+import { useEscapeKey } from './hooks/useEscapeKey';
 import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
 import {
@@ -163,22 +164,7 @@ const MappingDetails = () => {
         setCurrentQuestion(undefined);
     }, [redirectToReplace, params.mappingVersionId]);
 
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            const target = event.target as HTMLElement;
-            // Escape also closes dialogs and clears inputs
-            if (
-                event.key !== 'Escape' ||
-                !currentQuestion ||
-                target.closest('input, textarea, [role="dialog"]')
-            ) {
-                return;
-            }
-            onClearSelection();
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [currentQuestion, onClearSelection]);
+    useEscapeKey(onClearSelection, Boolean(currentQuestion));
 
     const onConfirmedQuestionMapping = questionMapping => {
         applyPartialUpdate.mutate({

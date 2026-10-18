@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { History } from '@mui/icons-material';
-import { Grid, Box, Typography, useTheme } from '@mui/material';
+import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
 
 import {
     commonStyles,
@@ -19,7 +19,7 @@ import GeneraMappingInfo from './components/GeneraMappingInfo';
 import { MappingImportActions } from './components/ImportMappings/MappingImportActions';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
-import RecursiveTreeView from './components/RecursiveTreeView';
+import { QuestionTree } from './components/QuestionTree/QuestionTree';
 import Descriptor from './descriptor';
 import {
     useApplyPartialUpdate,
@@ -28,16 +28,29 @@ import {
 } from './hooks';
 import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
+import { buildQuestionTree, countByStatus } from './questionTree';
+import { QuestionStatus } from './types';
 
 const baseUrl = baseUrls.mappingDetail;
 
 const styles: SxStyles = {
     actions: {
         display: 'flex',
-        justifyContent: 'flex-end',
+        flexWrap: 'wrap',
         alignItems: 'center',
         gap: 2,
         mb: 2,
+    },
+    progress: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        flex: '1 1 auto',
+    },
+    progressBar: {
+        width: 220,
+        height: 5,
+        borderRadius: 1,
     },
     linkWithIcon: {
         display: 'flex',
@@ -86,6 +99,24 @@ const MappingDetails = () => {
         () => getMappableQuestions(currentFormVersion?.descriptor),
         [currentFormVersion],
     );
+
+    const questionTree = useMemo(
+        () =>
+            buildQuestionTree(
+                currentFormVersion?.descriptor,
+                currentMappingVersion?.question_mappings ?? {},
+            ),
+        [currentFormVersion, currentMappingVersion],
+    );
+    const statusCounts = useMemo(
+        () => countByStatus(questionTree),
+        [questionTree],
+    );
+    const questionsCount = Object.values(statusCounts).reduce(
+        (sum, count) => sum + count,
+        0,
+    );
+    const mappedCount = statusCounts[QuestionStatus.MAPPED];
 
     const [currentQuestion, setCurrentQuestion] = useState(
         indexedQuestions[params.questionName],
@@ -173,6 +204,23 @@ const MappingDetails = () => {
             {currentMappingVersion && (
                 <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
                     <Box sx={styles.actions}>
+                        <Box sx={styles.progress}>
+                            <Typography variant="body2" color="textSecondary">
+                                {formatMessage(MESSAGES.mappedProgress, {
+                                    mapped: mappedCount,
+                                    total: questionsCount,
+                                })}
+                            </Typography>
+                            <LinearProgress
+                                variant="determinate"
+                                value={
+                                    questionsCount
+                                        ? (100 * mappedCount) / questionsCount
+                                        : 0
+                                }
+                                sx={styles.progressBar}
+                            />
+                        </Box>
                         <ExternalLink
                             url={`/${baseUrls.apiLogs}/?objectId=${currentMappingVersion.id}&contentType=iaso.mappingversion&fields=field_diffs`}
                         >
@@ -190,17 +238,19 @@ const MappingDetails = () => {
                     </Box>
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
-                            <Grid item xs={4} md={3}>
-                                <RecursiveTreeView
-                                    formVersion={currentFormVersion}
-                                    mappingVersion={currentMappingVersion}
-                                    // TODO confirm this prop can safely be deleted
-                                    // currentQuestion={currentQuestion}
-                                    onQuestionSelected={onQuestionSelected}
+                            <Grid item xs={12} md={5} lg={4}>
+                                <QuestionTree
+                                    nodes={questionTree}
+                                    selectedKey={
+                                        currentQuestion
+                                            ? Descriptor.getKey(currentQuestion)
+                                            : undefined
+                                    }
+                                    onSelect={onQuestionSelected}
                                 />
                             </Grid>
                         )}
-                        <Grid item xs={8} md={9}>
+                        <Grid item xs={12} md={7} lg={8}>
                             {currentQuestion == null &&
                                 currentMappingVersion && (
                                     <GeneraMappingInfo

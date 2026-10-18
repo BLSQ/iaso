@@ -21,7 +21,7 @@ import {
     Typography,
 } from '@mui/material';
 import { TreeItem, TreeView } from '@mui/x-tree-view';
-import { useSafeIntl } from 'bluesquare-components';
+import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { SxStyles } from '../../../../types/general';
 import MESSAGES from '../../messages';
@@ -36,11 +36,14 @@ import { QuestionStatus, QuestionTreeNode } from '../../types';
 import { QuestionTreeLabel } from './QuestionTreeLabel';
 import { StatusFilterChips } from './StatusFilterChips';
 
+// page padding and the progress / actions bar above the tree
+const PAGE_HEADER_HEIGHT = 125;
+
 const styles: SxStyles = {
     root: {
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 190px)',
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${PAGE_HEADER_HEIGHT}px)`,
         minHeight: 400,
     },
     header: {

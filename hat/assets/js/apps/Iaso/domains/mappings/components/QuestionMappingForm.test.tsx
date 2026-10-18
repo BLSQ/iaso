@@ -5,9 +5,38 @@ import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from '../utils';
 import QuestionMappingForm from './QuestionMappingForm';
 
-// no DHIS2 call: only shows which search is offered
+const facility = {
+    dataElement: {
+        id: 'deFacility',
+        name: 'Facility',
+        valueType: 'ORGANISATION_UNIT',
+    },
+    programStage: 'stageBelgium',
+};
+const weight = {
+    dataElement: { id: 'deWeight', name: 'Weight', valueType: 'NUMBER' },
+    programStage: 'stageBelgium',
+};
+
+// no DHIS2 call: shows which search is offered and proposes fixed targets
 vi.mock('./Dhis2SearchComponent', () => ({
-    default: ({ label }: { label: string }) => <div>{label}</div>,
+    default: ({
+        label,
+        onChange,
+    }: {
+        label: string;
+        onChange: (name: string, value: Record<string, any>) => void;
+    }) => (
+        <div>
+            {label}
+            <button type="button" onClick={() => onChange('de', facility)}>
+                propose facility
+            </button>
+            <button type="button" onClick={() => onChange('de', weight)}>
+                propose weight
+            </button>
+        </div>
+    ),
 }));
 
 const mappingVersion = {
@@ -16,14 +45,15 @@ const mappingVersion = {
     question_mappings: {},
 };
 
-const renderForm = () =>
+const renderForm = () => {
+    const onConfirmedQuestionMapping = vi.fn();
     renderWithThemeAndIntlProvider(
         <QuestionMappingForm
             mapping={mappingVersion}
             mappingVersion={mappingVersion}
             question={{ name: 'age', type: 'integer' }}
             indexedQuestions={{}}
-            onConfirmedQuestionMapping={vi.fn()}
+            onConfirmedQuestionMapping={onConfirmedQuestionMapping}
             onUnmapQuestionMapping={vi.fn()}
             onNeverMapQuestionMapping={vi.fn()}
             fieldTypeOptions={[
@@ -39,13 +69,20 @@ const renderForm = () =>
             ]}
         />,
     );
+    return onConfirmedQuestionMapping;
+};
+
+const chooseOption = (combobox: HTMLElement, option: string) => {
+    fireEvent.mouseDown(combobox);
+    fireEvent.click(within(screen.getByRole('listbox')).getByText(option));
+};
 
 describe('QuestionMappingForm for a tracker', () => {
-    it('selects the first field type and iaso field', () => {
+    it('selects the first field type', () => {
         renderForm();
-        const [fieldType, iasoField] = screen.getAllByRole('combobox');
-        expect(fieldType).toHaveValue('Program data element');
-        expect(iasoField).toHaveValue('Value from the form');
+        expect(screen.getByRole('combobox')).toHaveValue(
+            'Program data element',
+        );
         expect(screen.queryByText(/Value not found/)).toBeNull();
         expect(
             screen.getByText(/Search for tracker data element/),
@@ -54,13 +91,8 @@ describe('QuestionMappingForm for a tracker', () => {
 
     it('offers the tracked entity attribute search once chosen', () => {
         renderForm();
-        fireEvent.mouseDown(screen.getAllByRole('combobox')[0]);
-        fireEvent.click(
-            within(screen.getByRole('listbox')).getByText(
-                'Tracked Entity Attribute',
-            ),
-        );
-        expect(screen.getAllByRole('combobox')[0]).toHaveValue(
+        chooseOption(screen.getByRole('combobox'), 'Tracked Entity Attribute');
+        expect(screen.getByRole('combobox')).toHaveValue(
             'Tracked Entity Attribute',
         );
         expect(
@@ -69,5 +101,34 @@ describe('QuestionMappingForm for a tracker', () => {
         expect(
             screen.queryByText(/Search for tracker data element/),
         ).toBeNull();
+    });
+
+    it('fills an org unit element with the instance org unit when asked', () => {
+        const onConfirmed = renderForm();
+        fireEvent.click(screen.getByText('propose facility'));
+        const [, iasoField] = screen.getAllByRole('combobox');
+        expect(iasoField).toHaveValue('Value from the form');
+        chooseOption(iasoField, 'Org unit');
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+        expect(onConfirmed).toHaveBeenCalledWith([
+            { ...facility, iaso_field: ORG_UNIT_IASO_FIELD },
+        ]);
+    });
+
+    it('takes the answer of an org unit element by default', () => {
+        const onConfirmed = renderForm();
+        fireEvent.click(screen.getByText('propose facility'));
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+        expect(onConfirmed).toHaveBeenCalledWith([facility]);
+    });
+
+    it('does not offer the instance property for another value type', () => {
+        const onConfirmed = renderForm();
+        fireEvent.click(screen.getByText('propose facility'));
+        chooseOption(screen.getAllByRole('combobox')[1], 'Org unit');
+        fireEvent.click(screen.getByText('propose weight'));
+        expect(screen.getAllByRole('combobox')).toHaveLength(1);
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+        expect(onConfirmed).toHaveBeenCalledWith([weight]);
     });
 });

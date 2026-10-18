@@ -5,6 +5,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import MESSAGES from '../../messages';
 import { QuestionMapping } from '../../types';
+import { isOrgUnitTarget, ORG_UNIT_IASO_FIELD } from '../../utils';
 import ObjectDumper from '../ObjectDumper';
 import { ChipItem, ChipsRow } from './ChipsRow';
 import { LabeledValue } from './LabeledValue';
@@ -140,10 +141,17 @@ const TrackerItemSummary: FunctionComponent<ItemProps> = ({
                     label={formatMessage(MESSAGES.valueType)}
                     value={target.valueType ?? item.valueType}
                 />
-                <LabeledValue
-                    label={formatMessage(MESSAGES.useInstanceProperty)}
-                    value={item.iaso_field}
-                />
+                {(isOrgUnitTarget(item) || item.iaso_field) && (
+                    <LabeledValue
+                        label={formatMessage(MESSAGES.useInstanceProperty)}
+                        value={
+                            item.iaso_field === ORG_UNIT_IASO_FIELD
+                                ? formatMessage(MESSAGES.instanceOrgUnit)
+                                : (item.iaso_field ??
+                                  formatMessage(MESSAGES.useValueFromForm))
+                        }
+                    />
+                )}
             </Box>
         </Box>
     );

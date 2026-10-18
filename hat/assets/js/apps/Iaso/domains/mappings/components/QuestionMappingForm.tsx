@@ -8,7 +8,7 @@ import Descriptor from '../descriptor';
 import { getMappingLabel } from '../importMappings';
 import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
-import { VALUE_FROM_FORM } from '../utils';
+import { isOrgUnitTarget, VALUE_FROM_FORM } from '../utils';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
@@ -23,6 +23,10 @@ const styles: SxStyles = {
     },
     repeatGroup: {
         mt: 1,
+    },
+    iasoField: {
+        mt: 2,
+        maxWidth: 500,
     },
     neverHint: {
         alignSelf: 'center',
@@ -419,17 +423,6 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                                         programId={programId}
                                     />
                                 )}
-                                <p>
-                                    <FormattedMessage
-                                        {...MESSAGES.useInstanceProperty}
-                                    />
-                                </p>
-                                <Select
-                                    keyValue="iasoField"
-                                    options={fieldOptions}
-                                    value={iasoField}
-                                    onChange={setIasoField}
-                                />
                             </>
                         )}
                     </div>
@@ -452,6 +445,20 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                             mapping={newQuestionMapping}
                             mappingVersion={mappingVersion}
                         />
+                        {mapping.mapping.mapping_type === 'EVENT_TRACKER' &&
+                            isOrgUnitTarget(newQuestionMapping) && (
+                                <Box sx={styles.iasoField}>
+                                    <Select
+                                        keyValue="iasoField"
+                                        label={formatMessage(
+                                            MESSAGES.useInstanceProperty,
+                                        )}
+                                        options={fieldOptions}
+                                        value={iasoField}
+                                        onChange={setIasoField}
+                                    />
+                                </Box>
+                            )}
                         <Box sx={styles.actions}>
                             <Button
                                 variant="contained"
@@ -465,6 +472,9 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                                     ) {
                                         item = [{ ...newQuestionMapping }];
                                         if (
+                                            isOrgUnitTarget(
+                                                newQuestionMapping,
+                                            ) &&
                                             iasoField &&
                                             iasoField !== VALUE_FROM_FORM
                                         ) {

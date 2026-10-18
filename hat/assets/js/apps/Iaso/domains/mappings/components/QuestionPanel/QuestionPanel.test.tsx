@@ -89,8 +89,11 @@ describe('MappingSummary', () => {
                         },
                     },
                     {
-                        dataElement: { id: 'deAge', name: 'Age' },
-                        valueType: 'INTEGER',
+                        dataElement: {
+                            id: 'deFacility',
+                            name: 'Facility',
+                            valueType: 'ORGANISATION_UNIT',
+                        },
                         iaso_field: 'instance.org_unit.source_ref',
                     },
                 ]}
@@ -100,12 +103,31 @@ describe('MappingSummary', () => {
         expect(fieldTexts()).toEqual([
             'Tracked Entity Attribute: Gender',
             'Value type: TEXT',
-            'Use instance property to fill in this answer: --',
-            'Program data element: Age',
-            'Value type: INTEGER',
-            'Use instance property to fill in this answer: instance.org_unit.source_ref',
+            'Program data element: Facility',
+            'Value type: ORGANISATION_UNIT',
+            'Use instance property to fill in this answer: Instance orgunit',
         ]);
         expect(screen.getByText('teaGender')).toBeInTheDocument();
+    });
+
+    it('shows that an org unit element takes the answer without instance property', () => {
+        renderWithThemeAndIntlProvider(
+            <MappingSummary
+                mapping={[
+                    {
+                        dataElement: {
+                            id: 'deFacility',
+                            name: 'Facility',
+                            valueType: 'ORGANISATION_UNIT',
+                        },
+                    },
+                ]}
+                mappingType="EVENT_TRACKER"
+            />,
+        );
+        expect(fieldTexts()).toContain(
+            "Use instance property to fill in this answer: Use the value from the form's answer",
+        );
     });
 
     it('keeps the layout of a mapping when the question is not mapped', () => {
@@ -132,7 +154,6 @@ describe('MappingSummary', () => {
         expect(fieldTexts()).toEqual([
             'Program data element: Never mapped',
             'Value type: --',
-            'Use instance property to fill in this answer: --',
         ]);
     });
 

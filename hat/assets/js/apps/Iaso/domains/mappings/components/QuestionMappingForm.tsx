@@ -6,6 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import Descriptor from '../descriptor';
 import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
+import { VALUE_FROM_FORM } from '../utils';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
@@ -189,8 +190,11 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
     const questionMapping =
         mapping.question_mappings[Descriptor.getKey(question)] || {};
     const [newQuestionMapping, setNewQuestionMapping] = React.useState();
-    const [iasoField, setIasoField] = React.useState(fieldOptions[0]);
-    const [fieldType, setFieldType] = React.useState(fieldTypeOptions[0]);
+    // the Select takes and returns the option value, not the option
+    const [iasoField, setIasoField] = React.useState(fieldOptions[0]?.value);
+    const [fieldType, setFieldType] = React.useState(
+        fieldTypeOptions[0]?.value,
+    );
 
     if (indexedQuestions === undefined) {
         return <LoadingSpinner />;
@@ -348,13 +352,14 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
             {mapping.mapping.mapping_type === 'EVENT_TRACKER' && (
                 <div>
                     <Select
+                        keyValue="fieldType"
                         options={fieldTypeOptions}
                         value={fieldType}
                         onChange={setFieldType}
                     />
                     {fieldType && (
                         <>
-                            {fieldType.value === 'dataElement' && (
+                            {fieldType === 'dataElement' && (
                                 <Dhis2ProgramDataElementSearch
                                     question={question}
                                     onChange={onChange}
@@ -363,7 +368,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                                     programId={programId}
                                 />
                             )}
-                            {fieldType.value === 'trackedEntityAttribute' && (
+                            {fieldType === 'trackedEntityAttribute' && (
                                 <Dhis2ProgramTrackedEntityAttributeSearch
                                     question={question}
                                     onChange={onChange}
@@ -378,6 +383,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                                 />
                             </p>
                             <Select
+                                keyValue="iasoField"
                                 options={fieldOptions}
                                 value={iasoField}
                                 onChange={setIasoField}
@@ -420,12 +426,12 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                                 item = [{ ...newQuestionMapping }];
                                 if (
                                     iasoField &&
-                                    iasoField.value !== 'undefined'
+                                    iasoField !== VALUE_FROM_FORM
                                 ) {
                                     item = [
                                         {
                                             ...newQuestionMapping,
-                                            iaso_field: iasoField.value,
+                                            iaso_field: iasoField,
                                         },
                                     ];
                                 }

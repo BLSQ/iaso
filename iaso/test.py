@@ -16,6 +16,8 @@ from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
+from django.core.management.sql import emit_post_migrate_signal
+from django.db import connections, transaction
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase, TransactionTestCase as BaseTransactionTestCase
 from django.urls import clear_url_caches, reverse
@@ -280,6 +282,28 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
+
+
+class TransactionTestCase(BaseTransactionTestCase, IasoTestCaseMixin):
+    """
+    Empties the tables after each test with DELETE instead of Django's TRUNCATE of every table:
+    on the ~200 mostly empty tables of the test database, TRUNCATE takes ~1.4s (new files for every
+    table and index), DELETE ~0.05s.
+    Doesn't support `available_apps` / `serialized_rollback` (not used in iaso).
+    """
+
+    def _fixture_teardown(self):
+        for db_name in self._databases_names(include_mirrors=False):
+            connection = connections[db_name]
+            tables = connection.introspection.django_table_names(only_existing=True, include_views=False)
+            # the foreign keys created by Django are deferrable: the tables can be emptied in any order
+            sql = "SET CONSTRAINTS ALL DEFERRED;" + "".join(
+                f"DELETE FROM {connection.ops.quote_name(table)};" for table in tables
+            )
+            with transaction.atomic(using=db_name), connection.cursor() as cursor:
+                cursor.execute(sql)
+            # like the flush command: recreate the content types and permissions
+            emit_post_migrate_signal(verbosity=0, interactive=False, db=db_name)
 
 
 def try_json(response):

@@ -8,7 +8,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.sessions.models import Session
 from django.contrib.sites.models import Site
 from django.core import management
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from django.utils import timezone
 from django_sql_dashboard.models import Dashboard as SqlDashboard
 
@@ -20,10 +20,10 @@ from iaso.models.data_store import JsonDataStore
 from iaso.models.json_config import Config
 from iaso.models.microplanning import Assignment, PlanningSamplingResult
 from iaso.models.microplanning.plannings import PlanningConfig
-from iaso.test import IasoTestCaseMixin
+from iaso.test import TransactionTestCase
 
 
-class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
+class DeleteAccountsCommandTestCase(TransactionTestCase):
     """
     Builds two fully-populated accounts (one to keep, one to delete) covering the
     auto-discovered FK graph, the out-of-graph M2M gaps (DataSource/SourceVersion/OrgUnit,

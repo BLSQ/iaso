@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import uuid
@@ -254,32 +253,13 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
         )
 
     def test_list_entities_invalid_cursor_returns_400(self):
-        invalid_cursors = {
-            "not base64": "abc!",
-            "not json": "YWJj",  # "abc"
-            "raw id": "12",
-            "no model": base64.urlsafe_b64encode(b'{"after":1}').decode(),
-            "no after": base64.urlsafe_b64encode(b'{"model":"entities"}').decode(),
-            "string id": base64.urlsafe_b64encode(b'{"model":"entities","after":"1"}').decode(),
-            "boolean id": base64.urlsafe_b64encode(b'{"model":"entities","after":true}').decode(),
-            "negative id": encode_cursor("entities", -1),
-            "not an object": base64.urlsafe_b64encode(b"[1]").decode(),
-        }
+        """The decoding cases are covered by iaso.tests.api.test_query_params, this checks the endpoint uses it."""
+        self.create_entities(2)
 
-        for name, cursor in invalid_cursors.items():
-            with self.subTest(name):
-                response = self.get_entities_page(cursor=cursor)
-
-                response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-                self.assertEqual(response_json, {"cursor": f"Invalid cursor '{cursor}'."})
-
-    def test_list_entities_cursor_of_another_model_returns_400(self):
-        entities = self.create_entities(2)
-
-        response = self.get_entities_page(cursor=encode_cursor("orgunits", entities[0].pk))
+        response = self.get_entities_page(cursor="12")
 
         response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response_json, {"cursor": "This cursor pages 'orgunits', not 'entities'."})
+        self.assertEqual(response_json, {"cursor": "Invalid cursor '12'."})
 
     def test_list_entities_cursor_with_order_returns_400(self):
         entities = self.create_entities(2)

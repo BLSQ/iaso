@@ -97,6 +97,10 @@ describe('Validation workflow list UI integration test', () => {
                     {
                         id: 1,
                         form: { id: 1, name: 'Some form' },
+                        org_unit: {
+                            id: 1,
+                            name: 'some org unit',
+                        },
                         project: {
                             id: 1,
                             name: 'some project',
@@ -125,6 +129,7 @@ describe('Validation workflow list UI integration test', () => {
         });
 
         expect(screen.getByText('Approved')).toBeVisible();
+        expect(screen.getByText('some org unit')).toBeVisible();
         expect(screen.getByText('some project')).toBeVisible();
         expect(screen.getByText('Some form')).toBeVisible();
 

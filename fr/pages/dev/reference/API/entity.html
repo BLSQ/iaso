@@ -1454,22 +1454,7 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
+          <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
@@ -1576,7 +1561,22 @@ submission</p>
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""An entity represents a physical object or person with a known Entity Type</span>
 
 <span class="sd">    Contrary to forms, they are not linked to a specific OrgUnit.</span>
@@ -1730,14 +1730,14 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_latest_instance_created_at</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Retrieve the datetime of the last created instance for this entity."""</span>
     <span class="n">instance_dates</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">saved_at</span>
@@ -1767,23 +1767,23 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pending_duplicate_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Retrieve the id list of related pending duplicate entities."""</span>
     <span class="n">results</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"pending_duplicates1"</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"pending_duplicates2"</span><span class="p">):</span>
@@ -1825,29 +1825,29 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span>
+        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">399</span>
 <span class="normal">400</span>
 <span class="normal">401</span>
 <span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
 <span class="normal">405</span>
-<span class="normal">406</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This method does a proper soft-deletion of the entity:</span>
 <span class="sd">    - soft delete the entity</span>
@@ -2070,8 +2070,23 @@ submission</p>
 <span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
-<span class="normal">308</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">EntityQuerySet</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">QuerySet</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_filter_entities_with_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">limit_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">org_units_qs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">EntityQuerySet</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">QuerySet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_filter_entities_with_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">limit_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">org_units_qs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">after_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""AND-combine, as *independent* conditions, an org-unit-scope check and a limit_date check</span>
 <span class="sd">        against an entity's related instances: each condition gets its own correlated Exists(...),</span>
 <span class="sd">        so a *different* instance of the same entity can satisfy each one (e.g. an old in-scope</span>
@@ -2090,20 +2105,23 @@ submission</p>
 <span class="sd">        limit_date, ~396K candidate entities) that adds up to ~1.8M repeated point lookups against</span>
 <span class="sd">        iaso_orgunit (measured ~97GB / 3.7s). A concrete id list sidesteps the question entirely --</span>
 <span class="sd">        Postgres just probes iaso_instance_org_unit_entity_idx directly.</span>
+
+<span class="sd">        after_id (keyset pagination) is repeated as `entity_id &gt; after_id` inside each Exists(...):</span>
+<span class="sd">        Postgres doesn't push the outer `id &gt; after_id` into them on its own.</span>
 <span class="sd">        """</span>
         <span class="n">queryset</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">instances</span> <span class="o">=</span> <span class="n">Instance</span><span class="o">.</span><span class="n">non_deleted_objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">entity_id</span><span class="o">=</span><span class="n">OuterRef</span><span class="p">(</span><span class="s2">"pk"</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">after_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__gt</span><span class="o">=</span><span class="n">after_id</span><span class="p">)</span>
+            <span class="n">instances</span> <span class="o">=</span> <span class="n">instances</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">entity_id__gt</span><span class="o">=</span><span class="n">after_id</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">org_units_qs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">org_unit_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">org_units_qs</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-            <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                <span class="n">Exists</span><span class="p">(</span><span class="n">Instance</span><span class="o">.</span><span class="n">non_deleted_objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">org_unit_id__in</span><span class="o">=</span><span class="n">org_unit_ids</span><span class="p">,</span> <span class="n">entity_id</span><span class="o">=</span><span class="n">OuterRef</span><span class="p">(</span><span class="s2">"pk"</span><span class="p">)))</span>
-            <span class="p">)</span>
+            <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Exists</span><span class="p">(</span><span class="n">instances</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">org_unit_id__in</span><span class="o">=</span><span class="n">org_unit_ids</span><span class="p">)))</span>
 
         <span class="k">if</span> <span class="n">limit_date</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                    <span class="n">Exists</span><span class="p">(</span><span class="n">Instance</span><span class="o">.</span><span class="n">non_deleted_objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">updated_at__gte</span><span class="o">=</span><span class="n">limit_date</span><span class="p">,</span> <span class="n">entity_id</span><span class="o">=</span><span class="n">OuterRef</span><span class="p">(</span><span class="s2">"pk"</span><span class="p">)))</span>
-                <span class="p">)</span>
+                <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Exists</span><span class="p">(</span><span class="n">instances</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">updated_at__gte</span><span class="o">=</span><span class="n">limit_date</span><span class="p">)))</span>
             <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">InvalidLimitDateError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Invalid limit date </span><span class="si">{</span><span class="n">limit_date</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
@@ -2134,11 +2152,14 @@ submission</p>
         <span class="n">user</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">User</span><span class="p">,</span> <span class="n">AnonymousUser</span><span class="p">]],</span>
         <span class="n">limit_date</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">json_content</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">after_id</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Entities queryset for the mobile app's normal sync: scoped to the user's account and</span>
 <span class="sd">        their profile's org units, merged with limit_date/json_content, with the</span>
 <span class="sd">        instances/attributes the mobile serializer needs prefetched."""</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_for_mobile_entity</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">limit_date</span><span class="p">,</span> <span class="n">json_content</span><span class="p">,</span> <span class="n">restrict_to_user_org_units</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_for_mobile_entity</span><span class="p">(</span>
+            <span class="n">user</span><span class="p">,</span> <span class="n">limit_date</span><span class="p">,</span> <span class="n">json_content</span><span class="p">,</span> <span class="n">restrict_to_user_org_units</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">after_id</span><span class="o">=</span><span class="n">after_id</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_for_mobile_entity_non_geo_restricted_search</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2161,6 +2182,7 @@ submission</p>
         <span class="n">json_content</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">restrict_to_user_org_units</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">after_id</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">UserNotAuthError</span><span class="p">(</span><span class="s2">"User not Authenticated"</span><span class="p">)</span>
@@ -2176,8 +2198,10 @@ submission</p>
         <span class="c1"># as two independent Exists(...) checks (a different instance can satisfy each), not merged</span>
         <span class="c1"># into one -- that's what keeps this correct for an entity whose in-scope activity and its</span>
         <span class="c1"># most recent activity happened on different instances.</span>
-        <span class="k">if</span> <span class="n">org_units_qs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">limit_date</span><span class="p">:</span>
-            <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">_filter_entities_with_instances</span><span class="p">(</span><span class="n">org_units_qs</span><span class="o">=</span><span class="n">org_units_qs</span><span class="p">,</span> <span class="n">limit_date</span><span class="o">=</span><span class="n">limit_date</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">org_units_qs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">limit_date</span> <span class="ow">or</span> <span class="n">after_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">queryset</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">_filter_entities_with_instances</span><span class="p">(</span>
+                <span class="n">org_units_qs</span><span class="o">=</span><span class="n">org_units_qs</span><span class="p">,</span> <span class="n">limit_date</span><span class="o">=</span><span class="n">limit_date</span><span class="p">,</span> <span class="n">after_id</span><span class="o">=</span><span class="n">after_id</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">json_content</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -2228,7 +2252,13 @@ submission</p>
             <span class="k">if</span> <span class="n">project</span><span class="o">.</span><span class="n">account</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ProjectNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Project Account is None for app_id </span><span class="si">{</span><span class="n">app_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># Should be a 401</span>
 
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">entity_type__in</span><span class="o">=</span><span class="n">EntityType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">reference_form__projects__app_id</span><span class="o">=</span><span class="n">app_id</span><span class="p">))</span>
+            <span class="c1"># A concrete id list, not a subquery: Postgres can't estimate an `IN (SELECT ...)` and, on the mobile</span>
+            <span class="c1"># entity sync, underestimates the rows so badly that it sorts the whole scope instead of walking the</span>
+            <span class="c1"># primary key up to the page size (cursor page: ~680ms -&gt; ~8ms on 1M entities).</span>
+            <span class="n">entity_type_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">EntityType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">reference_form__projects__app_id</span><span class="o">=</span><span class="n">app_id</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">"id"</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">entity_type_id__in</span><span class="o">=</span><span class="n">entity_type_ids</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">Project</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ProjectNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Project Not Found for app_id </span><span class="si">{</span><span class="n">app_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
@@ -2258,7 +2288,7 @@ submission</p>
 
 
 <h3 id="iaso.models.entity.EntityQuerySet.filter_for_mobile_entity" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">filter_for_mobile_entity</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">limit_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">json_content</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">filter_for_mobile_entity</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">limit_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">json_content</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">after_id</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#iaso.models.entity.EntityQuerySet.filter_for_mobile_entity" class="headerlink" title="Permanent link">#</a></h3>
 
@@ -2271,25 +2301,31 @@ instances/attributes the mobile serializer needs prefetched.</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
+        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
-<span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_for_mobile_entity</span><span class="p">(</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_for_mobile_entity</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">user</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">User</span><span class="p">,</span> <span class="n">AnonymousUser</span><span class="p">]],</span>
     <span class="n">limit_date</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">json_content</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">after_id</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Entities queryset for the mobile app's normal sync: scoped to the user's account and</span>
 <span class="sd">    their profile's org units, merged with limit_date/json_content, with the</span>
 <span class="sd">    instances/attributes the mobile serializer needs prefetched."""</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_for_mobile_entity</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">limit_date</span><span class="p">,</span> <span class="n">json_content</span><span class="p">,</span> <span class="n">restrict_to_user_org_units</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_for_mobile_entity</span><span class="p">(</span>
+        <span class="n">user</span><span class="p">,</span> <span class="n">limit_date</span><span class="p">,</span> <span class="n">json_content</span><span class="p">,</span> <span class="n">restrict_to_user_org_units</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">after_id</span><span class="o">=</span><span class="n">after_id</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></tbody></table></div>
       </details>
   </div>
@@ -2317,19 +2353,19 @@ tracked separately, not addressed by this method).</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
+        <div class="highlight"><table class="highlighttable"><tbody><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_for_mobile_entity_non_geo_restricted_search</span><span class="p">(</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">filter_for_mobile_entity_non_geo_restricted_search</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">user</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">User</span><span class="p">,</span> <span class="n">AnonymousUser</span><span class="p">]],</span>
     <span class="n">limit_date</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>

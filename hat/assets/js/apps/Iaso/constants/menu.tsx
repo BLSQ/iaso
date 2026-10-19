@@ -72,6 +72,7 @@ import {
     CHANGE_REQUEST_CONFIG,
     FORMS_SUBMISSIONS,
     FORMS_STATS,
+    baseUrls,
 } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
@@ -249,7 +250,8 @@ const menuItems = (
                             icon: props => <AssessmentIcon {...props} />,
                             isActive: pathname =>
                                 pathname?.includes(FORMS_STATS) &&
-                                !pathname?.includes('completeness'),
+                                !pathname?.includes('completeness') &&
+                                !pathname?.includes(baseUrls.promptness),
                         },
                         {
                             label: formatMessage(MESSAGES.completeness),

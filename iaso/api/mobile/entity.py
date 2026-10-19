@@ -335,9 +335,8 @@ class MobileEntityViewSet(ModelViewSet):
         # EntityQuerySet._filter_entities_with_instances' for why they stay independent.
         # The cursor bound is also pushed into the Exists(...) subqueries: Postgres can't derive it from
         # the outer `id > cursor`, and without it each page re-probes the instances of every previous page.
-        queryset = filter_for_mobile_entity(
-            queryset, user, self.request, after_id=get_cursor_id(self.request, self.paginator.cursor_model)
-        )
+        cursor_id = get_cursor_id(self.request, self.paginator.cursor_model)
+        queryset = filter_for_mobile_entity(queryset, user, self.request, after_id=cursor_id)
 
         # select_related (a JOIN) is right here, not prefetch_related: `filter_for_mobile_entity` already
         # filters on `attributes__deleted`, which forces Postgres to join iaso_instance into this query

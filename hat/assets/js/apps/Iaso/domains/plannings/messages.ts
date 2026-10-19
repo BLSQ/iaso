@@ -549,6 +549,35 @@ const MESSAGES = defineMessages({
         defaultMessage: "No org units of this level's types in: {groups}",
         id: 'iaso.plannings.label.groupsWithoutLevelOrgUnits',
     },
+    explore: {
+        defaultMessage: 'Explore',
+        id: 'iaso.plannings.label.explore',
+    },
+    exploreModeTooltip: {
+        defaultMessage: 'Browse teams and open subteams',
+        id: 'iaso.plannings.label.exploreModeTooltip',
+    },
+    assign: {
+        defaultMessage: 'Assign',
+        id: 'iaso.plannings.label.assign',
+    },
+    assignModeTooltip: {
+        defaultMessage: 'Assign org units to team members',
+        id: 'iaso.plannings.label.assignModeTooltip',
+    },
+    assignmentsMode: {
+        defaultMessage: 'Mode',
+        id: 'iaso.plannings.label.assignmentsMode',
+    },
+    editingPublishedPlanning: {
+        defaultMessage: 'You are editing a published planning.',
+        id: 'iaso.plannings.label.editingPublishedPlanning',
+    },
+    editingPublishedPlanningDetails: {
+        defaultMessage:
+            'Every assignment change is sent to the agents concerned at their next synchronisation and can change the work they are doing on the field.',
+        id: 'iaso.plannings.label.editingPublishedPlanningDetails',
+    },
 });
 
 export default MESSAGES;

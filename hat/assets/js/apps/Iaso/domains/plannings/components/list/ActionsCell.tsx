@@ -37,7 +37,7 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
                 />
             </DisplayIfUserHasPerm>
             <IconButtonComponent
-                url={`/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team_details?.id}`}
+                url={`/${baseUrls.assignments}/planningId/${planning.id}`}
                 tooltipMessage={MESSAGES.assignments}
                 size="small"
                 replace={false}

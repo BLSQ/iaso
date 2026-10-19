@@ -341,7 +341,8 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             expected_attachment_filename=expected_name,
             streaming=streaming,
         )
-        decoded_response = content.decode("utf-8")
+        # "utf-8-sig": strips the UTF-8 BOM some CSV exports start with (for Excel), if any
+        decoded_response = content.decode("utf-8-sig")
 
         if return_as_lists:
             response_string = "".join(s for s in decoded_response)

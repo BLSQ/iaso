@@ -11,7 +11,7 @@ The computation is done in 3 steps:
    the parent org unit.
 """
 
-from typing import List, NamedTuple, Optional
+from typing import Dict, List, NamedTuple, Optional
 
 from django.db.models import (
     BooleanField,
@@ -46,6 +46,13 @@ class PathOrgUnitIds(Func):
     """
 
     template = "unnest(string_to_array(%(expressions)s::text, '.'))::integer"
+    output_field = IntegerField()
+
+
+class PathLevel(Func):
+    """Level of an org unit in the pyramid, from its ltree path: 1 for a root, 2 for its children, etc."""
+
+    function = "nlevel"
     output_field = IntegerField()
 
 
@@ -216,9 +223,35 @@ def annotate_rows(
     return (
         annotate_counts(rows, targets_ctes)
         .select_related("parent")
-        # Only the columns used by `PromptnessStatsRowSerializer`
-        .only("id", "name", "org_unit_type", "parent__id", "parent__name")
+        # Only the columns used by `PromptnessStatsRowSerializer` (and `path` by `PromptnessStatsCsvRowSerializer`)
+        .only("id", "name", "org_unit_type", "path", "parent__id", "parent__name")
     )
+
+
+class RowsAncestors(NamedTuple):
+    """Ancestors of the rows, see `get_rows_ancestors()`"""
+
+    names: Dict[int, str]  # id -> name
+    levels_count: int  # level of the deepest ancestor: the root is at level 1
+
+
+def get_rows_ancestors(rows: QuerySet[OrgUnit]) -> RowsAncestors:
+    """Ancestors of the rows of `get_rows()` (not the rows themselves), from the root of the pyramid, in 1 query.
+
+    The path of the direct parent of a row lists all the ancestors of the row: expanding the paths of the parents
+    gives all the ancestors, without fetching the rows. There are few of them compared to the rows.
+    """
+    parents = OrgUnit.objects.filter(id__in=rows.values("parent_id"))
+    ancestor_ids = parents.annotate(ancestor_id=PathOrgUnitIds("path")).values("ancestor_id")
+    ancestors = (
+        OrgUnit.objects.filter(id__in=ancestor_ids).annotate(level=PathLevel("path")).values_list("id", "name", "level")
+    )
+    names = {}
+    levels_count = 0
+    for ancestor_id, name, level in ancestors:
+        names[ancestor_id] = name
+        levels_count = max(levels_count, level)
+    return RowsAncestors(names=names, levels_count=levels_count)
 
 
 def get_totals(parent_org_unit: OrgUnit, target_org_units: QuerySet[OrgUnit]) -> OrgUnit:

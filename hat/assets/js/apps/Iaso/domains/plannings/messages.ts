@@ -445,6 +445,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Open assignments',
         id: 'iaso.plannings.label.openAssignments',
     },
+    assignmentsForPlanning: {
+        defaultMessage: 'Assignments for planning: {name}',
+        id: 'iaso.plannings.label.assignmentsForPlanning',
+    },
     info: {
         defaultMessage: 'Info',
         id: 'iaso.plannings.label.info',

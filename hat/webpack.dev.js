@@ -278,6 +278,11 @@ module.exports = {
                     __dirname,
                     '../node_modules/@mui/styles',
                 ),
+                // Pickers read the LocalizationProvider context set up by iaso
+                '@mui/x-date-pickers': path.resolve(
+                    __dirname,
+                    '../node_modules/@mui/x-date-pickers',
+                ),
                 '@emotion/react': path.resolve(
                     __dirname,
                     '../node_modules/@emotion/react',

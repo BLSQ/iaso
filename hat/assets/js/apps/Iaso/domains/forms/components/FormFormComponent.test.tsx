@@ -255,12 +255,8 @@ describe('FormFormComponent - promptness grace period days', () => {
         });
     });
 
-    it('is hidden until the advanced settings are shown', () => {
+    it('is displayed under the period type, without the advanced settings', () => {
         renderForm();
-        expect(
-            screen.queryByTestId('input-promptness_grace_period_days'),
-        ).not.toBeInTheDocument();
-        showAdvancedSettings();
         expect(
             screen.getByTestId('input-promptness_grace_period_days'),
         ).toBeInTheDocument();
@@ -268,7 +264,6 @@ describe('FormFormComponent - promptness grace period days', () => {
 
     it('is hidden when the form has no period type', () => {
         renderForm({ period_type: makeField(null) });
-        showAdvancedSettings();
         expect(
             screen.queryByTestId('input-promptness_grace_period_days'),
         ).not.toBeInTheDocument();
@@ -276,7 +271,6 @@ describe('FormFormComponent - promptness grace period days', () => {
 
     it('displays the current value', () => {
         renderForm({ promptness_grace_period_days: makeField(5) });
-        showAdvancedSettings();
         expect(
             screen.getByTestId('input-field-promptness_grace_period_days'),
         ).toHaveValue('5');
@@ -285,7 +279,6 @@ describe('FormFormComponent - promptness grace period days', () => {
     it('calls setFieldValue with the new value on change', () => {
         const setFieldValue = vi.fn();
         renderForm({}, setFieldValue);
-        showAdvancedSettings();
         fireEvent.change(
             screen.getByTestId('input-field-promptness_grace_period_days'),
             { target: { value: '3' } },
@@ -302,7 +295,6 @@ describe('FormFormComponent - promptness grace period days', () => {
             { promptness_grace_period_days: makeField(5) },
             setFieldValue,
         );
-        showAdvancedSettings();
         fireEvent.change(
             screen.getByTestId('input-field-promptness_grace_period_days'),
             { target: { value: '' } },
@@ -337,7 +329,6 @@ describe('FormFormComponent - promptness grace period days', () => {
                 errors: [backendError],
             },
         });
-        showAdvancedSettings();
         expect(
             screen.getByTestId('errors-promptness_grace_period_days'),
         ).toHaveTextContent(backendError);

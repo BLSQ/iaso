@@ -163,6 +163,35 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         options={periodTypeOptionsWithNoPeriod}
                         label={MESSAGES.periodType}
                     />
+                    {displayPeriods && (
+                        <InputWithInfos
+                            infos={formatMessage(
+                                MESSAGES.promptnessGracePeriodDaysInfo,
+                            )}
+                        >
+                            <InputComponent
+                                keyValue="promptness_grace_period_days"
+                                onChange={(key, value) =>
+                                    setFieldValue(
+                                        key,
+                                        value === '' || value == null
+                                            ? null
+                                            : value,
+                                    )
+                                }
+                                value={
+                                    currentForm.promptness_grace_period_days
+                                        ?.value ?? undefined
+                                }
+                                errors={
+                                    currentForm.promptness_grace_period_days
+                                        ?.errors ?? []
+                                }
+                                type="number"
+                                label={MESSAGES.promptnessGracePeriodDays}
+                            />
+                        </InputWithInfos>
+                    )}
 
                     <Grid container spacing={2}>
                         {displayPeriods && (
@@ -400,39 +429,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 options={changeRequestModeOptions}
                                 label={MESSAGES.changeRequestMode}
                             />
-                            {displayPeriods && (
-                                <InputWithInfos
-                                    infos={formatMessage(
-                                        MESSAGES.promptnessGracePeriodDaysInfo,
-                                    )}
-                                >
-                                    <InputComponent
-                                        keyValue="promptness_grace_period_days"
-                                        onChange={(key, value) =>
-                                            setFieldValue(
-                                                key,
-                                                value === '' || value == null
-                                                    ? null
-                                                    : value,
-                                            )
-                                        }
-                                        value={
-                                            currentForm
-                                                .promptness_grace_period_days
-                                                ?.value ?? undefined
-                                        }
-                                        errors={
-                                            currentForm
-                                                .promptness_grace_period_days
-                                                ?.errors ?? []
-                                        }
-                                        type="number"
-                                        label={
-                                            MESSAGES.promptnessGracePeriodDays
-                                        }
-                                    />
-                                </InputWithInfos>
-                            )}
 
                             <Box
                                 style={{

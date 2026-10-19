@@ -94,7 +94,6 @@ const Filters: FunctionComponent<Props> = ({
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
-    const [textSearchError, setTextSearchError] = useState<boolean>(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
@@ -164,8 +163,6 @@ const Filters: FunctionComponent<Props> = ({
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
-                        blockForbiddenChars
-                        onErrorChange={setTextSearchError}
                     />
                     {!hasFeatureFlag(
                         currentUser,
@@ -293,7 +290,7 @@ const Filters: FunctionComponent<Props> = ({
                             <Box mb={2}>
                                 <Button
                                     data-test="search-button"
-                                    disabled={textSearchError || !searchEnabled}
+                                    disabled={!searchEnabled}
                                     variant="contained"
                                     color="primary"
                                     onClick={() => handleSearch()}

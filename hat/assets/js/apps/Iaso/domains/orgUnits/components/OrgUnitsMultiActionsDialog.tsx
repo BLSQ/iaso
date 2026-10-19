@@ -109,7 +109,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         currentUser,
     );
     const searches = useMemo(
-        () => decodeSearch(decodeURI(params.searches)),
+        () => decodeSearch(params.searches),
         [params.searches],
     );
     const defaultVersion = currentUser?.account?.default_version;

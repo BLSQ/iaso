@@ -12,7 +12,6 @@ export const PlanningMissionPolymorphicList = zod.union([
         mission_type: zod.enum(['FORM_FILLING']),
         id: zod.int(),
         name: zod.string(),
-        forms_count: zod.int(),
         created_at: zod.iso.datetime({ offset: true }),
     }),
     zod.strictObject({
@@ -23,7 +22,6 @@ export const PlanningMissionPolymorphicList = zod.union([
             id: zod.int(),
             name: zod.string(),
         }),
-        forms_count: zod.int(),
         created_at: zod.iso.datetime({ offset: true }),
     }),
     zod.strictObject({
@@ -34,7 +32,6 @@ export const PlanningMissionPolymorphicList = zod.union([
             id: zod.int(),
             name: zod.string(),
         }),
-        forms_count: zod.int(),
         created_at: zod.iso.datetime({ offset: true }),
     }),
 ]);

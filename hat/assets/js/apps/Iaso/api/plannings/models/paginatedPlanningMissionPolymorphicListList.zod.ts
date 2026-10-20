@@ -21,7 +21,6 @@ export const PaginatedPlanningMissionPolymorphicListList = zod.strictObject({
                     mission_type: zod.enum(['FORM_FILLING']),
                     id: zod.int(),
                     name: zod.string(),
-                    forms_count: zod.int(),
                     created_at: zod.iso.datetime({ offset: true }),
                 }),
                 zod.strictObject({
@@ -32,7 +31,6 @@ export const PaginatedPlanningMissionPolymorphicListList = zod.strictObject({
                         id: zod.int(),
                         name: zod.string(),
                     }),
-                    forms_count: zod.int(),
                     created_at: zod.iso.datetime({ offset: true }),
                 }),
                 zod.strictObject({
@@ -43,7 +41,6 @@ export const PaginatedPlanningMissionPolymorphicListList = zod.strictObject({
                         id: zod.int(),
                         name: zod.string(),
                     }),
-                    forms_count: zod.int(),
                     created_at: zod.iso.datetime({ offset: true }),
                 }),
             ]),

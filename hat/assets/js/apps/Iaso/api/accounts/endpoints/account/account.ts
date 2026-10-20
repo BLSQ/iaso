@@ -498,10 +498,7 @@ export const useApiAccountsUpdate = <
 > => {
     const backupQueryClient = useQueryClient();
     return useMutation(
-        useApiAccountsUpdateMutationOptions(
-            queryClient ?? backupQueryClient,
-            options,
-        ),
+        useApiAccountsUpdateMutationOptions(backupQueryClient, options),
     );
 };
 export const getApiAccountsPartialUpdateUrl = (
@@ -948,10 +945,7 @@ export const useApiAccountsAiApiKeyUpdate = <
 > => {
     const backupQueryClient = useQueryClient();
     return useMutation(
-        useApiAccountsAiApiKeyUpdateMutationOptions(
-            queryClient ?? backupQueryClient,
-            options,
-        ),
+        useApiAccountsAiApiKeyUpdateMutationOptions(backupQueryClient, options),
     );
 };
 export const getApiAccountsAiApiKeyDestroyUrl = (
@@ -1086,7 +1080,7 @@ export const useApiAccountsAiApiKeyDestroy = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiAccountsAiApiKeyDestroyMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );

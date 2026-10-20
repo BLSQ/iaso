@@ -310,7 +310,6 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         res = self.client.get(self.url, data={"max_depth": 2})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        print(res_data)
         self.assertValidResponse(res_data, 2)
 
         self.assertEqual(

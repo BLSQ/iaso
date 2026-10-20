@@ -16,15 +16,15 @@ import {
     StatusE52Enum,
 } from '../../models';
 import type {
-    MissionEntityTypeListTyped,
-    MissionFormListTyped,
-    MissionOrgUnitTypeListTyped,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
     PaginatedPlanningSamplingResultReadList,
     PlanningDropdown,
+    PlanningMissionEntityTypeListTyped,
+    PlanningMissionFormListTyped,
+    PlanningMissionOrgUnitTypeListTyped,
     PlanningOrgUnit,
     PlanningOrgUnitTable,
     PlanningRead,
@@ -607,10 +607,10 @@ export const getApiMicroplanningPlanningsPartialUpdateResponseMock = (
     ...overrideResponse,
 });
 
-export const getApiMicroplanningPlanningsMissionsListResponseMissionFormListTypedMock =
+export const getApiMicroplanningPlanningsMissionsListResponsePlanningMissionFormListTypedMock =
     (
-        overrideResponse: Partial<MissionFormListTyped> = {},
-    ): MissionFormListTyped => ({
+        overrideResponse: Partial<PlanningMissionFormListTyped> = {},
+    ): PlanningMissionFormListTyped => ({
         ...{
             ...{
                 ...{
@@ -624,7 +624,6 @@ export const getApiMicroplanningPlanningsMissionsListResponseMissionFormListType
                     mission_type: faker.helpers.arrayElement(
                         Object.values(MissionTypeDa2Enum),
                     ),
-                    forms_count: faker.number.int(),
                     created_at:
                         faker.date.past().toISOString().slice(0, 19) + 'Z',
                 },
@@ -634,10 +633,10 @@ export const getApiMicroplanningPlanningsMissionsListResponseMissionFormListType
         ...overrideResponse,
     });
 
-export const getApiMicroplanningPlanningsMissionsListResponseMissionOrgUnitTypeListTypedMock =
+export const getApiMicroplanningPlanningsMissionsListResponsePlanningMissionOrgUnitTypeListTypedMock =
     (
-        overrideResponse: Partial<MissionOrgUnitTypeListTyped> = {},
-    ): MissionOrgUnitTypeListTyped => ({
+        overrideResponse: Partial<PlanningMissionOrgUnitTypeListTyped> = {},
+    ): PlanningMissionOrgUnitTypeListTyped => ({
         ...{
             ...{
                 ...{
@@ -659,7 +658,6 @@ export const getApiMicroplanningPlanningsMissionsListResponseMissionOrgUnitTypeL
                             }),
                         },
                     },
-                    forms_count: faker.number.int(),
                     created_at:
                         faker.date.past().toISOString().slice(0, 19) + 'Z',
                 },
@@ -671,10 +669,10 @@ export const getApiMicroplanningPlanningsMissionsListResponseMissionOrgUnitTypeL
         ...overrideResponse,
     });
 
-export const getApiMicroplanningPlanningsMissionsListResponseMissionEntityTypeListTypedMock =
+export const getApiMicroplanningPlanningsMissionsListResponsePlanningMissionEntityTypeListTypedMock =
     (
-        overrideResponse: Partial<MissionEntityTypeListTyped> = {},
-    ): MissionEntityTypeListTyped => ({
+        overrideResponse: Partial<PlanningMissionEntityTypeListTyped> = {},
+    ): PlanningMissionEntityTypeListTyped => ({
         ...{
             ...{
                 ...{
@@ -696,7 +694,6 @@ export const getApiMicroplanningPlanningsMissionsListResponseMissionEntityTypeLi
                             }),
                         },
                     },
-                    forms_count: faker.number.int(),
                     created_at:
                         faker.date.past().toISOString().slice(0, 19) + 'Z',
                 },
@@ -729,13 +726,13 @@ export const getApiMicroplanningPlanningsMissionsListResponseMock = (
         ).map(() =>
             faker.helpers.arrayElement([
                 {
-                    ...getApiMicroplanningPlanningsMissionsListResponseMissionFormListTypedMock(),
+                    ...getApiMicroplanningPlanningsMissionsListResponsePlanningMissionFormListTypedMock(),
                 },
                 {
-                    ...getApiMicroplanningPlanningsMissionsListResponseMissionOrgUnitTypeListTypedMock(),
+                    ...getApiMicroplanningPlanningsMissionsListResponsePlanningMissionOrgUnitTypeListTypedMock(),
                 },
                 {
-                    ...getApiMicroplanningPlanningsMissionsListResponseMissionEntityTypeListTypedMock(),
+                    ...getApiMicroplanningPlanningsMissionsListResponsePlanningMissionEntityTypeListTypedMock(),
                 },
             ]),
         ),

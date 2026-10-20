@@ -337,7 +337,7 @@ export const useApiMicroplanningMissionsCreate = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiMicroplanningMissionsCreateMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );
@@ -608,7 +608,7 @@ export const useApiMicroplanningMissionsUpdate = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiMicroplanningMissionsUpdateMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );
@@ -767,7 +767,7 @@ export const useApiMicroplanningMissionsPartialUpdate = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiMicroplanningMissionsPartialUpdateMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );
@@ -894,7 +894,7 @@ export const useApiMicroplanningMissionsDestroy = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiMicroplanningMissionsDestroyMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );

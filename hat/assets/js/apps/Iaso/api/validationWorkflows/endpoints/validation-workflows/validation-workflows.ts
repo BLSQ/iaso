@@ -466,7 +466,7 @@ export const useApiValidationWorkflowsCreate = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiValidationWorkflowsCreateMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );
@@ -736,7 +736,7 @@ export const useApiValidationWorkflowsUpdate = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiValidationWorkflowsUpdateMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );
@@ -895,7 +895,7 @@ export const useApiValidationWorkflowsPartialUpdate = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiValidationWorkflowsPartialUpdateMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );
@@ -1022,7 +1022,7 @@ export const useApiValidationWorkflowsDestroy = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiValidationWorkflowsDestroyMutationOptions(
-            queryClient ?? backupQueryClient,
+            backupQueryClient,
             options,
         ),
     );

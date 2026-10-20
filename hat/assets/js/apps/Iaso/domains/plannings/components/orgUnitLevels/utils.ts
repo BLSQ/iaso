@@ -1,10 +1,15 @@
-import { uniq } from 'lodash';
+import { uniq, xor } from 'lodash';
+import {
+    PlanningConfigBulkCreateRequest,
+    PlanningConfigBulkUpdateRequest,
+} from 'Iaso/api/planningConfigs';
 import { TeamNode } from '../teamHierarchy/types';
 import {
     LevelMembers,
     LevelOrgUnitType,
     LevelTypeError,
     PlanningLevel,
+    SavedPlanningConfig,
 } from './types';
 
 export const EMPTY_LEVEL: PlanningLevel = { orgUnitTypeIds: [], groupIds: [] };
@@ -85,4 +90,59 @@ export const validateLevelTypes = (
         depthAbove = Math.max(depthAbove, depth);
         return isDeeper ? undefined : 'notDeeperThanLevelAbove';
     });
+};
+
+export const configsToLevels = (
+    configs: SavedPlanningConfig[],
+): PlanningLevel[] => {
+    const levelsCount = Math.max(0, ...configs.map(config => config.level));
+    const levels = Array.from({ length: levelsCount }, () => EMPTY_LEVEL);
+    configs.forEach(config => {
+        levels[config.level - 1] = {
+            orgUnitTypeIds: (config.org_unit_types ?? []).map(type => type.id),
+            groupIds: (config.org_unit_groups ?? []).map(group => group.id),
+        };
+    });
+    return levels;
+};
+
+const isSameLevel = (a: PlanningLevel, b: PlanningLevel): boolean =>
+    xor(a.orgUnitTypeIds, b.orgUnitTypeIds).length === 0 &&
+    xor(a.groupIds, b.groupIds).length === 0;
+
+export type PlanningConfigChanges = {
+    toCreate: PlanningConfigBulkCreateRequest[];
+    toUpdate: PlanningConfigBulkUpdateRequest[];
+    toDeleteIds: number[];
+};
+
+// Configs are matched to levels by their level number, levels beyond the form's ones are deleted.
+export const getPlanningConfigChanges = (
+    planningId: number,
+    levels: PlanningLevel[],
+    savedConfigs: SavedPlanningConfig[],
+): PlanningConfigChanges => {
+    const savedByLevel = new Map(
+        savedConfigs.map(config => [config.level, config]),
+    );
+    const savedLevels = configsToLevels(savedConfigs);
+    const toCreate: PlanningConfigBulkCreateRequest[] = [];
+    const toUpdate: PlanningConfigBulkUpdateRequest[] = [];
+    levels.forEach((level, index) => {
+        const payload = {
+            level: index + 1,
+            org_unit_types: level.orgUnitTypeIds,
+            org_unit_groups: level.groupIds,
+        };
+        const saved = savedByLevel.get(payload.level);
+        if (!saved) {
+            toCreate.push({ ...payload, planning: planningId });
+        } else if (!isSameLevel(level, savedLevels[index])) {
+            toUpdate.push({ ...payload, id: saved.id });
+        }
+    });
+    const toDeleteIds = savedConfigs
+        .filter(config => config.level > levels.length)
+        .map(config => config.id);
+    return { toCreate, toUpdate, toDeleteIds };
 };

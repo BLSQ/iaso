@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { User } from 'Iaso/domains/teams/types/team';
 import { TeamNode } from '../teamHierarchy/types';
-import { LevelOrgUnitType, PlanningLevel } from './types';
+import { LevelOrgUnitType, PlanningLevel, SavedPlanningConfig } from './types';
 import {
+    configsToLevels,
     getLevelMembers,
+    getPlanningConfigChanges,
     getLevelTypeOptions,
     validateLevelTypes,
 } from './utils';
@@ -42,9 +44,12 @@ const TYPES: LevelOrgUnitType[] = [
     { id: 4, name: 'Centre', depth: 3 },
 ];
 
-const level = (orgUnitTypeIds: number[]): PlanningLevel => ({
+const level = (
+    orgUnitTypeIds: number[],
+    groupIds: number[] = [],
+): PlanningLevel => ({
     orgUnitTypeIds,
-    groupIds: [],
+    groupIds,
 });
 const optionNames = (levels: PlanningLevel[], index: number) =>
     getLevelTypeOptions(levels, index, TYPES).map(type => type.name);
@@ -121,5 +126,97 @@ describe('validateLevelTypes', () => {
             undefined,
             'notDeeperThanLevelAbove',
         ]);
+    });
+});
+
+const makeConfig = (
+    id: number,
+    levelNumber: number,
+    typeIds: number[],
+    groupIds: number[] = [],
+): SavedPlanningConfig => ({
+    id,
+    level: levelNumber,
+    org_unit_types: typeIds.map(typeId => ({ id: typeId, name: '' })),
+    org_unit_groups: groupIds.map(groupId => ({ id: groupId, name: '' })),
+});
+
+describe('configsToLevels', () => {
+    it('maps configs to levels by level number, filling gaps with empty levels', () => {
+        expect(
+            configsToLevels([
+                makeConfig(10, 1, [2], [7]),
+                makeConfig(11, 3, [4]),
+            ]),
+        ).toEqual([
+            { orgUnitTypeIds: [2], groupIds: [7] },
+            { orgUnitTypeIds: [], groupIds: [] },
+            { orgUnitTypeIds: [4], groupIds: [] },
+        ]);
+    });
+
+    it('treats null types and groups as empty', () => {
+        expect(
+            configsToLevels([
+                {
+                    id: 1,
+                    level: 1,
+                    org_unit_types: null,
+                    org_unit_groups: null,
+                },
+            ]),
+        ).toEqual([{ orgUnitTypeIds: [], groupIds: [] }]);
+    });
+});
+
+describe('getPlanningConfigChanges', () => {
+    it('creates every level when nothing is saved yet', () => {
+        expect(
+            getPlanningConfigChanges(5, [level([2], [7]), level([3])], []),
+        ).toEqual({
+            toCreate: [
+                {
+                    planning: 5,
+                    level: 1,
+                    org_unit_types: [2],
+                    org_unit_groups: [7],
+                },
+                {
+                    planning: 5,
+                    level: 2,
+                    org_unit_types: [3],
+                    org_unit_groups: [],
+                },
+            ],
+            toUpdate: [],
+            toDeleteIds: [],
+        });
+    });
+
+    it('updates only changed levels, ignoring the order of ids', () => {
+        const saved = [makeConfig(10, 1, [2, 5]), makeConfig(11, 2, [3])];
+        expect(
+            getPlanningConfigChanges(5, [level([5, 2]), level([4])], saved),
+        ).toEqual({
+            toCreate: [],
+            toUpdate: [
+                {
+                    id: 11,
+                    level: 2,
+                    org_unit_types: [4],
+                    org_unit_groups: [],
+                },
+            ],
+            toDeleteIds: [],
+        });
+    });
+
+    it('deletes saved configs deeper than the form levels', () => {
+        const saved = [makeConfig(10, 1, [2]), makeConfig(11, 2, [3])];
+        expect(getPlanningConfigChanges(5, [level([2])], saved)).toEqual({
+            toCreate: [],
+            toUpdate: [],
+            toDeleteIds: [11],
+        });
     });
 });

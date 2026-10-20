@@ -17,6 +17,7 @@ export const PaginatedPlanningConfigList = zod.strictObject({
     results: zod
         .array(
             zod.strictObject({
+                id: zod.int(),
                 level: zod.int(),
                 org_unit_types: zod
                     .array(

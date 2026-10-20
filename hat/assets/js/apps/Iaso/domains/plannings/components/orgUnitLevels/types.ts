@@ -1,3 +1,5 @@
+import { PaginatedPlanningConfigList } from 'Iaso/api/plannings';
+
 export type PlanningLevel = {
     orgUnitTypeIds: number[];
     groupIds: number[];
@@ -18,3 +20,7 @@ export type LevelTypeError =
     | 'requiredField'
     | 'mixedOrgUnitTypeDepths'
     | 'notDeeperThanLevelAbove';
+
+export type SavedPlanningConfig = NonNullable<
+    PaginatedPlanningConfigList['results']
+>[number];

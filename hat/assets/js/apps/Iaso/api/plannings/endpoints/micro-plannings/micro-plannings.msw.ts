@@ -671,6 +671,7 @@ export const getApiMicroplanningPlanningsConfigsListResponseMock = (
             { length: faker.number.int({ min: 1, max: 10 }) },
             (_, i) => i + 1,
         ).map(() => ({
+            id: faker.number.int(),
             level: faker.number.int(),
             org_unit_types: faker.helpers.arrayElement([
                 Array.from(

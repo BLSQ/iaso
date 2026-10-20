@@ -8,6 +8,7 @@
 import { z as zod } from 'zod';
 
 export const PlanningConfig = zod.strictObject({
+    id: zod.int(),
     level: zod.int(),
     org_unit_types: zod
         .array(

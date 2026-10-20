@@ -93,7 +93,6 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
             res = self.client.get(self.url)
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
-        print(res_data)
         self.assertValidResponse(res_data, 9)
 
     def test_happy_path(self):

@@ -138,3 +138,15 @@ export const smallInputOverrides: SxStyles = {
         cursor: 'pointer',
     },
 };
+
+export const smallTabsOverrides: SxStyles = {
+    '&': { minHeight: 36 },
+    '& .MuiTab-root': {
+        minHeight: 36,
+        paddingY: 0.5,
+        paddingX: 1.5,
+    },
+    '& .MuiTab-iconWrapper': {
+        fontSize: 20,
+    },
+};

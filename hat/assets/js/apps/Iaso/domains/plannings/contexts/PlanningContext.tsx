@@ -23,6 +23,7 @@ import {
 } from 'Iaso/api/missions';
 import { useApiMicroplanningPlanningsConfigsList } from 'Iaso/api/plannings';
 import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
@@ -162,6 +163,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     );
 
     // Drop the param once applied so a reload doesn't add the mission again.
+    const { tab } = useParamsObject(baseUrls.planningDetails);
     const redirectToReplace = useRedirectToReplace();
     useEffect(() => {
         if (!newMission) return;
@@ -169,8 +171,9 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         redirectToReplace(baseUrls.planningDetails, {
             planningId: planning && `${planning.id}`,
             mode,
+            tab,
         });
-    }, [newMission, addMissions, redirectToReplace, planning, mode]);
+    }, [newMission, addMissions, redirectToReplace, planning, mode, tab]);
 
     const canSave =
         isValid &&

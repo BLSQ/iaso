@@ -1,9 +1,11 @@
-import React, { FC, SyntheticEvent, useCallback, useState } from 'react';
+import React, { FC, SyntheticEvent, useCallback } from 'react';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
 import { Tab, Tabs } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { smallTabsOverrides } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
@@ -21,12 +23,20 @@ const styles = {
 
 type TabKey = 'info' | 'levelsAndTeams';
 
+const TAB_KEYS: TabKey[] = ['info', 'levelsAndTeams'];
+
+const isTabKey = (tab?: string): tab is TabKey =>
+    TAB_KEYS.includes(tab as TabKey);
+
 export const PlanningDetails: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const [activeTab, setActiveTab] = useState<TabKey>('info');
+    const params = useParamsObject(baseUrls.planningDetails);
+    const activeTab: TabKey = isTabKey(params.tab) ? params.tab : 'info';
+    const redirectToReplace = useRedirectToReplace();
     const handleChangeTab = useCallback(
-        (_event: SyntheticEvent, tab: TabKey) => setActiveTab(tab),
-        [],
+        (_event: SyntheticEvent, tab: TabKey) =>
+            redirectToReplace(baseUrls.planningDetails, { ...params, tab }),
+        [redirectToReplace, params],
     );
 
     return (

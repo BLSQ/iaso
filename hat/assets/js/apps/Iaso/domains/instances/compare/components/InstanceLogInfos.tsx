@@ -12,7 +12,10 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import { getDisplayName, User } from '../../../../utils/usersUtils';
 import { LinkToForm } from '../../../forms/components/LinkToForm';
 import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
-import { useGetOrgUnitDetail } from '../../../orgUnits/hooks/requests/useGetOrgUnitDetail';
+import {
+    ORG_UNIT_LINK_FIELDS,
+    useGetOrgUnitDetail,
+} from '../../../orgUnits/hooks/requests/useGetOrgUnitDetail';
 import { usePrettyPeriod } from '../../../periods/utils';
 
 import MESSAGES from '../messages';
@@ -47,7 +50,10 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
-    const { data: currentOrgUnit } = useGetOrgUnitDetail(infos?.org_unit);
+    const { data: currentOrgUnit } = useGetOrgUnitDetail(
+        infos?.org_unit,
+        ORG_UNIT_LINK_FIELDS,
+    );
     const firstLogInfos = useMemo(
         () => [
             // Modified by

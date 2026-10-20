@@ -6,7 +6,10 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 import { GeoJsonMap } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 import { LinkToOrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/LinkToOrgUnit';
-import { useGetOrgUnitDetail } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
+import {
+    ORG_UNIT_LINK_FIELDS,
+    useGetOrgUnitDetail,
+} from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
 import MESSAGES from '../../../constants/messages';
 
 type OrgUnitLinkProps = {
@@ -14,7 +17,10 @@ type OrgUnitLinkProps = {
 };
 
 const OrgUnitLink = ({ orgUnitId }): ReactElement<OrgUnitLinkProps> => {
-    const { data: currentOrgUnit } = useGetOrgUnitDetail(orgUnitId);
+    const { data: currentOrgUnit } = useGetOrgUnitDetail(
+        orgUnitId,
+        ORG_UNIT_LINK_FIELDS,
+    );
 
     return <LinkToOrgUnit orgUnit={currentOrgUnit} />;
 };

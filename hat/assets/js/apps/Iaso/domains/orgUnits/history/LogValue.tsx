@@ -8,7 +8,10 @@ import { GeoJsonMap } from 'Iaso/components/maps/GeoJsonMapComponent';
 import { MarkerMap } from 'Iaso/components/maps/MarkerMapComponent';
 import { GeoJson } from 'Iaso/components/maps/types';
 import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
-import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
+import {
+    ORG_UNIT_LINK_FIELDS,
+    useGetOrgUnitDetail,
+} from '../hooks/requests/useGetOrgUnitDetail';
 
 import { MESSAGES } from './messages';
 
@@ -36,7 +39,7 @@ export const LogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
         undefined | number
     >();
     const { data: parentOrgUnit, isFetching: isFetchingOrgUnit } =
-        useGetOrgUnitDetail(parentOrgUnitId);
+        useGetOrgUnitDetail(parentOrgUnitId, ORG_UNIT_LINK_FIELDS);
     if (!value || value === '') return textPlaceholder;
     try {
         switch (fieldKey) {

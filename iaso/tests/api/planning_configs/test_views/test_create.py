@@ -180,7 +180,7 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         with self.subTest("level"):
             for level in [0, -1]:
                 data = {"planning": self.planning.pk, "level": level}
-                self.assertValidBody(data)
+                # self.assertValidBody(data) # will fail obviously
                 res = self.client.post(reverse("planning_configs-list"), data=data)
                 res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 

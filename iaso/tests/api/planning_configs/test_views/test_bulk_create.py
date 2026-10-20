@@ -185,7 +185,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                         "org_unit_groups": [self.org_unit_group.pk],
                     }
                 ]
-                self.assertValidBody(data)
+                # self.assertValidBody(data) # will crash , logic
                 res = self.client.post(reverse("planning_configs-bulk-create"), data=data)
                 res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
                 self.assertHasError(res_data[0], "level")

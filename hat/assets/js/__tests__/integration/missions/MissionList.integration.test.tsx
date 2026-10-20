@@ -9,7 +9,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import {
     ApiMicroplanningMissionsListParams,
-    MissionTypeValueEnum,
+    MissionTypeDa2Enum,
 } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsDestroyMockHandler,
@@ -160,9 +160,9 @@ describe('Mission list integration test', () => {
             }, {});
 
         const missionTypeChipLabels: Record<string, string> = {
-            [MissionTypeValueEnum.enum.FORM_FILLING]: 'Form',
-            [MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM]: 'Org unit + Form',
-            [MissionTypeValueEnum.enum.ENTITY_AND_FORM]: 'Entity + Form',
+            [MissionTypeDa2Enum.enum.FORM_FILLING]: 'Form',
+            [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: 'Org unit + Form',
+            [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: 'Entity + Form',
         };
 
         Object.entries(uniqueMissionTypes ?? {})?.forEach(([item, count]) => {
@@ -282,7 +282,7 @@ describe('Mission list integration test', () => {
                 return getApiMicroplanningMissionsListResponseMock(data);
             }),
             getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
-                Object.entries(MissionTypeValueEnum.enum).map(
+                Object.entries(MissionTypeDa2Enum.enum).map(
                     ([label, value]) => ({
                         value,
                         label,
@@ -310,7 +310,7 @@ describe('Mission list integration test', () => {
 
         await selectFromComboBoxWithAsync({
             nameComboBox: /mission type/i,
-            nameOption: MissionTypeValueEnum.enum.FORM_FILLING,
+            nameOption: MissionTypeDa2Enum.enum.FORM_FILLING,
         });
 
         const searchButton = screen.getByRole('button', { name: /search/i });
@@ -336,7 +336,7 @@ describe('Mission list integration test', () => {
 
         expect(url.searchParams.get('search')).toBe('something');
         expect(url.searchParams.get('mission_type')).toBe(
-            MissionTypeValueEnum.enum.FORM_FILLING,
+            MissionTypeDa2Enum.enum.FORM_FILLING,
         );
         const { limit, page, ...params } = Object.fromEntries(
             url.searchParams.entries(),

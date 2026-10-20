@@ -5,8 +5,7 @@ from functools import reduce
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from django.db.models import Value
-from django.db.models.functions import Length, Replace
+from django.db.models import F
 from django_ltree.fields import PathField  # type: ignore
 
 from iaso.models import Account, Project
@@ -18,13 +17,18 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+        return self.filter_for_account(account)
 
     def filter_for_account(self, account: Account) -> "TeamQuerySet":
+        if not account:
+            return self.none()
         return self.filter(project__account=account)
 
     def annotate_with_depth(self) -> "TeamQuerySet":
-        return self.annotate(depth=(Length("path") - Length(Replace("path", Value("."), Value("")))))
+        return self.annotate(depth=F("path__depth"))
 
     def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
         """The Team and all their descendants"""
@@ -39,6 +43,21 @@ class TeamQuerySet(models.QuerySet):
             raise NotImplementedError
 
         return self.filter(query)
+
+    def get_tree(
+        self,
+        root: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team", None] = None,
+        max_depth: typing.Optional[int] = None,
+    ):
+        if not root:
+            root = self.filter(parent__isnull=True)
+
+        queryset = self.hierarchy(root)
+
+        if max_depth is not None:
+            queryset = queryset.filter(path__depth__lte=max_depth)
+
+        return queryset.order_by("path")
 
 
 class TeamType(models.TextChoices):
@@ -128,3 +147,25 @@ class Team(SoftDeletableModel):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def dump_tree(cls, queryset: TeamQuerySet):
+        nodes = {}
+        roots = []
+
+        for team in queryset:
+            nodes[team.pk] = {
+                "team": team,
+                "children": [],
+            }
+
+        for team in queryset:
+            node = nodes[team.pk]
+            parent = nodes.get(team.parent_id)
+
+            if parent is None:
+                roots.append(node)
+            else:
+                parent["children"].append(node)
+
+        return roots

@@ -7,7 +7,7 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsRetrieveMockHandler,
     getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock,
@@ -167,10 +167,8 @@ describe('Mission detail a11y test', () => {
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
                 forms: [],
-                mission_type: {
-                    label: 'Form filling',
-                    value: MissionTypeValueEnum.enum.FORM_FILLING,
-                },
+                mission_type_label: 'Form filling',
+                mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
             }),
         );
 
@@ -195,10 +193,8 @@ describe('Mission detail a11y test', () => {
             // @ts-ignore
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
-                mission_type: {
-                    label: 'Form filling',
-                    value: MissionTypeValueEnum.enum.FORM_FILLING,
-                },
+                mission_type_label: 'Form filling',
+                mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                 forms: [
                     { form: 1, form_name: 'Form A', min_cardinality: 1 },
                     {
@@ -238,10 +234,8 @@ describe('Mission detail a11y test', () => {
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
                 min_cardinality: 2,
-                mission_type: {
-                    label: 'Org unit',
-                    value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                },
+                mission_type_label: 'Org unit',
+                mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                 forms: [
                     { form: 1, form_name: 'Form A', min_cardinality: 1 },
                     {
@@ -279,10 +273,8 @@ describe('Mission detail a11y test', () => {
             // @ts-ignore
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
-                mission_type: {
-                    label: 'Entity type mission',
-                    value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                },
+                mission_type_label: 'Entity type mission',
+                mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                 forms: [
                     { form: 1, form_name: 'Form A', min_cardinality: 1 },
                     {

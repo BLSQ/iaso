@@ -1,13 +1,13 @@
 diff --git a/node_modules/orval/node_modules/@orval/query/dist/index.mjs b/node_modules/orval/node_modules/@orval/query/dist/index.mjs
-index 07203aa..bf6dead 100644
+index 07203aa..0f2f72f 100644
 --- a/node_modules/orval/node_modules/@orval/query/dist/index.mjs
 +++ b/node_modules/orval/node_modules/@orval/query/dist/index.mjs
-@@ -1301,7 +1301,7 @@ const createReactAdapter = ({ hasQueryV5, hasQueryV5WithDataTagError, hasQueryV5
- 		return [QueryType.SUSPENSE_QUERY];
- 	},
- 	generateMutationImplementation({ mutationOptionsFnName, hasInvalidation, isRequestOptions }) {
--		return `${mutationOptionsFnName}(${hasInvalidation ? `queryClient ?? backupQueryClient, ` : ""}${isRequestOptions ? "options" : "mutationOptions"})`;
-+		return `${mutationOptionsFnName}(${hasInvalidation ? `backupQueryClient, ` : ""}${isRequestOptions ? "options" : "mutationOptions"})`;
- 	},
- 	supportsMutationInvalidation() {
- 		return true;
+@@ -2096,7 +2096,7 @@ const createGenerateInvalidateCalls = (spec, shouldSplitQueryKey, useOperationId
+ 			const keys = group.flatMap((filter) => filter.key ?? []);
+ 			const predicates = group.flatMap((filter) => filter.predicate ?? []);
+ 			if (predicates.length === 0 && keys.length === 1) return `    queryClient.${method}({ queryKey: ${keys[0]} });`;
+-			return `    queryClient.${method}({ predicate: (query) => ${[...keys.length > 0 ? [`[${keys.join(", ")}].some((queryKey) => matchQuery({ queryKey }, query))`] : [], ...predicates.map((predicate) => `(${predicate})`)].join(" || ")} });`;
++			return `    queryClient.${method}({ predicate: (query) => ${[...keys.length > 0 ? [`[${keys.join(", ")}].some((queryKey) => queryClient.getQueryCache().findAll(queryKey).includes(query))`] : [], ...predicates.map((predicate) => `(${predicate})`)].join(" || ")} });`;
+ 		}).join("\n");
+ 	};
+ };

@@ -7,7 +7,7 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsCreateMockHandler,
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
@@ -96,7 +96,7 @@ const mockCreate = vi.fn();
 
 const server = setupServer(
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
-        Object.entries(MissionTypeValueEnum.enum).map(([label, value]) => ({
+        Object.entries(MissionTypeDa2Enum.enum).map(([label, value]) => ({
             value,
             label,
         })),
@@ -104,7 +104,7 @@ const server = setupServer(
     getApiMicroplanningMissionsCreateMockHandler(async _info => {
         const body = await _info.request.json();
         mockCreate(body);
-        return { id: 2, mission_type: MissionTypeValueEnum.enum.FORM_FILLING };
+        return { id: 2, mission_type: MissionTypeDa2Enum.enum.FORM_FILLING };
     }),
     getCustomFormOptionsMockHandler(),
     getApiNotificationMockHandler(),
@@ -128,12 +128,12 @@ const getFormsCardinalityInput = (
 };
 
 const switchMissionType = async (
-    missionType: (typeof MissionTypeValueEnum.enum)[keyof typeof MissionTypeValueEnum.enum],
+    missionType: (typeof MissionTypeDa2Enum.enum)[keyof typeof MissionTypeDa2Enum.enum],
 ) => {
     const labels: Record<string, RegExp> = {
-        [MissionTypeValueEnum.enum.FORM_FILLING]: /^form$/i,
-        [MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM]: /org unit \+ form/i,
-        [MissionTypeValueEnum.enum.ENTITY_AND_FORM]: /entity \+ form/i,
+        [MissionTypeDa2Enum.enum.FORM_FILLING]: /^form$/i,
+        [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: /org unit \+ form/i,
+        [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: /entity \+ form/i,
     };
 
     await act(async () => {
@@ -207,9 +207,7 @@ describe('Mission create integration test', () => {
         expect(
             screen.getByRole('textbox', { name: /description/i }),
         ).toBeInTheDocument();
-        expect(
-            screen.getByRole('radio', { name: /^form$/i }),
-        ).toBeChecked();
+        expect(screen.getByRole('radio', { name: /^form$/i })).toBeChecked();
         expect(
             screen.getByRole('radio', { name: /org unit \+ form/i }),
         ).not.toBeChecked();
@@ -246,7 +244,7 @@ describe('Mission create integration test', () => {
         ).not.toBeInTheDocument();
 
         // switch to org unit mission
-        await switchMissionType(MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM);
 
         await waitFor(() => {
             expect(
@@ -268,7 +266,7 @@ describe('Mission create integration test', () => {
 
         // switch to entity mission
 
-        await switchMissionType(MissionTypeValueEnum.enum.ENTITY_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ENTITY_AND_FORM);
 
         await waitFor(() => {
             expect(
@@ -316,7 +314,7 @@ describe('Mission create integration test', () => {
         });
 
         // switch mission type
-        await switchMissionType(MissionTypeValueEnum.enum.ENTITY_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ENTITY_AND_FORM);
 
         await waitFor(() => {
             expect(screen.queryByText('Form A')).not.toBeInTheDocument();
@@ -346,7 +344,7 @@ describe('Mission create integration test', () => {
             screen.getByText(/Invalid input: expected number, received null/i),
         ).toBeVisible();
 
-        await switchMissionType(MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM);
 
         expect(
             screen.queryByText(
@@ -467,7 +465,7 @@ describe('Mission create integration test', () => {
             );
         });
 
-        await switchMissionType(MissionTypeValueEnum.enum.ENTITY_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ENTITY_AND_FORM);
 
         expect(
             screen.getByRole('button', {
@@ -491,7 +489,7 @@ describe('Mission create integration test', () => {
             );
         });
 
-        await switchMissionType(MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM);
 
         expect(
             screen.getByRole('button', {
@@ -678,7 +676,7 @@ describe('Mission create integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        await switchMissionType(MissionTypeValueEnum.enum.ENTITY_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ENTITY_AND_FORM);
 
         await selectFromComboBoxWithAsync({
             nameComboBox: /entity type/i,
@@ -754,7 +752,7 @@ describe('Mission create integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        await switchMissionType(MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM);
 
         await selectFromComboBoxWithAsync({
             nameComboBox: /org unit type/i,
@@ -867,7 +865,7 @@ describe('Mission create integration test', () => {
             expect(mockCreate).toHaveBeenCalledWith({
                 name: 'name',
                 description: 'description',
-                mission_type: MissionTypeValueEnum.enum.FORM_FILLING,
+                mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                 forms: [
                     {
                         form: 1,
@@ -895,7 +893,7 @@ describe('Mission create integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        await switchMissionType(MissionTypeValueEnum.enum.ENTITY_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ENTITY_AND_FORM);
 
         await act(async () => {
             await userEvent.type(
@@ -955,7 +953,7 @@ describe('Mission create integration test', () => {
             expect(mockCreate).toHaveBeenCalledWith({
                 name: 'name',
                 description: 'description',
-                mission_type: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
+                mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                 entity_type: 1,
                 min_cardinality: 2,
                 max_cardinality: 20,
@@ -986,7 +984,7 @@ describe('Mission create integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        await switchMissionType(MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM);
+        await switchMissionType(MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM);
 
         await act(async () => {
             await userEvent.clear(
@@ -1046,7 +1044,7 @@ describe('Mission create integration test', () => {
             expect(mockCreate).toHaveBeenCalledWith({
                 name: 'name',
                 description: 'description',
-                mission_type: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
+                mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                 org_unit_type: 1,
                 min_cardinality: 2,
                 max_cardinality: 20,

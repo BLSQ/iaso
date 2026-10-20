@@ -4,11 +4,13 @@ from unittest import mock
 
 from django.test import override_settings
 
+from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.models.base import ERRORED, RUNNING, SUCCESS
 from iaso.perf_stats.collector import Collector
 from iaso.perf_stats.router import PerfStatsRouter
 from iaso.perf_stats.tasks import measure_task
+from iaso.tasks.dummy_task import dummy_task
 from iaso.test import TestCase
 
 
@@ -61,6 +63,34 @@ class MeasureTaskTestCase(TestCase):
         self.collector.flush()
 
         self.assertFalse(m.PerfStat.objects.exists())
+
+
+@override_settings(PERF_STATS_ENABLED=True)
+@mock.patch("iaso.tasks.dummy_task.time.sleep")
+class WorkerMeasuresTaskTestCase(TestCase):
+    def setUp(self):
+        self.collector = Collector()
+        patcher = mock.patch("iaso.perf_stats.tasks.collector", self.collector)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.account = m.Account.objects.create(name="Belgium")
+        self.user = self.create_user_with_profile(username="user", account=self.account)
+
+    def test_task_run_by_the_worker_is_recorded_with_its_final_status(self, sleep):
+        dummy_task(duration=1, user=self.user)
+        dummy_task(duration=1, fail=True, user=self.user)
+
+        TestTaskService().run_all()
+        self.collector.flush()
+
+        stats = m.PerfStat.objects.filter(kind="task").order_by("outcome")
+        self.assertEqual(
+            [(stat.name, stat.outcome, stat.count, stat.account_id) for stat in stats],
+            [
+                ("iaso.tasks.dummy_task.dummy_task", ERRORED, 1, self.account.id),
+                ("iaso.tasks.dummy_task.dummy_task", SUCCESS, 1, self.account.id),
+            ],
+        )
 
 
 class PerfStatsRouterTestCase(TestCase):

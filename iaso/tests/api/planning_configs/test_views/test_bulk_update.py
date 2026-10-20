@@ -7,6 +7,7 @@ from rest_framework.settings import api_settings
 from iaso.models import (
     Account,
     DataSource,
+    Group,
     OrgUnit,
     OrgUnitType,
     Planning,
@@ -33,6 +34,12 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.account.save()
 
         cls.other_account = Account.objects.create(name="other_account")
+        cls.data_source_other_account = DataSource.objects.create(name="Test Data Source 2")
+        cls.source_version_other_account = SourceVersion.objects.create(
+            data_source=cls.data_source_other_account, number=1
+        )
+        cls.other_account.default_version = cls.source_version_other_account
+        cls.other_account.save()
 
         # set up users
         cls.user_no_perm = cls.create_user_with_profile(username="user_no_perm", account=cls.account, permissions=[])
@@ -56,6 +63,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         cls.data_source.projects.add(cls.project)
+        cls.data_source_other_account.projects.add(cls.project_other_account)
 
         # Create test org unit types
         cls.org_unit_type = OrgUnitType.objects.create(name="Test Country Type")
@@ -74,20 +82,16 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.org_unit_type_other_account.projects.set([cls.project_other_account])
 
         # Create test org unit
-        cls.org_unit = OrgUnit.objects.create(
+        cls.ou = OrgUnit.objects.create(
             name="Test Country", org_unit_type=cls.org_unit_type, version=cls.source_version
         )
-        cls.org_unit_2 = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_2, version=cls.source_version
-        )
-        cls.org_unit_3 = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_3, version=cls.source_version
-        )
-        cls.org_unit_4 = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_4, version=cls.source_version
-        )
-        cls.org_unit_other_account = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_other_account
+
+        cls.org_unit_group = Group.objects.create(name="Test Country", source_version=cls.source_version)
+        cls.org_unit_group_2 = Group.objects.create(name="Test Country", source_version=cls.source_version)
+        cls.org_unit_group_3 = Group.objects.create(name="Test Country", source_version=cls.source_version)
+        cls.org_unit_group_4 = Group.objects.create(name="Test Country", source_version=cls.source_version)
+        cls.org_unit_group_other_account = Group.objects.create(
+            name="Test Country", source_version=cls.source_version_other_account
         )
 
         # Create test team
@@ -98,22 +102,20 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # create plannings
 
-        cls.planning = Planning.objects.create(
-            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit
-        )
+        cls.planning = Planning.objects.create(name="planning", project=cls.project, team=cls.team, org_unit=cls.ou)
 
         cls.planning_other_account = Planning.objects.create(
             name="planning_other_account",
             project=cls.project_other_account,
             team=cls.team_other_account,
-            org_unit=cls.org_unit,
+            org_unit=cls.ou,
         )
 
         # create some planning configs
 
         cls.planning_config = PlanningConfig.objects.create(level=1, planning=cls.planning)
         cls.planning_config.org_unit_types.add(cls.org_unit_type)
-        cls.planning_config.org_unit_groups.add(cls.org_unit)
+        cls.planning_config.org_unit_groups.add(cls.org_unit_group)
 
         cls.planning_config_2 = PlanningConfig.objects.create(level=2, planning=cls.planning)
 
@@ -160,7 +162,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "id": self.planning_config.pk,
                     "level": 2,
                     "org_unit_types": [self.org_unit_type_other_account.pk],
-                    "org_unit_groups": [self.org_unit.pk],
+                    "org_unit_groups": [self.org_unit_group.pk],
                 }
             ]
             self.assertValidBody(data)
@@ -174,7 +176,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "id": self.planning_config.pk,
                     "level": 2,
                     "org_unit_types": [self.org_unit_type.pk],
-                    "org_unit_groups": [self.org_unit_other_account.pk],
+                    "org_unit_groups": [self.org_unit_group_other_account.pk],
                 }
             ]
             self.assertValidBody(data)
@@ -189,7 +191,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                         "id": self.planning_config.pk,
                         "level": level,
                         "org_unit_types": [self.org_unit_type.pk],
-                        "org_unit_groups": [self.org_unit.pk],
+                        "org_unit_groups": [self.org_unit_group.pk],
                     }
                 ]
                 self.assertValidBody(data)
@@ -225,13 +227,13 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "id": self.planning_config.pk,
                 "level": 2,
                 "org_unit_types": [self.org_unit_type.pk],
-                "org_unit_groups": [self.org_unit.pk],
+                "org_unit_groups": [self.org_unit_group.pk],
             },
             {
                 "id": self.planning_config_2.pk,
                 "level": 2,
                 "org_unit_types": [self.org_unit_type.pk, self.org_unit_type_2.pk],
-                "org_unit_groups": [self.org_unit.pk, self.org_unit_2.pk],
+                "org_unit_groups": [self.org_unit_group.pk, self.org_unit_group_2.pk],
             },
         ]
         self.assertValidBody(data)
@@ -250,19 +252,22 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.superuser)
         data = [
             {
-                "id": self.planning.pk,
+                "id": self.planning_config.pk,
                 "level": 2,
                 "org_unit_types": [self.org_unit_type.pk],
-                "org_unit_groups": [self.org_unit.pk],
+                "org_unit_groups": [self.org_unit_group.pk],
             }
         ]
         self.assertValidBody(data)
 
         res = self.client.put(reverse("planning_configs-bulk-update"), data)
-
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-        self.assertHasError(res_data[0], "id")
+        self.assertHasError(
+            res_data,
+            api_settings.NON_FIELD_ERRORS_KEY,
+            "A planning configuration with this level already exists for this planning.",
+        )
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
@@ -277,12 +282,12 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "id": self.planning_config_2.pk,
                 "level": 1,
                 "org_unit_types": [self.org_unit_type.pk, self.org_unit_type_2.pk],
-                "org_unit_groups": [self.org_unit.pk, self.org_unit_2.pk],
+                "org_unit_groups": [self.org_unit_group.pk, self.org_unit_group_2.pk],
             },
         ]
         self.assertValidBody(data)
 
-        with self.assertNumQueries(31):
+        with self.assertNumQueries(30):
             res = self.client.put(reverse("planning_configs-bulk-update"), data)
 
         self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)
@@ -303,7 +308,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
         self.assertEqual(
             list(self.planning_config_2.org_unit_groups.values_list("id", flat=True)),
-            [self.org_unit.pk, self.org_unit_2.pk],
+            [self.org_unit_group.pk, self.org_unit_group_2.pk],
         )
 
     def test_happy_path(self):
@@ -319,7 +324,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "id": self.planning_config_2.pk,
                 "level": 1,
                 "org_unit_types": [self.org_unit_type.pk, self.org_unit_type_2.pk],
-                "org_unit_groups": [self.org_unit.pk, self.org_unit_2.pk],
+                "org_unit_groups": [self.org_unit_group.pk, self.org_unit_group_2.pk],
             },
         ]
         self.assertValidBody(data)
@@ -342,7 +347,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
         self.assertEqual(
             list(self.planning_config_2.org_unit_groups.values_list("id", flat=True)),
-            [self.org_unit.pk, self.org_unit_2.pk],
+            [self.org_unit_group.pk, self.org_unit_group_2.pk],
         )
 
     def test_update_same_values(self):

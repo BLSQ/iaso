@@ -42,6 +42,7 @@ from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 
 from ...models import (
+    Group,
     MissionEntityType,
     MissionOrgUnitType,
     PlanningConfig,
@@ -236,7 +237,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                     "configs",
                     queryset=PlanningConfig.objects.prefetch_related(
                         Prefetch("org_unit_types", queryset=OrgUnitType.objects.only("id", "name").all()),
-                        Prefetch("org_unit_groups", queryset=OrgUnit.objects.only("id", "name").all()),
+                        Prefetch("org_unit_groups", queryset=Group.objects.only("id", "name").all()),
                     ).order_by("level"),
                 )
             )

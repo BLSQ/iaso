@@ -7,6 +7,7 @@ from rest_framework.settings import api_settings
 from iaso.models import (
     Account,
     DataSource,
+    Group,
     OrgUnit,
     OrgUnitType,
     Planning,
@@ -33,6 +34,12 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.account.save()
 
         cls.other_account = Account.objects.create(name="other_account")
+        cls.data_source_other_account = DataSource.objects.create(name="Test Data Source 2")
+        cls.source_version_other_account = SourceVersion.objects.create(
+            data_source=cls.data_source_other_account, number=1
+        )
+        cls.other_account.default_version = cls.source_version_other_account
+        cls.other_account.save()
 
         # set up users
         cls.user_no_perm = cls.create_user_with_profile(username="user_no_perm", account=cls.account, permissions=[])
@@ -57,6 +64,7 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         cls.data_source.projects.add(cls.project)
+        cls.data_source_other_account.projects.add(cls.project_other_account)
 
         # Create test org unit types
         cls.org_unit_type = OrgUnitType.objects.create(name="Test Country Type")
@@ -69,14 +77,13 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.org_unit_type_other_account.projects.set([cls.project_other_account])
 
         # Create test org unit
-        cls.org_unit = OrgUnit.objects.create(
+        cls.ou = OrgUnit.objects.create(
             name="Test Country", org_unit_type=cls.org_unit_type, version=cls.source_version
         )
-        cls.org_unit_2 = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_2, version=cls.source_version
-        )
-        cls.org_unit_other_account = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_other_account
+        cls.org_unit_group = Group.objects.create(name="Test country", source_version=cls.source_version)
+        cls.org_unit_group_2 = Group.objects.create(name="Test Country", source_version=cls.source_version)
+        cls.org_unit_group_other_account = Group.objects.create(
+            name="Test Country", source_version=cls.source_version_other_account
         )
 
         # Create test team
@@ -87,15 +94,13 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # create plannings
 
-        cls.planning = Planning.objects.create(
-            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit
-        )
+        cls.planning = Planning.objects.create(name="planning", project=cls.project, team=cls.team, org_unit=cls.ou)
 
         cls.planning_other_account = Planning.objects.create(
             name="planning_other_account",
             project=cls.project_other_account,
             team=cls.team_other_account,
-            org_unit=cls.org_unit,
+            org_unit=cls.ou,
         )
 
     def assertValidBody(self, body: Any) -> None:
@@ -130,10 +135,10 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             "planning": self.planning.id,
             "level": 1,
             "org_unit_types": [self.org_unit_type.id, self.org_unit_type_2.id],
-            "org_unit_groups": [self.org_unit.id, self.org_unit_2.id],
+            "org_unit_groups": [self.org_unit_group.id, self.org_unit_group_2.id],
         }
         self.assertValidBody(data)
-        with self.assertNumQueries(24):
+        with self.assertNumQueries(23):
             res = self.client.post(reverse("planning_configs-list"), data=data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)
@@ -150,7 +155,8 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [self.org_unit_type.id, self.org_unit_type_2.id],
         )
         self.assertCountEqual(
-            planning_config.org_unit_groups.values_list("id", flat=True), [self.org_unit.id, self.org_unit_2.id]
+            planning_config.org_unit_groups.values_list("id", flat=True),
+            [self.org_unit_group.id, self.org_unit_group_2.id],
         )
 
     def test_validation_errors(self):
@@ -189,7 +195,7 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertHasError(res_data, "org_unit_types")
 
         with self.subTest("org unit group out of account"):
-            data = {"planning": self.planning.pk, "level": 1, "org_unit_groups": [self.org_unit_other_account.pk]}
+            data = {"planning": self.planning.pk, "level": 1, "org_unit_groups": [self.org_unit_group_other_account.pk]}
             self.assertValidBody(data)
             res = self.client.post(reverse("planning_configs-list"), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
@@ -216,7 +222,7 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             "planning": self.planning.id,
             "level": 1,
             "org_unit_types": [self.org_unit_type.id, self.org_unit_type_2.id],
-            "org_unit_groups": [self.org_unit.id, self.org_unit_2.id],
+            "org_unit_groups": [self.org_unit_group.id, self.org_unit_group_2.id],
         }
         self.assertValidBody(data)
         res = self.client.post(reverse("planning_configs-list"), data=data)
@@ -236,5 +242,6 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [self.org_unit_type.id, self.org_unit_type_2.id],
         )
         self.assertCountEqual(
-            planning_config.org_unit_groups.values_list("id", flat=True), [self.org_unit.id, self.org_unit_2.id]
+            planning_config.org_unit_groups.values_list("id", flat=True),
+            [self.org_unit_group.id, self.org_unit_group_2.id],
         )

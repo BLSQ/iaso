@@ -117,6 +117,11 @@ Lorsque cette variable est définie, Product Fruits sera activé et seuls le nom
 
 ## Configuration Frontend
 
+
+| nom | valeurs possibles | valeur par défaut | description |
+|------|----------------|---------------|-------------|
+| SHOW_NAME_WITH_LOGO | `yes`, `no` | `yes` | Permet de cacher le texte `APP_TITLE` dans le menu latéral |
+
 ### Paramètres de développement
 
 | Nom              | Optionnel | Valeur par défaut | Description                                          |

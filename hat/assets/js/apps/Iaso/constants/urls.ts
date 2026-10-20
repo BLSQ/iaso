@@ -512,7 +512,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     planningDetails: {
         url: 'planning/details',
-        params: ['accountId', 'planningId', 'mode', ...paginationPathParams],
+        params: [
+            'accountId',
+            'planningId',
+            'mode',
+            'newMissionId',
+            ...paginationPathParams,
+        ],
     },
     missions: {
         url: 'planning/missions',
@@ -534,7 +540,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     missionsCreate: {
         url: 'planning/missions/create',
-        params: ['accountId'],
+        params: ['accountId', 'planningId', 'planningMode'],
     },
     assignments: {
         url: 'planning/assignments',
@@ -682,6 +688,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'requires_user_action',
             'validation_workflows',
             'projects',
+            'org_unit',
             ...paginationPathParams,
         ],
     },

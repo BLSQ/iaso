@@ -796,6 +796,72 @@ const MESSAGES = defineMessages({
         id: 'iaso.formversions.modifiedQuestionsSection',
         defaultMessage: 'Questions with changed type ({count})',
     },
+    configurationImpacts: {
+        id: 'iaso.formversions.configurationImpacts',
+        defaultMessage: 'used in the configuration',
+    },
+    configurationImpactsSection: {
+        id: 'iaso.formversions.configurationImpactsSection',
+        defaultMessage:
+            'Removed or changed questions used in the configuration ({count})',
+    },
+    configurationUsage: {
+        id: 'iaso.formversions.configurationUsage',
+        defaultMessage: 'Used in',
+    },
+    configurationTarget: {
+        id: 'iaso.formversions.configurationTarget',
+        defaultMessage: 'To check',
+    },
+    impactLocationField: {
+        id: 'iaso.formversions.impactLocationField',
+        defaultMessage: 'GPS location question of the form',
+    },
+    impactDeviceField: {
+        id: 'iaso.formversions.impactDeviceField',
+        defaultMessage: 'Device question of the form',
+    },
+    impactCorrelationField: {
+        id: 'iaso.formversions.impactCorrelationField',
+        defaultMessage:
+            'Correlation question of the form: new submissions will fail to be processed',
+    },
+    impactLabelKey: {
+        id: 'iaso.formversions.impactLabelKey',
+        defaultMessage: 'Label of the submissions and entities',
+    },
+    impactPredefinedFilter: {
+        id: 'iaso.formversions.impactPredefinedFilter',
+        defaultMessage: 'Predefined filter',
+    },
+    impactEntityTypeListField: {
+        id: 'iaso.formversions.impactEntityTypeListField',
+        defaultMessage: "Column of the entity type's list",
+    },
+    impactEntityTypeDetailField: {
+        id: 'iaso.formversions.impactEntityTypeDetailField',
+        defaultMessage: "Field of the entity type's detail",
+    },
+    impactEntityTypeDuplicateField: {
+        id: 'iaso.formversions.impactEntityTypeDuplicateField',
+        defaultMessage: 'Duplicate search of the entity type',
+    },
+    impactStockRule: {
+        id: 'iaso.formversions.impactStockRule',
+        defaultMessage: 'Stock rule',
+    },
+    impactDhis2Mapping: {
+        id: 'iaso.formversions.impactDhis2Mapping',
+        defaultMessage: "Mapped to DHIS2, won't be mapped anymore",
+    },
+    impactFollowUpCondition: {
+        id: 'iaso.formversions.impactFollowUpCondition',
+        defaultMessage: 'Condition of follow-up {order}',
+    },
+    impactChangeMapping: {
+        id: 'iaso.formversions.impactChangeMapping',
+        defaultMessage: 'Change mapping {source} \u2192 {target}',
+    },
     questionName: {
         id: 'iaso.formversions.questionName',
         defaultMessage: 'Name',

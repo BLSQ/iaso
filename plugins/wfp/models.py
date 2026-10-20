@@ -49,6 +49,7 @@ ADMISSION_CRITERIAS = [
 
 ADMISSION_TYPES = [
     ("new_case", _("New case")),
+    ("new_admission", _("New admission")),
     ("new_case_MUAC", _("New admission (MUAC <11.5 cm)")),
     ("new_case_WHZ", _("New admission (WHZ scores <-3SD)")),
     ("new_case_MUAC_WHZ", _("New admission (Both WHZ and MUAC)")),
@@ -59,9 +60,14 @@ ADMISSION_TYPES = [
     ("referred_from_tsfp_mam", _("Referred from TSFP (MAM)")),
     ("referred_from_BSFP", _("Referred from BSFP")),
     ("relapse", _("Relapse")),
+    ("readmission_after_default", _("Readmission after default")),
     ("returned_defaulter", _("Returned defaulter")),
+    ("returned_defaulter_old_case", _("Returned defaulter (old case)")),
     ("returned_referral", _("Returned referral")),
     ("transfer_from_other_tsfp", _("Transfer from other TSFP")),
+    ("transferred_from_tsfp", _("Transferred as cured from TSFP")),
+    ("transferred_cured_otp", _("Transferred as cured from OTP")),
+    ("transferred_from_bsfp_nsep", _("Transferred from another BSFP/NSEP")),
 ]
 
 RATION_SIZE = [

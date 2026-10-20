@@ -13,9 +13,7 @@ import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/Mi
 import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/MissionOrgUnitTypeInput';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
-import { EntityAndFormChip } from './chips/EntityAndFormChip';
-import { FormsChip } from './chips/FormsChip';
-import { OrgUnitAndFormChip } from './chips/OrgUnitAndFormChip';
+import { MissionTypeChip } from './chips/MissionTypeChip';
 import { InfosTitle } from './details/InfosTitle';
 import { MissionsTitle } from './details/MissionsTitle';
 
@@ -59,15 +57,7 @@ export const EditMissionForm = ({
                 />
 
                 <MissionsTitle />
-                {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
-                    <FormsChip />
-                )}
-                {missionType === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (
-                    <OrgUnitAndFormChip />
-                )}
-                {missionType === MissionTypeDa2Enum.enum.ENTITY_AND_FORM && (
-                    <EntityAndFormChip />
-                )}
+                <MissionTypeChip missionType={missionType} />
 
                 {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
                     <MissionFormsBaseInput formik={formik} />

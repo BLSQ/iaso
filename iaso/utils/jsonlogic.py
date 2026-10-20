@@ -3,7 +3,7 @@
 import operator
 import re
 
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Iterator, Optional, Union
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression
@@ -696,3 +696,25 @@ def float_try_parse(value):
         return True
     except ValueError:
         return False
+
+
+def jsonlogic_variable_names(jsonlogic: Any) -> Iterator[str]:
+    """Yield the variable names a JsonLogic expression reads, at any depth, in order of appearance (duplicates kept).
+
+    A variable is `{"var": "age"}` or, with a default value, `{"var": ["age", 0]}`; an empty name (`{"var": ""}`,
+    the whole data) is skipped.
+
+    >>> list(jsonlogic_variable_names({"and": [{">": [{"var": "age"}, 60]}, {"==": [{"var": ["gender", ""]}, "F"]}]}))
+    ['age', 'gender']
+    """
+    if isinstance(jsonlogic, dict):
+        for operator_name, operand in jsonlogic.items():
+            if operator_name == "var":
+                name = operand[0] if isinstance(operand, list) and operand else operand
+                if isinstance(name, str) and name:
+                    yield name
+            else:
+                yield from jsonlogic_variable_names(operand)
+    elif isinstance(jsonlogic, list):
+        for item in jsonlogic:
+            yield from jsonlogic_variable_names(item)

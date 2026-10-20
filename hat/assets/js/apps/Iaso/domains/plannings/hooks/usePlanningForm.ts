@@ -4,7 +4,8 @@ import { useFormik } from 'formik';
 import moment from 'moment';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
-import { PlanningLevel } from '../components/orgUnitLevels/types';
+import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
+import { configsToLevels } from '../components/orgUnitLevels/utils';
 import { PageMode, Planning } from '../types';
 import {
     convertAPIErrorsToState,
@@ -18,6 +19,7 @@ const toDatePickerFormat = (date?: string) =>
 
 export const usePlanningForm = (
     planning: Planning | undefined,
+    savedConfigs: SavedPlanningConfig[],
     mode: PageMode,
 ) => {
     const redirectToReplace = useRedirectToReplace();
@@ -32,7 +34,10 @@ export const usePlanningForm = (
         },
         [mode, redirectToReplace],
     );
-    const { mutateAsync: savePlanning } = useSavePlanning({ type: mode });
+    const { mutateAsync: savePlanning } = useSavePlanning({
+        type: mode,
+        savedConfigs,
+    });
     const {
         apiErrors,
         payload,
@@ -56,8 +61,7 @@ export const usePlanningForm = (
             missions: planning?.missions,
             selectedOrgUnit: planning?.org_unit_details?.id,
             selectedTeam: planning?.team_details?.id,
-            // Not persisted yet: the planning levels API is still to be built.
-            levels: [] as PlanningLevel[],
+            levels: configsToLevels(savedConfigs),
         },
         enableReinitialize: true,
         validateOnBlur: true,

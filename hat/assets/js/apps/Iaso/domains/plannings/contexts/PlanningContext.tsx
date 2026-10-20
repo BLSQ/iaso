@@ -21,7 +21,9 @@ import {
     useApiMicroplanningMissionsList,
     useApiMicroplanningMissionsRetrieve,
 } from 'Iaso/api/missions';
+import { useApiMicroplanningPlanningsConfigsList } from 'Iaso/api/plannings';
 import { baseUrls } from 'Iaso/constants/urls';
+import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
@@ -73,6 +75,7 @@ export const usePlanningContext = (): PlanningContextValue => {
 
 type LoadedPlanningProviderProps = {
     planning?: Planning;
+    savedConfigs: SavedPlanningConfig[];
     isFetchingPlanning: boolean;
     mode: PageMode;
     newMissionId?: string;
@@ -81,12 +84,13 @@ type LoadedPlanningProviderProps = {
 
 const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     planning,
+    savedConfigs,
     isFetchingPlanning,
     mode,
     newMissionId,
     children,
 }) => {
-    const formik = usePlanningForm(planning, mode);
+    const formik = usePlanningForm(planning, savedConfigs, mode);
     const {
         values,
         initialValues,
@@ -255,6 +259,8 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     );
 };
 
+const EMPTY_CONFIGS: SavedPlanningConfig[] = [];
+
 type Props = {
     planningId: string;
     mode: PageMode;
@@ -273,8 +279,12 @@ export const PlanningProvider: FC<Props> = ({
         isLoading,
         isFetching,
     } = useGetPlanningDetails(planningId);
+    const { data: savedConfigs, isLoading: isLoadingConfigs } =
+        useApiMicroplanningPlanningsConfigsList(Number(planningId), undefined, {
+            query: { enabled: Boolean(planningId) },
+        });
 
-    if (isLoading) {
+    if (isLoading || isLoadingConfigs) {
         return <LoadingSpinner />;
     }
     if (!planning && mode !== 'create') {
@@ -283,6 +293,7 @@ export const PlanningProvider: FC<Props> = ({
     return (
         <LoadedPlanningProvider
             planning={planning}
+            savedConfigs={savedConfigs?.results ?? EMPTY_CONFIGS}
             isFetchingPlanning={isFetching}
             mode={mode}
             newMissionId={newMissionId}

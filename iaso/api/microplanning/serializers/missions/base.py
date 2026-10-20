@@ -5,9 +5,9 @@ from rest_polymorphic.serializers import PolymorphicSerializer
 
 from iaso.models import MissionEntityType, MissionForm, MissionOrgUnitType
 
-from .mission_entity_type import MissionEntityTypeListSerializer
-from .mission_form import MissionFormListSerializer
-from .mission_org_unit_type import MissionOrgUnitTypeListSerializer
+from .mission_entity_type import PlanningMissionEntityTypeListSerializer
+from .mission_form import PlanningMissionFormListSerializer
+from .mission_org_unit_type import PlanningMissionOrgUnitTypeListSerializer
 
 
 class BaseMissionPolymorphicSerializer(PolymorphicSerializer):
@@ -60,7 +60,7 @@ class BaseMissionPolymorphicSerializer(PolymorphicSerializer):
 
 class PlanningMissionPolymorphicListSerializer(BaseMissionPolymorphicSerializer):
     model_serializer_mapping = {
-        MissionForm: MissionFormListSerializer,
-        MissionOrgUnitType: MissionOrgUnitTypeListSerializer,
-        MissionEntityType: MissionEntityTypeListSerializer,
+        MissionForm: PlanningMissionFormListSerializer,
+        MissionOrgUnitType: PlanningMissionOrgUnitTypeListSerializer,
+        MissionEntityType: PlanningMissionEntityTypeListSerializer,
     }

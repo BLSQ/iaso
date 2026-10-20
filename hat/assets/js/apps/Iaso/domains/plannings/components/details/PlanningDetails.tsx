@@ -1,20 +1,16 @@
 import React, { FC, SyntheticEvent, useCallback, useState } from 'react';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { InfoTab } from '../info/InfoTab';
 import { LevelsAndTeamsTab } from '../levelsAndTeams/LevelsAndTeamsTab';
-import { PlanningHeader } from './PlanningHeader';
+import { PlanningHeaderActions, PlanningHeaderTitle } from './PlanningHeader';
 
 const styles = {
-    root: {
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-    },
     tabs: {
         flexShrink: 0,
         marginBottom: 3,
@@ -32,8 +28,10 @@ export const PlanningDetails: FC = () => {
     );
 
     return (
-        <Box sx={styles.root}>
-            <PlanningHeader />
+        <GreyPageWrapper
+            title={<PlanningHeaderTitle />}
+            actions={<PlanningHeaderActions />}
+        >
             <Tabs value={activeTab} onChange={handleChangeTab} sx={styles.tabs}>
                 <Tab
                     value="info"
@@ -50,6 +48,6 @@ export const PlanningDetails: FC = () => {
             </Tabs>
             {activeTab === 'info' && <InfoTab />}
             {activeTab === 'levelsAndTeams' && <LevelsAndTeamsTab />}
-        </Box>
+        </GreyPageWrapper>
     );
 };

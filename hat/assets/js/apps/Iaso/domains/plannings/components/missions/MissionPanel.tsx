@@ -7,10 +7,10 @@ import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
+import { planningPanelStyles } from '../shared/styles';
 import { AddMissionsDialog } from './AddMissionsDialog';
 import { MissionItem } from './MissionItem';
 import { NoMissionPlaceholder } from './NoMissionPlaceholder';
-import { planningPanelStyles } from '../shared/styles';
 
 const styles = {
     card: {

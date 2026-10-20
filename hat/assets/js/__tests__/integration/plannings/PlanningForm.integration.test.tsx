@@ -7,8 +7,8 @@ import moment from 'moment';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import 'moment/locale/fr';
+import { PlanningHeaderActions } from 'Iaso/domains/plannings/components/details/PlanningHeader';
 import { PlanningForm } from 'Iaso/domains/plannings/components/info/PlanningForm';
-import { PlanningHeader } from 'Iaso/domains/plannings/components/details/PlanningHeader';
 import { PlanningProvider } from 'Iaso/domains/plannings/contexts/PlanningContext';
 import MESSAGES from 'Iaso/domains/plannings/messages';
 import { Planning } from 'Iaso/domains/plannings/types';
@@ -107,7 +107,7 @@ const renderForm = (planning: Planning) => {
                 adapterLocale="fr"
             >
                 <PlanningProvider planningId={`${planning.id}`} mode="edit">
-                    <PlanningHeader />
+                    <PlanningHeaderActions />
                     <PlanningForm />
                 </PlanningProvider>
             </LocalizationProvider>

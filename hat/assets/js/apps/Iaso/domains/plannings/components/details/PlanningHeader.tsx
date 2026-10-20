@@ -2,76 +2,62 @@ import React, { FC } from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import { Button, Stack, Typography } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { PlanningStatusChip } from '../shared/PlanningStatusChip';
-import { SaveWarningDialog } from './SaveWarningDialog';
 import { planningPanelStyles } from '../shared/styles';
+import { SaveWarningDialog } from './SaveWarningDialog';
 
 const styles = {
-    header: {
-        position: 'sticky',
-        top: 0,
-        pt: 4,
-        zIndex: 2,
-        pb: 2,
-        backgroundColor: 'white',
-    },
-    title: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-    },
     buttonIcon: {
         ...planningPanelStyles.smallIcon,
         mr: 1,
     },
 } satisfies SxStyles;
 
-export const PlanningHeader: FC = () => {
-    const { planning, mode, canSave, savePlanning, duplicatePlanning } =
+export const PlanningHeaderTitle: FC = () => {
+    const { planning } = usePlanningContext();
+    return (
+        <>
+            {planning?.name}
+            <PlanningStatusChip status={planning?.status ?? 'draft'} />
+        </>
+    );
+};
+
+export const PlanningHeaderActions: FC = () => {
+    const { mode, canSave, savePlanning, duplicatePlanning } =
         usePlanningContext();
     const { formatMessage } = useSafeIntl();
     return (
-        <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={styles.header}
-        >
-            <Typography variant="h6" sx={styles.title}>
-                {planning?.name}
-                <PlanningStatusChip status={planning?.status ?? 'draft'} />
-            </Typography>
-            <Stack direction="row" gap={1}>
-                <Button variant="outlined" size="small">
-                    <OpenInNewIcon sx={styles.buttonIcon} />
-                    {formatMessage(MESSAGES.openAssignments)}
-                </Button>
-                {mode === 'edit' && (
-                    <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={duplicatePlanning}
-                    >
-                        <ContentCopyIcon sx={styles.buttonIcon} />
-                        {formatMessage(MESSAGES.duplicatePlanning)}
-                    </Button>
-                )}
+        <Stack direction="row" gap={1}>
+            <Button variant="outlined" size="small">
+                <OpenInNewIcon sx={styles.buttonIcon} />
+                {formatMessage(MESSAGES.openAssignments)}
+            </Button>
+            {mode === 'edit' && (
                 <Button
-                    variant="contained"
+                    variant="outlined"
                     size="small"
-                    onClick={savePlanning}
-                    disabled={!canSave}
+                    onClick={duplicatePlanning}
                 >
-                    <SaveOutlinedIcon sx={styles.buttonIcon} />
-                    {formatMessage(MESSAGES.save)}
+                    <ContentCopyIcon sx={styles.buttonIcon} />
+                    {formatMessage(MESSAGES.duplicatePlanning)}
                 </Button>
-                <SaveWarningDialog />
-            </Stack>
+            )}
+            <Button
+                variant="contained"
+                size="small"
+                onClick={savePlanning}
+                disabled={!canSave}
+            >
+                <SaveOutlinedIcon sx={styles.buttonIcon} />
+                {formatMessage(MESSAGES.save)}
+            </Button>
+            <SaveWarningDialog />
         </Stack>
     );
 };

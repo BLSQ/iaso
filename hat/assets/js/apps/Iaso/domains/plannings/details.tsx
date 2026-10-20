@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
 import { useSafeIntl, useGoBack } from 'bluesquare-components';
-import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { baseUrls } from 'Iaso/constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -32,15 +31,13 @@ export const Details: FunctionComponent = () => {
     return (
         <>
             <TopBar title={titleMessage} displayBackButton goBack={goBack} />
-            <MainWrapper sx={{ p: 4, pt: 0 }}>
-                <PlanningProvider
-                    planningId={planningId}
-                    mode={params.mode as PageMode}
-                    newMissionId={params.newMissionId}
-                >
-                    <PlanningDetails />
-                </PlanningProvider>
-            </MainWrapper>
+            <PlanningProvider
+                planningId={planningId}
+                mode={params.mode as PageMode}
+                newMissionId={params.newMissionId}
+            >
+                <PlanningDetails />
+            </PlanningProvider>
         </>
     );
 };

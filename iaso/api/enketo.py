@@ -47,14 +47,17 @@ def public_url_for_enketo(request: HttpRequest, path):
     """Utility function, used for giving Enketo an url by which they can contact our Iaso server,
     so they can download form definitions"""
 
-    resolved_path = request.build_absolute_uri(path)
+    return _rewrite_host_for_enketo_dev(request.build_absolute_uri(path))
 
-    # This hack allow it to work in the docker compose environment, where the server name from outside the container
-    # network are not the same that in the inside.
-    if enketo_settings().get("ENKETO_DEV"):
-        resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")
-        resolved_path = resolved_path.replace("127.0.0.1:8081", "iaso:8081")
-    return resolved_path
+
+def _rewrite_host_for_enketo_dev(url: str) -> str:
+    """In local dev, Enketo runs in docker and can't reach Iaso through the host the browser uses
+    (e.g. localhost:8081), so we swap it for ENKETO_DEV_IASO_HOST (e.g. iaso:8081 or host.docker.internal:8081)."""
+    settings = enketo_settings()
+    if not settings.get("ENKETO_DEV"):
+        return url
+    iaso_host = settings["ENKETO_DEV_IASO_HOST"]
+    return url.replace("localhost:8081", iaso_host).replace("127.0.0.1:8081", iaso_host)
 
 
 # it's now actually an edition, we extract a fresh "data" xml from the form definition
@@ -274,11 +277,7 @@ def _build_url_for_edition(request, instance, user_id=None):
         # but in development
         #   the file.url is just a path
         #    we use the current request to resolve the host and swap to iaso internal name
-        url_with_secret = request.build_absolute_uri(url_with_secret)
-        if enketo_settings().get("ENKETO_DEV"):
-            url_with_secret = url_with_secret.replace("localhost:8081", "iaso:8081")
-
-        return url_with_secret
+        return _rewrite_host_for_enketo_dev(request.build_absolute_uri(url_with_secret))
 
     edit_url = enketo_url_for_edition(
         public_url_for_enketo(request, "/api/enketo"),

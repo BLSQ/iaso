@@ -59,7 +59,11 @@ export const useSaveNodeOrder = (
     slug: string,
     invalidateQueryKey?: string[],
 ) => {
-    return useSnackMutation({
+    return useSnackMutation<
+        unknown,
+        unknown,
+        ValidationNodeTemplateBulkUpdateBody
+    >({
         mutationFn: saveNodeOrder(slug),
         invalidateQueryKey: [...(invalidateQueryKey ?? []), WF_BASE_QUERYKEY],
     });

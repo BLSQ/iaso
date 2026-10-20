@@ -33,7 +33,7 @@ from iaso.api.validation_workflow_instances.permissions import (
 )
 from iaso.api.validation_workflow_instances.serializers.list import ValidationWorkflowInstanceListSerializer
 from iaso.api.validation_workflow_instances.serializers.retrieve import ValidationWorkflowInstanceRetrieveSerializer
-from iaso.models import Instance, ValidationNode, ValidationNodeTemplate
+from iaso.models import Instance, OrgUnit, ValidationNode, ValidationNodeTemplate
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
@@ -141,7 +141,9 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
 
             # get latest new version to handle resubmit cases
             latest_new_version_create_at_query = Subquery(
-                ValidationNode.objects.filter(instance=OuterRef("pk"), status=ValidationNodeStatus.NEW_VERSION)
+                ValidationNode.objects.filter(
+                    instance=OuterRef(OuterRef("pk")), status=ValidationNodeStatus.NEW_VERSION
+                )
                 .order_by("-created_at")
                 .values("created_at")[:1]
             )
@@ -165,7 +167,9 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
 
             cutoff = Coalesce(
                 Subquery(
-                    ValidationNode.objects.filter(instance=OuterRef("pk"), status=ValidationNodeStatus.NEW_VERSION)
+                    ValidationNode.objects.filter(
+                        instance=OuterRef(OuterRef(OuterRef("pk"))), status=ValidationNodeStatus.NEW_VERSION
+                    )
                     .order_by("-created_at")
                     .values("created_at")[:1]
                 ),
@@ -174,25 +178,12 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
             # get all next bypass where user could take action in that workflow for that instance
             bypass_waiting_query = Exists(
                 validation_node_templates.filter(
-                    workflow__account=self.request.user.iaso_profile.account,
                     can_skip_previous_nodes=True,
                     workflow__form_set=OuterRef("form_id"),
                 ).filter(
-                    Q(
-                        ~Exists(
-                            ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
-                                instance=OuterRef("pk"),
-                                node=OuterRef("pk"),
-                            )
-                        )
-                    )
-                    & Q(
-                        ~Exists(
-                            ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
-                                instance=OuterRef("pk"),
-                                node=OuterRef("pk"),
-                                created_at__gt=cutoff,
-                            )
+                    ~Exists(
+                        ValidationNode.objects.exclude(created_at__lt=cutoff).filter(
+                            instance=OuterRef(OuterRef("pk")), node=OuterRef("pk")
                         )
                     )
                 )
@@ -211,8 +202,12 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
                 annotate_last_updated=Max("validationnode__updated_at"),
             )
 
+            deferred_fields = [
+                f"org_unit__{field.name}" for field in OrgUnit._meta.get_fields() if field.name not in ["id", "name"]
+            ]
             qs = (
-                qs.select_related("project", "form")
+                qs.select_related("project", "form", "org_unit")
+                .defer(*deferred_fields)
                 .filter(Q(annotate_user_has_been_involved=True) | Q(annotate_requires_user_action=True))
                 .distinct()
             )

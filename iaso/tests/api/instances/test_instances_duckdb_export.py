@@ -14,6 +14,7 @@ from django.contrib.gis.geos import Point
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION
 from iaso.tests.utils_parquet import BaseAPITransactionTestCase
 
@@ -23,6 +24,12 @@ ESCAPED_CONTROL_CHARS_RE = re.compile(
     "_x00[01][0-9A-F]_"
 )  # closes a $$ ... $$ quoted string: the query params must not be able to end the sql given to duckdb
 DOLLAR_QUOTED = "#hash $$) ; SELECT 42; --"
+VALIDATION_STATUSES = [
+    ValidationWorkflowArtefactStatus.APPROVED,
+    ValidationWorkflowArtefactStatus.REJECTED,
+    ValidationWorkflowArtefactStatus.PENDING,
+    "",
+]
 TRICKY_ANSWERS = [
     {"text": 'a, "quoted" <b>&amp;</b>', "other": "multi\nline\r\nend", "number": 1, "the_last_column": "short"},
     {
@@ -118,6 +125,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
         org_unit_type.reference_forms.add(self.form)
         # the answers columns (and their labels) come from the latest version, like for any real form
         m.FormVersion.objects.create(form=self.form, version_id="2020020101", form_descriptor=FORM_DESCRIPTOR)
+        self.create_validation_workflow(account=self.account, forms=[self.form], name="Tricky validation")
         entity_type = m.EntityType.objects.create(name="Beneficiary", account=self.account)
 
         date = datetime.datetime(2020, 2, 1, 10, 11, 12, 123456, tzinfo=pytz.UTC)
@@ -139,6 +147,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
                 if index % 2
                 else None,
                 json={"_version": "2020020101", **answers},
+                general_validation_status=VALIDATION_STATUSES[index % len(VALIDATION_STATUSES)],
             )
             if index == 1:
                 instance.flag_reference_instance(instance.org_unit)
@@ -215,6 +224,43 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
         self.assertIsInstance(duckdb_rows[3][header.index("number")], float)
         self.assertEqual(duckdb_rows[5][header.index("text")], "007")
         self.assertIsInstance(duckdb_rows[0][header.index("ID du formulaire")], int)
+
+    def test_validation_workflow_columns(self):
+        expected = [
+            ("Tricky validation", VALIDATION_STATUSES[index % len(VALIDATION_STATUSES)])
+            for index in range(2 * len(TRICKY_ANSWERS))
+        ]
+        for engine in ("legacy", "duckdb"):
+            with self.subTest(file_format="csv", engine=engine):
+                header, *rows = csv_rows(self.get("csv", engine))
+                workflow, status = header.index("Workflow"), header.index("Validation Status")
+                self.assertEqual([(row[workflow], row[status]) for row in rows], expected)
+            with self.subTest(file_format="xlsx", engine=engine):
+                header, _labels, *rows = load_xlsx(self.get("xlsx", engine))[0]
+                workflow, status = header.index("Workflow"), header.index("Validation Status")
+                # empty cells are read back as None
+                self.assertEqual([(row[workflow], row[status] or "") for row in rows], expected)
+
+    def test_validation_workflow_filters(self):
+        other_workflow = self.create_validation_workflow(account=self.account, name="Other workflow")
+        all_count = 2 * len(TRICKY_ANSWERS)
+        approved_count = sum(
+            VALIDATION_STATUSES[index % len(VALIDATION_STATUSES)] == ValidationWorkflowArtefactStatus.APPROVED
+            for index in range(all_count)
+        )
+
+        def statuses(engine, params):
+            header, *rows = csv_rows(self.get("csv", engine, params))
+            return [row[header.index("Validation Status")] for row in rows]
+
+        for engine in ("legacy", "duckdb"):
+            with self.subTest(engine=engine):
+                self.assertEqual(len(statuses(engine, {"workflow_ids": self.form.validation_workflow_id})), all_count)
+                self.assertEqual(statuses(engine, {"workflow_ids": other_workflow.id}), [])
+                self.assertEqual(
+                    statuses(engine, {"validation_status": ValidationWorkflowArtefactStatus.APPROVED}),
+                    [ValidationWorkflowArtefactStatus.APPROVED] * approved_count,
+                )
 
     def test_no_submission(self):
         """only the header rows (from the form version) when no submission matches the filters"""

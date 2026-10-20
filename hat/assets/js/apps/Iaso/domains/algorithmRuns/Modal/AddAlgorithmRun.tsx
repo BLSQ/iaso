@@ -2,6 +2,7 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { PutAlgorithmRunBody } from 'Iaso/domains/algorithmRuns/types';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
     useGetAlgorithmsOptions,
@@ -39,7 +40,7 @@ const AddAlgorithmRun: FunctionComponent<Props> = ({
         isValid,
         handleSubmit,
         resetForm,
-    } = useFormik({
+    } = useFormik<Partial<PutAlgorithmRunBody>>({
         initialValues: {
             algoId: undefined,
             sourceOriginId: undefined,
@@ -71,7 +72,7 @@ const AddAlgorithmRun: FunctionComponent<Props> = ({
     });
 
     const handleChange = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: any) => {
             setFieldTouched(keyValue, true);
             setFieldValue(keyValue, value);
         },
@@ -79,7 +80,7 @@ const AddAlgorithmRun: FunctionComponent<Props> = ({
     );
 
     const handleSourceChange = useCallback(
-        (keyValue, value) => {
+        (keyValue: string, value: number) => {
             setFieldTouched(keyValue, true);
             if (keyValue === 'sourceOriginId') {
                 setValues({

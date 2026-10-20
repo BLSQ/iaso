@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from iaso import models as m
-from iaso.api.org_unit_types.serializers import validate_reference_forms
+from iaso.api.org_unit_types.serializers import get_parents, validate_reference_forms
 from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
 from iaso.models import FeatureFlag
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION
@@ -798,7 +798,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             format="json",
         )
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("sub_unit_type_ids", data)
+        self.assertEqual(data, {"sub_unit_type_ids": [self.org_unit_type_1.name]})
 
     def test_prevent_loop_allow_creating_sub_unit_types(self):
         """Test that `allow_creating_sub_unit_types` is validated to prevent infinite recursion loops."""
@@ -817,7 +817,50 @@ class OrgUnitTypesAPITestCase(APITestCase):
             format="json",
         )
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("allow_creating_sub_unit_type_ids", data)
+        self.assertEqual(data, {"allow_creating_sub_unit_type_ids": [self.org_unit_type_1.name]})
+
+    def test_prevent_loop_only_reports_types_creating_the_loop(self):
+        """Only the selected types that are ancestors (here a grandparent) are reported, by name."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_3.sub_unit_types.set([self.org_unit_type_1])
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2])
+
+        response = self.client.patch(
+            f"{self.BASE_URL}{self.org_unit_type_2.id}/",
+            data={"sub_unit_type_ids": [self.org_unit_type_3.id, self.org_unit_type_4.id]},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(data, {"sub_unit_type_ids": [self.org_unit_type_3.name]})
+
+    def test_get_parents(self):
+        """All the ancestors are returned, through the given relation only."""
+        self.org_unit_type_4.sub_unit_types.set([self.org_unit_type_3])
+        self.org_unit_type_3.sub_unit_types.set([self.org_unit_type_1])
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2])
+        self.org_unit_type_5.allow_creating_sub_unit_types.set([self.org_unit_type_2])
+
+        self.assertCountEqual(
+            get_parents(self.org_unit_type_2.id, "sub_unit_types"),
+            [self.org_unit_type_1.id, self.org_unit_type_3.id, self.org_unit_type_4.id],
+        )
+        self.assertEqual(
+            get_parents(self.org_unit_type_2.id, "allow_creating_sub_unit_types"), [self.org_unit_type_5.id]
+        )
+
+    def test_prevent_loop_resilience_to_existing_loops(self):
+        """Test that validating sub types doesn't loop forever if a cycle already exists."""
+        self.client.force_authenticate(self.jane)
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2])
+        self.org_unit_type_2.sub_unit_types.set([self.org_unit_type_1])
+
+        response = self.client.patch(
+            f"{self.BASE_URL}{self.org_unit_type_2.id}/",
+            data={"sub_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_4.id]},
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(data, {"sub_unit_type_ids": [self.org_unit_type_1.name]})
 
     def test_serialization_resilience_to_existing_loops(self):
         """Test that if a cycle exists, querying the api doesn't throw a recursion error."""

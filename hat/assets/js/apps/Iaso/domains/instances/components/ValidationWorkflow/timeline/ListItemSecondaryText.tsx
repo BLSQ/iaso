@@ -10,6 +10,10 @@ import {
     ValidateNodeRejectModal,
 } from 'Iaso/domains/instances/components/ValidationWorkflow/ValidationModal';
 import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
+import {
+    canBypass,
+    canValidateOrBypass,
+} from 'Iaso/domains/validationWorkflowsConfiguration/utils';
 import MESSAGES from '../../../messages';
 import { ValidateButton } from '../ValidateButton';
 
@@ -24,10 +28,6 @@ export const ListItemSecondaryText = ({
     isFirstSubmission,
 }: ListItemSecondaryTextProps) => {
     const { formatMessage } = useSafeIntl();
-    const canBypass =
-        timelineItem.type === 'NEXT_BYPASS' && timelineItem.user_can_do_actions;
-    const canValidate =
-        timelineItem.status === 'UNKNOWN' && timelineItem.user_can_do_actions;
     const redirectTo = useRedirectTo();
     const goToReview = useCallback(() => {
         redirectTo(baseUrls.instanceValidation, {
@@ -42,7 +42,7 @@ export const ListItemSecondaryText = ({
     ) {
         return;
     }
-    if (!isFirstSubmission && (canBypass || canValidate)) {
+    if (!isFirstSubmission && canValidateOrBypass(timelineItem)) {
         return (
             <>
                 <Typography sx={{ textTransform: 'uppercase' }}>
@@ -66,7 +66,7 @@ export const ListItemSecondaryText = ({
         );
     }
 
-    if (canBypass && isFirstSubmission) {
+    if (canBypass(timelineItem) && isFirstSubmission) {
         return (
             <>
                 <Typography sx={{ textTransform: 'uppercase' }}>

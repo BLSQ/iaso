@@ -129,11 +129,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'isSearchActive',
             'referenceInstances',
             'org_unit_status',
+            'workflow_ids',
+            'validation_status',
         ],
     },
     instanceDetail: {
         url: 'forms/submission',
-        params: ['accountId', 'instanceId', 'referenceFormId'],
+        params: ['accountId', 'instanceId', 'referenceFormId', 'isValidating'],
     },
     instanceValidation: {
         url: 'forms/submission/validate',
@@ -657,6 +659,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'status',
             'requires_user_action',
             'validation_workflows',
+            'projects',
+            'org_unit',
             ...paginationPathParams,
         ],
     },

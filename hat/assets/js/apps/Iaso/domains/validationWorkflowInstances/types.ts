@@ -2,6 +2,10 @@ import { Paginated } from 'bluesquare-components';
 
 export type ValidationWorkflowInstanceListResponseItem = {
     id: number;
+    org_unit: {
+        id: number;
+        name: string;
+    };
     form: {
         id: number;
         name: string;

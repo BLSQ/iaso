@@ -215,13 +215,13 @@ class MetricTypeWriteSerializerTestCase(TestCase):
         invalid_data = self.request_data.copy()
         invalid_data["legend_type"] = "ordinal"
         invalid_data["legend_config"] = {
-            "domain": [10, 20, 30, 40, 50],
-            "range": ["#A2CAEA", "#ACDF9B", "#F5F1A0", "#F2B16E", "#A93A42"],
-        }  # Invalid for ordinal (max 4)
+            "domain": list(range(13)),
+            "range": ["#A2CAEA"] * 13,
+        }  # Invalid for ordinal (max 12)
         serializer = MetricTypeWriteSerializer(data=invalid_data, context=serializer_context)
         self.assertFalse(serializer.is_valid())
         self.assertIn(
-            "Ordinal legend type allows a maximum of four scale items.", serializer.errors["non_field_errors"]
+            "Ordinal legend type allows a maximum of twelve scale items.", serializer.errors["non_field_errors"]
         )
 
 
@@ -395,13 +395,13 @@ class MetricTypeCreateSerializerTestCase(TestCase):
         invalid_data = self.request_data.copy()
         invalid_data["legend_type"] = "ordinal"
         invalid_data["legend_config"] = {
-            "domain": [10, 20, 30, 40, 50],
-            "range": ["#A2CAEA", "#ACDF9B", "#F5F1A0", "#F2B16E", "#A93A42"],
-        }  # Invalid for ordinal (max 4)
+            "domain": list(range(13)),
+            "range": ["#A2CAEA"] * 13,
+        }  # Invalid for ordinal (max 12)
         serializer = MetricTypeCreateSerializer(data=invalid_data, context=serializer_context)
         self.assertFalse(serializer.is_valid())
         self.assertIn(
-            "Ordinal legend type allows a maximum of four scale items.", serializer.errors["non_field_errors"]
+            "Ordinal legend type allows a maximum of twelve scale items.", serializer.errors["non_field_errors"]
         )
 
     def test_create_metric_type_invalid_legend_type_schema(self):

@@ -29,6 +29,7 @@ describe('Module panel accessibility', () => {
         const { container } = renderWithThemeAndIntlProvider(
             <ModulePanel
                 accountId={1}
+                // @ts-ignore
                 modules={modulesMock}
                 account={accountMock}
             />,

@@ -27,6 +27,7 @@ GPKG_IMPORT = "gpkg_import"
 GROUP_SET_API = "group_set_api"
 INSTANCE_API = "instance_api"
 INSTANCE_API_BULK = "instance_api_bulk"
+MAPPING_VERSION_API = "mapping_version_api"
 ORG_UNIT_API = "org_unit_api"
 ORG_UNIT_API_BULK = "org_unit_api_bulk"
 ORG_UNIT_CHANGE_REQUEST = "org_unit_change_request"
@@ -186,7 +187,11 @@ def log_modification(
     source: Optional[str],
     user: User = None,
     org_unit_change_request_id: int = None,
+    save: bool = True,
 ) -> Modification:
+    """
+    `save=False` returns the modification without saving it, e.g. to `bulk_create` many of them at once.
+    """
     modification = Modification()
     modification.past_value = []
     modification.new_value = []
@@ -231,5 +236,6 @@ def log_modification(
         if not any([added, removed]) and len(modified.keys()) == 1 and "updated_at" in modified:
             logger.warning("log_modification() called with only `updated_at`.", extra={"modification": modification})
 
-    modification.save()
+    if save:
+        modification.save()
     return modification

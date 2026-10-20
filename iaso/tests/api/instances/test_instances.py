@@ -1,4 +1,5 @@
 import asyncio
+import csv
 import datetime
 import io
 import json
@@ -30,6 +31,7 @@ from iaso.api import query_params as query
 from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.api.instances.views import import_data
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
+from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
 from iaso.modules import MODULE_EXTERNAL_STORAGE
@@ -834,6 +836,39 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.assertValidInstanceListData(response.json(), 0)
 
+    def test_instance_filter_by_workflow_and_validation_status(self):
+        """GET /instances/?workflow_ids={ids}&validation_status={status}"""
+        self.client.force_authenticate(self.yoda)
+        workflow_1 = self.create_validation_workflow(account=self.star_wars, forms=[self.form_1], name="Workflow 1")
+        workflow_2 = self.create_validation_workflow(account=self.star_wars, forms=[self.form_2], name="Workflow 2")
+        unused_workflow = self.create_validation_workflow(account=self.star_wars, name="Unused workflow")
+        for instance, validation_status in [
+            (self.instance_1, ValidationWorkflowArtefactStatus.APPROVED),
+            (self.instance_2, ValidationWorkflowArtefactStatus.REJECTED),
+            (self.instance_5, ValidationWorkflowArtefactStatus.APPROVED),
+        ]:
+            instance.general_validation_status = validation_status
+            instance.save()
+
+        def instance_ids(params):
+            response = self.client.get(f"/api/instances/?{params}")
+            data = self.assertJSONResponse(response, status.HTTP_200_OK)
+            return {instance["id"] for instance in data["instances"]}
+
+        form_1_ids = {self.instance_1.id, self.instance_2.id, self.instance_3.id, self.instance_4.id}
+        self.assertEqual(instance_ids(f"workflow_ids={workflow_1.id}"), form_1_ids)
+        self.assertEqual(instance_ids(f"workflow_ids={workflow_2.id}"), {self.instance_5.id})
+        self.assertEqual(
+            instance_ids(f"workflow_ids={workflow_1.id},{workflow_2.id}"), form_1_ids | {self.instance_5.id}
+        )
+        self.assertEqual(instance_ids(f"workflow_ids={unused_workflow.id}"), set())
+
+        self.assertEqual(instance_ids("validation_status=APPROVED"), {self.instance_1.id, self.instance_5.id})
+        self.assertEqual(instance_ids("validation_status=REJECTED"), {self.instance_2.id})
+        self.assertEqual(instance_ids("validation_status=PENDING"), set())
+
+        self.assertEqual(instance_ids(f"workflow_ids={workflow_1.id}&validation_status=APPROVED"), {self.instance_1.id})
+
     def test_instance_unknown_form_id(self):
         """GET /instances/?form_id=form_id"""
         self.client.force_authenticate(self.yoda)
@@ -1522,6 +1557,28 @@ class InstancesAPITestCase(TaskAPITestCase):
             ","
         )
         self.assertIn(expected_csv_row, response_csv)
+
+    def test_submissions_list_csv_export_includes_validation_workflow(self):
+        self.client.force_authenticate(self.yoda)
+        self.create_validation_workflow(account=self.star_wars, forms=[self.form_1], name="Hydroponics validation")
+        self.instance_1.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+        self.instance_1.save()
+
+        # Same count as test_can_retrieve_submissions_list_in_csv_format (form__validation_workflow is select_related)
+        with self.assertNumQueries(11):
+            response = self.client.get(
+                f"/api/instances/?form_ids={self.form_1.id}&csv=true&engine=legacy",
+                headers={"Content-Type": "text/csv"},
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        rows = list(csv.DictReader(io.StringIO(response.getvalue().decode("utf-8"))))
+        rows_by_id = {int(row["ID du formulaire"]): row for row in rows}
+        self.assertEqual(len(rows_by_id), self.form_1.instances.count())
+        for instance_id, row in rows_by_id.items():
+            self.assertEqual(row["Workflow"], "Hydroponics validation")
+            expected_status = ValidationWorkflowArtefactStatus.APPROVED if instance_id == self.instance_1.id else ""
+            self.assertEqual(row["Validation Status"], expected_status)
 
     def test_can_retrieve_submissions_list_in_xlsx_format(self):
         self.client.force_authenticate(self.yoda)
@@ -3526,6 +3583,38 @@ class InstancesAPITestCase(TaskAPITestCase):
             self.assertFalse(item["is_instance_of_reference_form"])
             self.assertFalse(item["is_reference_instance"])
 
+    def test_instances_list_with_validation_workflow_is_constant_queries(self):
+        """The `workflow`/`validation_status` keys must not add per-instance queries when
+        the form has a validation workflow (form__validation_workflow is select_related)."""
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.projects.add(self.project)
+
+        workflow = self.create_validation_workflow(
+            account=self.star_wars, forms=[self.form_1], name="Hydroponics validation"
+        )
+        approved_instance = self.form_1.instances.first()
+        approved_instance.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+        approved_instance.save()
+
+        # Same count as test_instances_list_is_constant_queries (no workflow)
+        with self.assertNumQueries(15):
+            response = self.client.get("/api/instances/?limit=3000")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data["instances"]), 6)
+
+        form_1_items = [item for item in data["instances"] if item["form_id"] == self.form_1.id]
+        other_items = [item for item in data["instances"] if item["form_id"] != self.form_1.id]
+        self.assertTrue(form_1_items)
+        self.assertTrue(other_items)
+        for item in form_1_items:
+            self.assertEqual(item["workflow"], {"id": workflow.id, "name": "Hydroponics validation"})
+            expected_status = ValidationWorkflowArtefactStatus.APPROVED if item["id"] == approved_instance.id else ""
+            self.assertEqual(item["validation_status"], expected_status)
+        for item in other_items:
+            self.assertIsNone(item["workflow"])
+
     def test_instances_list_with_fields_param_restricts_payload_and_query_count(self):
         """GET /instances/?fields=... only returns the requested keys, and skips the
         per-instance `project`/`org_unit` lookups (the N+1 the OrgUnit map screen hits)
@@ -3767,6 +3856,8 @@ class InstancesAPITestCase(TaskAPITestCase):
             "project_color",
             "project_id",
             "status",
+            "validation_status",
+            "workflow",
             "correlation_id",
             "created_by",
             "last_modified_by",

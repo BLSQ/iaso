@@ -28,6 +28,7 @@ import { RailRow } from './RailRow';
 type Props = {
     currentInstance: Instance;
     showHistoryLink: boolean;
+    showValidation?: boolean;
     onLightBoxToggled: (open: boolean) => void;
 };
 
@@ -39,6 +40,7 @@ type Props = {
 export const SubmissionRail: FunctionComponent<Props> = ({
     currentInstance,
     showHistoryLink,
+    showValidation = false,
     onLightBoxToggled,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -104,6 +106,7 @@ export const SubmissionRail: FunctionComponent<Props> = ({
                             ? 'info'
                             : 'muted'
                     }
+                    defaultExpanded={showValidation}
                     label={formatMessage(MESSAGES.validation)}
                     state={validationState}
                 >

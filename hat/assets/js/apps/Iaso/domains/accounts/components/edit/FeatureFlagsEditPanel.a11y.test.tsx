@@ -4,7 +4,7 @@ import { axe } from 'jest-axe';
 import { FeatureFlagsEditPanel } from 'Iaso/domains/accounts/components/edit/FeatureFlagsEditPanel';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 
-describe('FeatureFlagsEditPanel accessiblity test', () => {
+describe('FeatureFlagsEditPanel accessibility test', () => {
     it('has no accessibility violation when there is no data', async () => {
         const { container } = renderWithThemeAndIntlProvider(
             <Formik
@@ -19,7 +19,7 @@ describe('FeatureFlagsEditPanel accessiblity test', () => {
         const results = await axe(container);
         expect(results).toHaveNoViolations();
     });
-    it('has no accessiblity violation when there is data', async () => {
+    it('has no accessibility violation when there is data', async () => {
         const { container } = renderWithThemeAndIntlProvider(
             <Formik
                 initialValues={{}}
@@ -28,6 +28,7 @@ describe('FeatureFlagsEditPanel accessiblity test', () => {
                 }}
             >
                 <FeatureFlagsEditPanel
+                    // @ts-ignore
                     accountFeatureFlags={[{ label: 'a', value: 'a' }]}
                 />
             </Formik>,

@@ -8,9 +8,9 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import { baseUrls } from 'Iaso/constants/urls';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { baseUrls } from '../../../constants/urls';
 import getDisplayName from '../../../utils/usersUtils';
 import { MESSAGES } from '../messages';
 import { useDeleteRun } from './api/useDeleteRun';
@@ -120,10 +120,8 @@ export const useRunsTableColumns = (): Column[] => {
                             disabled={Boolean(!settings.row.original.ended_at)}
                             titleMessage={MESSAGES.deleteRunTitle}
                             message={MESSAGES.deleteRunText}
-                            onConfirm={closeDialog =>
-                                deleteRun(settings.row.original.id).then(
-                                    closeDialog,
-                                )
+                            onConfirm={() =>
+                                deleteRun(settings.row.original.id)
                             }
                         />
                     </section>

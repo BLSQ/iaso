@@ -32,7 +32,7 @@ from iaso.admin.task_throttles import (
     running_throttle_keys,
 )
 from iaso.models.json_config import Config  # type: ignore
-from iaso.plugins import is_wfp_plugin_active
+from iaso.plugins import is_saas_plugin_active, is_wfp_plugin_active
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
@@ -1462,6 +1462,10 @@ class AccountAdmin(admin.ModelAdmin):
         from plugins.wfp.admin import create_indexes_celery_action
 
         actions.append(create_indexes_celery_action)
+    if is_saas_plugin_active():
+        from plugins.saas.admin.actions import refresh_account_usage_action
+
+        actions.append(refresh_account_usage_action)
 
 
 @admin.register(UserRole)

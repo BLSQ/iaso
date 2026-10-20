@@ -1,4 +1,5 @@
 import logging
+import typing
 import uuid
 
 
@@ -34,6 +35,29 @@ def seed_event_mapping(api, program_id):
     return (mapping, missing_data_elements)
 
 
+def mapped_question_names(mapping_json: dict) -> typing.Set[str]:
+    """The questions a mapping version exports:
+    - aggregate and event mappings: the keys of `question_mappings`, `<question>__<choice>` for a multiple select
+      exported as booleans, except the ones marked as never mapped;
+    - derived mappings: the `questionName` of the `aggregations` and of their `where` conditions.
+
+    A new form version copying the mappings of the previous one (`copy_mappings_from_previous_version()`), its
+    removed questions are dropped from them - no more exported -, its retyped ones kept - maybe no more matching the
+    DHIS2 value type."""
+    names = set()
+    for key, question_mapping in (mapping_json or {}).get("question_mappings", {}).items():
+        # `MappingVersion.QUESTION_MAPPING_NEVER_MAPPED`, not imported: `iaso.models` imports this module
+        if isinstance(question_mapping, dict) and question_mapping.get("type") == "neverMapped":
+            continue
+        names.add(key)
+        names.add(key.split("__")[0])
+    for aggregation in (mapping_json or {}).get("aggregations", []):
+        names.add(aggregation.get("questionName"))
+        names.update(condition.get("questionName") for condition in aggregation.get("where") or [])
+    names.discard(None)
+    return names
+
+
 def copy_mappings_from_previous_version(form_version, previous_form_version):
     for mapping_version in previous_form_version.mapping_versions.all():
         # clone the mapping_version and assign it the new version
@@ -42,11 +66,13 @@ def copy_mappings_from_previous_version(form_version, previous_form_version):
         mapping_version.form_version = form_version
 
         questions_by_name = form_version.questions_by_name()
+        # unlike questions_by_name, also has the questions inside repeat groups
+        mappable_questions = form_version.mappable_questions_by_name()
 
         if "question_mappings" in mapping_version.json:
             filtered_question_mappings = {}
             for k, v in mapping_version.json["question_mappings"].items():
-                if k in questions_by_name:
+                if k in mappable_questions:
                     # preserve all question mappings except the questions that don't exist in the newer version
                     filtered_question_mappings[k] = v
                 elif "__" in k:

@@ -26,6 +26,7 @@ describe('ModulePanel tests', () => {
         renderWithThemeAndIntlProvider(
             <ModulePanel
                 accountId={1}
+                // @ts-ignore
                 modules={modulesMock}
                 account={accountMock}
             />,
@@ -49,6 +50,7 @@ describe('ModulePanel tests', () => {
         renderWithThemeAndIntlProvider(
             <ModulePanel
                 accountId={1}
+                // @ts-ignore
                 modules={modulesMock}
                 account={accountMock}
             />,
@@ -71,6 +73,7 @@ describe('ModulePanel tests', () => {
         renderWithThemeAndIntlProvider(
             <ModulePanel
                 accountId={1}
+                // @ts-ignore
                 modules={modulesMock}
                 account={accountMock}
             />,
@@ -89,6 +92,7 @@ describe('ModulePanel tests', () => {
         renderWithThemeAndIntlProvider(
             <ModulePanel
                 accountId={1}
+                // @ts-ignore
                 modules={modulesMock}
                 account={accountMock}
             />,

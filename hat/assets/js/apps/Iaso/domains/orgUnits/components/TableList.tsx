@@ -60,7 +60,7 @@ export const TableList: FunctionComponent<Props> = ({
     const isSearchActive = params?.searchActive === 'true';
 
     const searches: [Search] = useMemo(
-        () => decodeSearch(decodeURI(params.searches)),
+        () => decodeSearch(params.searches),
         [params.searches],
     );
 

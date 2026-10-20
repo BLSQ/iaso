@@ -309,13 +309,13 @@ In the Form view you can see details of:
 
 -   Versions
 
--   Type of the form :
+-   Type of the mapping (see [which mapping type to choose](../how_to/import_export_dhis2_mappings.md#which-mapping-type-to-choose)):
 
-    -   Aggregate : fix
+    -   Aggregate : one submission per org unit and period, exported to a DHIS2 dataset
 
-    -   Event : series of singular events
+    -   Event : several submissions per org unit and period, exported to an event program without registration
 
-    -   Event Tracker : continuous
+    -   Event Tracker : the same person followed over time, exported to a tracker program
 
 -   Number of questionnaire to be mapped
 
@@ -341,6 +341,9 @@ If the question is to be mapped, search for the correspondence DE in the
 box by using the name, code or ID and then confirm.
 
 Once confirmed, the question will turn to green and be counted.
+
+To reuse the mappings of another form version or of an export file, see
+[Import and export DHIS2 mappings](../how_to/import_export_dhis2_mappings.md).
 
 <img src="./user_guide_attachments/image115.png"
 style="width:7.03646in;height:3.20249in" />

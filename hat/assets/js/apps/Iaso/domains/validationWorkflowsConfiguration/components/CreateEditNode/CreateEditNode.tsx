@@ -20,7 +20,7 @@ import { useNodeValidation } from './validation';
 
 type Props = {
     workflowSlug: string;
-    nodeSlug?: any;
+    nodeSlug?: string;
     isOpen: boolean;
     closeDialog: () => void;
 };

@@ -78,6 +78,8 @@ def build_submission_annotations():
         "export_id",
         "correlation_id",
         "app_version",
+        "general_validation_status",
+        "form__validation_workflow_id",
     ]
     model_prefix = "iaso_subm_"
 

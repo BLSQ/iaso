@@ -68,7 +68,6 @@ services:
         - ENABLE_SETUPER_SANDBOX
         - ENCRYPTED_TEXT_FIELD_KEY
         - ENKETO_API_TOKEN
-        - ENKETO_DEV
         - ENKETO_SIGNING_SECRET
         - ENKETO_URL
         - FAVICON_PATH
@@ -82,6 +81,7 @@ services:
         - LOGIN_LOGO_PATH
         - LOGO_PATH
         - MAINTENANCE_MODE
+        - MCP_ENABLED
         - PLUGINS
         - PROD_IMAGE_CREATION
         - PROD_IMAGE_DIGEST

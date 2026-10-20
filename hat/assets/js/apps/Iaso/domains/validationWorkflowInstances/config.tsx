@@ -7,6 +7,7 @@ import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { baseUrls } from 'Iaso/constants/urls';
+import { LinkToOrgUnit } from 'Iaso/domains/orgUnits/components/LinkToOrgUnit';
 import { ProjectChip } from 'Iaso/domains/projects/components/ProjectChip';
 import { StatusChip } from 'Iaso/domains/validationWorkflowInstances/components/StatusChip';
 import { getLocaleDateFormat } from 'Iaso/utils/dates';
@@ -64,6 +65,13 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 Cell: settings => <ProjectChip project={settings.value} />,
             },
             {
+                Header: formatMessage(MESSAGES.orgUnit),
+                id: 'org_unit__name',
+                sortable: false,
+                accessor: 'org_unit',
+                Cell: settings => <LinkToOrgUnit orgUnit={settings.value} />,
+            },
+            {
                 Header: formatMessage(MESSAGES.form),
                 id: 'form__name',
                 sortable: false,
@@ -89,7 +97,11 @@ export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
                 Cell: settings => (
                     <section>
                         <IconButton
-                            url={`/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}/instanceId/${settings.row.original.id}/accountId/${currentUser.account?.id}/`}
+                            url={
+                                `/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}` +
+                                `/instanceId/${settings.row.original.id}/accountId/${currentUser.account?.id}` +
+                                `/isValidating/true/`
+                            }
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
                         />

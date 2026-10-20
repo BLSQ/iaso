@@ -57,6 +57,9 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
             updatedDescription,
         ],
     );
+    const onOpen = useCallback(() => {
+        setUpdatedDescription(description);
+    }, [description]);
     const onCancel = useCallback(
         closeDialog => {
             setUpdatedDescription(description);
@@ -77,6 +80,7 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
             titleMessage={{
                 ...MESSAGES.editSourceVersion,
             }}
+            onOpen={onOpen}
             onCancel={onCancel}
             allowConfirm={allowConfirm}
             // This is to avoid complaints from TS compiler

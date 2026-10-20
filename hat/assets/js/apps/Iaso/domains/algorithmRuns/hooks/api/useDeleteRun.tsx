@@ -1,8 +1,7 @@
-import { UseMutationResult } from 'react-query';
-import { deleteRequest } from '../../../../libs/Api';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import { deleteRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
-export const useDeleteRun = (): UseMutationResult<any> => {
+export const useDeleteRun = () => {
     return useSnackMutation({
         mutationFn: runId => deleteRequest(`/api/algorithmsruns/${runId}/`),
         invalidateQueryKey: 'algos',

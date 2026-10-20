@@ -72,6 +72,22 @@ export type Instance = {
     source_created_at: number;
     change_requests: Array<OrgUnitChangeRequest>;
     project: Pick<Project, 'name' | 'color'>;
+    project_name?: string;
+    project_color?: string;
+    created_by?: User;
+    validation_status?: string;
+    workflow?: Workflow;
+};
+
+export type User = {
+    first_name: string;
+    username: string;
+    last_name: string;
+};
+
+export type Workflow = {
+    id: number;
+    name: string;
 };
 
 export type InstanceLogDetail = {

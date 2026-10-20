@@ -2,11 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { AddButton } from 'bluesquare-components';
 import { MESSAGES } from '../messages';
 
-type Props = {
+type Props = React.ComponentProps<typeof AddButton> & {
     onClick: () => void;
-    id?: string;
-    dataTestId?: string;
-    size?: string;
 };
 
 export const AddRunButton: FunctionComponent<Props> = props => {

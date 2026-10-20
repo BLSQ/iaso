@@ -1,19 +1,28 @@
 import React from 'react';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
+import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
 import { useGetRequiresUserActionOptions } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetRequiresUserActionOptions';
+import { UseGetValidationWorkflowInstanceSearchProps } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceSearch';
 import { useGetValidationWorkflowInstanceStatuses } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceStatuses';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
-import { useFilterState } from 'Iaso/hooks/useFilterState';
+import {
+    useFilterState,
+    useMultiTreeviewFilterState,
+} from 'Iaso/hooks/useFilterState';
 
 const baseUrl = baseUrls.validationWorkflowInstances;
 
-export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
+export const ValidationWorkflowInstanceSearchFilter = ({
+    params,
+}: {
+    params: UseGetValidationWorkflowInstanceSearchProps['params'];
+}) => {
     const { filters, filtersUpdated, handleChange, handleSearch } =
         useFilterState({ baseUrl, params, withPagination: true });
     const { data: formsList, isFetching: isFetchingForms } =
@@ -22,6 +31,12 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
     const requiresUserActionOptions = useGetRequiresUserActionOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+
+    const { initialOrgUnits, handleOrgUnitChange } =
+        useMultiTreeviewFilterState({
+            paramIds: params.org_unit,
+            handleChange,
+        });
 
     return (
         <>
@@ -84,6 +99,16 @@ export const ValidationWorkflowInstanceSearchFilter = ({ params }) => {
                         clearable
                         multi
                     />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <Box mb={1}>
+                        <OrgUnitTreeviewModal
+                            titleMessage={MESSAGES.orgUnits}
+                            onConfirm={handleOrgUnitChange}
+                            initialSelection={initialOrgUnits}
+                            multiselect
+                        />
+                    </Box>
                 </Grid>
                 <Grid
                     item

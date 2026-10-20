@@ -97,6 +97,10 @@ describe('Validation workflow list UI integration test', () => {
                     {
                         id: 1,
                         form: { id: 1, name: 'Some form' },
+                        org_unit: {
+                            id: 1,
+                            name: 'some org unit',
+                        },
                         project: {
                             id: 1,
                             name: 'some project',
@@ -124,7 +128,8 @@ describe('Validation workflow list UI integration test', () => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
 
-        expect(screen.getByText('APPROVED')).toBeVisible();
+        expect(screen.getByText('Approved')).toBeVisible();
+        expect(screen.getByText('some org unit')).toBeVisible();
         expect(screen.getByText('some project')).toBeVisible();
         expect(screen.getByText('Some form')).toBeVisible();
 
@@ -133,8 +138,6 @@ describe('Validation workflow list UI integration test', () => {
                 moment(date, apiDateTimeFormat).format('DD/MM/YYYY HH:mm'),
             ),
         ).toBeVisible();
-
-        // But can you tell me which data you'd need to construct your dashboard ? might be worth having a dedicated
     });
     it('displays the right icons', async () => {
         const date = moment(Date.now()).format(apiDateTimeFormat);
@@ -183,7 +186,7 @@ describe('Validation workflow list UI integration test', () => {
             screen.getByTestId('RemoveRedEyeIcon').parentElement,
         ).toHaveAttribute(
             'href',
-            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/`,
+            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/isValidating/true/`,
         );
     });
 });

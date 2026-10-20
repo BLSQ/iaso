@@ -10,7 +10,7 @@ export const tableDefaults = {
     order: '-ended_at',
 };
 
-const getAlgos = async queryString => {
+const getAlgos = async (queryString: string) => {
     return getRequest(`${apiUrl}/?${queryString}`);
 };
 

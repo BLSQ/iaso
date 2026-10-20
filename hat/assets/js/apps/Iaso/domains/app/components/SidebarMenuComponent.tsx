@@ -16,11 +16,11 @@ import {
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { Link } from 'react-router-dom';
-import { useMenuItems } from '../../../constants/menu';
-import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
-import { baseUrls } from '../../../constants/urls';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { Link, useLocation } from 'react-router-dom';
+import { useMenuItems } from 'Iaso/constants/menu';
+import { SIDEBAR_WIDTH } from 'Iaso/constants/uiConstants';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useSidebar } from '../contexts/SideBarContext';
 import { LogoAndTitle } from './LogoAndTitle';
 import MenuItem from './MenuItemComponent';
@@ -87,12 +87,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Props = { location: any };
+type Props = { location: ReturnType<typeof useLocation> };
 
 const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
+    // issue is caused by the ...theme.mixin.toolbar , don't know how to fix it though, maybe updating mui ?
+    // @ts-ignore
     const classes: Record<string, string> = useStyles();
     const { toggleSidebar, isOpen } = useSidebar();
-    const onClick = url => {
+    const onClick = (url?: string) => {
         toggleSidebar();
         if (url) {
             window.open(url);
@@ -129,7 +131,6 @@ const SidebarMenu: FunctionComponent<Props> = ({ location }) => {
                             menuItem={menuItem}
                             onClick={(_, url) => onClick(url)}
                             url={menuItem.url}
-                            target="_blank"
                         />
                     ))}
                 </List>

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
+import { Box, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useApiAccountsList } from 'Iaso/api/accounts';
@@ -15,7 +15,7 @@ import {
 } from 'Iaso/routing/hooks/useParamsObject';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles((theme: any) => {
+const useStyles = makeStyles((theme: Theme) => {
     return { ...commonStyles(theme) };
 });
 
@@ -33,11 +33,15 @@ export const Accounts: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
 
     const safeParams = useUrlParams(params, defaults);
-    const apiParams = useApiParams(safeParams);
+    const { limit, page, ...apiParams } = useApiParams(safeParams);
 
     const { formatMessage } = useSafeIntl();
     const columns = useAccountTableColumns();
-    const { data, isLoading } = useApiAccountsList(apiParams);
+    const { data, isLoading } = useApiAccountsList({
+        limit: limit ? parseInt(limit) : undefined,
+        page: page ? parseInt(page) : undefined,
+        ...apiParams,
+    });
 
     return (
         <>

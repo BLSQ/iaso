@@ -24,7 +24,7 @@ import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-from environs import Env as _Env, EnvError
+from environs import Env, EnvError
 from requests.exceptions import HTTPError
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -32,16 +32,6 @@ from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
-
-
-class Env(_Env):
-    # Workaround because of docker compose converting missing vars to "".
-    # This override returns default value instead of blank string
-    def _get_from_environ(self, name, default, **kwargs):
-        envvar_key, envvar_value, proxied_key = super()._get_from_environ(name, default, **kwargs)
-        if envvar_value == "":
-            return envvar_key, default, proxied_key
-        return envvar_key, envvar_value, proxied_key
 
 
 env = Env()
@@ -85,6 +75,12 @@ ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 USE_S3 = env.bool("USE_S3", default=False)
+# MCP is a core app (iaso.mcp), not a plugin. Off unless MCP_ENABLED=true.
+# DEBUG must not turn it on: DEBUG is sometimes enabled in production to
+# collect SQL, and local runs should opt in explicitly (compose and
+# .env.example set MCP_ENABLED=true). Tests opt in so `manage test` still
+# mounts /mcp.
+MCP_ENABLED = env.bool("MCP_ENABLED", default=IN_TESTS)
 USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
 # Storage provider configuration
 STORAGE_PROVIDER = env.str("STORAGE_PROVIDER", default="local")  # local, s3, azure
@@ -169,9 +165,16 @@ HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
 if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
+    # The default PBKDF2 hasher is slow by design (~50ms per hash), tests don't need that
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+# Host:port the Enketo container uses to reach Iaso in local dev, e.g. "iaso:8081" when Iaso runs in docker compose,
+# "host.docker.internal:8081" when it runs on the host with docker desktop. Leave unset in deployed environments.
+ENKETO_DEV_IASO_HOST = env.str("ENKETO_DEV_IASO_HOST", default=None)
 
 ENKETO = {
-    "ENKETO_DEV": env.str("ENKETO_DEV", default=None),
+    "ENKETO_DEV": bool(ENKETO_DEV_IASO_HOST),
+    "ENKETO_DEV_IASO_HOST": ENKETO_DEV_IASO_HOST,
     "ENKETO_API_TOKEN": env.str("ENKETO_API_TOKEN", default=None),
     "ENKETO_URL": env.str("ENKETO_URL", default=None),
     "ENKETO_SIGNING_SECRET": env.str("ENKETO_SIGNING_SECRET", default=None) or SECRET_KEY,
@@ -248,6 +251,7 @@ if ENABLE_CORS:
 
 INSTALLED_APPS += [
     "rest_framework",
+    "rest_framework_api_key",
     "webpack_loader",
     "django_ltree",
     "hat",
@@ -256,6 +260,8 @@ INSTALLED_APPS += [
     "hat.audit",
     "hat.menupermissions",
     "iaso",
+    "iaso.mcp",
+    "oauth2_provider",
     "django_extensions",
     "beanstalk_worker",
     "django_comments",
@@ -990,6 +996,11 @@ for plugin_name in PLUGINS:
 
 XLSFORM_VALIDATOR_TEMP_DIR = tempfile.gettempdir()
 INSTALLED_APPS.append("dynamic_fields")
+
+if MCP_ENABLED:
+    from iaso.mcp.conf import apply as apply_mcp_settings
+
+    apply_mcp_settings(globals())
 
 # Making sure that files are not stored on disk while running tests
 # This allows faster tests and easier clean up of test files

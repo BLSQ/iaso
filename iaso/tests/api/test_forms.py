@@ -109,6 +109,7 @@ class FormsAPITestCase(APITestCase):
             period_type="QUARTER",
             single_per_period=True,
             created_at=cls.now,
+            promptness_grace_period_days=10,
         )
         form_version = cls.form_2.form_versions.create(
             file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
@@ -850,6 +851,9 @@ class FormsAPITestCase(APITestCase):
         """PUT /forms/<form_id>: happy path (validation is already covered by create tests)"""
 
         """POST /forms/ happy path"""
+        # setting promptness_grace_period_days to a positive int to test that it is correctly updated to 0
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
 
         self.client.force_authenticate(self.yoda)
         response = self.client.put(
@@ -864,6 +868,7 @@ class FormsAPITestCase(APITestCase):
                 "location_field": "location",
                 "project_ids": [self.project_1.id, self.project_2.id],
                 "org_unit_type_ids": [self.jedi_council.id],
+                "promptness_grace_period_days": 0,
             },
             format="json",
         )
@@ -880,6 +885,108 @@ class FormsAPITestCase(APITestCase):
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(2, form.projects.count())
         self.assertEqual(1, form.org_unit_types.count())
+        self.assertEqual(form.promptness_grace_period_days, 0)
+
+    def test_forms_create_with_promptness_grace_period_days(self):
+        """POST /forms/ with a grace period for the promptness stats"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with grace period",
+                "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "promptness_grace_period_days": 10,
+            },
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(form.promptness_grace_period_days, 10)
+
+    def test_forms_create_with_promptness_grace_period_days_no_period_type(self):
+        """POST /forms/ with a grace period for the promptness stats but without a period type"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form with grace period",
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id],
+                "period_type": None,
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "promptness_grace_period_days": 10,
+            },
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("promptness_grace_period_days", response_data)
+        self.assertIn(
+            "Should not be set when period type is not specified", response_data["promptness_grace_period_days"]
+        )
+
+    def test_forms_patch_promptness_grace_period_days_to_null(self):
+        """PATCH /forms/<form_id>: the grace period can be removed"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/", data={"promptness_grace_period_days": None}, format="json"
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.form_1.refresh_from_db()
+        self.assertIsNone(self.form_1.promptness_grace_period_days)
+
+    def test_forms_patch_negative_promptness_grace_period_days(self):
+        """PATCH /forms/<form_id>: a negative grace period is rejected"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/", data={"promptness_grace_period_days": -1}, format="json"
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            response_data, "promptness_grace_period_days", "Ensure this value is greater than or equal to 0."
+        )
+        self.form_1.refresh_from_db()
+        self.assertEqual(self.form_1.promptness_grace_period_days, 5)
+
+    def test_forms_patch_too_large_promptness_grace_period_days(self):
+        """PATCH /forms/<form_id>: the grace period must fit in a `PositiveSmallIntegerField`"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/forms/{self.form_1.id}/", data={"promptness_grace_period_days": 32768}, format="json"
+        )
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            response_data, "promptness_grace_period_days", "Ensure this value is less than or equal to 32767."
+        )
+        self.form_1.refresh_from_db()
+        self.assertEqual(self.form_1.promptness_grace_period_days, 5)
+
+    def test_forms_patch_without_promptness_grace_period_days_keeps_it(self):
+        """PATCH /forms/<form_id>: a client that doesn't send the grace period doesn't change it"""
+        self.form_1.promptness_grace_period_days = 5
+        self.form_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(f"/api/forms/{self.form_1.id}/", data={"name": "renamed form"}, format="json")
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(response_data["name"], "renamed form")
+        self.form_1.refresh_from_db()
+        self.assertEqual(self.form_1.promptness_grace_period_days, 5)
 
     def test_forms_destroy_ok(self):
         """DELETE /forms/<form_id> happy path"""
@@ -964,6 +1071,7 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "projects", list)
         self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "promptness_grace_period_days", int, optional=True)
 
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)

@@ -1,19 +1,13 @@
-import typing
-
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import CheckConstraint, Q
+from django.db.models import CheckConstraint, Q, UniqueConstraint
 
+from iaso.models import Group
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
-from iaso.models.team import Team
-
-
-if typing:
-    from iaso.models.team import TeamQuerySet
-
+from iaso.models.team import Team, TeamQuerySet
 from iaso.utils.models.soft_deletable import (
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
@@ -122,17 +116,34 @@ class Planning(SoftDeletableModel):
         return self.pipeline_uuids or []
 
 
+class PlanningConfigQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User) -> "PlanningConfigQuerySet":
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+
+        return self.filter(planning__project__account=account)
+
+
 class PlanningConfig(models.Model):
-    planning = models.ForeignKey(Planning, on_delete=models.CASCADE)
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name="configs")
 
     level = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=False)
 
     org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
-    org_unit_groups = models.ManyToManyField("OrgUnit", blank=True)
+    org_unit_groups = models.ManyToManyField(Group, blank=True)
+
+    objects = PlanningConfigQuerySet.as_manager()
 
     class Meta:
-        unique_together = (("planning", "level"),)
-        constraints = [CheckConstraint(check=Q(level__gte=1), name="level_gte_1")]
+        ordering = ("level",)
+        constraints = [
+            CheckConstraint(check=Q(level__gte=1), name="level_gte_1"),
+            UniqueConstraint(
+                fields=("planning", "level"),
+                name="planning_config_planning_level_uniq",
+            ),
+        ]
 
     def get_related_teams(self) -> TeamQuerySet:
         return (

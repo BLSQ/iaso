@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 12:17+0000\n"
+"POT-Creation-Date: 2026-10-16 08:33+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -38,6 +38,11 @@ msgstr "Cette fonctionnalité est désactivée pour votre compte."
 #: iaso/api/common/permissions.py
 msgid "The related module(s) are not activated for your account."
 msgstr "Le ou les modules associés ne sont pas activés pour votre compte."
+
+#: iaso/api/common/serializer.py
+#, python-brace-format
+msgid "{lookup_field}s provided are not unique"
+msgstr "Les {lookup_field}s fournis ne sont pas uniques"
 
 #: iaso/api/common/serializer_fields.py
 msgid "Enter a valid phone number."
@@ -505,6 +510,16 @@ msgstr "Nombre de modifications d'unités organisationnelles"
 #, python-format
 msgid "Form: %(name)s"
 msgstr "Formulaire : %(name)s"
+
+#: iaso/api/planning_configs/serializers/bulk_create.py
+msgid "Level and planning must be unique together"
+msgstr "La combinaison niveau et planning doit être unique"
+
+#: iaso/api/planning_configs/serializers/bulk_update.py
+#: iaso/api/planning_configs/serializers/update.py
+msgid ""
+"A planning configuration with this level already exists for this planning."
+msgstr "Une configuration de planning avec ce niveau existe déjà pour ce planning."
 
 #: iaso/api/profile_logs/filters.py
 msgid "User IDs"

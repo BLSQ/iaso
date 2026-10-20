@@ -83,6 +83,8 @@ export type Plugin = {
     routes: RouteCustom[];
     menu: MenuItem[];
     translations: Record<string, any>;
+    permissionsMessages?: PermissionsMessages;
+    permissionsGroupsMessages?: PermissionsMessages;
     homeUrl?: string;
     homeOnline?: ElementType;
     homeOffline?: ElementType;
@@ -118,7 +120,9 @@ export type Plugins = {
 - `key`: Unique identifier for the plugin
 - `redirections`: Array of routing redirections
 - `theme`: Custom theme for the plugin
-- `customComponents`: Array of custom components to be registered
+- `permissionsMessages`: Labels and tooltips for the plugin's permissions. Merged by `usePermissionsMessages()`
+- `permissionsGroupsMessages`: Labels for the plugin's permission groups. Merged by `usePermissionsGroupsMessages()`
+- `customComponents`: Components inserted into host slots. See [Custom components](#custom-components)
 
 #### Example Configuration
 
@@ -176,14 +180,54 @@ export default {
             to: '/my-plugin',
         },
     ],
+    permissionsMessages: PERMISSIONS_MESSAGES,
+    permissionsGroupsMessages: PERMISSIONS_GROUPS_MESSAGES,
     customComponents: [
         {
-            key: 'myCustomComponent',
-            component: MyCustomComponent,
+            key: 'tasks.rowAction',
+            component: MyTaskRowAction,
         },
     ],
 };
 ```
+
+### Permission labels
+
+Core permission labels live in `hat/assets/js/apps/Iaso/domains/users/permissionsMessages.ts`. Group labels live in `permissionsGroupsMessages.ts`. A plugin keeps its own labels and exposes them on the `Plugin` object. Host screens do not import the plugin file. They call:
+
+- `usePermissionsMessages()` for a permission codename and its tooltip
+- `usePermissionsGroupsMessages()` for a permission group
+
+Each hook starts from the core map and spreads every enabled plugin's map on top. A plugin key with the same name replaces the core string.
+
+`permissionsMessages` is a `defineMessages` record. The key is the permission codename (`iaso_polio`). The tooltip key is that codename plus `_tooltip` (`iaso_polio_tooltip`). `permissionsGroupsMessages` uses the group codename (`polio`).
+
+String values still belong in the plugin locale files (`js/src/constants/translations/<lang>.json`). The message `id` must match a key in those files.
+
+### Custom components
+
+A custom component is a React component a plugin inserts into a slot the host already renders. The plugin declares it in `config.tsx`:
+
+```typescript
+customComponents: [
+    { key: 'topbar.disclaimer', component: Disclaimer },
+],
+```
+
+The host reads those registrations from `hat/assets/js/apps/Iaso/plugins/hooks/customComponents.ts`. Two hooks, because the two kinds of slot behave differently:
+
+- `useFindCustomComponent(key)` returns one component, the last plugin that registered `key`. Use it when the slot is a single widget.
+- `useCustomComponentsByKey(key)` returns every component registered under `key`, from every enabled plugin. Use it when several plugins can add to the same place.
+
+A key that no host screen asks for is never rendered. Adding a slot means rendering one of these hooks in the host, then registering a component under that key from the plugin.
+
+| Key | Hook | Rendered in | Props the host passes |
+| --- | --- | --- | --- |
+| `topbar.disclaimer` | `useFindCustomComponent` | `components/nav/TopBarComponent.tsx` | none |
+| `tasks.rowAction` | `useCustomComponentsByKey` | `domains/tasks/components/ActionCell.tsx` | `task` |
+| `groups.dialogField` | `useCustomComponentsByKey` | `domains/orgUnits/groups/components/GroupsDialog.tsx` | `values`, `onChange` |
+
+`tasks.rowAction` is an extra control on a task row. `groups.dialogField` is an extra field in the org-unit group create/edit dialog. `topbar.disclaimer` is a single line in the top bar; a later plugin replaces an earlier one.
 
 ## Development vs Production
 

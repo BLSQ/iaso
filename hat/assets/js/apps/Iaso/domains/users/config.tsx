@@ -263,6 +263,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
     }, [
         currentUser.user_roles_permissions.value,
         formatMessage,
+        permissionsGroupsMessages,
         setPermissions,
     ]);
 };

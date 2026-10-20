@@ -71,7 +71,7 @@ const usePermissionTableColumns = (): Column[] => {
             },
         ];
         return columns;
-    }, [formatMessage]);
+    }, [formatMessage, permissionsMessages]);
 };
 export const PermissionTable: FunctionComponent<Props> = ({ data }) => {
     const columns: Column[] = usePermissionTableColumns();

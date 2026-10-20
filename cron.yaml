@@ -1,5 +1,3 @@
-# Core schedules only. On deploy, .platform/hooks/predeploy/10_merge_plugin_cron.sh
-# appends plugins/<name>/cron.yaml for each name in PLUGINS. sqsd then reads this file.
 version: 1
 cron:
     - name: 'reap_lost_tasks'

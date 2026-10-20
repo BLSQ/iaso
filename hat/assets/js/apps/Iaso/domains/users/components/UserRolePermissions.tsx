@@ -6,7 +6,7 @@ import {
 import { Stack, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Permission } from '../../userRoles/types/userRoles';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { usePermissionsMessages } from '../permissionsMessages';
 
 type Props = {
     original: any;
@@ -17,6 +17,7 @@ export const UserRolePermissions: FunctionComponent<Props> = ({
     userRolepermissions,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const permissionsMessages = usePermissionsMessages();
     if (original.readEdit) {
         const permissions: [string, string][] = Object.entries(
             original.readEdit,
@@ -47,7 +48,7 @@ export const UserRolePermissions: FunctionComponent<Props> = ({
                                 <NotCheckedIcon color="disabled" />
                             )}
                             <Typography variant="body1">
-                                {formatMessage(PERMISSIONS_MESSAGES[key])}
+                                {formatMessage(permissionsMessages[key])}
                             </Typography>
                         </Stack>
                     );

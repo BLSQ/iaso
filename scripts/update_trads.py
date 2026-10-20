@@ -52,7 +52,6 @@ paths = [
         "source_files": "./hat/assets/js/apps/Iaso/",
         "translations_dir": "hat/assets/js/apps/Iaso/domains/app/translations/",
     },
-    {"source_files": "./plugins/polio/js/", "translations_dir": "plugins/polio/js/src/constants/translations/"},
 ]
 if __name__ == "__main__":
     if os.getcwd().endswith("scripts"):  # we are in the script directory, go up a level

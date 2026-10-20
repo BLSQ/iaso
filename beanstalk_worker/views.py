@@ -4,7 +4,6 @@ import json
 from datetime import timedelta
 from logging import getLogger
 
-from django.apps import apps
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils import timezone
@@ -52,13 +51,6 @@ def run_all(request):
 
 @csrf_exempt
 def task_launcher(request, task_name: str, user_name: str):
-    if task_name.startswith("plugins.polio") and not apps.is_installed("plugins.polio"):
-        error = f"Skipping task {task_name}: because polio plugin is not enabled"
-        logger.info(error)
-        return JsonResponse(
-            {"status": "skipped", "error": error},
-            status=http.HTTPStatus.BAD_REQUEST,
-        )
     try:
         the_user = User.objects.get(username=user_name)
     except User.DoesNotExist:

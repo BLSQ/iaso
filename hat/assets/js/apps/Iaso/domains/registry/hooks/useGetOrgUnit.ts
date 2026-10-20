@@ -52,13 +52,22 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
     return { fetchOrgUnit, isFetching };
 };
 
+// What the registry page shows (title, breadcrumbs, map, sub types, reference
+// submission); leaving out instances_count and catchment skips their
+// computation on the backend.
+export const REGISTRY_ORG_UNIT_FIELDS =
+    'id,name,org_unit_type,org_unit_type_name,validation_status,parent,geo_json,latitude,longitude,reference_instances';
+
 export const useGetOrgUnit = (
     orgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
-    const queryKey: any[] = ['orgUnit', orgUnitId];
+    const queryKey: any[] = ['orgUnit', orgUnitId, REGISTRY_ORG_UNIT_FIELDS];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getRequest(`/api/orgunits/${orgUnitId}/`),
+        queryFn: () =>
+            getRequest(
+                `/api/orgunits/${orgUnitId}/?fields=${REGISTRY_ORG_UNIT_FIELDS}`,
+            ),
         options: {
             retry: false,
             enabled: Boolean(orgUnitId),

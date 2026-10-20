@@ -6,6 +6,7 @@ import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../libs/utils';
+import { TREEVIEW_ORG_UNIT_FIELDS } from '../../orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { RegistryParams } from '../types';
@@ -23,12 +24,13 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
         async (orgUnit: OrgUnit): Promise<OrgUnit | Error> => {
             setIsFetching(true);
             try {
-                let url = `/api/orgunits/${orgUnit.id}/`;
-                if (appId) {
-                    url += `?app_id=${appId}`;
-                }
+                // Only used to find the ancestors to expand in the treeview.
+                const url = makeUrlWithParams(`/api/orgunits/${orgUnit.id}/`, {
+                    app_id: appId || undefined,
+                    fields: TREEVIEW_ORG_UNIT_FIELDS,
+                });
                 const result = await queryClient.fetchQuery<OrgUnit>(
-                    ['orgUnit', orgUnit.id],
+                    ['orgUnit', orgUnit.id, TREEVIEW_ORG_UNIT_FIELDS],
                     () => getRequest(url),
                     {
                         staleTime: 1000 * 60 * 5, // Example: 5 minutes stale time

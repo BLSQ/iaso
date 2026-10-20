@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("level", models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(1)])),
-                ("org_unit_groups", models.ManyToManyField(blank=True, to="iaso.orgunit")),
+                ("org_unit_groups", models.ManyToManyField(blank=True, to="iaso.group")),
                 ("org_unit_types", models.ManyToManyField(blank=True, to="iaso.orgunittype")),
                 (
                     "planning",

@@ -9,7 +9,7 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../utils/dates';
-import { PLANNINGS_API_URL } from '../../constants';
+import { getPublishingStatus, PLANNINGS_API_URL } from '../../constants';
 import { PlanningParams } from '../../types';
 
 export type OrgUnitDetails = {
@@ -52,9 +52,7 @@ export const useGetPlannings = (
                     results: data?.results.map(planning => {
                         return {
                             ...planning,
-                            status: planning.published_at
-                                ? 'published'
-                                : 'draft',
+                            status: getPublishingStatus(planning),
                             started_at: dateApiToDateRangePicker(
                                 planning.started_at,
                             ),

@@ -166,7 +166,10 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
 
     def get_queryset(self):
         return (
-            VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)
+            VaccineRequestForm.objects.filter(
+                campaign__account=self.request.user.iaso_profile.account,
+                campaign__deleted_at__isnull=True,
+            )
             .select_related("campaign__country")
             .order_by("id")
         )
@@ -198,7 +201,11 @@ class PreAlertDashboardViewSet(ModelViewSet):
     serializer_class = VaccinePreAlertDashboardSerializer
 
     def get_queryset(self):
-        return VaccinePreAlert.objects.filter(request_form__campaign__account=self.request.user.iaso_profile.account)
+        return VaccinePreAlert.objects.filter(
+            request_form__campaign__account=self.request.user.iaso_profile.account,
+            request_form__deleted_at__isnull=True,
+            request_form__campaign__deleted_at__isnull=True,
+        )
 
 
 class VaccineArrivalReportDashboardSerializer(serializers.ModelSerializer):
@@ -223,10 +230,12 @@ class VaccineArrivalReportDashboardViewSet(ModelViewSet):
             read_only_perm=POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION,
         )
     ]
-    model = VaccinePreAlert
+    model = VaccineArrivalReport
     serializer_class = VaccineArrivalReportDashboardSerializer
 
     def get_queryset(self):
         return VaccineArrivalReport.objects.filter(
-            request_form__campaign__account=self.request.user.iaso_profile.account
+            request_form__campaign__account=self.request.user.iaso_profile.account,
+            request_form__deleted_at__isnull=True,
+            request_form__campaign__deleted_at__isnull=True,
         )

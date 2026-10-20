@@ -4,6 +4,7 @@ from rest_framework import status
 from iaso.models import (
     Account,
     DataSource,
+    Group,
     OrgUnit,
     OrgUnitType,
     Planning,
@@ -28,6 +29,12 @@ class PlanningConfigDeleteAPITestCase(APITestCase):
         cls.account.save()
 
         cls.other_account = Account.objects.create(name="other_account")
+        cls.data_source_other_account = DataSource.objects.create(name="Test Data Source 2")
+        cls.source_version_other_account = SourceVersion.objects.create(
+            data_source=cls.data_source_other_account, number=1
+        )
+        cls.other_account.default_version = cls.source_version_other_account
+        cls.other_account.save()
 
         # set up users
         cls.user_no_perm = cls.create_user_with_profile(username="user_no_perm", account=cls.account, permissions=[])
@@ -52,6 +59,7 @@ class PlanningConfigDeleteAPITestCase(APITestCase):
         )
 
         cls.data_source.projects.add(cls.project)
+        cls.data_source_other_account.projects.add(cls.project_other_account)
 
         # Create test org unit types
         cls.org_unit_type = OrgUnitType.objects.create(name="Test Country Type")
@@ -64,14 +72,13 @@ class PlanningConfigDeleteAPITestCase(APITestCase):
         cls.org_unit_type_other_account.projects.set([cls.project_other_account])
 
         # Create test org unit
-        cls.org_unit = OrgUnit.objects.create(
+        cls.ou = OrgUnit.objects.create(
             name="Test Country", org_unit_type=cls.org_unit_type, version=cls.source_version
         )
-        cls.org_unit_2 = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_2, version=cls.source_version
-        )
-        cls.org_unit_other_account = OrgUnit.objects.create(
-            name="Test Country", org_unit_type=cls.org_unit_type_other_account
+        cls.org_unit_group = Group.objects.create(name="Test country", source_version=cls.source_version)
+        cls.org_unit_group_2 = Group.objects.create(name="Test Country", source_version=cls.source_version)
+        cls.org_unit_group_other_account = Group.objects.create(
+            name="Test Country", source_version=cls.source_version_other_account
         )
 
         # Create test team
@@ -82,21 +89,19 @@ class PlanningConfigDeleteAPITestCase(APITestCase):
 
         # create plannings
 
-        cls.planning = Planning.objects.create(
-            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit
-        )
+        cls.planning = Planning.objects.create(name="planning", project=cls.project, team=cls.team, org_unit=cls.ou)
 
         cls.planning_other_account = Planning.objects.create(
             name="planning_other_account",
             project=cls.project_other_account,
             team=cls.team_other_account,
-            org_unit=cls.org_unit,
+            org_unit=cls.ou,
         )
 
         # create planning configs
         cls.planning_config = PlanningConfig.objects.create(planning=cls.planning, level=1)
         cls.planning_config.org_unit_types.set([cls.org_unit_type, cls.org_unit_type_2])
-        cls.planning_config.org_unit_groups.set([cls.org_unit, cls.org_unit_2])
+        cls.planning_config.org_unit_groups.set([cls.org_unit_group, cls.org_unit_group_2])
 
         cls.planning_config_other_account = PlanningConfig.objects.create(planning=cls.planning_other_account, level=1)
 

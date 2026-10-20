@@ -1,6 +1,7 @@
 import math
 
 from django.db.models import Count, Window
+from django.utils.functional import cached_property
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
@@ -127,6 +128,12 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     defining_instance_id = serializers.CharField(read_only=True, source="attributes.uuid")
     entity_type_id = serializers.CharField(read_only=True, source="entity_type.id")
 
+    @cached_property
+    def instance_serializer(self):
+        # Built once per response instead of once per entity: building a serializer (its fields) is what
+        # dominated get_instances. The ListSerializer reuses this child serializer for every entity.
+        return MobileEntityAttributesSerializer(context=self.context)
+
     def get_instances(self, entity):
         possible_form_versions = self.context.get("possible_form_versions")
         ok_instances = []
@@ -142,7 +149,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
                 if form_version is not None:
                     ok_instances.append(inst)
 
-        return MobileEntityAttributesSerializer(ok_instances, many=True, context=self.context).data  # type: ignore
+        return [self.instance_serializer.to_representation(instance) for instance in ok_instances]
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

@@ -3,7 +3,7 @@ from typing import Any
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, OrgUnit, OrgUnitType, Planning, PlanningConfig, Project, Team
+from iaso.models import Account, Group, OrgUnit, OrgUnitType, Planning, PlanningConfig, Project, Team
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -49,10 +49,12 @@ class NestedPlanningConfigAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.org_unit_type_3 = OrgUnitType.objects.create(name="Test Country Type 3")
         cls.org_unit_type_3.projects.set([cls.project, cls.project_other_account])
 
-        # Create test org unit
+        # Create test org unit and groups
         cls.org_unit = OrgUnit.objects.create(name="Test Country", org_unit_type=cls.org_unit_type)
-        cls.org_unit_2 = OrgUnit.objects.create(name="Test Country 2", org_unit_type=cls.org_unit_type)
-        cls.org_unit_3 = OrgUnit.objects.create(name="Test Country 3", org_unit_type=cls.org_unit_type)
+
+        cls.org_unit_group = Group.objects.create(name="Test Country")
+        cls.org_unit_group_2 = Group.objects.create(name="Test Country 2")
+        cls.org_unit_group_3 = Group.objects.create(name="Test Country 3")
 
         # Create test team
         cls.team = Team.objects.create(name="Test Team", project=cls.project, manager=cls.superuser)
@@ -76,11 +78,11 @@ class NestedPlanningConfigAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         cls.planning_config = PlanningConfig.objects.create(level=1, planning=cls.planning)
         cls.planning_config.org_unit_types.set([cls.org_unit_type, cls.org_unit_type_2])
-        cls.planning_config.org_unit_groups.set([cls.org_unit, cls.org_unit_2])
+        cls.planning_config.org_unit_groups.set([cls.org_unit_group, cls.org_unit_group_2])
 
         cls.planning_config_2 = PlanningConfig.objects.create(level=2, planning=cls.planning)
         cls.planning_config_2.org_unit_types.set([cls.org_unit_type_3])
-        cls.planning_config_2.org_unit_groups.set([cls.org_unit_3])
+        cls.planning_config_2.org_unit_groups.set([cls.org_unit_group_3])
 
     def assertValidData(self, data: Any, expected_length: int) -> None:
         self.assertResponseCompliantToSwagger(data, "PaginatedPlanningConfigList")
@@ -138,14 +140,15 @@ class NestedPlanningConfigAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertEqual(
                 results[0],
                 {
+                    "id": self.planning_config.pk,
                     "level": 1,
                     "org_unit_types": [
                         {"id": self.org_unit_type.id, "name": self.org_unit_type.name},
                         {"id": self.org_unit_type_2.id, "name": self.org_unit_type_2.name},
                     ],
                     "org_unit_groups": [
-                        {"id": self.org_unit.id, "name": self.org_unit.name},
-                        {"id": self.org_unit_2.id, "name": self.org_unit_2.name},
+                        {"id": self.org_unit_group.id, "name": self.org_unit_group.name},
+                        {"id": self.org_unit_group_2.id, "name": self.org_unit_group_2.name},
                     ],
                 },
             )
@@ -153,12 +156,13 @@ class NestedPlanningConfigAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertEqual(
                 results[1],
                 {
+                    "id": self.planning_config_2.pk,
                     "level": 2,
                     "org_unit_types": [
                         {"id": self.org_unit_type_3.id, "name": self.org_unit_type_3.name},
                     ],
                     "org_unit_groups": [
-                        {"id": self.org_unit_3.id, "name": self.org_unit_3.name},
+                        {"id": self.org_unit_group_3.id, "name": self.org_unit_group_3.name},
                     ],
                 },
             )

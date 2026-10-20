@@ -7,7 +7,7 @@ from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
-from iaso.models import OrgUnit, OrgUnitType, Planning, PlanningConfig
+from iaso.models import Group, OrgUnitType, Planning, PlanningConfig
 
 
 class PlanningConfigBulkCreateListSerializer(serializers.ListSerializer):
@@ -58,7 +58,7 @@ class PlanningConfigBulkCreateListSerializer(serializers.ListSerializer):
         if instance_oug_pairs:
             PlanningConfig.org_unit_groups.through.objects.bulk_create(
                 [
-                    PlanningConfig.org_unit_groups.through(planningconfig_id=inst_id, orgunit_id=oug_id)
+                    PlanningConfig.org_unit_groups.through(planningconfig_id=inst_id, group_id=oug_id)
                     for inst_id, oug_id in instance_oug_pairs
                 ],
                 ignore_conflicts=True,
@@ -78,7 +78,7 @@ class PlanningConfigBulkCreateSerializer(ModelSerializer):
         many=True,
     )
     org_unit_groups = PrimaryKeyRelatedField(
-        queryset=OrgUnit.objects.none(), write_only=True, required=False, allow_null=True, allow_empty=True, many=True
+        queryset=Group.objects.none(), write_only=True, required=False, allow_null=True, allow_empty=True, many=True
     )
 
     class Meta:
@@ -99,5 +99,5 @@ class PlanningConfigBulkCreateSerializer(ModelSerializer):
             self.fields["org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
                 user
             ).only("id")
-            self.fields["org_unit_groups"].child_relation.queryset = OrgUnit.objects.filter_for_user(user).only("id")
+            self.fields["org_unit_groups"].child_relation.queryset = Group.objects.filter_for_user(user).only("id")
             self.fields["planning"].queryset = Planning.objects.filter_for_user(user).only("id")

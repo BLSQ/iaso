@@ -1,10 +1,10 @@
 from iaso.api.common import ModelSerializer
-from iaso.models import OrgUnit, OrgUnitType, PlanningConfig
+from iaso.models import Group, OrgUnitType, PlanningConfig
 
 
 class PlanningConfigNestedOrgUnitSerializer(ModelSerializer):
     class Meta:
-        model = OrgUnit
+        model = Group
         fields = ("id", "name")
         read_only_fields = fields
 
@@ -22,5 +22,5 @@ class PlanningConfigSerializer(ModelSerializer):
 
     class Meta:
         model = PlanningConfig
-        fields = ("level", "org_unit_types", "org_unit_groups")
+        fields = ("id", "level", "org_unit_types", "org_unit_groups")
         read_only_fields = fields

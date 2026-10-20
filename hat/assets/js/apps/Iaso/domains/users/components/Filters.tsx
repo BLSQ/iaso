@@ -65,7 +65,7 @@ const Filters = ({
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown();
+        useGetTeamsDropdown({});
 
     const orgUnitTypeDropdown = useMemo(() => {
         if (!orgUnitTypes?.length) return orgUnitTypes;

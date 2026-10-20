@@ -24,6 +24,7 @@ Expected diff v1 → v2:
 import io
 import tempfile
 
+from collections import Counter
 from unittest import mock
 
 import openpyxl
@@ -32,11 +33,14 @@ from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
+from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.form_versions.configuration_impacts.common import ConfigurationImpact, ConfigurationImpactKind
+from iaso.api.form_versions.configuration_impacts.forms_impacts import forms_impacts
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 PREVIEW_URL = "/api/formversions/preview/"
@@ -46,7 +50,7 @@ INVALID_XLS = "iaso/tests/fixtures/odk_form_blatantly_invalid.xlsx"
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class FormVersionPreviewAPITestCase(APITestCase):
+class FormVersionPreviewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -226,10 +230,12 @@ class FormVersionPreviewAPITestCase(APITestCase):
                 format="multipart",
             )
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "FormVersionDiff")
         self.assertIsNone(data["previous_version_id"])
         self.assertEqual(data["removed_questions"], [])
         self.assertEqual(data["added_questions"], [])
         self.assertEqual(data["modified_questions"], [])
+        self.assertEqual(data["configuration_impacts"], [])
 
     # -------------------------------------------------------------------------
     # Diff content — v1 → v2
@@ -288,6 +294,279 @@ class FormVersionPreviewAPITestCase(APITestCase):
         self.assertEqual(modified_by_name["age"]["old_type"], "integer")
         self.assertEqual(modified_by_name["age"]["new_type"], "text")
 
+    def test_preview_workflow_impacts(self):
+        """The entity workflows reading the removed (birth_date) or retyped (age) questions."""
+        account = self.yoda.iaso_profile.account
+        entity_type = m.EntityType.objects.create(
+            name="Patients", reference_form=self.form_with_version, account=account
+        )
+        version = m.WorkflowVersion.objects.create(
+            workflow=m.Workflow.objects.create(entity_type=entity_type), name="Follow-ups", status="PUBLISHED"
+        )
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=2, condition={">": [{"var": "age"}, 5]})
+        visit = m.Form.objects.create(name="Visit")
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=visit, mapping={"dob": "birth_date", "name": "full_name"}
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "FormVersionDiff")
+        common = {
+            "target_id": version.id,
+            "target_name": "Patients / Follow-ups (PUBLISHED)",
+            "entity_type_id": entity_type.id,
+        }
+        self.assertEqual(
+            data["configuration_impacts"],
+            [
+                {
+                    "kind": ConfigurationImpactKind.FOLLOW_UP_CONDITION,
+                    "question": "age",
+                    **common,
+                    "follow_up_order": 2,
+                    "condition": {">": [{"var": "age"}, 5]},
+                    "mapping_source": None,
+                    "mapping_target": None,
+                },
+                # full_name is unchanged: not there
+                {
+                    "kind": ConfigurationImpactKind.CHANGE_MAPPING,
+                    "question": "birth_date",
+                    **common,
+                    "follow_up_order": None,
+                    "condition": None,
+                    "mapping_source": "dob",
+                    "mapping_target": "birth_date",
+                },
+            ],
+        )
+
+    def test_preview_workflow_impacts_self_mapping_listed_once(self):
+        """A change of the reference form into itself mapping birth_date to birth_date: one entry, not one per side."""
+        entity_type = m.EntityType.objects.create(
+            name="Patients", reference_form=self.form_with_version, account=self.yoda.iaso_profile.account
+        )
+        version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=self.form_with_version, mapping={"birth_date": "birth_date"}
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            [
+                (i["kind"], i["question"], i["mapping_source"], i["mapping_target"])
+                for i in data["configuration_impacts"]
+            ],
+            [(ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "birth_date", "birth_date")],
+        )
+
+    def _create_workflow_version_reading_age_and_birth_date(self, workflow, name, deleted_at=None):
+        version = m.WorkflowVersion.objects.create(workflow=workflow, name=name, deleted_at=deleted_at)
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=1, condition={">": [{"var": "age"}, 5]})
+        m.WorkflowChange.objects.create(
+            workflow_version=version, form=m.Form.objects.create(name="Visit"), mapping={"dob": "birth_date"}
+        )
+        return version
+
+    def _preview_workflow_impact_targets(self):
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        return [(i["kind"], i["question"], i["target_name"]) for i in data["configuration_impacts"]]
+
+    def test_preview_workflow_impacts_ignore_deleted_workflow_versions(self):
+        entity_type = m.EntityType.objects.create(
+            name="Belgium patients", reference_form=self.form_with_version, account=self.yoda.iaso_profile.account
+        )
+        workflow = m.Workflow.objects.create(entity_type=entity_type)
+        self._create_workflow_version_reading_age_and_birth_date(workflow, "Current")
+        self._create_workflow_version_reading_age_and_birth_date(workflow, "Deleted", deleted_at=timezone.now())
+
+        self.assertEqual(
+            self._preview_workflow_impact_targets(),
+            [
+                (ConfigurationImpactKind.FOLLOW_UP_CONDITION, "age", "Belgium patients / Current (DRAFT)"),
+                (ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "Belgium patients / Current (DRAFT)"),
+            ],
+        )
+
+    def test_preview_workflow_impacts_ignore_deleted_workflows(self):
+        account = self.yoda.iaso_profile.account
+        belgium = m.EntityType.objects.create(
+            name="Belgium patients", reference_form=self.form_with_version, account=account
+        )
+        self._create_workflow_version_reading_age_and_birth_date(
+            m.Workflow.objects.create(entity_type=belgium), "Current"
+        )
+        france = m.EntityType.objects.create(
+            name="France patients", reference_form=self.form_with_version, account=account
+        )
+        # the version itself is not deleted, only its workflow
+        self._create_workflow_version_reading_age_and_birth_date(
+            m.Workflow.objects.create(entity_type=france, deleted_at=timezone.now()), "Current"
+        )
+
+        self.assertEqual(
+            self._preview_workflow_impact_targets(),
+            [
+                (ConfigurationImpactKind.FOLLOW_UP_CONDITION, "age", "Belgium patients / Current (DRAFT)"),
+                (ConfigurationImpactKind.CHANGE_MAPPING, "birth_date", "Belgium patients / Current (DRAFT)"),
+            ],
+        )
+
+    def test_preview_configuration_impacts(self):
+        """The form's fields, predefined filters, entity types and stock rules reading the removed (birth_date) or
+        retyped (age) questions - not the unchanged full_name, nor a deleted stock rules version."""
+        account = self.yoda.iaso_profile.account
+        form = self.form_with_version
+        form.location_field = "birth_date"
+        form.device_field = "full_name"
+        form.correlation_field = "age"
+        form.label_keys = ["full_name", "birth_date"]
+        form.save()
+        predefined_filter = m.FormPredefinedFilter.objects.create(
+            form=form, name="Toddlers", short_name="toddlers", json_logic={"<": [{"var": "age"}, 3]}
+        )
+        entity_type = m.EntityType.objects.create(
+            name="Patients",
+            reference_form=form,
+            account=account,
+            fields_list_view=["full_name", "age"],
+            fields_detail_info_view=["birth_date", "age"],
+            fields_duplicate_search=["full_name", "age"],
+        )
+        sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
+        rules_version = m.StockRulesVersion.objects.create(account=account, name="2026 rules")
+        m.StockItemRule.objects.create(version=rules_version, sku=sku, form=form, question="age")
+        m.StockItemRule.objects.create(version=rules_version, sku=sku, form=form, question="full_name")
+        deleted_version = m.StockRulesVersion.objects.create(account=account, name="Old", deleted_at=timezone.now())
+        m.StockItemRule.objects.create(version=deleted_version, sku=sku, form=form, question="age")
+        data_source = m.DataSource.objects.create(name="DHIS2")
+        aggregate = m.MappingVersion.objects.create(
+            form_version=form.form_versions.get(),
+            name="v1",
+            mapping=m.Mapping.objects.create(form=form, data_source=data_source, name="HMIS", mapping_type="AGGREGATE"),
+            json={"question_mappings": {"birth_date": {"id": "de1"}, "full_name": {"id": "de2"}}},
+        )
+        derived = m.MappingVersion.objects.create(
+            form_version=form.form_versions.get(),
+            name="v1 stats",
+            mapping=m.Mapping.objects.create(form=form, data_source=data_source, name="Stats", mapping_type="DERIVED"),
+            json={
+                "aggregations": [
+                    {"id": "a1", "questionName": "age", "where": [{"questionName": "birth_date", "operator": "gt"}]}
+                ]
+            },
+        )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": form.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "FormVersionDiff")
+        self.assertEqual(
+            [(i["kind"], i["question"], i["target_id"], i["target_name"]) for i in data["configuration_impacts"]],
+            [
+                (ConfigurationImpactKind.LOCATION_FIELD, "birth_date", form.id, "Form With Version"),
+                (ConfigurationImpactKind.CORRELATION_FIELD, "age", form.id, "Form With Version"),
+                (ConfigurationImpactKind.LABEL_KEY, "birth_date", form.id, "Form With Version"),
+                (ConfigurationImpactKind.PREDEFINED_FILTER, "age", predefined_filter.id, "Toddlers"),
+                (ConfigurationImpactKind.ENTITY_TYPE_LIST_FIELD, "age", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.ENTITY_TYPE_DETAIL_FIELD, "age", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.ENTITY_TYPE_DETAIL_FIELD, "birth_date", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.ENTITY_TYPE_DUPLICATE_FIELD, "age", entity_type.id, "Patients"),
+                (ConfigurationImpactKind.STOCK_RULE, "age", rules_version.id, "2026 rules / Vaccine"),
+                (ConfigurationImpactKind.DHIS2_MAPPING, "birth_date", aggregate.id, "HMIS (AGGREGATE)"),
+                # age is retyped, not removed: still mapped
+                (ConfigurationImpactKind.DHIS2_MAPPING, "birth_date", derived.id, "Stats (DERIVED)"),
+            ],
+        )
+        # only the predefined filter carries its JsonLogic, and none of these is a workflow's (no entity type)
+        self.assertEqual(
+            [(i["kind"], i["condition"]) for i in data["configuration_impacts"] if i["condition"] is not None],
+            [(ConfigurationImpactKind.PREDEFINED_FILTER, {"<": [{"var": "age"}, 3]})],
+        )
+        self.assertTrue(all(i["entity_type_id"] is None for i in data["configuration_impacts"]))
+
+    def test_preview_configuration_impacts_of_other_forms_ignored(self):
+        """Another form's configuration reading questions of the same names (age, birth_date) is not listed."""
+        account = self.yoda.iaso_profile.account
+        other_form = m.Form.objects.create(name="France form")
+        m.FormPredefinedFilter.objects.create(
+            form=other_form, name="Toddlers", short_name="toddlers", json_logic={"<": [{"var": "age"}, 3]}
+        )
+        entity_type = m.EntityType.objects.create(
+            name="France patients", reference_form=other_form, account=account, fields_list_view=["age"]
+        )
+        sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
+        rules_version = m.StockRulesVersion.objects.create(account=account, name="2026 rules")
+        m.StockItemRule.objects.create(version=rules_version, sku=sku, form=other_form, question="age")
+        m.MappingVersion.objects.create(
+            form_version=m.FormVersion.objects.create(form=other_form, version_id="1"),
+            name="v1",
+            mapping=m.Mapping.objects.create(
+                form=other_form,
+                data_source=m.DataSource.objects.create(name="DHIS2"),
+                name="HMIS",
+                mapping_type="AGGREGATE",
+            ),
+            json={"question_mappings": {"birth_date": {"id": "de1"}}},
+        )
+        version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+        m.WorkflowFollowup.objects.create(workflow_version=version, order=1, condition={">": [{"var": "age"}, 5]})
+        m.WorkflowChange.objects.create(workflow_version=version, form=other_form, mapping={"birth_date": "birth_date"})
+
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            response = self.client.post(
+                PREVIEW_URL,
+                data={"form_id": self.form_with_version.id, "xls_file": xls_file},
+                format="multipart",
+            )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data["configuration_impacts"], [])
+
+    def test_preview_configuration_impacts_default_device_field(self):
+        """No device question set: `deviceid` is used, removing it drops the submissions' device."""
+        self.form_with_version.device_field = None
+        self.form_with_version.save()
+        impacts = forms_impacts(
+            self.form_with_version.form_versions.get(),
+            removed_question_names={"deviceid"},
+            modified_question_names={"age"},
+        )
+        self.assertEqual(
+            impacts,
+            [
+                ConfigurationImpact(
+                    ConfigurationImpactKind.DEVICE_FIELD,
+                    "deviceid",
+                    self.form_with_version.id,
+                    self.form_with_version.name,
+                )
+            ],
+        )
+
     def test_preview_unchanged_questions_absent_from_diff(self):
         """full_name and instanceID are identical in v1 and v2 → absent from all diff lists."""
         self.client.force_authenticate(self.yoda)
@@ -337,14 +616,68 @@ class FormVersionPreviewAPITestCase(APITestCase):
         """Preview endpoint should use a bounded number of database queries."""
         self.client.force_authenticate(self.yoda)
         with open(FIXTURE_V2, "rb") as xls_file:
-            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup
-            with self.assertNumQueries(5):
+            # 2 permission queries + 1 form lookup + 1 HasFormPermission check + 1 latest version lookup + the
+            # configuration reading the removed or modified questions: 1 for the form, 1 for its predefined filters, 1
+            # for its entity types, 1 for the stock rules, 1 for the DHIS2 mappings, 1 for the workflows' follow-ups, 1
+            # for their changes
+            with self.assertNumQueries(12):
                 response = self.client.post(
                     PREVIEW_URL,
                     data={"form_id": self.form_with_version.id, "xls_file": xls_file},
                     format="multipart",
                 )
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_preview_query_count_with_configuration(self):
+        """Same number of queries with two of each configuration reading the changed questions: no N+1."""
+        account = self.yoda.iaso_profile.account
+        form = self.form_with_version
+        data_source = m.DataSource.objects.create(name="DHIS2")
+        sku = m.StockKeepingUnit.objects.create(name="Vaccine", short_name="vac", account=account)
+        for country in ("Belgium", "France"):
+            m.FormPredefinedFilter.objects.create(
+                form=form, name=country, short_name=country.lower(), json_logic={"<": [{"var": "age"}, 3]}
+            )
+            entity_type = m.EntityType.objects.create(
+                name=f"{country} patients", reference_form=form, account=account, fields_list_view=["age"]
+            )
+            version = m.WorkflowVersion.objects.create(workflow=m.Workflow.objects.create(entity_type=entity_type))
+            m.WorkflowFollowup.objects.create(workflow_version=version, order=1, condition={">": [{"var": "age"}, 5]})
+            m.WorkflowChange.objects.create(
+                workflow_version=version, form=m.Form.objects.create(name="Visit"), mapping={"dob": "birth_date"}
+            )
+            rules_version = m.StockRulesVersion.objects.create(account=account, name=f"{country} rules")
+            m.StockItemRule.objects.create(version=rules_version, sku=sku, form=form, question="age")
+            m.MappingVersion.objects.create(
+                form_version=form.form_versions.get(),
+                name=country,
+                mapping=m.Mapping.objects.create(
+                    form=form, data_source=data_source, name=country, mapping_type="AGGREGATE"
+                ),
+                json={"question_mappings": {"birth_date": {"id": "de1"}}},
+            )
+        self.client.force_authenticate(self.yoda)
+        with open(FIXTURE_V2, "rb") as xls_file:
+            # the 12 queries of test_preview_query_count: one per domain whatever the number of rows
+            with self.assertNumQueries(12):
+                response = self.client.post(
+                    PREVIEW_URL,
+                    data={"form_id": form.id, "xls_file": xls_file},
+                    format="multipart",
+                )
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        # every configuration above was read
+        self.assertEqual(
+            Counter(i["kind"] for i in data["configuration_impacts"]),
+            {
+                ConfigurationImpactKind.PREDEFINED_FILTER: 2,
+                ConfigurationImpactKind.ENTITY_TYPE_LIST_FIELD: 2,
+                ConfigurationImpactKind.STOCK_RULE: 2,
+                ConfigurationImpactKind.DHIS2_MAPPING: 2,
+                ConfigurationImpactKind.FOLLOW_UP_CONDITION: 2,
+                ConfigurationImpactKind.CHANGE_MAPPING: 2,
+            },
+        )
 
     # -------------------------------------------------------------------------
     # IA-5214 — form assigned to multiple projects

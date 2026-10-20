@@ -5,7 +5,16 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
-from iaso.models import Account, Form, Project, UserRole, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import (
+    Account,
+    DataSource,
+    Form,
+    Project,
+    SourceVersion,
+    UserRole,
+    ValidationNodeTemplate,
+    ValidationWorkflow,
+)
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_VALIDATION_WORKFLOW_PERMISSION
@@ -107,15 +116,41 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         self.project = Project.objects.create(account=self.account, app_id="1.1")
         self.project.forms.add(self.form)
 
+        data_source = DataSource.objects.create(name="Data Source")
+        source_version = SourceVersion.objects.create(data_source=data_source, number=1)
+        self.org_unit_type = self.create_org_unit_type(name="OrgUnit Type", projects=[self.project], category="COUNTRY")
+        self.org_unit_root = self.create_valid_org_unit(name="Root", type=self.org_unit_type, version=source_version)
+        self.org_unit_parent_1 = self.create_valid_org_unit(
+            name="Parent", type=self.org_unit_type, version=source_version
+        )
+        self.org_unit_parent_1.parent = self.org_unit_root
+        self.org_unit_parent_1.save()
+        self.org_unit_parent_2 = self.create_valid_org_unit(
+            name="Parent 2", type=self.org_unit_type, version=source_version
+        )
+        self.org_unit_parent_2.parent = self.org_unit_root
+        self.org_unit_parent_2.save()
+        self.org_unit_1 = self.create_valid_org_unit(name="OU1", type=self.org_unit_type, version=source_version)
+        self.org_unit_1.parent = self.org_unit_parent_1
+        self.org_unit_1.save()
+        self.org_unit_2 = self.create_valid_org_unit(name="OU2", type=self.org_unit_type, version=source_version)
+        self.org_unit_2.parent = self.org_unit_parent_2
+        self.org_unit_2.save()
+        self.org_unit_3 = self.create_valid_org_unit(name="OU3", type=self.org_unit_type, version=source_version)
+        self.org_unit_3.parent = self.org_unit_parent_1
+        self.org_unit_3.save()
+
         self.instance = self.create_form_instance(
             form=self.form,
             project=self.project,
+            org_unit=self.org_unit_1,
             uuid=str(uuid.uuid4()),
         )
 
         self.other_instance = self.create_form_instance(
             form=self.other_form,
             project=self.other_project,
+            org_unit=self.org_unit_3,
             uuid=str(uuid.uuid4()),
         )
         self.add_validation_workflow_module(self.account)
@@ -625,6 +660,45 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
             self.assertValidVFInstanceListData(res_data, 1)
 
             res = self.client.get(reverse("validation_workflow_instances-list"), data={"requires_user_action": True})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 0)
+
+        with self.subTest("org_units"):
+            self.client.force_authenticate(self.john_wick)
+
+            res = self.client.get(reverse("validation_workflow_instances-list"), data={"org_units": "bad"})
+            self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"), data={"org_units": self.org_unit_root.pk}
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 2)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"), data={"org_units": self.org_unit_parent_1.pk}
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 2)
+
+            res = self.client.get(reverse("validation_workflow_instances-list"), data={"org_units": self.org_unit_1.pk})
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 1)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"), data={"org_units": self.org_unit_parent_2.pk}
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 0)
+
+            res = self.client.get(
+                reverse("validation_workflow_instances-list"),
+                data={"org_units": f"{self.org_unit_parent_1.pk},{self.org_unit_parent_2.pk}"},
+            )
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidVFInstanceListData(res_data, 2)
+
+            res = self.client.get(reverse("validation_workflow_instances-list"), data={"org_units": "-1"})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidVFInstanceListData(res_data, 0)
 

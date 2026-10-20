@@ -8,7 +8,7 @@ from rest_framework.settings import api_settings
 
 from iaso.api.common import ModelSerializer
 from iaso.api.common.serializer import BulkUpdateListSerializer
-from iaso.models import OrgUnit, OrgUnitType, PlanningConfig
+from iaso.models import Group, OrgUnitType, PlanningConfig
 
 
 class PlanningConfigBulkUpdateListSerializer(BulkUpdateListSerializer):
@@ -18,7 +18,7 @@ class PlanningConfigBulkUpdateListSerializer(BulkUpdateListSerializer):
 
     m2m_fields = {
         "org_unit_types": ("planningconfig_id", "orgunittype_id"),
-        "org_unit_groups": ("planningconfig_id", "orgunit_id"),
+        "org_unit_groups": ("planningconfig_id", "group_id"),
     }
     update_fields = ["level"]
 
@@ -67,7 +67,7 @@ class PlanningConfigBulkUpdateSerializer(ModelSerializer):
         many=True,
     )
     org_unit_groups = serializers.PrimaryKeyRelatedField(
-        queryset=OrgUnit.objects.none(), write_only=True, required=False, allow_null=True, allow_empty=True, many=True
+        queryset=Group.objects.none(), write_only=True, required=False, allow_null=True, allow_empty=True, many=True
     )
 
     class Meta:
@@ -85,7 +85,7 @@ class PlanningConfigBulkUpdateSerializer(ModelSerializer):
             self.fields["org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
                 user
             ).only("id")
-            self.fields["org_unit_groups"].child_relation.queryset = OrgUnit.objects.filter_for_user(user).only("id")
+            self.fields["org_unit_groups"].child_relation.queryset = Group.objects.filter_for_user(user).only("id")
 
     def validate_id(self, value: int) -> int:
         if value not in self.instance.values_list("id", flat=True):

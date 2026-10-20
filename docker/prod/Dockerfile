@@ -132,6 +132,9 @@ RUN chown -R appuser:appuser ./static
 # Switch to non-root user
 USER appuser
 
+# Preinstall the duckdb extensions in appuser's home, otherwise downloaded at the first export of every new container
+RUN python scripts/install_duckdb_extensions.py
+
 EXPOSE 8081
 
 ENTRYPOINT ["/opt/app/entrypoint.sh"]

@@ -207,6 +207,54 @@ class PromptnessStatsRowSerializer(PromptnessStatsCountsSerializer):
         }
 
 
+class PromptnessStatsCsvRowSerializer(PromptnessStatsRowSerializer):
+    """One line of the CSV export: a row of `results`, flattened, with the names of its ancestors.
+
+    Input: same as `PromptnessStatsRowSerializer`, plus an `org_unit_type_name` annotation (see the `export_csv` view).
+    Context: `status`, and `ancestor_names` (id -> name of the ancestors of the rows, see `get_rows_ancestors()`).
+
+    Ancestors are in the `level_<n>` columns, from the root of the pyramid (`level_1`) down to the direct parent: each
+    column holds a single level of the pyramid. A row has no value in the levels at or below its own.
+
+    The counts of the excluded statuses are still in the line (as `None`): `get_columns()` leaves them out of the CSV.
+    """
+
+    BASE_COLUMNS = ["org_unit_id", "org_unit_name", "org_unit_type"]
+
+    @staticmethod
+    def level_column(level: int) -> str:
+        return f"level_{level}"
+
+    def to_representation(self, org_unit: OrgUnit) -> dict:
+        row = super().to_representation(org_unit)
+        ancestor_names = self.context["ancestor_names"]
+        # The path of an org unit is the ids of its ancestors, from the root, followed by its own id
+        ancestor_ids = [int(ancestor_id) for ancestor_id in org_unit.path[:-1]]
+        return {
+            "org_unit_id": row["id"],
+            "org_unit_name": row["name"],
+            "org_unit_type": org_unit.org_unit_type_name,
+            **{
+                self.level_column(level): ancestor_names[ancestor_id]
+                for level, ancestor_id in enumerate(ancestor_ids, start=1)
+            },
+            **{field_name: row[field_name] for field_name in self.COUNT_FIELDS},
+        }
+
+    @classmethod
+    def get_columns(cls, statuses, levels_count: int) -> list:
+        """Columns of the CSV: one column per level of ancestors, the columns of the excluded statuses are left out"""
+        level_columns = [cls.level_column(level) for level in range(1, levels_count + 1)]
+        excluded_fields = {
+            field
+            for status, field_name in cls.STATUS_TO_FIELD.items()
+            if status not in statuses
+            for field in (field_name, f"{field_name}_percent")
+        }
+        count_columns = [field for field in cls.COUNT_FIELDS if field not in excluded_fields]
+        return cls.BASE_COLUMNS + level_columns + count_columns
+
+
 class PromptnessStatsSummarySerializer(serializers.Serializer):
     """Serializes the response of the `summary` action.
 

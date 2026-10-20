@@ -79,7 +79,7 @@ export const OrgUnits: FunctionComponent = () => {
 
     // MEMO
     const searches: [Search] = useMemo(() => {
-        return decodeSearch(decodeURI(params.searches));
+        return decodeSearch(params.searches);
     }, [params.searches]);
     const canExportParquet = searches.filter(s => !s.isAdded).length <= 1;
     // MEMO

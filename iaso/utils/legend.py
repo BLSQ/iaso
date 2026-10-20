@@ -75,6 +75,35 @@ TEN_SHADES = [
     "#A93A42",
 ]
 
+ELEVEN_SHADES = [
+    "#A2CAEA",
+    "#80B3DC",
+    "#6BD39D",
+    "#ACDF9B",
+    "#F5F1A0",
+    "#F2D683",
+    "#F2B16E",
+    "#EC9360",
+    "#E4754F",
+    "#C54A53",
+    "#A93A42",
+]
+
+TWELVE_SHADES = [
+    "#A2CAEA",
+    "#80B3DC",
+    "#6BD39D",
+    "#8DD99C",
+    "#ACDF9B",
+    "#F5F1A0",
+    "#F2D683",
+    "#F2B16E",
+    "#EC9360",
+    "#E4754F",
+    "#C54A53",
+    "#A93A42",
+]
+
 RISK_LOW = "#A5D6A7"
 RISK_MEDIUM = "#FFECB3"
 RISK_HIGH = "#FECDD2"
@@ -85,6 +114,18 @@ ORDINAL = {
     3: [RISK_LOW, RISK_MEDIUM, RISK_VERY_HIGH],
     4: [RISK_LOW, RISK_MEDIUM, RISK_HIGH, RISK_VERY_HIGH],
 }
+ORDINAL_MAX_ITEMS = 12
+
+
+def get_ordinal_range(count: int) -> List[str]:
+    if count in ORDINAL:
+        return list(ORDINAL[count])
+    if count == 11:
+        return list(ELEVEN_SHADES)
+    if count == 12:
+        return list(TWELVE_SHADES)
+    # get_range_from_count adds a colour for the open-ended top bucket, which ordinal doesn't have.
+    return get_range_from_count(count - 1)
 
 
 def get_legend_config(metric_type, scale):
@@ -102,11 +143,11 @@ def get_legend_config(metric_type, scale):
         return {"domain": numeric_scales, "range": get_range_from_count(len(scales))}
     if metric_type.legend_type == "ordinal":
         scales = get_scales_from_list_or_json_str(scale)
-        if len(scales) < 2 or len(scales) > 4:
+        if len(scales) < 2 or len(scales) > ORDINAL_MAX_ITEMS:
             print(f"Metric ordinal has to many or to few scales {len(scales)}")
             return None
 
-        return {"domain": scales, "range": ORDINAL[len(scales)]}
+        return {"domain": scales, "range": get_ordinal_range(len(scales))}
     if metric_type.legend_type == "linear":
         max_value = get_max_range_value(metric_type)
         scales = get_scales_from_list_or_json_str(scale) if scale else [0, max_value]

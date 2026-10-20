@@ -198,6 +198,7 @@ plugins/saas
 plugins/ginger
 plugins/active_list
 plugins/polio
+plugins/registry
 
 # some local env config to be ignored
 .direnv

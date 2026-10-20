@@ -97,7 +97,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const [locationLimit, setLocationLimit] = useState<number>(
         parseInt(params.locationLimit, 10),
     );
-    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
     const handleSearch = useCallback(() => {
@@ -136,7 +135,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const handleDeleteDynamicTab = useCallback(
         newParams => {
             redirectTo(baseUrl, newParams);
-            const newSearches = decodeSearch(decodeURI(newParams.searches));
+            const newSearches = decodeSearch(newParams.searches);
             setSearches(newSearches);
             onSearch({
                 ...newParams,
@@ -148,13 +147,13 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const handleAddDynamicTab = useCallback(
         newParams => {
             redirectTo(baseUrl, newParams);
-            setSearches(decodeSearch(decodeURI(newParams.searches)));
+            setSearches(decodeSearch(newParams.searches));
         },
         [redirectTo],
     );
     // update filter state if search changed in the url
     useSkipEffectOnMount(() => {
-        if (!isEqual(decodeSearch(decodeURI(params.searches)), searches)) {
+        if (!isEqual(decodeSearch(params.searches), searches)) {
             setSearches(paramsSearches);
         }
     }, [params.searches]);
@@ -221,7 +220,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             searchIndex={currentSearchIndex}
                             currentSearch={searches[searchIndex]}
                             searches={searches}
-                            setTextSearchError={setTextSearchError}
                             setSearches={setSearches}
                             onChangeColor={handleChangeColor}
                             currentTab={currentTab}
@@ -251,7 +249,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         </Box>
                     </DisplayIfUserHasPerm>
                     <SearchButton
-                        disabled={textSearchError || hasLocationLimitError}
+                        disabled={hasLocationLimitError}
                         onSearch={handleSearch}
                     />
                 </Box>

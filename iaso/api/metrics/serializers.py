@@ -11,7 +11,7 @@ from iaso.api.common.serializer_fields import JSONSchemaField
 from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers, get_org_unit_row
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
-from iaso.utils.legend import build_auto_legend_config, resolve_auto_legend_type
+from iaso.utils.legend import ORDINAL_MAX_ITEMS, build_auto_legend_config, resolve_auto_legend_type
 from iaso.utils.org_units import get_valid_org_units_with_geography
 
 
@@ -90,8 +90,8 @@ class MetricTypeWriteSerializer(serializers.ModelSerializer):
         elif legend_type == MetricType.LegendType.ORDINAL:
             if scale_count < 2:
                 raise serializers.ValidationError(_("Ordinal legend type requires at least two scale items."))
-            if scale_count > 4:
-                raise serializers.ValidationError(_("Ordinal legend type allows a maximum of four scale items."))
+            if scale_count > ORDINAL_MAX_ITEMS:
+                raise serializers.ValidationError(_("Ordinal legend type allows a maximum of twelve scale items."))
 
         return data
 

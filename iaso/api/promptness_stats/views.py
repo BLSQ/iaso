@@ -1,3 +1,6 @@
+from django.db.models import F
+from django.http.response import StreamingHttpResponse
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
@@ -5,12 +8,20 @@ from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from iaso.api.common import HasPermission
+from iaso.api.common import CONTENT_TYPE_CSV, HasPermission
+from iaso.api.promptness_stats.csv_export import stream_csv
 from iaso.api.promptness_stats.filters import PromptnessStatsOrderingFilter
 from iaso.api.promptness_stats.pagination import PromptnessStatsPagination
 from iaso.api.promptness_stats.period import PromptnessPeriod
-from iaso.api.promptness_stats.queries import annotate_rows, get_rows, get_target_org_units, get_totals
+from iaso.api.promptness_stats.queries import (
+    annotate_rows,
+    get_rows,
+    get_rows_ancestors,
+    get_target_org_units,
+    get_totals,
+)
 from iaso.api.promptness_stats.serializers import (
+    PromptnessStatsCsvRowSerializer,
     PromptnessStatsQueryParamsSerializer,
     PromptnessStatsRowSerializer,
     PromptnessStatsSummarySerializer,
@@ -121,8 +132,30 @@ class PromptnessStatsViewSet(viewsets.GenericViewSet):
         target_org_units = get_target_org_units(form, period)
         return params, target_org_units, period
 
-    @extend_schema(parameters=[PromptnessStatsQueryParamsSerializer])
+    @extend_schema(
+        parameters=[PromptnessStatsQueryParamsSerializer],
+        responses={(200, CONTENT_TYPE_CSV): OpenApiTypes.BINARY, **ERROR_RESPONSES},
+    )
     @action(methods=["GET"], detail=False)
-    def export_csv(self, request: Request, *args, **kwargs):
+    def export_csv(self, request: Request, *args, **kwargs) -> StreamingHttpResponse:
         """Same as `list`, as a CSV file and without pagination"""
-        raise NotImplementedError
+        params, target_org_units, period = self._validate_serializer_and_fetch_target_org_units(request)
+
+        rows = get_rows(params["parent_org_unit"], params.get("org_unit_types"))
+        # Fetched before streaming, on the rows without their counts: the number of levels is needed for the header
+        rows_ancestors = get_rows_ancestors(rows)
+        annotated_rows = annotate_rows(rows, params["parent_org_unit"], target_org_units)
+        # The CSV contains the name of the org unit type, the JSON rows only its id
+        annotated_rows = annotated_rows.annotate(org_unit_type_name=F("org_unit_type__name"))
+        ordered_rows = self.filter_queryset(annotated_rows)
+
+        row_serializer = PromptnessStatsCsvRowSerializer(
+            context={"status": params["status"], "ancestor_names": rows_ancestors.names}
+        )
+        columns = row_serializer.get_columns(params["status"], rows_ancestors.levels_count)
+        file_name = CSV_FILENAME_TEMPLATE.format(form_id=params["form"].id, period=period.value)
+        return StreamingHttpResponse(
+            stream_csv(ordered_rows, row_serializer, columns),
+            content_type=CONTENT_TYPE_CSV,
+            headers={"Content-Disposition": f'attachment; filename="{file_name}"'},
+        )

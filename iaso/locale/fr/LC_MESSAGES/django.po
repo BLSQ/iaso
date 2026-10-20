@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 14:57+0000\n"
+"POT-Creation-Date: 2026-10-15 12:17+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -159,9 +159,8 @@ msgid "Ordinal legend type requires at least two scale items."
 msgstr "Le type de légende ordinal nécéssite au moins deux éléments d'échelle"
 
 #: iaso/api/metrics/serializers.py
-msgid "Ordinal legend type allows a maximum of four scale items."
-msgstr ""
-"Le type de légende ordinal autorise un maximum de quatre éléments d'échelle"
+msgid "Ordinal legend type allows a maximum of twelve scale items."
+msgstr "Le type de légende ordinal permet un maximum de douze éléments d'échelle."
 
 #: iaso/api/metrics/serializers.py
 msgid "The file must be a CSV."
@@ -206,7 +205,7 @@ msgstr "L'année de chaque valeur doit faire partie des 'years' soumises."
 
 #: iaso/api/metrics/serializers.py
 msgid "metric_type_ids must be a comma-separated list of integers."
-msgstr "metric_type_ids doit être une liste d'integer séparé par une virgule"
+msgstr "metric_type_ids doit être une liste d'entiers séparés par une virgule"
 
 #: iaso/api/microplanning/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
@@ -226,7 +225,7 @@ msgstr "ID du parent de l'unité organisationnelle"
 
 #: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
 msgid "Org unit type IDs (comma-separated)"
-msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
+msgstr "IDs des types d'unité organisationnelle (séparés par des virgules)"
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -565,7 +564,7 @@ msgstr ""
 
 #: iaso/api/stocks/filters.py
 msgid "SKUs - SKU IDs (comma-separated)"
-msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
+msgstr "SKUs - IDs des SKUs (séparés par des virgules)"
 
 #: iaso/api/stocks/filters.py
 msgid "SKU ID"
@@ -582,6 +581,10 @@ msgstr "ID de Formulaire"
 #: iaso/api/stocks/filters.py
 msgid "Form Version ID"
 msgstr "ID de Version de Formulaire"
+
+#: iaso/api/validation_workflow_instances/filters.py
+msgid "Org unit IDs (comma-separated)"
+msgstr "IDs des unités organisationnelles (séparés par des virgules)"
 
 #: iaso/auth/forms.py
 msgid "Too many login attempts. Please try again later."
@@ -1389,6 +1392,11 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Ordinal legend type allows a maximum of four scale items."
+#~ msgstr ""
+#~ "Le type de légende ordinal autorise un maximum de quatre éléments "
+#~ "d'échelle"
 
 #, python-brace-format
 #~ msgid "Dynamic fields cannot contain both {all_fields} and {default_fields}"

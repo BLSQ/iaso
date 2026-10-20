@@ -68,16 +68,6 @@ ROW_KEYS = {
 }
 TOTALS_KEYS = ROW_KEYS - {"id", "name", "org_unit_type_id", "parent_org_unit", "has_children"}
 PERIOD_KEYS = {"value", "start", "end", "grace_period_days", "deadline", "is_current", "is_provisional"}
-SUMMARY_KEYS = {"period", "totals"}
-RESPONSE_KEYS = {
-    "count",
-    "has_next",
-    "has_previous",
-    "page",
-    "pages",
-    "limit",
-    "results",
-}
 
 
 def aware(*args) -> datetime.datetime:

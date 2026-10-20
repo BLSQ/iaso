@@ -4,6 +4,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { Tab, Tabs } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
+import { smallTabsOverrides } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { InfoTab } from '../info/InfoTab';
@@ -12,6 +13,7 @@ import { PlanningHeaderActions, PlanningHeaderTitle } from './PlanningHeader';
 
 const styles = {
     tabs: {
+        ...smallTabsOverrides,
         flexShrink: 0,
         marginBottom: 3,
     },

@@ -24,7 +24,7 @@ import sentry_sdk
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
-from environs import Env as _Env, EnvError
+from environs import Env, EnvError
 from requests.exceptions import HTTPError
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -32,16 +32,6 @@ from sentry_sdk.integrations.logging import ignore_logger
 from sentry_sdk.integrations.redis import RedisIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
-
-
-class Env(_Env):
-    # Workaround because of docker compose converting missing vars to "".
-    # This override returns default value instead of blank string
-    def _get_from_environ(self, name, default, **kwargs):
-        envvar_key, envvar_value, proxied_key = super()._get_from_environ(name, default, **kwargs)
-        if envvar_value == "":
-            return envvar_key, default, proxied_key
-        return envvar_key, envvar_value, proxied_key
 
 
 env = Env()
@@ -175,6 +165,8 @@ HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
 if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
+    # The default PBKDF2 hasher is slow by design (~50ms per hash), tests don't need that
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # Host:port the Enketo container uses to reach Iaso in local dev, e.g. "iaso:8081" when Iaso runs in docker compose,
 # "host.docker.internal:8081" when it runs on the host with docker desktop. Leave unset in deployed environments.

@@ -4,6 +4,19 @@ import { baseUrls } from '../constants/urls';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { cleanupParams } from '../utils/requests';
 
+/**
+ * Returns the part of the pathname matched by the "*" of routePath, still encoded.
+ * Use it instead of useParams()['*'] to rebuild a url: react-router decodes the splat, "%2F" included,
+ * so a "/" inside a param value would become a separator.
+ */
+export const getRawSplat = (pathname: string, routePath: string): string => {
+    const routeSegments = `/${routePath}`
+        .replace(/^\/+/, '/')
+        .replace(/\/\*$/, '')
+        .split('/');
+    return pathname.split('/').slice(routeSegments.length).join('/');
+};
+
 // TODO replace createUrl to avoid multiple methods with same use
 export const getOrgUnitsUrl = (
     accountId: string | number,

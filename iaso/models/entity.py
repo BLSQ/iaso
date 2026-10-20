@@ -139,7 +139,7 @@ class ProjectNotFoundError(ValidationError):
 
 
 class EntityQuerySet(models.QuerySet):
-    def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None):
+    def _filter_entities_with_instances(self, *, limit_date=None, org_units_qs=None, after_id=None):
         """AND-combine, as *independent* conditions, an org-unit-scope check and a limit_date check
         against an entity's related instances: each condition gets its own correlated Exists(...),
         so a *different* instance of the same entity can satisfy each one (e.g. an old in-scope
@@ -158,20 +158,23 @@ class EntityQuerySet(models.QuerySet):
         limit_date, ~396K candidate entities) that adds up to ~1.8M repeated point lookups against
         iaso_orgunit (measured ~97GB / 3.7s). A concrete id list sidesteps the question entirely --
         Postgres just probes iaso_instance_org_unit_entity_idx directly.
+
+        after_id (keyset pagination) is repeated as `entity_id > after_id` inside each Exists(...):
+        Postgres doesn't push the outer `id > after_id` into them on its own.
         """
         queryset = self
+        instances = Instance.non_deleted_objects.filter(entity_id=OuterRef("pk"))
+        if after_id is not None:
+            queryset = queryset.filter(id__gt=after_id)
+            instances = instances.filter(entity_id__gt=after_id)
 
         if org_units_qs is not None:
             org_unit_ids = list(org_units_qs.values_list("id", flat=True))
-            queryset = queryset.filter(
-                Exists(Instance.non_deleted_objects.filter(org_unit_id__in=org_unit_ids, entity_id=OuterRef("pk")))
-            )
+            queryset = queryset.filter(Exists(instances.filter(org_unit_id__in=org_unit_ids)))
 
         if limit_date:
             try:
-                queryset = queryset.filter(
-                    Exists(Instance.non_deleted_objects.filter(updated_at__gte=limit_date, entity_id=OuterRef("pk")))
-                )
+                queryset = queryset.filter(Exists(instances.filter(updated_at__gte=limit_date)))
             except ValidationError:
                 raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
 
@@ -202,11 +205,14 @@ class EntityQuerySet(models.QuerySet):
         user: typing.Optional[typing.Union[User, AnonymousUser]],
         limit_date: typing.Optional[str] = None,
         json_content: typing.Optional[str] = None,
+        after_id: typing.Optional[int] = None,
     ):
         """Entities queryset for the mobile app's normal sync: scoped to the user's account and
         their profile's org units, merged with limit_date/json_content, with the
         instances/attributes the mobile serializer needs prefetched."""
-        return self._filter_for_mobile_entity(user, limit_date, json_content, restrict_to_user_org_units=True)
+        return self._filter_for_mobile_entity(
+            user, limit_date, json_content, restrict_to_user_org_units=True, after_id=after_id
+        )
 
     def filter_for_mobile_entity_non_geo_restricted_search(
         self,
@@ -229,6 +235,7 @@ class EntityQuerySet(models.QuerySet):
         json_content: typing.Optional[str],
         *,
         restrict_to_user_org_units: bool,
+        after_id: typing.Optional[int] = None,
     ):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
@@ -244,8 +251,10 @@ class EntityQuerySet(models.QuerySet):
         # as two independent Exists(...) checks (a different instance can satisfy each), not merged
         # into one -- that's what keeps this correct for an entity whose in-scope activity and its
         # most recent activity happened on different instances.
-        if org_units_qs is not None or limit_date:
-            queryset = queryset._filter_entities_with_instances(org_units_qs=org_units_qs, limit_date=limit_date)
+        if org_units_qs is not None or limit_date or after_id is not None:
+            queryset = queryset._filter_entities_with_instances(
+                org_units_qs=org_units_qs, limit_date=limit_date, after_id=after_id
+            )
 
         if json_content:
             try:
@@ -296,7 +305,13 @@ class EntityQuerySet(models.QuerySet):
             if project.account is None:
                 raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
 
-            return self.filter(entity_type__in=EntityType.objects.filter(reference_form__projects__app_id=app_id))
+            # A concrete id list, not a subquery: Postgres can't estimate an `IN (SELECT ...)` and, on the mobile
+            # entity sync, underestimates the rows so badly that it sorts the whole scope instead of walking the
+            # primary key up to the page size (cursor page: ~680ms -> ~8ms on 1M entities).
+            entity_type_ids = list(
+                EntityType.objects.filter(reference_form__projects__app_id=app_id).values_list("id", flat=True)
+            )
+            return self.filter(entity_type_id__in=entity_type_ids)
         except Project.DoesNotExist:
             raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 

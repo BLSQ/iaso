@@ -3,6 +3,7 @@ import datetime
 from unittest import TestCase
 
 from iaso.periods import (
+    DayPeriod,
     FinancialNovPeriod,
     MonthPeriod,
     Period,
@@ -35,6 +36,10 @@ class PeriodTests(TestCase):
         self.assertEqual(YearPeriod("2014").range_period_to(YearPeriod("2017")), ["2014", "2015", "2016", "2017"])
         self.assertRaises(ValueError, lambda: YearPeriod("2014").range_period_to(QuarterPeriod("2022Q1")))
         self.assertEqual(MonthPeriod("202112").next_period(), MonthPeriod("202201"))
+        self.assertEqual(DayPeriod("20261020").next_period(), DayPeriod("20261021"))
+        self.assertEqual(DayPeriod("20261031").next_period(), DayPeriod("20261101"))
+        self.assertEqual(DayPeriod("20261231").next_period(), DayPeriod("20270101"))
+        self.assertEqual(DayPeriod("20280228").next_period(), DayPeriod("20280229"))
         self.assertEqual(MonthPeriod("202101").next_period(), MonthPeriod("202102"))
         self.assertEqual(MonthPeriod("202101").range_period_to(MonthPeriod("202101")), [MonthPeriod("202101")])
         self.assertEqual(

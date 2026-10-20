@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { useFormatCount } from 'Iaso/hooks/useFormatCount';
 import { SxStyles } from 'Iaso/types/general';
 import {
     PROMPTNESS_STATUSES,
@@ -14,7 +15,6 @@ import {
     STATUS_FIELDS,
     STATUS_MESSAGES,
 } from '../constants';
-import { useFormatCount } from '../hooks/useFormatCount';
 import MESSAGES from '../messages';
 import { PromptnessCounts, PromptnessStatus } from '../types';
 import { formatPercent } from '../utils';

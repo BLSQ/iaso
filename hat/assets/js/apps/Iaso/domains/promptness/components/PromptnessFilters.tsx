@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { CsvSvg, useSafeIntl } from 'bluesquare-components';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -13,17 +13,19 @@ import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/h
 import PeriodPicker from '../../periods/components/PeriodPicker';
 import { PERIOD_TYPE_PLACEHOLDER } from '../../periods/constants';
 import PERIOD_MESSAGES from '../../periods/messages';
+import { getCurrentPeriodString } from '../../periods/utils';
 import {
     CSV_EXPORT_ENABLED,
     ORG_UNIT_FIELDS,
     PROMPTNESS_STATUSES,
+    STATUS_CHIP_COLORS,
     STATUS_MESSAGES,
 } from '../constants';
 import { getPromptnessCsvUrl } from '../hooks/api/usePromptnessStats';
 import MESSAGES from '../messages';
-import { PromptnessRouterParams } from '../types';
+import { PromptnessRouterParams, PromptnessStatus } from '../types';
 import { getNotApplicableTypeIds } from '../utils';
-import { OrgUnitTypesSelect } from './OrgUnitTypesSelect';
+import { OrgUnitTypeOption } from './OrgUnitTypeOption';
 
 type Props = {
     params: PromptnessRouterParams;
@@ -36,17 +38,6 @@ type Props = {
 const baseUrl = baseUrls.promptness;
 
 const styles: SxStyles = {
-    filters: {
-        display: 'grid',
-        gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-            lg: 'repeat(5, 1fr)',
-        },
-        columnGap: 2,
-        alignItems: 'start',
-    },
-
     periodHelper: {
         display: 'block',
         color: 'text.secondary',
@@ -107,9 +98,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
           ).toLowerCase()
         : undefined;
     const getFormErrors = (): string[] => {
-        if (!filters.formId) {
-            return [formatMessage(MESSAGES.formRequired)];
-        }
         if (selectedForm?.promptness_grace_period_days === null) {
             return [formatMessage(MESSAGES.formNoGracePeriod)];
         }
@@ -126,6 +114,25 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         [orgUnitTypes, selectedForm],
     );
 
+    const renderOrgUnitTypeOption = useCallback(
+        (
+            props: Record<string, any>,
+            option: Record<string, any>,
+            state?: { selected: boolean },
+        ) => (
+            <OrgUnitTypeOption
+                key={option.value}
+                optionProps={props}
+                label={option.label}
+                selected={Boolean(state?.selected)}
+                notApplicable={notApplicableTypeIds.includes(
+                    Number(option.value),
+                )}
+            />
+        ),
+        [notApplicableTypeIds],
+    );
+
     const statusOptions = useMemo(
         () =>
             PROMPTNESS_STATUSES.map(status => ({
@@ -135,16 +142,39 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         [formatMessage],
     );
 
+    // Selected statuses are displayed with their own color
+    const renderStatusTags = useCallback(
+        (
+            tags: { value: PromptnessStatus; label: string }[],
+            getTagProps: (args: { index: number }) => Record<string, unknown>,
+        ) =>
+            tags.map((tag, index) => (
+                <Chip
+                    {...getTagProps({ index })}
+                    key={tag.value}
+                    label={tag.label}
+                    color={STATUS_CHIP_COLORS[tag.value]}
+                    size="medium"
+                />
+            )),
+        [],
+    );
+
     const handleChangeForm = useCallback(
         (keyValue: string, value?: number) => {
             const newForm = forms?.find(form => form.value === value);
-            // The period has to follow the period type of the form
+            // The period has to follow the period type of the form,
+            // the current one by default
+            const newPeriodType = newForm?.original.period_type;
             const keepPeriod =
-                newForm?.original.period_type === selectedForm?.period_type;
+                Boolean(filters.period) &&
+                newPeriodType === selectedForm?.period_type;
             setFilters({
                 ...filters,
                 [keyValue]: value ?? undefined,
-                period: keepPeriod ? filters.period : undefined,
+                period: keepPeriod
+                    ? filters.period
+                    : newPeriodType && getCurrentPeriodString(newPeriodType),
             });
             setFiltersUpdated(true);
         },
@@ -166,81 +196,107 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box sx={styles.filters}>
-                <InputComponent
-                    type="select"
-                    keyValue="formId"
-                    onChange={handleChangeForm}
-                    value={filters.formId}
-                    label={MESSAGES.form}
-                    loading={isFetchingForms}
-                    options={forms ?? []}
-                    errors={getFormErrors()}
-                    placeholder={formatMessage(MESSAGES.selectForm)}
-                    required
-                />
-                <Box>
-                    {/* The period picker depends on the period type of the form */}
-                    {!selectedForm && (
-                        <InputComponent
-                            type="select"
-                            keyValue="period"
-                            label={MESSAGES.period}
-                            placeholder={formatMessage(
-                                MESSAGES.selectFormFirst,
-                            )}
-                            options={[]}
-                            required
-                            disabled
-                        />
-                    )}
-                    {selectedForm && (
-                        <PeriodPicker
-                            title={`${formatMessage(MESSAGES.period)} *`}
-                            periodType={periodType}
-                            onChange={value => handleChange('period', value)}
-                            activePeriodString={filters.period}
-                        />
-                    )}
-                    {periodTypeLabel && (
-                        <Typography variant="caption" sx={styles.periodHelper}>
-                            {formatMessage(MESSAGES.periodInfo, {
-                                periodType: periodTypeLabel,
-                            })}
-                        </Typography>
-                    )}
-                </Box>
-                <OrgUnitTreeviewModal
-                    titleMessage={MESSAGES.parent}
-                    onConfirm={handleChangeParent}
-                    initialSelection={initialParent}
-                    required
-                />
-                <OrgUnitTypesSelect
-                    value={filters.orgUnitTypeIds}
-                    onChange={handleChange}
-                    options={orgUnitTypes ?? []}
-                    notApplicableTypeIds={notApplicableTypeIds}
-                    loading={isFetchingTypes}
-                    helperText={formatMessage(
-                        filters.orgUnitTypeIds
-                            ? MESSAGES.orgUnitTypesSelectedInfo
-                            : MESSAGES.orgUnitTypesInfo,
-                    )}
-                />
-                <InputComponent
-                    type="select"
-                    keyValue="status"
-                    onChange={onChangeStatus}
-                    value={filters.status ?? PROMPTNESS_STATUSES.join(',')}
-                    label={MESSAGES.status}
-                    options={statusOptions}
-                    helperText={formatMessage(MESSAGES.statusInfo)}
-                    clearable={false}
-                    required
-                    multi
-                />
-            </Box>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} lg={2}>
+                    <InputComponent
+                        type="select"
+                        keyValue="formId"
+                        onChange={handleChangeForm}
+                        value={filters.formId}
+                        label={MESSAGES.form}
+                        loading={isFetchingForms}
+                        options={forms ?? []}
+                        errors={getFormErrors()}
+                        placeholder={formatMessage(MESSAGES.selectForm)}
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} lg={4}>
+                    <Box>
+                        {/* The period picker depends on the period type of the form */}
+                        {!selectedForm && (
+                            <InputComponent
+                                type="select"
+                                keyValue="period"
+                                label={MESSAGES.period}
+                                placeholder={formatMessage(
+                                    MESSAGES.selectFormFirst,
+                                )}
+                                options={[]}
+                                required
+                                disabled
+                            />
+                        )}
+                        {selectedForm && (
+                            <PeriodPicker
+                                title={`${formatMessage(MESSAGES.period)} *`}
+                                periodType={periodType}
+                                onChange={value =>
+                                    handleChange('period', value)
+                                }
+                                activePeriodString={filters.period}
+                            />
+                        )}
+                        {periodTypeLabel && (
+                            <Typography
+                                variant="caption"
+                                sx={styles.periodHelper}
+                            >
+                                {formatMessage(MESSAGES.periodInfo, {
+                                    periodType: periodTypeLabel,
+                                })}
+                            </Typography>
+                        )}
+                    </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} lg={2}>
+                    <OrgUnitTreeviewModal
+                        titleMessage={MESSAGES.parent}
+                        onConfirm={handleChangeParent}
+                        initialSelection={initialParent}
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} lg={2}>
+                    <InputComponent
+                        type="select"
+                        keyValue="orgUnitTypeIds"
+                        onChange={handleChange}
+                        value={filters.orgUnitTypeIds}
+                        label={MESSAGES.orgUnitTypes}
+                        options={orgUnitTypes ?? []}
+                        loading={isFetchingTypes}
+                        // Only when nothing is selected, the chips are enough otherwise
+                        placeholder={
+                            filters.orgUnitTypeIds
+                                ? undefined
+                                : formatMessage(MESSAGES.allTypes)
+                        }
+                        helperText={formatMessage(
+                            filters.orgUnitTypeIds
+                                ? MESSAGES.orgUnitTypesSelectedInfo
+                                : MESSAGES.orgUnitTypesInfo,
+                        )}
+                        renderOption={renderOrgUnitTypeOption}
+                        multi
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} lg={2}>
+                    <InputComponent
+                        type="select"
+                        keyValue="status"
+                        onChange={onChangeStatus}
+                        value={filters.status ?? PROMPTNESS_STATUSES.join(',')}
+                        label={MESSAGES.status}
+                        options={statusOptions}
+                        helperText={formatMessage(MESSAGES.statusInfo)}
+                        renderTags={renderStatusTags}
+                        clearable={false}
+                        required
+                        multi
+                    />
+                </Grid>
+            </Grid>
             <Box sx={styles.buttons}>
                 {CSV_EXPORT_ENABLED && (
                     <Button

@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react';
-import { InventoryOutlined } from '@mui/icons-material';
+import { AccessAlarm, InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AssessmentIcon from '@mui/icons-material/Assessment';
@@ -269,7 +269,7 @@ const menuItems = (
                             label: formatMessage(MESSAGES.promptness),
                             permissions: paths.promptnessPath.permissions,
                             key: 'promptness',
-                            icon: props => <DoneAll {...props} />,
+                            icon: props => <AccessAlarm {...props} />,
                         },
                     ],
                 },

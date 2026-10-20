@@ -23,7 +23,7 @@ const styles: SxStyles = {
     root: {
         px: 2,
         py: 1.5,
-        bgcolor: 'grey.100',
+        bgcolor: 'background.paper',
     },
     line: {
         display: 'flex',
@@ -64,7 +64,7 @@ export const DeadlineBanner: FunctionComponent<Props> = ({
         ?.map(orgUnitType => orgUnitType.name)
         .join(', ');
     return (
-        <Paper variant="outlined" sx={styles.root}>
+        <Paper sx={styles.root}>
             <Box sx={styles.line}>
                 <Box sx={styles.deadline}>
                     <CalendarMonth />

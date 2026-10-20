@@ -1,11 +1,12 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { FormatListBulleted, History } from '@mui/icons-material';
+import { FormatListBulleted, History, QueryStats } from '@mui/icons-material';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExternalLink,
     InputWithInfos,
     LinkWithLocation,
+    makeRedirectionUrl,
     useSafeIntl,
 } from 'bluesquare-components';
 import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
@@ -16,7 +17,11 @@ import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
+import {
+    COMPLETENESS_STATS,
+    SUBMISSIONS,
+    SUBMISSIONS_UPDATE,
+} from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { formatLabel } from '../../instances/utils';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
@@ -25,6 +30,7 @@ import {
     NO_PERIOD,
     periodTypeOptionsWithNoPeriod,
 } from '../../periods/constants';
+import { getCurrentPeriodString } from '../../periods/utils';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { userHasAccessToModule } from '../../users/utils';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
@@ -490,6 +496,30 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             </LinkWithLocation>
                         </Grid>
                     </DisplayIfUserHasPerm>
+                    {/* Promptness is only computed for forms which have period type*/}
+                    {currentForm.period_type.value && (
+                        <DisplayIfUserHasPerm
+                            permissions={[COMPLETENESS_STATS]}
+                        >
+                            <Grid item>
+                                <LinkWithLocation
+                                    className={classes.linkWithIcon}
+                                    to={makeRedirectionUrl(
+                                        baseUrls.promptness,
+                                        {
+                                            formId: currentForm.id.value,
+                                            period: getCurrentPeriodString(
+                                                currentForm.period_type.value,
+                                            ),
+                                        },
+                                    )}
+                                >
+                                    <QueryStats />
+                                    {formatMessage(MESSAGES.promptness)}
+                                </LinkWithLocation>
+                            </Grid>
+                        </DisplayIfUserHasPerm>
+                    )}
                     <Grid item>
                         <ExternalLink url={logsUrl}>
                             <Typography className={classes.linkWithIcon}>

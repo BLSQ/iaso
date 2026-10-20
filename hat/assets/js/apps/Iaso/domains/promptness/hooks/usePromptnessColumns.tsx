@@ -7,6 +7,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useFormatCount } from 'Iaso/hooks/useFormatCount';
 import { useGenUrl } from 'Iaso/routing/routing';
 import { ShareBar } from '../components/ShareBar';
 import {
@@ -18,7 +19,6 @@ import {
 import MESSAGES from '../messages';
 import { PromptnessRouterParams, PromptnessRow } from '../types';
 import { formatPercent, getSelectedStatuses } from '../utils';
-import { useFormatCount } from './useFormatCount';
 
 type CellProps = { row: { original: PromptnessRow } };
 
@@ -69,7 +69,7 @@ export const usePromptnessColumns = (
                 accessor: 'name',
                 align: 'left',
                 Cell: ({ row: { original } }: CellProps) => (
-                    <Box display="flex" alignItems="center">
+                    <Box display="flex" alignItems="center" gap={1}>
                         {/* Keep the names aligned when there is no drill down */}
                         <Box width={36} flexShrink={0}>
                             {original.has_children && (

@@ -51,10 +51,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
         id: 'iaso.label.form',
     },
-    formRequired: {
-        defaultMessage: 'Required — pick a form to compute promptness',
-        id: 'iaso.promptness.formRequired',
-    },
     formNoGracePeriod: {
         defaultMessage:
             'No grace period is configured for this form, set it in the form settings',

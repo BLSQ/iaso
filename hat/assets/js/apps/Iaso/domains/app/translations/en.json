@@ -1695,7 +1695,6 @@
     "iaso.promptness.expectedSubmissions": "Expected submissions",
     "iaso.promptness.exportCsv": "Export CSV",
     "iaso.promptness.formNoGracePeriod": "No grace period is configured for this form, set it in the form settings",
-    "iaso.promptness.formRequired": "Required — pick a form to compute promptness",
     "iaso.promptness.formSettings": "Form settings",
     "iaso.promptness.late": "Late",
     "iaso.promptness.missing": "Missing",

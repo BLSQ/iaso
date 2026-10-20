@@ -26,6 +26,15 @@ export const STATUS_FIELDS: Record<
     [STATUS_MISSING]: 'missing',
 };
 
+export const STATUS_CHIP_COLORS: Record<
+    PromptnessStatus,
+    'success' | 'warning' | 'error'
+> = {
+    ON_TIME: 'success',
+    LATE: 'warning',
+    MISSING: 'error',
+};
+
 export const STATUS_COLORS = {
     [STATUS_ON_TIME]: 'success.main',
     [STATUS_LATE]: 'warning.main',

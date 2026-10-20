@@ -385,6 +385,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.periodsAfterAllowed',
         defaultMessage: 'Allowed periods after',
     },
+    promptness: {
+        id: 'iaso.promptness.title',
+        defaultMessage: 'Promptness',
+    },
     promptnessGracePeriodDays: {
         id: 'iaso.label.promptnessGracePeriodDays',
         defaultMessage: 'Promptness grace period (days)',

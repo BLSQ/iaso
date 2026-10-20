@@ -18,6 +18,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useFormatPeriod } from '../periods/utils';
 import { DeadlineBanner } from './components/DeadlineBanner';
 import { EmptyState } from './components/EmptyState';
 import { OrgUnitPath } from './components/OrgUnitPath';
@@ -29,7 +30,6 @@ import {
     useGetPromptnessStats,
     useGetPromptnessSummary,
 } from './hooks/api/usePromptnessStats';
-import { useFormatPeriod } from './hooks/useFormatPeriod';
 import { usePromptnessColumns } from './hooks/usePromptnessColumns';
 import MESSAGES from './messages';
 import { PromptnessRouterParams } from './types';
@@ -46,11 +46,21 @@ const FORM_EXTRA_FIELDS = [
 ];
 
 const styles: SxStyles = {
+    root: {
+        backgroundColor: theme => theme.palette.background.blueGrey,
+        p: 4,
+    },
+    filters: {
+        p: 2,
+    },
+    totals: {
+        mt: 2,
+        p: 2,
+    },
     totalsTitle: {
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        mt: 2,
         mb: 1,
         color: 'text.secondary',
         '& svg': {
@@ -97,12 +107,12 @@ export const Promptness: FunctionComponent = () => {
         [orgUnitTypes],
     );
 
-    const isReady = canComputePromptness(params, selectedForm);
+    const canCompute = canComputePromptness(params, selectedForm);
     const { data: summary, isFetching: isFetchingSummary } =
-        useGetPromptnessSummary(params, isReady);
+        useGetPromptnessSummary(params, canCompute);
     const { data: stats, isFetching: isFetchingStats } = useGetPromptnessStats(
         params,
-        isReady,
+        canCompute,
     );
     const columns = usePromptnessColumns(params, orgUnitTypeNames);
     const defaultOrder = getDefaultOrder(params.status);
@@ -127,16 +137,18 @@ export const Promptness: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.promptness)}
                 displayBackButton={false}
             />
-            <MainWrapper sx={{ p: 4 }}>
-                <PromptnessFilters
-                    // Reset the filters state when drilling down from the table
-                    key={currentOrgUnitId}
-                    orgUnitId={currentOrgUnitId}
-                    params={params}
-                    forms={formsWithPeriod}
-                    isFetchingForms={isFetchingForms}
-                    canExport={isReady}
-                />
+            <MainWrapper sx={styles.root}>
+                <Paper sx={styles.filters}>
+                    <PromptnessFilters
+                        // Reset the filters state when drilling down from the table
+                        key={currentOrgUnitId}
+                        orgUnitId={currentOrgUnitId}
+                        params={params}
+                        forms={formsWithPeriod}
+                        isFetchingForms={isFetchingForms}
+                        canExport={canCompute}
+                    />
+                </Paper>
                 {!params.formId && (
                     <EmptyState
                         title={formatMessage(MESSAGES.selectForm)}
@@ -155,16 +167,16 @@ export const Promptness: FunctionComponent = () => {
                     />
                 )}
 
-                {params.formId && !isReady && isFetchingForms && (
+                {params.formId && !canCompute && isFetchingForms && (
                     <LoadingSpinner />
                 )}
-                {params.formId && !isReady && !isFetchingForms && (
+                {params.formId && !canCompute && !isFetchingForms && (
                     <EmptyState
                         title={formatMessage(MESSAGES.selectFilters)}
                         description={formatMessage(MESSAGES.selectFiltersInfo)}
                     />
                 )}
-                {isReady && (
+                {canCompute && (
                     <Box mt={2} position="relative">
                         {isFetchingSummary && <LoadingSpinner absolute />}
                         {summary && (
@@ -174,23 +186,25 @@ export const Promptness: FunctionComponent = () => {
                                     periodLabel={periodLabel}
                                     form={selectedForm}
                                 />
-                                <Box sx={styles.totalsTitle}>
-                                    <AccountTree />
-                                    <Typography variant="body2">
-                                        {formatMessage(MESSAGES.totalsFor)}
-                                    </Typography>
-                                    <OrgUnitPath
-                                        orgUnit={currentOrgUnit}
-                                        rootId={params.parentId}
+                                <Paper sx={styles.totals}>
+                                    <Box sx={styles.totalsTitle}>
+                                        <AccountTree />
+                                        <Typography variant="body2">
+                                            {formatMessage(MESSAGES.totalsFor)}
+                                        </Typography>
+                                        <OrgUnitPath
+                                            orgUnit={currentOrgUnit}
+                                            rootId={params.parentId}
+                                        />
+                                        <Typography variant="body2">
+                                            {`· ${periodLabel}`}
+                                        </Typography>
+                                    </Box>
+                                    <TotalsCards
+                                        totals={summary.totals}
+                                        orgUnitName={currentOrgUnitName}
                                     />
-                                    <Typography variant="body2">
-                                        {`· ${periodLabel}`}
-                                    </Typography>
-                                </Box>
-                                <TotalsCards
-                                    totals={summary.totals}
-                                    orgUnitName={currentOrgUnitName}
-                                />
+                                </Paper>
                             </>
                         )}
                         <Paper sx={{ mt: 2 }}>

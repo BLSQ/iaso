@@ -16,7 +16,7 @@ const styles: SxStyles = {
         alignItems: 'center',
         textAlign: 'center',
         gap: 1,
-        mt: 1,
+        mt: 2,
         px: 2,
         py: 6,
     },
@@ -36,7 +36,7 @@ export const EmptyState: FunctionComponent<Props> = ({
     description,
     action,
 }) => (
-    <Paper variant="outlined" sx={styles.root}>
+    <Paper sx={styles.root}>
         <QueryStats sx={styles.icon} />
         <Typography variant="subtitle1" fontWeight="bold">
             {title}

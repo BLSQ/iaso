@@ -1695,7 +1695,6 @@
     "iaso.promptness.expectedSubmissions": "Soumissions attendues",
     "iaso.promptness.exportCsv": "Exporter en CSV",
     "iaso.promptness.formNoGracePeriod": "Aucun délai de grâce n'est configuré pour ce formulaire, définissez-le dans les paramètres du formulaire",
-    "iaso.promptness.formRequired": "Requis — choisissez un formulaire pour calculer la promptitude",
     "iaso.promptness.formSettings": "Paramètres du formulaire",
     "iaso.promptness.late": "En retard",
     "iaso.promptness.missing": "Manquantes",

@@ -1363,7 +1363,6 @@
     "iaso.promptness.expectedSubmissions": "Envíos esperados",
     "iaso.promptness.exportCsv": "Exportar CSV",
     "iaso.promptness.formNoGracePeriod": "No hay período de gracia configurado para este formulario, configúrelo en los ajustes del formulario",
-    "iaso.promptness.formRequired": "Obligatorio — elija un formulario para calcular la prontitud",
     "iaso.promptness.formSettings": "Ajustes del formulario",
     "iaso.promptness.late": "Con retraso",
     "iaso.promptness.missing": "Faltantes",

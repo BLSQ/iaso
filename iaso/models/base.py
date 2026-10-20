@@ -218,15 +218,15 @@ class Link(models.Model):
 
 class GroupQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        profile = user.iaso_profile
-        queryset = self
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+
+        if not account:
+            return self.none()
+
         version_ids = (
-            SourceVersion.objects.filter(data_source__projects__account=profile.account)
-            .values_list("id", flat=True)
-            .distinct()
+            SourceVersion.objects.filter(data_source__projects__account=account).values_list("id", flat=True).distinct()
         )
-        queryset = queryset.filter(source_version_id__in=version_ids)
-        return queryset
+        return self.filter(source_version_id__in=version_ids)
 
 
 class Group(models.Model):

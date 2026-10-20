@@ -6,7 +6,8 @@ be linked:
 - one account (``account=<id>`` or ``account=none`` for unattributed operations): its routes / tasks,
 - one route / task (``name``, optionally within an account): timeline, latency histogram and breakdowns.
 
-Charts are plain SVG geometry computed here, so the page needs no JavaScript nor external assets.
+Charts are drawn by Chart.js in the page, like the task monitor (``admin/iaso/task/monitor.html``): this module
+only provides their data. The trend sparklines of the tables stay plain SVG.
 """
 
 import datetime
@@ -27,6 +28,7 @@ class Period:
     label: str
     days: int
     bin_hours: int
+    tick_format: str  # strftime format of the x-axis labels of the timelines
 
 
 @dataclass(frozen=True)
@@ -42,9 +44,9 @@ class KindLabels:
 
 
 PERIODS = {
-    "24h": Period("24 hours", 1, 1),
-    "7d": Period("7 days", 7, 6),
-    "30d": Period("30 days", 30, 24),
+    "24h": Period("24 hours", 1, 1, "%H:%M"),
+    "7d": Period("7 days", 7, 6, "%a %H:%M"),
+    "30d": Period("30 days", 30, 24, "%d %b"),
 }
 DEFAULT_PERIOD = "7d"
 KINDS = {
@@ -112,16 +114,9 @@ def summary_cells(summary: Summary) -> dict:
     }
 
 
-def bar_chart(values: list[float], titles: list[str], height: int = 60) -> dict:
-    """SVG geometry for a bar chart in a ``0 0 width height`` viewBox (1 unit wide bars, stretched by CSS)."""
-    peak = max(values, default=0) or 1
-    bars = []
-    for index, (value, title) in enumerate(zip(values, titles)):
-        bar_height = value / peak * height
-        if value and bar_height < 1:
-            bar_height = 1  # keep non-zero bins visible
-        bars.append({"x": index + 0.1, "y": height - bar_height, "height": bar_height, "title": title})
-    return {"width": len(values), "height": height, "bars": bars}
+def bar_chart(labels: list[str], values: list[float], titles: list[str], unit: str) -> dict:
+    """Data of a bar chart drawn by dashboard.html: x-axis labels, values, tooltips and the unit of the y-axis."""
+    return {"labels": labels, "values": values, "titles": titles, "unit": unit}
 
 
 def sparkline(values: list[float], width: int = 100, height: int = 20) -> str:
@@ -204,7 +199,7 @@ class Dashboard:
             "periods": [(key, period.label, self.url(period=key)) for key, period in PERIODS.items()],
             "period_key": self.period_key,
             "total": summary_cells(total),
-            "timeline": self.timeline_chart(total.timeline),
+            "timeline": self.timeline_chart(total.timeline, format_total, "ms"),
             "breadcrumbs": self.breadcrumbs(),
             "has_data": bool(stats),
         }
@@ -236,18 +231,14 @@ class Dashboard:
             crumbs.append((self.name, None))
         return crumbs
 
-    def timeline_titles(self, values: list[float], formatter) -> list[str]:
-        titles = []
-        for index, value in enumerate(values):
-            start = timezone.localtime(self.bins.bin_start(index))
-            titles.append(f"{start:%a %d %b %H:%M}: {formatter(value)}")
-        return titles
-
-    def timeline_chart(self, values: list[float]) -> dict:
-        chart = bar_chart(values, self.timeline_titles(values, format_total))
-        chart["start"] = timezone.localtime(self.bins.start)
-        chart["end"] = timezone.localtime(self.bins.bin_start(self.bins.count))
-        return chart
+    def timeline_chart(self, values: list[float], formatter, unit: str) -> dict:
+        starts = [timezone.localtime(self.bins.bin_start(index)) for index in range(len(values))]
+        return bar_chart(
+            [f"{start:{self.period.tick_format}}" for start in starts],
+            values,
+            [f"{start:%a %d %b %H:%M}: {formatter(value)}" for start, value in zip(starts, values)],
+            unit,
+        )
 
     def headers(self) -> list[dict]:
         columns = [
@@ -315,10 +306,11 @@ class Dashboard:
         if used:
             indexes = range(used[0], used[-1] + 1)
             histogram = bar_chart(
-                [buckets[i] for i in indexes], [f"{bucket_label(i)}: {buckets[i]:,} {operations}" for i in indexes]
+                [bucket_label(i) for i in indexes],
+                [buckets[i] for i in indexes],
+                [f"{bucket_label(i)}: {buckets[i]:,} {operations}" for i in indexes],
+                "count",
             )
-            histogram["first"] = bucket_label(used[0])
-            histogram["last"] = bucket_label(used[-1])
 
         breakdowns = [
             ("Per variant", lambda stat: stat.variant or "(plain)", None),
@@ -333,8 +325,8 @@ class Dashboard:
                 )
             )
         return {
-            "count_chart": bar_chart(counts, self.timeline_titles(counts, lambda v: f"{v:,} {operations}")),
-            "p95_chart": bar_chart(p95s, self.timeline_titles(p95s, format_ms)),
+            "count_chart": self.timeline_chart(counts, lambda v: f"{v:,} {operations}", "count"),
+            "p95_chart": self.timeline_chart(p95s, format_ms, "ms"),
             "histogram": histogram,
             "headers": self.headers(),
             "breakdowns": [

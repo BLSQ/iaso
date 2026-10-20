@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.utils import timezone
 
 from iaso import models as m
-from iaso.perf_stats.dashboard import Dashboard
+from iaso.perf_stats.dashboard import Dashboard, bucket_label, format_total
 from iaso.perf_stats.histogram import bucket_index, empty_buckets
 from iaso.perf_stats.report import Bins, summarize, summarize_total
 from iaso.test import TestCase
@@ -155,8 +155,16 @@ class PerfStatsDashboardTestCase(TestCase):
         self.assertEqual([row["label"] for row in breakdowns["Per variant"]], ["xlsx", "(plain)"])
         self.assertEqual([row["label"] for row in breakdowns["Per status"]], ["200"])
         self.assertEqual([row["label"] for row in breakdowns["Per account"]], ["Big account"])
-        self.assertIsNotNone(response.context["histogram"])
+        self.assertEqual(sum(response.context["count_chart"]["values"]), 3)
+        self.assertEqual(response.context["count_chart"]["unit"], "count")
+        self.assertEqual(response.context["p95_chart"]["unit"], "ms")
+        histogram = response.context["histogram"]
+        self.assertEqual(sum(histogram["values"]), 3)
+        self.assertEqual(len(histogram["labels"]), len(histogram["values"]))
+        self.assertEqual(histogram["labels"][-1], bucket_label(bucket_index(5000)))  # the slowest request
         self.assertContains(response, 'class="apm-chart"', count=4)
+        self.assertContains(response, '<script type="application/json">', count=4)
+        self.assertContains(response, "chart.js@4.4.7")
 
     def test_name_level_within_account_has_no_account_breakdown(self):
         response = self.get({"name": "GET api/forms/", "account": self.other_account.id})
@@ -198,9 +206,9 @@ class PerfStatsDashboardTestCase(TestCase):
         self.assertEqual([row["label"] for row in breakdowns["Per outcome"]], ["SUCCESS", "ERRORED"])
 
     def test_periods(self):
-        self.assertEqual(len(self.get({"period": "24h"}).context["timeline"]["bars"]), 24)
-        self.assertEqual(len(self.get({"period": "7d"}).context["timeline"]["bars"]), 28)
-        self.assertEqual(len(self.get({"period": "30d"}).context["timeline"]["bars"]), 30)
+        self.assertEqual(len(self.get({"period": "24h"}).context["timeline"]["values"]), 24)
+        self.assertEqual(len(self.get({"period": "7d"}).context["timeline"]["values"]), 28)
+        self.assertEqual(len(self.get({"period": "30d"}).context["timeline"]["values"]), 30)
         # Invalid values fall back to defaults
         response = self.get({"period": "1y", "sort": "nope", "kind": "nope"})
         self.assertEqual(response.context["period_key"], "7d")
@@ -208,12 +216,28 @@ class PerfStatsDashboardTestCase(TestCase):
 
     def test_empty(self):
         m.PerfStat.objects.all().delete()
-        self.assertContains(self.get(), "No requests recorded")
+        response = self.get()
+        self.assertContains(response, "No requests recorded")
+        self.assertNotContains(response, "chart.js")
 
     def test_links_keep_period_and_kind(self):
         dashboard = Dashboard({"period": "30d", "sort": "p95", "kind": "task"})
         self.assertEqual(dashboard.url(account="12"), "?kind=task&period=30d&sort=p95&account=12")
         self.assertEqual(dashboard.url(sort="count"), "?kind=task&period=30d&sort=count")
+
+    def test_timeline_chart(self):
+        now = datetime.datetime(2026, 10, 12, 14, 30, tzinfo=datetime.timezone.utc)
+
+        chart = Dashboard({"period": "24h"}, now=now).timeline_chart([0] * 23 + [1500], format_total, "ms")
+        self.assertEqual(chart["labels"][0], "15:00")
+        self.assertEqual(chart["labels"][-1], "14:00")
+        self.assertEqual(chart["values"][-1], 1500)
+        self.assertEqual(chart["titles"][-1], "Mon 12 Oct 14:00: 1.5 s")
+        self.assertEqual(chart["unit"], "ms")
+
+        chart = Dashboard({"period": "30d"}, now=now).timeline_chart([0] * 30, format_total, "ms")
+        self.assertEqual(chart["labels"][0], "12 Sep")
+        self.assertEqual(chart["labels"][-1], "11 Oct")
 
 
 class ReportTestCase(TestCase):

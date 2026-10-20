@@ -3,6 +3,7 @@
 {% block extrastyle %}
   {{ block.super }}
   <style>
+    /* chart colors, read by the script */
     .apm { --apm-bar: var(--secondary); --apm-bar-hover: var(--primary); }
     .apm-toolbar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 0 0 16px; }
     .apm-toolbar .apm-group { display: flex; gap: 4px; }
@@ -18,10 +19,7 @@
     .apm-kpi .apm-value { font-size: 18px; font-variant-numeric: tabular-nums; }
     .apm-chart { margin: 0 0 20px; }
     .apm-chart h3 { margin: 0 0 4px; }
-    .apm-chart svg { display: block; width: 100%; height: 90px; background: var(--darkened-bg); }
-    .apm-chart svg rect { fill: var(--apm-bar); }
-    .apm-chart svg rect:hover { fill: var(--apm-bar-hover); }
-    .apm-axis { display: flex; justify-content: space-between; color: var(--body-quiet-color); font-size: 11px; }
+    .apm-canvas { position: relative; height: 160px; }
     .apm-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
     table.apm-table { width: 100%; margin: 0 0 24px; }
     table.apm-table td.apm-num, table.apm-table th.apm-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -92,11 +90,11 @@
 
     {% if level == "name" %}
       <div class="apm-charts">
-        {% include "admin/iaso/perfstat/bar_chart.html" with title="Total time" chart=timeline start=timeline.start end=timeline.end %}
-        {% include "admin/iaso/perfstat/bar_chart.html" with title=labels.operations|capfirst chart=count_chart start=timeline.start end=timeline.end %}
-        {% include "admin/iaso/perfstat/bar_chart.html" with title="p95 latency" chart=p95_chart start=timeline.start end=timeline.end %}
+        {% include "admin/iaso/perfstat/bar_chart.html" with title="Total time" chart=timeline %}
+        {% include "admin/iaso/perfstat/bar_chart.html" with title=labels.operations|capfirst chart=count_chart %}
+        {% include "admin/iaso/perfstat/bar_chart.html" with title="p95 latency" chart=p95_chart %}
         {% if histogram %}
-          {% include "admin/iaso/perfstat/bar_chart.html" with title="Latency distribution" chart=histogram start=histogram.first end=histogram.last %}
+          {% include "admin/iaso/perfstat/bar_chart.html" with title="Latency distribution" chart=histogram %}
         {% endif %}
       </div>
 
@@ -105,7 +103,7 @@
         {% include "admin/iaso/perfstat/summary_table.html" with rows=breakdown.rows first_column="" sortable=False with_trend=False show_variant=False %}
       {% endfor %}
     {% else %}
-      {% include "admin/iaso/perfstat/bar_chart.html" with title="Total time" chart=timeline start=timeline.start end=timeline.end %}
+      {% include "admin/iaso/perfstat/bar_chart.html" with title="Total time" chart=timeline %}
       {% include "admin/iaso/perfstat/summary_table.html" with sortable=True %}
       {% if truncated %}<p class="apm-note">Only the first {{ rows|length }} rows are shown.</p>{% endif %}
     {% endif %}
@@ -124,4 +122,64 @@
     p50/p95 are estimated from latency histograms (~10% precision); other values are exact.
   </p>
 </div>
+{% if has_data %}
+<script
+  src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js"
+  integrity="sha384-zYPBGXwO4633CABX/5Spf6emCKUJCfoOkhOMYyxMsatqQZPnDblmmOewfjsIVWCM"
+  crossorigin="anonymous"
+></script>
+<script>
+(function () {
+  "use strict";
+  // y-axis ticks, the tooltips are formatted by the server
+  function formatMs(ms) {
+    if (ms >= 3600000) return `${(ms / 3600000).toFixed(1)} h`;
+    if (ms >= 60000) return `${(ms / 60000).toFixed(1)} min`;
+    if (ms >= 1000) return `${(ms / 1000).toFixed(ms >= 10000 ? 0 : 1)} s`;
+    return `${Math.round(ms)} ms`;
+  }
+  const TICKS = { ms: formatMs, count: (value) => value.toLocaleString() };
+
+  // the colors follow the admin theme, see the --apm-* variables
+  const style = getComputedStyle(document.querySelector(".apm"));
+  const color = (name) => style.getPropertyValue(name).trim();
+
+  document.querySelectorAll(".apm-chart").forEach((element) => {
+    const chart = JSON.parse(element.querySelector("script").textContent);
+    new Chart(element.querySelector("canvas"), {
+      type: "bar",
+      data: {
+        labels: chart.labels,
+        datasets: [{
+          data: chart.values,
+          backgroundColor: color("--apm-bar"),
+          hoverBackgroundColor: color("--apm-bar-hover"),
+          minBarLength: 1,  // keep the small non-zero values visible
+        }],
+      },
+      options: {
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: color("--body-quiet-color"), maxRotation: 0, autoSkipPadding: 16 },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: color("--hairline-color") },
+            ticks: { color: color("--body-quiet-color"), maxTicksLimit: 5, precision: 0, callback: TICKS[chart.unit] },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { title: () => "", label: (item) => chart.titles[item.dataIndex] } },
+        },
+      },
+    });
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}

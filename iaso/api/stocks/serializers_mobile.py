@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField
@@ -95,5 +96,6 @@ class StockLedgerItemMobileSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "created_by"]
 
     @staticmethod
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_form_name(obj):
         return obj.submission.form.name if obj.submission and obj.submission.form else None

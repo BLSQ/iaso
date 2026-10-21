@@ -165,6 +165,8 @@ HAT_LOGGING_LEVEL = env.str("HAT_LOGGING_LEVEL", default="DEBUG")
 if IN_TESTS:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
+    # The default PBKDF2 hasher is slow by design (~50ms per hash), tests don't need that
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # Host:port the Enketo container uses to reach Iaso in local dev, e.g. "iaso:8081" when Iaso runs in docker compose,
 # "host.docker.internal:8081" when it runs on the host with docker desktop. Leave unset in deployed environments.
@@ -513,12 +515,6 @@ AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
 ]
-
-# Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
-if "polio" in PLUGINS:
-    AUTH_CLASSES.append(
-        "rest_framework.authentication.BasicAuthentication",
-    )
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
@@ -986,6 +982,11 @@ for plugin_name in PLUGINS:
 
         if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
             REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)
+
+        # Same list object as REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"].
+        for auth_class in getattr(plugin_settings, "AUTHENTICATION_CLASSES", []):
+            if auth_class not in AUTH_CLASSES:
+                AUTH_CLASSES.append(auth_class)
 
     except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
         print(

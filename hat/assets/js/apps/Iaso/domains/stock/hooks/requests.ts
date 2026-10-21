@@ -41,7 +41,7 @@ export const useGetStockKeepingUnitsApiParams = (
         project_ids: params.projectsIds,
         org_unit_type_ids: params.orgUnitTypeIds,
         created_by: params.created_by,
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         page: params.page || '1',
     };
     const url = makeUrlWithParams('/api/stockkeepingunits/', apiParams);

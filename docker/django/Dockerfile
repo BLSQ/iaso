@@ -19,6 +19,10 @@ ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system
 RUN uv sync --python "$(which python3)"
 
+# preinstall the duckdb extensions, otherwise downloaded in every new container (~5 s, see the script)
+COPY scripts/install_duckdb_extensions.py /opt/app/scripts/install_duckdb_extensions.py
+RUN python scripts/install_duckdb_extensions.py
+
 # Uncomment to debug snt-malaria budgeting
 # ENV PYTHONPATH="/opt/snt-malaria-budgeting:${PYTHONPATH}"
 

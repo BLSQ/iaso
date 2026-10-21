@@ -47,7 +47,8 @@
             }
         </script>
 
-        {% include "iaso/pages/refresh_data_set_snippet.html" %}
+        {% load iaso_extras %}
+        {% include_optional "iaso/pages/refresh_data_set_snippet.html" %}
         {% include "iaso/pages/launch_pipeline_snippet.html" %}
     </body>
 </html>

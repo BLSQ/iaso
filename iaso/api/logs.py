@@ -24,7 +24,7 @@ from iaso.permissions.core_permissions import (
     CORE_SUBMISSIONS_UPDATE_PERMISSION,
     CORE_USERS_ADMIN_PERMISSION,
 )
-from iaso.plugins import is_polio_plugin_active
+from iaso.plugins import plugin_log_access
 
 
 def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
@@ -58,16 +58,10 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         mapping_versions = MappingVersion.objects.filter_for_user(user)
         return mapping_versions.filter(id=obj.id).exists() and user.has_perm(CORE_MAPPINGS_PERMISSION.full_name())
 
-    # Now checking models that are part of plugins
-    if is_polio_plugin_active():
-        from plugins.polio.models import Campaign
-        from plugins.polio.permissions import POLIO_PERMISSION
-
-        if isinstance(obj, Campaign):
-            return (
-                user.has_perm(POLIO_PERMISSION.full_name())
-                and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
-            )
+    # Plugins decide access for their own models. None means no plugin claimed obj.
+    access = plugin_log_access(user, obj)
+    if access is not None:
+        return access
     return False
 
 
@@ -82,7 +76,7 @@ class LogsViewSet(viewsets.ViewSet):
         - new_value
         - field_diffs
 
-    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance, iaso.mappingversion, polio.campaign
+    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance, iaso.mappingversion
 
     list:
     Returns the list of modifications

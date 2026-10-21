@@ -47,6 +47,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             user = account_user or self.user
             restricted_projects_ids = user.iaso_profile.projects_ids
             if restricted_projects_ids and project.id not in restricted_projects_ids:
-                raise PermissionDenied("You don't have access to this project.")  # 403
+                # In a multi-project app, the user may only have access to other projects of the
+                # same account: the mobile app then switches to one of them after login.
+                has_project_in_account = Project.objects.filter(
+                    id__in=restricted_projects_ids, account_id=project.account_id
+                ).exists()
+                if not has_project_in_account:
+                    raise PermissionDenied("You don't have access to this project.")  # 403
 
         return data

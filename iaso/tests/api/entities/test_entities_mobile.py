@@ -2,6 +2,7 @@ import datetime
 import json
 import uuid
 
+from dataclasses import dataclass
 from unittest import mock
 
 from django.db import connection
@@ -11,10 +12,19 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.api.mobile.entity import MobileEntityAttributesSerializer
+from iaso.api.query_params import encode_cursor
+from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
-class MobileEntityAPITestCase(EntityAPITestCase):
+@dataclass(frozen=True)
+class ExpectedPage:
+    page: int
+    entities: list
+    has_next: bool
+
+
+class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
     BASE_URL = "/api/mobile/entities/"
 
     def test_list_entities_empty_does_not_issue_extra_query_for_queryset_truthiness(self):
@@ -106,6 +116,254 @@ class MobileEntityAPITestCase(EntityAPITestCase):
         # 1 merged entity count+data query (asserted above), 1 instances prefetch, and 1 FormVersion
         # lookup for get_serializer_context's possible_form_versions dict.
         self.assertEqual(len(ctx.captured_queries), 8)
+
+    def create_entities(self, count: int) -> list:
+        entities = []
+        for i in range(count):
+            instance = self.create_form_instance(
+                project=self.project, org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=f"entity_{i}", entity_type=self.entity_type, attributes=instance, account=self.account
+            )
+            instance.entity = entity
+            instance.save()
+            entities.append(entity)
+        return entities
+
+    def get_entities_page(self, **params):
+        self.client.force_authenticate(self.yoda)
+        return self.client.get(self.BASE_URL, {"app_id": self.project.app_id, **params})
+
+    def assert_page(self, response_json, entities, count, pages, page, limit, has_next, has_previous):
+        self.assertEqual(
+            {
+                "uuids": [result["id"] for result in response_json["results"]],
+                "count": response_json["count"],
+                "pages": response_json["pages"],
+                "page": response_json["page"],
+                "limit": response_json["limit"],
+                "has_next": response_json["has_next"],
+                "has_previous": response_json["has_previous"],
+            },
+            {
+                "uuids": [str(entity.uuid) for entity in entities],
+                "count": count,
+                "pages": pages,
+                "page": page,
+                "limit": limit,
+                "has_next": has_next,
+                "has_previous": has_previous,
+            },
+        )
+
+    def test_list_entities_offset_page_is_counted(self):
+        entities = self.create_entities(3)
+
+        response = self.get_entities_page(limit=2, page=1)
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities[:2], count=3, pages=2, page=1, limit=2, has_next=True, has_previous=False
+        )
+        self.assertResponseCompliantToSwagger(response_json, "PaginatedMobileEntityList")
+
+    def test_list_entities_offset_pages_after_the_first_are_counted(self):
+        """Apps without cursor support page by `page` only: every page keeps its rows and its count."""
+        entities = self.create_entities(6)
+
+        expected_pages = (
+            ExpectedPage(page=2, entities=entities[2:4], has_next=True),
+            ExpectedPage(page=3, entities=entities[4:], has_next=False),
+        )
+        for expected in expected_pages:
+            with self.subTest(page=expected.page):
+                response = self.get_entities_page(limit=2, page=expected.page)
+                response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+                self.assert_page(
+                    response_json,
+                    expected.entities,
+                    count=6,
+                    pages=3,
+                    page=expected.page,
+                    limit=2,
+                    has_next=expected.has_next,
+                    has_previous=True,
+                )
+
+    def test_list_entities_next_cursor_is_the_last_row_id_until_the_last_page(self):
+        entities = self.create_entities(3)
+
+        for page, expected_cursor in ((1, encode_cursor("entities", entities[1].pk)), (2, None)):
+            with self.subTest(page=page):
+                response_json = self.assertJSONResponse(self.get_entities_page(limit=2, page=page), status.HTTP_200_OK)
+                self.assertEqual(response_json["next_cursor"], expected_cursor)
+                self.assertResponseCompliantToSwagger(response_json, "PaginatedMobileEntityList")
+
+    def test_list_entities_with_cursor_returns_the_rows_after_it_ignoring_page(self):
+        """Clients keep sending `page` with `cursor` (for servers without cursor support): the cursor wins."""
+        entities = self.create_entities(4)
+
+        for page in (2, 5):
+            with self.subTest(page=page):
+                response = self.get_entities_page(limit=2, page=page, cursor=encode_cursor("entities", entities[0].pk))
+
+                response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+                self.assert_page(
+                    response_json,
+                    entities[1:3],
+                    count=None,
+                    pages=None,
+                    page=page,
+                    limit=2,
+                    has_next=True,
+                    has_previous=True,
+                )
+                self.assertEqual(response_json["next_cursor"], encode_cursor("entities", entities[2].pk))
+                self.assertResponseCompliantToSwagger(response_json, "PaginatedMobileEntityList")
+
+    def test_list_entities_with_cursor_on_the_last_page(self):
+        entities = self.create_entities(3)
+
+        response = self.get_entities_page(limit=2, page=2, cursor=encode_cursor("entities", entities[0].pk))
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities[1:], count=None, pages=None, page=2, limit=2, has_next=False, has_previous=True
+        )
+        self.assertIsNone(response_json["next_cursor"])
+
+    def test_list_entities_with_cursor_past_the_end_returns_an_empty_page(self):
+        entities = self.create_entities(2)
+
+        response = self.get_entities_page(limit=2, page=2, cursor=encode_cursor("entities", entities[1].pk))
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(response_json, [], count=None, pages=None, page=2, limit=2, has_next=False, has_previous=True)
+        self.assertIsNone(response_json["next_cursor"])
+
+    def test_list_entities_empty_cursor_pages_by_page_number(self):
+        entities = self.create_entities(4)
+
+        response = self.get_entities_page(limit=2, page=2, cursor="")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(
+            response_json, entities[2:], count=4, pages=2, page=2, limit=2, has_next=False, has_previous=True
+        )
+
+    def test_list_entities_invalid_cursor_returns_400(self):
+        """The decoding cases are covered by iaso.tests.api.test_query_params, this checks the endpoint uses it."""
+        self.create_entities(2)
+
+        response = self.get_entities_page(cursor="12")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response_json, {"cursor": "Invalid cursor '12'."})
+
+    def test_list_entities_cursor_with_order_returns_400(self):
+        entities = self.create_entities(2)
+
+        response = self.get_entities_page(cursor=encode_cursor("entities", entities[0].pk), order="-created_at")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("cursor", response_json)
+
+    def test_list_entities_no_next_cursor_with_order(self):
+        """The cursor is an id: under another ordering a client following it would skip rows."""
+        self.create_entities(3)
+
+        response = self.get_entities_page(limit=2, order="-created_at")
+
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertTrue(response_json["has_next"])
+        self.assertIsNone(response_json["next_cursor"])
+
+    def test_list_entities_cursor_walk_matches_offset_walk_with_scope_and_limit_date(self):
+        """The cursor bound is pushed into the org-unit and limit_date Exists(...) subqueries: walking
+        page by page with `cursor` must return exactly the entities (and order) of the offset walk."""
+        ou_other = m.OrgUnit.objects.create(name="France", validation_status=m.OrgUnit.VALIDATION_VALID)
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        now = timezone.now()
+        limit_date = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+
+        for i, (org_unit, days_ago) in enumerate(
+            [(self.ou_country, 1), (ou_other, 1), (self.ou_country, 10), (self.ou_country, 2), (self.ou_country, 3)]
+        ):
+            instance = self.create_form_instance(
+                project=self.project, org_unit=org_unit, form=self.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=f"entity_{i}", entity_type=self.entity_type, attributes=instance, account=self.account
+            )
+            instance.entity = entity
+            instance.save()
+            m.Instance.objects.filter(pk=instance.pk).update(updated_at=now - datetime.timedelta(days=days_ago))
+
+        offset_walk = self.assertJSONResponse(self.get_entities_page(limit_date=limit_date), status.HTTP_200_OK)
+        self.assertEqual(offset_walk["count"], 3, "fixture: 3 entities in scope and recent")
+
+        cursor_walk, cursor = [], None
+        for page in range(1, 5):
+            params = {"limit_date": limit_date, "limit": 1, "page": page, **({"cursor": cursor} if cursor else {})}
+            response_json = self.assertJSONResponse(self.get_entities_page(**params), status.HTTP_200_OK)
+            cursor_walk += [result["id"] for result in response_json["results"]]
+            cursor = response_json["next_cursor"]
+            if not response_json["has_next"]:
+                break
+
+        self.assertEqual(cursor_walk, [result["id"] for result in offset_walk["results"]])
+
+    def test_list_entities_with_cursor_keeps_scope_and_recency_on_different_instances(self):
+        """The cursor bound must not merge the org-unit scope and limit_date Exists(...) back into one (see
+        test_list_entities_includes_entity_when_scope_and_recency_are_on_different_instances): the only recent
+        activity of the entity is a submission to another project's form, outside the user's scope."""
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        ou_france = m.OrgUnit.objects.create(name="France", validation_status=m.OrgUnit.VALIDATION_VALID)
+        project_france = m.Project.objects.create(name="France project", app_id="france", account=self.account)
+        form_france = m.Form.objects.create(name="France form")
+        form_france.projects.add(project_france)
+        now = timezone.now()
+        limit_date = (now - datetime.timedelta(days=5)).strftime("%Y-%m-%d")
+
+        instance_in_scope_old = self.create_form_instance(
+            form=self.form_1, org_unit=self.ou_country, project=self.project, uuid=uuid.uuid4()
+        )
+        instance_other_project_recent = self.create_form_instance(
+            form=form_france, org_unit=ou_france, project=project_france, uuid=uuid.uuid4()
+        )
+        entity = m.Entity.objects.create(
+            name="split_entity", entity_type=self.entity_type, attributes=instance_in_scope_old, account=self.account
+        )
+        m.Instance.objects.filter(pk=instance_in_scope_old.pk).update(
+            entity=entity, updated_at=now - datetime.timedelta(days=10)
+        )
+        m.Instance.objects.filter(pk=instance_other_project_recent.pk).update(
+            entity=entity, updated_at=now - datetime.timedelta(days=2)
+        )
+
+        for params in ({}, {"cursor": encode_cursor("entities", entity.pk - 1)}):
+            with self.subTest(params=params):
+                response = self.get_entities_page(limit_date=limit_date, page=1, **params)
+
+                response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+                self.assertEqual([result["id"] for result in response_json["results"]], [str(entity.uuid)])
+
+    def test_list_entities_with_cursor_bounds_the_instance_subqueries_without_offset_nor_count(self):
+        entities = self.create_entities(2)
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.get_entities_page(cursor=encode_cursor("entities", entities[0].pk), limit_date="2020-01-01")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        entity_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_entity"' in q["sql"]]
+        self.assertEqual(len(entity_queries), 1, entity_queries)
+        sql = entity_queries[0]
+        self.assertNotIn("OFFSET", sql)
+        self.assertNotIn("OVER (", sql, "a cursor page must not compute the Window count")
+        bound = f'"entity_id" > {entities[0].pk}'
+        self.assertEqual(sql.count(bound), 2, f"cursor bound missing from the scope / limit_date Exists: {sql}")
 
     def test_list_entities_with_filtered_out_entities_with_soft_deleted_instances(self):
         uuid_valid_instance = uuid.uuid4()

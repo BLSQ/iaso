@@ -584,7 +584,7 @@ class EntityTypeAPITestCase(APITestCase):
         form_queries = [q["sql"] for q in ctx.captured_queries if 'FROM "iaso_form"' in q["sql"]]
         self.assertEqual(form_queries, [])
 
-        # The remaining 8 queries: 1 Project lookup (filter_on_app_id), 3 org-unit-scope queries
+        # The remaining 9 queries: 1 Project lookup and 1 entity type ids lookup (filter_on_app_id), 3 org-unit-scope queries
         # (restriction EXISTS check, profile org units, descendants path), 2 merged entity count+data
         # queries -- select_related("attributes") folds the entity's attribute instance into these two
         # via JOIN instead of a separate prefetch round trip -- 1 instances prefetch, and 1 FormVersion
@@ -594,7 +594,7 @@ class EntityTypeAPITestCase(APITestCase):
         # if select_related("attributes") ever gets dropped without a replacement, entity.attributes
         # falls back to one query per entity (a real N+1, not just a harmless extra prefetch), which this
         # exact-count assertion also catches (4 entities created above -> +4 queries).
-        self.assertEqual(len(ctx.captured_queries), 8)
+        self.assertEqual(len(ctx.captured_queries), 9)
 
     def test_get_entities_by_entity_type_empty_list_deleted_instances(self):
         entity_type = EntityType.objects.create(
@@ -642,8 +642,9 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response_json["count"], 0)  # all entities have their reference instance deleted
         # `filter_for_mobile_entity` must not force early evaluation of an empty
-        # queryset (e.g. via `if queryset:`), which would add an extra query.
-        self.assertEqual(len(ctx.captured_queries), 4)
+        # queryset (e.g. via `if queryset:`), which would add an extra query. The 5 queries include
+        # filter_on_app_id's entity type ids lookup.
+        self.assertEqual(len(ctx.captured_queries), 5)
 
     def test_entity_types_are_account_restricted(self):
         self.client.force_authenticate(self.yoda)

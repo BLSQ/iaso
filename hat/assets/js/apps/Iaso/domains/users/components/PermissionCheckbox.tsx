@@ -1,7 +1,7 @@
 import React from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
 import { Permission } from '../../userRoles/types/userRoles';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { usePermissionsMessages } from '../permissionsMessages';
 
 type PermissionCheckboxProps = {
     permissionCode: string;
@@ -30,9 +30,10 @@ const PermissionCheckbox: React.FunctionComponent<PermissionCheckboxProps> = ({
     handleCheckboxChange,
     allPermissions,
 }) => {
+    const permissionsMessages = usePermissionsMessages();
     const checkBoxLabel =
         keyPermission !== null
-            ? { label: PERMISSIONS_MESSAGES[keyPermission] }
+            ? { label: permissionsMessages[keyPermission] }
             : { labelString: '' };
 
     const permissionsChecked = allPermissions;

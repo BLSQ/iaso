@@ -21,11 +21,15 @@ type Props = Omit<
     ButtonProps,
     'onClick' | 'color' | 'variant' | 'className' | 'disabled'
 > & {
-    disabled: boolean;
+    disabled?: boolean;
     onSearch: () => void;
 };
 
-export const SearchButton = ({ disabled, onSearch, ...props }: Props) => {
+export const SearchButton = ({
+    disabled = false,
+    onSearch,
+    ...props
+}: Props) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     return (

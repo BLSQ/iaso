@@ -147,25 +147,3 @@ class Team(SoftDeletableModel):
 
     def __str__(self):
         return self.name
-
-    @classmethod
-    def dump_tree(cls, queryset: TeamQuerySet):
-        nodes = {}
-        roots = []
-
-        for team in queryset:
-            nodes[team.pk] = {
-                "team": team,
-                "children": [],
-            }
-
-        for team in queryset:
-            node = nodes[team.pk]
-            parent = nodes.get(team.parent_id)
-
-            if parent is None:
-                roots.append(node)
-            else:
-                parent["children"].append(node)
-
-        return roots

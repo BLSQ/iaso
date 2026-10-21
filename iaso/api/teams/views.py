@@ -6,7 +6,8 @@ from typing import Any, Sequence
 
 import django_filters
 
-from django.db.models import Count
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
@@ -134,7 +135,23 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                 )
                 .annotate_with_depth()
                 .select_related("parent")
-                .only("path", "id", "parent", "name", "type")
+                .prefetch_related(
+                    Prefetch(
+                        "users",
+                        queryset=get_user_model()
+                        .objects.only(
+                            "id",
+                            "username",
+                            "first_name",
+                            "last_name",
+                            "iaso_profile",
+                            "iaso_profile__id",
+                            "iaso_profile__color",
+                        )
+                        .select_related("iaso_profile"),
+                    )
+                )
+                .only("path", "id", "parent", "name", "type", "color")
             )
 
         queryset = queryset.select_related("project").prefetch_related("users", "users__iaso_profile", "sub_teams")

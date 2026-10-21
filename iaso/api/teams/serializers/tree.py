@@ -1,25 +1,32 @@
 import typing
 
+from django.contrib.auth import get_user_model
 from drf_spectacular.helpers import lazy_serializer
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
 from iaso.models import Team
+from iaso.utils.serializer.color import ColorFieldSerializer
+
+
+class NestedUserTreeSerializer(ModelSerializer):
+    color = ColorFieldSerializer(source="iaso_profile.color", read_only=True, allow_null=False)
+    iaso_profile_id = serializers.IntegerField(source="iaso_profile.id", read_only=True, allow_null=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = ["id", "iaso_profile_id", "username", "first_name", "last_name", "color"]
+        read_only_fields = fields
 
 
 class TeamBuildTreeSerializer(ModelSerializer):
     depth = serializers.IntegerField(read_only=True)
+    users = NestedUserTreeSerializer(many=True, read_only=True, allow_null=True, allow_empty=True)
 
     class Meta:
         model = Team
-        fields = [
-            "id",
-            "name",
-            "type",
-            "parent",
-            "depth",
-        ]
+        fields = ["id", "name", "type", "parent", "depth", "color", "users"]
         read_only_fields = fields
 
 

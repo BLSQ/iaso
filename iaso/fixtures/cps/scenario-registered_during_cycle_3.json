@@ -1,0 +1,52 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Registered during cycle 3",
+  "description": "A child registered in August starts at cycle 3: cycles 1 and 2 are not offered, cycle 3 is, and not again once done.",
+  "steps": [
+    {
+      "form": "registre_de_denombrement_et_administration_cps_2026",
+      "description": "Card CARD-0003 scanned: nothing found, the child is registered in August (cycle 3)",
+      "at": "2026-08-20T09:00:00+00:00",
+      "search": {
+        "qr_code": "CARD-0003"
+      },
+      "answers": {
+        "code_menage": "34",
+        "nom_prenoms_parent_gardien": "MARIE DUPONT",
+        "nom_prenoms_enfant": "JULES DUPONT",
+        "age": "03_11_mois",
+        "sexe": "Masculin",
+        "resident_nonresident": "Resident(e)"
+      },
+      "expect": {
+        "attributes": {
+          "qr_code": "CARD-0003",
+          "cycle_1_rempli": "0",
+          "cycle_2_rempli": "0"
+        },
+        "next_forms": [
+          "cps_2026_cycle3"
+        ]
+      }
+    },
+    {
+      "form": "cps_2026_cycle3",
+      "description": "First dose taken, no vaccination card: cycle 3 done",
+      "at": "2026-08-20T09:30:00+00:00",
+      "answers": {
+        "date_cy3": "2026-08-20",
+        "age_actuel_enfant": "03_11_mois",
+        "prise_dose1": "Oui0",
+        "verification_carnet_enfant": "Carnet_absent"
+      },
+      "expect": {
+        "attributes": {
+          "cycle_3_rempli": "cycle_rempli",
+          "cycle_1_rempli": "0"
+        },
+        "next_forms": []
+      }
+    }
+  ]
+}

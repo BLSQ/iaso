@@ -96,6 +96,21 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
+# odk_cli (https://github.com/BLSQ/odk_cli, private): JavaRosa, the form engine of ODK Collect and of the IASO app, as
+# a native binary. Fills and checks the forms of entity workflow scenarios (`iaso.scenarios.form_engine`). Its release
+# binary, published on S3, checked against the checksum pinned here - same URL and checksum in docker/django/Dockerfile
+# and docker/prod/Dockerfile. v1.0.1 (`new`: a blank form filled as the app starts one). linux/amd64 only: elsewhere,
+# scenarios can't fill forms.
+ARG ODK_CLI_URL=https://blsq-io.s3.eu-west-1.amazonaws.com/odk-cli/1.0.1/odk_cli-linux-amd64
+ARG ODK_CLI_SHA256=e0a0ea97f71b0c4d6dc2941facc1be9cbe1c2fa0a0cc05eb532a2afbe8a1bd20
+RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+        curl -fsSL -o /usr/local/bin/odk_cli "${ODK_CLI_URL}" \
+        && echo "${ODK_CLI_SHA256}  /usr/local/bin/odk_cli" | sha256sum -c - \
+        && chmod +x /usr/local/bin/odk_cli; \
+    else \
+        echo "odk_cli: no $(dpkg --print-architecture) binary, submissions' answers can't be edited"; \
+    fi
+
 WORKDIR /opt/app
 
 # Copy the virtualenv from builder

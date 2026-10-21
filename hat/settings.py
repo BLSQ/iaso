@@ -182,6 +182,12 @@ ENKETO = {
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
 
+# Scenarios (iaso.scenarios): forms are filled by odk_cli, installed by the Docker images (linux/amd64 only)
+ODK_CLI_PATH = env.str("ODK_CLI_PATH", default="odk_cli")
+ODK_CLI_TIMEOUT_SECONDS = env.int("ODK_CLI_TIMEOUT_SECONDS", default=10)
+# a run is synchronous: above this many steps, it is refused
+SCENARIOS_SYNC_MAX_STEPS = env.int("SCENARIOS_SYNC_MAX_STEPS", default=200)
+
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
 LOGGING: Dict[str, Any] = {

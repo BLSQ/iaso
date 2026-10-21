@@ -1,0 +1,192 @@
+"""Runs entity scenarios (`"kind": "entity"`) - register an entity, fill the followup forms, check what the app would
+offer and what the profile becomes - against a workflow version, as the IASO app would, without saving anything.
+
+    {
+        "$schema": "./scenario.schema.json",
+        "format": "iaso-scenarios/1",
+        "kind": "entity",
+        "name": "Oedema leads to OTP",
+        "steps": [
+            {"form": "child_registration", "answers": {"first_name": "Amina", "age_months": "11"},
+             "expect": {"next_forms": ["anthropometry"]}},
+            {"form": "anthropometry", "answers": {"muac": "12.0", "oedema": "yes"},
+             "expect": {"attributes": {"oedema_status": "yes"}, "next_forms": ["anthropometry", "otp_admission"]}}
+        ]
+    }
+
+Each form is filled and checked as in a form scenario (`forms.fill_and_check`); the workflow's part - forms offered,
+prefill, copy rules - is `runtime`'s.
+"""
+
+import datetime
+import json
+
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
+from django.utils import timezone
+
+from iaso.models import StepStatus, WorkflowVersion
+from iaso.scenarios.forms import FormSource, ScenarioResult, StepResult, fill_and_check
+from iaso.scenarios.runtime import (
+    PROFILE_IGNORED,
+    Change,
+    Followup,
+    NextForms,
+    apply_changes,
+    next_forms,
+    prefill,
+    search_fields,
+    search_problem,
+    search_values,
+)
+from iaso.scenarios.schema import EntityScenario, EntityStep
+
+
+@dataclass
+class EntityStepResult(StepResult):
+    offered_before: Optional[NextForms] = None
+    changes: List[Change] = field(default_factory=list)
+    profile: Dict[str, Any] = field(default_factory=dict)
+    next: Optional[NextForms] = None
+
+
+def describe_next(next_: NextForms) -> str:
+    lines = []
+    for offered in next_.followups:
+        verdict = "error" if offered.result.error else ("yes" if offered.result.value else "no")
+        lines.append(
+            f"  followup {offered.followup.id} (order {offered.followup.order}) {verdict}: "
+            f"{json.dumps(offered.followup.condition)} with {json.dumps(offered.result.read)} -> "
+            f"{offered.followup.form_ids}"
+        )
+    return "\n".join(lines)
+
+
+class EntityScenarioRunner:
+    """Loads a workflow version's configuration once; `run` replays entity scenarios against it, in memory."""
+
+    def __init__(
+        self,
+        workflow_version: WorkflowVersion,
+        source: FormSource,
+        now: Optional[datetime.datetime] = None,
+    ):
+        self.workflow_version = workflow_version
+        self.entity_type = workflow_version.workflow.entity_type
+        self.reference_form = self.entity_type.reference_form
+        self.now = now or timezone.now()
+        self.source = source
+        # the app keeps the list as the API sends it, which has no ordering: by creation, here
+        self.followups = [
+            Followup(followup.id, followup.order, followup.condition, [form.form_id for form in followup.forms.all()])
+            for followup in workflow_version.follow_ups.order_by("id").prefetch_related("forms")
+        ]
+        self.mappings = {
+            change.form.form_id: change.mapping for change in workflow_version.changes.select_related("form")
+        }
+
+    def run(self, scenario: EntityScenario) -> ScenarioResult:
+        profile: Dict[str, Any] = {}
+        offered: Optional[NextForms] = None
+        results: List[StepResult] = []
+        for index, step in enumerate(scenario.steps, start=1):
+            result = self._run_step(index, step, profile, offered)
+            results.append(result)
+            if result.status in (StepStatus.NOT_OFFERED, StepStatus.REFUSED, StepStatus.ERROR):
+                break
+            profile, offered = result.profile, result.next
+        return ScenarioResult(scenario, results)
+
+    def _run_step(
+        self, index: int, step: EntityStep, profile: Dict[str, Any], offered: Optional[NextForms]
+    ) -> EntityStepResult:
+        # nothing saved unless the form accepts the answers: the profile and the forms offered stay as they were
+        result = EntityStepResult(index, step, offered_before=offered, profile=profile, next=offered)
+        if self.reference_form is None:
+            result.status = StepStatus.ERROR
+            result.failures.append(f"The entity type '{self.entity_type}' has no reference form")
+            return result
+        reference_form_id = self.reference_form.form_id
+        form_questions = self.source.questions(step.form)
+        if not form_questions:
+            result.status = StepStatus.ERROR
+            result.failures.append(self.source.not_found(step.form))
+            return result
+        # no entity yet (first step, or its registration refused): this step registers it
+        registering = offered is None
+        if registering and step.form != reference_form_id:
+            result.status = StepStatus.ERROR
+            result.failures.append(
+                f"The entity isn't registered yet: the step must fill '{reference_form_id}', not '{step.form}'"
+            )
+            return result
+        if not registering:
+            # the app evaluates the follow-ups when the entity is opened: on this step's clock, not the last one's
+            offered = self.next_forms(result.profile, step.at)
+            result.offered_before = result.next = offered
+            if offered.errors:
+                result.status = StepStatus.ERROR
+                result.failures += [f"The app would fail: {error}" for error in offered.errors]
+                return result
+        if not registering and not step.force and step.form not in offered.form_ids:
+            result.status = StepStatus.NOT_OFFERED
+            result.failures.append(
+                f"'{step.form}' isn't offered, the app offers {offered.form_ids}:\n{describe_next(offered)}"
+            )
+            return result
+
+        if registering:
+            # the search before registering: its values prefill the form, as PRE_FILLED_ANSWERS
+            fields = search_fields(self.entity_type.fields_duplicate_search, form_questions)
+            problem = search_problem(step.search, fields, self.entity_type.prevent_add_if_duplicate_found)
+            if problem:
+                result.status = StepStatus.NOT_OFFERED
+                result.failures.append(problem)
+                return result
+        elif step.search:
+            result.status = StepStatus.ERROR
+            result.failures.append("A search only comes before registering: the entity is registered already")
+            return result
+
+        prefilled = prefill(search_values(step.search) if registering else profile, form_questions, step.context)
+        filled = fill_and_check(self.source, step.form, result, step.expect, prefilled, step.at)
+        if filled is None:
+            return result
+
+        answered = {
+            name: value for name, value in filled.values.items() if value is not None and name not in PROFILE_IGNORED
+        }
+        if registering or step.form == reference_form_id:
+            result.profile = answered
+        else:
+            result.profile, result.changes = apply_changes(profile, self.mappings.get(step.form, {}), answered)
+
+        result.next = self.next_forms(result.profile, step.at)
+        if result.next.errors:
+            result.status = StepStatus.ERROR
+            result.failures += [f"The app would fail: {error}" for error in result.next.errors]
+            return result
+
+        self._check(result)
+        return result
+
+    def next_forms(self, profile: Dict[str, Any], at: Optional[datetime.datetime]) -> NextForms:
+        """The forms the app offers for this profile when the entity is opened at `at` (none: now)."""
+        return next_forms(profile, self.source.questions(self.reference_form.form_id), self.followups, at or self.now)
+
+    def _check(self, result: EntityStepResult):
+        expect = result.step.expect
+        if expect.next_forms is not None and result.next.form_ids != expect.next_forms:
+            result.failures.append(
+                f"Forms offered next should be {expect.next_forms}, were {result.next.form_ids}:\n"
+                f"{describe_next(result.next)}"
+            )
+        for name, expected in expect.attributes.items():
+            actual = result.profile.get(name)
+            if (None if actual in (None, "") else str(actual)) != (None if expected is None else str(expected)):
+                change = next((change for change in result.changes if change.target == name), None)
+                origin = f" (copied from '{change.source}')" if change else " (no copy rule changed it in this step)"
+                result.failures.append(f"'{name}' should be {expected!r}, was {actual!r}{origin}")
+        if result.failures:
+            result.status = StepStatus.FAILED

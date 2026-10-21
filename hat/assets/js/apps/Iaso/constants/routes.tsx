@@ -56,6 +56,9 @@ import { Planning } from '../domains/plannings';
 import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
 import { Registry } from '../domains/registry';
+import { ScenarioDetail } from '../domains/scenarios/details';
+import { ScenarioEditor } from '../domains/scenarios/editor';
+import { Scenarios } from '../domains/scenarios/index';
 import { SetupAccount } from '../domains/setup';
 import { Storages } from '../domains/storages';
 import { Details as StorageDetails } from '../domains/storages/details';
@@ -454,6 +457,24 @@ export const workflowsDetailPath = {
     permissions: [Permission.WORKFLOWS],
     element: <WorkflowDetails />,
 };
+export const scenariosPath = {
+    baseUrl: baseUrls.scenarios,
+    routerUrl: `${baseUrls.scenarios}/*`,
+    permissions: [Permission.WORKFLOWS],
+    element: <Scenarios />,
+};
+export const scenarioDetailPath = {
+    baseUrl: baseUrls.scenarioDetail,
+    routerUrl: `${baseUrls.scenarioDetail}/*`,
+    permissions: [Permission.WORKFLOWS],
+    element: <ScenarioDetail />,
+};
+export const scenarioEditPath = {
+    baseUrl: baseUrls.scenarioEdit,
+    routerUrl: `${baseUrls.scenarioEdit}/*`,
+    permissions: [Permission.WORKFLOWS],
+    element: <ScenarioEditor />,
+};
 export const potentialPaymentsPath = {
     baseUrl: baseUrls.potentialPayments,
     routerUrl: `${baseUrls.potentialPayments}/*`,
@@ -631,6 +652,9 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    scenariosPath,
+    scenarioDetailPath,
+    scenarioEditPath,
     orgUnitChangeRequestPath,
     orgUnitChangeRequestDetailPath,
     orgUnitsChangeRequestConfiguration,

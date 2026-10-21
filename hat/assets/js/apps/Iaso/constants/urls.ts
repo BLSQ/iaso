@@ -577,6 +577,24 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    scenarios: {
+        url: 'entities/types/scenarios',
+        params: ['accountId', 'entityTypeId', 'versionId'],
+    },
+    scenarioDetail: {
+        url: 'entities/types/scenarios/detail',
+        params: ['accountId', 'scenarioId', 'versionId', 'step'],
+    },
+    scenarioEdit: {
+        url: 'entities/types/scenarios/edit',
+        params: [
+            'accountId',
+            'entityTypeId',
+            'scenarioId',
+            'versionId',
+            'step',
+        ],
+    },
     potentialPayments: {
         url: 'payments/potential',
         params: [
@@ -795,6 +813,9 @@ type IasoBaseUrls = {
     storageDetail: string;
     workflows: string;
     workflowDetail: string;
+    scenarios: string;
+    scenarioDetail: string;
+    scenarioEdit: string;
     potentialPayments: string;
     lotsPayments: string;
     stockKeepingUnits: string;

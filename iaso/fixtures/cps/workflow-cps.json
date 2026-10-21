@@ -1,0 +1,203 @@
+{
+  "entity_type": "Enfant CPS 2026",
+  "created_at": "2026-08-10T13:18:55+00:00",
+  "updated_at": "2026-08-10T13:18:55+00:00",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "versions": [
+    {
+      "name": "CPS 2026",
+      "status": "PUBLISHED",
+      "created_at": "2026-08-10T13:18:55+00:00",
+      "updated_at": "2026-08-10T13:18:55+00:00",
+      "uuid": "00000000-0000-0000-0000-000000000000",
+      "follow_ups": [
+        {
+          "order": 0,
+          "condition": {
+            "and": [
+              {
+                "!=": [
+                  {
+                    "var": "cycle_1_rempli"
+                  },
+                  "cycle_rempli"
+                ]
+              },
+              {
+                ">=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1767222000000"
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1783548000000"
+                ]
+              }
+            ]
+          },
+          "forms": [
+            "Cycle 1 CPS 2026"
+          ],
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        },
+        {
+          "order": 1,
+          "condition": {
+            "and": [
+              {
+                "!=": [
+                  {
+                    "var": "cycle_2_rempli"
+                  },
+                  "cycle_rempli"
+                ]
+              },
+              {
+                ">=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1783634400000"
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1786226400000"
+                ]
+              }
+            ]
+          },
+          "forms": [
+            "Cycle 2 CPS 2026"
+          ],
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        },
+        {
+          "order": 2,
+          "condition": {
+            "and": [
+              {
+                "!=": [
+                  {
+                    "var": "cycle_3_rempli"
+                  },
+                  "cycle_rempli"
+                ]
+              },
+              {
+                ">=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1786312800000"
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1788904800000"
+                ]
+              }
+            ]
+          },
+          "forms": [
+            "Cycle 3 CPS 2026"
+          ],
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        },
+        {
+          "order": 3,
+          "condition": {
+            "and": [
+              {
+                "!=": [
+                  {
+                    "var": "cycle_4_rempli"
+                  },
+                  "cycle_rempli"
+                ]
+              },
+              {
+                ">=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1788991200000"
+                ]
+              },
+              {
+                "<=": [
+                  {
+                    "var": "current_date"
+                  },
+                  "1791496800000"
+                ]
+              }
+            ]
+          },
+          "forms": [
+            "Cycle 4 CPS 2026"
+          ],
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        }
+      ],
+      "changes": [
+        {
+          "form": "Cycle 1 CPS 2026",
+          "mapping": {
+            "cycle_rempli": "cycle_1_rempli",
+            "reset_evind": "evind_notification_remplie",
+            "reset_medsafety": "evind_med_safety_id"
+          },
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        },
+        {
+          "form": "Cycle 2 CPS 2026",
+          "mapping": {
+            "cycle_rempli": "cycle_2_rempli",
+            "reset_evind": "evind_notification_remplie",
+            "reset_medsafety": "evind_med_safety_id"
+          },
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        },
+        {
+          "form": "Cycle 3 CPS 2026",
+          "mapping": {
+            "cycle_rempli": "cycle_3_rempli",
+            "reset_evind": "evind_notification_remplie",
+            "reset_medsafety": "evind_med_safety_id"
+          },
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        },
+        {
+          "form": "Cycle 4 CPS 2026",
+          "mapping": {
+            "cycle_rempli": "cycle_4_rempli",
+            "reset_evind": "evind_notification_remplie",
+            "reset_medsafety": "evind_med_safety_id"
+          },
+          "created_at": "2026-08-10T13:18:55+00:00",
+          "updated_at": "2026-08-10T13:18:55+00:00"
+        }
+      ]
+    }
+  ]
+}

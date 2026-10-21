@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
     },
+    scenarios: {
+        id: 'iaso.scenarios.label.scenarios',
+        defaultMessage: 'Scenarios',
+    },
     entities: {
         id: 'iaso.label.entities',
         defaultMessage: 'Entities',

@@ -91,6 +91,7 @@
         "flume": "^1.2.0",
         "formik": "^2.2.9",
         "globals": "^16.1.0",
+        "jsqr": "^1.4.0",
         "leaflet": "^1.9.3",
         "leaflet-draw": "^1.0.4",
         "leaflet.markercluster": "^1.4.1",

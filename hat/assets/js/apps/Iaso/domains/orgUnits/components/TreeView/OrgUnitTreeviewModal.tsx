@@ -36,6 +36,7 @@ type Props = {
     titleMessage: string | IntlMessage;
     toggleOnLabelClick?: boolean;
     onConfirm: (selectedOrgUnits: any) => void;
+    onCancel?: () => void;
     multiselect?: boolean;
     initialSelection?: OrgUnit | OrgUnit[];
     source?: number | string;
@@ -58,6 +59,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     titleMessage,
     toggleOnLabelClick = false,
     onConfirm = () => undefined,
+    onCancel = () => undefined,
     multiselect = false,
     initialSelection = undefined,
     source = undefined,
@@ -146,8 +148,9 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             setSelectedOrgUnitsIds(selectedOrgUnitsIdsCopy.current);
             setSelectedOrgUnitParents(selectedOrgUnitParentsCopy.current);
             closeDialog();
+            onCancel();
         },
-        [selectedOrgUnitsIdsCopy, selectedOrgUnitParentsCopy],
+        [selectedOrgUnitsIdsCopy, selectedOrgUnitParentsCopy, onCancel],
     );
     const { displayTypes, statusSettings } = settings;
     const { sourceSettings, isFetchingSource, sourceInfos } = useSourceConfig(

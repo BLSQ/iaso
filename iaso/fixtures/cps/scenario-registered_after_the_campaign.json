@@ -1,0 +1,27 @@
+{
+  "format": "iaso-scenarios/1",
+  "kind": "entity",
+  "name": "Registered after the campaign",
+  "description": "Cycle 4 ended on 2026-10-09: a child registered after it is offered no cycle.",
+  "steps": [
+    {
+      "form": "registre_de_denombrement_et_administration_cps_2026",
+      "description": "Card CARD-0002 scanned in October",
+      "at": "2026-10-12T09:00:00+00:00",
+      "search": {
+        "qr_code": "CARD-0002"
+      },
+      "answers": {
+        "code_menage": "12",
+        "nom_prenoms_parent_gardien": "JULES MARTIN",
+        "nom_prenoms_enfant": "AMINA MARTIN",
+        "age": "12_59_mois",
+        "sexe": "Feminin",
+        "resident_nonresident": "Resident(e)"
+      },
+      "expect": {
+        "next_forms": []
+      }
+    }
+  ]
+}

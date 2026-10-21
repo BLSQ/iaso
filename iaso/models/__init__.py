@@ -20,6 +20,7 @@ from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
 from .project import Project
 from .reports import Report, ReportVersion
+from .scenarios import Scenario, ScenarioKind, ScenarioStatus, StepStatus
 from .stocks import (
     StockImpacts,
     StockItem,
@@ -88,7 +89,11 @@ __all__ = [
     "Project",
     "Report",
     "ReportVersion",
+    "Scenario",
+    "ScenarioKind",
+    "ScenarioStatus",
     "SourceVersion",
+    "StepStatus",
     "StockKeepingUnit",
     "StockKeepingUnitChildren",
     "StockImpacts",

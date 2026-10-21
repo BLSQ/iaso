@@ -31,6 +31,7 @@ import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQue
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
 import { PossibleField } from '../forms/types/forms';
+import { ScenariosPanel } from '../scenarios/components/ScenariosPanel';
 import { AddChangeModal } from './components/changes/Modal';
 import { AddFollowUpsModal } from './components/followUps/Modal';
 import { FollowUpsTable } from './components/followUps/Table';
@@ -330,6 +331,16 @@ export const Details: FunctionComponent = () => {
                         )}
                     </WidgetPaper>
                 </Box>
+                {workflowVersion && (
+                    <Box mt={2} data-test="scenarios">
+                        <ScenariosPanel
+                            entityTypeId={workflowVersion.entity_type.id}
+                            workflowVersionId={Number(versionId)}
+                            params={params}
+                            baseUrl={baseUrls.workflowDetail}
+                        />
+                    </Box>
+                )}
             </Box>
         </>
     );

@@ -80,14 +80,14 @@ RUN groupadd --gid 1001 appuser && \
     useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Runtime-only dependencies:
-#  - libgdal33: GDAL shared library on Bookworm (runtime, no headers)
+#  - libgdal36: GDAL shared library on Bookworm (runtime, no headers)
 #  - libpq5: PostgreSQL client library (for psycopg2)
 #  - postgresql-client: psql CLI (used in wait_for_dbs.sh)
 #  - gettext-base: envsubst (used for config templating)
 #  - gettext: compilemessages needs msgfmt at build, but also useful at runtime
 #  - libmagic1: used by python-magic
 RUN apt-get update && apt-get install --yes --no-install-recommends \
-    libgdal33 \
+    libgdal36 \
     libpq5 \
     postgresql-client \
     gettext \

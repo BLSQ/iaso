@@ -82,7 +82,19 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         return (
             StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id)
-            .select_related("sku", "org_unit", "submission__form", "created_by")
+            .select_related("submission__form", "created_by")
+            # Only what `StockLedgerItemMobileSerializer` reads: skips the submission json, the form fields...
+            .only(
+                "id",
+                "sku",
+                "org_unit",
+                "question",
+                "value",
+                "impact",
+                "created_at",
+                "submission__form__name",
+                "created_by__username",
+            )
             .order_by("id")
         )
 

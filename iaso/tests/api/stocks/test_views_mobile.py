@@ -4,6 +4,9 @@ from datetime import datetime, timedelta, timezone
 
 import rest_framework.status
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
@@ -574,6 +577,38 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         data = self.get_list(num_queries=3)
         self.assertEqual(7, data["count"])
+
+    def test_list_only_selects_the_serialized_columns(self):
+        """The page query skips the heavy columns: submission json, form possible_fields, org unit geometries..."""
+        self.client.force_authenticate(self.user)
+        with CaptureQueriesContext(connection) as context:
+            response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project.app_id})
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+
+        page_query = next(
+            q["sql"] for q in context.captured_queries if q["sql"].startswith('SELECT "iaso_stockledgeritem"')
+        )
+        selected_columns = page_query[len("SELECT ") : page_query.index(" FROM ")].split(", ")
+        self.assertCountEqual(
+            [
+                '"iaso_stockledgeritem"."id"',
+                '"iaso_stockledgeritem"."sku_id"',
+                '"iaso_stockledgeritem"."org_unit_id"',
+                '"iaso_stockledgeritem"."submission_id"',
+                '"iaso_stockledgeritem"."question"',
+                '"iaso_stockledgeritem"."value"',
+                '"iaso_stockledgeritem"."impact"',
+                '"iaso_stockledgeritem"."created_by_id"',
+                '"iaso_stockledgeritem"."created_at"',
+                '"iaso_instance"."id"',
+                '"iaso_instance"."form_id"',
+                '"iaso_form"."id"',
+                '"iaso_form"."name"',
+                '"auth_user"."id"',
+                '"auth_user"."username"',
+            ],
+            selected_columns,
+        )
 
     def test_list_is_scoped_to_the_project_of_the_app(self):
         self.client.force_authenticate(self.user)

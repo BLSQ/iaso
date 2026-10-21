@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 COPY ../../uv.lock ./
-RUN pip install uv
+RUN #pip install uv
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
@@ -76,8 +76,8 @@ ENV DEPLOYED_ON=$DEPLOYED_ON \
     IASO_VERSION=$IASO_VERSION
 
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
-RUN groupadd --gid 1001 appuser && \
-    useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
+RUN addgroup --gid 1001 appuser && \
+    adduser --uid 1001 --gid appuser --shell /bin/bash --home /home/appuser --disabled-password appuser
 
 # Runtime-only dependencies:
 #  - libgdal32: GDAL shared library on Bookworm (runtime, no headers)

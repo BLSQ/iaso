@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import rest_framework.status
 
@@ -459,3 +459,164 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
         response = self.client.delete(f"{LEDGER_ITEM_URL}{self.ledger_item_1.pk}/?app_id={self.project_1.app_id}")
         self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertEqual(m.StockLedgerItem.objects.count(), 4)
+
+
+class StockLedgerItemMobileListAPITestCase(APITestCase):
+    CREATED_AT = datetime(2026, 1, 15, 10, 0, tzinfo=timezone.utc)
+    LAST_SYNC = datetime(2026, 2, 1, tzinfo=timezone.utc)
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.belgium = belgium = m.Account.objects.create(name="Belgium")
+        cls.france = france = m.Account.objects.create(name="France")
+        cls.user = cls.create_user_with_profile(username="brussels_user", account=belgium)
+        cls.creator = cls.create_user_with_profile(username="liege_user", account=belgium)
+        cls.project = project = m.Project.objects.create(name="Belgium stock", app_id="be.stock", account=belgium)
+        cls.other_project = other_project = m.Project.objects.create(
+            name="Belgium vaccines", app_id="be.vaccines", account=belgium
+        )
+
+        cls.brussels = m.OrgUnit.objects.create(name="Brussels")
+        cls.liege = m.OrgUnit.objects.create(name="Liège")
+
+        cls.sku = m.StockKeepingUnit.objects.create(name="Paracetamol", short_name="PCM", account=belgium)
+        cls.sku.projects.set([project, other_project])
+        cls.other_project_sku = m.StockKeepingUnit.objects.create(name="Syringe", short_name="SYR", account=belgium)
+        cls.other_project_sku.projects.set([other_project])
+        # Linked to the Belgian project but owned by another account: must never leak
+        cls.other_account_sku = m.StockKeepingUnit.objects.create(name="Bandage", short_name="BDG", account=france)
+        cls.other_account_sku.projects.set([project])
+
+        cls.stock_count_form = m.Form.objects.create(name="Stock count")
+        cls.delivery_form = m.Form.objects.create(name="Delivery")
+        cls.stock_count_submission = m.Instance.objects.create(project=project, form=cls.stock_count_form)
+        cls.delivery_submission = m.Instance.objects.create(project=project, form=cls.delivery_form)
+        cls.submission_without_form = m.Instance.objects.create(project=project)
+
+        # Fixed ids so that the `order_by("id")` of the endpoint gives a known order
+        cls.item_stock_count = cls.create_ledger_item(1, cls.sku, cls.brussels, cls.stock_count_submission, 100)
+        cls.item_delivery = cls.create_ledger_item(2, cls.sku, cls.liege, cls.delivery_submission, 20)
+        cls.item_without_form = cls.create_ledger_item(3, cls.sku, cls.brussels, cls.submission_without_form, 5)
+        cls.item_without_submission = cls.create_ledger_item(4, cls.sku, cls.liege, None, 7)
+        cls.item_other_project = cls.create_ledger_item(5, cls.other_project_sku, cls.brussels, None, 3)
+        cls.item_other_account = cls.create_ledger_item(6, cls.other_account_sku, cls.brussels, None, 9)
+
+    @classmethod
+    def create_ledger_item(cls, number, sku, org_unit, submission, value):
+        return m.StockLedgerItem.objects.create(
+            id=uuid.UUID(int=number),
+            sku=sku,
+            org_unit=org_unit,
+            submission=submission,
+            question=f"question_{number}",
+            value=value,
+            impact=m.StockImpacts.ADD,
+            created_by=cls.creator,
+            created_at=cls.CREATED_AT,
+        )
+
+    def expected_item(self, item, form_name=None):
+        return {
+            "id": str(item.id),
+            "org_unit": item.org_unit_id,
+            "sku": item.sku_id,
+            "submission_id": item.submission_id,
+            "form_name": form_name,
+            "question": item.question,
+            "value": item.value,
+            "impact": m.StockImpacts.ADD,
+            "created_at": self.CREATED_AT.timestamp(),
+            "created_by": self.creator.username,
+        }
+
+    def get_list(self, num_queries, **params):
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(num_queries):
+            response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project.app_id, **params})
+            data = self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        return data
+
+    def assertResultIds(self, data, expected_items):
+        self.assertEqual([str(item.id) for item in expected_items], [result["id"] for result in data["results"]])
+
+    def test_list_results(self):
+        # 1. SELECT project (+ account + default_version via select_related)
+        # 2. SELECT COUNT(*)
+        # 3. SELECT StockLedgerItem (+ sku, org_unit, submission, created_by via select_related)
+        # 4-5. SELECT form, once per item whose submission has a form (N+1 on form_name, IA-5559)
+        data = self.get_list(num_queries=5)
+
+        self.assertEqual(
+            data,
+            {
+                "count": 4,
+                "results": [
+                    self.expected_item(self.item_stock_count, form_name=self.stock_count_form.name),
+                    self.expected_item(self.item_delivery, form_name=self.delivery_form.name),
+                    self.expected_item(self.item_without_form),
+                    self.expected_item(self.item_without_submission),
+                ],
+                "has_next": False,
+                "has_previous": False,
+                "page": 1,
+                "pages": 1,
+                "limit": 20,
+            },
+        )
+
+    def test_list_number_of_queries_grows_with_submissions_with_form(self):
+        """Documents the N+1 on form_name (IA-5559): one extra query per item whose submission has a form."""
+        self.get_list(num_queries=5)
+
+        for number in (10, 11, 12):
+            submission = m.Instance.objects.create(project=self.project, form=self.stock_count_form)
+            self.create_ledger_item(number, self.sku, self.brussels, submission, 1)
+
+        data = self.get_list(num_queries=8)
+        self.assertEqual(7, data["count"])
+
+    def test_list_is_scoped_to_the_project_of_the_app(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.other_project.app_id})
+        data = self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+
+        self.assertResultIds(
+            data,
+            [
+                self.item_stock_count,
+                self.item_delivery,
+                self.item_without_form,
+                self.item_without_submission,
+                self.item_other_project,
+            ],
+        )
+
+    def test_list_excludes_skus_of_another_account(self):
+        data = self.get_list(num_queries=5)
+
+        self.assertNotIn(str(self.item_other_account.id), [result["id"] for result in data["results"]])
+
+    def test_list_last_sync(self):
+        m.StockLedgerItem.objects.filter(id__in=[self.item_stock_count.id, self.item_without_form.id]).update(
+            received_at=self.LAST_SYNC - timedelta(seconds=1)
+        )
+        m.StockLedgerItem.objects.filter(id=self.item_delivery.id).update(received_at=self.LAST_SYNC)
+        m.StockLedgerItem.objects.filter(id=self.item_without_submission.id).update(
+            received_at=self.LAST_SYNC + timedelta(days=1)
+        )
+
+        # 4. SELECT form of item_delivery's submission (N+1 on form_name, IA-5559)
+        data = self.get_list(num_queries=4, last_sync=self.LAST_SYNC.isoformat())
+
+        self.assertEqual(2, data["count"])
+        self.assertResultIds(data, [self.item_delivery, self.item_without_submission])
+
+    def test_list_pagination(self):
+        # No form query: neither item of the second page has a submission with a form
+        data = self.get_list(num_queries=3, limit=2, page=2)
+
+        self.assertResultIds(data, [self.item_without_form, self.item_without_submission])
+        self.assertEqual(
+            {"count": 4, "has_next": False, "has_previous": True, "page": 2, "pages": 2, "limit": 2},
+            {key: value for key, value in data.items() if key != "results"},
+        )

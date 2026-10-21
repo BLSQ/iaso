@@ -6,7 +6,7 @@ import rest_framework.status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT_PERMISSION
-from iaso.test import APITestCase
+from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 SKU_URL = "/api/mobile/stockkeepingunits/"
@@ -461,7 +461,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
         self.assertEqual(m.StockLedgerItem.objects.count(), 4)
 
 
-class StockLedgerItemMobileListAPITestCase(APITestCase):
+class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
     CREATED_AT = datetime(2026, 1, 15, 10, 0, tzinfo=timezone.utc)
     LAST_SYNC = datetime(2026, 2, 1, tzinfo=timezone.utc)
 
@@ -534,6 +534,7 @@ class StockLedgerItemMobileListAPITestCase(APITestCase):
         with self.assertNumQueries(num_queries):
             response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project.app_id, **params})
             data = self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
+        self.assertResponseCompliantToSwagger(data, "PaginatedStockLedgerItemMobileList")
         return data
 
     def assertResultIds(self, data, expected_items):

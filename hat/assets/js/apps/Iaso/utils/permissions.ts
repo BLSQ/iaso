@@ -21,26 +21,6 @@ const PAGES = 'iaso_pages';
 const PAGE_WRITE = 'iaso_page_write';
 const PLANNING_READ = 'iaso_planning_read';
 const PLANNING_WRITE = 'iaso_planning_write';
-const POLIO = 'iaso_polio';
-const POLIO_CONFIG = 'iaso_polio_config';
-const POLIO_CHRONOGRAM = 'iaso_polio_chronogram';
-const POLIO_CHRONOGRAM_RESTRICTED_WRITE =
-    'iaso_polio_chronogram_restricted_write';
-const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
-const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
-const POLIO_SUPPLY_CHAIN_READ_ONLY =
-    'iaso_polio_vaccine_supply_chain_read_only';
-const POLIO_VACCINE_STOCK_READ = 'iaso_polio_vaccine_stock_management_read';
-const POLIO_VACCINE_STOCK_READ_ONLY =
-    'iaso_polio_vaccine_stock_management_read_only';
-const POLIO_VACCINE_STOCK_WRITE = 'iaso_polio_vaccine_stock_management_write';
-
-const POLIO_VACCINE_STOCK_EARMARKS_NONADMIN =
-    'iaso_polio_vaccine_stock_earmarks_nonadmin';
-const POLIO_VACCINE_STOCK_EARMARKS_ADMIN =
-    'iaso_polio_vaccine_stock_earmarks_admin';
-const POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY =
-    'iaso_polio_vaccine_stock_earmarks_read_only';
 const PROJECTS = 'iaso_projects';
 const REGISTRY_WRITE = 'iaso_registry_write';
 const REGISTRY_READ = 'iaso_registry_read';
@@ -60,7 +40,6 @@ const USERS_ADMIN = 'iaso_users';
 const USERS_MANAGEMENT = 'iaso_users_managed';
 const WORKFLOWS = 'iaso_workflows';
 const MODULES = 'iaso_modules';
-const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 const PAYMENTS = 'iaso_payments';
 const STOCK_MANAGEMENT = 'iaso_stock_management';
 const METRIC_TYPES = 'iaso_metric_types';
@@ -97,20 +76,6 @@ export {
     PLANNING_READ,
     PLANNING_WRITE,
     PIPELINE_MANAGEMENT,
-    POLIO,
-    POLIO_CHRONOGRAM,
-    POLIO_CHRONOGRAM_RESTRICTED_WRITE,
-    POLIO_CONFIG,
-    POLIO_NOTIFICATIONS,
-    POLIO_SUPPLY_CHAIN_READ,
-    POLIO_SUPPLY_CHAIN_READ_ONLY,
-    POLIO_SUPPLY_CHAIN_WRITE,
-    POLIO_VACCINE_STOCK_READ,
-    POLIO_VACCINE_STOCK_READ_ONLY,
-    POLIO_VACCINE_STOCK_WRITE,
-    POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-    POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-    POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
     PROJECTS,
     REGISTRY_READ,
     REGISTRY_WRITE,

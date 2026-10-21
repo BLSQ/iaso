@@ -37,10 +37,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.groups.sourceVersion',
         defaultMessage: 'Source version',
     },
-    blockOfCountries: {
-        defaultMessage: 'Block of countries',
-        id: 'iaso.groups.blockOfCountries',
-    },
     sourceRef: {
         defaultMessage: 'Source ref',
         id: 'iaso.orgUnits.sourceRef',

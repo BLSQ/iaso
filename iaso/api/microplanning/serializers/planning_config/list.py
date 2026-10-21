@@ -16,7 +16,7 @@ class PlanningConfigNestedOrgUnitTypeSerializer(ModelSerializer):
         read_only_fields = fields
 
 
-class PlanningConfigSerializer(ModelSerializer):
+class NestedPlanningConfigListSerializer(ModelSerializer):
     org_unit_types = PlanningConfigNestedOrgUnitTypeSerializer(many=True, allow_null=True, allow_empty=True)
     org_unit_groups = PlanningConfigNestedOrgUnitSerializer(many=True, allow_null=True, allow_empty=True)
 

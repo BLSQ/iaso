@@ -5,7 +5,7 @@
  * Iaso Swagger
  * OpenAPI spec version: v1
  */
-import { useMutation, useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import type {
     InvalidateOptions,
     MutationFunction,
@@ -22,6 +22,7 @@ import { customFetchInstance } from '../../../../../../orval/client/custom-fetch
 import { useCustomMutationOptions } from '../../../../../../orval/mutator/custom-mutation-options';
 import { getCustomQueryOptions } from '../../../../../../orval/mutator/custom-query-options';
 import type {
+    ApiMicroplanningPlanningsConfigsBulkUpdateParams,
     ApiMicroplanningPlanningsConfigsListParams,
     ApiMicroplanningPlanningsDropdownListParams,
     ApiMicroplanningPlanningsListParams,
@@ -34,9 +35,11 @@ import type {
     ApiMicroplanningSamplingsRetrieveParams,
     ApiMobilePlanningsListParams,
     ApiV2MobilePlanningsListParams,
+    NestedPlanningConfigBulkRequest,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
-    PaginatedPlanningConfigList,
+    PaginatedNestedPlanningConfigBulkList,
+    PaginatedNestedPlanningConfigListList,
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
     PaginatedPlanningSamplingResultReadList,
@@ -1356,8 +1359,8 @@ export const apiMicroplanningPlanningsConfigsList = async (
     id: number,
     params?: ApiMicroplanningPlanningsConfigsListParams,
     options?: Parameters<typeof customFetchInstance>[1],
-): Promise<PaginatedPlanningConfigList> => {
-    return customFetchInstance<PaginatedPlanningConfigList>(
+): Promise<PaginatedNestedPlanningConfigListList> => {
+    return customFetchInstance<PaginatedNestedPlanningConfigListList>(
         getApiMicroplanningPlanningsConfigsListUrl(id, params),
         {
             credentials: 'same-origin',
@@ -1478,6 +1481,185 @@ export const invalidateApiMicroplanningPlanningsConfigsList = async (
     return queryClient;
 };
 
+export const getApiMicroplanningPlanningsConfigsBulkUpdateUrl = (
+    id: number,
+    params?: ApiMicroplanningPlanningsConfigsBulkUpdateParams,
+) => {
+    const normalizedParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== undefined) {
+            normalizedParams.append(
+                key,
+                value === null ? 'null' : String(value),
+            );
+        }
+    });
+
+    const stringifiedParams = normalizedParams.toString();
+
+    return stringifiedParams.length > 0
+        ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/configs/bulk/?${stringifiedParams}`
+        : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/configs/bulk/`;
+};
+
+export const apiMicroplanningPlanningsConfigsBulkUpdate = async (
+    id: number,
+    nestedPlanningConfigBulkRequest: NestedPlanningConfigBulkRequest[],
+    params?: ApiMicroplanningPlanningsConfigsBulkUpdateParams,
+    options?: Parameters<typeof customFetchInstance>[1],
+): Promise<PaginatedNestedPlanningConfigBulkList> => {
+    const getHeaders = (
+        h?: NonNullable<RequestInit['headers']>,
+    ): Record<string, string | readonly string[]> => {
+        if (!h) return {};
+        if (h instanceof Headers) return Object.fromEntries(h.entries());
+        if (Symbol.iterator in h) {
+            return Object.fromEntries(
+                Array.from(
+                    h as Iterable<Iterable<string>>,
+                    entry => Array.from(entry) as [string, string],
+                ),
+            );
+        }
+        const headers: Record<string, string | readonly string[]> = {};
+        for (const [name, value] of Object.entries<
+            string | readonly string[] | undefined
+        >(h)) {
+            if (value !== undefined) headers[name] = value;
+        }
+        return headers;
+    };
+    return customFetchInstance<PaginatedNestedPlanningConfigBulkList>(
+        getApiMicroplanningPlanningsConfigsBulkUpdateUrl(id, params),
+        {
+            credentials: 'same-origin',
+            ...options,
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...getHeaders(options?.headers),
+            },
+            body: JSON.stringify(nestedPlanningConfigBulkRequest),
+        },
+    );
+};
+
+export const getApiMicroplanningPlanningsConfigsBulkUpdateMutationKey = () =>
+    ['apiMicroplanningPlanningsConfigsBulkUpdate'] as const;
+
+export const useApiMicroplanningPlanningsConfigsBulkUpdateMutationOptions = <
+    TError = unknown,
+    TContext = unknown,
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<
+                ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>
+            >,
+            TError,
+            ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables,
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
+    Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>>,
+    TError,
+    ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables,
+    TContext
+> => {
+    const mutationKey =
+        getApiMicroplanningPlanningsConfigsBulkUpdateMutationKey();
+    const { mutation: mutationOptions, request: requestOptions } = options
+        ? options.mutation &&
+          'mutationKey' in options.mutation &&
+          options.mutation.mutationKey
+            ? options
+            : { ...options, mutation: { ...options.mutation, mutationKey } }
+        : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>>,
+        ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables
+    > = props => {
+        const { id, data, params } = props ?? {};
+
+        return apiMicroplanningPlanningsConfigsBulkUpdate(
+            id,
+            data,
+            params,
+            requestOptions,
+        );
+    };
+
+    const onSuccess = (
+        data: Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>
+        >,
+        variables: ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables,
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                queryKey: getApiMicroplanningPlanningsConfigsListQueryKey(
+                    variables.id,
+                ),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
+    const customOptions = useCustomMutationOptions({
+        ...mutationOptions,
+        mutationFn,
+        onSuccess,
+    });
+
+    return customOptions;
+};
+
+export type ApiMicroplanningPlanningsConfigsBulkUpdateMutationResult =
+    NonNullable<
+        Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>>
+    >;
+export type ApiMicroplanningPlanningsConfigsBulkUpdateMutationBody =
+    NestedPlanningConfigBulkRequest[];
+export type ApiMicroplanningPlanningsConfigsBulkUpdateMutationError = unknown;
+export type ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables = {
+    id: number;
+    data: NestedPlanningConfigBulkRequest[];
+    params?: ApiMicroplanningPlanningsConfigsBulkUpdateParams;
+};
+
+export const useApiMicroplanningPlanningsConfigsBulkUpdate = <
+    TError = unknown,
+    TContext = unknown,
+>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>>,
+        TError,
+        ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables,
+        TContext
+    >;
+    skipInvalidation?: boolean;
+    request?: SecondParameter<typeof customFetchInstance>;
+}): UseMutationResult<
+    Awaited<ReturnType<typeof apiMicroplanningPlanningsConfigsBulkUpdate>>,
+    TError,
+    ApiMicroplanningPlanningsConfigsBulkUpdateMutationVariables,
+    TContext
+> => {
+    const backupQueryClient = useQueryClient();
+    return useMutation(
+        useApiMicroplanningPlanningsConfigsBulkUpdateMutationOptions(
+            backupQueryClient,
+            options,
+        ),
+    );
+};
 export const getApiMicroplanningPlanningsMissionsListUrl = (
     id: number,
     params?: ApiMicroplanningPlanningsMissionsListParams,

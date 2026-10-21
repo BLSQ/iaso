@@ -1319,6 +1319,8 @@ export type Plugin = {
     routes: RouteCustom[];
     menu: MenuItem[];
     translations: Record&lt;string, any&gt;;
+    permissionsMessages?: PermissionsMessages;
+    permissionsGroupsMessages?: PermissionsMessages;
     homeUrl?: string;
     homeOnline?: ElementType;
     homeOffline?: ElementType;
@@ -1353,7 +1355,9 @@ export type Plugins = {
 <li><code>key</code>: Unique identifier for the plugin</li>
 <li><code>redirections</code>: Array of routing redirections</li>
 <li><code>theme</code>: Custom theme for the plugin</li>
-<li><code>customComponents</code>: Array of custom components to be registered</li>
+<li><code>permissionsMessages</code>: Labels and tooltips for the plugin's permissions. Merged by <code>usePermissionsMessages()</code></li>
+<li><code>permissionsGroupsMessages</code>: Labels for the plugin's permission groups. Merged by <code>usePermissionsGroupsMessages()</code></li>
+<li><code>customComponents</code>: Components inserted into host slots. See <a href="#custom-components">Custom components</a></li>
 </ul>
 <h4 id="example-configuration">Example Configuration<a class="headerlink" href="#example-configuration" title="Permanent link">#</a></h4>
 <pre><code class="language-typescript">// js/config.tsx
@@ -1409,14 +1413,68 @@ export default {
             to: '/my-plugin',
         },
     ],
+    permissionsMessages: PERMISSIONS_MESSAGES,
+    permissionsGroupsMessages: PERMISSIONS_GROUPS_MESSAGES,
     customComponents: [
         {
-            key: 'myCustomComponent',
-            component: MyCustomComponent,
+            key: 'tasks.rowAction',
+            component: MyTaskRowAction,
         },
     ],
 };
 </code></pre>
+<h3 id="permission-labels">Permission labels<a class="headerlink" href="#permission-labels" title="Permanent link">#</a></h3>
+<p>Core permission labels live in <code>hat/assets/js/apps/Iaso/domains/users/permissionsMessages.ts</code>. Group labels live in <code>permissionsGroupsMessages.ts</code>. A plugin keeps its own labels and exposes them on the <code>Plugin</code> object. Host screens do not import the plugin file. They call:</p>
+<ul>
+<li><code>usePermissionsMessages()</code> for a permission codename and its tooltip</li>
+<li><code>usePermissionsGroupsMessages()</code> for a permission group</li>
+</ul>
+<p>Each hook starts from the core map and spreads every enabled plugin's map on top. A plugin key with the same name replaces the core string.</p>
+<p><code>permissionsMessages</code> is a <code>defineMessages</code> record. The key is the permission codename (<code>iaso_polio</code>). The tooltip key is that codename plus <code>_tooltip</code> (<code>iaso_polio_tooltip</code>). <code>permissionsGroupsMessages</code> uses the group codename (<code>polio</code>).</p>
+<p>String values still belong in the plugin locale files (<code>js/src/constants/translations/&lt;lang&gt;.json</code>). The message <code>id</code> must match a key in those files.</p>
+<h3 id="custom-components">Custom components<a class="headerlink" href="#custom-components" title="Permanent link">#</a></h3>
+<p>A custom component is a React component a plugin inserts into a slot the host already renders. The plugin declares it in <code>config.tsx</code>:</p>
+<pre><code class="language-typescript">customComponents: [
+    { key: 'topbar.disclaimer', component: Disclaimer },
+],
+</code></pre>
+<p>The host reads those registrations from <code>hat/assets/js/apps/Iaso/plugins/hooks/customComponents.ts</code>. Two hooks, because the two kinds of slot behave differently:</p>
+<ul>
+<li><code>useFindCustomComponent(key)</code> returns one component, the last plugin that registered <code>key</code>. Use it when the slot is a single widget.</li>
+<li><code>useCustomComponentsByKey(key)</code> returns every component registered under <code>key</code>, from every enabled plugin. Use it when several plugins can add to the same place.</li>
+</ul>
+<p>A key that no host screen asks for is never rendered. Adding a slot means rendering one of these hooks in the host, then registering a component under that key from the plugin.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Hook</th>
+<th>Rendered in</th>
+<th>Props the host passes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>topbar.disclaimer</code></td>
+<td><code>useFindCustomComponent</code></td>
+<td><code>components/nav/TopBarComponent.tsx</code></td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>tasks.rowAction</code></td>
+<td><code>useCustomComponentsByKey</code></td>
+<td><code>domains/tasks/components/ActionCell.tsx</code></td>
+<td><code>task</code></td>
+</tr>
+<tr>
+<td><code>groups.dialogField</code></td>
+<td><code>useCustomComponentsByKey</code></td>
+<td><code>domains/orgUnits/groups/components/GroupsDialog.tsx</code></td>
+<td><code>values</code>, <code>onChange</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>tasks.rowAction</code> is an extra control on a task row. <code>groups.dialogField</code> is an extra field in the org-unit group create/edit dialog. <code>topbar.disclaimer</code> is a single line in the top bar; a later plugin replaces an earlier one.</p>
 <h2 id="development-vs-production">Development vs Production<a class="headerlink" href="#development-vs-production" title="Permanent link">#</a></h2>
 <h3 id="development-mode">Development Mode<a class="headerlink" href="#development-mode" title="Permanent link">#</a></h3>
 <p>In development (<code>webpack.dev.js</code>):

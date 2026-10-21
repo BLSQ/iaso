@@ -34,7 +34,6 @@ RUN npm run build
 WORKDIR /opt/app
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
-# Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.
 FROM ghcr.io/astral-sh/uv:python3.9-trixie-slim AS pybuilder
 
@@ -49,7 +48,6 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 COPY ../../uv.lock ./
-RUN #pip install uv
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
@@ -80,7 +78,7 @@ RUN groupadd --gid 1001 appuser && \
     useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Runtime-only dependencies:
-#  - libgdal36: GDAL shared library on Bookworm (runtime, no headers)
+#  - libgdal36: GDAL shared library on trixie (runtime, no headers)
 #  - libpq5: PostgreSQL client library (for psycopg2)
 #  - postgresql-client: psql CLI (used in wait_for_dbs.sh)
 #  - gettext-base: envsubst (used for config templating)

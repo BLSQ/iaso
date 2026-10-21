@@ -5,26 +5,35 @@ from functools import reduce
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from django.db.models import Value
-from django.db.models.functions import Length, Replace
+from django.db.models import F
 from django_ltree.fields import PathField  # type: ignore
 
 from iaso.models import Account, Project
 from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.color import ColorField
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+        return self.filter_for_account(account)
 
     def filter_for_account(self, account: Account) -> "TeamQuerySet":
+        if not account:
+            return self.none()
         return self.filter(project__account=account)
 
     def annotate_with_depth(self) -> "TeamQuerySet":
-        return self.annotate(depth=(Length("path") - Length(Replace("path", Value("."), Value("")))))
+        return self.annotate(depth=F("path__depth"))
 
     def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
         """The Team and all their descendants"""
@@ -40,6 +49,21 @@ class TeamQuerySet(models.QuerySet):
 
         return self.filter(query)
 
+    def get_tree(
+        self,
+        root: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team", None] = None,
+        max_depth: typing.Optional[int] = None,
+    ):
+        if not root:
+            root = self.filter(parent__isnull=True)
+
+        queryset = self.hierarchy(root)
+
+        if max_depth is not None:
+            queryset = queryset.filter(path__depth__lte=max_depth)
+
+        return queryset.order_by("path")
+
 
 class TeamType(models.TextChoices):
     TEAM_OF_TEAMS = "TEAM_OF_TEAMS", "Team of teams"
@@ -50,11 +74,10 @@ class TeamType(models.TextChoices):
         return value in cls.values
 
 
-TeamManager = models.Manager.from_queryset(TeamQuerySet)
-
-
 class Team(SoftDeletableModel):
-    objects = TeamManager()
+    objects = DefaultSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
 
     class Meta:
         ordering = ("name",)

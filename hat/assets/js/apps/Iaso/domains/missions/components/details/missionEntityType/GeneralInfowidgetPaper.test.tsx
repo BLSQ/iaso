@@ -18,11 +18,8 @@ describe('GeneralInfoWidgetPaper test', () => {
                 mission={getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock(
                     {
                         max_cardinality: null,
-                        // @ts-ignore
-                        mission_type: {
-                            label: 'Entity',
-                            value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
-                        },
+                        mission_type_label: 'Entity',
+                        mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     },
                 )}
             />,
@@ -37,11 +34,8 @@ describe('GeneralInfoWidgetPaper test', () => {
                 mission={getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock(
                     {
                         max_cardinality: 12,
-                        // @ts-ignore
-                        mission_type: {
-                            label: 'Entity',
-                            value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
-                        },
+                        mission_type_label: 'Entity',
+                        mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     },
                 )}
             />,

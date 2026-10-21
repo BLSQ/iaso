@@ -7,7 +7,7 @@ from iaso.api.microplanning.filters import (
     validate_planning_has_org_unit_scope,
     validate_planning_org_unit_type_ids,
 )
-from iaso.api.teams.serializers import NestedTeamSerializer
+from iaso.api.teams.serializers.misc import NestedTeamSerializer
 from iaso.models import (
     Group,
     Mission,

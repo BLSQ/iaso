@@ -92,7 +92,7 @@ class BulkUpdateListSerializer(serializers.ListSerializer):
         Validate that lookup_fields are unique withing the batch provided
         """
         attrs = super().validate(attrs)
-        ids = [x[self.lookup_field] for x in attrs]
+        ids = [x[self.lookup_field] for x in attrs if self.lookup_field in x]
         if len(set(ids)) != len(ids):
             raise serializers.ValidationError(
                 _("{lookup_field}s provided are not unique").format(lookup_field=self.lookup_field)

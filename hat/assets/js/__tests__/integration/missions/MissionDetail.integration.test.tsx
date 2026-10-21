@@ -7,7 +7,7 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsDestroyMockHandler,
     getApiMicroplanningMissionsRetrieveMockHandler,
@@ -164,13 +164,10 @@ describe('Mission detail integration test', () => {
             getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock();
 
         server.use(
-            // @ts-ignore
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
-                mission_type: {
-                    label: 'Form filling',
-                    value: MissionTypeValueEnum.enum.FORM_FILLING,
-                },
+                mission_type_label: 'Form filling',
+                mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
             }),
         );
 
@@ -216,13 +213,10 @@ describe('Mission detail integration test', () => {
         expect(data.org_unit_type).not.toBeNull();
 
         server.use(
-            // @ts-ignore
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
-                mission_type: {
-                    label: 'Org unit',
-                    value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                },
+                mission_type_label: 'Org unit',
+                mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
             }),
         );
 
@@ -281,10 +275,8 @@ describe('Mission detail integration test', () => {
             // @ts-ignore
             getApiMicroplanningMissionsRetrieveMockHandler({
                 ...data,
-                mission_type: {
-                    label: 'Entity type mission',
-                    value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                },
+                mission_type_label: 'Entity type mission',
+                mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
             }),
         );
 

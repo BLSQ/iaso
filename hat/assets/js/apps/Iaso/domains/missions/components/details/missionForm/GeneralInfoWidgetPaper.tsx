@@ -23,7 +23,6 @@ export const GeneralInfoWidgetPaper: React.FunctionComponent<
                 size="small"
                 sx={{
                     border: theme =>
-                        // @ts-ignore
                         `1px solid ${theme.palette.lightGray.border}`,
                 }}
             >

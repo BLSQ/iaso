@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from rest_framework.fields import Field
 
 from dynamic_fields.serializer import DynamicFieldsModelSerializerBackwardCompatible
 from iaso.api.common import ModelSerializer
@@ -34,23 +33,6 @@ class NestedUserSerializer(ModelSerializer):
     def get_iaso_profile_id(self, obj):
         profile = getattr(obj, "iaso_profile", None)
         return getattr(profile, "id", None) if profile else None
-
-
-class AuditTeamSerializer(ModelSerializer):
-    sub_teams: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-
-    class Meta:
-        model = Team
-        fields = "__all__"
-
-
-class TeamDropdownSerializer(ModelSerializer):
-    """Lightweight serializer for team dropdown lists"""
-
-    class Meta:
-        model = Team
-        fields = ["id", "name", "color", "type", "project"]
-        read_only_fields = ["id", "name", "color", "type", "project"]
 
 
 class TeamSerializer(ModelSerializer, DynamicFieldsModelSerializerBackwardCompatible):

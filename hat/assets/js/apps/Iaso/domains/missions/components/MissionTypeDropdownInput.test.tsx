@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { FormikProps } from 'formik';
 import { setupServer } from 'msw/node';
 import { vi } from 'vitest';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
     getApiMicroplanningMissionsMissionTypesDropdownListResponseMock,
@@ -58,7 +58,7 @@ const createProps = (overrides = {}) => ({
     label: 'Mission type',
     field: {
         name: 'mission_type',
-        value: MissionTypeValueEnum.enum.FORM_FILLING,
+        value: MissionTypeDa2Enum.enum.FORM_FILLING,
         onBlur: vi.fn(),
         onChange: vi.fn(),
     },

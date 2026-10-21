@@ -36,7 +36,7 @@ export const useGetStockRulesVersionsApiParams = (
         order: params.order || '-id',
         name: params.search,
         status: params.status,
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         page: params.page || '1',
     };
     const url = makeUrlWithParams('/api/stockrulesversions/', apiParams);
@@ -120,7 +120,7 @@ export const useGetStockItemRulesApiParams = (
         version_id: version,
         order: params.order || 'id',
         name: params.search,
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         page: params.page || '1',
         sku_id: params.skuId,
         form_id: params.formId,

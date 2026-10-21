@@ -28,6 +28,7 @@ from iaso.api.entities.serializers import (
 from iaso.models import Entity, EntityDuplicate, EntityType, Instance
 from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
+from iaso.utils.pii import get_allowed_fields, is_field_allowed
 
 
 logger = getLogger(__name__)
@@ -217,7 +218,10 @@ class EntityViewSet(ModelViewSet):
         except (ValueError, EntityType.DoesNotExist):
             return []
 
-        fields = entity_type.get_list_view_fields()
+        allowed_fields = get_allowed_fields(entity_type.reference_form, self.request.user)
+        fields = [
+            field for field in entity_type.get_list_view_fields() if is_field_allowed(field.get("name"), allowed_fields)
+        ]
         serializer = EntityTypeColumnSerializer(data=fields, many=True)
 
         if serializer.is_valid():

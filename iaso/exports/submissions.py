@@ -1,10 +1,13 @@
 from logging import getLogger
+from typing import FrozenSet, Optional
 
 from django.db import models
 from django.db.models import Exists, F, Func, OuterRef, QuerySet
 from django.db.models.fields.json import KeyTextTransform
 
 import iaso.models as m
+
+from iaso.utils.pii import is_field_allowed
 
 from .mapping import generate_safe_mapping
 from .utils import normalize_field_name
@@ -13,7 +16,10 @@ from .utils import normalize_field_name
 logger = getLogger(__name__)
 
 
-def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QuerySet[m.Instance]:
+def build_submissions_queryset(
+    qs: QuerySet[m.Instance], form_id: str, allowed_fields: Optional[FrozenSet[str]] = None
+) -> QuerySet[m.Instance]:
+    """`allowed_fields`: when set, only these questions are exported (see `iaso.utils.pii.get_allowed_fields`)."""
     form = m.Form.objects.get(pk=form_id)
     if form.possible_fields == None or len(form.possible_fields) == 0:
         form.update_possible_fields()
@@ -22,7 +28,7 @@ def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QueryS
 
     prefixed_fields = build_submission_annotations()
 
-    possible_fields = form.possible_fields
+    possible_fields = [f for f in form.possible_fields if is_field_allowed(f["name"], allowed_fields)]
 
     answer_mappings = generate_safe_mapping(list(prefixed_fields.keys()) + [f["name"] for f in possible_fields])
 

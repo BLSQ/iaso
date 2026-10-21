@@ -35,6 +35,8 @@ import InstanceFileContentBasic from '../InstanceFileContentBasic';
 import { Descriptor } from '../InstanceFileContentRich';
 import { SubmissionTreeSection } from './SubmissionTreeSection';
 import {
+    keepSummaryFields,
+    removeHiddenFields,
     useFilteredSubmissionTree,
     useSubmissionTree,
 } from './useSubmissionSections';
@@ -130,6 +132,13 @@ type Props = {
     instanceData?: Record<string, any>;
     files?: string[];
     showNote?: boolean;
+    /**
+     * Questions shown by default (`Form.summary_fields`). When set, the other
+     * questions are shown with the "show all questions" toggle, or when searching.
+     */
+    summaryFields?: string[] | null;
+    /** Questions withheld by the server because they contain personal data */
+    hiddenFields?: string[];
 };
 
 export const SubmissionContent: FunctionComponent<Props> = ({
@@ -137,6 +146,8 @@ export const SubmissionContent: FunctionComponent<Props> = ({
     instanceData,
     files = NO_FILES,
     showNote = true,
+    summaryFields,
+    hiddenFields,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { locale: uiLocale } = useLocale();
@@ -168,11 +179,27 @@ export const SubmissionContent: FunctionComponent<Props> = ({
         showNote,
         language,
     );
-    const { tree: shownTree, matchCount } = useFilteredSubmissionTree(
+    const isSearching = Boolean(query.trim());
+    const hasSummary = Boolean(summaryFields?.length);
+    // the toggle reveals the questions hidden from the summary, and searching
+    // looks into all questions
+    const visibleTree = useMemo(() => {
+        const allowedTree = removeHiddenFields(tree, hiddenFields ?? []);
+        return hasSummary && !showQuestionIds && !isSearching
+            ? keepSummaryFields(allowedTree, summaryFields ?? [])
+            : allowedTree;
+    }, [
+        hasSummary,
+        showQuestionIds,
+        isSearching,
         tree,
+        summaryFields,
+        hiddenFields,
+    ]);
+    const { tree: shownTree, matchCount } = useFilteredSubmissionTree(
+        visibleTree,
         query,
     );
-    const isSearching = Boolean(query.trim());
 
     const toggleSection = useCallback((key: string) => {
         setToggledKeys(previous => {
@@ -290,7 +317,11 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                                 variant="body2"
                                 sx={styles.showQuestionIdsLabel}
                             >
-                                {formatMessage(MESSAGES.showQuestionIds)}
+                                {formatMessage(
+                                    hasSummary
+                                        ? MESSAGES.showAllQuestions
+                                        : MESSAGES.showQuestionIds,
+                                )}
                             </Typography>
                         }
                     />

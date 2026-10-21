@@ -917,6 +917,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Show question IDs',
         id: 'iaso.instance.showQuestionIds',
     },
+    showAllQuestions: {
+        defaultMessage: 'Show all questions and their identifiers',
+        id: 'iaso.instance.showAllQuestions',
+    },
     clearSearch: {
         defaultMessage: 'Clear search',
         id: 'iaso.instance.clearSearch',

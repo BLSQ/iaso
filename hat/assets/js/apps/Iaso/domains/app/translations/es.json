@@ -1314,5 +1314,13 @@
     "iaso.stock.sku.dialog.delete": "¿Estás seguro de que quieres eliminar este SKU?",
     "iaso.stock.sku.update": "Actualizar SKU",
     "iaso.stock.version.dialog.delete": "¿Estás seguro de que quieres eliminar esta versión?",
-    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar."
+    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar.",
+    "iaso.form.label.summaryFields": "Campos de resumen",
+    "iaso.form.label.summaryFieldsHelp": "Preguntas mostradas por defecto en el detalle de los envíos. Las demás preguntas se muestran a pedido.",
+    "iaso.form.label.restrictPii": "Este formulario contiene datos personales (PII): ocultar las preguntas no listadas abajo a los usuarios sin el permiso PII",
+    "iaso.form.label.nonPiiFields": "Preguntas sin datos personales (no PII)",
+    "iaso.form.label.nonPiiFieldsHelp": "Solo estas preguntas se muestran a los usuarios sin el permiso \"Ver datos personales (PII) de los envíos\". Toda pregunta no listada se considera un dato personal.",
+    "iaso.permissions.iaso_submissions_pii": "Ver datos personales (PII) de los envíos",
+    "iaso.permissions.iaso_submissions_pii_tooltip": "Permite ver todas las preguntas de los envíos, incluidas las que no están declaradas sin datos personales en su formulario",
+    "iaso.instance.showAllQuestions": "Mostrar todas las preguntas y sus identificadores"
 }

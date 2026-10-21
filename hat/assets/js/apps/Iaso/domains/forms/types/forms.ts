@@ -105,6 +105,8 @@ export type Form = {
     deleted_at: string;
     derived: boolean;
     label_keys: string[];
+    non_pii_fields?: string[] | null;
+    summary_fields?: string[] | null;
     possible_fields: PossibleField[];
     legend_threshold: ScaleThreshold;
     has_mappings: boolean;
@@ -190,6 +192,9 @@ export type FormDataType = {
     location_field: FieldError<string>;
     possible_fields: FieldError<PossibleField[]>;
     label_keys: FieldError<string[]>;
+    // null: the form has no PII configuration, nothing is filtered
+    non_pii_fields: FieldError<string[] | null>;
+    summary_fields: FieldError<string[]>;
     legend_threshold?: FieldError<ScaleThreshold>;
     change_request_mode: FieldError<ChangeRequestModeType>;
     validation_workflow?: FieldError<number>;

@@ -1073,9 +1073,9 @@ class InstancesAPITestCase(TaskAPITestCase):
                 ]
             }
         )
-        # 6, not 7: org_unit__org_unit_type is now select_related, saving the per-instance
-        # lazy-load query for org_unit_type.
-        with self.assertNumQueries(6):
+        # org_unit__org_unit_type is select_related, saving the per-instance lazy-load query for
+        # org_unit_type. One query checks that the filtered questions aren't hidden personal data (PII).
+        with self.assertNumQueries(7):
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, status.HTTP_200_OK)
         response_json = response.json()

@@ -490,6 +490,29 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.fields',
         defaultMessage: 'Default fields to display',
     },
+    summaryFields: {
+        id: 'iaso.form.label.summaryFields',
+        defaultMessage: 'Summary fields',
+    },
+    summaryFieldsHelp: {
+        id: 'iaso.form.label.summaryFieldsHelp',
+        defaultMessage:
+            'Questions shown by default in the submission details. The other questions are shown on demand.',
+    },
+    restrictPii: {
+        id: 'iaso.form.label.restrictPii',
+        defaultMessage:
+            'This form contains personal data (PII): hide the questions not listed below to users without the PII permission',
+    },
+    nonPiiFields: {
+        id: 'iaso.form.label.nonPiiFields',
+        defaultMessage: 'Questions without personal data (non-PII)',
+    },
+    nonPiiFieldsHelp: {
+        id: 'iaso.form.label.nonPiiFieldsHelp',
+        defaultMessage:
+            'Only these questions are shown to users without the "View personal data (PII) in submissions" permission. Any question not listed is treated as personal data.',
+    },
     showAdvancedSettings: {
         id: 'iaso.form.label.showAdvancedSettings',
         defaultMessage: 'Show advanced settings',

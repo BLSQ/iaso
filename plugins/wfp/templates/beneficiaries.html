@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Beneficiaries · {{ account.name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Colors of the IASO theme (bluesquare-components) */
+        :root {
+            --primary: #006699;
+            --primary-dark: #004c73;
+            --primary-light: rgba(0, 102, 153, 0.08);
+            --primary-medium: rgba(0, 102, 153, 0.16);
+            --background: #f5f5f5;
+            --paper: #ffffff;
+            --text: rgba(0, 0, 0, 0.87);
+            --text-secondary: rgba(0, 0, 0, 0.6);
+            --text-disabled: rgba(0, 0, 0, 0.38);
+            --divider: rgba(0, 0, 0, 0.12);
+            --error: rgb(215, 25, 28);
+            --error-bg: rgba(215, 25, 28, 0.12);
+            --success: #2e7d32;
+            --success-main: #4caf50;
+            --success-bg: rgba(76, 175, 80, 0.16);
+            --warning-bg: rgba(255, 216, 53, 0.45);
+            --warning-text: #6d5800;
+            --shadow-1: 0 2px 1px -1px rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 1px 3px 0 rgba(0, 0, 0, .12);
+            --shadow-4: 0 2px 4px -1px rgba(0, 0, 0, .2), 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12);
+            --shadow-8: 0 5px 5px -3px rgba(0, 0, 0, .2), 0 8px 10px 1px rgba(0, 0, 0, .14), 0 3px 14px 2px rgba(0, 0, 0, .12);
+            --shadow-24: 0 11px 15px -7px rgba(0, 0, 0, .2), 0 24px 38px 3px rgba(0, 0, 0, .14), 0 9px 46px 8px rgba(0, 0, 0, .12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+            font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.43;
+        }
+
+        a {
+            color: var(--primary);
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .muted {
+            color: var(--text-secondary);
+        }
+
+        .mono {
+            font-family: "Roboto Mono", monospace;
+            font-size: 12px;
+        }
+
+        /* App bar */
+        .app-bar {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: var(--shadow-4);
+            padding: 10px 24px;
+            min-height: 64px;
+            gap: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .app-bar h1 {
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: 0.15px;
+            margin: 0;
+        }
+
+        .app-bar .subtitle {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .app-bar .count {
+            background: rgba(255, 255, 255, 0.16);
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        main {
+            padding: 24px;
+        }
+
+        .paper {
+            background: var(--paper);
+            border-radius: 4px;
+            box-shadow: var(--shadow-1);
+        }
+
+        /* Filters */
+        form.filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .field {
+            position: relative;
+            min-width: 200px;
+            flex: 0 1 240px;
+        }
+
+        .field label {
+            position: absolute;
+            top: -8px;
+            left: 10px;
+            padding: 0 4px;
+            background: var(--paper);
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 16px;
+            pointer-events: none;
+        }
+
+        .field select,
+        .field input {
+            width: 100%;
+            height: 40px;
+            padding: 8px 14px;
+            border: 1px solid rgba(0, 0, 0, 0.23);
+            border-radius: 4px;
+            background: transparent;
+            font: inherit;
+            color: var(--text);
+            outline: none;
+        }
+
+        .field select:hover,
+        .field input:hover {
+            border-color: var(--text);
+        }
+
+        .field select:focus,
+        .field input:focus {
+            border-color: var(--primary);
+            box-shadow: inset 0 0 0 1px var(--primary);
+        }
+
+        .field:focus-within label {
+            color: var(--primary);
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 36px;
+            padding: 6px 16px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            font: inherit;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            color: var(--primary);
+            white-space: nowrap;
+            transition: background-color 150ms, box-shadow 150ms;
+        }
+
+        .btn:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-contained {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: var(--shadow-1);
+        }
+
+        .btn-contained:hover {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow-4);
+        }
+
+        .btn-outlined {
+            border-color: rgba(0, 102, 153, 0.5);
+        }
+
+        .btn-outlined:hover {
+            border-color: var(--primary);
+        }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 150ms, color 150ms;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .icon-btn:focus:not(:focus-visible),
+        .btn:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        .icon-btn:focus-visible,
+        .btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        dialog .dialog-header .icon-btn:focus-visible {
+            outline-color: #fff;
+        }
+
+        .icon-btn .icon {
+            transition: transform 200ms;
+        }
+
+        button.toggle[aria-expanded="true"] {
+            color: var(--primary);
+        }
+
+        button.toggle[aria-expanded="true"] .icon {
+            transform: rotate(180deg);
+        }
+
+        /* Tooltips on icon buttons */
+        [data-tip] {
+            position: relative;
+        }
+
+        [data-tip]:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(97, 97, 97, 0.92);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 6px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--divider);
+            vertical-align: middle;
+        }
+
+        thead th {
+            font-weight: 500;
+            color: var(--text);
+            height: 56px;
+            white-space: nowrap;
+        }
+
+        th.num,
+        td.num {
+            text-align: right;
+        }
+
+        .beneficiaries>tbody>tr.row:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .beneficiaries>tbody>tr.row.expanded {
+            background: var(--primary-light);
+        }
+
+        .beneficiaries>tbody>tr.row.expanded td {
+            border-bottom-color: transparent;
+        }
+
+        .beneficiaries td.actions {
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .uuid {
+            display: inline-block;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+            color: var(--text-secondary);
+        }
+
+        /* Chips */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            background: rgba(0, 0, 0, 0.08);
+            color: var(--text);
+            margin: 1px 2px 1px 0;
+        }
+
+        .chip-primary {
+            background: var(--primary-medium);
+            color: var(--primary-dark);
+        }
+
+        .chip-success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .chip-error {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .chip-warning {
+            background: var(--warning-bg);
+            color: var(--warning-text);
+        }
+
+        .chip-outlined {
+            background: none;
+            border: 1px solid currentColor;
+        }
+
+        .chip-programme-bsfp {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .chip-programme-nsep {
+            background: #00838f;
+            color: #fff;
+        }
+
+        .chip-programme-tsfp {
+            background: #ef6c00;
+            color: #fff;
+        }
+
+        .chip-programme-otp,
+        .chip-programme-otp-under-6 {
+            background: var(--error);
+            color: #fff;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            background: var(--text-disabled);
+            vertical-align: middle;
+        }
+
+        .dot.green {
+            background: var(--success-main);
+        }
+
+        .dot.yellow {
+            background: #fbc02d;
+        }
+
+        .dot.red {
+            background: var(--error);
+        }
+
+        /* Expanded row: journeys and visits */
+        tr.visits>td {
+            padding: 0 16px 16px 56px;
+            background: var(--primary-light);
+        }
+
+        .journey {
+            background: var(--paper);
+            border-radius: 4px;
+            box-shadow: var(--shadow-1);
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .journey-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--divider);
+            border-left: 4px solid var(--primary);
+        }
+
+        .journey-header .title {
+            font-weight: 500;
+            margin-right: 4px;
+        }
+
+        .journey-header .dates {
+            color: var(--text-secondary);
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .journey table th {
+            height: 40px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .journey table td {
+            padding: 6px 16px;
+        }
+
+        .journey table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .journey table tbody tr:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .visit-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        a.submission-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a.submission-link:hover {
+            text-decoration: underline;
+        }
+
+        .empty {
+            padding: 48px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            padding: 8px 16px;
+            color: var(--text-secondary);
+        }
+
+        .pagination .label {
+            margin: 0 12px;
+        }
+
+        .pagination .icon-btn.disabled {
+            color: var(--text-disabled);
+            pointer-events: none;
+        }
+
+        /* Hover popup with the fields of a submission */
+        #submission-tooltip {
+            position: absolute;
+            z-index: 10;
+            width: 560px;
+            max-width: calc(100vw - 32px);
+            max-height: 60vh;
+            overflow: auto;
+            background: var(--paper);
+            border-radius: 4px;
+            box-shadow: var(--shadow-8);
+            padding: 0 0 8px;
+            font-size: 13px;
+        }
+
+        #submission-tooltip .submission-header {
+            position: sticky;
+            top: 0;
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 16px;
+            margin-bottom: 4px;
+            line-height: 1.5;
+        }
+
+        /* Key / value tables of the popup and of the dialog */
+        #submission-tooltip table th,
+        #dialog-body table th {
+            width: 40%;
+            font-weight: 400;
+            color: var(--text-secondary);
+            height: auto;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        #submission-tooltip table th,
+        #submission-tooltip table td {
+            padding: 4px 16px;
+        }
+
+        #dialog-body table th,
+        #dialog-body table td {
+            padding: 6px 16px;
+        }
+
+        #dialog-body table td,
+        #submission-tooltip table td {
+            word-break: break-word;
+        }
+
+        /* Dialog */
+        dialog {
+            width: min(900px, calc(100vw - 32px));
+            max-height: 85vh;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            box-shadow: var(--shadow-24);
+            overflow: hidden;
+        }
+
+        dialog[open] {
+            display: flex;
+            flex-direction: column;
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        dialog .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px 12px 24px;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        dialog .dialog-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        dialog .dialog-header .icon-btn {
+            color: #fff;
+        }
+
+        dialog .dialog-header .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        dialog .dialog-body {
+            padding: 8px 24px 24px;
+            overflow: auto;
+        }
+
+        #dialog-body h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary);
+            margin: 20px 0 8px;
+        }
+
+        #dialog-body details {
+            border: 1px solid var(--divider);
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        #dialog-body details[open] {
+            box-shadow: var(--shadow-1);
+        }
+
+        #dialog-body summary {
+            cursor: pointer;
+            padding: 10px 16px;
+            list-style-position: inside;
+        }
+
+        #dialog-body summary:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        #dialog-body details p {
+            margin: 0;
+            padding: 0 16px 8px;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            padding: 24px;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 700px) {
+            main {
+                padding: 16px;
+            }
+
+            .app-bar {
+                padding: 8px 16px;
+                position: static;
+            }
+
+            .app-bar h1 {
+                font-size: 17px;
+            }
+
+            .field {
+                flex: 1 1 100%;
+            }
+
+            tr.visits>td {
+                padding-left: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Material icons used on the page -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+        <symbol id="i-expand" viewBox="0 0 24 24"><path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z" /></symbol>
+        <symbol id="i-download" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z" /></symbol>
+        <symbol id="i-person" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></symbol>
+        <symbol id="i-bug" viewBox="0 0 24 24"><path d="M20 8h-2.81a5.985 5.985 0 0 0-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5s-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z" /></symbol>
+        <symbol id="i-open" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" /></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></symbol>
+        <symbol id="i-first" viewBox="0 0 24 24"><path d="M18.41 16.59 13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z" /></symbol>
+        <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" /></symbol>
+        <symbol id="i-next" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" /></symbol>
+        <symbol id="i-last" viewBox="0 0 24 24"><path d="M5.59 7.41 10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z" /></symbol>
+        <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" /></symbol>
+        <symbol id="i-table" viewBox="0 0 24 24"><path d="M10 10.02h5V21h-5zM17 21h3c1.1 0 2-.9 2-2v-9h-5v11zm3-18H5c-1.1 0-2 .9-2 2v3h19V5c0-1.1-.9-2-2-2zM3 19c0 1.1.9 2 2 2h3V10H3v9z" /></symbol>
+        <symbol id="i-filter" viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" /></symbol>
+    </svg>
+
+    <header class="app-bar">
+        <div>
+            <h1>Beneficiaries computed by the ETL</h1>
+            <div class="subtitle">{{ account.name }}</div>
+        </div>
+        <span class="count">{{ page.paginator.count }} beneficiaries</span>
+    </header>
+
+    <main>
+        <form class="filters paper" method="get">
+            <div class="field">
+                <label for="f-entity-type">Entity type</label>
+                <select id="f-entity-type" name="entity_type">
+                    <option value="">All</option>
+                    {% for entity_type in entity_types %}
+                    <option value="{{ entity_type.id }}" {% if selected_entity_type == entity_type.id|stringformat:"s" %}selected{% endif %}>
+                        {{ entity_type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="f-programme">Programme</label>
+                <select id="f-programme" name="programme">
+                    <option value="">All</option>
+                    {% for value, label in programmes %}
+                    <option value="{{ value }}" {% if selected_programme == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="f-search">Entity id or UUID</label>
+                <input id="f-search" type="text" name="q" value="{{ search }}" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-contained">
+                <svg class="icon"><use href="#i-filter" /></svg>Filter
+            </button>
+            <a class="btn" href="?">Reset</a>
+            <span class="spacer"></span>
+            <a class="btn btn-outlined export-raw" href="{% url 'wfp_beneficiaries_raw_export' %}?{{ query_without_page }}"
+                title="The ETL tables and the raw submissions (one sheet per form) of the beneficiaries matching the filters">
+                <svg class="icon"><use href="#i-table" /></svg>Export raw data
+            </a>
+            <a class="btn btn-outlined export" href="{% url 'wfp_beneficiaries_coda_export' %}?{{ query_without_page }}"
+                title="One row per visit of the beneficiaries matching the filters">
+                <svg class="icon"><use href="#i-download" /></svg>Export CODA 2.0
+            </a>
+        </form>
+
+        <div class="paper">
+            <div class="table-wrapper">
+                <table class="beneficiaries">
+                    <thead>
+                        <tr>
+                            <th style="width: 56px"></th>
+                            <th>Entity id</th>
+                            <th>UUID</th>
+                            <th>Entity type</th>
+                            <th>Gender</th>
+                            <th>Birth date</th>
+                            <th class="num">Journeys</th>
+                            <th class="num">Visits</th>
+                            <th>Last visit</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for beneficiary in page %}
+                        <tr class="row">
+                            <td>
+                                <button type="button" class="icon-btn toggle" aria-expanded="false"
+                                    data-target="visits-{{ beneficiary.id }}" data-tip="Visits">
+                                    <svg class="icon"><use href="#i-expand" /></svg>
+                                </button>
+                            </td>
+                            <td><strong>{{ beneficiary.entity_id }}</strong></td>
+                            <td><span class="uuid mono" title="{{ beneficiary.entity.uuid }}">{{ beneficiary.entity.uuid }}</span></td>
+                            <td><span class="chip chip-primary">{{ beneficiary.entity.entity_type.name }}</span></td>
+                            <td>{{ beneficiary.gender|default_if_none:"—" }}</td>
+                            <td>{{ beneficiary.birth_date|date:"Y-m-d" }}</td>
+                            <td class="num">{{ beneficiary.journeys_count }}</td>
+                            <td class="num">{{ beneficiary.visits_count }}</td>
+                            <td>{{ beneficiary.last_visit_date|date:"Y-m-d" }}</td>
+                            <td class="actions">
+                                <button type="button" class="icon-btn show-data" data-tip="Beneficiary data"
+                                    aria-label="Beneficiary data"
+                                    data-url="{% url 'wfp_beneficiary_data' beneficiary.entity_id %}">
+                                    <svg class="icon"><use href="#i-person" /></svg>
+                                </button>
+                                <a class="icon-btn" href="{% url 'wfp_debug' beneficiary.entity_id %}" data-tip="Debug"
+                                    aria-label="Debug">
+                                    <svg class="icon"><use href="#i-bug" /></svg>
+                                </a>
+                                <a class="icon-btn"
+                                    href="/dashboard/entities/details/accountId/{{ account.id }}/entityId/{{ beneficiary.entity_id }}"
+                                    target="_blank" data-tip="Entity in IASO" aria-label="Entity in IASO">
+                                    <svg class="icon"><use href="#i-open" /></svg>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr class="visits" id="visits-{{ beneficiary.id }}" hidden>
+                            <td colspan="10">
+                                {% for journey in beneficiary.journeys %}
+                                <section class="journey">
+                                    <div class="journey-header">
+                                        <span class="title">Journey {{ forloop.counter }}</span>
+                                        <span class="chip chip-programme-{{ journey.nutrition_programme|slugify }}">{{ journey.nutrition_programme|default:"No programme" }}</span>
+                                        {% if journey.programme_type %}<span class="chip">{{ journey.programme_type }}</span>{% endif %}
+                                        {% if journey.physiology_status %}<span class="chip">{{ journey.physiology_status }}</span>{% endif %}
+                                        {% if journey.admission_type %}<span class="chip chip-outlined">admission: {{ journey.admission_type }}</span>{% endif %}
+                                        {% if not journey.exit_type %}
+                                        <span class="chip chip-success chip-outlined">ongoing</span>
+                                        {% elif journey.exit_type == "cured" %}
+                                        <span class="chip chip-success">exit: cured</span>
+                                        {% elif journey.exit_type == "death" or journey.exit_type == "defaulter" or journey.exit_type == "non_respondent" %}
+                                        <span class="chip chip-error">exit: {{ journey.exit_type }}</span>
+                                        {% elif "transfer" in journey.exit_type %}
+                                        <span class="chip chip-primary">exit: {{ journey.exit_type }}</span>
+                                        {% else %}
+                                        <span class="chip">exit: {{ journey.exit_type }}</span>
+                                        {% endif %}
+                                        <span class="dates">{{ journey.start_date|date:"Y-m-d" }} &rarr; {{ journey.end_date|date:"Y-m-d"|default:"…" }}</span>
+                                    </div>
+                                    <div class="table-wrapper">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Date</th>
+                                                    <th>Org unit</th>
+                                                    <th>MUAC</th>
+                                                    <th>WHZ</th>
+                                                    <th>Oedema</th>
+                                                    <th>Entry point</th>
+                                                    <th>Assistance</th>
+                                                    <th>Submission</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for visit in journey.visit_set.all %}
+                                                <tr>
+                                                    <td><span class="visit-number">{{ visit.number }}</span></td>
+                                                    <td>{{ visit.date|date:"Y-m-d" }}</td>
+                                                    <td>{{ visit.org_unit.name|default:"" }}</td>
+                                                    <td class="muac" data-muac="{{ visit.muac_size|default_if_none:'' }}"
+                                                        data-programme-type="{{ journey.programme_type|default_if_none:'' }}">
+                                                        {% if visit.muac_size %}<span class="dot"></span>{{ visit.muac_size }}{% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if visit.whz_color == "Green" %}<span class="chip chip-success">Green</span>
+                                                        {% elif visit.whz_color == "Yellow" %}<span class="chip chip-warning">Yellow</span>
+                                                        {% elif visit.whz_color == "Red" %}<span class="chip chip-error">Red</span>
+                                                        {% else %}{{ visit.whz_color|default_if_none:"" }}{% endif %}
+                                                    </td>
+                                                    <td>{% if visit.oedema %}<span class="chip chip-error">yes</span>{% else %}<span class="muted">no</span>{% endif %}</td>
+                                                    <td>{{ visit.entry_point|default_if_none:"" }}</td>
+                                                    <td>
+                                                        {% for step in visit.step_set.all %}
+                                                        <span class="chip">{{ step.assistance_type }}: {{ step.quantity_given }}{% if step.ration_size %} ({{ step.ration_size }}){% endif %}</span>
+                                                        {% empty %}<span class="muted">none</span>
+                                                        {% endfor %}
+                                                    </td>
+                                                    <td>
+                                                        {% if visit.instance_id %}
+                                                        <a href="/dashboard/forms/submission/instanceId/{{ visit.instance_id }}"
+                                                            class="submission-link" target="_blank"
+                                                            data-fields-url="{% url 'wfp_submission_fields' visit.instance_id %}"><svg class="icon"><use href="#i-doc" /></svg>{{ visit.instance_id }}</a>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="9" class="muted">No visits</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                                {% empty %}
+                                <p class="muted">No journeys</p>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="empty">No beneficiaries found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <nav class="pagination" aria-label="Pagination">
+                <span class="label">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+                <a class="icon-btn{% if not page.has_previous %} disabled{% endif %}" aria-label="First page"
+                    href="?{{ query_without_page }}&page=1"><svg class="icon"><use href="#i-first" /></svg></a>
+                <a class="icon-btn{% if not page.has_previous %} disabled{% endif %}" aria-label="Previous page"
+                    href="{% if page.has_previous %}?{{ query_without_page }}&page={{ page.previous_page_number }}{% endif %}"><svg class="icon"><use href="#i-prev" /></svg></a>
+                <a class="icon-btn{% if not page.has_next %} disabled{% endif %}" aria-label="Next page"
+                    href="{% if page.has_next %}?{{ query_without_page }}&page={{ page.next_page_number }}{% endif %}"><svg class="icon"><use href="#i-next" /></svg></a>
+                <a class="icon-btn{% if not page.has_next %} disabled{% endif %}" aria-label="Last page"
+                    href="?{{ query_without_page }}&page={{ page.paginator.num_pages }}"><svg class="icon"><use href="#i-last" /></svg></a>
+            </nav>
+        </div>
+    </main>
+
+    <div id="submission-tooltip" hidden></div>
+
+    <dialog id="data-dialog" aria-labelledby="data-dialog-title">
+        <div class="dialog-header">
+            <h2 id="data-dialog-title">Beneficiary data</h2>
+            <button type="button" id="close-dialog" class="icon-btn" aria-label="Close">
+                <svg class="icon"><use href="#i-close" /></svg>
+            </button>
+        </div>
+        <div class="dialog-body" id="dialog-body"></div>
+    </dialog>
+
+    <script>
+        document.querySelectorAll("button.toggle").forEach(function (button) {
+            button.addEventListener("click", function () {
+                var row = document.getElementById(button.dataset.target);
+                row.hidden = !row.hidden;
+                button.setAttribute("aria-expanded", String(!row.hidden));
+                button.closest("tr").classList.toggle("expanded", !row.hidden);
+            });
+        });
+
+        // Color of the MUAC: green / yellow / red, with the thresholds of children (U5) and women (PLW)
+        document.querySelectorAll("td.muac").forEach(function (cell) {
+            var muac = parseFloat(cell.dataset.muac);
+            var dot = cell.querySelector(".dot");
+            if (isNaN(muac) || !dot) {
+                return;
+            }
+            var colour;
+            if (cell.dataset.programmeType === "PLW") {
+                colour = muac >= 23 ? "green" : "red";
+            } else {
+                colour = muac >= 12.5 ? "green" : muac >= 11.5 ? "yellow" : "red";
+            }
+            dot.classList.add(colour);
+        });
+
+        // Hovering a submission link shows all the fields of the submission.
+        // The tooltip stays open while the mouse is over it, so that long submissions can be scrolled.
+        var tooltip = document.getElementById("submission-tooltip");
+        var fieldsCache = {};
+        var hideTimer = null;
+        var currentUrl = null;
+
+        function hideTooltipSoon() {
+            hideTimer = setTimeout(function () {
+                tooltip.hidden = true;
+                currentUrl = null;
+            }, 250);
+        }
+
+        function showTooltip(link) {
+            clearTimeout(hideTimer);
+            var url = link.dataset.fieldsUrl;
+            currentUrl = url;
+            var rect = link.getBoundingClientRect();
+            var width = Math.min(560, window.innerWidth - 32);
+            tooltip.style.top = (window.scrollY + rect.bottom + 6) + "px";
+            tooltip.style.left = Math.max(16, window.scrollX + rect.right - width) + "px";
+            tooltip.hidden = false;
+            if (!fieldsCache[url]) {
+                tooltip.innerHTML = '<div class="loading">Loading…</div>';
+                fieldsCache[url] = fetch(url, { credentials: "same-origin" }).then(function (response) {
+                    if (!response.ok) {
+                        throw new Error(response.status + " " + response.statusText);
+                    }
+                    return response.text();
+                });
+                fieldsCache[url].catch(function () {
+                    delete fieldsCache[url];
+                });
+            }
+            fieldsCache[url]
+                .then(function (html) {
+                    if (currentUrl === url) {
+                        tooltip.innerHTML = html;
+                    }
+                })
+                .catch(function (error) {
+                    if (currentUrl === url) {
+                        tooltip.textContent = "Could not load the submission: " + error.message;
+                    }
+                });
+        }
+
+        document.querySelectorAll("a.submission-link").forEach(function (link) {
+            link.addEventListener("mouseenter", function () {
+                showTooltip(link);
+            });
+            link.addEventListener("mouseleave", hideTooltipSoon);
+        });
+        tooltip.addEventListener("mouseenter", function () {
+            clearTimeout(hideTimer);
+        });
+        tooltip.addEventListener("mouseleave", hideTooltipSoon);
+
+        var dialog = document.getElementById("data-dialog");
+        var dialogBody = document.getElementById("dialog-body");
+        document.getElementById("close-dialog").addEventListener("click", function () {
+            dialog.close();
+        });
+        // Clicking the backdrop closes the dialog
+        dialog.addEventListener("click", function (event) {
+            if (event.target === dialog) {
+                dialog.close();
+            }
+        });
+        document.querySelectorAll("button.show-data").forEach(function (button) {
+            button.addEventListener("click", function () {
+                dialogBody.innerHTML = '<div class="loading">Loading…</div>';
+                dialog.showModal();
+                fetch(button.dataset.url, { credentials: "same-origin" })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error(response.status + " " + response.statusText);
+                        }
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        dialogBody.innerHTML = html;
+                    })
+                    .catch(function (error) {
+                        dialogBody.textContent = "Could not load the data: " + error.message;
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>

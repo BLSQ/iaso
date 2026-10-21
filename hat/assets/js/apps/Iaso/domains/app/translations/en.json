@@ -2108,5 +2108,13 @@
     "trypelim.permissions.workzones": "Workzones",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes"
+    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes",
+    "iaso.form.label.summaryFields": "Summary fields",
+    "iaso.form.label.summaryFieldsHelp": "Questions shown by default in the submission details. The other questions are shown on demand.",
+    "iaso.form.label.restrictPii": "This form contains personal data (PII): hide the questions not listed below to users without the PII permission",
+    "iaso.form.label.nonPiiFields": "Questions without personal data (non-PII)",
+    "iaso.form.label.nonPiiFieldsHelp": "Only these questions are shown to users without the \"View personal data (PII) in submissions\" permission. Any question not listed is treated as personal data.",
+    "iaso.permissions.iaso_submissions_pii": "View personal data (PII) in submissions",
+    "iaso.permissions.iaso_submissions_pii_tooltip": "Allows to see all the questions of the submissions, including the ones that are not whitelisted as non-personal data in their form",
+    "iaso.instance.showAllQuestions": "Show all questions and their identifiers"
 }

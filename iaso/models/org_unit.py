@@ -645,8 +645,14 @@ class OrgUnit(TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-    def get_reference_instances_details_for_api(self) -> list:
-        return [instance.as_full_model() for instance in self.reference_instances.all()]
+    def get_reference_instances_details_for_api(self, user) -> list:
+        """`user`: personal data (PII) is filtered out of the submissions according to this user's permissions."""
+        from iaso.utils.pii import filter_instance_payload
+
+        return [
+            filter_instance_payload(instance.as_full_model(), instance.form, user)
+            for instance in self.reference_instances.all()
+        ]
 
     def set_extra_fields(self, fields):
         self.extra_fields = self.extra_fields | fields

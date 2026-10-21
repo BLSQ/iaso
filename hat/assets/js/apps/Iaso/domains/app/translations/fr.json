@@ -2106,5 +2106,13 @@
     "trypelim.permissions.workzones": "Rayons d'actions",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé"
+    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé",
+    "iaso.form.label.summaryFields": "Champs de résumé",
+    "iaso.form.label.summaryFieldsHelp": "Questions affichées par défaut dans le détail des soumissions. Les autres questions sont affichées à la demande.",
+    "iaso.form.label.restrictPii": "Ce formulaire contient des données personnelles (PII) : masquer les questions non listées ci-dessous aux utilisateurs sans la permission PII",
+    "iaso.form.label.nonPiiFields": "Questions sans données personnelles (non-PII)",
+    "iaso.form.label.nonPiiFieldsHelp": "Seules ces questions sont visibles par les utilisateurs sans la permission « Voir les données personnelles (PII) des soumissions ». Toute question non listée est considérée comme une donnée personnelle.",
+    "iaso.permissions.iaso_submissions_pii": "Voir les données personnelles (PII) des soumissions",
+    "iaso.permissions.iaso_submissions_pii_tooltip": "Permet de voir toutes les questions des soumissions, y compris celles qui ne sont pas déclarées sans données personnelles dans leur formulaire",
+    "iaso.instance.showAllQuestions": "Afficher toutes les questions et leurs identifiants"
 }

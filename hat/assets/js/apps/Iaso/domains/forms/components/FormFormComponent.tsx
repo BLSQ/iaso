@@ -385,6 +385,62 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 label={MESSAGES.fields}
                             />
                             <InputComponent
+                                multi
+                                clearable
+                                keyValue="summary_fields"
+                                onChange={(key, value) => {
+                                    setFieldValue(
+                                        key,
+                                        commaSeparatedIdsToStringArray(value),
+                                    );
+                                }}
+                                value={currentForm.summary_fields.value}
+                                errors={currentForm.summary_fields.errors}
+                                type="select"
+                                options={labelKeysOptions}
+                                label={MESSAGES.summaryFields}
+                                helperText={formatMessage(
+                                    MESSAGES.summaryFieldsHelp,
+                                )}
+                            />
+                            <InputComponent
+                                keyValue="non_pii_fields_enabled"
+                                onChange={(_key, value) =>
+                                    setFieldValue(
+                                        'non_pii_fields',
+                                        value ? [] : null,
+                                    )
+                                }
+                                value={
+                                    currentForm.non_pii_fields.value !== null
+                                }
+                                type="checkbox"
+                                label={MESSAGES.restrictPii}
+                            />
+                            {currentForm.non_pii_fields.value !== null && (
+                                <InputComponent
+                                    multi
+                                    clearable
+                                    keyValue="non_pii_fields"
+                                    onChange={(key, value) => {
+                                        setFieldValue(
+                                            key,
+                                            commaSeparatedIdsToStringArray(
+                                                value,
+                                            ),
+                                        );
+                                    }}
+                                    value={currentForm.non_pii_fields.value}
+                                    errors={currentForm.non_pii_fields.errors}
+                                    type="select"
+                                    options={labelKeysOptions}
+                                    label={MESSAGES.nonPiiFields}
+                                    helperText={formatMessage(
+                                        MESSAGES.nonPiiFieldsHelp,
+                                    )}
+                                />
+                            )}
+                            <InputComponent
                                 keyValue="change_request_mode"
                                 clearable
                                 onChange={(key, value) =>

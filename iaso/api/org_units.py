@@ -833,7 +833,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     if org_unit.catchment:
                         res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
-                res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
+                res["reference_instances"] = org_unit.get_reference_instances_details_for_api(request.user)
                 return Response(res)
             except IntegrityError:
                 errors.append(
@@ -1089,7 +1089,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             if is_field_referenced("catchment", requested_fields, []) and org_unit.catchment is not None:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
-        res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
+        res["reference_instances"] = org_unit.get_reference_instances_details_for_api(request.user)
 
         # `fields=` also trims the response to just the requested top-level keys (in addition to
         # skipping the `instances_count`/`catchment` computations above when they're not among

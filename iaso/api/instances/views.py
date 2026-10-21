@@ -23,6 +23,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
@@ -76,6 +77,19 @@ from iaso.models.instances import resolve_status_form_ids
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
+from iaso.utils.pii import (
+    ensure_fields_allowed,
+    filter_entity_payload,
+    filter_instance_payload,
+    filter_pii,
+    filter_submission_files,
+    filter_submission_json,
+    get_allowed_fields,
+    is_field_allowed,
+    jsonlogic_vars,
+    restricted_forms_for_user,
+    user_can_view_pii,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -156,8 +170,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def _get_filtered_attachments_queryset(self, request):
         """Helper method to get filtered attachments queryset with common logic"""
-        filters = parse_instance_filters(request.GET)
+        filters = parse_instance_filters_for_user(request.GET, request.user)
         instances = self.get_queryset().for_filters(**filters)
+        if not user_can_view_pii(request.user):
+            # Attachments can't be matched to their question in a query: without the PII permission, the
+            # attachments of the forms with a PII configuration are not listed (they remain visible, when their
+            # question is whitelisted, in the submission details).
+            instances = instances.filter(form__non_pii_fields__isnull=True)
         queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
 
         file_type_serializer = FileTypeSerializer(data=request.query_params)
@@ -260,8 +279,11 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
     @staticmethod
-    def _file_export_columns(form: Form, queryset: "QuerySet[Instance]"):
-        """Columns, sub columns (question labels) and answers keys shared by the csv/xlsx exports"""
+    def _file_export_columns(form: Form, queryset: "QuerySet[Instance]", user):
+        """Columns, sub columns (question labels) and answers keys shared by the csv/xlsx exports
+
+        `user`: the questions hidden from this user as personal data (PII) are left out.
+        """
         columns = [
             {"title": "ID du formulaire", "width": 20},
             {"title": "Soumission de référence", "width": 20},
@@ -297,10 +319,11 @@ class InstancesViewSet(viewsets.ViewSet):
             columns.append({"title": "correlation id", "width": 20})
 
         sub_columns = ["" for __ in columns]
+        allowed_fields = get_allowed_fields(form, user)
         latest_form_version = form.latest_version
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
         if form and latest_form_version:
-            file_content_template = questions_by_name
+            file_content_template = {k: v for k, v in questions_by_name.items() if is_field_allowed(k, allowed_fields)}
             for title in file_content_template:
                 # some form have dict as label to support MuliLang. So convert to String
                 # e.g. Vaccine Stock Monitoring {'French': 'fin', 'English': 'end'}
@@ -310,7 +333,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 sub_columns.append(label)
                 columns.append({"title": title, "width": 50})
         else:
-            file_content_template = queryset.first().as_dict()["file_content"]  # type: ignore
+            file_content_template = filter_submission_json(
+                queryset.first().as_dict()["file_content"],  # type: ignore
+                form,
+                user,
+            )
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
                 sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
@@ -328,7 +355,8 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
-        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
+        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset, self.request.user)
+        allowed_fields = get_allowed_fields(form, self.request.user)
 
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
@@ -337,6 +365,8 @@ class InstancesViewSet(viewsets.ViewSet):
             updated_at_timestamp = instance.source_updated_at_with_fallback.timestamp()
             org_unit = instance.org_unit
             file_content = instance.get_and_save_json_of_xml()
+            if allowed_fields is not None and file_content:
+                file_content = filter_pii(file_content, allowed_fields)
 
             instance_values = [
                 instance.id,
@@ -446,7 +476,7 @@ class InstancesViewSet(viewsets.ViewSet):
         if not form:
             return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
-        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
+        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset, self.request.user)
         export_queryset = build_submissions_tabular_queryset(queryset, form, file_content_template, columns)
 
         filename = "instances-%s-%s" % (form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
@@ -506,7 +536,7 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         parquet_format = request.GET.get("parquet", None)
-        filters = parse_instance_filters(request.GET)
+        filters = parse_instance_filters_for_user(request.GET, request.user)
         with_descriptor = request.GET.get("with_descriptor", "false")
         fields_param = request.GET.get("fields", None)
         # Not (yet) applied to the csv/xlsx/parquet export branches below, only to the JSON
@@ -597,6 +627,7 @@ class InstancesViewSet(viewsets.ViewSet):
                         if with_descriptor == "true"
                         else instance.as_dict(fields=requested_fields)
                     )
+                    filter_instance_payload(d, instance.form, request.user)
                     if wants_field("can_user_modify"):
                         d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     if wants_field("is_locked"):
@@ -628,9 +659,13 @@ class InstancesViewSet(viewsets.ViewSet):
             return Response(
                 {
                     "instances": [
-                        instance.as_dict_with_descriptor(fields=requested_fields)
-                        if with_descriptor == "true"
-                        else instance.as_dict(fields=requested_fields)
+                        filter_instance_payload(
+                            instance.as_dict_with_descriptor(fields=requested_fields)
+                            if with_descriptor == "true"
+                            else instance.as_dict(fields=requested_fields),
+                            instance.form,
+                            request.user,
+                        )
                         for instance in queryset
                     ]
                 }
@@ -686,7 +721,9 @@ class InstancesViewSet(viewsets.ViewSet):
         # actually return parquet file
         form_ids = filters["form_ids"]
         form = Form.objects.get(pk=form_ids)
-        export_queryset, mapping = parquet.build_submissions_queryset(queryset, form.id)
+        export_queryset, mapping = parquet.build_submissions_queryset(
+            queryset, form.id, allowed_fields=get_allowed_fields(form, request.user)
+        )
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 
@@ -703,7 +740,7 @@ class InstancesViewSet(viewsets.ViewSet):
         Returns a flat list of {id, latitude, longitude} for all instances with
         a location that match the given filters. Intentionally not paginated.
         """
-        filters = parse_instance_filters(request.GET)
+        filters = parse_instance_filters_for_user(request.GET, request.user)
         limit = int(request.GET.get("limit", 3000))
         queryset = self.get_queryset().for_filters(**filters)[:limit]
         serializer = InstanceLocationSerializer(queryset, many=True)
@@ -801,6 +838,21 @@ class InstancesViewSet(viewsets.ViewSet):
 
         response = instance.as_full_model(with_entity=True)
         response = self._filter_response_for_permissions(response)
+        filter_instance_payload(response, instance.form, request.user)
+        if instance.entity_id:
+            filter_entity_payload(response.get("entity"), instance.entity, request.user)
+        response["summary_fields"] = instance.form.summary_fields
+        # questions whose answers were removed because they contain personal data, so they aren't shown as empty
+        allowed_fields = get_allowed_fields(instance.form, request.user)
+        response["hidden_fields"] = (
+            [
+                field["name"]
+                for field in instance.form.possible_fields or []
+                if not is_field_allowed(field["name"], allowed_fields)
+            ]
+            if allowed_fields is not None
+            else []
+        )
 
         # Logs(history) of all instance locks
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
@@ -822,7 +874,7 @@ class InstancesViewSet(viewsets.ViewSet):
         instance.last_modified_by = user
         instance.soft_delete()
         log_modification(original, instance, INSTANCE_API, user=request.user)
-        return Response(instance.as_full_model())
+        return Response(filter_instance_payload(instance.as_full_model(), instance.form, request.user))
 
     @transaction.atomic
     def patch(self, request, pk=None):
@@ -853,7 +905,7 @@ class InstancesViewSet(viewsets.ViewSet):
         instance.last_modified_by = request.user
         instance.save()
         log_modification(original, instance, INSTANCE_API, user=request.user)
-        return Response(instance.as_full_model())
+        return Response(filter_instance_payload(instance.as_full_model(), instance.form, request.user))
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
     def bulkdelete(self, request):
@@ -862,7 +914,7 @@ class InstancesViewSet(viewsets.ViewSet):
         unselected_ids = request.data.get("unselected_ids", None)
         is_deletion = request.data.get("is_deletion", True)
 
-        filters = parse_instance_filters(request.data)
+        filters = parse_instance_filters_for_user(request.data, request.user)
         instances_query = self.get_queryset()
         instances_query = instances_query.prefetch_related("form")
         instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
@@ -958,7 +1010,7 @@ class InstancesViewSet(viewsets.ViewSet):
             raise Http404
 
         # let's filter everything
-        filters = parse_instance_filters(request.GET)
+        filters = parse_instance_filters_for_user(request.GET, request.user)
         instances_query = instances_query.select_related("org_unit")
         instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
         instances_query = instances_query.for_filters(**filters)
@@ -1063,7 +1115,7 @@ class InstancesViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(Instance.objects.filter_for_user(request.user).filter(pk=pk))
         log = get_object_or_404(Modification, pk=logId)
-        log_dict = log.as_dict()
+        log_dict = log.as_dict(request.user)
         possible_fields = (
             instance.form_version.possible_fields
             if instance.form_version and instance.form_version.possible_fields
@@ -1073,6 +1125,13 @@ class InstancesViewSet(viewsets.ViewSet):
         # return also deleted once because here we are looking the history of the submission
         for f in instance.instancefile_set.all():
             dict_files[f.name] = f.file.url
+        if get_allowed_fields(instance.form, request.user) is not None:
+            # only keep the attachments of the questions that remained visible in the snapshots
+            visible_json = [
+                value.get("fields", {}).get("json") for value in log_dict["past_value"] + log_dict["new_value"]
+            ]
+            visible_urls = set(filter_submission_files(list(dict_files.values()), visible_json))
+            dict_files = {name: url for name, url in dict_files.items() if url in visible_urls}
         log_dict["files"] = dict_files
         log_dict["possible_fields"] = possible_fields
         log_dict["form_descriptor"] = instance.form_version.form_descriptor if instance.form_version else None
@@ -1083,6 +1142,8 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(
             Instance.objects.filter_for_user(request.user).prefetch_related("instancefile_set").filter(pk=pk)
         )
+        if get_allowed_fields(instance.form, request.user) is not None:
+            raise PermissionDenied("The attachments of this form may contain personal data")
         return StreamingHttpResponse(
             streaming_content=generate_zip(instance),
             headers={
@@ -1091,6 +1152,17 @@ class InstancesViewSet(viewsets.ViewSet):
                 "Access-Control-Expose-Headers": "Content-Disposition",
             },
         )
+
+
+def parse_instance_filters_for_user(data, user) -> Dict[str, Any]:
+    """`parse_instance_filters`, refusing JsonLogic filters on questions whose answers are hidden from the user."""
+    filters = parse_instance_filters(data)
+    if filters.get("json_content"):
+        form_ids = [i for i in str(filters.get("form_ids") or filters.get("form_id") or "").split(",") if i.strip()]
+        ensure_fields_allowed(
+            jsonlogic_vars(filters["json_content"]), restricted_forms_for_user(user, form_ids or None), user
+        )
+    return filters
 
 
 def find_entity(

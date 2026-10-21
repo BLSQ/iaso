@@ -5,6 +5,8 @@ import {
     filterSubmissionTree,
     getFieldKind,
     getSectionFields,
+    keepSummaryFields,
+    removeHiddenFields,
 } from './useSubmissionSections';
 
 const descriptor: Descriptor = {
@@ -284,5 +286,63 @@ describe('buildSubmissionTree with repeats', () => {
         const [repeat] = childSections(filtered!);
         expect(repeat.id).to.equal('members');
         expect(childSections(repeat)[0].label).to.equal('Household member (1)');
+    });
+});
+
+describe('keepSummaryFields / removeHiddenFields', () => {
+    const descriptor: Descriptor = {
+        name: 'survey',
+        type: 'survey',
+        children: [
+            {
+                name: 'child',
+                type: 'group',
+                label: 'Child',
+                children: [
+                    { name: 'name', type: 'text', label: 'Name' },
+                    { name: 'muac', type: 'decimal', label: 'MUAC' },
+                ],
+            },
+            {
+                name: 'contact',
+                type: 'group',
+                label: 'Contact',
+                children: [{ name: 'phone', type: 'text', label: 'Phone' }],
+            },
+        ],
+    };
+    const tree = buildSubmissionTree(
+        descriptor,
+        { name: 'Ada', muac: '12.5', phone: '0123' },
+        'en',
+    );
+    const questionNames = (section: SubmissionSection | undefined): string[] =>
+        section
+            ? section.items.flatMap(item =>
+                  item.type === 'field'
+                      ? [item.field.descriptor.name]
+                      : questionNames(item.section),
+              )
+            : [];
+
+    it('keeps the summary fields, case insensitively, and drops empty groups', () => {
+        const result = keepSummaryFields(tree, ['MUAC']);
+        expect(questionNames(result)).to.eql(['muac']);
+        expect(childSections(result!).map(section => section.id)).to.eql([
+            'child',
+        ]);
+    });
+
+    it('removes the hidden fields and drops empty groups', () => {
+        const result = removeHiddenFields(tree, ['name', 'Phone']);
+        expect(questionNames(result)).to.eql(['muac']);
+    });
+
+    it('returns the tree unchanged without hidden fields', () => {
+        expect(removeHiddenFields(tree, [])).to.equal(tree);
+    });
+
+    it('keeps an empty root when nothing is left', () => {
+        expect(keepSummaryFields(tree, ['unknown'])?.items).to.eql([]);
     });
 });

@@ -1,0 +1,19 @@
+<div class="submission-header">
+    <strong>{{ submission.form.name }}</strong> ({{ submission.form.form_id }}) &middot; #{{ submission.id }}
+    {% if submission.deleted %}<strong>(deleted)</strong>{% endif %}<br>
+    {{ submission.org_unit.name|default:"" }} &middot;
+    device: {{ submission.source_created_at|date:"Y-m-d H:i" }} &middot;
+    synced: {{ submission.created_at|date:"Y-m-d H:i" }}
+</div>
+<table>
+    {% for key, value in rows %}
+    <tr>
+        <th>{{ key }}</th>
+        <td>{{ value|default_if_none:"" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td class="muted">No fields</td>
+    </tr>
+    {% endfor %}
+</table>

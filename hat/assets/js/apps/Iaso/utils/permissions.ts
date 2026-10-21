@@ -34,6 +34,7 @@ const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
 const SUBMISSIONS = 'iaso_submissions';
 const SUBMISSIONS_UPDATE = 'iaso_update_submission';
+const SUBMISSIONS_PII = 'iaso_submissions_pii';
 const TEAMS = 'iaso_teams';
 const USER_ROLES = 'iaso_user_roles';
 const USERS_ADMIN = 'iaso_users';
@@ -86,6 +87,7 @@ export {
     STORAGES,
     SUBMISSIONS,
     SUBMISSIONS_UPDATE,
+    SUBMISSIONS_PII,
     TEAMS,
     USERS_ADMIN,
     USERS_MANAGEMENT,

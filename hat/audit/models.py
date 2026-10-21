@@ -101,21 +101,38 @@ class Modification(models.Model):
             self.created_at,
         )
 
-    def as_dict(self):
+    def values_for_user(self, user=None):
+        """`(past_value, new_value)`, without the personal data the user can't see when this is a submission log.
+
+        `user=None` means no filtering, for internal uses.
+        """
+        from iaso.models import Instance
+        from iaso.utils.pii import filter_serialized_instance_values
+
+        if user is None or not isinstance(self.content_object, Instance):
+            return self.past_value, self.new_value
+        form = self.content_object.form
+        return (
+            filter_serialized_instance_values(self.past_value, form, user),
+            filter_serialized_instance_values(self.new_value, form, user),
+        )
+
+    def as_dict(self, user=None):
         values_serializer = get_values_serializer(self.content_object)
+        past_value, new_value = self.values_for_user(user)
         return {
             "id": self.id,
             "content_type": self.content_type.app_label,
             "object_id": self.object_id,
-            "past_value": values_serializer.serialize(self.past_value),
-            "new_value": values_serializer.serialize(self.new_value),
+            "past_value": values_serializer.serialize(past_value),
+            "new_value": values_serializer.serialize(new_value),
             "source": self.source,
             "user": self.user.iaso_profile.as_dict() if self.user else None,
             "created_at": self.created_at,
             "org_unit_change_request_id": self.org_unit_change_request.id if self.org_unit_change_request else None,
         }
 
-    def as_list(self, fields):
+    def as_list(self, fields, user=None):
         dict_list = {
             "id": self.id,
             "content_type": self.content_type.app_label,
@@ -125,18 +142,20 @@ class Modification(models.Model):
             "created_at": self.created_at,
             "org_unit_change_request_id": self.org_unit_change_request.id if self.org_unit_change_request else None,
         }
+        if {"past_value", "new_value", "field_diffs"} & set(fields):
+            past_value, new_value = self.values_for_user(user)
         if "past_value" in fields:
-            dict_list["past_value"] = self.past_value
+            dict_list["past_value"] = past_value
         if "new_value" in fields:
-            dict_list["new_value"] = self.new_value
+            dict_list["new_value"] = new_value
         if "field_diffs" in fields:
-            dict_list["field_diffs"] = self.field_diffs()
+            dict_list["field_diffs"] = self.field_diffs(past_value, new_value)
 
         return dict_list
 
-    def field_diffs(self):
-        past_values = self.past_value or []
-        new_values = self.new_value or []
+    def field_diffs(self, past_values=None, new_values=None):
+        past_values = (self.past_value if past_values is None else past_values) or []
+        new_values = (self.new_value if new_values is None else new_values) or []
         past_value = past_values[0] if len(past_values) > 0 else {}
         new_value = new_values[0] if len(new_values) > 0 else {}
         past_fields = past_value.get("fields") or {}

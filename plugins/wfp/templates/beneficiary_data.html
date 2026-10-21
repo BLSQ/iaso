@@ -1,0 +1,73 @@
+<h3>Entity {{ entity.id }} &middot; {{ entity.entity_type.name }}</h3>
+<table>
+    <tr>
+        <th>UUID</th>
+        <td>{{ entity.uuid }}</td>
+    </tr>
+    <tr>
+        <th>Created</th>
+        <td>{{ entity.created_at|date:"Y-m-d H:i" }}</td>
+    </tr>
+    {% if entity.deleted_at %}
+    <tr>
+        <th>Deleted</th>
+        <td>{{ entity.deleted_at|date:"Y-m-d H:i" }}</td>
+    </tr>
+    {% endif %}
+    {% if beneficiary %}
+    <tr>
+        <th>ETL gender</th>
+        <td>{{ beneficiary.gender|default_if_none:"" }}</td>
+    </tr>
+    <tr>
+        <th>ETL birth date</th>
+        <td>{{ beneficiary.birth_date|date:"Y-m-d" }}</td>
+    </tr>
+    <tr>
+        <th>ETL guidelines</th>
+        <td>{{ beneficiary.guidelines|default_if_none:"" }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<h3>Reference form{% if entity.attributes %} &middot; submission {{ entity.attributes.id }}{% endif %}</h3>
+{% if attributes %}
+<table>
+    {% for key, value in attributes %}
+    <tr>
+        <th>{{ key }}</th>
+        <td>{{ value|default_if_none:"" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p class="muted">No reference form data</p>
+{% endif %}
+
+<h3>Submissions linked to the entity ({{ submissions|length }})</h3>
+{% for submission in submissions %}
+<details>
+    <summary>
+        {{ submission.source_created_at|default:submission.created_at|date:"Y-m-d H:i" }}
+        &middot; {{ submission.form.name }} ({{ submission.form.form_id }})
+        &middot; {{ submission.org_unit.name|default:"" }}
+        &middot; #{{ submission.id }}
+        {% if submission.deleted %}<strong>(deleted)</strong>{% endif %}
+    </summary>
+    <p>
+        Synced: {{ submission.created_at|date:"Y-m-d H:i" }} &middot;
+        Updated: {{ submission.updated_at|date:"Y-m-d H:i" }} &middot;
+        <a href="/dashboard/forms/submission/instanceId/{{ submission.id }}" target="_blank">Open submission</a>
+    </p>
+    <table>
+        {% for key, value in submission.rows %}
+        <tr>
+            <th>{{ key }}</th>
+            <td>{{ value|default_if_none:"" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</details>
+{% empty %}
+<p class="muted">No submissions</p>
+{% endfor %}

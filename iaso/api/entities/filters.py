@@ -13,6 +13,39 @@ from iaso.api.common import CharInFilter
 from iaso.models import Entity, Instance, OrgUnit
 from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
+from iaso.utils.pii import (
+    ensure_fields_allowed,
+    is_field_allowed_in_forms,
+    jsonlogic_vars,
+    restricted_forms_for_user,
+)
+
+
+def restricted_reference_forms(user) -> list:
+    """Reference forms of entity types whose personal data (PII) is hidden from this user."""
+    from iaso.models import EntityType
+
+    forms = restricted_forms_for_user(user)
+    if not forms:
+        return []
+    reference_form_ids = set(
+        EntityType.objects.filter(reference_form__in=forms).values_list("reference_form_id", flat=True)
+    )
+    return [form for form in forms if form.id in reference_form_ids]
+
+
+def json_search_q(token, restricted_forms):
+    """Search in the attributes, only in the questions visible to the user for the forms with PII."""
+    if not restricted_forms:
+        return Q(attributes__json__icontains=token)
+    q = Q(attributes__json__icontains=token) & ~Q(attributes__form__in=restricted_forms)
+    for form in restricted_forms:
+        form_q = Q()
+        for name in form.non_pii_fields or []:
+            form_q |= Q(**{f"attributes__json__{name}__icontains": token})
+        if form_q:
+            q |= Q(attributes__form=form) & form_q
+    return q
 
 
 class EntityFilterSet(FilterSet):
@@ -52,7 +85,10 @@ class EntityFilterSet(FilterSet):
 
     def filter_fields_search(self, queryset, name, value):
         try:
-            q, _ = entities_jsonlogic_to_q(json.loads(value))
+            logic = json.loads(value)
+            user = getattr(self.request, "user", None)
+            ensure_fields_allowed(jsonlogic_vars(logic), restricted_reference_forms(user), user)
+            q, _ = entities_jsonlogic_to_q(logic)
             return queryset.filter(q)
         except (ValueError, json.JSONDecodeError):
             raise ValidationError("Invalid JSON in fields_search")
@@ -71,9 +107,11 @@ class EntityFilterSet(FilterSet):
                 raise ValidationError(f"Failed parsing uuids in search '{value}'")
             return queryset.filter(uuid__in=uuids)
 
+        user = getattr(self.request, "user", None)
+        restricted_forms = restricted_reference_forms(user)
         q = Q()
         for token in value.split():
-            q &= Q(name__icontains=token) | Q(attributes__json__icontains=token)
+            q &= Q(name__icontains=token) | json_search_q(token, restricted_forms)
         q |= Q(uuid__icontains=value)
 
         return queryset.filter(q)
@@ -126,6 +164,7 @@ class EntityOrderingFilter(filters.OrderingFilter):
         model_fields.update(queryset.query.annotations.keys())
 
         final_ordering = []
+        restricted_forms = None  # only looked up when sorting on the attributes
 
         for field in ordering.split(","):
             field = field.strip()
@@ -138,6 +177,11 @@ class EntityOrderingFilter(filters.OrderingFilter):
             if base_field in model_fields:
                 final_ordering.append(field)
             else:
+                if restricted_forms is None:
+                    restricted_forms = restricted_reference_forms(request.user)
+                if not is_field_allowed_in_forms(field_name, restricted_forms, request.user):
+                    # sorting on a hidden question would reveal its values
+                    continue
                 prefix = "-" if field.startswith("-") else ""
                 final_ordering.append(f"{prefix}attributes__json__{field_name}")
 

@@ -182,6 +182,15 @@ class Form(SoftDeletableModel):
     label_keys = ArrayField(
         models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
     )
+    # Questions that do NOT contain personal data (PII). When set, users without the "view PII" permission only
+    # see these questions of the submissions. When null, the form has no PII configuration and nothing is filtered.
+    non_pii_fields = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), null=True, blank=True
+    )
+    # Questions displayed by default in the submission details, the other ones are shown on demand
+    summary_fields = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), null=True, blank=True
+    )
 
     objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
 

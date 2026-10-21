@@ -3,6 +3,7 @@ from rest_framework import serializers
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, Group, OrgUnit
 from iaso.models.storage import StorageDevice
+from iaso.utils.pii import filter_instance_payload, get_allowed_fields, is_field_allowed
 
 
 class EntityTypeColumnSerializer(serializers.Serializer):
@@ -159,7 +160,17 @@ class EntityListSerializer(serializers.ModelSerializer):
         return bool(obj.get_pending_duplicate_ids())
 
     def get_name(self, obj):
+        if obj.attributes and not is_field_allowed("name", self._allowed_fields(obj.attributes.form)):
+            return None
         return obj.attributes and obj.attributes.json and obj.attributes.json.get("name")
+
+    def _allowed_fields(self, form):
+        """PII whitelist of a reference form (prefetched by the view) for the current user, cached for the list."""
+        cache = self.context.setdefault("_pii_allowed_fields", {})
+        if form.id not in cache:
+            request = self.context.get("request")
+            cache[form.id] = get_allowed_fields(form, request.user if request else None)
+        return cache[form.id]
 
     def to_representation(self, instance):
         """Handle entity_type_columns from the serializer context."""
@@ -203,7 +214,10 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
-            return entity.attributes.as_dict()
+            request = self.context.get("request")
+            return filter_instance_payload(
+                entity.attributes.as_dict(), entity.attributes.form, request.user if request else None
+            )
         return None
 
     def get_org_unit(self, entity: Entity):

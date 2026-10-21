@@ -154,17 +154,17 @@ class LogsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["list"] = map(lambda x: x.as_list(fields), page.object_list)
+            res["list"] = map(lambda x: x.as_list(fields, request.user), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        return Response(map(lambda x: x.as_list(fields), queryset))
+        return Response(map(lambda x: x.as_list(fields, request.user), queryset))
 
     def retrieve(self, request, pk=None):
         log = get_object_or_404(Modification, pk=pk)
         if not has_access_to(request.user, log.content_object):
             return Response({"error": _("Unauthorized")}, status=401)
-        return Response(log.as_dict())
+        return Response(log.as_dict(request.user))

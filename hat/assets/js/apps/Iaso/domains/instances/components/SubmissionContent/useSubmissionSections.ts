@@ -292,3 +292,60 @@ export const useFilteredSubmissionTree = (
     query: string,
 ): FilteredSubmission =>
     useMemo(() => filterSubmissionTree(tree, query), [tree, query]);
+
+/**
+ * Keep the questions for which `keep` is true. Groups left without any question
+ * are dropped; the root is always kept, possibly empty.
+ */
+const filterTreeFields = (
+    section: SubmissionSection,
+    keep: (field: SubmissionField) => boolean,
+): SubmissionSection | undefined => {
+    const items: SubmissionSectionItem[] = [];
+    section.items.forEach(item => {
+        if (isField(item)) {
+            if (keep(item.field)) items.push(item);
+            return;
+        }
+        const filtered = filterTreeFields(item.section, keep);
+        if (filtered) items.push({ type: 'section', section: filtered });
+    });
+    return items.length > 0 ? { ...section, items } : undefined;
+};
+
+const filterTree = (
+    tree: SubmissionSection | undefined,
+    keep: (field: SubmissionField) => boolean,
+): SubmissionSection | undefined =>
+    tree && (filterTreeFields(tree, keep) ?? { ...tree, items: [] });
+
+/**
+ * Keep only the summary fields of the form (`Form.summary_fields`), the ones
+ * shown by default in the submission details. Question names are compared case
+ * insensitively, like on the server.
+ */
+export const keepSummaryFields = (
+    tree: SubmissionSection | undefined,
+    summaryFields: string[],
+): SubmissionSection | undefined => {
+    const names = new Set(summaryFields.map(name => name.toLowerCase()));
+    return filterTree(tree, field =>
+        names.has(field.descriptor.name.toLowerCase()),
+    );
+};
+
+/**
+ * Remove the questions whose answers were withheld by the server because they
+ * contain personal data (PII), so they don't look like unanswered questions.
+ */
+export const removeHiddenFields = (
+    tree: SubmissionSection | undefined,
+    hiddenFields: string[],
+): SubmissionSection | undefined => {
+    if (hiddenFields.length === 0) return tree;
+    const names = new Set(hiddenFields.map(name => name.toLowerCase()));
+    return filterTree(
+        tree,
+        field => !names.has(field.descriptor.name.toLowerCase()),
+    );
+};

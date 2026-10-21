@@ -102,6 +102,8 @@ const makeForm = (overrides: Record<string, any> = {}) => ({
     location_field: makeField(''),
     possible_fields: makeField([]),
     label_keys: makeField([]),
+    non_pii_fields: makeField(null),
+    summary_fields: makeField([]),
     legend_threshold: makeField(null),
     change_request_mode: makeField('CR_MODE_NONE'),
     validation_workflow: makeField(null),

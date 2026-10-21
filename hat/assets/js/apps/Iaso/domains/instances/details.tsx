@@ -114,6 +114,10 @@ const InstanceDetails: FunctionComponent = () => {
                                     }
                                     instanceData={currentInstance.file_content}
                                     files={currentInstance.files ?? []}
+                                    summaryFields={
+                                        currentInstance.summary_fields
+                                    }
+                                    hiddenFields={currentInstance.hidden_fields}
                                 />
                             </Grid>
 

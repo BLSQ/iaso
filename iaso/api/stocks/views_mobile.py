@@ -82,7 +82,7 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         return (
             StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id)
-            .select_related("sku", "org_unit", "submission", "created_by")
+            .select_related("sku", "org_unit", "submission__form", "created_by")
             .order_by("id")
         )
 

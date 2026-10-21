@@ -543,9 +543,8 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_list_results(self):
         # 1. SELECT project (+ account + default_version via select_related)
         # 2. SELECT COUNT(*)
-        # 3. SELECT StockLedgerItem (+ sku, org_unit, submission, created_by via select_related)
-        # 4-5. SELECT form, once per item whose submission has a form (N+1 on form_name, IA-5559)
-        data = self.get_list(num_queries=5)
+        # 3. SELECT StockLedgerItem (+ sku, org_unit, submission, form, created_by via select_related)
+        data = self.get_list(num_queries=3)
 
         self.assertEqual(
             data,
@@ -565,15 +564,15 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
             },
         )
 
-    def test_list_number_of_queries_grows_with_submissions_with_form(self):
-        """Documents the N+1 on form_name (IA-5559): one extra query per item whose submission has a form."""
-        self.get_list(num_queries=5)
+    def test_list_number_of_queries_does_not_grow_with_submissions_with_form(self):
+        """No N+1 on form_name (IA-5559): the form is fetched with the ledger items."""
+        self.get_list(num_queries=3)
 
         for number in (10, 11, 12):
             submission = m.Instance.objects.create(project=self.project, form=self.stock_count_form)
             self.create_ledger_item(number, self.sku, self.brussels, submission, 1)
 
-        data = self.get_list(num_queries=8)
+        data = self.get_list(num_queries=3)
         self.assertEqual(7, data["count"])
 
     def test_list_is_scoped_to_the_project_of_the_app(self):
@@ -593,7 +592,7 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
     def test_list_excludes_skus_of_another_account(self):
-        data = self.get_list(num_queries=5)
+        data = self.get_list(num_queries=3)
 
         self.assertNotIn(str(self.item_other_account.id), [result["id"] for result in data["results"]])
 
@@ -606,14 +605,12 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
             received_at=self.LAST_SYNC + timedelta(days=1)
         )
 
-        # 4. SELECT form of item_delivery's submission (N+1 on form_name, IA-5559)
-        data = self.get_list(num_queries=4, last_sync=self.LAST_SYNC.isoformat())
+        data = self.get_list(num_queries=3, last_sync=self.LAST_SYNC.isoformat())
 
         self.assertEqual(2, data["count"])
         self.assertResultIds(data, [self.item_delivery, self.item_without_submission])
 
     def test_list_pagination(self):
-        # No form query: neither item of the second page has a submission with a form
         data = self.get_list(num_queries=3, limit=2, page=2)
 
         self.assertResultIds(data, [self.item_without_form, self.item_without_submission])

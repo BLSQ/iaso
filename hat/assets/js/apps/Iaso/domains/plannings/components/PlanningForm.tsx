@@ -17,7 +17,7 @@ import {
     LinkButton,
     ConfirmCancelModal,
 } from 'bluesquare-components';
-import { Field, FormikProvider, useFormik } from 'formik';
+import { useFormik } from 'formik';
 import { isEqual, pick } from 'lodash';
 import moment from 'moment';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
@@ -27,6 +27,7 @@ import { useBulkDeleteAssignments } from 'Iaso/domains/assignments/hooks/request
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { filterOrgUnitTypesByForms } from 'Iaso/domains/forms/utils';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
+import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import {
     OrgUnitTypeHierarchy,
@@ -37,7 +38,6 @@ import { useSkipEffectUntilValue } from 'Iaso/hooks/useSkipEffectUntilValue';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
-import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -350,325 +350,313 @@ export const PlanningForm: FunctionComponent<Props> = ({
             >
                 {formatMessage(MESSAGES.planningWarningMessage)}
             </ConfirmCancelModal>
-            <FormikProvider value={formik}>
-                <Grid container spacing={2}>
-                    <Grid xs={12} md={4} item>
-                        <InputComponent
-                            keyValue="name"
-                            onChange={onChange}
-                            value={values.name}
-                            errors={getErrors('name')}
-                            type="text"
-                            label={MESSAGES.name}
-                            required
-                            withMarginTop={false}
-                        />
+            <Grid container spacing={2}>
+                <Grid xs={12} md={4} item>
+                    <InputComponent
+                        keyValue="name"
+                        onChange={onChange}
+                        value={values.name}
+                        errors={getErrors('name')}
+                        type="text"
+                        label={MESSAGES.name}
+                        required
+                        withMarginTop={false}
+                    />
 
-                        <DatesRange
-                            onChangeDate={onChangeDate}
-                            dateFrom={values.startDate}
-                            dateTo={values.endDate}
-                            labelFrom={MESSAGES.startDatefrom}
-                            labelTo={MESSAGES.endDateUntil}
-                            keyDateFrom="startDate"
-                            keyDateTo="endDate"
-                            errors={[
-                                getErrors('startDate'),
-                                getErrors('endDate'),
-                            ]}
-                            blockInvalidDates={false}
-                        />
-                        <InputComponent
-                            keyValue="description"
-                            onChange={onChange}
-                            value={values.description}
-                            errors={getErrors('description')}
-                            type="textarea"
-                            label={MESSAGES.description}
-                        />
-                    </Grid>
+                    <DatesRange
+                        onChangeDate={onChangeDate}
+                        dateFrom={values.startDate}
+                        dateTo={values.endDate}
+                        labelFrom={MESSAGES.startDatefrom}
+                        labelTo={MESSAGES.endDateUntil}
+                        keyDateFrom="startDate"
+                        keyDateTo="endDate"
+                        errors={[getErrors('startDate'), getErrors('endDate')]}
+                        blockInvalidDates={false}
+                    />
+                    <InputComponent
+                        keyValue="description"
+                        onChange={onChange}
+                        value={values.description}
+                        errors={getErrors('description')}
+                        type="textarea"
+                        label={MESSAGES.description}
+                    />
+                </Grid>
 
-                    <Grid xs={12} md={4} item>
-                        <InputWithInfos
-                            infos={formatMessage(
-                                MESSAGES.projectSelectHelperText,
-                            )}
-                        >
-                            <Box sx={styles.paper}>
-                                <Grid container spacing={2}>
-                                    <Grid xs={6} item>
-                                        <InputComponent
-                                            type="select"
-                                            keyValue="project"
-                                            onChange={onChange}
-                                            value={
-                                                isFetchingProjects
-                                                    ? undefined
-                                                    : values.project
-                                            }
-                                            errors={getErrors('project')}
-                                            label={MESSAGES.project}
-                                            required
-                                            options={projectsDropdown}
-                                            loading={isFetchingProjects}
-                                        />
-                                    </Grid>
-                                    <Grid xs={6} item>
-                                        <InputComponent
-                                            type="select"
-                                            keyValue="selectedTeam"
-                                            onChange={onChange}
-                                            value={values.selectedTeam}
-                                            errors={getErrors('selectedTeam')}
-                                            label={MESSAGES.team}
-                                            required
-                                            options={teamsDropdown || []}
-                                            loading={isFetchingTeams}
-                                            disabled={!values.project}
-                                        />
-                                    </Grid>
+                <Grid xs={12} md={4} item>
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.projectSelectHelperText)}
+                    >
+                        <Box sx={styles.paper}>
+                            <Grid container spacing={2}>
+                                <Grid xs={6} item>
+                                    <InputComponent
+                                        type="select"
+                                        keyValue="project"
+                                        onChange={onChange}
+                                        value={
+                                            isFetchingProjects
+                                                ? undefined
+                                                : values.project
+                                        }
+                                        errors={getErrors('project')}
+                                        label={MESSAGES.project}
+                                        required
+                                        options={projectsDropdown}
+                                        loading={isFetchingProjects}
+                                    />
                                 </Grid>
-                                <InputComponent
-                                    type="select"
-                                    keyValue="forms"
-                                    onChange={(keyValue, value) =>
-                                        onChange(
-                                            keyValue,
-                                            commaSeparatedIdsToArray(value),
-                                        )
-                                    }
-                                    value={values.forms}
-                                    errors={getErrors('forms')}
-                                    label={MESSAGES.forms}
-                                    required
-                                    multi
-                                    options={formsDropdown}
-                                    loading={isFetchingForms}
-                                    disabled={!values.project}
-                                />
-                            </Box>
-                        </InputWithInfos>
-
-                        {hasPipelineConfig && (
+                                <Grid xs={6} item>
+                                    <InputComponent
+                                        type="select"
+                                        keyValue="selectedTeam"
+                                        onChange={onChange}
+                                        value={values.selectedTeam}
+                                        errors={getErrors('selectedTeam')}
+                                        label={MESSAGES.team}
+                                        required
+                                        options={teamsDropdown || []}
+                                        loading={isFetchingTeams}
+                                        disabled={!values.project}
+                                    />
+                                </Grid>
+                            </Grid>
                             <InputComponent
                                 type="select"
-                                multi
-                                keyValue="pipelineUuids"
+                                keyValue="forms"
                                 onChange={(keyValue, value) =>
                                     onChange(
                                         keyValue,
-                                        value ? value.split(',') : [],
+                                        commaSeparatedIdsToArray(value),
                                     )
                                 }
-                                loading={isFetchingPipelineUuids}
-                                options={pipelineUuidsOptions}
-                                value={values.pipelineUuids}
-                                errors={getErrors('pipelineUuids')}
-                                label={MESSAGES.pipelines}
+                                value={values.forms}
+                                errors={getErrors('forms')}
+                                label={MESSAGES.forms}
+                                required
+                                multi
+                                options={formsDropdown}
+                                loading={isFetchingForms}
+                                disabled={!values.project}
                             />
-                        )}
-                    </Grid>
+                        </Box>
+                    </InputWithInfos>
 
-                    <Grid xs={12} md={4} item>
-                        <InputWithInfos
-                            infos={formatMessage(
-                                MESSAGES.targetOrgUnitTypeInfos,
-                            )}
-                        >
-                            <Box sx={styles.paper}>
-                                <Field
-                                    required
-                                    component={OrgUnitSelect}
-                                    label={formatMessage(
-                                        MESSAGES.selectOrgUnit,
-                                    )}
-                                    name="selectedOrgUnit"
-                                    errors={getErrors('selectedOrgUnit')}
-                                />
+                    {hasPipelineConfig && (
+                        <InputComponent
+                            type="select"
+                            multi
+                            keyValue="pipelineUuids"
+                            onChange={(keyValue, value) =>
+                                onChange(
+                                    keyValue,
+                                    value ? value.split(',') : [],
+                                )
+                            }
+                            loading={isFetchingPipelineUuids}
+                            options={pipelineUuidsOptions}
+                            value={values.pipelineUuids}
+                            errors={getErrors('pipelineUuids')}
+                            label={MESSAGES.pipelines}
+                        />
+                    )}
+                </Grid>
+
+                <Grid xs={12} md={4} item>
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.targetOrgUnitTypeInfos)}
+                    >
+                        <Box sx={styles.paper}>
+                            <OrgUnitTreeviewModal
+                                titleMessage={MESSAGES.selectOrgUnit}
+                                required
+                                onConfirm={orgUnit => {
+                                    onChange('selectedOrgUnit', orgUnit?.id);
+                                }}
+                                initialSelection={rootorgunit}
+                                showStatusIconInTree={false}
+                                showStatusIconInPicker={false}
+                                errors={getErrors('selectedOrgUnit')}
+                                disabled={isFetchingRootOrgUnit}
+                            />
+                            <InputComponent
+                                type="select"
+                                multi
+                                keyValue="targetOrgUnitTypes"
+                                onChange={(keyValue, value) =>
+                                    onChange(
+                                        keyValue,
+                                        commaSeparatedIdsToArray(value),
+                                    )
+                                }
+                                label={MESSAGES.targetOrgUnitType}
+                                errors={getErrors('targetOrgUnitTypes')}
+                                value={
+                                    isFetchingOrgunitTypes ||
+                                    isFetchingRootOrgUnit
+                                        ? undefined
+                                        : values.targetOrgUnitTypes
+                                }
+                                disabled={!values.selectedOrgUnit}
+                                options={orgunitTypes || []}
+                                loading={
+                                    isFetchingOrgunitTypes ||
+                                    isFetchingRootOrgUnit
+                                }
+                            />
+                        </Box>
+                    </InputWithInfos>
+                    <Grid container spacing={2}>
+                        <Grid xs={6} lg={5} item>
+                            <Box sx={styles.paper} mt={2}>
                                 <InputComponent
-                                    type="select"
-                                    multi
-                                    keyValue="targetOrgUnitTypes"
-                                    onChange={(keyValue, value) =>
-                                        onChange(
-                                            keyValue,
-                                            commaSeparatedIdsToArray(value),
-                                        )
-                                    }
-                                    label={MESSAGES.targetOrgUnitType}
-                                    errors={getErrors('targetOrgUnitTypes')}
-                                    value={
-                                        isFetchingOrgunitTypes ||
-                                        isFetchingRootOrgUnit
-                                            ? undefined
-                                            : values.targetOrgUnitTypes
-                                    }
-                                    disabled={!values.selectedOrgUnit}
-                                    options={orgunitTypes || []}
-                                    loading={
-                                        isFetchingOrgunitTypes ||
-                                        isFetchingRootOrgUnit
-                                    }
+                                    type="radio"
+                                    keyValue="publishingStatus"
+                                    onChange={onChange}
+                                    value={values.publishingStatus}
+                                    errors={getErrors('publishingStatus')}
+                                    label={MESSAGES.publishingStatus}
+                                    options={publishingStatusOptions}
+                                    required
                                 />
                             </Box>
-                        </InputWithInfos>
-                        <Grid container spacing={2}>
-                            <Grid xs={6} lg={5} item>
-                                <Box sx={styles.paper} mt={2}>
-                                    <InputComponent
-                                        type="radio"
-                                        keyValue="publishingStatus"
-                                        onChange={onChange}
-                                        value={values.publishingStatus}
-                                        errors={getErrors('publishingStatus')}
-                                        label={MESSAGES.publishingStatus}
-                                        options={publishingStatusOptions}
-                                        required
-                                    />
-                                </Box>
-                            </Grid>
-                            <Grid item xs={6} lg={7}>
-                                <Box
-                                    display="flex"
-                                    gap={2}
-                                    flexDirection="column"
-                                    justifyContent="flex-end"
-                                    alignItems="flex-end"
-                                    mt={2}
+                        </Grid>
+                        <Grid item xs={6} lg={7}>
+                            <Box
+                                display="flex"
+                                gap={2}
+                                flexDirection="column"
+                                justifyContent="flex-end"
+                                alignItems="flex-end"
+                                mt={2}
+                            >
+                                <Button
+                                    disabled={!allowConfirm}
+                                    color="primary"
+                                    variant="contained"
+                                    startIcon={<SaveRoundedIcon />}
+                                    onClick={handleSubmitWithWarning}
                                 >
-                                    <Button
-                                        disabled={!allowConfirm}
-                                        color="primary"
-                                        variant="contained"
-                                        startIcon={<SaveRoundedIcon />}
-                                        onClick={handleSubmitWithWarning}
-                                    >
-                                        {formatMessage(MESSAGES.save)}
-                                    </Button>
-                                    {mode === 'edit' && (
-                                        <>
-                                            <DisplayIfUserHasPerm
-                                                permissions={[PLANNING_WRITE]}
-                                            >
+                                    {formatMessage(MESSAGES.save)}
+                                </Button>
+                                {mode === 'edit' && (
+                                    <>
+                                        <DisplayIfUserHasPerm
+                                            permissions={[PLANNING_WRITE]}
+                                        >
+                                            <DeleteDialog
+                                                iconColor="error"
+                                                titleMessage={{
+                                                    ...MESSAGES.deletePlanning,
+                                                    values: {
+                                                        planningName:
+                                                            values.name,
+                                                    },
+                                                }}
+                                                message={{
+                                                    ...MESSAGES.deleteWarning,
+                                                    values: {
+                                                        name: values.name,
+                                                    },
+                                                }}
+                                                disabled={false}
+                                                onConfirm={() =>
+                                                    deletePlanning(values.id)
+                                                }
+                                                keyName="delete-planning"
+                                                Trigger={({ onClick }) => (
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        onClick={onClick}
+                                                        startIcon={
+                                                            <DeleteIcon />
+                                                        }
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.delete,
+                                                        )}
+                                                    </Button>
+                                                )}
+                                            />
+                                        </DisplayIfUserHasPerm>
+                                        <LinkButton
+                                            variant="outlined"
+                                            startIcon={<FileCopyIcon />}
+                                            to={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
+                                        >
+                                            {formatMessage(
+                                                MESSAGES.duplicatePlanning,
+                                            )}
+                                        </LinkButton>
+                                        <Box
+                                            display="flex"
+                                            sx={{ flexWrap: 'nowrap' }}
+                                        >
+                                            {Boolean(planning) && (
                                                 <DeleteDialog
                                                     iconColor="error"
-                                                    titleMessage={{
-                                                        ...MESSAGES.deletePlanning,
-                                                        values: {
-                                                            planningName:
-                                                                values.name,
-                                                        },
-                                                    }}
-                                                    message={{
-                                                        ...MESSAGES.deleteWarning,
-                                                        values: {
-                                                            name: values.name,
-                                                        },
-                                                    }}
-                                                    disabled={false}
-                                                    onConfirm={() =>
-                                                        deletePlanning(
-                                                            values.id,
-                                                        )
+                                                    titleMessage={
+                                                        MESSAGES.deleteAllAssignments
                                                     }
-                                                    keyName="delete-planning"
+                                                    message={{
+                                                        ...MESSAGES.deleteAssignmentsWarning,
+                                                        values: {
+                                                            count: planning?.assignments_count,
+                                                        },
+                                                    }}
+                                                    onConfirm={
+                                                        deleteAssignments
+                                                    }
+                                                    keyName="delete-all-assignments"
                                                     Trigger={({ onClick }) => (
                                                         <Button
                                                             variant="outlined"
                                                             color="error"
                                                             onClick={onClick}
+                                                            disabled={
+                                                                planning?.assignments_count ===
+                                                                0
+                                                            }
                                                             startIcon={
                                                                 <DeleteIcon />
                                                             }
+                                                            sx={{
+                                                                marginRight:
+                                                                    theme =>
+                                                                        theme.spacing(
+                                                                            2,
+                                                                        ),
+                                                                whiteSpace:
+                                                                    'nowrap',
+                                                            }}
                                                         >
                                                             {formatMessage(
-                                                                MESSAGES.delete,
+                                                                MESSAGES.deleteAllAssignments,
                                                             )}
                                                         </Button>
                                                     )}
                                                 />
-                                            </DisplayIfUserHasPerm>
+                                            )}
                                             <LinkButton
+                                                disabled={!canAssign}
+                                                to={assignmentUrl}
                                                 variant="outlined"
-                                                startIcon={<FileCopyIcon />}
-                                                to={`/${baseUrls.planningDetails}/planningId/${values.id}/mode/copy`}
+                                                startIcon={<Assignment />}
                                             >
                                                 {formatMessage(
-                                                    MESSAGES.duplicatePlanning,
+                                                    MESSAGES.assignments,
                                                 )}
                                             </LinkButton>
-                                            <Box
-                                                display="flex"
-                                                sx={{ flexWrap: 'nowrap' }}
-                                            >
-                                                {Boolean(planning) && (
-                                                    <DeleteDialog
-                                                        iconColor="error"
-                                                        titleMessage={
-                                                            MESSAGES.deleteAllAssignments
-                                                        }
-                                                        message={{
-                                                            ...MESSAGES.deleteAssignmentsWarning,
-                                                            values: {
-                                                                count: planning?.assignments_count,
-                                                            },
-                                                        }}
-                                                        onConfirm={
-                                                            deleteAssignments
-                                                        }
-                                                        keyName="delete-all-assignments"
-                                                        Trigger={({
-                                                            onClick,
-                                                        }) => (
-                                                            <Button
-                                                                variant="outlined"
-                                                                color="error"
-                                                                onClick={
-                                                                    onClick
-                                                                }
-                                                                disabled={
-                                                                    planning?.assignments_count ===
-                                                                    0
-                                                                }
-                                                                startIcon={
-                                                                    <DeleteIcon />
-                                                                }
-                                                                sx={{
-                                                                    marginRight:
-                                                                        theme =>
-                                                                            theme.spacing(
-                                                                                2,
-                                                                            ),
-                                                                    whiteSpace:
-                                                                        'nowrap',
-                                                                }}
-                                                            >
-                                                                {formatMessage(
-                                                                    MESSAGES.deleteAllAssignments,
-                                                                )}
-                                                            </Button>
-                                                        )}
-                                                    />
-                                                )}
-                                                <LinkButton
-                                                    disabled={!canAssign}
-                                                    to={assignmentUrl}
-                                                    variant="outlined"
-                                                    startIcon={<Assignment />}
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES.assignments,
-                                                    )}
-                                                </LinkButton>
-                                            </Box>
-                                        </>
-                                    )}
-                                </Box>
-                            </Grid>
+                                        </Box>
+                                    </>
+                                )}
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>
-            </FormikProvider>
+            </Grid>
         </>
     );
 };

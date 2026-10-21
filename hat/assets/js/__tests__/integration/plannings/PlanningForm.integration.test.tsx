@@ -14,21 +14,9 @@ import { Planning } from 'Iaso/domains/plannings/types';
 import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 
 vi.mock(
-    '../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect',
+    'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal',
     () => ({
-        OrgUnitsLevels: ({
-            field,
-        }: {
-            field: { name: string; value: unknown; onChange: (e: any) => void };
-        }) => (
-            <input
-                type="hidden"
-                data-testid="org-unit-field"
-                name={field.name}
-                value={field.value == null ? '' : String(field.value)}
-                onChange={field.onChange}
-            />
-        ),
+        OrgUnitTreeviewModal: () => <div data-testid="org-unit-treeview" />,
     }),
 );
 

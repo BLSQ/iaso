@@ -1,5 +1,6 @@
 import { ElementType } from 'react';
 import { Theme } from '@mui/material/styles';
+import { PermissionsMessages } from 'Iaso/domains/users/permissionsMessages';
 import { MenuItem } from '../domains/app/types';
 import {
     RouteCustom,
@@ -10,6 +11,8 @@ export type Plugin = {
     routes: RouteCustom[];
     menu: MenuItem[];
     translations: Record<string, any>;
+    permissionsMessages?: PermissionsMessages;
+    permissionsGroupsMessages?: PermissionsMessages;
     homeUrl?: string;
     homeOnline?: ElementType;
     homeOffline?: ElementType;

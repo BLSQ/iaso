@@ -13,7 +13,9 @@ WORKDIR /opt/app
 
 # install python dependencies
 COPY pyproject.toml /opt/app/pyproject.toml
-RUN pip install uv
+# uv 0.13.4 drops the compromised emSign root. pip 26.2.2 has the same
+# fix but requires Python >=3.10, and this image is Python 3.9.
+RUN pip install "uv==0.13.4"
 # make uv use the system python and install everything in the system, not in a .venv
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system

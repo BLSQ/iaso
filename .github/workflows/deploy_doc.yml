@@ -42,7 +42,7 @@ jobs:
             restore-keys: |
                 ${{ runner.os }}-venv-py312-
             # Build a virtualenv, but only if it doesn't already exist
-      - run: python -V && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
+      - run: python -V && python -m venv ./venv && . ./venv/bin/activate && pip install -U "pip>=26.2.2" &&
             pip install -r docs/requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info

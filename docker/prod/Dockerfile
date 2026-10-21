@@ -49,7 +49,9 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 COPY ../../uv.lock ./
-RUN pip install uv
+# uv 0.13.4 drops the compromised emSign root. pip 26.2.2 has the same
+# fix but requires Python >=3.10, and this image is Python 3.9.
+RUN pip install "uv==0.13.4"
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system

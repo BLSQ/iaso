@@ -9,6 +9,7 @@ dependencies = [
     "beautifulsoup4==4.12.2", # https://pypi.org/project/beautifulsoup4/
     "boto3==1.42.44", # https://github.com/boto/boto3/tags
     "celery==5.3.6", # https://github.com/celery/celery/tags
+    "certifi==2026.10.19", # https://github.com/certifi/python-certifi — GHSA-6q48-6c7w-9gw2
     "clamav-client==0.6.3", # https://github.com/artefactual-labs/clamav-client/tags
     "cryptography==45.0.7", # https://github.com/pyca/cryptography
     "dateparser==1.2.0", # https://github.com/scrapinghub/dateparser/tags
@@ -289,6 +290,10 @@ omit = [
     "*/migrations/*",
     "iaso/tests/*"
 ]
+
+[tool.uv]
+# uv before 0.13.4 trusts the compromised emSign root (GHSA-hq85-5cpj-mr62).
+required-version = ">=0.13.4"
 
 [tool.uv.sources]
 # Webpack loader.

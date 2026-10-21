@@ -66,7 +66,7 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM ghcr.io/astral-sh/uv:python3.9-alpine3.22 AS prod
+FROM ghcr.io/astral-sh/uv:python3.9-trixie-slim AS prod
 
 ARG DEPLOYED_ON=unknown
 ARG DEPLOYED_BY=unknown
@@ -76,8 +76,8 @@ ENV DEPLOYED_ON=$DEPLOYED_ON \
     IASO_VERSION=$IASO_VERSION
 
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
-RUN addgroup --gid 1001 appuser && \
-    adduser --uid 1001 --gid appuser --shell /bin/bash --home /home/appuser --disabled-password appuser
+RUN groupadd --gid 1001 appuser && \
+    useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Runtime-only dependencies:
 #  - libgdal32: GDAL shared library on Bookworm (runtime, no headers)

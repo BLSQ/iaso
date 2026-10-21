@@ -5,6 +5,7 @@ import { TeamUrlParams } from 'Iaso/domains/teams/types/team';
 import { deleteRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
+import { TEAM_QUERY_KEYS } from '../../constants';
 import MESSAGES from '../../messages';
 
 export const deleteTeam = (teamId: number) =>
@@ -24,7 +25,7 @@ export const useDeleteTeam = ({
         params,
         pageKey: 'page',
         pageSizeKey: 'pageSize',
-        invalidateQueries: ['teamsList', 'teamsDropdown', 'team'],
+        invalidateQueries: TEAM_QUERY_KEYS,
         baseUrl: baseUrls.teams,
     });
 

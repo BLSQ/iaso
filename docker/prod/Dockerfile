@@ -36,7 +36,7 @@ WORKDIR /opt/app
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.
-FROM python:3.9-bookworm AS pybuilder
+FROM ghcr.io/astral-sh/uv:python3.9-trixie-slim AS pybuilder
 
 # Set working directory
 WORKDIR /opt/app
@@ -66,7 +66,7 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM python:3.9-slim-bookworm AS prod
+FROM ghcr.io/astral-sh/uv:python3.9-alpine3.22 AS prod
 
 ARG DEPLOYED_ON=unknown
 ARG DEPLOYED_BY=unknown

@@ -231,16 +231,6 @@ class TeamAPITestCase(APITestCase):
         response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
-
-        # we see deleted and not deleted
-        response = self.client.get("/api/teams/?deletion_status=all", format="json")
-        r = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(len(r), 2)
-
-        # see with deletion status
-        response = self.client.get("/api/teams/?deletion_status=deleted", format="json")
-        r = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["id"], team.id)
 
         # Undelete

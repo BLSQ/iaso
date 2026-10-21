@@ -201,7 +201,7 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(team_ids, expected_ids)
         self.assertNotIn(other_team.id, team_ids)
 
-    def test_dropdown_endpoint_respects_deletion_status(self):
+    def test_dropdown_endpoint_does_not_include_soft_deleted(self):
         """Test dropdown endpoint respects soft delete"""
 
         self.client.force_authenticate(self.superuser)
@@ -225,13 +225,6 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidResponse(r, 9)
         team_ids = [t["id"] for t in r]
         self.assertNotIn(team.id, team_ids)
-
-        # Team should appear when using deletion_status=all
-        response = self.client.get(self.url, data={"deletion_status": "all"})
-        r = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertValidResponse(r, 10)
-        team_ids = [t["id"] for t in r]
-        self.assertIn(team.id, team_ids)
 
     def test_dropdown_endpoint_with_color(self):
         """Test dropdown endpoint includes color field"""

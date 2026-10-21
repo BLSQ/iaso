@@ -85,7 +85,7 @@ class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.planning_config_2.org_unit_groups.set([cls.org_unit_group_3])
 
     def assertValidData(self, data: Any, expected_length: int) -> None:
-        self.assertResponseCompliantToSwagger(data, "PaginatedPlanningConfigList")
+        self.assertResponseCompliantToSwagger(data, "PaginatedNestedPlanningConfigListList")
         self.assertEqual(len(data["results"]), expected_length)
 
     def test_permissions(self) -> None:

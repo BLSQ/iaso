@@ -24,7 +24,6 @@ from rest_framework.serializers import BaseSerializer
 from dynamic_fields.filter_backends import DynamicFieldsFilterBackendBackwardCompatible
 from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import (
-    DeletionFilterBackend,
     ModelViewSet,
     ReadOnlyOrHasPermission,
     is_field_referenced,
@@ -82,7 +81,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                 filters.OrderingFilter,
                 DjangoFilterBackend,
                 TeamSearchFilterBackend,
-                DeletionFilterBackend,
                 TeamManagersFilterBackend,
                 TeamTypesFilterBackend,
                 TeamProjectsFilterBackend,
@@ -95,7 +93,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             filters.OrderingFilter,
             DjangoFilterBackend,
             TeamSearchFilterBackend,
-            DeletionFilterBackend,
             TeamManagersFilterBackend,
             TeamTypesFilterBackend,
             TeamProjectsFilterBackend,
@@ -174,9 +171,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     def dropdown(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Lightweight endpoint for team dropdowns with minimal data"""
         queryset = self.filter_queryset(self.get_queryset())
-        # DeletionFilterBackend only auto-filters on list action, so explicitly filter here
-        if request.query_params.get("deletion_status") is None:
-            queryset = queryset.filter(deleted_at__isnull=True)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

@@ -368,10 +368,11 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
 
     def test_authenticated_without_rights_list(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             # 1. SELECT project (+ account + default_version via select_related)
             # 2. SELECT COUNT(*)
             # 3. SELECT StockLedgerItem
+            # 4. SELECT Instance (+ form) of the page, prefetched
             response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project_1.app_id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, response.data["count"])
@@ -546,8 +547,9 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_list_results(self):
         # 1. SELECT project (+ account + default_version via select_related)
         # 2. SELECT COUNT(*)
-        # 3. SELECT StockLedgerItem (+ sku, org_unit, submission, form, created_by via select_related)
-        data = self.get_list(num_queries=3)
+        # 3. SELECT StockLedgerItem (+ created_by via select_related)
+        # 4. SELECT Instance (+ form via select_related) of the page, prefetched
+        data = self.get_list(num_queries=4)
 
         self.assertEqual(
             data,
@@ -568,27 +570,28 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
     def test_list_number_of_queries_does_not_grow_with_submissions_with_form(self):
-        """No N+1 on form_name (IA-5559): the form is fetched with the ledger items."""
-        self.get_list(num_queries=3)
+        """No N+1 on form_name (IA-5559): the forms of the page are prefetched with their submissions."""
+        self.get_list(num_queries=4)
 
         for number in (10, 11, 12):
             submission = m.Instance.objects.create(project=self.project, form=self.stock_count_form)
             self.create_ledger_item(number, self.sku, self.brussels, submission, 1)
 
-        data = self.get_list(num_queries=3)
+        data = self.get_list(num_queries=4)
         self.assertEqual(7, data["count"])
 
     def test_list_only_selects_the_serialized_columns(self):
-        """The page query skips the heavy columns: submission json, form possible_fields, org unit geometries..."""
+        """The queries skip the heavy columns: submission json, form possible_fields, org unit geometries...
+        and the page query doesn't join the submissions (done on all the ledger items before the pagination)."""
         self.client.force_authenticate(self.user)
         with CaptureQueriesContext(connection) as context:
             response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project.app_id})
             self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
 
-        page_query = next(
-            q["sql"] for q in context.captured_queries if q["sql"].startswith('SELECT "iaso_stockledgeritem"')
-        )
-        selected_columns = page_query[len("SELECT ") : page_query.index(" FROM ")].split(", ")
+        def selected_columns(table):
+            query = next(q["sql"] for q in context.captured_queries if q["sql"].startswith(f'SELECT "{table}"'))
+            return query[len("SELECT ") : query.index(" FROM ")].split(", ")
+
         self.assertCountEqual(
             [
                 '"iaso_stockledgeritem"."id"',
@@ -600,14 +603,14 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 '"iaso_stockledgeritem"."impact"',
                 '"iaso_stockledgeritem"."created_by_id"',
                 '"iaso_stockledgeritem"."created_at"',
-                '"iaso_instance"."id"',
-                '"iaso_instance"."form_id"',
-                '"iaso_form"."id"',
-                '"iaso_form"."name"',
                 '"auth_user"."id"',
                 '"auth_user"."username"',
             ],
-            selected_columns,
+            selected_columns("iaso_stockledgeritem"),
+        )
+        self.assertCountEqual(
+            ['"iaso_instance"."id"', '"iaso_instance"."form_id"', '"iaso_form"."id"', '"iaso_form"."name"'],
+            selected_columns("iaso_instance"),
         )
 
     def test_list_is_scoped_to_the_project_of_the_app(self):
@@ -627,7 +630,7 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
     def test_list_excludes_skus_of_another_account(self):
-        data = self.get_list(num_queries=3)
+        data = self.get_list(num_queries=4)
 
         self.assertNotIn(str(self.item_other_account.id), [result["id"] for result in data["results"]])
 
@@ -640,13 +643,13 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
             received_at=self.LAST_SYNC + timedelta(days=1)
         )
 
-        data = self.get_list(num_queries=3, last_sync=self.LAST_SYNC.isoformat())
+        data = self.get_list(num_queries=4, last_sync=self.LAST_SYNC.isoformat())
 
         self.assertEqual(2, data["count"])
         self.assertResultIds(data, [self.item_delivery, self.item_without_submission])
 
     def test_list_pagination(self):
-        data = self.get_list(num_queries=3, limit=2, page=2)
+        data = self.get_list(num_queries=4, limit=2, page=2)
 
         self.assertResultIds(data, [self.item_without_form, self.item_without_submission])
         self.assertEqual(

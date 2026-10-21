@@ -18,4 +18,14 @@ export const planningOperations = {
             },
         },
     },
+    apiMicroplanningPlanningsConfigsList: {
+        query: {
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
 };

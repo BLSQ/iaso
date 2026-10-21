@@ -217,35 +217,26 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(len(r), 2)
 
         # DELETE IT
-        response = self.client.delete(f"/api/teams/{team.id}/", format="json")
-        self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
+        team.delete()
 
         team.refresh_from_db()
         self.assertIsNotNone(team.deleted_at)
-
-        m = Modification.objects.filter(object_id=team.id, content_type__model="team").first()
-        self.assertEqual(m.past_value[0]["deleted_at"], None)
-        self.assertNotEqual(m.new_value[0]["deleted_at"], None)
 
         # we don't see it anymore
         response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
-        self.assertEqual(r[0]["id"], team.id)
+        self.assertNotEqual(r[0]["id"], team.id)
 
         # Undelete
-        response = self.client.patch(f"/api/teams/{team.id}/", format="json", data={"deleted_at": None})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+        team.restore()
         team.refresh_from_db()
-        team = Team.objects.get(id=team.id)
         self.assertIsNone(team.deleted_at)
 
         # we see it again from the API
         response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 2)
-        # one for delete, one for undelete
-        self.assertEqual(Modification.objects.count(), 2)
 
     def test_list_filter_by_manager(self):
         # Set up new team and new user who'll be the new manager

@@ -582,3 +582,18 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 },
             ],
         )
+
+    def test_does_not_include_soft_deleted(self):
+        self.team1.delete()
+
+        self.team1.refresh_from_db()
+        self.assertIsNotNone(self.team1.deleted_at)
+
+        self.client.force_authenticate(self.superuser)
+
+        res = self.client.get(self.url, data={"max_depth": 1})
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 1)
+        self.assertNotIn(self.team1.pk, [x["id"] for x in res_data])
+        self.assertIn(self.team2.pk, [x["id"] for x in res_data])

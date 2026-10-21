@@ -12,7 +12,12 @@ from iaso.models import Account, Project
 from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.color import ColorField
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class TeamQuerySet(models.QuerySet):
@@ -69,11 +74,10 @@ class TeamType(models.TextChoices):
         return value in cls.values
 
 
-TeamManager = models.Manager.from_queryset(TeamQuerySet)
-
-
 class Team(SoftDeletableModel):
-    objects = TeamManager()
+    objects = DefaultSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
 
     class Meta:
         ordering = ("name",)

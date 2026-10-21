@@ -109,6 +109,9 @@ COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv
 ENV VIRTUAL_ENV=/opt/app/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# remove pip
+RUN python -m pip uninstall --yes pip && rm -rf /usr/local/lib/python3.9/ensurepip
+
 # Copy webpack assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets
 

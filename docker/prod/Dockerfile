@@ -66,7 +66,7 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM ghcr.io/astral-sh/uv:python3.9-trixie-slim AS prod
+FROM ghcr.io/astral-sh/uv:python3.9-trixie AS prod
 
 ARG DEPLOYED_ON=unknown
 ARG DEPLOYED_BY=unknown

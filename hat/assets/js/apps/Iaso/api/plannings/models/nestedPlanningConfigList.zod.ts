@@ -7,7 +7,7 @@
  */
 import * as zod from 'zod';
 
-export const PlanningConfig = zod.strictObject({
+export const NestedPlanningConfigList = zod.strictObject({
     id: zod.int(),
     level: zod.int(),
     org_unit_types: zod
@@ -28,5 +28,9 @@ export const PlanningConfig = zod.strictObject({
         .nullable(),
 });
 
-export type PlanningConfig = zod.input<typeof PlanningConfig>;
-export type PlanningConfigOutput = zod.output<typeof PlanningConfig>;
+export type NestedPlanningConfigList = zod.input<
+    typeof NestedPlanningConfigList
+>;
+export type NestedPlanningConfigListOutput = zod.output<
+    typeof NestedPlanningConfigList
+>;

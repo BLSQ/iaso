@@ -29,3 +29,15 @@ export const planningOperations = {
         },
     },
 };
+
+export const mutationInvalidates = [
+    {
+        onMutations: ['apiMicroplanningPlanningsConfigsBulkUpdate'],
+        invalidates: [
+            {
+                query: 'apiMicroplanningPlanningsConfigsList',
+                params: ['id'],
+            },
+        ],
+    },
+];

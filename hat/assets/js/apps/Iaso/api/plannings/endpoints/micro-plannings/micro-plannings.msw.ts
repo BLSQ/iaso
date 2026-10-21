@@ -18,7 +18,8 @@ import {
 import type {
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
-    PaginatedPlanningConfigList,
+    PaginatedNestedPlanningConfigBulkList,
+    PaginatedNestedPlanningConfigListList,
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
     PaginatedPlanningSamplingResultReadList,
@@ -610,9 +611,9 @@ export const getApiMicroplanningPlanningsPartialUpdateResponseMock = (
 
 export const getApiMicroplanningPlanningsConfigsListResponseMock = (
     overrideResponse: Partial<
-        Extract<PaginatedPlanningConfigList, object>
+        Extract<PaginatedNestedPlanningConfigListList, object>
     > = {},
-): PaginatedPlanningConfigList => ({
+): PaginatedNestedPlanningConfigListList => ({
     count: faker.helpers.arrayElement([faker.number.int(), undefined]),
     has_next: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
     has_previous: faker.helpers.arrayElement([
@@ -649,6 +650,32 @@ export const getApiMicroplanningPlanningsConfigsListResponseMock = (
                 })),
                 null,
             ]),
+        })),
+        undefined,
+    ]),
+    ...overrideResponse,
+});
+
+export const getApiMicroplanningPlanningsConfigsBulkUpdateResponseMock = (
+    overrideResponse: Partial<
+        Extract<PaginatedNestedPlanningConfigBulkList, object>
+    > = {},
+): PaginatedNestedPlanningConfigBulkList => ({
+    count: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    has_next: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
+    has_previous: faker.helpers.arrayElement([
+        faker.datatype.boolean(),
+        undefined,
+    ]),
+    limit: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    page: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    pages: faker.helpers.arrayElement([faker.number.int(), undefined]),
+    results: faker.helpers.arrayElement([
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
+            id: faker.helpers.arrayElement([faker.number.int(), undefined]),
         })),
         undefined,
     ]),
@@ -1621,12 +1648,12 @@ export const getApiMicroplanningPlanningsDestroyMockHandler = (
 
 export const getApiMicroplanningPlanningsConfigsListMockHandler = (
     overrideResponse?:
-        | PaginatedPlanningConfigList
+        | PaginatedNestedPlanningConfigListList
         | ((
               info: Parameters<Parameters<typeof http.get>[1]>[0],
           ) =>
-              | Promise<PaginatedPlanningConfigList>
-              | PaginatedPlanningConfigList),
+              | Promise<PaginatedNestedPlanningConfigListList>
+              | PaginatedNestedPlanningConfigListList),
     options?: RequestHandlerOptions,
 ) => {
     return http.get(
@@ -1645,6 +1672,39 @@ export const getApiMicroplanningPlanningsConfigsListMockHandler = (
                         ? await overrideResponse(info)
                         : overrideResponse
                     : getApiMicroplanningPlanningsConfigsListResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
+export const getApiMicroplanningPlanningsConfigsBulkUpdateMockHandler = (
+    overrideResponse?:
+        | PaginatedNestedPlanningConfigBulkList
+        | ((
+              info: Parameters<Parameters<typeof http.put>[1]>[0],
+          ) =>
+              | Promise<PaginatedNestedPlanningConfigBulkList>
+              | PaginatedNestedPlanningConfigBulkList),
+    options?: RequestHandlerOptions,
+) => {
+    return http.put(
+        '*/api/microplanning/plannings/:id/configs/bulk/',
+        async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningPlanningsConfigsBulkUpdateResponseMock(),
                 { status: 200 },
             );
         },
@@ -1891,6 +1951,7 @@ export const getMicroPlanningsMock = () => [
     getApiMicroplanningPlanningsPartialUpdateMockHandler(),
     getApiMicroplanningPlanningsDestroyMockHandler(),
     getApiMicroplanningPlanningsConfigsListMockHandler(),
+    getApiMicroplanningPlanningsConfigsBulkUpdateMockHandler(),
     getApiMicroplanningPlanningsMissionsListMockHandler(),
     getApiMicroplanningPlanningsDropdownListMockHandler(),
     getApiMicroplanningSamplingsListMockHandler(),

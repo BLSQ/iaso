@@ -13,7 +13,8 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
-from .serializers.planning_config import PlanningConfigSerializer
+from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
+from .serializers.planning_config.list import NestedPlanningConfigListSerializer
 
 
 if TYPE_CHECKING:
@@ -221,8 +222,16 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         if self.action == "missions":
             return PlanningMissionPolymorphicListSerializer
         if self.action == "configs":
-            return PlanningConfigSerializer
+            return NestedPlanningConfigListSerializer
+        if self.action == "bulk_configs":
+            return NestedPlanningConfigBulkSerializer
         return PlanningReadSerializer
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        ctx = super().get_serializer_context()
+        if self.action == "bulk_configs":
+            ctx.update({"planning_id": self.kwargs.get("pk")})
+        return ctx
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -241,6 +250,14 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                     ).order_by("level"),
                 )
             )
+            planning = get_object_or_404(
+                qs,
+                pk=self.kwargs["pk"],
+            )
+            return planning.configs.all()
+
+        if self.action == "bulk_configs":
+            qs = qs.prefetch_related("configs")
             planning = get_object_or_404(
                 qs,
                 pk=self.kwargs["pk"],
@@ -315,7 +332,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     def missions(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
         return super().list(request, *args, **kwargs)
 
-    @extend_schema(responses={200: PlanningConfigSerializer(many=True)})
+    @extend_schema(responses={200: NestedPlanningConfigListSerializer(many=True)})
     @action(
         detail=True,
         methods=["get"],
@@ -323,6 +340,17 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     )
     def configs(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
         return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        responses=NestedPlanningConfigBulkSerializer(many=True), request=NestedPlanningConfigBulkSerializer(many=True)
+    )
+    @action(detail=True, methods=["put"], url_path="configs/bulk", url_name="planning-configs-bulk")
+    def bulk_configs(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(data=request.data, many=True, instance=self.get_queryset())
+        serializer.is_valid(raise_exception=True)
+        super(ModelViewSet, self).perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 @extend_schema(tags=["Micro plannings", "Planning samplings", "Plannings"])

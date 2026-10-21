@@ -7,7 +7,7 @@
  */
 import * as zod from 'zod';
 
-export const PaginatedPlanningConfigList = zod.strictObject({
+export const PaginatedNestedPlanningConfigListList = zod.strictObject({
     count: zod.int().optional(),
     has_next: zod.boolean().optional(),
     has_previous: zod.boolean().optional(),
@@ -40,9 +40,9 @@ export const PaginatedPlanningConfigList = zod.strictObject({
         .optional(),
 });
 
-export type PaginatedPlanningConfigList = zod.input<
-    typeof PaginatedPlanningConfigList
+export type PaginatedNestedPlanningConfigListList = zod.input<
+    typeof PaginatedNestedPlanningConfigListList
 >;
-export type PaginatedPlanningConfigListOutput = zod.output<
-    typeof PaginatedPlanningConfigList
+export type PaginatedNestedPlanningConfigListListOutput = zod.output<
+    typeof PaginatedNestedPlanningConfigListList
 >;

@@ -8,7 +8,7 @@ from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, COR
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class NestedPlanningConfigAPITestCase(SwaggerTestCaseMixin, APITestCase):
+class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         super().setUpTestData()

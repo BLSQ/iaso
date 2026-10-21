@@ -8,6 +8,9 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Set working directory
 WORKDIR /opt/app
 
+# update certificates
+RUN apt-get update && apt-get install --only-upgrade -y ca-certificates
+
 # Copy package files
 COPY ../../package.json package-lock.json ./
 RUN npm install -g npm@11.19.0 && \
@@ -42,7 +45,7 @@ WORKDIR /opt/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install --yes --no-install-recommends \
-    libgdal-dev \
+    libgdal-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies + gunicorn
@@ -96,6 +99,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     gettext-base \
     curl \
     libmagic1 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/app

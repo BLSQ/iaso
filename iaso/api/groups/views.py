@@ -110,9 +110,30 @@ class GroupsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
+        queryset = self.filter_by_org_unit_types(queryset)
+
         order = self.request.query_params.get("order", "name").split(",")
 
         return queryset.order_by(*order)
+
+    def filter_by_org_unit_types(self, queryset):
+        """Keep groups holding at least one valid org unit of the given types, optionally under a parent org unit."""
+        org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
+        if not org_unit_type_ids:
+            return queryset
+        parent_id = self.request.query_params.get("orgUnitParentId")
+        try:
+            type_ids = [int(type_id) for type_id in org_unit_type_ids.split(",")]
+            parent = OrgUnit.objects.filter(pk=int(parent_id)).first() if parent_id else None
+        except ValueError:
+            raise serializers.ValidationError("orgUnitTypeIds and orgUnitParentId must be integers")
+        if parent_id and not parent:
+            raise serializers.ValidationError("orgUnitParentId does not match any org unit")
+
+        org_units = OrgUnit.objects.filter(org_unit_type_id__in=type_ids, validation_status=OrgUnit.VALIDATION_VALID)
+        if parent:
+            org_units = org_units.descendants(parent)
+        return queryset.filter(pk__in=org_units.values("groups"))
 
     @action(
         permission_classes=[AuthenticationEnforcedPermission],

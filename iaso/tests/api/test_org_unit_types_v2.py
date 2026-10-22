@@ -888,3 +888,59 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/hierarchy/")
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+
+class OrgUnitTypeDescendantsAPITestCase(APITestCase):
+    URL = "/api/v2/orgunittypes/descendants/"
+
+    @classmethod
+    def setUpTestData(cls):
+        data_source = m.DataSource.objects.create(name="Source")
+        version = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        account = m.Account.objects.create(name="Account", default_version=version)
+        project = m.Project.objects.create(name="Project", account=account)
+        project.data_sources.add(data_source)
+        cls.user = cls.create_user_with_profile(username="user", account=account)
+
+        province_type = m.OrgUnitType.objects.create(name="Province")
+        cls.zone_type = m.OrgUnitType.objects.create(name="Zone")
+        cls.area_type = m.OrgUnitType.objects.create(name="Area")
+        cls.hospital_type = m.OrgUnitType.objects.create(name="Hospital")
+        rejected_type = m.OrgUnitType.objects.create(name="Rejected type")
+
+        def create(name, org_unit_type, parent=None, status=m.OrgUnit.VALIDATION_VALID):
+            return m.OrgUnit.objects.create(
+                name=name, org_unit_type=org_unit_type, parent=parent, version=version, validation_status=status
+            )
+
+        cls.province = create("Province", province_type)
+        zone = create("Zone", cls.zone_type, cls.province)
+        create("Area", cls.area_type, zone)
+        # Hospitals sit under zones and directly under the province: the shallowest position wins.
+        create("Hospital in zone", cls.hospital_type, zone)
+        create("Hospital in province", cls.hospital_type, cls.province)
+        create("Rejected", rejected_type, zone, status=m.OrgUnit.VALIDATION_REJECTED)
+        create("Outside area", cls.area_type)
+
+    def test_descendants_lists_types_found_below_org_unit_with_shallowest_depth(self):
+        """Types of valid org units under the given org unit, with the fewest levels below it, ordered by depth."""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.URL, {"orgUnitId": self.province.id})
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            [
+                {"id": self.hospital_type.id, "name": "Hospital", "depth": 1},
+                {"id": self.zone_type.id, "name": "Zone", "depth": 1},
+                {"id": self.area_type.id, "name": "Area", "depth": 2},
+            ],
+        )
+
+    def test_descendants_requires_a_valid_org_unit_id(self):
+        self.client.force_authenticate(self.user)
+
+        self.assertJSONResponse(self.client.get(self.URL), status.HTTP_400_BAD_REQUEST)
+        self.assertJSONResponse(self.client.get(self.URL, {"orgUnitId": "abc"}), status.HTTP_400_BAD_REQUEST)
+        self.assertJSONResponse(self.client.get(self.URL, {"orgUnitId": 999999}), status.HTTP_404_NOT_FOUND)

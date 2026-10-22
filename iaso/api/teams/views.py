@@ -149,6 +149,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                     )
                 )
                 .only("path", "id", "parent", "name", "type", "color")
+                .order_by("id")
             )
 
         queryset = queryset.select_related("project").prefetch_related("users", "users__iaso_profile", "sub_teams")

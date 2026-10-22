@@ -4,6 +4,7 @@ import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { useAssignmentsParams } from '../../hooks/useAssignmentsParams';
 import MESSAGES from '../../messages';
 import { AssignmentsMode } from '../../types';
 
@@ -14,18 +15,14 @@ const styles = {
     },
 } satisfies SxStyles;
 
-type Props = {
-    mode: AssignmentsMode;
-    onChange: (mode: AssignmentsMode) => void;
-};
-
-export const ModeToggle: FC<Props> = ({ mode, onChange }) => {
+export const ModeToggle: FC = () => {
     const { formatMessage } = useSafeIntl();
+    const { mode, updateParams } = useAssignmentsParams();
     const handleChange = useCallback(
         (_event: MouseEvent<HTMLElement>, value: AssignmentsMode | null) => {
-            if (value) onChange(value);
+            if (value) updateParams({ mode: value });
         },
-        [onChange],
+        [updateParams],
     );
     return (
         <ToggleButtonGroup

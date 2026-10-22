@@ -10,7 +10,7 @@ import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import MESSAGES from '../../messages';
 import { Planning } from '../../types';
-import { canAssignPlanning } from '../../utils';
+import { canAssignPlanning, getAssignmentsUrl } from '../../utils';
 
 interface ActionsCellProps extends ColumnCell<Planning> {
     deletePlanning: (id: number) => void;
@@ -37,7 +37,7 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
                 />
             </DisplayIfUserHasPerm>
             <IconButtonComponent
-                url={`/${baseUrls.assignments}/planningId/${planning.id}`}
+                url={getAssignmentsUrl(planning.id)}
                 tooltipMessage={MESSAGES.assignments}
                 size="small"
                 replace={false}

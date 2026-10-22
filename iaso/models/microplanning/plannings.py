@@ -41,8 +41,13 @@ class PlanningSamplingResult(models.Model):
 
 
 class PlanningQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+    def filter_for_user(self, user: User) -> "PlanningQuerySet":
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+
+        if not account:
+            return self.none()
+
+        return self.filter(project__account=account)
 
 
 class Planning(SoftDeletableModel):
@@ -67,6 +72,7 @@ class Planning(SoftDeletableModel):
         OrgUnit,
         on_delete=models.PROTECT,
         help_text="The root org unit of the planning used to scope the assignments org units",
+        related_name="plannings",
     )
     target_org_unit_types = models.ManyToManyField(
         OrgUnitType,

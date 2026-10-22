@@ -1,10 +1,7 @@
-from typing import Any, Dict, Optional
-
-import django_filters
+from typing import Any, Dict
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
-from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.core.cache import cache
 from django.db.models import F
 from django.db.models.expressions import RawSQL
@@ -13,212 +10,22 @@ from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
 from rest_framework.decorators import action
-from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
-from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
-from iaso.api.instances.serializers import InstanceFileAttachmentSerializer
-from iaso.api.org_units import import_org_units
-from iaso.api.permission_checks import (
-    AuthenticationEnforcedPermission,
-    IsAuthenticatedWhenAuthenticationRequired,
-)
+from iaso.api.common import ModelViewSet, safe_api_import
+from iaso.api.org_units.filters import ReferenceInstancesFilter
+from iaso.api.org_units.pagination import MobileOrgUnitsSetPagination
+from iaso.api.org_units.permissions import HasMobileOrgUnitPermission
+from iaso.api.org_units.serializers.mobile import MobileOrgUnitSerializer, ReferenceInstancesSerializer
+from iaso.api.org_units.utils import Buffer, bbox_merge, import_org_units
+from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import FeatureFlag, Instance, OrgUnit, Project
-from iaso.permissions.core_permissions import (
-    CORE_FORMS_PERMISSION,
-    CORE_ORG_UNITS_PERMISSION,
-    CORE_ORG_UNITS_READ_PERMISSION,
-    CORE_SUBMISSIONS_PERMISSION,
-)
-
-
-SHAPE_RESULTS_MAX = 1000
-
-
-class MobileOrgUnitsSetPagination(Paginator):
-    page_size_query_param = LIMIT
-    page_query_param = PAGE
-    page_size = None  # None to disable pagination by default.
-
-    def get_iaso_page_number(self, request):
-        return int(request.query_params.get(self.page_query_param, 1))
-
-    def get_page_size(self, request):
-        page_size = super().get_page_size(request)
-        if request.query_params.get("shapes", "false").lower() == "true":
-            if page_size and page_size > SHAPE_RESULTS_MAX:
-                return SHAPE_RESULTS_MAX
-
-        return super().get_page_size(request)
-
-
-class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
-    last_sync = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
-
-    class Meta:
-        model = Instance
-        fields = []
-
-
-class ReferenceInstancesSerializer(serializers.ModelSerializer):
-    created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
-    updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
-    instance_files = InstanceFileAttachmentSerializer(many=True, read_only=True, source="instancefile_set")
-
-    class Meta:
-        model = Instance
-        fields = [
-            "id",
-            "uuid",
-            "form_id",
-            "form_version_id",
-            "created_at",
-            "updated_at",
-            "json",
-            "instance_files",
-        ]
-
-
-class MobileOrgUnitSerializer(serializers.ModelSerializer):
-    app_id = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Do not include the geo_json if not requested
-        self.app_id = kwargs["context"].get("app_id")
-        if not kwargs["context"].get("include_geo_json"):
-            self.fields.pop("geo_json")
-
-    class Meta:
-        model = OrgUnit
-        fields = [
-            "name",
-            "id",
-            "parent_id",
-            "org_unit_type_id",
-            "org_unit_type_name",
-            "validation_status",
-            "created_at",
-            "updated_at",
-            "latitude",
-            "longitude",
-            "altitude",
-            "uuid",
-            "aliases",
-            "code",
-            "geo_json",
-            "groups",
-            "opening_date",
-            "closed_date",
-        ]
-
-    parent_id = SerializerMethodField()
-    org_unit_type_name = SerializerMethodField()
-    created_at = TimestampField()
-    updated_at = TimestampField()
-    latitude = SerializerMethodField()
-    longitude = SerializerMethodField()
-    altitude = SerializerMethodField()
-    geo_json = serializers.JSONField()
-
-    @staticmethod
-    def get_org_unit_type_name(org_unit: OrgUnit):
-        name_annotated = getattr(org_unit, "org_unit_type_name_annotated", None)
-        if name_annotated is not None:
-            return name_annotated
-        return org_unit.org_unit_type.name if org_unit.org_unit_type else None
-
-    @cached_property
-    def valid_org_unit_type_ids(self):
-        valid_ids = set()
-        project = self.context.get("project")
-        if project is not None:
-            valid_ids = set(project.unit_types.values_list("id", flat=True))
-        return valid_ids
-
-    def get_parent_id(self, org_unit: OrgUnit):
-        parent_id = org_unit.parent_id
-        if parent_id is None:
-            return None
-
-        # Retrieve annotated values if present
-        parent_validation_status = getattr(org_unit, "parent_validation_status", None)
-        parent_org_unit_type_id = getattr(org_unit, "parent_org_unit_type_id", None)
-
-        if parent_validation_status is None or parent_org_unit_type_id is None:
-            parent = org_unit.parent
-            if parent is None:
-                return None
-            parent_validation_status = parent.validation_status
-            parent_org_unit_type_id = parent.org_unit_type_id
-
-        if parent_validation_status != OrgUnit.VALIDATION_VALID:
-            return None
-
-        if self.app_id is not None:
-            project = self.context.get("project")
-            if project is not None:
-                if parent_org_unit_type_id not in self.valid_org_unit_type_ids:
-                    return None
-            else:
-                raise NotImplementedError("The serializer requires a valid project in its context.")
-
-        return parent_id
-
-    @staticmethod
-    def get_latitude(org_unit: OrgUnit):
-        return org_unit.location.y if org_unit.location else None
-
-    @staticmethod
-    def get_longitude(org_unit: OrgUnit):
-        return org_unit.location.x if org_unit.location else None
-
-    @staticmethod
-    def get_altitude(org_unit: OrgUnit):
-        return org_unit.location.z if org_unit.location else None
-
-
-class HasOrgUnitPermission(IsAuthenticatedWhenAuthenticationRequired):
-    def has_object_permission(self, request, view, obj):
-        if not (
-            request.user.is_authenticated
-            and (
-                request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
-                or request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name())
-                or request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name())
-                or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
-            )
-        ):
-            return False
-
-        # TODO: can be handled with get_queryset()
-        user_account = request.user.iaso_profile.account
-        projects = obj.version.data_source.projects.all()
-        account_ids = [p.account_id for p in projects]
-
-        return user_account.id in account_ids
+from iaso.models import FeatureFlag, OrgUnit, Project
 
 
 BUFFER_FOR_POINT = 0.008 * 3  # 0.008 degrees is around 3km at the equator
-
-
-# Define a GIS function, GeoDjango will map it to ST_BUFFER in postgis (using the class name)
-class Buffer(GeomOutputGeoFunc):
-    """Computes a POLYGON or MULTIPOLYGON that represents all points whose distance from a geometry/geography is less
-    than or equal to a given distance.
-
-    https://postgis.net/docs/ST_Buffer.html
-
-    arguments are:
-        - geography g1 or geometry g1
-        - float radius_of_buffer
-    """
-
-    arity = 2
 
 
 @extend_schema(tags=["Mobile", "Org units"])
@@ -248,7 +55,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
     GET /api/mobile/orgunits/?app_id={APP_ID}&ids=id_1,id_2,id_3
     """
 
-    permission_classes = [AuthenticationEnforcedPermission, HasOrgUnitPermission]
+    permission_classes = [AuthenticationEnforcedPermission, HasMobileOrgUnitPermission]
     serializer_class = MobileOrgUnitSerializer
     pagination_class = MobileOrgUnitsSetPagination
 
@@ -421,18 +228,3 @@ class MobileOrgUnitViewSet(ModelViewSet):
             paginated_reference_instances, many=True, context=self.get_serializer_context()
         )
         return self.get_paginated_response(serializer.data)
-
-
-def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
-    if not a and not b:
-        return None
-    if not a:
-        return b
-    if not b:
-        return a
-    return (
-        max(a[0], b[0]),
-        min(a[1], b[1]),
-        min(a[2], b[2]),
-        max(a[3], b[3]),
-    )

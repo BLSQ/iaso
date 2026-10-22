@@ -8,10 +8,10 @@ import pandas as pd
 from jinja2 import Template
 from rest_framework.test import APIClient
 
-from iaso.test import FastFlushTransactionTestCase
+from iaso.test import APIAssertionsMixin, FastFlushTransactionTestCase
 
 
-class BaseAPITransactionTestCase(FastFlushTransactionTestCase):
+class BaseAPITransactionTestCase(FastFlushTransactionTestCase, APIAssertionsMixin):
     client_class = APIClient
 
     def assert_parquet_content_type(self, response):

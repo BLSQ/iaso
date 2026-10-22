@@ -183,16 +183,6 @@ class IasoTestCaseMixin:
         template = env.get_template(fixture_name)
         return template.render(context)
 
-    def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
-        self.assertIsInstance(response, HttpResponse)
-        self.assertEqual(expected_status_code, response.status_code, try_json(response))
-
-        if expected_status_code != 204:
-            self.assertEqual("application/json", response["Content-Type"], try_json(response))
-
-        if response.content:
-            return response.json()
-
 
 class SwaggerTestCaseMixin(BaseAPITestCase):
     """
@@ -323,7 +313,23 @@ def try_json(response):
         return response.content
 
 
-class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
+class APIAssertionsMixin:
+    """
+    Shared by APITestCase and the API tests that can't inherit from it (TransactionTestCase).
+    """
+
+    def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
+        self.assertIsInstance(response, HttpResponse)
+        self.assertEqual(expected_status_code, response.status_code, try_json(response))
+
+        if expected_status_code != 204:
+            self.assertEqual("application/json", response["Content-Type"], try_json(response))
+
+        if response.content:
+            return response.json()
+
+
+class APITestCase(BaseAPITestCase, IasoTestCaseMixin, APIAssertionsMixin):
     client: APIClient
 
     def setUp(self):

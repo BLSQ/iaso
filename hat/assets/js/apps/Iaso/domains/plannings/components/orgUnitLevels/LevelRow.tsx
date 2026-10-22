@@ -1,6 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import { TableCell, TableRow, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
@@ -157,7 +157,7 @@ export const LevelRow: FC<Props> = ({
             </TableCell>
             <TableCell align="right">
                 <Typography sx={styles.count}>
-                    {hasTypes && counts ? counts.total : '--'}
+                    {hasTypes && counts ? counts.total : textPlaceholder}
                 </Typography>
             </TableCell>
         </TableRow>

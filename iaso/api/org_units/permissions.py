@@ -9,6 +9,7 @@ from iaso.permissions.core_permissions import (
     CORE_REGISTRY_WRITE_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
 )
+from iaso.plugins import extra_org_unit_permissions
 
 
 class HasCreateOrgUnitPermission(permissions.BasePermission):

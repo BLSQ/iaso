@@ -1,13 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import { Chip } from '@mui/material';
+import { Chip, SxProps } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
 type Props = {
     status: 'draft' | 'published';
+    sx?: SxProps;
 };
 
-export const PlanningStatusChip: FunctionComponent<Props> = ({ status }) => {
+export const PlanningStatusChip: FunctionComponent<Props> = ({
+    status,
+    sx,
+}) => {
     const { formatMessage } = useSafeIntl();
     return (
         <Chip
@@ -24,6 +28,7 @@ export const PlanningStatusChip: FunctionComponent<Props> = ({ status }) => {
                         : theme.palette.error.main,
                 color: 'white',
                 fontSize: '0.8rem',
+                ...sx,
             }}
         />
     );

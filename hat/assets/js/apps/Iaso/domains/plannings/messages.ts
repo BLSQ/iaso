@@ -81,9 +81,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createPlanning',
         defaultMessage: 'Create planning',
     },
-    forms: {
-        defaultMessage: 'Forms',
-        id: 'iaso.forms.title',
+    missions: {
+        defaultMessage: 'Missions',
+        id: 'iaso.missions.title',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -379,6 +379,71 @@ const MESSAGES = defineMessages({
     planning: {
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
+    },
+    add: {
+        defaultMessage: 'Add',
+        id: 'iaso.label.add',
+    },
+    addMissions: {
+        defaultMessage: 'Add missions',
+        id: 'iaso.plannings.label.addMissions',
+    },
+    addMissionsToPlanning: {
+        defaultMessage: 'Add missions to this planning',
+        id: 'iaso.plannings.label.addMissionsToPlanning',
+    },
+    searchMission: {
+        defaultMessage: 'Search a mission',
+        id: 'iaso.plannings.label.searchMission',
+    },
+    alreadyLinked: {
+        defaultMessage: 'Already linked',
+        id: 'iaso.plannings.label.alreadyLinked',
+    },
+    linkMission: {
+        defaultMessage: 'Link mission',
+        id: 'iaso.plannings.label.linkMission',
+    },
+    notSavedYet: {
+        defaultMessage: 'Not saved yet',
+        id: 'iaso.plannings.label.notSavedYet',
+    },
+    willBeUnlinked: {
+        defaultMessage: 'Will be unlinked',
+        id: 'iaso.plannings.label.willBeUnlinked',
+    },
+    unlinkMission: {
+        defaultMessage: 'Unlink mission',
+        id: 'iaso.plannings.label.unlinkMission',
+    },
+    relinkMission: {
+        defaultMessage: 'Undo unlink',
+        id: 'iaso.plannings.label.relinkMission',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.label.type',
+    },
+    linkedMissionsCount: {
+        defaultMessage: '{count} linked',
+        id: 'iaso.plannings.label.linkedMissionsCount',
+    },
+    noMissionLinked: {
+        defaultMessage: 'No mission linked yet',
+        id: 'iaso.plannings.label.noMissionLinked',
+    },
+    noMissionLinkedDescription: {
+        defaultMessage:
+            'Link an existing mission or create a new one to define what agents collect on the field.',
+        id: 'iaso.plannings.label.noMissionLinkedDescription',
+    },
+    planningDetails: {
+        defaultMessage: 'Planning details',
+        id: 'iaso.plannings.label.planningDetails',
+    },
+    openAssignments: {
+        defaultMessage: 'Open assignments',
+        id: 'iaso.plannings.label.openAssignments',
     },
 });
 

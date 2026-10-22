@@ -1,30 +1,31 @@
+from typing import List, cast
+
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer import BulkUpdateListSerializer
 from iaso.models import UserRole, ValidationNodeTemplate
 
 
-class ValidationNodeTemplateBulkUpdateListSerializer(serializers.ListSerializer):
+class ValidationNodeTemplateBulkUpdateListSerializer(BulkUpdateListSerializer):
+    update_fields = ["name", "description", "can_skip_previous_nodes"]
+    lookup_field = "slug"
+    m2m_fields = {"roles_required": ("validationnodetemplate_id", "userrole_id")}
+
     class Meta:
         model = ValidationNodeTemplate
         fields = []
 
     @transaction.atomic
-    def update(self, instances, validated_data):
-        instances = {x.slug: x for x in instances}
+    def update(
+        self, instances: List[ValidationNodeTemplate], validated_data: List[dict]
+    ) -> List[ValidationNodeTemplate]:
+        rtn_instances = cast(list[ValidationNodeTemplate], super().update(instances, validated_data))
 
-        for data in validated_data:
-            inst = instances[data["slug"]]
-            for field, value in data.items():
-                if field not in ["roles_required", "slug"]:
-                    setattr(inst, field, value)
-
-        update_fields = [f.name for f in ValidationNodeTemplate._meta.fields if f.name not in ["id", "slug"]]
-
-        ValidationNodeTemplate.objects.bulk_update(list(instances.values()), update_fields, batch_size=100)
+        instances = {x.slug: x for x in rtn_instances}
 
         ordered_instances = [instances[data["slug"]] for data in validated_data]
 
@@ -45,19 +46,6 @@ class ValidationNodeTemplateBulkUpdateListSerializer(serializers.ListSerializer)
         ]
         if prev_links:
             through.objects.bulk_create(prev_links, batch_size=100, ignore_conflicts=True)
-
-        role_links = [
-            through_obj
-            for inst, data in zip(ordered_instances, validated_data)
-            for role in data.get("roles_required", [])
-            for through_obj in [
-                ValidationNodeTemplate.roles_required.through(validationnodetemplate_id=inst.id, userrole_id=role.id)
-            ]
-        ]
-        if role_links:
-            ValidationNodeTemplate.roles_required.through.objects.bulk_create(
-                role_links, batch_size=100, ignore_conflicts=True
-            )
 
         return ordered_instances
 

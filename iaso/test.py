@@ -183,6 +183,16 @@ class IasoTestCaseMixin:
         template = env.get_template(fixture_name)
         return template.render(context)
 
+    def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
+        self.assertIsInstance(response, HttpResponse)
+        self.assertEqual(expected_status_code, response.status_code, try_json(response))
+
+        if expected_status_code != 204:
+            self.assertEqual("application/json", response["Content-Type"], try_json(response))
+
+        if response.content:
+            return response.json()
+
 
 class SwaggerTestCaseMixin(BaseAPITestCase):
     """
@@ -320,16 +330,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         """Make sure we have a fresh client at the beginning of each test"""
 
         self.client = APIClient()
-
-    def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
-        self.assertIsInstance(response, HttpResponse)
-        self.assertEqual(expected_status_code, response.status_code, try_json(response))
-
-        if expected_status_code != 204:
-            self.assertEqual("application/json", response["Content-Type"], try_json(response))
-
-        if response.content:
-            return response.json()
 
     def assertFileResponse(
         self,

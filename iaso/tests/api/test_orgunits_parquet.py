@@ -376,8 +376,8 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             with self.subTest(name):
                 self.client.force_authenticate(user)
                 response = self.client.get(url)
-                self.assertEqual(response.status_code, expected_status)
-                self.assertEqual(response.json(), {"error": expected_error})
+                response_data = self.assertJSONResponse(response, expected_status)
+                self.assertEqual(response_data, {"error": expected_error})
 
     def test_groups_exploded_code_collision_returns_400(self):
         """When two group names normalize to the same safe identifier, the API returns 400."""

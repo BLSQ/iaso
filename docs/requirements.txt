@@ -12,7 +12,7 @@ beautifulsoup4==4.15.0
     #   readtime
 bracex==2.3.post1
     # via wcmatch
-certifi==2026.7.22
+certifi==2026.10.19
     # via requests
 charset-normalizer==3.4.9
     # via requests

@@ -542,28 +542,6 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'planning/missions/create',
         params: ['accountId', 'planningId', 'planningMode'],
     },
-    missions: {
-        url: 'planning/missions',
-        params: [
-            'accountId',
-            'search',
-            'mission_type',
-            'planning_ids',
-            ...paginationPathParams,
-        ],
-    },
-    missionsDetails: {
-        url: 'planning/missions/detail',
-        params: ['accountId', 'id'],
-    },
-    missionsEdit: {
-        url: 'planning/missions/edit',
-        params: ['accountId', 'id'],
-    },
-    missionsCreate: {
-        url: 'planning/missions/create',
-        params: ['accountId'],
-    },
     assignments: {
         url: 'planning/assignments',
         params: [

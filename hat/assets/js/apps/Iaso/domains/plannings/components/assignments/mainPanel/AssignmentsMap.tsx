@@ -8,6 +8,7 @@ import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl'
 import { InvalidateOnResize } from 'Iaso/components/maps/tools/InvalidateOnResize';
 import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
 import tiles from 'Iaso/constants/mapTiles';
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
 import {
     CloseTooltipOnMoveStart,
@@ -15,8 +16,12 @@ import {
     defaultZoom,
 } from 'Iaso/utils/map/mapUtils';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
+import { AssignableOrgUnitsLayer } from './AssignableOrgUnitsLayer';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
+import { useAssignableOrgUnits } from './useAssignableOrgUnits';
+import { useAssignments } from './useAssignments';
 import { useScopeArea } from './useScopeArea';
+import { getAssigneeColorByOrgUnitId } from './utils';
 
 const styles = {
     container: {
@@ -30,9 +35,20 @@ const styles = {
     },
 } satisfies SxStyles;
 
-export const AssignmentsMap: FC = () => {
+type Props = {
+    tree: TeamTreeNode;
+};
+
+export const AssignmentsMap: FC<Props> = ({ tree }) => {
     const { planningId } = useAssignmentsParams();
     const { orgUnitId, geoJson, bounds, isLoading } = useScopeArea(planningId);
+    const { data: assignableOrgUnits, isFetching: isFetchingOrgUnits } =
+        useAssignableOrgUnits(planningId, orgUnitId);
+    const { data: assignments } = useAssignments(planningId);
+    const colorByOrgUnitId = useMemo(
+        () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
+        [tree, assignments],
+    );
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const boundsOptions: L.FitBoundsOptions = useMemo(
         () => ({ padding: [20, 20], maxZoom: currentTile.maxZoom }),
@@ -41,7 +57,9 @@ export const AssignmentsMap: FC = () => {
 
     return (
         <Box sx={styles.container}>
-            {isLoading && <LoadingSpinner absolute fixed={false} />}
+            {(isLoading || isFetchingOrgUnits) && (
+                <LoadingSpinner absolute fixed={false} />
+            )}
             <Box sx={styles.map}>
                 <MapContainer
                     center={defaultCenter}
@@ -64,6 +82,12 @@ export const AssignmentsMap: FC = () => {
                         currentTile={currentTile}
                         setCurrentTile={setCurrentTile}
                     />
+                    {assignableOrgUnits && (
+                        <AssignableOrgUnitsLayer
+                            orgUnits={assignableOrgUnits}
+                            colorByOrgUnitId={colorByOrgUnitId}
+                        />
+                    )}
                     {orgUnitId && geoJson && (
                         <ScopeAreaLayer
                             orgUnitId={orgUnitId}

@@ -167,7 +167,8 @@ As described in the documentation, all configuration is defined in `orval.config
 Several environment variables are also available to control the generation process:
 
 * `ORVAL_TARGET_URL_PROTOCOL`: `http` or `https`, the protocol used in the URL to fetch the OpenAPI schema
-* `ORVAL_TARGET_URL_DOMAIN`: default `localhost:8000`, the host serving the OpenAPI schema
+* `ORVAL_TARGET_URL_DOMAIN`: default `localhost`, the host serving the OpenAPI schema
+* `ORVAL_TARGET_URL_PORT`: default `8000`, the port serving the OpenAPI schema
 * `ORVAL_API_BASE_URL`: the base url that will be appended to your generated hooks for the API.
 * `ORVAL_TARGET_FILE`: path to a local OpenAPI file, if used instead of a remote endpoint
 * `API_TOKEN`: bearer token used when fetching the schema from a protected /swagger/ endpoint

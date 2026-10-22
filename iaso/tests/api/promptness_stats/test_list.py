@@ -7,7 +7,18 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.test import SwaggerTestCaseMixin
-from iaso.tests.api.promptness_stats.common import RESPONSE_KEYS, ROW_KEYS, PromptnessStatsTestCase, aware
+from iaso.tests.api.promptness_stats.common import ROW_KEYS, PromptnessStatsTestCase, aware
+
+
+RESPONSE_KEYS = {
+    "count",
+    "has_next",
+    "has_previous",
+    "page",
+    "pages",
+    "limit",
+    "results",
+}
 
 
 @time_machine.travel(PromptnessStatsTestCase.TODAY, tick=False)

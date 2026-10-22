@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.api.missions.serializers.retrieve.common import MissionTypeSerializer
 from iaso.models import OrgUnitType
 from iaso.models.missions import MissionFormThroughForm, MissionOrgUnitType
 
@@ -32,7 +31,7 @@ class NestedOrgUnitTypeSerializer(ModelSerializer):
 
 
 class MissionOrgUnitTypeRetrieveSerializer(ModelSerializer):
-    mission_type = MissionTypeSerializer(source="*")
+    mission_type_label = serializers.CharField(source="get_mission_type_display", read_only=True)
     org_unit_type = NestedOrgUnitTypeSerializer(read_only=True)
     forms = NestedMissionFormThroughFormSerializer(many=True, read_only=True, source="missionformthroughform_set")
 
@@ -43,6 +42,7 @@ class MissionOrgUnitTypeRetrieveSerializer(ModelSerializer):
             "name",
             "description",
             "mission_type",
+            "mission_type_label",
             "created_at",
             "org_unit_type",
             "forms",
@@ -57,4 +57,5 @@ class MissionOrgUnitTypeRetrieveSerializer(ModelSerializer):
             "name": {"read_only": True},
             "min_cardinality": {"read_only": True},
             "max_cardinality": {"read_only": True},
+            "mission_type": {"read_only": True},
         }

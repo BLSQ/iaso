@@ -18,11 +18,8 @@ describe('GeneralInfoWidgetPaper test', () => {
                 mission={getApiMicroplanningMissionsRetrieveResponseMissionOrgUnitTypeRetrieveTypedMock(
                     {
                         max_cardinality: null,
-                        // @ts-ignore
-                        mission_type: {
-                            label: 'Org unit',
-                            value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
-                        },
+                        mission_type_label: 'Org unit',
+                        mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                     },
                 )}
             />,
@@ -37,11 +34,9 @@ describe('GeneralInfoWidgetPaper test', () => {
                 mission={getApiMicroplanningMissionsRetrieveResponseMissionOrgUnitTypeRetrieveTypedMock(
                     {
                         max_cardinality: 12,
-                        // @ts-ignore
-                        mission_type: {
-                            label: 'Org unit',
-                            value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
-                        },
+
+                        mission_type_label: 'Org unit',
+                        mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                     },
                 )}
             />,

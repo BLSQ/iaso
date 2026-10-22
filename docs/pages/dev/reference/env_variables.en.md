@@ -172,6 +172,10 @@ For detailed setup instructions, see [Plausible Analytics Setup](./analytics/pla
 
 ## Frontend Configuration
 
+| name | possible values | default value | description |
+|------|----------------|---------------|-------------|
+| SHOW_NAME_WITH_LOGO | `yes`, `no` | `yes` | Hides the `APP_TITLE` text in the sidebar menu |
+
 ### Development Settings
 
 | name | optional | default value | description |

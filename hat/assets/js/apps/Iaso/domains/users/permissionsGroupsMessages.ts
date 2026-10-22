@@ -1,4 +1,7 @@
+import { useContext, useMemo } from 'react';
 import { defineMessages } from 'react-intl';
+import { PluginsContext } from 'Iaso/plugins/context';
+import { PermissionsMessages } from './permissionsMessages';
 
 // List of translations for Iaso groups of permissions used all along the project
 
@@ -35,10 +38,6 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
         id: 'iaso.permissions.group.embedded_links',
         defaultMessage: 'Embedded links:',
     },
-    polio: {
-        id: 'iaso.permissions.group.polio',
-        defaultMessage: 'Polio:',
-    },
     trypelim: {
         id: 'iaso.permissions.group.trypelim',
         defaultMessage: 'Trypelim:',
@@ -74,3 +73,20 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
 });
 
 export default PERMISSIONS_GROUPS_MESSAGES;
+
+export const usePermissionsGroupsMessages = (): PermissionsMessages => {
+    const { plugins } = useContext(PluginsContext);
+    return useMemo(
+        () =>
+            plugins.reduce<PermissionsMessages>((messages, plugin) => {
+                if (!plugin.permissionsGroupsMessages) {
+                    return messages;
+                }
+                return {
+                    ...messages,
+                    ...plugin.permissionsGroupsMessages,
+                };
+            }, PERMISSIONS_GROUPS_MESSAGES),
+        [plugins],
+    );
+};

@@ -4,8 +4,7 @@ from iaso.tests.api.promptness_stats.common import PromptnessStatsTestCase
 
 
 class PromptnessStatsPermissionsTestCase(PromptnessStatsTestCase):
-    # URLS = [PromptnessStatsTestCase.URL,PromptnessStatsTestCase.SUMMARY_URL, PromptnessStatsTestCase.EXPORT_CSV_URL]
-    URLS = [PromptnessStatsTestCase.URL, PromptnessStatsTestCase.SUMMARY_URL]
+    URLS = [PromptnessStatsTestCase.URL, PromptnessStatsTestCase.SUMMARY_URL, PromptnessStatsTestCase.EXPORT_CSV_URL]
 
     def test_anonymous_user(self):
         for url in self.URLS:

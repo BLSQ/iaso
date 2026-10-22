@@ -10,7 +10,7 @@ import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,
 } from 'hat/assets/js/tests/helpers';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
     getApiMicroplanningMissionsRetrieveMockHandler,
@@ -96,11 +96,8 @@ const defaultRetrieveData =
     getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock({
         name: 'some name',
         description: 'some description',
-        // @ts-ignore
-        mission_type: {
-            label: 'Form filling',
-            value: MissionTypeValueEnum.enum.FORM_FILLING,
-        },
+        mission_type_label: 'Form filling',
+        mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
         forms: [],
     });
 
@@ -109,7 +106,7 @@ const mockUpdate = vi.fn();
 const server = setupServer(
     getApiMicroplanningMissionsRetrieveMockHandler(defaultRetrieveData),
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
-        Object.entries(MissionTypeValueEnum.enum).map(([label, value]) => ({
+        Object.entries(MissionTypeDa2Enum.enum).map(([label, value]) => ({
             value,
             label,
         })),
@@ -173,11 +170,8 @@ describe('Mission edit a11y tests', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.FORM_FILLING,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                     forms: [
                         {
                             form: 1,
@@ -218,11 +212,8 @@ describe('Mission edit a11y tests', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'ORg unit and form',
-                        value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                    },
+                    mission_type_label: 'ORg unit and form',
+                    mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                     org_unit_type: {
                         id: 1,
                         name: 'OUT 1',
@@ -259,11 +250,8 @@ describe('Mission edit a11y tests', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Entity and form',
-                        value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                    },
+                    mission_type_label: 'Entity and form',
+                    mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     entity_type: {
                         id: 1,
                         name: 'ET 1',

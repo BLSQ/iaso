@@ -1,5 +1,7 @@
+from functools import wraps
+
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.http.request import HttpRequest
@@ -39,7 +41,25 @@ def _base_iaso(request: HttpRequest, analytics_data: dict = None) -> HttpRespons
     )
 
 
-@login_required(login_url="/login/")
+def login_required_keeping_encoded_path(view):
+    """
+    Like login_required, but "next" keeps the url as the browser sent it.
+
+    login_required builds "next" from the decoded path: a "%2F" inside a url param value
+    (e.g. /search/01211%2Fsh%2F20/) would come back as a "/" after login and break the params.
+    Gunicorn exposes the raw url in RAW_URI; other servers (e.g. runserver) fall back to the decoded path.
+    """
+
+    @wraps(view)
+    def wrapper(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.META.get("RAW_URI") or request.get_full_path(), login_url="/login/")
+        return view(request, *args, **kwargs)
+
+    return wrapper
+
+
+@login_required_keeping_encoded_path
 @require_http_methods(["GET"])
 def iaso(request: HttpRequest) -> HttpResponse:
     analytics_data = None

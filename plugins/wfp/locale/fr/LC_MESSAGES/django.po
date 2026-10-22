@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-12 14:53+0000\n"
+"POT-Creation-Date: 2026-10-14 16:37+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -147,6 +147,10 @@ msgid "New case"
 msgstr "Nouveau cas"
 
 #: plugins/wfp/models.py
+msgid "New admission"
+msgstr "Nouvelle admission"
+
+#: plugins/wfp/models.py
 msgid "New admission (MUAC <11.5 cm)"
 msgstr "Nouvelle admission (MUAC <11.5 cm)"
 
@@ -187,8 +191,16 @@ msgid "Relapse"
 msgstr "Rechute"
 
 #: plugins/wfp/models.py
+msgid "Readmission after default"
+msgstr "Réadmission après défaillance"
+
+#: plugins/wfp/models.py
 msgid "Returned defaulter"
 msgstr "Défaillant de retour"
+
+#: plugins/wfp/models.py
+msgid "Returned defaulter (old case)"
+msgstr "Défaillant réapparu (ancien dossier)"
 
 #: plugins/wfp/models.py
 msgid "Returned referral"
@@ -197,6 +209,18 @@ msgstr "Référence retournée"
 #: plugins/wfp/models.py
 msgid "Transfer from other TSFP"
 msgstr "Transfert d'un autre TSFP"
+
+#: plugins/wfp/models.py
+msgid "Transferred as cured from TSFP"
+msgstr "Transféré depuis TSFP avec le statut guéri"
+
+#: plugins/wfp/models.py
+msgid "Transferred as cured from OTP"
+msgstr "Transféré depuis OTP avec le statut guéri"
+
+#: plugins/wfp/models.py
+msgid "Transferred from another BSFP/NSEP"
+msgstr "Transféré depuis un autre BSFP/NSEP"
 
 #: plugins/wfp/models.py
 msgid "Full"

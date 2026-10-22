@@ -18,4 +18,26 @@ export const planningOperations = {
             },
         },
     },
+    apiMicroplanningPlanningsConfigsList: {
+        query: {
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
 };
+
+export const mutationInvalidates = [
+    {
+        onMutations: ['apiMicroplanningPlanningsConfigsBulkUpdate'],
+        invalidates: [
+            {
+                query: 'apiMicroplanningPlanningsConfigsList',
+                params: ['id'],
+            },
+        ],
+    },
+];

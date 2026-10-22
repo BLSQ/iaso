@@ -2609,6 +2609,74 @@ class OrgUnitAPITestCase(APITestCase):
         first_org_unit = org_units["orgunits"][0]
         self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)
 
+    def search_org_unit_ids(self, search: dict) -> list:
+        response = self.client.get(
+            f"/api/orgunits/?{urlencode({'limit': 1000, 'page': 1, 'searches': json.dumps([search])})}"
+        )
+        org_units = self.assertJSONResponse(response, status.HTTP_200_OK)
+        return [org_unit["id"] for org_unit in org_units["orgunits"]]
+
+    # IA-5518: API clients send ids as JSON numbers in `searches`, which raised a 500 (int has no split)
+    def test_search_org_unit_with_integer_parent_and_type(self):
+        self.client.force_authenticate(self.yoda)
+
+        org_unit_ids = self.search_org_unit_ids(
+            {
+                "validation_status": "VALID",
+                "orgUnitParentId": self.jedi_council_endor.pk,
+                "orgUnitTypeId": self.jedi_squad.pk,
+            }
+        )
+
+        self.assertCountEqual(org_unit_ids, [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk])
+
+    def test_search_org_unit_with_integer_group(self):
+        self.client.force_authenticate(self.yoda)
+
+        org_unit_ids = self.search_org_unit_ids({"validation_status": "all", "group": self.elite_group.pk})
+
+        self.assertCountEqual(org_unit_ids, [self.jedi_council_corruscant.pk])
+
+    def test_search_org_unit_with_integer_parent_ids(self):
+        self.client.force_authenticate(self.yoda)
+
+        org_unit_ids = self.search_org_unit_ids(
+            {"validation_status": "all", "orgUnitParentIds": self.jedi_council_endor.pk}
+        )
+
+        self.assertCountEqual(
+            org_unit_ids, [self.jedi_council_endor.pk, self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk]
+        )
+
+    def test_search_org_unit_with_integer_excluded_parent_ids(self):
+        self.client.force_authenticate(self.yoda)
+
+        org_unit_ids = self.search_org_unit_ids(
+            {"validation_status": "all", "excludedOrgUnitParentIds": self.jedi_council_endor.pk}
+        )
+
+        self.assertCountEqual(org_unit_ids, [self.jedi_council_corruscant.pk, self.jedi_council_brussels.pk])
+
+    def test_search_org_unit_with_null_ids_ignores_filters(self):
+        self.client.force_authenticate(self.yoda)
+        unfiltered_ids = self.search_org_unit_ids({"validation_status": "all"})
+
+        org_unit_ids = self.search_org_unit_ids(
+            {
+                "validation_status": "all",
+                "group": None,
+                "orgUnitTypeId": None,
+                "orgUnitParentIds": None,
+                "excludedOrgUnitParentIds": None,
+            }
+        )
+
+        self.assertCountEqual(org_unit_ids, unfiltered_ids)
+        # both types, grouped and ungrouped, parents and children: no filter was applied
+        self.assertIn(self.jedi_council_corruscant.pk, org_unit_ids)
+        self.assertIn(self.jedi_council_endor.pk, org_unit_ids)
+        self.assertIn(self.jedi_squad_endor.pk, org_unit_ids)
+
     def test_descending_order_without_as_location(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1")

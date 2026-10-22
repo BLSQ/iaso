@@ -13,6 +13,9 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
+from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
+from .serializers.planning_config.list import NestedPlanningConfigListSerializer
+
 
 if TYPE_CHECKING:
     from django_filters.filterset import BaseFilterSet
@@ -36,12 +39,14 @@ from iaso.api.common import (
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.missions import MissionWithForms
-from iaso.models.org_unit import OrgUnit
+from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 
 from ...models import (
+    Group,
     MissionEntityType,
     MissionOrgUnitType,
+    PlanningConfig,
 )
 from .filters import (
     PlanningDropdownFilterSet,
@@ -52,7 +57,7 @@ from .filters import (
     validate_planning_has_org_unit_scope,
 )
 from .mixins import PlanningOrgUnitChildrenQuerysetMixin
-from .pagination import PlanningMissionPagination, PlanningOrgUnitChildrenPagination
+from .pagination import PlanningConfigPagination, PlanningMissionPagination, PlanningOrgUnitChildrenPagination
 from .serializers import (
     AssignmentSerializer,
     AuditAssignmentSerializer,
@@ -181,13 +186,15 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     def pagination_class(self) -> type[BasePagination] | None:
         if self.action == "missions":
             return PlanningMissionPagination
+        if self.action == "configs":
+            return PlanningConfigPagination
         if self.action == "dropdown":
             return None
         return Paginator
 
     @property
     def include_results_key_if_not_paginated(self) -> bool:
-        if self.action == "missions":
+        if self.action in ["missions", "configs"]:
             return True
         return False
 
@@ -196,6 +203,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         if self.action == "dropdown":
             return [filters.OrderingFilter, DjangoFilterBackend]
         if self.action == "missions":
+            return []
+        if self.action == "configs":
             return []
         return [
             filters.OrderingFilter,
@@ -212,7 +221,17 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return PlanningDropdownSerializer
         if self.action == "missions":
             return PlanningMissionPolymorphicListSerializer
+        if self.action == "configs":
+            return NestedPlanningConfigListSerializer
+        if self.action == "bulk_configs":
+            return NestedPlanningConfigBulkSerializer
         return PlanningReadSerializer
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        ctx = super().get_serializer_context()
+        if self.action == "bulk_configs":
+            ctx.update({"planning_id": self.kwargs.get("pk")})
+        return ctx
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -220,6 +239,30 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
         if self.action == "dropdown":
             return qs.only("id", "name")
+
+        if self.action == "configs":
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "configs",
+                    queryset=PlanningConfig.objects.prefetch_related(
+                        Prefetch("org_unit_types", queryset=OrgUnitType.objects.only("id", "name").all()),
+                        Prefetch("org_unit_groups", queryset=Group.objects.only("id", "name").all()),
+                    ).order_by("level"),
+                )
+            )
+            planning = get_object_or_404(
+                qs,
+                pk=self.kwargs["pk"],
+            )
+            return planning.configs.all()
+
+        if self.action == "bulk_configs":
+            qs = qs.prefetch_related("configs")
+            planning = get_object_or_404(
+                qs,
+                pk=self.kwargs["pk"],
+            )
+            return planning.configs.all()
 
         if self.action == "missions":
             qs = qs.prefetch_related(
@@ -288,6 +331,26 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     )
     def missions(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
         return super().list(request, *args, **kwargs)
+
+    @extend_schema(responses={200: NestedPlanningConfigListSerializer(many=True)})
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+    )
+    def configs(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+        return super().list(request, *args, **kwargs)
+
+    @extend_schema(
+        responses=NestedPlanningConfigBulkSerializer(many=True), request=NestedPlanningConfigBulkSerializer(many=True)
+    )
+    @action(detail=True, methods=["put"], url_path="configs/bulk", url_name="planning-configs-bulk")
+    def bulk_configs(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(data=request.data, many=True, instance=self.get_queryset())
+        serializer.is_valid(raise_exception=True)
+        super(ModelViewSet, self).perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
 
 @extend_schema(tags=["Micro plannings", "Planning samplings", "Plannings"])

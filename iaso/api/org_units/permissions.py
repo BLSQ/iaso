@@ -9,7 +9,6 @@ from iaso.permissions.core_permissions import (
     CORE_REGISTRY_WRITE_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
 )
-from iaso.plugins import is_polio_plugin_active
 
 
 class HasCreateOrgUnitPermission(permissions.BasePermission):
@@ -36,10 +35,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name()),
             request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name()),
         ]
-        if is_polio_plugin_active():
-            from plugins.polio.permissions import POLIO_PERMISSION
-
-            required_perms.append(request.user.has_perm(POLIO_PERMISSION.full_name()))
+        required_perms.extend(extra_org_unit_permissions(request.user))
 
         if not (request.user.is_authenticated and any(required_perms)):
             return False

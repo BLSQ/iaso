@@ -8,8 +8,10 @@ from django.test import override_settings
 from django.utils import timezone
 from oauth2_provider.models import AccessToken, Application
 
+from iaso.mcp.client import IasoClient, IasoHTTPError
 from iaso.mcp.oauth import MCP_SCOPE, redirect_uri_error
 from iaso.mcp.recipes.fill_account import resolve_xlsx_path
+from iaso.mcp.recipes.fill_account.apply import current_account
 from iaso.test import TestCase
 
 
@@ -185,6 +187,21 @@ class McpEndpointAuthTest(TestCase):
         self.assertTrue(payload["ok"])
         self.assertEqual(payload["user_name"], "mcp-user")
         self.assertEqual(payload["account_name"], "MCP")
+
+    @override_settings(SECURE_SSL_REDIRECT=True)
+    def test_whoami_profile_survives_ssl_redirect(self):
+        identity = current_account(IasoClient.for_user(self.user))
+        self.assertEqual(identity["user_name"], "mcp-user")
+        self.assertEqual(identity["account_name"], "MCP")
+        self.assertEqual(identity["account_id"], self.account.id)
+
+    @override_settings(SECURE_SSL_REDIRECT=True)
+    def test_in_process_post_is_not_an_ssl_redirect(self):
+        try:
+            IasoClient.for_user(self.user).transport.request("POST", "profiles/me/", json={})
+        except IasoHTTPError as exc:
+            self.assertNotEqual(exc.status_code, 301)
+            self.assertGreaterEqual(exc.status_code, 400)
 
     def test_me_uses_django_session(self):
         self.client.force_login(self.user)

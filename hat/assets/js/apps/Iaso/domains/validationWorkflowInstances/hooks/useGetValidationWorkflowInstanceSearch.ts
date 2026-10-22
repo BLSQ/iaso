@@ -36,6 +36,11 @@ const useGetValidationWorkflowInstanceSearchParams = (
                 ? params?.validation_workflows
                 : (params?.validation_workflows?.split(',') ?? []);
         }
+        if (params?.org_unit) {
+            params.org_units = Array.isArray(params.org_unit)
+                ? params.org_unit.join(',')
+                : params.org_unit;
+        }
         return params;
     }, [params]);
 };

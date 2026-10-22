@@ -1,2 +1,0 @@
-class InvalidFormatError(Exception):
-    pass

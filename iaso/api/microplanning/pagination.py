@@ -15,3 +15,7 @@ class MobilePagination(Paginator):
 
 class PlanningMissionPagination(Paginator):
     page_size = 20
+
+
+class PlanningConfigPagination(Paginator):
+    page_size = 20

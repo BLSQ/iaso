@@ -16,7 +16,9 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
         self.group = Group.objects.create(name="Group")
         self.other_group = Group.objects.create(name="Group 2")
+        self.group_3 = Group.objects.create(name="Group 3")
         self.user_role = UserRole.objects.create(group=self.group, account=self.account)
+        self.user_role_2 = UserRole.objects.create(group=self.group_3, account=self.account)
 
         self.validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name",
@@ -125,6 +127,37 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
     def test_happy_flow_as_superuser(self):
         self.base_test_happy_flow(self.superuser)
+
+    def test_roles_required_are_correctly_replaced(self):
+        self.client.force_authenticate(self.superuser)
+        res = self.client.put(
+            reverse(
+                "validation_node_templates-bulk",
+                kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
+            ),
+            data=[
+                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
+                {
+                    "slug": self.second_node.slug,
+                    "name": "new third node",
+                    "description": "some description",
+                    "roles_required": [self.user_role_2.pk],
+                },
+            ],
+        )
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertEqual(res_data, [{"slug": "third-node"}, {"slug": "first-node"}, {"slug": "second-node"}])
+
+        self.second_node.refresh_from_db()
+
+        self.assertEqual(self.second_node.slug, "second-node")
+        self.assertEqual(self.second_node.name, "new third node")
+        self.assertEqual(self.second_node.description, "some description")
+        self.assertEqual(list(self.second_node.roles_required.all()), [self.user_role_2])
+        self.assertTrue(self.second_node.can_skip_previous_nodes)
 
     def base_test_happy_flow(self, user):
         self.client.force_authenticate(user)
@@ -363,7 +396,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(15):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-bulk",

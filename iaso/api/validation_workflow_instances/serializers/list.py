@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.models import Form, Instance, Project, ValidationNodeTemplate
+from iaso.models import Form, Instance, OrgUnit, Project, ValidationNodeTemplate
 
 
 class ProjectNestedSerializer(ModelSerializer):
@@ -22,8 +22,16 @@ class FormNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
+class OrgUnitNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+        read_only_fields = ["id", "name"]
+
+
 class ValidationWorkflowInstanceListSerializer(ModelSerializer):
     project = ProjectNestedSerializer(read_only=True)
+    org_unit = OrgUnitNestedSerializer(read_only=True, allow_null=True)
     user_has_been_involved = serializers.BooleanField(read_only=True, source="annotate_user_has_been_involved")
     requires_user_action = serializers.BooleanField(read_only=True, source="annotate_requires_user_action")
     last_updated = serializers.DateTimeField(read_only=True, source="annotate_last_updated")
@@ -37,6 +45,7 @@ class ValidationWorkflowInstanceListSerializer(ModelSerializer):
         fields = [
             "id",
             "form",
+            "org_unit",
             "project",
             "general_validation_status",
             "user_has_been_involved",

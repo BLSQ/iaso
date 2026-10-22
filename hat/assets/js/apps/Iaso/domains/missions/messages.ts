@@ -157,6 +157,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.chip.entityAndForm',
         defaultMessage: 'Entity + Form',
     },
+    formsCount: {
+        id: 'iaso.missions.label.formsCount',
+        defaultMessage: '{count, plural, one {# form} other {# forms}}',
+    },
     formInfo: {
         id: 'iaso.missions.label.formInfo',
         defaultMessage:

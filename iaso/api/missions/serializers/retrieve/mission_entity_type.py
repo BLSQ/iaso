@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.api.missions.serializers.retrieve.common import MissionTypeSerializer
 from iaso.models import EntityType
 from iaso.models.missions import MissionEntityType, MissionFormThroughForm
 
@@ -32,7 +31,7 @@ class NestedEntityTypeSerializer(ModelSerializer):
 
 
 class MissionEntityTypeRetrieveSerializer(ModelSerializer):
-    mission_type = MissionTypeSerializer(source="*")
+    mission_type_label = serializers.CharField(source="get_mission_type_display", read_only=True)
     entity_type = NestedEntityTypeSerializer(read_only=True)
     forms = NestedMissionFormThroughFormSerializer(many=True, read_only=True, source="missionformthroughform_set")
 
@@ -48,6 +47,7 @@ class MissionEntityTypeRetrieveSerializer(ModelSerializer):
             "min_cardinality",
             "max_cardinality",
             "mission_type",
+            "mission_type_label",
         ]
 
         extra_kwargs = {

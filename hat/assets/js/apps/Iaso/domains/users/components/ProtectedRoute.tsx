@@ -1,9 +1,10 @@
 import React, { useEffect, FunctionComponent, ReactNode } from 'react';
 import * as Sentry from '@sentry/browser';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageError from '../../../components/errors/PageError';
 import PageNoPerms from '../../../components/errors/PageNoPerms';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { getRawSplat } from '../../../routing/utils';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
@@ -21,11 +22,12 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     allRoutes = [],
     component,
 }) => {
-    const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
+    const { featureFlag, permissions, isRootUrl, baseUrl, routerUrl } =
+        routeConfig;
     const params = useParamsObject(baseUrl);
-    const paramsString = useParams()['*'];
     const navigate = useNavigate();
     const location = useLocation();
+    const paramsString = getRawSplat(location.pathname, routerUrl);
     const currentUser = useCurrentUser();
 
     // TODO test wrong account feature

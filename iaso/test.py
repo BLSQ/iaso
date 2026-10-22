@@ -7,7 +7,6 @@ import typing
 from cgi import parse_header
 from unittest import mock
 
-import jsonref
 import jsonschema
 import numpy as np
 import pandas as pd
@@ -24,6 +23,7 @@ from django.utils import timezone
 from django_test_migrations.contrib.unittest_case import MigratorTestCase
 from django_test_migrations.migrator import Migrator
 from jinja2 import Environment, FileSystemLoader
+from jsonschema import RefResolver
 from openapi_schema_validator import validate
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
@@ -200,8 +200,8 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
             SwaggerTestCaseMixin._openapi_schema_cache = res.json()
         return SwaggerTestCaseMixin._openapi_schema_cache
 
-    def resolve_refs(self, schema):
-        return jsonref.replace_refs(schema)
+    # def resolve_refs(self, schema):
+    #     return jsonref.replace_refs(schema)
 
     def normalize_schema(self, schema):
         if isinstance(schema, dict):
@@ -251,21 +251,25 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
         # touch the shared cache (it is reused across every test of the run).
         openapi = copy.deepcopy(self.get_openapi_schema())
 
-        # resolve refs first
-        resolved = self.resolve_refs(openapi)
+        for component_schema in openapi["components"]["schemas"].values():
+            self.normalize_schema(component_schema)
 
         # extract schema AFTER resolution
-        schema = self.get_component_schema(resolved, schema_name)
+        schema = self.get_component_schema(openapi, schema_name)
 
         # normalize OpenAPI quirks
         schema = self.normalize_schema(schema)
 
         # validate
         if as_array:
-            for d in data:
-                validate(schema, d)
-        else:
-            validate(schema, data)
+            schema = {
+                "type": "array",
+                "items": schema,
+            }
+
+        # Resolve local references against the original OpenAPI document.
+        resolver = RefResolver.from_schema(openapi)
+        validate(data, schema, resolver=resolver)
 
     def assertResponseCompliantToSwagger(self, data, schema, as_array=False):
         try:
@@ -345,7 +349,8 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             expected_attachment_filename=expected_name,
             streaming=streaming,
         )
-        decoded_response = content.decode("utf-8")
+        # "utf-8-sig": strips the UTF-8 BOM some CSV exports start with (for Excel), if any
+        decoded_response = content.decode("utf-8-sig")
 
         if return_as_lists:
             response_string = "".join(s for s in decoded_response)

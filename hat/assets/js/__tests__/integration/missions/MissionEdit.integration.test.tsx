@@ -7,7 +7,7 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { MissionTypeValueEnum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
     getApiMicroplanningMissionsRetrieveMockHandler,
@@ -98,11 +98,8 @@ const defaultRetrieveData =
     getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock({
         name: 'some name',
         description: 'some description',
-        // @ts-ignore
-        mission_type: {
-            label: 'Form filling',
-            value: MissionTypeValueEnum.enum.FORM_FILLING,
-        },
+        mission_type_label: 'Form filling',
+        mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
         forms: [],
     });
 
@@ -111,7 +108,7 @@ const mockUpdate = vi.fn();
 const server = setupServer(
     getApiMicroplanningMissionsRetrieveMockHandler(defaultRetrieveData),
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler(
-        Object.entries(MissionTypeValueEnum.enum).map(([label, value]) => ({
+        Object.entries(MissionTypeDa2Enum.enum).map(([label, value]) => ({
             value,
             label,
         })),
@@ -219,11 +216,8 @@ describe('Mission edit integration test', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.FORM_FILLING,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                     forms: [
                         {
                             form: 1,
@@ -259,11 +253,8 @@ describe('Mission edit integration test', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Entity and form',
-                        value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                    },
+                    mission_type_label: 'Entity and form',
+                    mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     entity_type: {
                         id: 1,
                         name: 'ET 1',
@@ -304,11 +295,8 @@ describe('Mission edit integration test', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'ORg unit and form',
-                        value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                    },
+                    mission_type_label: 'ORg unit and form',
+                    mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                     org_unit_type: {
                         id: 1,
                         name: 'OUT 1',
@@ -350,11 +338,8 @@ describe('Mission edit integration test', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.FORM_FILLING,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                     forms: [
                         {
                             form: 1,
@@ -446,11 +431,8 @@ describe('Mission edit integration test', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.FORM_FILLING,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                     forms: [],
                 },
             );
@@ -469,7 +451,7 @@ describe('Mission edit integration test', () => {
     });
     it('does not call API if form is invalid - MISSION_ENTITY_TYPE', async () => {
         const data =
-            getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock(
+            getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock(
                 {
                     name: 'some name',
                     description: 'some description',
@@ -477,11 +459,8 @@ describe('Mission edit integration test', () => {
                         id: 1,
                         name: 'ET 1',
                     },
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     forms: [],
                 },
             );
@@ -504,15 +483,8 @@ describe('Mission edit integration test', () => {
                 {
                     name: 'some name',
                     description: 'some description',
-                    org_unit_type: {
-                        id: 1,
-                        name: 'OUT 1',
-                    },
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.FORM_FILLING,
                     forms: [],
                 },
             );
@@ -680,11 +652,8 @@ describe('Mission edit integration test', () => {
                         name: 'ET 1',
                     },
                     min_cardinality: 1,
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     forms: [],
                 },
             );
@@ -765,11 +734,8 @@ describe('Mission edit integration test', () => {
                         name: 'OUT 1',
                     },
                     min_cardinality: 1,
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                     forms: [],
                 },
             );
@@ -936,11 +902,8 @@ describe('Mission edit integration test', () => {
                         name: 'ET 1',
                     },
                     min_cardinality: 1,
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.ENTITY_AND_FORM,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
                     forms: [],
                 },
             );
@@ -1045,11 +1008,8 @@ describe('Mission edit integration test', () => {
                         name: 'OUT 1',
                     },
                     min_cardinality: 1,
-                    // @ts-ignore
-                    mission_type: {
-                        label: 'Form filling',
-                        value: MissionTypeValueEnum.enum.ORG_UNIT_AND_FORM,
-                    },
+                    mission_type_label: 'Form filling',
+                    mission_type: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
                     forms: [],
                 },
             );

@@ -1,10 +1,13 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import CheckConstraint, Q, UniqueConstraint
 
+from iaso.models import Group
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
-from iaso.models.team import Team
+from iaso.models.team import Team, TeamQuerySet
 from iaso.utils.models.soft_deletable import (
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
@@ -117,3 +120,40 @@ class Planning(SoftDeletableModel):
     def get_pipeline_uuids(self) -> list:
         """Get the list of pipeline UUIDs for this planning."""
         return self.pipeline_uuids or []
+
+
+class PlanningConfigQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User) -> "PlanningConfigQuerySet":
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+
+        return self.filter(planning__project__account=account)
+
+
+class PlanningConfig(models.Model):
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name="configs")
+
+    level = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=False)
+
+    org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
+    org_unit_groups = models.ManyToManyField(Group, blank=True)
+
+    objects = PlanningConfigQuerySet.as_manager()
+
+    class Meta:
+        ordering = ("level",)
+        constraints = [
+            CheckConstraint(check=Q(level__gte=1), name="level_gte_1"),
+            UniqueConstraint(
+                fields=("planning", "level"),
+                name="planning_config_planning_level_uniq",
+            ),
+        ]
+
+    def get_related_teams(self) -> TeamQuerySet:
+        return (
+            Team.objects.filter_for_account(account=self.planning.project.account)
+            .annotate_with_depth()
+            .filter(depth__lte=self.level)
+        )

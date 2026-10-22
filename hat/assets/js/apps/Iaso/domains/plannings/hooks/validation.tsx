@@ -49,19 +49,10 @@ export const usePlanningValidation = (
                 missions: array()
                     .min(1, 'requiredField')
                     .test(apiValidator('missions')),
-                selectedOrgUnit: number()
-                    .nullable()
-                    .test(apiValidator('selectedOrgUnit'))
-                    .required('requiredField'),
-                selectedTeam: number().nullable().required('requiredField'),
                 publishingStatus: mixed()
                     .oneOf(['draft', 'published'])
                     .required('requiredField'),
                 pipelineUuids: array().nullable(),
-                targetOrgUnitTypes: array()
-                    .of(number())
-                    .min(1, 'requiredField')
-                    .test(apiValidator('targetOrgUnitTypes')),
             }),
         [apiValidator],
     );

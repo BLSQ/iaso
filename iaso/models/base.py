@@ -6,7 +6,7 @@ from django.contrib import auth
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
@@ -218,15 +218,15 @@ class Link(models.Model):
 
 class GroupQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        profile = user.iaso_profile
-        queryset = self
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+
+        if not account:
+            return self.none()
+
         version_ids = (
-            SourceVersion.objects.filter(data_source__projects__account=profile.account)
-            .values_list("id", flat=True)
-            .distinct()
+            SourceVersion.objects.filter(data_source__projects__account=account).values_list("id", flat=True).distinct()
         )
-        queryset = queryset.filter(source_version_id__in=version_ids)
-        return queryset
+        return self.filter(source_version_id__in=version_ids)
 
 
 class Group(models.Model):
@@ -371,6 +371,14 @@ class Mapping(models.Model):
         }
 
 
+class MappingVersionQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User):
+        # Exists() rather than a join on form__projects to avoid duplicate rows (form <-> project is m2m)
+        return self.filter(
+            Exists(Project.objects.filter(account=user.iaso_profile.account, forms=OuterRef("form_version__form")))
+        )
+
+
 class MappingVersion(models.Model):
     QUESTION_MAPPING_NEVER_MAPPED = "neverMapped"
     QUESTION_MAPPING_MULTIPLE = "multiple"
@@ -390,6 +398,8 @@ class MappingVersion(models.Model):
     json = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = MappingVersionQuerySet.as_manager()
 
     class Meta:
         unique_together = [["form_version", "name"]]

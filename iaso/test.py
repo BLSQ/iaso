@@ -16,6 +16,8 @@ from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
+from django.core.management.sql import emit_post_migrate_signal
+from django.db import connections, transaction
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase, TransactionTestCase as BaseTransactionTestCase
 from django.urls import clear_url_caches, reverse
@@ -282,6 +284,28 @@ class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
 
 
+class FastFlushTransactionTestCase(BaseTransactionTestCase, IasoTestCaseMixin):
+    """
+    Empties the tables after each test with DELETE instead of Django's TRUNCATE of every table:
+    on the ~200 mostly empty tables of the test database, TRUNCATE takes ~1.4s (new files for every
+    table and index), DELETE ~0.05s.
+    Doesn't support `available_apps` / `serialized_rollback` (not used in iaso).
+    """
+
+    def _fixture_teardown(self):
+        for db_name in self._databases_names(include_mirrors=False):
+            connection = connections[db_name]
+            tables = connection.introspection.django_table_names(only_existing=True, include_views=False)
+            # the foreign keys created by Django are deferrable: the tables can be emptied in any order
+            sql = "SET CONSTRAINTS ALL DEFERRED;" + "".join(
+                f"DELETE FROM {connection.ops.quote_name(table)};" for table in tables
+            )
+            with transaction.atomic(using=db_name), connection.cursor() as cursor:
+                cursor.execute(sql)
+            # like the flush command: recreate the content types and permissions
+            emit_post_migrate_signal(verbosity=0, interactive=False, db=db_name)
+
+
 def try_json(response):
     try:
         return response.json()
@@ -289,13 +313,10 @@ def try_json(response):
         return response.content
 
 
-class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
-    client: APIClient
-
-    def setUp(self):
-        """Make sure we have a fresh client at the beginning of each test"""
-
-        self.client = APIClient()
+class APIAssertionsMixin:
+    """
+    Shared by APITestCase and the API tests that can't inherit from it (TransactionTestCase).
+    """
 
     def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, HttpResponse)
@@ -306,6 +327,15 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
         if response.content:
             return response.json()
+
+
+class APITestCase(BaseAPITestCase, IasoTestCaseMixin, APIAssertionsMixin):
+    client: APIClient
+
+    def setUp(self):
+        """Make sure we have a fresh client at the beginning of each test"""
+
+        self.client = APIClient()
 
     def assertFileResponse(
         self,

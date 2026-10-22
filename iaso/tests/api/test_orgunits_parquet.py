@@ -204,141 +204,87 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         self.jedi_council_brussels.save()
 
     def test_can_retrieve_org_units_list_in_parquet_format(self):
-        """It tests the parquet org unit export data"""
+        """It tests the parquet org unit export data, without and with all the extra_fields (geojson, groups).
 
+        One test rather than one per extra field: as a TransactionTestCase, each test method pays
+        a flush of every table (~1.5s).
+        """
+        stable_columns = [
+            "org_unit_name",
+            "org_unit_source_ref",
+            "org_unit_code",
+            "org_unit_created_by_username",
+            "org_unit_opening_date",
+            "org_unit_closed_date",
+            "org_unit_validation_status",
+            "org_unit_type_name",
+            "org_unit_level",
+            "level_1_name",
+            "level_1_source_ref",
+            "level_1_closed_date",
+            "level_1_validation_status",
+            "level_2_name",
+            "level_2_source_ref",
+            "level_2_closed_date",
+            "level_2_validation_status",
+            "org_unit_longitude",
+            "org_unit_latitude",
+            "org_unit_altitude",
+        ]
+        geojson_columns = [
+            "org_unit_geom_geojson",
+            "org_unit_location_geojson",
+            "org_unit_simplified_geom_geojson",
+            "org_unit_biggest_polygon_geojson",
+        ]
         self.client.force_authenticate(self.yoda)
 
-        with self.assertNumQueries(3):
-            response = self.client.get("/api/orgunits/?order=id&parquet=true")
+        with self.subTest("no extra_fields"):
+            self._export_and_compare_snapshot(
+                extra_params="",
+                num_queries=3,
+                columns=stable_columns,
+                snapshot="test_can_retrieve_org_units_list_in_parquet_format.csv",
+            )
+
+        with self.subTest("extra_fields=:all"):
+            # +1 query for the groups_exploded pre-query included in :all
+            rows = self._export_and_compare_snapshot(
+                extra_params="&extra_fields=:all",
+                num_queries=4,
+                columns=stable_columns + geojson_columns,
+                snapshot="test_can_retrieve_org_units_list_in_parquet_format_extra_fields.csv",
+            )
+            corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
+            endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
+
+            # groups_exploded: one binary column per group that has any org unit in the selection, id + normalized name
+            elite_col = f"group_{self.elite_group.id}_elite_councils"
+            self.assertIn(elite_col, rows[0].keys())
+            # unofficial_group and another_group have no linked org units → no column
+            self.assertNotIn(f"group_{self.unofficial_group.id}_unofficial_jedi_councils", rows[0].keys())
+            self.assertNotIn(f"group_{self.another_group.id}_another_group", rows[0].keys())
+            self.assertEqual(corruscant_row[elite_col], 1)
+            self.assertEqual(endor_row[elite_col], 0)
+
+            # groups_json: a single JSON column listing all groups per org unit
+            self.assertEqual(
+                json.loads(corruscant_row["org_unit_groups"]), [{"id": self.elite_group.id, "name": "Elite councils"}]
+            )
+            self.assertEqual(json.loads(endor_row["org_unit_groups"]), [])
+
+    def _export_and_compare_snapshot(self, *, extra_params, num_queries, columns, snapshot):
+        """exports with the given extra params, compares the columns with the snapshot, returns the rows"""
+        with self.assertNumQueries(num_queries):
+            response = self.client.get(f"/api/orgunits/?order=id&parquet=true{extra_params}")
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assert_parquet_content_type(response)
 
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
                 write_response_to_file(response, f)
-
-                stable_columns = [
-                    "org_unit_name",
-                    "org_unit_source_ref",
-                    "org_unit_code",
-                    "org_unit_created_by_username",
-                    "org_unit_opening_date",
-                    "org_unit_closed_date",
-                    "org_unit_validation_status",
-                    "org_unit_type_name",
-                    "org_unit_level",
-                    "level_1_name",
-                    "level_1_source_ref",
-                    "level_1_closed_date",
-                    "level_1_validation_status",
-                    "level_2_name",
-                    "level_2_source_ref",
-                    "level_2_closed_date",
-                    "level_2_validation_status",
-                    "org_unit_longitude",
-                    "org_unit_latitude",
-                    "org_unit_altitude",
-                ]
-
-                compare_or_create_snapshot(
-                    f.name,
-                    "./iaso/tests/fixtures/snapshots/test_can_retrieve_org_units_list_in_parquet_format.csv",
-                    stable_columns,
-                )
-
-    def test_can_retrieve_org_units_list_in_parquet_format_extra_fields(self):
-        """It tests the parquet org unit export data + extra_fields geojson"""
-
-        self.client.force_authenticate(self.yoda)
-
-        with self.assertNumQueries(4):  # +1 for the groups_exploded pre-query included in :all
-            response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=:all")
-
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assert_parquet_content_type(response)
-
-            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
-                write_response_to_file(response, f)
-                stable_columns = [
-                    "org_unit_name",
-                    "org_unit_source_ref",
-                    "org_unit_code",
-                    "org_unit_created_by_username",
-                    "org_unit_opening_date",
-                    "org_unit_closed_date",
-                    "org_unit_validation_status",
-                    "org_unit_type_name",
-                    "org_unit_level",
-                    "level_1_name",
-                    "level_1_source_ref",
-                    "level_1_closed_date",
-                    "level_1_validation_status",
-                    "level_2_name",
-                    "level_2_source_ref",
-                    "level_2_closed_date",
-                    "level_2_validation_status",
-                    "org_unit_longitude",
-                    "org_unit_latitude",
-                    "org_unit_altitude",
-                    "org_unit_geom_geojson",
-                    "org_unit_location_geojson",
-                    "org_unit_simplified_geom_geojson",
-                    "org_unit_biggest_polygon_geojson",
-                ]
-
-                compare_or_create_snapshot(
-                    f.name,
-                    "./iaso/tests/fixtures/snapshots/test_can_retrieve_org_units_list_in_parquet_format_extra_fields.csv",
-                    stable_columns,
-                )
-
-    def test_can_retrieve_org_units_with_groups_exploded(self):
-        """groups_exploded adds one binary column per group that has any org unit in the selection"""
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_exploded")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assert_parquet_content_type(response)
-
-        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
-            write_response_to_file(response, f)
-            rows = read_parquet(f)
-
-        # Only elite_group is linked to an org unit -- id + normalized name
-        expected_col = f"group_{self.elite_group.id}_elite_councils"
-        self.assertIn(expected_col, rows[0].keys())
-        # unofficial_group and another_group have no linked org units → no column
-        self.assertNotIn(f"group_{self.unofficial_group.id}_unofficial_jedi_councils", rows[0].keys())
-        self.assertNotIn(f"group_{self.another_group.id}_another_group", rows[0].keys())
-
-        corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
-        self.assertEqual(corruscant_row[expected_col], 1)
-
-        endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
-        self.assertEqual(endor_row[expected_col], 0)
-
-    def test_can_retrieve_org_units_with_groups_json(self):
-        """groups_json adds a single JSON column listing all groups per org unit"""
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=groups_json")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assert_parquet_content_type(response)
-
-        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
-            write_response_to_file(response, f)
-            rows = read_parquet(f)
-
-        self.assertIn("org_unit_groups", rows[0].keys())
-
-        corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
-        groups = json.loads(corruscant_row["org_unit_groups"])
-        self.assertEqual(groups, [{"id": self.elite_group.id, "name": "Elite councils"}])
-
-        endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
-        self.assertEqual(json.loads(endor_row["org_unit_groups"]), [])
+                compare_or_create_snapshot(f.name, f"./iaso/tests/fixtures/snapshots/{snapshot}", columns)
+                return read_parquet(f)
 
     def test_can_retrieve_org_units_with_groups_exploded_code(self):
         """groups_exploded_code uses accent-stripped normalized names — columns are safe SQL identifiers"""
@@ -388,40 +334,53 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         self.assertIn("Corruscant Jedi Council", names)
         self.assertNotIn("Endor Jedi Council", names)
 
-    def test_bad_request_parquet_with_several_searches(self):
-        self.client.force_authenticate(self.yoda)
-        searches = [{"search": "Corruscant"}, {"search": "Endor"}]
-        response = self.client.get(f"/api/orgunits/?order=id&parquet=true&searches={json.dumps(searches)}")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json(), {"error": "Multiple searches are not supported for parquet exports"})
+    def test_bad_request_parquet(self):
+        """Parameters the parquet export doesn't support are rejected (subtests: see test_can_retrieve_org_units_list_in_parquet_format)"""
+        several_searches = json.dumps([{"search": "Corruscant"}, {"search": "Endor"}])
+        cases = [
+            (
+                "several searches",
+                self.yoda,
+                f"/api/orgunits/?order=id&parquet=true&searches={several_searches}",
+                status.HTTP_400_BAD_REQUEST,
+                "Multiple searches are not supported for parquet exports",
+            ),
+            (
+                "unknown extra_fields",
+                None,
+                "/api/orgunits/?order=id&parquet=true&extra_fields=bad_param",
+                status.HTTP_409_CONFLICT,
+                "Unknown extra_fields for parquet exports: bad_param, only supported geom_geojson, location_geojson, simplified_geom_geojson, biggest_polygon_geojson, groups_exploded, groups_exploded_code, groups_json, :all.",
+            ),
+            (
+                "ordered by instances_count",
+                None,
+                "/api/orgunits/?order=instances_count&parquet=true",
+                status.HTTP_400_BAD_REQUEST,
+                "Ordering by instances_count is not supported for parquet exports",
+            ),
+            (
+                "ordered by name then instances_count",
+                None,
+                "/api/orgunits/?order=name,-instances_count&parquet=true",
+                status.HTTP_400_BAD_REQUEST,
+                "Ordering by instances_count is not supported for parquet exports",
+            ),
+            (
+                "unknown query param",
+                None,
+                "/api/orgunits/?order=id&parquet=true&unknown_unsupported_filter=bad_param",
+                status.HTTP_409_CONFLICT,
+                "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters extra_fields, order, parquet, searches",
+            ),
+        ]
 
-    def test_bad_request_parquet_validates_unknown_extra_fields(self):
-        response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=bad_param")
-        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(
-            response.json(),
-            {
-                "error": "Unknown extra_fields for parquet exports: bad_param, only supported geom_geojson, location_geojson, simplified_geom_geojson, biggest_polygon_geojson, groups_exploded, groups_exploded_code, groups_json, :all."
-            },
-        )
-
-    def test_bad_request_parquet_ordered_by_instances_count(self):
-        for order in ("instances_count", "name,-instances_count"):
-            response = self.client.get(f"/api/orgunits/?order={order}&parquet=true")
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(
-                response.json(), {"error": "Ordering by instances_count is not supported for parquet exports"}
-            )
-
-    def test_bad_request_parquet_validates_unknown_query_param(self):
-        response = self.client.get("/api/orgunits/?order=id&parquet=true&unknown_unsupported_filter=bad_param")
-        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(
-            response.json(),
-            {
-                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters extra_fields, order, parquet, searches"
-            },
-        )
+        for name, user, url, expected_status, expected_error in cases:
+            with self.subTest(name):
+                self.client.force_authenticate(user)
+                response = self.client.get(url)
+                response_data = self.assertJSONResponse(response, expected_status)
+                self.assertEqual(response_data, {"error": expected_error})
 
     def test_groups_exploded_code_collision_returns_400(self):
         """When two group names normalize to the same safe identifier, the API returns 400."""

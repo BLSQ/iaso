@@ -241,16 +241,19 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         with self.subTest("no extra_fields"):
             self._export_and_compare_snapshot(
-                "", 3, stable_columns, "test_can_retrieve_org_units_list_in_parquet_format.csv"
+                extra_params="",
+                num_queries=3,
+                columns=stable_columns,
+                snapshot="test_can_retrieve_org_units_list_in_parquet_format.csv",
             )
 
         with self.subTest("extra_fields=:all"):
             # +1 query for the groups_exploded pre-query included in :all
             rows = self._export_and_compare_snapshot(
-                "&extra_fields=:all",
-                4,
-                stable_columns + geojson_columns,
-                "test_can_retrieve_org_units_list_in_parquet_format_extra_fields.csv",
+                extra_params="&extra_fields=:all",
+                num_queries=4,
+                columns=stable_columns + geojson_columns,
+                snapshot="test_can_retrieve_org_units_list_in_parquet_format_extra_fields.csv",
             )
             corruscant_row = next(r for r in rows if r["org_unit_name"] == "Corruscant Jedi Council")
             endor_row = next(r for r in rows if r["org_unit_name"] == "Endor Jedi Council")
@@ -270,7 +273,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             )
             self.assertEqual(json.loads(endor_row["org_unit_groups"]), [])
 
-    def _export_and_compare_snapshot(self, extra_params, num_queries, columns, snapshot):
+    def _export_and_compare_snapshot(self, *, extra_params, num_queries, columns, snapshot):
         """exports with the given extra params, compares the columns with the snapshot, returns the rows"""
         with self.assertNumQueries(num_queries):
             response = self.client.get(f"/api/orgunits/?order=id&parquet=true{extra_params}")

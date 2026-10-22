@@ -238,9 +238,11 @@ describe('Mission edit a11y tests', () => {
             screen.getByRole('textbox', { name: /description/i }),
         ).toHaveValue('some description');
 
-        expect(
-            screen.getByRole('combobox', { name: /org unit type/i }),
-        ).toHaveValue('OUT 1');
+        await waitFor(() => {
+            expect(
+                screen.getByRole('combobox', { name: /org unit type/i }),
+            ).toHaveValue('OUT 1');
+        });
 
         expect(await axe(container)).toHaveNoViolations();
     });
@@ -283,9 +285,11 @@ describe('Mission edit a11y tests', () => {
             screen.getByRole('textbox', { name: /description/i }),
         ).toHaveValue('some description');
 
-        expect(
-            screen.getByRole('combobox', { name: /entity type/i }),
-        ).toHaveValue('ET 1');
+        await waitFor(() => {
+            expect(
+                screen.getByRole('combobox', { name: /entity type/i }),
+            ).toHaveValue('ET 1');
+        });
 
         // @ts-ignore
         expect(await axe(container)).toHaveNoViolations();

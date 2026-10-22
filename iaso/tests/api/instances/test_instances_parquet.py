@@ -272,6 +272,12 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         OrgUnitReferenceInstance.objects.create(
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
+        # the form's validation workflow and the submissions' validation status are exported too
+        # (an unrelated workflow first, so the workflow id can't be equal to the form id by chance)
+        self.create_validation_workflow(account=self.star_wars, name="Unrelated workflow")
+        workflow = self.create_validation_workflow(account=self.star_wars, forms=[self.form_1])
+        self.instance_1.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
+        self.instance_1.save()
         instances = [self.instance_1, self.instance_2, self.instance_3, self.instance_4]
 
         # 9, not 8: with_status() now spends one extra query checking whether the filtered-in form(s) are
@@ -295,6 +301,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                         "instances": instances,
                         "form_id": self.instance_1.form.id,
                         "org_unit_id": self.instance_1.org_unit_id,
+                        "workflow_id": workflow.id,
                     },
                 )
 
@@ -341,58 +348,12 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
 
         self.assertEqual(queries_for_0_extra, queries_for_6_extra)
 
-    def test_parquet_includes_validation_workflow(self):
-        self.yoda.iaso_profile.projects.add(self.instance_1.project)
-        self.client.force_authenticate(self.yoda)
-        workflow = self.create_validation_workflow(account=self.star_wars, forms=[self.form_1])
-        self.instance_1.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
-        self.instance_1.save()
+    def test_parquet_supports_the_export_filters(self):
+        """the submissions page sends the same filters for the csv/xlsx/parquet exports
 
-        response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&order=id")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
-            write_response_to_file(response, f)
-            with duckdb.connect() as con:
-                rows = con.execute(
-                    "SELECT iaso_subm_id, iaso_subm_form_validation_workflow_id, iaso_subm_general_validation_status"
-                    f" FROM '{f.name}' ORDER BY iaso_subm_id"
-                ).fetchall()
-
-        expected = [
-            (instance.id, workflow.id, ValidationWorkflowArtefactStatus.APPROVED if instance == self.instance_1 else "")
-            for instance in sorted(
-                (self.instance_1, self.instance_2, self.instance_3, self.instance_4), key=lambda i: i.id
-            )
-        ]
-        self.assertEqual(rows, expected)
-
-    def test_parquet_supports_the_ui_export_filters(self):
-        """the submissions page sends the same filters for the csv/xlsx/parquet exports"""
-        self.yoda.iaso_profile.projects.add(self.instance_1.project)
-        self.client.force_authenticate(self.yoda)
-
-        def parquet_ids(filters):
-            response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&{filters}")
-            self.assertEqual(response.status_code, status.HTTP_200_OK, response)
-            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
-                write_response_to_file(response, f)
-                # used by the UI for the download progress
-                self.assertEqual(int(response["X-File-Size"]), os.path.getsize(f.name))
-                with duckdb.connect() as con:
-                    return sorted(row[0] for row in con.execute(f"SELECT iaso_subm_id FROM '{f.name}'").fetchall())
-
-        all_ids = sorted(i.id for i in (self.instance_1, self.instance_2, self.instance_3, self.instance_4))
-        # all the form_1 submissions are in the "VALID" Coruscant Jedi Council
-        self.assertEqual(parquet_ids("org_unit_status=VALID"), all_ids)
-        self.assertEqual(parquet_ids("org_unit_status=NEW"), [])
-        self.assertEqual(parquet_ids("search=Coruscant"), all_ids)
-        self.assertEqual(parquet_ids(f"search=ids:{self.instance_1.id}"), [self.instance_1.id])
-        self.assertEqual(parquet_ids("deviceId=99999"), [])
-        # closes a $$ ... $$ quoted string: the search must not be able to end the sql given to duckdb
-        self.assertEqual(parquet_ids("search=" + quote("a$$) ; SELECT 42; --")), [])
-
-    def test_parquet_supports_the_validation_workflow_filters(self):
+        One test with subtests rather than one test per filter family: as a TransactionTestCase,
+        each test method pays a flush of every table (~1.5s).
+        """
         self.yoda.iaso_profile.projects.add(self.instance_1.project)
         self.client.force_authenticate(self.yoda)
         workflow = self.create_validation_workflow(account=self.star_wars, forms=[self.form_1])
@@ -405,14 +366,29 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK, response)
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
                 write_response_to_file(response, f)
+                # used by the UI for the download progress
+                self.assertEqual(int(response["X-File-Size"]), os.path.getsize(f.name))
                 with duckdb.connect() as con:
                     return sorted(row[0] for row in con.execute(f"SELECT iaso_subm_id FROM '{f.name}'").fetchall())
 
         all_ids = sorted(i.id for i in (self.instance_1, self.instance_2, self.instance_3, self.instance_4))
-        self.assertEqual(parquet_ids(f"workflow_ids={workflow.id}"), all_ids)
-        self.assertEqual(parquet_ids(f"workflow_ids={other_workflow.id}"), [])
-        self.assertEqual(parquet_ids("validation_status=APPROVED"), [self.instance_1.id])
-        self.assertEqual(parquet_ids("validation_status=REJECTED"), [])
+        cases = [
+            # all the form_1 submissions are in the "VALID" Coruscant Jedi Council
+            ("org_unit_status=VALID", all_ids),
+            ("org_unit_status=NEW", []),
+            ("search=Coruscant", all_ids),
+            (f"search=ids:{self.instance_1.id}", [self.instance_1.id]),
+            ("deviceId=99999", []),
+            # closes a $$ ... $$ quoted string: the search must not be able to end the sql given to duckdb
+            ("search=" + quote("a$$) ; SELECT 42; --"), []),
+            (f"workflow_ids={workflow.id}", all_ids),
+            (f"workflow_ids={other_workflow.id}", []),
+            ("validation_status=APPROVED", [self.instance_1.id]),
+            ("validation_status=REJECTED", []),
+        ]
+        for filters, expected_ids in cases:
+            with self.subTest(filters=filters):
+                self.assertEqual(parquet_ids(filters), expected_ids)
 
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)

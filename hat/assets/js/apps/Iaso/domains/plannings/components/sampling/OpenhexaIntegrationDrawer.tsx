@@ -29,9 +29,9 @@ import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
 import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
-import { Planning } from '../../types';
 import { useGetPipelineAccountConfig } from '../../hooks/useGetPipelineAccountConfig';
 import MESSAGES from '../../messages';
+import { Planning } from '../../types';
 import { PipelineInfos } from './PipelineInfos';
 import { PipelineSelect } from './PipelineSelect';
 

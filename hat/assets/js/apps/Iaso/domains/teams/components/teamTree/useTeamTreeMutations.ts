@@ -1,17 +1,23 @@
-import { useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
+import {
+    PatchedTeamRequest,
+    TeamTree,
+    apiTeamsPartialUpdate,
+    useApiTeamsDestroy,
+    useApiTeamsPartialUpdate,
+} from 'Iaso/api/teams';
 import { TEAM_QUERY_KEYS } from 'Iaso/domains/teams/constants';
-import { deleteTeam } from 'Iaso/domains/teams/hooks/requests/useDeleteTeam';
 import { getTeamTreeQueryKey } from 'Iaso/domains/teams/hooks/requests/useGetTeamTree';
-import { patchTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
 import TEAM_MESSAGES from 'Iaso/domains/teams/messages';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
-import { mapTeamTree, normalizeTeamTree } from 'Iaso/domains/teams/utils';
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { collectTeamTreeNodes, mapTeamTree } from 'Iaso/domains/teams/utils';
+import { useCustomMutationOptions } from '../../../../../../orval/mutator/custom-mutation-options';
 
 const userIds = (team: TeamTreeNode) => team.users.map(user => user.id);
 
 type TeamChanges = Pick<Partial<TeamTreeNode>, 'name' | 'type' | 'parent'>;
-type UpdateTeamVariables = { team: TeamTreeNode; changes: TeamChanges };
+type UpdateTeamVariables = { id: number; data?: PatchedTeamRequest };
+type DeleteTeamVariables = { id: number };
 type MoveUserVariables = {
     userId: number;
     from: TeamTreeNode;
@@ -20,8 +26,11 @@ type MoveUserVariables = {
 
 const applyUpdateTeam = (
     root: TeamTreeNode,
-    { team: updatedTeam, changes }: UpdateTeamVariables,
+    { id, data }: UpdateTeamVariables,
 ): TeamTreeNode | undefined => {
+    const updatedTeam = collectTeamTreeNodes(root).find(team => team.id === id);
+    if (!updatedTeam) return root;
+    const changes = data as TeamChanges;
     const isMove =
         changes.parent !== undefined && changes.parent !== updatedTeam.parent;
     return mapTeamTree(root, team => {
@@ -38,9 +47,9 @@ const applyUpdateTeam = (
 
 const applyDeleteTeam = (
     root: TeamTreeNode,
-    teamId: number,
+    { id }: DeleteTeamVariables,
 ): TeamTreeNode | undefined =>
-    mapTeamTree(root, team => (team.id === teamId ? undefined : team));
+    mapTeamTree(root, team => (team.id === id ? undefined : team));
 
 const applyMoveUser = (
     root: TeamTreeNode,
@@ -77,12 +86,13 @@ const useOptimisticHierarchyUpdate = <Variables>(
     return {
         onMutate: async (variables: Variables) => {
             await queryClient.cancelQueries(queryKey);
-            const previous = queryClient.getQueryData<TeamTreeNode>(queryKey);
+            const previous = queryClient.getQueryData<TeamTree[]>(queryKey);
             if (previous) {
-                const next = apply(previous, variables);
                 queryClient.setQueryData(
                     queryKey,
-                    next && normalizeTeamTree(next),
+                    (previous as TeamTreeNode[]).flatMap(
+                        root => apply(root, variables) ?? [],
+                    ),
                 );
             }
             return { previous };
@@ -90,7 +100,7 @@ const useOptimisticHierarchyUpdate = <Variables>(
         onError: (
             _error: unknown,
             _variables: Variables,
-            context?: { previous?: TeamTreeNode },
+            context?: { previous?: TeamTree[] },
         ) => {
             if (context?.previous) {
                 queryClient.setQueryData(queryKey, context.previous);
@@ -103,34 +113,40 @@ const useOptimisticHierarchyUpdate = <Variables>(
 };
 
 export const useUpdateTeam = (rootTeamId?: number) =>
-    useSnackMutation({
-        mutationFn: ({ team, changes }: UpdateTeamVariables) =>
-            patchTeam({ id: team.id, ...changes }),
-        showSuccessSnackBar: false,
-        options: useOptimisticHierarchyUpdate(rootTeamId, applyUpdateTeam),
+    useApiTeamsPartialUpdate({
+        mutation: {
+            ...useOptimisticHierarchyUpdate(rootTeamId, applyUpdateTeam),
+            meta: { showSuccessSnackBar: false },
+        },
     });
 
 export const useDeleteHierarchyTeam = (rootTeamId?: number) =>
-    useSnackMutation({
-        mutationFn: deleteTeam,
-        snackSuccessMessage: TEAM_MESSAGES.deleteSuccess,
-        snackErrorMsg: TEAM_MESSAGES.deleteError,
-        options: useOptimisticHierarchyUpdate(rootTeamId, applyDeleteTeam),
+    useApiTeamsDestroy({
+        mutation: {
+            ...useOptimisticHierarchyUpdate(rootTeamId, applyDeleteTeam),
+            meta: {
+                snackSuccessMessage: TEAM_MESSAGES.deleteSuccess,
+                snackErrorMsg: TEAM_MESSAGES.deleteError,
+            },
+        },
     });
 
 // Without a target team, the user is only removed from its current team.
 export const useMoveUser = (rootTeamId?: number) =>
-    useSnackMutation({
-        mutationFn: async ({ userId, from, to }: MoveUserVariables) => {
-            // Add before removing so a failure never leaves the user without a team.
-            if (to) {
-                await patchTeam({ id: to.id, users: [...userIds(to), userId] });
-            }
-            return patchTeam({
-                id: from.id,
-                users: userIds(from).filter(id => id !== userId),
-            });
-        },
-        showSuccessSnackBar: false,
-        options: useOptimisticHierarchyUpdate(rootTeamId, applyMoveUser),
-    });
+    useMutation(
+        useCustomMutationOptions({
+            mutationFn: async ({ userId, from, to }: MoveUserVariables) => {
+                // Add before removing so a failure never leaves the user without a team.
+                if (to) {
+                    await apiTeamsPartialUpdate(to.id, {
+                        users: [...userIds(to), userId],
+                    });
+                }
+                return apiTeamsPartialUpdate(from.id, {
+                    users: userIds(from).filter(id => id !== userId),
+                });
+            },
+            ...useOptimisticHierarchyUpdate(rootTeamId, applyMoveUser),
+            meta: { showSuccessSnackBar: false },
+        }),
+    );

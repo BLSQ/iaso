@@ -8,8 +8,7 @@ import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { TEAM_QUERY_KEYS } from '../../constants';
 import MESSAGES from '../../messages';
 
-export const deleteTeam = (teamId: number) =>
-    deleteRequest(`/api/teams/${teamId}/`);
+const deleteTeam = (teamId: number) => deleteRequest(`/api/teams/${teamId}/`);
 
 type useDeleteArgs = {
     params: TeamUrlParams;

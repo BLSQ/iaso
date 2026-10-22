@@ -48,7 +48,7 @@ export const TeamTreeEditor: FC<Props> = ({
     const moveItem = useCallback(
         (item: DraggedItem, target: TeamTreeNode) => {
             if (item.kind === 'team') {
-                updateTeam({ team: item.team, changes: { parent: target.id } });
+                updateTeam({ id: item.team.id, data: { parent: target.id } });
             } else {
                 moveUser({ userId: item.user.id, from: item.team, to: target });
             }
@@ -58,7 +58,7 @@ export const TeamTreeEditor: FC<Props> = ({
     );
     const renameTeam = useCallback(
         (team: TeamTreeNode, name: string) =>
-            updateTeam({ team, changes: { name } }),
+            updateTeam({ id: team.id, data: { name } }),
         [updateTeam],
     );
     const openRootCreateDialog = useCallback(
@@ -81,8 +81,8 @@ export const TeamTreeEditor: FC<Props> = ({
                     break;
                 case 'changeType':
                     updateTeam({
-                        team: action.team,
-                        changes: { type: getToggledType(action.team) },
+                        id: action.team.id,
+                        data: { type: getToggledType(action.team) },
                     });
                     break;
                 case 'removeUser':

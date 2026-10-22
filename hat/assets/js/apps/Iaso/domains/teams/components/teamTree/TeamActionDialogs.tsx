@@ -136,7 +136,7 @@ type HierarchyDialogsProps = {
     projectId?: number;
     onMove: (item: DraggedItem, target: TeamTreeNode) => void;
     onRename: (team: TeamTreeNode, name: string) => void;
-    onDelete: (teamId: number) => void;
+    onDelete: (variables: { id: number }) => void;
     onTeamCreated: (team: Team) => void;
     closeDialog: () => void;
 };
@@ -186,7 +186,7 @@ export const HierarchyDialogs: FC<HierarchyDialogsProps> = ({
             return (
                 <DeleteTeamDialog
                     team={dialog.team}
-                    onConfirm={() => onDelete(dialog.team.id)}
+                    onConfirm={() => onDelete({ id: dialog.team.id })}
                     closeDialog={closeDialog}
                 />
             );

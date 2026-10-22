@@ -3,6 +3,7 @@ import ListIcon from '@mui/icons-material/List';
 import MapIcon from '@mui/icons-material/Map';
 import { Box, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
@@ -32,7 +33,11 @@ const styles = {
     },
 } satisfies SxStyles;
 
-export const AssignmentsMainPanel: FC = () => {
+type Props = {
+    tree: TeamTreeNode;
+};
+
+export const AssignmentsMainPanel: FC<Props> = ({ tree }) => {
     const { formatMessage } = useSafeIntl();
     const { view, updateParams } = useAssignmentsParams();
     const handleChangeView = useCallback(
@@ -59,7 +64,7 @@ export const AssignmentsMainPanel: FC = () => {
                     />
                 </Tabs>
             </Box>
-            {view === 'map' && <AssignmentsMap />}
+            {view === 'map' && <AssignmentsMap tree={tree} />}
             {view === 'list' && (
                 <Box sx={styles.listPlaceholder}>
                     <Typography color="text.secondary">

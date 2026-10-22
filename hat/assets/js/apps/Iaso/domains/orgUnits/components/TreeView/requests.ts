@@ -159,17 +159,20 @@ export const searchOrgUnits = async ({
     }
 };
 
+// What the treeview picker needs for an initial selection (label, status icon,
+// ancestors to preexpand) plus the type id; leaving out instances_count skips
+// the expensive descendants count on the backend.
+export const TREEVIEW_ORG_UNIT_FIELDS =
+    'id,name,validation_status,org_unit_type_id,org_unit_type_name,parent';
+
 export const useGetOrgUnit = (
     orgUnitId?: string,
-    // Optional `fields=` allow-list to skip the expensive instances_count.
-    fields?: string,
+    // `fields=` allow-list, ':all' for the full org unit.
+    fields: string = TREEVIEW_ORG_UNIT_FIELDS,
 ): UseQueryResult<OrgUnit, Error> =>
     useSnackQuery(
         ['orgunits', `${orgUnitId}`, fields],
-        () =>
-            getRequest(
-                `/api/orgunits/${orgUnitId}/${fields ? `?fields=${fields}` : ''}`,
-            ),
+        () => getRequest(`/api/orgunits/${orgUnitId}/?fields=${fields}`),
         undefined,
         {
             enabled: Boolean(orgUnitId),

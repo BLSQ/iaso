@@ -1,5 +1,7 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
+import { LoadingSpinner } from 'bluesquare-components';
+import L from 'leaflet';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import { CustomTileLayer } from 'Iaso/components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from 'Iaso/components/maps/tools/CustomZoomControl';
@@ -12,6 +14,9 @@ import {
     defaultCenter,
     defaultZoom,
 } from 'Iaso/utils/map/mapUtils';
+import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
+import { ScopeAreaLayer } from './ScopeAreaLayer';
+import { useScopeArea } from './useScopeArea';
 
 const styles = {
     container: {
@@ -26,9 +31,17 @@ const styles = {
 } satisfies SxStyles;
 
 export const AssignmentsMap: FC = () => {
+    const { planningId } = useAssignmentsParams();
+    const { orgUnitId, geoJson, bounds, isLoading } = useScopeArea(planningId);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const boundsOptions: L.FitBoundsOptions = useMemo(
+        () => ({ padding: [20, 20], maxZoom: currentTile.maxZoom }),
+        [currentTile.maxZoom],
+    );
+
     return (
         <Box sx={styles.container}>
+            {isLoading && <LoadingSpinner absolute fixed={false} />}
             <Box sx={styles.map}>
                 <MapContainer
                     center={defaultCenter}
@@ -41,12 +54,22 @@ export const AssignmentsMap: FC = () => {
                 >
                     <CloseTooltipOnMoveStart />
                     <InvalidateOnResize />
-                    <CustomZoomControl />
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        fitOnLoad
+                    />
                     <ScaleControl imperial={false} />
                     <CustomTileLayer
                         currentTile={currentTile}
                         setCurrentTile={setCurrentTile}
                     />
+                    {orgUnitId && geoJson && (
+                        <ScopeAreaLayer
+                            orgUnitId={orgUnitId}
+                            geoJson={geoJson}
+                        />
+                    )}
                 </MapContainer>
             </Box>
         </Box>

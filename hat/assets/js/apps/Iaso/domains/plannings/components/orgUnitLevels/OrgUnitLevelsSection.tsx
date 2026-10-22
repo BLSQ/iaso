@@ -18,8 +18,6 @@ import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { PlanningStepCard } from '../shared/PlanningStepCard';
-import { useGetTeamHierarchy } from '../teamHierarchy/useTeamHierarchy';
-import { buildTeamTree } from '../teamHierarchy/utils';
 import { LevelMembersChips } from './LevelMembersChips';
 import { LevelRow } from './LevelRow';
 import { PlanningLevel } from './types';

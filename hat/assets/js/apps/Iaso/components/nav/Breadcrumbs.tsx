@@ -18,6 +18,9 @@ export type BreadcrumbItem = {
 };
 
 const styles = {
+    root: {
+        font: 'inherit',
+    },
     urlLink: {
         '& a': { color: 'mediumGray.main' },
     },
@@ -88,7 +91,10 @@ export const Breadcrumbs: FC<Props> = ({
     replace = true,
     sx,
 }) => (
-    <MuiBreadcrumbs separator={separator} sx={sx}>
+    <MuiBreadcrumbs
+        separator={separator}
+        sx={[styles.root, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
         {items.map((item, index) => (
             <BreadcrumbItemContent
                 key={item.key}

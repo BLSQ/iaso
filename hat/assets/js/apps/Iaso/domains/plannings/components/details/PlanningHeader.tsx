@@ -3,10 +3,11 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import { Button, Stack } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
+import { getAssignmentsUrl } from '../../utils';
 import { PlanningStatusChip } from '../shared/PlanningStatusChip';
 import { planningPanelStyles } from '../shared/styles';
 import { SaveWarningDialog } from './SaveWarningDialog';
@@ -29,12 +30,18 @@ export const PlanningHeaderTitle: FC = () => {
 };
 
 export const PlanningHeaderActions: FC = () => {
-    const { mode, canSave, savePlanning, duplicatePlanning } =
+    const { planning, mode, canSave, savePlanning, duplicatePlanning } =
         usePlanningContext();
     const { formatMessage } = useSafeIntl();
     return (
         <Stack direction="row" gap={1}>
-            <Button variant="outlined" size="small">
+            <Button
+                variant="outlined"
+                size="small"
+                component={LinkWithLocation}
+                to={planning ? getAssignmentsUrl(planning.id) : ''}
+                disabled={!planning}
+            >
                 <OpenInNewIcon sx={styles.buttonIcon} />
                 {formatMessage(MESSAGES.openAssignments)}
             </Button>

@@ -7,6 +7,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
+import { AssignmentsMap } from './AssignmentsMap';
 
 const styles = {
     panel: {
@@ -21,10 +22,6 @@ const styles = {
         pr: 2,
         borderBottom: 1,
         borderColor: 'divider',
-    },
-    map: {
-        flex: 1,
-        bgcolor: 'background.blueGrey',
     },
     listPlaceholder: {
         flex: 1,
@@ -62,7 +59,7 @@ export const AssignmentsMainPanel: FC = () => {
                     />
                 </Tabs>
             </Box>
-            {view === 'map' && <Box sx={styles.map} />}
+            {view === 'map' && <AssignmentsMap />}
             {view === 'list' && (
                 <Box sx={styles.listPlaceholder}>
                     <Typography color="text.secondary">

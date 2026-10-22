@@ -28,7 +28,7 @@ import { useGetGroupDropdown } from '../orgUnits/hooks/requests/useGetGroups';
 import { useGetOrgUnitValidationStatus } from '../orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import PeriodPicker from '../periods/components/PeriodPicker';
 import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
-import { PlanningsDropdown } from '../plannings/components/PlanningsDropdown';
+import { PlanningsDropdown } from '../plannings/components/shared/PlanningsDropdown';
 import { useGetProjectsDropdownOptions } from '../projects/hooks/requests';
 import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';

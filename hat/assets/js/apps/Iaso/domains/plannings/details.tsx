@@ -1,12 +1,11 @@
 import React, { FunctionComponent } from 'react';
 
 import { useSafeIntl, useGoBack } from 'bluesquare-components';
-import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { baseUrls } from 'Iaso/constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { PlanningDetails } from './components/PlanningDetails';
+import { PlanningDetails } from './components/details/PlanningDetails';
 import { PlanningProvider } from './contexts/PlanningContext';
 import MESSAGES from './messages';
 import { PageMode } from './types';
@@ -32,15 +31,13 @@ export const Details: FunctionComponent = () => {
     return (
         <>
             <TopBar title={titleMessage} displayBackButton goBack={goBack} />
-            <MainWrapper sx={{ p: 4 }}>
-                <PlanningProvider
-                    planningId={planningId}
-                    mode={params.mode as PageMode}
-                    newMissionId={params.newMissionId}
-                >
-                    <PlanningDetails />
-                </PlanningProvider>
-            </MainWrapper>
+            <PlanningProvider
+                planningId={planningId}
+                mode={params.mode as PageMode}
+                newMissionId={params.newMissionId}
+            >
+                <PlanningDetails />
+            </PlanningProvider>
         </>
     );
 };

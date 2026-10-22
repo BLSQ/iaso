@@ -7,7 +7,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { PlanningFilters } from './components/PlanningFilters';
+import { PlanningFilters } from './components/list/PlanningFilters';
 import { usePlanningColumns } from './config';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';

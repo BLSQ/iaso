@@ -655,6 +655,76 @@ class GroupsAPITestCase(APITestCase):
         for item in data:
             self.assertIn("Default source", item["label"])
 
+    def _create_groups_by_org_unit_type(self):
+        zone_type = m.OrgUnitType.objects.create(name="Zone", short_name="Z")
+        area_type = m.OrgUnitType.objects.create(name="Area", short_name="A")
+        version = self.source_version_2
+        valid = m.OrgUnit.VALIDATION_VALID
+        root = m.OrgUnit.objects.create(
+            name="Province", version=version, org_unit_type=self.org_unit_type, validation_status=valid
+        )
+        zone = m.OrgUnit.objects.create(
+            name="Zone", version=version, org_unit_type=zone_type, parent=root, validation_status=valid
+        )
+        area = m.OrgUnit.objects.create(
+            name="Area", version=version, org_unit_type=area_type, parent=zone, validation_status=valid
+        )
+        outside_zone = m.OrgUnit.objects.create(
+            name="Outside zone", version=version, org_unit_type=zone_type, validation_status=valid
+        )
+        rejected_zone = m.OrgUnit.objects.create(
+            name="Rejected zone",
+            version=version,
+            org_unit_type=zone_type,
+            parent=root,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+        groups = {
+            "zones": m.Group.objects.create(name="Zones", source_version=version),
+            "areas": m.Group.objects.create(name="Areas", source_version=version),
+            "outside": m.Group.objects.create(name="Outside", source_version=version),
+            "rejected": m.Group.objects.create(name="Rejected", source_version=version),
+        }
+        groups["zones"].org_units.add(zone)
+        groups["areas"].org_units.add(area)
+        groups["outside"].org_units.add(outside_zone)
+        groups["rejected"].org_units.add(rejected_zone)
+        return root, zone_type, area_type, groups
+
+    def _dropdown_group_ids(self, params):
+        self.client.force_authenticate(self.core_permission_user)
+        response = self.client.get("/api/groups/dropdown/", params)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        return {item["id"] for item in response.json()}
+
+    def test_dropdown_filter_by_org_unit_types_under_parent_keeps_groups_with_valid_matching_org_units(self):
+        """Only groups holding a valid org unit of the requested types below the parent are returned."""
+        root, zone_type, _area_type, groups = self._create_groups_by_org_unit_type()
+
+        group_ids = self._dropdown_group_ids(
+            {"version": self.source_version_2.id, "orgUnitTypeIds": zone_type.id, "orgUnitParentId": root.id}
+        )
+
+        self.assertEqual(group_ids, {groups["zones"].id})
+
+    def test_dropdown_filter_by_org_unit_types_without_parent_searches_whole_version(self):
+        root, zone_type, area_type, groups = self._create_groups_by_org_unit_type()
+
+        group_ids = self._dropdown_group_ids(
+            {"version": self.source_version_2.id, "orgUnitTypeIds": f"{zone_type.id},{area_type.id}"}
+        )
+
+        self.assertEqual(group_ids, {groups["zones"].id, groups["areas"].id, groups["outside"].id})
+
+    def test_dropdown_filter_by_org_unit_types_rejects_invalid_ids(self):
+        self.client.force_authenticate(self.core_permission_user)
+
+        response = self.client.get("/api/groups/dropdown/", {"orgUnitTypeIds": "abc"})
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        response = self.client.get("/api/groups/dropdown/", {"orgUnitTypeIds": "1", "orgUnitParentId": 999999})
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
     def test_export_groups_in_xlsx(self):
         """GET /groups/export/ with xlsx format"""
 

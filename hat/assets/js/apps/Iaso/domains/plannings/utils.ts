@@ -19,6 +19,8 @@ const SAVE_WARNING_FIELDS = [
     'publishingStatus',
     'project',
     'missions',
+    'selectedOrgUnit',
+    'selectedTeam',
 ] as const;
 
 const isActiveToday = (startDate?: string, endDate?: string): boolean =>

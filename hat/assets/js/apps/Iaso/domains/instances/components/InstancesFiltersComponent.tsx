@@ -19,7 +19,7 @@ import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetForms
 import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
 import { getPrunedFormVersionIds } from 'Iaso/domains/forms/utils/getPrunedFormVersionIds';
 import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
-import { PlanningsDropdown } from 'Iaso/domains/plannings/components/PlanningsDropdown';
+import { PlanningsDropdown } from 'Iaso/domains/plannings/components/shared/PlanningsDropdown';
 import { useGetValidationWorkflowInstanceStatuses } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceStatuses';
 import { getInstancesFilterValues, useFormState } from 'Iaso/hooks/form';
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';

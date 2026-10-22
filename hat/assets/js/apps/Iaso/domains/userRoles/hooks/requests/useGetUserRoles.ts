@@ -18,7 +18,7 @@ const getUserRoles = async (
 ): Promise<UserRolesList> => {
     const { pageSize, order, page, ...params } = options as Record<string, any>;
 
-    params.limit = pageSize || 20;
+    params.limit = pageSize || 10;
     params.order = order || 'group__name';
     params.page = page || 1;
     if (params.select) {

@@ -8,6 +8,9 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 # Set working directory
 WORKDIR /opt/app
 
+# update certificates
+RUN apt-get update && apt-get install --only-upgrade -y ca-certificates
+
 # Copy package files
 COPY ../../package.json package-lock.json ./
 RUN npm install -g npm@11.19.0 && \
@@ -34,7 +37,6 @@ RUN npm run build
 WORKDIR /opt/app
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
-# Full Bookworm image to compile C extensions
 # Only the resulting /.venv is carried forward.
 FROM python:3.9-bookworm AS pybuilder
 
@@ -43,13 +45,16 @@ WORKDIR /opt/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install --yes --no-install-recommends \
-    libgdal-dev \
+    libgdal-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 COPY ../../uv.lock ./
-RUN pip install uv
+
+# install pinned uv version
+COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
+
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
 ENV UV_PYTHON_PREFERENCE=only-system
@@ -68,19 +73,12 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 # Slim image with runtime-only libraries.
 FROM python:3.9-slim-bookworm AS prod
 
-ARG DEPLOYED_ON=unknown
-ARG DEPLOYED_BY=unknown
-ARG IASO_VERSION=
-ENV DEPLOYED_ON=$DEPLOYED_ON \
-    DEPLOYED_BY=$DEPLOYED_BY \
-    IASO_VERSION=$IASO_VERSION
-
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
 RUN groupadd --gid 1001 appuser && \
     useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Runtime-only dependencies:
-#  - libgdal32: GDAL shared library on Bookworm (runtime, no headers)
+#  - libgdal32: GDAL shared library on bookworm (runtime, no headers)
 #  - libpq5: PostgreSQL client library (for psycopg2)
 #  - postgresql-client: psql CLI (used in wait_for_dbs.sh)
 #  - gettext-base: envsubst (used for config templating)
@@ -94,9 +92,13 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     gettext-base \
     curl \
     libmagic1 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/app
+
+# remove pip
+RUN python -m pip uninstall --yes pip && rm -rf /usr/local/lib/python3.9/ensurepip
 
 # Copy the virtualenv from builder
 COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv

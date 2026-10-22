@@ -1,16 +1,13 @@
-import { keyBy } from 'lodash';
-import { HierarchyTeam } from '../teamHierarchy/types';
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 
 export const getTeamChain = (
-    teams: HierarchyTeam[],
+    root: TeamTreeNode,
     teamId: number,
-): HierarchyTeam[] => {
-    const teamsById = keyBy(teams, 'id');
-    const chain: HierarchyTeam[] = [];
-    let team: HierarchyTeam | undefined = teamsById[teamId];
-    while (team) {
-        chain.unshift(team);
-        team = team.parent ? teamsById[team.parent] : undefined;
+): TeamTreeNode[] => {
+    if (root.id === teamId) return [root];
+    for (const child of root.children) {
+        const chain = getTeamChain(child, teamId);
+        if (chain.length) return [root, ...chain];
     }
-    return chain;
+    return [];
 };

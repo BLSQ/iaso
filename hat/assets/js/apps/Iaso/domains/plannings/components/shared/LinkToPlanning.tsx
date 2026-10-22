@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { LinkTo } from '../../../../components/nav/LinkTo';
-import { baseUrls } from '../../../../constants/urls';
 import { PLANNING_READ, PLANNING_WRITE } from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasOneOfPermissions } from '../../../users/utils';
+import { getAssignmentsUrl } from '../../utils';
 
 type Props = {
     planning: Planning;
@@ -16,7 +16,7 @@ export const LinkToPlanning: FunctionComponent<Props> = ({ planning }) => {
         [PLANNING_READ, PLANNING_WRITE],
         user,
     );
-    const url = `/${baseUrls.assignments}/planningId/${planning.id}`;
+    const url = getAssignmentsUrl(planning.id);
     const { name: text } = planning;
 
     return <LinkTo condition={condition} url={url} text={text} />;

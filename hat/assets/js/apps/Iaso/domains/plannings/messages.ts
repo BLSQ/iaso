@@ -578,6 +578,28 @@ const MESSAGES = defineMessages({
             'Every assignment change is sent to the agents concerned at their next synchronisation and can change the work they are doing on the field.',
         id: 'iaso.plannings.label.editingPublishedPlanningDetails',
     },
+    teamsPanelExploreHelp: {
+        defaultMessage:
+            'Click a member to open it and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.teamsPanelExploreHelp',
+    },
+    teamsPanelAssignNote: {
+        defaultMessage:
+            'Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.',
+        id: 'iaso.plannings.label.teamsPanelAssignNote',
+    },
+    hideTeams: {
+        defaultMessage: 'Hide teams',
+        id: 'iaso.plannings.label.hideTeams',
+    },
+    openTeam: {
+        defaultMessage: 'Open {name}',
+        id: 'iaso.plannings.label.openTeam',
+    },
+    targetGeographyCaption: {
+        defaultMessage: '{name} (target geography)',
+        id: 'iaso.plannings.label.targetGeographyCaption',
+    },
 });
 
 export default MESSAGES;

@@ -8,6 +8,7 @@ type UseAssignmentsParams = AssignmentsParams & {
     mode: AssignmentsMode;
     view: AssignmentsView;
     updateParams: (changes: Partial<AssignmentsParams>) => void;
+    openTeam: (teamId: number) => void;
 };
 
 export const useAssignmentsParams = (): UseAssignmentsParams => {
@@ -18,11 +19,16 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
             redirectToReplace(baseUrls.assignments, { ...params, ...changes }),
         [params, redirectToReplace],
     );
+    const openTeam = useCallback(
+        (teamId: number) => updateParams({ teamId: `${teamId}` }),
+        [updateParams],
+    );
     return {
         planningId: params.planningId,
         teamId: params.teamId,
         mode: (params.mode as AssignmentsMode) ?? 'explore',
         view: (params.view as AssignmentsView) ?? 'map',
         updateParams,
+        openTeam,
     };
 };

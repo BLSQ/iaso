@@ -7,7 +7,6 @@ import typing
 from cgi import parse_header
 from unittest import mock
 
-import jsonref
 import jsonschema
 import numpy as np
 import pandas as pd
@@ -24,7 +23,8 @@ from django.utils import timezone
 from django_test_migrations.contrib.unittest_case import MigratorTestCase
 from django_test_migrations.migrator import Migrator
 from jinja2 import Environment, FileSystemLoader
-from jsonschema import Draft202012Validator
+from jsonschema import RefResolver
+from openapi_schema_validator import validate
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -200,8 +200,8 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
             SwaggerTestCaseMixin._openapi_schema_cache = res.json()
         return SwaggerTestCaseMixin._openapi_schema_cache
 
-    def resolve_refs(self, schema):
-        return jsonref.replace_refs(schema)
+    # def resolve_refs(self, schema):
+    #     return jsonref.replace_refs(schema)
 
     def normalize_schema(self, schema):
         if isinstance(schema, dict):
@@ -251,17 +251,25 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
         # touch the shared cache (it is reused across every test of the run).
         openapi = copy.deepcopy(self.get_openapi_schema())
 
-        # resolve refs first
-        resolved = self.resolve_refs(openapi)
+        for component_schema in openapi["components"]["schemas"].values():
+            self.normalize_schema(component_schema)
 
         # extract schema AFTER resolution
-        schema = self.get_component_schema(resolved, schema_name, as_array=as_array)
+        schema = self.get_component_schema(openapi, schema_name)
 
         # normalize OpenAPI quirks
         schema = self.normalize_schema(schema)
 
         # validate
-        Draft202012Validator(schema).validate(data)
+        if as_array:
+            schema = {
+                "type": "array",
+                "items": schema,
+            }
+
+        # Resolve local references against the original OpenAPI document.
+        resolver = RefResolver.from_schema(openapi)
+        validate(data, schema, resolver=resolver)
 
     def assertResponseCompliantToSwagger(self, data, schema, as_array=False):
         try:

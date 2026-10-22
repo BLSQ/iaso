@@ -215,7 +215,13 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     <PlanningsDropdown
                         handleChange={handleChange}
                         value={filters.planningId}
-                        formIds={filters.formId}
+                        formIds={
+                            filters?.formId
+                                ? filters?.formId
+                                      ?.split(',')
+                                      ?.map((i: string) => parseInt(i))
+                                : undefined
+                        }
                         keyValue="planningId"
                     />
                 </Grid>

@@ -1,4 +1,8 @@
+import django_filters
+
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
+from django_filters import ModelChoiceFilter, NumberFilter
 from rest_framework import filters, serializers
 
 from iaso.models.team import Team, TeamType
@@ -55,3 +59,19 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
             queryset = queryset.filter(path__descendants=ancestor.path)
 
         return queryset
+
+
+class TeamTreeFilter(django_filters.FilterSet):
+    root = ModelChoiceFilter(
+        queryset=Team.objects.all(),
+    )
+    max_depth = NumberFilter(
+        min_value=1,
+        help_text=_(
+            "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
+        ),
+    )
+
+    class Meta:
+        model = Team
+        fields = []

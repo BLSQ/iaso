@@ -2,7 +2,10 @@ import { accountFeatureFlagsOperations } from './accountFeatureFlags/configurati
 import { accountsOperations } from './accounts/configuration';
 import { apiImportsOperations } from './apiImports/configuration';
 import { instanceDiffOperations } from './instanceDiff/configuration';
+import { missionsOperations } from './missions/configuration';
 import { modulesOperations } from './modules/configuration';
+import { planningConfigOperations } from './planningConfigs/configuration';
+import { planningOperations } from './plannings/configuration';
 import { workflowsOperations } from './validationWorkflows/configuration';
 
 export const OperationConfig: Record<string, any> = {
@@ -11,7 +14,10 @@ export const OperationConfig: Record<string, any> = {
         ...accountFeatureFlagsOperations,
         ...apiImportsOperations,
         ...instanceDiffOperations,
+        ...missionsOperations,
         ...modulesOperations,
+        ...planningOperations,
+        ...planningConfigOperations,
         ...workflowsOperations,
     },
 };

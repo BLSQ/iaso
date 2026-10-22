@@ -196,7 +196,13 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             )}
             {isLoading && <LoadingSpinner />}
             <MapContainer
-                key={planning?.id}
+                // Keyed on the route param, not planning?.id: the latter is undefined until the
+                // planning request resolves, so the key flipped undefined -> id and React tore
+                // down and rebuilt the Leaflet map. When that happened while the fitOnLoad zoom
+                // was still animating, _onZoomTransitionEnd ran against a destroyed map and threw
+                // "Cannot read properties of undefined (reading '_leaflet_pos')". planningId is
+                // available on first render and still changes between plannings.
+                key={planningId}
                 bounds={bounds}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: defaultHeight }}

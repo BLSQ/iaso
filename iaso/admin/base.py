@@ -840,7 +840,7 @@ class EntityTypeAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
-    autocomplete_fields = ("project", "forms", "team", "created_by")
+    autocomplete_fields = ("project", "team", "created_by")
     search_fields = ("name", "description")
     list_select_related = ("project", "org_unit", "team")
     list_display = (
@@ -863,7 +863,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "name",
                     "description",
                     "project",
-                    "forms",
+                    "missions",
                     "org_unit",
                     "team",
                     "started_at",

@@ -113,7 +113,7 @@ try:
     version = pyproject_toml["project"]["version"]
 except Exception as e:
     version = "error - unknown version"
-IASO_VERSION = env.str("IASO_VERSION", default=version)
+IASO_VERSION = version
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()

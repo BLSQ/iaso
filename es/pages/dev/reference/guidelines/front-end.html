@@ -1327,6 +1327,69 @@ For every big feature entity in IASO (forms, org units, plannings, ...) we have 
  &lt;Box sx={styles.root}&gt;
  ...
 </code></pre>
+<h3 id="reusable-style-overrides">Reusable style overrides<a class="headerlink" href="#reusable-style-overrides" title="Permanent link">#</a></h3>
+<p><code>hat/assets/js/apps/Iaso/styles/index.ts</code> exposes <code>SxStyles</code> overrides for compact variants of MUI components. Spread them into your <code>styles</code> object instead of redefining heights and paddings:</p>
+<ul>
+<li><code>smallTabsOverrides</code>: compact <code>Tabs</code> (36px height, reduced paddings, smaller icons)</li>
+<li><code>smallInputOverrides</code>: compact outlined inputs</li>
+</ul>
+<pre><code class="language-tsx">import { smallTabsOverrides } from 'Iaso/styles';
+
+const styles = {
+    tabs: {
+        ...smallTabsOverrides,
+        marginBottom: 3,
+    },
+} satisfies SxStyles;
+
+...
+&lt;Tabs value={tab} onChange={handleChangeTab} sx={styles.tabs}&gt;
+</code></pre>
+<h2 id="page-layouts">Page layouts<a class="headerlink" href="#page-layouts" title="Permanent link">#</a></h2>
+<p>For full pages with a white header bar and a grey scrollable body, use <code>GreyPageWrapper</code> from <code>Iaso/components/GreyPageWrapper</code> instead of combining <code>MainWrapper</code> with custom header styles.</p>
+<table>
+<thead>
+<tr>
+<th>Prop</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td><code>ReactNode</code></td>
+<td>Displayed on the left of the header</td>
+</tr>
+<tr>
+<td><code>actions</code></td>
+<td><code>ReactNode</code></td>
+<td>Optional, displayed on the right of the header</td>
+</tr>
+<tr>
+<td><code>maxWidth</code></td>
+<td><code>Breakpoint</code></td>
+<td>Optional MUI breakpoint used to center and constrain header and body width</td>
+</tr>
+<tr>
+<td><code>children</code></td>
+<td><code>ReactNode</code></td>
+<td>Page content</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-tsx">import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
+
+export const PlanningDetails: FC = () =&gt; (
+    &lt;GreyPageWrapper
+        title={&lt;PlanningHeaderTitle /&gt;}
+        actions={&lt;PlanningHeaderActions /&gt;}
+        maxWidth="lg"
+    &gt;
+        &lt;PlanningContent /&gt;
+    &lt;/GreyPageWrapper&gt;
+);
+</code></pre>
 <h2 id="translating">Translating<a class="headerlink" href="#translating" title="Permanent link">#</a></h2>
 <h3 id="basic-usage">Basic usage<a class="headerlink" href="#basic-usage" title="Permanent link">#</a></h3>
 <p>We are using <a href="https://www.npmjs.com/package/react-intl">react-intl</a> to translate messages.
@@ -1555,6 +1618,18 @@ When performing <code>DELETE</code> operations from the table that will reduce t
 <p><code>useObjectState</code>: when we have an object-like state, allows to update a state value using the old class-component syntax: <code>setState(key,value)</code> instead of `setState({...prevState,key:value}). Does not support nested objects</p>
 <p><code>useArrayState</code>: convenience hook for when the state is an array and we want to update elements based on index</p>
 <h2 id="code-style">Code style<a class="headerlink" href="#code-style" title="Permanent link">#</a></h2>
+<ul>
+<li>Don't use the array index as a React <code>key</code>. Use a stable id when items have one, otherwise wrap the list in <code>React.Children.toArray</code> so React assigns keys:</li>
+</ul>
+<pre><code class="language-tsx">// BAD
+{items.map((item, index) =&gt; &lt;Chip key={index} label={item.name} /&gt;)}
+
+// GOOD, items have a stable id
+{items.map(item =&gt; &lt;Chip key={item.id} label={item.name} /&gt;)}
+
+// GOOD, no stable id
+{React.Children.toArray(items.map(item =&gt; &lt;Chip label={item.name} /&gt;))}
+</code></pre>
 <ul>
 <li>Prefer <code>type?:string</code> to <code>type: string | undefined</code></li>
 <li>Prefer <code>const</code> to <code>let</code>:</li>

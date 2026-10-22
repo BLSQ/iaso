@@ -7,6 +7,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../hooks/useAssignmentsParams';
 import { Planning } from '../../types';
 import { AssignmentsBreadcrumbs } from './AssignmentsBreadcrumbs';
+import { AssignmentsMainPanel } from './mainPanel/AssignmentsMainPanel';
 import { ModeToggle } from './ModeToggle';
 import { PublishedPlanningWarning } from './PublishedPlanningWarning';
 import { TeamsPanel } from './teamsPanel/TeamsPanel';
@@ -61,6 +62,7 @@ export const AssignmentsContent: FC<Props> = ({ planning, rootTeamId }) => {
                         onToggleTeam={toggleTeam}
                         targetGeographyName={planning.org_unit_details?.name}
                     />
+                    <AssignmentsMainPanel />
                 </Stack>
             </Stack>
         </GreyPageWrapper>

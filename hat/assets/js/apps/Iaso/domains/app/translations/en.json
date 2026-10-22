@@ -1603,6 +1603,7 @@
     "iaso.plannings.label.orgUnitLevelsInfos": "{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.",
     "iaso.plannings.label.orgUnits": "Org units",
     "iaso.plannings.label.orgUnitsCount": "Org units count",
+    "iaso.plannings.label.orgUnitsListPlaceholder": "The org units of the selected team will be listed here.",
     "iaso.plannings.label.orgUnitsToAssign": "Org units to assign",
     "iaso.plannings.label.orgUnitTypes": "Org unit types",
     "iaso.plannings.label.planningDetails": "Planning details",

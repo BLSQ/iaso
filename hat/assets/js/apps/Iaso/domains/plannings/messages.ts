@@ -600,6 +600,19 @@ const MESSAGES = defineMessages({
         defaultMessage: '{name} (target geography)',
         id: 'iaso.plannings.label.targetGeographyCaption',
     },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    orgUnitsListPlaceholder: {
+        defaultMessage:
+            'The org units of the selected team will be listed here.',
+        id: 'iaso.plannings.label.orgUnitsListPlaceholder',
+    },
 });
 
 export default MESSAGES;

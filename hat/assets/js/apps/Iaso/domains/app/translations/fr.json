@@ -1602,6 +1602,7 @@
     "iaso.plannings.label.orgUnitLevelsInfos": "{count, plural, one {# niveau calculé} other {# niveaux calculés}} à partir de la hiérarchie des équipes. Chaque niveau utilise des types d'unités d'organisation plus profonds que le niveau supérieur, éventuellement limités à des groupes.",
     "iaso.plannings.label.orgUnits": "Unités d'organisation",
     "iaso.plannings.label.orgUnitsCount": "Nombre d'unités d'org.",
+    "iaso.plannings.label.orgUnitsListPlaceholder": "Les unités d'organisation de l'équipe sélectionnée seront listées ici.",
     "iaso.plannings.label.orgUnitsToAssign": "Unités d'organisation à assigner",
     "iaso.plannings.label.orgUnitTypes": "Types d'unités d'organisation",
     "iaso.plannings.label.planningDetails": "Détails du planning",

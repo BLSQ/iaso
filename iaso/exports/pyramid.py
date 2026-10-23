@@ -186,7 +186,7 @@ def build_group_annotations(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]
             Subquery(
                 m.Group.objects.filter(org_units=OuterRef("pk"))
                 .values("org_units")
-                .annotate(j=JSONBAgg(JSONObject(id="id", name="name"), ordering="id"))
+                .annotate(j=JSONBAgg(JSONObject(id="id", name="name"), order_by="id"))
                 .values("j"),
                 output_field=JSONField(),
             ),

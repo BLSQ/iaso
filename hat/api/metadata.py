@@ -43,9 +43,7 @@ class IasoMetadata(SimpleMetadata):
         """
         field_info = super().get_field_info(field)
 
-        if not isinstance(field, (serializers.RelatedField, serializers.ManyRelatedField)) and hasattr(
-            field, "choices"
-        ):
+        if not isinstance(field, serializers.RelatedField | serializers.ManyRelatedField) and hasattr(field, "choices"):
             field_info["choices"] = [
                 {"value": choice_value, "display_name": force_str(choice_name, strings_only=True)}
                 for choice_value, choice_name in field.choices.items()

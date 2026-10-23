@@ -103,7 +103,7 @@ class WorkflowVersion(SoftDeletableModel):
     name = models.CharField(max_length=NAME_MAX_LENGTH, default="No Name")
     status = models.CharField(
         max_length=12,
-        choices=WorkflowVersionsStatus.choices,
+        choices=WorkflowVersionsStatus,
         default=WorkflowVersionsStatus.DRAFT,
     )
     # When True, the mobile app jumps directly into the workflow's first step right

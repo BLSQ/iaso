@@ -60,7 +60,7 @@ class Mission(SoftDeletableModel, CreatedAndUpdatedModel, PolymorphicModel):
     name = models.CharField(max_length=200)
     description = models.CharField(max_length=500, blank=True)
     account = models.ForeignKey("Account", on_delete=models.CASCADE, related_name="missions")
-    mission_type = models.CharField(max_length=30, choices=MissionType.choices)
+    mission_type = models.CharField(max_length=30, choices=MissionType)
     created_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
 
     def has_form_assignments(self, org_unit: "OrgUnit") -> bool:

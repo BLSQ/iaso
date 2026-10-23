@@ -280,7 +280,7 @@ def load_pyramid_spec(path: Path | None = None) -> PyramidSpec:
         )
     leaf_depth = (geo_levels[-1]["depth"] + 1) if geo_levels else 1
     leaf_types: list[dict[str, Any]] = []
-    for sheet_name, headers in zip(data_names, header_lists):
+    for sheet_name, headers in zip(data_names, header_lists, strict=False):
         column = headers[-1]
         meta = type_meta.get(column) or {}
         leaf_types.append(
@@ -567,7 +567,7 @@ def _upsert_org_unit_type(
         existing[(spec["name"], spec["depth"])] = {
             "id": type_id,
             "name": spec["name"],
-            "sub_unit_types": [{"id": item, "name": name} for item, name in zip(child_ids, child_names)],
+            "sub_unit_types": [{"id": item, "name": name} for item, name in zip(child_ids, child_names, strict=False)],
         }
     return type_id, {
         "op": op,

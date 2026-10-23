@@ -1,5 +1,3 @@
-from typing import Optional
-
 import django_filters
 
 from django.db.models import Q
@@ -60,7 +58,7 @@ class ProfileListFilter(django_filters.rest_framework.FilterSet):
                 org_units__pk=location,
             ).distinct()
 
-        parent: Optional[OrgUnit] = None
+        parent: OrgUnit | None = None
 
         if parent_ou or children_ou:
             ou = get_object_or_404(OrgUnit, pk=location)

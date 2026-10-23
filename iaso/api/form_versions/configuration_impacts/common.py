@@ -35,12 +35,12 @@ class ConfigurationImpact:
     target_id: int
     target_name: str
     # the JsonLogic reading the question: a predefined filter's or a follow-up's
-    condition: typing.Optional[typing.Any] = None
+    condition: typing.Any | None = None
     # workflows only: the link to a workflow version needs its entity type, and what of it reads the question
-    entity_type_id: typing.Optional[int] = None
-    follow_up_order: typing.Optional[int] = None
-    mapping_source: typing.Optional[str] = None
-    mapping_target: typing.Optional[str] = None
+    entity_type_id: int | None = None
+    follow_up_order: int | None = None
+    mapping_source: str | None = None
+    mapping_target: str | None = None
 
 
 # What each domain's module implements: the configuration reading the removed or modified questions of the form of

@@ -13,7 +13,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
     Test OrgUnitChangeRequestConfiguration model.
     """
 
-    DT = datetime.datetime(2023, 10, 18, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2023, 10, 18, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):

@@ -21,6 +21,7 @@ from iaso.api.stocks.serializers_mobile import (
 from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.models import (
     Form,
+    Instance,
     OrgUnitType,
     Project,
     StockItemRule,
@@ -82,7 +83,24 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         return (
             StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id)
-            .select_related("sku", "org_unit", "submission", "created_by")
+            .select_related("created_by")
+            # Only what `StockLedgerItemMobileSerializer` reads: skips the submission json, the form fields...
+            .only(
+                "id",
+                "sku",
+                "org_unit",
+                "submission",
+                "question",
+                "value",
+                "impact",
+                "created_at",
+                "created_by__username",
+            )
+            # Prefetched, not joined: a join would be done on all the ledger items of the project before the
+            # sort and the pagination, the prefetch only reads the submissions of the page.
+            .prefetch_related(
+                Prefetch("submission", queryset=Instance.objects.select_related("form").only("id", "form__name"))
+            )
             .order_by("id")
         )
 

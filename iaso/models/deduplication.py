@@ -21,9 +21,7 @@ class TypeOfRelation(models.TextChoices):
 class EntityDuplicateAnalyzis(models.Model):
     SUPPORTED_FIELD_TYPES = ["number", "integer", "decimal", "text", "calculate", None]
 
-    algorithm = models.CharField(
-        max_length=20, choices=PossibleAlgorithms.choices, default=PossibleAlgorithms.LEVENSHTEIN
-    )
+    algorithm = models.CharField(max_length=20, choices=PossibleAlgorithms, default=PossibleAlgorithms.LEVENSHTEIN)
     created_at = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(default=dict)
     task = models.ForeignKey(
@@ -49,10 +47,10 @@ class EntityDuplicate(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     validation_status = models.CharField(
         max_length=20,
-        choices=ValidationStatus.choices,
+        choices=ValidationStatus,
         default=ValidationStatus.PENDING,
     )
-    type_of_relation = models.CharField(max_length=20, choices=TypeOfRelation.choices, default=TypeOfRelation.DUPLICATE)
+    type_of_relation = models.CharField(max_length=20, choices=TypeOfRelation, default=TypeOfRelation.DUPLICATE)
     similarity_score = models.SmallIntegerField(null=True)
     updated_at = models.DateTimeField(auto_now=True)
     metadata = models.JSONField(default=dict, blank=True)

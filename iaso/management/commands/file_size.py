@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 
 from hat.api_import.models import APIImport
 from iaso.models import (
@@ -90,7 +91,9 @@ class Command(BaseCommand):
     @staticmethod
     def calculate_reports_size(account: Account) -> int:
         """Calculate the reports size for an account"""
-        reports = ReportVersion.objects.filter(report__project__account=account)
+        reports = ReportVersion.objects_include_deleted.filter(
+            Q(report__project__account=account) | Q(published_in_reports__project__account=account)
+        ).distinct()
         return Command.sum_size(map(lambda x: x.file, reports))
 
     @staticmethod

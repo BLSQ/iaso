@@ -1,4 +1,4 @@
-FROM node:22.18.0-bullseye-slim
+FROM node:22.23.4-bookworm-slim
 
 ENV PROJECT_ROOT /opt
 WORKDIR /opt/app
@@ -21,7 +21,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 COPY package.json .
 COPY package-lock.json .
 
-# Upgrade npm to the latest version compatible with Node.js 22.18.0
+# Upgrade npm to the latest version compatible with Node.js 22.23.4
 RUN npm install -g npm@11.19.0
 
 # Install project dependencies

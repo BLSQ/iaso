@@ -27,7 +27,7 @@ services:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '22.18.0'
+    versionSpec: '22.23.4'
   displayName: 'Install Node.js'
 
 - script: |

@@ -90,7 +90,7 @@ class NestedPlanningConfigBulkListSerializer(BulkUpdateListSerializer):
         org_unit_types = []
         org_unit_groups = []
 
-        for pc, vd in zip(planning_config_bulk_create_ids, to_add_data):
+        for pc, vd in zip(planning_config_bulk_create_ids, to_add_data, strict=False):
             # org_unit_groups
             org_unit_groups += [{"group_id": v.id, "planningconfig_id": pc} for v in vd["org_unit_groups"]]
 

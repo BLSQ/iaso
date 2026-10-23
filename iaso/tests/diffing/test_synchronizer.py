@@ -15,7 +15,7 @@ from iaso.test import TestCase as IasoTestCase
 from iaso.tests.diffing.utils import PyramidBaseTest
 
 
-DT = datetime.datetime(2024, 11, 30, 10, 0, 0, 0, tzinfo=datetime.timezone.utc)
+DT = datetime.datetime(2024, 11, 30, 10, 0, 0, 0, tzinfo=datetime.UTC)
 
 
 class DataSourceVersionsSynchronizerTestCase(TestCase):

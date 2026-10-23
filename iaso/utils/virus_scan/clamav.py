@@ -2,8 +2,6 @@ import logging
 import os
 import tempfile
 
-from typing import Union
-
 import clamav_client
 
 from clamav_client.clamd import CommunicationError
@@ -86,7 +84,7 @@ def scan_disk_file_for_virus(file_path: str):
     return _scan_with_clamav(file_path)
 
 
-def scan_stored_file_for_virus(stored_file: Union[FieldFile, File], raise_on_error=True):
+def scan_stored_file_for_virus(stored_file: FieldFile | File, raise_on_error=True):
     """
     Scan a file from Django storage (local disk, S3, Azure, etc.) using ClamAV.
 

@@ -5,8 +5,6 @@ import sqlite3
 import tempfile
 import uuid
 
-from typing import Optional
-
 import geopandas as gpd  # type: ignore
 
 from django.contrib.gis.geos import GEOSGeometry
@@ -35,7 +33,7 @@ OUT_COLUMNS = [
 ]
 
 
-def geos_to_shapely(geom: Optional[GEOSGeometry]) -> Optional[BaseGeometry]:
+def geos_to_shapely(geom: GEOSGeometry | None) -> BaseGeometry | None:
     # Pandas need a shapely geom because it needs an object with __geo_interface__ for fiona
     if not geom:
         return None

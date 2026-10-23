@@ -3,7 +3,6 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from importlib import import_module
-from typing import Optional
 
 from django.conf import settings
 from django_stubs_ext import StrOrPromise
@@ -24,13 +23,13 @@ class IasoPermission(ABC):
 
     codename: str
     label: StrOrPromise  # For translation purposes
-    module: Optional[IasoModule] = None
-    ui_group: Optional[str] = None  # Represents a permission group in the web interface
-    ui_category: Optional[str] = (
+    module: IasoModule | None = None
+    ui_group: str | None = None  # Represents a permission group in the web interface
+    ui_category: str | None = (
         None  # Represents a category whenever there are read/write/admin/non-admin/... permissions
     )
-    ui_type_in_category: Optional[str] = None  # Represents a type in the category, e.g. "read", "write", "admin"...
-    ui_order_in_category: Optional[int] = (
+    ui_type_in_category: str | None = None  # Represents a type in the category, e.g. "read", "write", "admin"...
+    ui_order_in_category: int | None = (
         None  # Represents the order of the permission in its category (1 = lowest permissions)
     )
 

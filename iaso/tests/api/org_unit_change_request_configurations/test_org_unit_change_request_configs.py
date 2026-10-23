@@ -15,7 +15,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     Test actions on the OUCRCViewSet.
     """
 
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
     # *** utility methods for testing ***
     def create_new_org_unit_type(self, name=None, project=None):

@@ -83,7 +83,7 @@ def read_parquet(f):
         result = con.execute(f"SELECT * FROM read_parquet('{f.name}')")
         colnames = [d[0] for d in result.description]  # column names
         tuples = result.fetchall()
-        rows = [dict(zip(colnames, row)) for row in tuples]
+        rows = [dict(zip(colnames, row, strict=False)) for row in tuples]
 
     return rows
 

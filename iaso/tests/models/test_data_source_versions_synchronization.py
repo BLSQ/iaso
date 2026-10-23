@@ -15,7 +15,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
     Test DataSourceVersionsSynchronization model.
     """
 
-    DT = datetime.datetime(2024, 12, 4, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2024, 12, 4, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):

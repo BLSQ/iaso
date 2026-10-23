@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
@@ -415,7 +413,7 @@ class OrgUnitChangeRequestConfigurationTypeSerializer(serializers.Serializer):
 
     type = serializers.ChoiceField(choices=OrgUnitChangeRequestConfiguration.Type.choices, allow_null=False)
 
-    def get_type(self, raise_exception: bool) -> Optional[OrgUnitChangeRequestConfiguration.Type]:
+    def get_type(self, raise_exception: bool) -> OrgUnitChangeRequestConfiguration.Type | None:
         if not self.is_valid(raise_exception=raise_exception):
             return None
         return self.validated_data[TYPE]
@@ -438,7 +436,7 @@ class IncludeCreationSerializer(serializers.Serializer):
 
     include_creation = serializers.BooleanField(allow_null=True, default=False)
 
-    def get_include_creation(self, raise_exception: bool) -> Optional[bool]:
+    def get_include_creation(self, raise_exception: bool) -> bool | None:
         if not self.is_valid(raise_exception=raise_exception):
             return None
         return self.validated_data[INCLUDE_CREATION]

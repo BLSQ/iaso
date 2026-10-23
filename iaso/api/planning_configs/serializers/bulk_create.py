@@ -36,7 +36,7 @@ class PlanningConfigBulkCreateListSerializer(ListQueryOptimizedSerializer):
 
         instance_out_pairs = [
             (instance.id, out.pk)
-            for instance, data in zip(instances, validated_data)
+            for instance, data in zip(instances, validated_data, strict=False)
             for out in data.get("org_unit_types", [])
         ]
 
@@ -52,7 +52,7 @@ class PlanningConfigBulkCreateListSerializer(ListQueryOptimizedSerializer):
 
         instance_oug_pairs = [
             (instance.id, oug.pk)
-            for instance, data in zip(instances, validated_data)
+            for instance, data in zip(instances, validated_data, strict=False)
             for oug in data.get("org_unit_groups", [])
         ]
 

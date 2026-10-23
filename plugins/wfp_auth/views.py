@@ -40,8 +40,8 @@ logger = getLogger(__name__)
 class ExtraData(typing.TypedDict):
     email: str
     sub: str  # same as email
-    given_name: typing.Optional[str]
-    family_name: typing.Optional[str]
+    given_name: str | None
+    family_name: str | None
 
 
 def send_mail(subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):

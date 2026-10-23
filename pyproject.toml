@@ -335,3 +335,6 @@ setuper = [
     "pyarrow==21.0.0",  # https://github.com/apache/arrow/releases
     "requests",  # no need to pin because it's already pinned in the main dependencies
 ]
+upgrade = [
+    "django-upgrade==1.33.0",
+]

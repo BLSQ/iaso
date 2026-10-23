@@ -1,10 +1,29 @@
-import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { FC, useMemo } from 'react';
 import { useTheme } from '@mui/material';
-import { Feature } from 'geojson';
-import L from 'leaflet';
-import { GeoJSON } from 'react-leaflet';
-import { AssignableOrgUnit, OrgUnitFeatureProperties } from './types';
+import {
+    ExpressionSpecification,
+    FillLayerSpecification,
+    LineLayerSpecification,
+} from 'maplibre-gl';
+import { Layer, Source } from 'react-map-gl/maplibre';
+import { AssignableOrgUnit } from './types';
 import { toFeatureCollection } from './utils';
+
+const SOURCE_ID = 'assignableOrgUnits';
+
+// Styles by org unit id, so assignment changes never touch the geometry.
+const getFillColor = (
+    colorByOrgUnitId: Map<number, string>,
+    unassignedColor: string,
+): ExpressionSpecification => [
+    'coalesce',
+    [
+        'get',
+        ['to-string', ['get', 'id']],
+        ['literal', Object.fromEntries(colorByOrgUnitId)],
+    ],
+    unassignedColor,
+];
 
 type Props = {
     orgUnits: AssignableOrgUnit[];
@@ -16,39 +35,31 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
     colorByOrgUnitId,
 }) => {
     const theme = useTheme();
-    const layerRef = useRef<L.GeoJSON>(null);
     const featureCollection = useMemo(
         () => toFeatureCollection(orgUnits),
         [orgUnits],
     );
-
-    const getStyle = useCallback(
-        (feature?: Feature): L.PathOptions => {
-            const { id } = (feature?.properties ??
-                {}) as OrgUnitFeatureProperties;
-            const color = colorByOrgUnitId.get(id);
-            return {
-                color: theme.palette.common.white,
-                weight: 2,
-                fillColor: color ?? theme.palette.grey[400],
-                fillOpacity: color ? 0.62 : 0.5,
-            };
-        },
-        [colorByOrgUnitId, theme],
+    const fillPaint: FillLayerSpecification['paint'] = useMemo(
+        () => ({
+            'fill-color': getFillColor(
+                colorByOrgUnitId,
+                theme.palette.grey[400],
+            ),
+            'fill-opacity': 0.6,
+        }),
+        [colorByOrgUnitId, theme.palette.grey],
     );
-
-    // react-leaflet only reads data on mount, and types `style` as CSS: update the layer in place.
-    const getStyleRef = useRef(getStyle);
-    getStyleRef.current = getStyle;
-    useEffect(() => {
-        layerRef.current
-            ?.clearLayers()
-            .addData(featureCollection)
-            .setStyle(getStyleRef.current);
-    }, [featureCollection]);
-    useEffect(() => {
-        layerRef.current?.setStyle(getStyle);
-    }, [getStyle]);
-
-    return <GeoJSON ref={layerRef} data={featureCollection} />;
+    const linePaint: LineLayerSpecification['paint'] = useMemo(
+        () => ({
+            'line-color': theme.palette.common.white,
+            'line-width': 2,
+        }),
+        [theme.palette.common.white],
+    );
+    return (
+        <Source id={SOURCE_ID} type="geojson" data={featureCollection}>
+            <Layer id={`${SOURCE_ID}-fill`} type="fill" paint={fillPaint} />
+            <Layer id={`${SOURCE_ID}-line`} type="line" paint={linePaint} />
+        </Source>
+    );
 };

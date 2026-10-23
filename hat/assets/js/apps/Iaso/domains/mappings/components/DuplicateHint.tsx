@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/lab/Alert';
+import { Alert } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import { isNeverMapped } from '../question_mappings';
 
 type Props = {
     mapping?: Record<string, any>;
@@ -14,7 +13,8 @@ export const DuplicateHint: FunctionComponent<Props> = ({
     mappingVersion,
 }) => {
     const { formatMessage } = useSafeIntl();
-    if (isNeverMapped(mapping) || Object.keys(mapping).length === 0) {
+    // tracker mappings (lists) and never mapped markers have no id to compare
+    if (!mapping.id) {
         return null;
     }
     const duplicates = [];

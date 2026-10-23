@@ -1,7 +1,5 @@
 import argparse
 
-from typing import Union
-
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db.models import Count, QuerySet
@@ -148,7 +146,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f" - Multiple instances with content corrected: {multiple_content}"))
         self.stdout.write(self.style.SUCCESS(f" - No instances with no content: {no_content}"))
 
-    def _delete_instances(self, uuid: str, file_name: Union[str, None], first_id: str):
+    def _delete_instances(self, uuid: str, file_name: str | None, first_id: str):
         to_delete = Instance.objects.filter(uuid=uuid).exclude(id=first_id)
         if file_name:
             to_delete = to_delete.filter(file_name=file_name)

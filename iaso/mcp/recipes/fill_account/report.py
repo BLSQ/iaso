@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -68,7 +68,7 @@ def _action_table(actions: list[dict[str, Any]], columns: list[tuple[str, str]])
 def render_fill_report(result: dict[str, Any]) -> str:
     dry_run = bool(result.get("dry_run"))
     mode = "dry-run (nothing written)" if dry_run else "applied"
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     stats = result.get("org_unit_results") or {}
     type_ops = result.get("type_actions") or []
     form_ops = result.get("form_actions") or []

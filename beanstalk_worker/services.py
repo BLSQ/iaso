@@ -294,7 +294,7 @@ def throttle_slots(task, task_name, throttle, kwargs) -> List[Tuple[Concurrency,
     return slots
 
 
-def check_throttle(task, task_name, slots, config, kwargs, db) -> Optional[Blocked]:
+def check_throttle(task, task_name, slots, config, kwargs, db) -> Blocked | None:
     """Return why the task can't start now, or None.
 
     `config` is the entry of the task in the `task_throttles` Config.
@@ -341,7 +341,7 @@ def configured_limit(concurrency, key, configured, log=True):
     return _MISSING
 
 
-def _limit(task, concurrency, key, configured, kwargs) -> Optional[int]:
+def _limit(task, concurrency, key, configured, kwargs) -> int | None:
     limit = configured_limit(concurrency, key, configured)
     if limit is not _MISSING:
         return limit

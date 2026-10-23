@@ -3,7 +3,7 @@
 import operator
 import re
 
-from typing import Any, Callable, Dict, Iterator, Optional, Union
+from typing import Any, Callable, Dict, Iterator
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression
@@ -29,7 +29,7 @@ EXTENDED_OPERATOR_LOOKUPS = {
 JSON_ANNOTATED_FIELD_ALIAS = "json_annotated_field"
 
 
-def _extract_unary_var(operand: Any) -> Optional[str]:
+def _extract_unary_var(operand: Any) -> str | None:
     """Return the field name when operand is a bare JsonLogic var (query-builder is_empty / is_not_empty)."""
     if isinstance(operand, dict) and set(operand.keys()) == {"var"}:
         return operand["var"]
@@ -621,7 +621,7 @@ def entities_jsonlogic_to_q(
     jsonlogic: Dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
-) -> tuple[Union[None, Exists, Q, NegatedExpression], int]:
+) -> tuple[None | Exists | Q | NegatedExpression, int]:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on
     the submitted values of their instances.
     It also converts a JsonLogic query to a Django Q object.

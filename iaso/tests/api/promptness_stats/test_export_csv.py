@@ -164,7 +164,9 @@ class PromptnessStatsExportCsvTestCase(PromptnessStatsTestCase):
 
         self.assertEqual(header, self.get_header(levels_count=3))
         hf_a_line = next(line for line in rows if line[0] == str(self.hf_a.id))
-        hf_a_levels = {column: value for column, value in zip(header, hf_a_line) if column.startswith("level_")}
+        hf_a_levels = {
+            column: value for column, value in zip(header, hf_a_line, strict=False) if column.startswith("level_")
+        }
         self.assertEqual(hf_a_levels, {"level_1": "Ethiopia", "level_2": "Oromia", "level_3": "Jimma"})
 
     def test_export_drill_down(self):

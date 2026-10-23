@@ -2,7 +2,6 @@ import re
 import traceback
 
 from logging import getLogger
-from typing import Optional
 from urllib.parse import unquote
 
 from django.conf import settings
@@ -96,9 +95,9 @@ class Task(models.Model):
 
     def report_progress_and_stop_if_killed(
         self,
-        progress_value: Optional[int] = None,
-        progress_message: Optional[str] = None,
-        end_value: Optional[int] = None,
+        progress_value: int | None = None,
+        progress_message: str | None = None,
+        end_value: int | None = None,
         prepend_progress=False,
     ):
         """Save progress and check if we have been killed
@@ -124,7 +123,7 @@ class Task(models.Model):
         self.create_log_entry_if_needed(progress_message)
         self.save()
 
-    def report_success_with_result(self, message: Optional[str] = None, result_data=None):
+    def report_success_with_result(self, message: str | None = None, result_data=None):
         logger.info(f"Task {self} reported success with message {message}")
         self.progress_message = message
         self.status = SUCCESS
@@ -133,7 +132,7 @@ class Task(models.Model):
         self.create_log_entry_if_needed(message)
         self.save()
 
-    def report_success(self, message: Optional[str] = None):
+    def report_success(self, message: str | None = None):
         logger.info(f"Task {self} reported success with message {message}")
         self.progress_message = message
         self.status = SUCCESS
@@ -165,7 +164,7 @@ class Task(models.Model):
         self.create_log_entry_if_needed(self.progress_message)
         self.save()
 
-    def terminate_with_error(self, message: Optional[str] = None, exception=None):
+    def terminate_with_error(self, message: str | None = None, exception=None):
         self.refresh_from_db()
         logger.error(f"Task {self} ended in error %s", message, exc_info=exception)
         self.status = ERRORED
@@ -174,7 +173,7 @@ class Task(models.Model):
         self.create_log_entry_if_needed(message)
         self.save()
 
-    def create_log_entry_if_needed(self, message: Optional[str]):
+    def create_log_entry_if_needed(self, message: str | None):
         if message:
             # In tests, everything is in a transaction so trying to go around it will always result in failure.
             database = "task_logs" if "task_logs" in settings.DATABASES and not settings.IN_TESTS else "default"

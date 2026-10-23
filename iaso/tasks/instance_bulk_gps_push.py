@@ -1,7 +1,7 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import List
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -18,7 +18,7 @@ from iaso.utils.models.common import check_instance_bulk_gps_push
 logger = getLogger(__name__)
 
 
-def push_single_instance_gps_to_org_unit(user: Optional[User], instance: Instance):
+def push_single_instance_gps_to_org_unit(user: User | None, instance: Instance):
     org_unit = instance.org_unit
     original_copy = deepcopy(org_unit)
     org_unit.location = convert_2d_point_to_3d(instance.location) if instance.location else None

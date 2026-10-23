@@ -52,7 +52,7 @@ class TeamQuerySet(models.QuerySet):
     def get_tree(
         self,
         root: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team", None] = None,
-        max_depth: typing.Optional[int] = None,
+        max_depth: int | None = None,
     ):
         if not root:
             root = self.filter(parent__isnull=True)

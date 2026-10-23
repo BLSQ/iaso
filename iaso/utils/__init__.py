@@ -56,7 +56,7 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup: Soup, repeat_groups: List[Any], allowed_paths: Optional[Iterable[str]]) -> Dict[str, Any]:
+def flat_parse_xml_soup(soup: Soup, repeat_groups: List[Any], allowed_paths: Iterable[str] | None) -> Dict[str, Any]:
     """
     Parse XML data in a BeautifulSoup and return a flattened JSON-serializable representation of the data.
 

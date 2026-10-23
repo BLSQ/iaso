@@ -1,5 +1,3 @@
-import typing
-
 from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
@@ -10,9 +8,7 @@ from iaso.utils.models.color import ColorField
 
 
 class ProjectQuerySet(models.QuerySet):
-    def get_for_user_and_app_id(
-        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
-    ):
+    def get_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str | None):
         """Attempt to find a valid project to which the user has access, and that corresponds to the
         provided app_id. If the user is not authenticated, he can still access the project if it does not
         require authentication.

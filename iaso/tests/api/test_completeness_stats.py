@@ -45,7 +45,7 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
             return False
         if any(
             not are_almost_equal(getattr(o1, s1), getattr(o2, s2), max_abs_ratio_diff, max_abs_diff)
-            for s1, s2 in zip(sorted(o1.__slots__), sorted(o2.__slots__))
+            for s1, s2 in zip(sorted(o1.__slots__), sorted(o2.__slots__), strict=False)
         ):
             return False
         composite_type_passed = True
@@ -56,7 +56,7 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
         if any(
             not are_almost_equal(k1, k2, max_abs_ratio_diff, max_abs_diff)
             or not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff)
-            for ((k1, v1), (k2, v2)) in zip(sorted(o1.__dict__.items()), sorted(o2.__dict__.items()))
+            for ((k1, v1), (k2, v2)) in zip(sorted(o1.__dict__.items()), sorted(o2.__dict__.items()), strict=False)
             if not k1.startswith("__")
         ):  # avoid infinite loops
             return False
@@ -68,14 +68,14 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
         if any(
             not are_almost_equal(k1, k2, max_abs_ratio_diff, max_abs_diff)
             or not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff)
-            for ((k1, v1), (k2, v2)) in zip(sorted(o1.items()), sorted(o2.items()))
+            for ((k1, v1), (k2, v2)) in zip(sorted(o1.items()), sorted(o2.items()), strict=False)
         ):
             return False
 
     elif any(issubclass(o1.__class__, c) for c in (list, tuple, set)):
         if len(o1) != len(o2):
             return False
-        if any(not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff) for v1, v2 in zip(o1, o2)):
+        if any(not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff) for v1, v2 in zip(o1, o2, strict=False)):
             return False
 
     elif isinstance(o1, float):

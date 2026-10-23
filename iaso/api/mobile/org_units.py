@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import django_filters
 
@@ -423,7 +423,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
+def bbox_merge(a: tuple | None, b: tuple | None) -> tuple | None:
     if not a and not b:
         return None
     if not a:

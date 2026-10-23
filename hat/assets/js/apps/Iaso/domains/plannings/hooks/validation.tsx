@@ -46,9 +46,7 @@ export const usePlanningValidation = (
                     .required('requiredField')
                     .test(apiValidator('projects')),
                 // Specifying array().of(number()) will cause a bug where the error won't show until you put another field in error
-                missions: array()
-                    .min(1, 'requiredField')
-                    .test(apiValidator('missions')),
+                missions: array().nullable().test(apiValidator('missions')),
                 publishingStatus: mixed()
                     .oneOf(['draft', 'published'])
                     .required('requiredField'),

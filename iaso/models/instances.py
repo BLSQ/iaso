@@ -664,7 +664,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
                 self.save()
 
     def xml_file_to_json(
-        self, file: typing.IO, form_versions_cache: typing.Optional[dict] = None
+        self, file: typing.IO, form_versions_cache: dict | None = None
     ) -> dict[str, typing.Any]:
         raw_content = file.read().decode("utf-8")
         fixed_content = fix_emoji(raw_content).decode("utf-8")
@@ -697,7 +697,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
         return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
     def get_and_save_json_of_xml(
-        self, force=False, tries=3, save=True, xml_content: typing.Optional[bytes] = None, form_versions_cache=None
+        self, force=False, tries=3, save=True, xml_content: bytes | None = None, form_versions_cache=None
     ):
         """
         Convert the xml file to json and save it to the instance.
@@ -771,7 +771,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
         except NothingToExportError:
             print("Export failed for instance", self)
 
-    def as_dict(self, fields: typing.Optional[typing.Iterable[str]] = None):
+    def as_dict(self, fields: typing.Iterable[str] | None = None):
         """
         :param fields: if given, restrict the returned dict to these keys, and skip computing
             the (potentially expensive, e.g. S3 fetch + XML parse for `file_content`, or extra
@@ -843,7 +843,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
             return result
         return {key: value for key, value in result.items() if key in wanted}
 
-    def as_dict_with_descriptor(self, fields: typing.Optional[typing.Iterable[str]] = None):
+    def as_dict_with_descriptor(self, fields: typing.Iterable[str] | None = None):
         """Same as `as_dict()`, plus a `form_descriptor` key (the form version's descriptor).
 
         :param fields: see `as_dict()`. Additionally, when given and it doesn't contain

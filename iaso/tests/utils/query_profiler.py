@@ -46,11 +46,11 @@ class QueryProfiler:
     def __init__(
         self,
         trace_tables: typing.Sequence[str] = (),
-        github_repo: typing.Optional[str] = "BLSQ/iaso",
+        github_repo: str | None = "BLSQ/iaso",
         github_ref: str = "develop",
         snippet_context: int = 4,
-        db_latency_ms: typing.Optional[float] = None,
-        storage_latency_ms: typing.Optional[float] = None,
+        db_latency_ms: float | None = None,
+        storage_latency_ms: float | None = None,
     ):
         self.trace_tables = trace_tables
         self.github_repo = github_repo
@@ -65,7 +65,7 @@ class QueryProfiler:
         self._table_counts: Counter = Counter()
         self._capture = None
         self._wrapper_ctx = None
-        self.queries: typing.Optional[list] = None
+        self.queries: list | None = None
         self.db_latency = _latency_seconds(db_latency_ms, "QUERY_PROFILER_DB_LATENCY_MS", default_ms=1)
         self.storage_latency = _latency_seconds(storage_latency_ms, "QUERY_PROFILER_STORAGE_LATENCY_MS", default_ms=20)
         # Queries and seconds spent in them, per first table of their SQL (so that a join isn't counted twice), "?" for
@@ -78,7 +78,7 @@ class QueryProfiler:
         self._storage_names: dict[str, list] = {}
         self._storage_patches = None
         self._started_at = None
-        self.elapsed: typing.Optional[float] = None
+        self.elapsed: float | None = None
 
     def _wrapper(self, execute, sql, params, many, context):
         self._total_queries += 1
@@ -178,7 +178,7 @@ class QueryProfiler:
         when outside the project (e.g. Django's `Storage.save()`), then up to 3 project frames."""
         return Counter(self._storage_stacks.get(method_name, []))
 
-    def storage_names(self, method_name: str, suffix: typing.Union[str, tuple[str, ...]] = "") -> list:
+    def storage_names(self, method_name: str, suffix: str | tuple[str, ...] = "") -> list:
         """The file names a storage method was called with, in call order - for `_save()`, the final names the
         files were stored under (after `get_available_name()` and the field's `max_length` truncation).
         `suffix` keeps only the names ending with it (or with one of them), e.g. ".webp" for the attachments."""
@@ -308,11 +308,11 @@ class QueryProfiler:
         if violations:
             raise AssertionError("Storage call count(s) differ from expected:\n" + "\n".join(violations))
 
-    def _relpath(self, filename: str) -> typing.Optional[str]:
+    def _relpath(self, filename: str) -> str | None:
         relpath = os.path.relpath(filename, settings.BASE_DIR)
         return None if relpath.startswith("..") else relpath
 
-    def _github_url(self, filename: str, lineno: int) -> typing.Optional[str]:
+    def _github_url(self, filename: str, lineno: int) -> str | None:
         if not self.github_repo:
             return None
         relpath = self._relpath(filename)
@@ -320,7 +320,7 @@ class QueryProfiler:
             return None
         return f"https://github.com/{self.github_repo}/blob/{self.github_ref}/{relpath}#L{lineno}"
 
-    def _code_snippet(self, filename: str, lineno: int) -> typing.Optional[str]:
+    def _code_snippet(self, filename: str, lineno: int) -> str | None:
         try:
             with open(filename) as f:
                 all_lines = f.readlines()
@@ -442,7 +442,7 @@ class QueryProfiler:
         return lines
 
     @contextmanager
-    def report_on_failure(self, markdown_filename: typing.Optional[str] = None, title: str = "Query report"):
+    def report_on_failure(self, markdown_filename: str | None = None, title: str = "Query report"):
         """
         Wrap query-count assertions: the report is only printed if one of them fails, so the
         normal test run stays quiet. Set the `QUERY_PROFILER_REPORTS` env var to always print it
@@ -490,7 +490,7 @@ def _is_project_frame(filename: str, top_dirs: tuple[str, ...]) -> bool:
     return parts[0] in top_dirs and "tests" not in parts
 
 
-def _latency_seconds(latency_ms: typing.Optional[float], env_var: str, default_ms: float) -> float:
+def _latency_seconds(latency_ms: float | None, env_var: str, default_ms: float) -> float:
     if latency_ms is None:
         latency_ms = float(os.environ.get(env_var) or default_ms)
     return latency_ms / 1000

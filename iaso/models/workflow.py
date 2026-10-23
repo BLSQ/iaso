@@ -1,8 +1,6 @@
 import typing
 import uuid
 
-from typing import Optional
-
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
@@ -68,7 +66,7 @@ def is_transition_allowed(self: "WorkflowVersion", new_status: str):
 
 
 class WorkflowVersionQuerySet(models.QuerySet):
-    def filter_for_user(self, user: typing.Union[User, AnonymousUser, None]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or user.is_anonymous:
             return self.none()
 
@@ -79,7 +77,7 @@ class WorkflowVersionQuerySet(models.QuerySet):
 
         return queryset
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: Optional[str]):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str | None):
         queryset = self.filter_for_user(user)
 
         if app_id is not None:

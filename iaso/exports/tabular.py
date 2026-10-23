@@ -25,7 +25,6 @@ import time
 import zipfile
 
 from logging import getLogger
-from typing import Optional
 from xml.sax.saxutils import escape as xml_escape
 
 from django.db.models import QuerySet
@@ -81,7 +80,7 @@ def export_django_query_to_xlsx_via_duckdb(
     output_file_path: str,
     sheet_name: str,
     columns: list[dict],
-    sub_columns: Optional[list[str]] = None,
+    sub_columns: list[str] | None = None,
 ):
     """
     sub_columns: optional second header row (legacy export: the question labels under the question names)
@@ -151,7 +150,7 @@ def export_django_query_to_xlsx_via_duckdb(
     )
 
 
-def style_xlsx(raw_file_path: str, output_file_path: str, columns: list[dict], sub_columns: Optional[list[str]]):
+def style_xlsx(raw_file_path: str, output_file_path: str, columns: list[dict], sub_columns: list[str] | None):
     """
     Styles the duckdb xlsx like the legacy export (bold header, frozen header, columns widths) and adds the sub
     columns row. The files parts are patched directly: loading the workbook (openpyxl) would be much too slow.
@@ -190,7 +189,7 @@ def _patch_styles(styles: str) -> tuple[str, int]:
     return styles, xf_count
 
 
-def _patch_sheet_head(head: str, header_style: int, columns: list[dict], sub_columns: Optional[list[str]]) -> str:
+def _patch_sheet_head(head: str, header_style: int, columns: list[dict], sub_columns: list[str] | None) -> str:
     header_end = head.find("</row>")
     if "<sheetData>" not in head or header_end == -1:
         raise ValueError("xlsx header row not found")
@@ -257,7 +256,7 @@ def infer_number_types(duckdb_connection, fields: list[str]) -> dict[str, str]:
 
     number_types = {}
     # two checks per field: only integers, only numbers (integers or decimals)
-    for field, only_integers, only_numbers in zip(fields, results[0::2], results[1::2]):
+    for field, only_integers, only_numbers in zip(fields, results[0::2], results[1::2], strict=False):
         if only_integers:
             number_types[field] = "BIGINT"
         elif only_numbers:

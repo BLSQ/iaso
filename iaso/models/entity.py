@@ -14,7 +14,6 @@ form.
 """
 
 import json
-import typing
 import uuid
 
 from copy import copy
@@ -202,10 +201,10 @@ class EntityQuerySet(models.QuerySet):
 
     def filter_for_mobile_entity(
         self,
-        user: typing.Optional[typing.Union[User, AnonymousUser]],
-        limit_date: typing.Optional[str] = None,
-        json_content: typing.Optional[str] = None,
-        after_id: typing.Optional[int] = None,
+        user: User | AnonymousUser | None,
+        limit_date: str | None = None,
+        json_content: str | None = None,
+        after_id: int | None = None,
     ):
         """Entities queryset for the mobile app's normal sync: scoped to the user's account and
         their profile's org units, merged with limit_date/json_content, with the
@@ -216,9 +215,9 @@ class EntityQuerySet(models.QuerySet):
 
     def filter_for_mobile_entity_non_geo_restricted_search(
         self,
-        user: typing.Optional[typing.Union[User, AnonymousUser]],
-        limit_date: typing.Optional[str] = None,
-        json_content: typing.Optional[str] = None,
+        user: User | AnonymousUser | None,
+        limit_date: str | None = None,
+        json_content: str | None = None,
     ):
         """Entities queryset for the mobile app's "online search" action (IA-3021): a user can find
         an entity that isn't scoped to their org units / synced to their device yet. This mode does
@@ -230,12 +229,12 @@ class EntityQuerySet(models.QuerySet):
 
     def _filter_for_mobile_entity(
         self,
-        user: typing.Optional[typing.Union[User, AnonymousUser]],
-        limit_date: typing.Optional[str],
-        json_content: typing.Optional[str],
+        user: User | AnonymousUser | None,
+        limit_date: str | None,
+        json_content: str | None,
         *,
         restrict_to_user_org_units: bool,
-        after_id: typing.Optional[int] = None,
+        after_id: int | None = None,
     ):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
@@ -281,7 +280,7 @@ class EntityQuerySet(models.QuerySet):
 
         return queryset
 
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
@@ -295,7 +294,7 @@ class EntityQuerySet(models.QuerySet):
 
         return queryset
 
-    def filter_for_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]):
+    def filter_for_app_id(self, user: User | AnonymousUser | None, app_id: str | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
@@ -317,8 +316,8 @@ class EntityQuerySet(models.QuerySet):
 
     def filter_for_user_and_app_id(
         self,
-        user: typing.Optional[typing.Union[User, AnonymousUser]],
-        app_id: typing.Optional[str],
+        user: User | AnonymousUser | None,
+        app_id: str | None,
     ):
         return self.filter_for_user(user).filter_for_app_id(user, app_id)
 

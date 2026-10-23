@@ -42,7 +42,7 @@ class ValidationNodeTemplateBulkUpdateListSerializer(BulkUpdateListSerializer):
         # reinsert
         prev_links = [
             through(from_validationnodetemplate_id=prev.id, to_validationnodetemplate_id=curr.id)
-            for prev, curr in zip(ordered_instances, ordered_instances[1:])
+            for prev, curr in zip(ordered_instances, ordered_instances[1:], strict=False)
         ]
         if prev_links:
             through.objects.bulk_create(prev_links, batch_size=100, ignore_conflicts=True)

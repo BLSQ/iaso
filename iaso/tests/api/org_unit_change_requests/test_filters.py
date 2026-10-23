@@ -55,11 +55,11 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
             org_unit=self.org_unit,
             new_name="Foo",
         )
-        changeRequest1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        changeRequest1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
         changeRequest1.save()
 
         changeRequest2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
-        changeRequest2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        changeRequest2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
         changeRequest2.save()
 
         response = self.client.get("/api/orgunits/changes/?created_at_after=17-10-2023&created_at_before=17-10-2023")

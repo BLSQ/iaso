@@ -5,7 +5,6 @@ import uuid
 
 from dataclasses import dataclass
 from itertools import islice
-from typing import Optional
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point
@@ -26,7 +25,7 @@ def diffs_to_json(diffs) -> str:
 
 @dataclass
 class ChangeRequestGroups:
-    change_request_id: Optional[int]
+    change_request_id: int | None
     org_unit_id: int
     old_groups_ids: set[int]
     new_groups_ids: set[int]
@@ -34,8 +33,8 @@ class ChangeRequestGroups:
 
 @dataclass
 class OrgUnitMatching:
-    corresponding_id: Optional[int]
-    corresponding_parent_id: Optional[int]
+    corresponding_id: int | None
+    corresponding_parent_id: int | None
 
 
 class DataSourceVersionsSynchronizer:
@@ -287,7 +286,7 @@ class DataSourceVersionsSynchronizer:
                     new_groups_ids=new_groups_ids,
                 )
 
-    def _prepare_new_change_requests(self, diff: dict) -> tuple[Optional[OrgUnitChangeRequest], Optional[list]]:
+    def _prepare_new_change_requests(self, diff: dict) -> tuple[OrgUnitChangeRequest | None, list | None]:
         org_unit = diff["orgunit_ref"]
         requested_fields = [
             f"new_{field}"

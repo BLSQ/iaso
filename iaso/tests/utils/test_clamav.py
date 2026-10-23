@@ -30,7 +30,7 @@ from iaso.utils.virus_scan.clamav import (
 class ClamAVTestCase(TestCase):
     SAFE_FILE_PATH = "iaso/tests/fixtures/clamav/safe.jpg"
     EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
-    DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.UTC)
 
     @time_machine.travel(DT, tick=False)
     @patch("clamav_client.get_scanner")

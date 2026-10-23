@@ -21,14 +21,14 @@ class StockImpacts(models.TextChoices):
 
 
 class StockKeepingUnitQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(account=profile.account).filter(deleted_at=None)
 
-    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str):
         project = Project.objects.get_for_user_and_app_id(user, app_id)
         return self.filter_for_project(project)
 
@@ -101,7 +101,7 @@ class StockKeepingUnitChildren(models.Model):
 
 
 class StockItemQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
@@ -128,14 +128,14 @@ class StockItem(models.Model):
 
 
 class StockLedgerItemQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(sku__account=profile.account)
 
-    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str):
         project = Project.objects.get_for_user_and_app_id(user, app_id)
         return self.filter_for_project(project)
 
@@ -180,14 +180,14 @@ class StockLedgerItem(models.Model):
 
 
 class StockItemRuleQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(sku__account=profile.account)
 
-    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str):
         project = Project.objects.get_for_user_and_app_id(user, app_id)
         return self.filter_for_project(project)
 
@@ -226,14 +226,14 @@ class StockItemRule(models.Model):
 
 
 class StockRulesVersionQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(account=profile.account).filter(deleted_at=None)
 
-    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str):
         project = Project.objects.get_for_user_and_app_id(user, app_id)
         return self.filter_for_project(project)
 

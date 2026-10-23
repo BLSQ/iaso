@@ -68,7 +68,7 @@ class SizedFileField(models.FileField):
             if not file._committed:
                 try:
                     file_size = file.size
-                    if not isinstance(file_size, (int, float)):
+                    if not isinstance(file_size, int | float):
                         file_size = None
                 except AttributeError:
                     file_size = None

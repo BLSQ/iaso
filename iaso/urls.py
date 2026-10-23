@@ -1,5 +1,3 @@
-from typing import Union
-
 from django.conf import settings
 from django.contrib import auth
 from django.urls import URLPattern, URLResolver, include, path
@@ -151,7 +149,7 @@ from .api.workflows.versions import WorkflowVersionViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 
 
-URL = Union[URLPattern, URLResolver]
+URL = URLPattern | URLResolver
 URLList = list[URL]
 
 router = ExtendedDefaultRouter()

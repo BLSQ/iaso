@@ -169,7 +169,7 @@ class DjangoUserTransport:
 
 
 def _as_uploaded(spec: Any) -> Any:
-    if isinstance(spec, (tuple, list)):
+    if isinstance(spec, tuple | list):
         name = spec[0]
         content = spec[1]
         content_type = spec[2] if len(spec) > 2 else "application/octet-stream"

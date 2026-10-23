@@ -1,7 +1,8 @@
 """This module provides various utils and helpers for IASO"""
-
+import json
+import re
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify
@@ -75,10 +76,6 @@ def flat_parse_xml_soup(soup: Soup, repeat_groups: list[Any], allowed_paths: Ite
 
 def slugify_underscore(filename):
     return slugify(filename).replace("-", "_")
-
-
-import json
-import re
 
 
 sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")

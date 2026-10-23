@@ -1,6 +1,6 @@
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import List
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -18,7 +18,7 @@ from iaso.utils.models.common import check_instance_reference_bulk_link
 logger = getLogger(__name__)
 
 
-def link_single_reference_instance_to_org_unit(user: Optional[User], instance: Instance):
+def link_single_reference_instance_to_org_unit(user: User | None, instance: Instance):
     org_unit = instance.org_unit
     form = instance.form
     if not org_unit.reference_instances.filter(form=form).exists():
@@ -27,7 +27,7 @@ def link_single_reference_instance_to_org_unit(user: Optional[User], instance: I
     audit_models.log_modification(org_unit, org_unit, source=audit_models.INSTANCE_API_BULK, user=user)
 
 
-def unlink_single_reference_instance_from_org_unit(user: Optional[User], instance: Instance):
+def unlink_single_reference_instance_from_org_unit(user: User | None, instance: Instance):
     org_unit = instance.org_unit
     org_unit.reference_instances.remove(instance)
     org_unit.save()

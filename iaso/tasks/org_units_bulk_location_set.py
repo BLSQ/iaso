@@ -1,7 +1,7 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import List
 
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import GeometryCollectionField
@@ -19,7 +19,7 @@ from iaso.utils.gis import convert_2d_point_to_3d
 
 
 class OrgUnitWithFormStat(OrgUnit):
-    instance_center: Optional[Point]
+    instance_center: Point | None
 
     class Meta:
         abstract = True
@@ -28,7 +28,7 @@ class OrgUnitWithFormStat(OrgUnit):
 logger = getLogger(__name__)
 
 
-def update_single_org_unit_location_from_bulk(user: Optional[User], org_unit: OrgUnitWithFormStat):
+def update_single_org_unit_location_from_bulk(user: User | None, org_unit: OrgUnitWithFormStat):
     original_copy = deepcopy(org_unit)
     if org_unit.location and not org_unit.geom:
         # skip orgunit if it already has location
@@ -43,7 +43,7 @@ def update_single_org_unit_location_from_bulk(user: Optional[User], org_unit: Or
 
 @task_decorator(task_name="org_unit_bulk_location_set")
 def org_units_bulk_location_set(
-    app_id: Optional[str],
+    app_id: str | None,
     select_all: bool,
     selected_ids: List[int],
     unselected_ids: List[int],

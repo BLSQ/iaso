@@ -1,5 +1,3 @@
-import typing
-
 from logging import getLogger
 
 from django.contrib import auth
@@ -275,9 +273,7 @@ class Group(models.Model):
 
 
 class GroupSetQuerySet(models.QuerySet):
-    def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
-    ):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str | None = None):
         queryset = self
         if user and user.is_anonymous and app_id is None:
             return self.none()
@@ -320,8 +316,8 @@ GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
 
 class GroupSet(models.Model):
     class GroupBelonging(models.TextChoices):
-        SINGLE = _("SINGLE")
-        MULTIPLE = _("MULTIPLE")
+        SINGLE = "SINGLE", _("SINGLE")
+        MULTIPLE = "MULTIPLE", _("MULTIPLE")
 
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)

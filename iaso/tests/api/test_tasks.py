@@ -2,7 +2,6 @@ import datetime
 
 import time_machine
 
-from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
@@ -12,7 +11,7 @@ from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
 from iaso.test import APITestCase, TestCase
 
 
-CREATED_AT = datetime.datetime(2023, 12, 20, 15, 0, 0, 0, tzinfo=timezone.utc)
+CREATED_AT = datetime.datetime(2023, 12, 20, 15, 0, 0, 0, tzinfo=datetime.UTC)
 
 
 @time_machine.travel(CREATED_AT, tick=False)
@@ -227,8 +226,8 @@ class IasoTasksTestCase(APITestCase):
         self.client.force_authenticate(superuser)
 
         # Some useful timestamps
-        started_at = datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc)
-        ended_at = datetime.datetime(2024, 2, 10, 15, 0, 0, 0, tzinfo=timezone.utc)
+        started_at = datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=datetime.UTC)
+        ended_at = datetime.datetime(2024, 2, 10, 15, 0, 0, 0, tzinfo=datetime.UTC)
 
         # Create a few tasks for user Johnny
         task_1 = m.Task.objects.create(
@@ -356,7 +355,7 @@ class IasoTasksTestCase(APITestCase):
             launcher=other_user,
             status=RUNNING,
             name="running_task_from_another_account",
-            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=datetime.UTC),
             params={"password": "other-secret"},
         )
         m.Task.objects.create(
@@ -400,7 +399,7 @@ class IasoTasksTestCase(APITestCase):
             launcher=self.johnny,
             status=QUEUED,
             name="queued_task",
-            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=datetime.UTC),
         )
         matching_task = m.Task.objects.create(
             account=self.account,
@@ -408,7 +407,7 @@ class IasoTasksTestCase(APITestCase):
             launcher=self.miguel,
             status=RUNNING,
             name="running_task",
-            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=datetime.UTC),
         )
         m.Task.objects.create(
             account=self.account,
@@ -416,7 +415,7 @@ class IasoTasksTestCase(APITestCase):
             launcher=self.miguel,
             status=RUNNING,
             name="other_running_task",
-            started_at=datetime.datetime(2024, 2, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+            started_at=datetime.datetime(2024, 2, 20, 15, 0, 0, 0, tzinfo=datetime.UTC),
         )
         m.Task.objects.create(
             account=self.account,
@@ -424,7 +423,7 @@ class IasoTasksTestCase(APITestCase):
             launcher=self.miguel,
             status=SUCCESS,
             name="running_task",
-            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=timezone.utc),
+            started_at=datetime.datetime(2024, 1, 20, 15, 0, 0, 0, tzinfo=datetime.UTC),
         )
 
         response = self.client.get(

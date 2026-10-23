@@ -1,7 +1,7 @@
 import uuid as uuid_lib
 
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 from iaso.models import Account, Entity, Form, Instance, OrgUnit
 
@@ -23,7 +23,7 @@ class InstanceImportCache:
     - Form versions: `form_versions`, the dict `FormVersionManager.find_for_form()` fills, passed down to the models.
     """
 
-    def __init__(self, instance_uuids: Iterable[Optional[str]]):
+    def __init__(self, instance_uuids: Iterable[str | None]):
         # Lists: older instances can share a uuid (the unique index only covers recent ones). Ordered by id, so the
         # first one is the one `.first()` would pick.
         # With their entity, read (never saved) when updating them: the entities the import saves are the ones from
@@ -32,11 +32,11 @@ class InstanceImportCache:
         existing = Instance.objects.filter(uuid__in=[uuid for uuid in instance_uuids if uuid]).select_related("entity")
         for instance in existing.order_by("id"):
             self._instances_by_uuid[instance.uuid].append(instance)
-        self._org_units: Dict[Tuple[str, Optional[int]], OrgUnit] = {}
+        self._org_units: Dict[Tuple[str, int | None], OrgUnit] = {}
         # Lists too: older entities can share a uuid. Only for the keys given to `prefetch_entities()`.
         self._entities: Dict[EntityKey, List[Entity]] = {}
         self._forms: Dict[int, Form] = {}
-        self._reference_form_ids: Dict[int, Optional[int]] = {}
+        self._reference_form_ids: Dict[int, int | None] = {}
         # See `FormVersionManager.find_for_form()`
         self.form_versions: dict = {}
 
@@ -44,7 +44,7 @@ class InstanceImportCache:
         """All the instances with this uuid, oldest first."""
         return self._instances_by_uuid.get(uuid, [])
 
-    def instance(self, uuid: str) -> Optional[Instance]:
+    def instance(self, uuid: str) -> Instance | None:
         """The instance with this uuid, or None if there is none, or several."""
         instances = self.instances(uuid)
         return instances[0] if len(instances) == 1 else None
@@ -53,7 +53,7 @@ class InstanceImportCache:
         """Record an instance created (or given its uuid) while importing the batch."""
         self._instances_by_uuid[instance.uuid].append(instance)
 
-    def org_unit(self, uuid: str, version_id: Optional[int]) -> OrgUnit:
+    def org_unit(self, uuid: str, version_id: int | None) -> OrgUnit:
         key = (uuid, version_id)
         if key not in self._org_units:
             self._org_units[key] = OrgUnit.objects.get(uuid=uuid, version_id=version_id)
@@ -77,7 +77,7 @@ class InstanceImportCache:
             if key in self._entities:
                 self._entities[key].append(entity)
 
-    def entities(self, entity_uuid: str, entity_type_id: str) -> Optional[List[Entity]]:
+    def entities(self, entity_uuid: str, entity_type_id: str) -> List[Entity] | None:
         """The entities for this (uuid, entity type) - see `find_entity()` - or None if they weren't prefetched."""
         entities = self._entities.get(_entity_key(entity_uuid, entity_type_id))
         return list(entities) if entities is not None else None
@@ -92,11 +92,11 @@ class InstanceImportCache:
         """Look up these forms in a single query."""
         self._forms.update((form.id, form) for form in Form.objects.filter(id__in=set(form_ids)))
 
-    def form(self, form_id: Optional[int]) -> Optional[Form]:
+    def form(self, form_id: int | None) -> Form | None:
         """The form, if prefetched: shared by the batch's instances, so that `instance.form` doesn't query it again."""
         return self._forms.get(form_id)
 
-    def reference_form_id(self, entity: Entity) -> Optional[int]:
+    def reference_form_id(self, entity: Entity) -> int | None:
         """The reference form of the entity's type, looked up once per entity type (a batch typically has one)."""
         # int(): entities created by `find_entity()` keep the payload's string entityTypeId
         entity_type_id = int(entity.entity_type_id)
@@ -105,7 +105,7 @@ class InstanceImportCache:
         return self._reference_form_ids[entity_type_id]
 
 
-def _entity_key(entity_uuid, entity_type_id) -> Optional[EntityKey]:
+def _entity_key(entity_uuid, entity_type_id) -> EntityKey | None:
     """(uuid, entity type id) normalized - the mobile app sends them as strings - or None if they aren't valid."""
     try:
         return str(uuid_lib.UUID(str(entity_uuid))), int(entity_type_id)

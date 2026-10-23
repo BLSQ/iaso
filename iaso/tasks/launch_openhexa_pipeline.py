@@ -1,7 +1,7 @@
 import logging
 import time
 
-from typing import Any, Optional
+from typing import Any
 
 from django.utils import timezone
 from gql import Client, gql
@@ -220,7 +220,7 @@ def launch_openhexa_pipeline(
     version: str,
     config: dict,
     delay: int = 2,
-    task: Optional[Task] = None,
+    task: Task | None = None,
     max_polling_duration_minutes: int = 200,
     _immediate: bool = False,
     user: Any = None,
@@ -343,7 +343,7 @@ def launch_page_openhexa_pipeline(
     openhexa_token: str,
     version: str,
     delay: int = 2,
-    task: Optional[Task] = None,
+    task: Task | None = None,
     max_polling_duration_minutes: int = 200,
     _immediate: bool = False,
     user: Any = None,

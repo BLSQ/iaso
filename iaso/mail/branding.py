@@ -5,7 +5,7 @@ import mimetypes
 import os
 
 from email.utils import parseaddr
-from typing import Optional, Tuple
+from typing import Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -23,7 +23,7 @@ def _user_manual_url(*, protocol: str, domain: str) -> str:
     return f"{protocol}://{domain}{path}"
 
 
-def _resolve_logo_filesystem_path() -> Optional[str]:
+def _resolve_logo_filesystem_path() -> str | None:
     """Return absolute path to ``LOGO_PATH`` on disk, or None (same asset as ``email_logo_url``)."""
     rel = settings.LOGO_PATH.lstrip("/")
     found = finders.find(settings.LOGO_PATH)
@@ -41,7 +41,7 @@ def _resolve_logo_filesystem_path() -> Optional[str]:
     return None
 
 
-def _static_logo_data_uri() -> Optional[str]:
+def _static_logo_data_uri() -> str | None:
     """Return a data: URI for the configured logo, for offline HTML previews."""
     path = _resolve_logo_filesystem_path()
     if not path:

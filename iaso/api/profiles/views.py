@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, List
 
 import django.core.exceptions as django_exceptions
 
@@ -392,9 +392,7 @@ class ProfilesViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @staticmethod
-    def list_export(
-        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
-    ) -> Union[HttpResponse, StreamingHttpResponse]:
+    def list_export(queryset: "QuerySet[Profile]", file_format: FileFormatEnum) -> HttpResponse | StreamingHttpResponse:
         columns = [{"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
@@ -425,7 +423,7 @@ class ProfilesViewSet(ModelViewSet):
             ]
 
         filename = "users"
-        response: Union[HttpResponse, StreamingHttpResponse]
+        response: HttpResponse | StreamingHttpResponse
         queryset = queryset.order_by("id")
 
         if file_format == FileFormatEnum.XLSX:

@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 
 from copy import copy, deepcopy
 from logging import getLogger
-from typing import Dict, Optional
+from typing import Dict
 from uuid import UUID, uuid4
 
 from django.contrib.auth.models import User
@@ -165,8 +165,8 @@ class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
 
 def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: Dict):
     new_uuid = uuid4()
-    att1: Optional[Instance] = e1.attributes
-    att2: Optional[Instance] = e2.attributes
+    att1: Instance | None = e1.attributes
+    att2: Instance | None = e2.attributes
 
     if att1 is None or att2 is None or att1.form is None or att2.form is None:
         raise Exception("One of the entities has no attributes")

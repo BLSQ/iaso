@@ -4,9 +4,9 @@ import os
 import tempfile
 
 from copy import deepcopy
-from datetime import datetime
+from datetime import date, datetime
 from time import gmtime, strftime
-from typing import Dict, List, Union
+from typing import Dict, List
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -847,11 +847,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return Response(errors, status=400)
 
-    def get_date(self, date: str) -> Union[datetime.date, None]:
+    def get_date(self, date_str: str) -> date | None:
         date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
-                return datetime.strptime(date, date_input_format).date()
+                return datetime.strptime(date_str, date_input_format).date()
             except (ValueError, TypeError):
                 pass
         return None

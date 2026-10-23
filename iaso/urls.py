@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 from django.conf import settings
 from django.contrib import auth
@@ -151,7 +151,7 @@ from .api.workflows.versions import WorkflowVersionViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 
 
-URL = Union[URLPattern, URLResolver]
+URL = URLPattern | URLResolver
 URLList = List[URL]
 
 router = ExtendedDefaultRouter()

@@ -16,7 +16,7 @@ class ModificationModelTestCase(TestCase):
     Test the `Modification` model.
     """
 
-    DT = datetime.datetime(2025, 4, 1, 15, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2025, 4, 1, 15, 0, 0, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):

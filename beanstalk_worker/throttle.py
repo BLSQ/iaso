@@ -37,7 +37,7 @@ import pkgutil
 
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Sequence
 
 from django.apps import apps
 
@@ -53,8 +53,8 @@ class Concurrency:
     """
 
     name: str
-    limit: Union[int, None, Callable[..., Optional[int]]] = None
-    key: Optional[Callable[..., Any]] = None
+    limit: int | None | Callable[..., int | None] = None
+    key: Callable[..., Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -79,7 +79,7 @@ BUILTIN_CONCURRENCIES = (
 )
 
 
-def effective_throttle(throttle: Optional[Throttle]) -> Throttle:
+def effective_throttle(throttle: Throttle | None) -> Throttle:
     """The limits declared by the task, followed by the built-in ones it doesn't redefine."""
     declared = list(throttle.concurrency) if throttle else []
     names = {concurrency.name for concurrency in declared}
@@ -87,16 +87,16 @@ def effective_throttle(throttle: Optional[Throttle]) -> Throttle:
 
 
 # task name -> Throttle declared in the code (None if none), filled by `task_decorator` when a task module is imported
-TASKS: Dict[str, Optional[Throttle]] = {}
+TASKS: Dict[str, Throttle | None] = {}
 
 
-def register_task(task_name: str, throttle: Optional[Throttle]) -> None:
+def register_task(task_name: str, throttle: Throttle | None) -> None:
     # a task name can be reused (e.g. in tests): don't forget the throttle of the real task
     if throttle or task_name not in TASKS:
         TASKS[task_name] = throttle
 
 
-def discover_tasks() -> Dict[str, Optional[Throttle]]:
+def discover_tasks() -> Dict[str, Throttle | None]:
     """Import the `tasks` modules of the installed apps, so that TASKS lists all the tasks."""
     for app_config in apps.get_app_configs():
         package_name = f"{app_config.name}.tasks"

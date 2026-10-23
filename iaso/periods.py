@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 
 PERIOD_TYPE_DAY = "DAY"
@@ -65,7 +65,7 @@ class Period:
         raise ValueError(f"unsupported period type: {period_type}")
 
     @staticmethod
-    def bound_range(from_string: Optional[str], to_string: Optional[str]) -> Tuple["Period", "Period"]:
+    def bound_range(from_string: str | None, to_string: str | None) -> Tuple["Period", "Period"]:
         """convert to period and fill missing bound
         if we don't have a start or end value, provide one since we cant generate a range from infinity"""
         if not from_string and not to_string:

@@ -42,7 +42,7 @@ class TeamQuerySet(models.QuerySet):
         elif isinstance(teams, models.QuerySet):
             team_qs = teams
             query = models.Q(path__descendants=ArraySubquery(team_qs.values("path")))
-        elif isinstance(teams, (list,)):
+        elif isinstance(teams, list):
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in teams])
         else:
             raise NotImplementedError
@@ -52,7 +52,7 @@ class TeamQuerySet(models.QuerySet):
     def get_tree(
         self,
         root: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team", None] = None,
-        max_depth: typing.Optional[int] = None,
+        max_depth: int | None = None,
     ):
         if not root:
             root = self.filter(parent__isnull=True)
@@ -90,7 +90,7 @@ class Team(SoftDeletableModel):
     parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
     path = PathField(unique=True)
     # scope = models.ManyToManyField("OrgUnit", related_name="teams")
-    type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
+    type = models.CharField(choices=TeamType, max_length=100, null=True, blank=True)
     color = ColorField(default=COLOR_CHOICES[0][0])
 
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)

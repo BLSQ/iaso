@@ -30,7 +30,6 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from io import BytesIO
-from typing import Optional
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -83,10 +82,10 @@ ORDER BY dups.form_id, dups.original_file_name
 @dataclass
 class InstanceRepair:
     instance_id: int
-    current_file: Optional[str]
+    current_file: str | None
     file: str
-    created_by_id: Optional[int]
-    last_modified_by_id: Optional[int]
+    created_by_id: int | None
+    last_modified_by_id: int | None
 
 
 @dataclass

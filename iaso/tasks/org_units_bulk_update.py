@@ -1,6 +1,6 @@
 from copy import deepcopy
 from time import time
-from typing import List, Optional
+from typing import List
 
 from django.db import transaction
 
@@ -37,15 +37,15 @@ def update_single_unit_from_bulk(
 
 @task_decorator(task_name="org_unit_bulk_update")
 def org_units_bulk_update(
-    app_id: Optional[str],
+    app_id: str | None,
     select_all: bool,
     selected_ids: List[int],
     unselected_ids: List[int],
     searches: List,
-    org_unit_type_id: Optional[List[int]],
-    groups_ids_added: Optional[List[int]],
-    groups_ids_removed: Optional[List[int]],
-    validation_status: Optional[str],
+    org_unit_type_id: List[int] | None,
+    groups_ids_added: List[int] | None,
+    groups_ids_removed: List[int] | None,
+    validation_status: str | None,
     task: Task,
 ):
     """Background Task to bulk update org units."""

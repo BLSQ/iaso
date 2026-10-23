@@ -192,7 +192,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
                 return None
             if isinstance(value, bool):
                 return str(value)
-            if isinstance(value, (int, float)):
+            if isinstance(value, int | float):
                 return float(value)
             try:
                 return float(value) if re.fullmatch(r"-?(0|[1-9][0-9]*)(\.[0-9]+)?", value) else value
@@ -217,7 +217,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
         duckdb_rows = duckdb_rows[2:]
         self.assertEqual(len(duckdb_rows), 2 * len(TRICKY_ANSWERS))
 
-        for legacy_row, duckdb_row in zip(legacy_rows, duckdb_rows):
+        for legacy_row, duckdb_row in zip(legacy_rows, duckdb_rows, strict=False):
             self.assertEqual([text(v) for v in duckdb_row], [text(v) for v in legacy_row])
 
         # the answers holding only numbers are number cells, the others stay texts (like "007")

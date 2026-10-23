@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import CheckConstraint, Q, UniqueConstraint
+from django.utils.translation import gettext_lazy as _
 
 from iaso.models import Group
 from iaso.models.org_unit import OrgUnit, OrgUnitType
@@ -150,4 +151,9 @@ class PlanningConfig(models.Model):
             Team.objects.filter_for_account(account=self.planning.project.account)
             .annotate_with_depth()
             .filter(depth__lte=self.level)
+        )
+
+    def __str__(self):
+        return _("Planning Config for planning {planning} at level {level}").format(
+            level=self.level, planning=self.planning
         )

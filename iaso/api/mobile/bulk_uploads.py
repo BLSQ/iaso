@@ -91,7 +91,7 @@ class MobileBulkUploadsViewSet(ViewSet):
                 import_type="bulk",
                 file=zip_file,
                 json_body={
-                    "user_agent": request.META.get("HTTP_USER_AGENT"),
+                    "user_agent": request.headers.get("user-agent"),
                 },
                 app_id=request.GET.get("app_id", default=""),
                 app_version=request.GET.get("app_version", default=""),

@@ -977,7 +977,7 @@ class MetricValueAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(
             f"{self.BASE_URL}export_csv/",
-            HTTP_ACCEPT="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            headers={"accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
         )
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 

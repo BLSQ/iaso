@@ -152,7 +152,7 @@ uv run ./manage.py runserver
 
 ### Node.js and npm (native frontend)
 
-Frontend tooling is pinned to the same versions as Docker/CI (`node:22.18.0`, `npm@11.19.0`) via `package.json` (`engines` + `packageManager`), `.nvmrc`, and `.npmrc` (`engine-strict=true`). Wrong versions will fail `npm ci` / `npm install`.
+Frontend tooling is pinned to the same versions as Docker/CI (`node:22.23.4`, `npm@11.19.0`) via `package.json` (`engines` + `packageManager`), `.nvmrc`, and `.npmrc` (`engine-strict=true`). Wrong versions will fail `npm ci` / `npm install`.
 
 ```bash
 # Node (nvm, fnm, or asdf all read .nvmrc)
@@ -163,7 +163,7 @@ nvm use
 corepack enable
 corepack prepare npm@11.19.0 --activate
 
-node -v   # v22.18.0
+node -v   # v22.23.4
 npm -v    # 11.19.0
 npm ci
 ```
@@ -987,7 +987,7 @@ External service dependencies:
 
 Currently supported version of Python is 3.9.
 
-Frontend: Node.js **22.18.0** and npm **11.19.0** (see `.nvmrc` / `package.json` `engines`; required for `npm ci` with the versioned lockfile).
+Frontend: Node.js **22.23.4** and npm **11.19.0** (see `.nvmrc` / `package.json` `engines`; required for `npm ci` with the versioned lockfile).
 
 The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
 

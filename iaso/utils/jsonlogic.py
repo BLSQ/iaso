@@ -216,7 +216,7 @@ def jsonlogic_to_q(
     value = params[0] if op == "in" else params[1]
 
     extract = ""
-    if isinstance(value, (int, float)) and field_prefix:
+    if isinstance(value, int | float) and field_prefix:
         # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
@@ -528,7 +528,7 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str, index
 
     # Handle numeric type casting for JSON fields
     extract = ""
-    if isinstance(value, (int, float)) and field_prefix:
+    if isinstance(value, int | float) and field_prefix:
         # Since JSON fields store everything as strings, we need to cast back to numeric
         extract = "__forcefloat"
 

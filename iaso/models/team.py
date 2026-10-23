@@ -42,7 +42,7 @@ class TeamQuerySet(models.QuerySet):
         elif isinstance(teams, models.QuerySet):
             team_qs = teams
             query = models.Q(path__descendants=ArraySubquery(team_qs.values("path")))
-        elif isinstance(teams, (list,)):
+        elif isinstance(teams, list):
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in teams])
         else:
             raise NotImplementedError

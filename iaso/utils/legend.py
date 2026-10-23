@@ -1,6 +1,6 @@
 import json
 
-from typing import Iterable, List, Union
+from typing import Iterable, List
 
 from django.db.models import Max, Min
 
@@ -242,7 +242,7 @@ def get_max_range_value(metric_type):
     return result["max_value"]
 
 
-LegendValue = Union[float, str]
+LegendValue = float | str
 
 
 def is_categorical_values(values: Iterable[LegendValue]) -> bool:

@@ -277,7 +277,7 @@ def build_fk_graph(root_model):
     # Collect cross-edges between discovered models (for topo sort)
     for model in discovered:
         for field in model._meta.get_fields():
-            if not isinstance(field, (ForeignKey, OneToOneField)):
+            if not isinstance(field, ForeignKey | OneToOneField):
                 continue
             target = field.related_model
             if target not in discovered or target is model:
@@ -603,7 +603,7 @@ class Command(BaseCommand):
 
         for model in plan_models:
             for field in model._meta.local_fields:
-                if isinstance(field, (ForeignKey, OneToOneField)):
+                if isinstance(field, ForeignKey | OneToOneField):
                     # Skip SET_NULL FKs: they don't create a hard ordering constraint
                     # (the DB will null them on target deletion, or we've already done so).
                     # Including them creates false cycles (e.g. DataSource.default_version

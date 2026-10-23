@@ -192,7 +192,7 @@ class InstancesDuckdbExportTestCase(BaseAPITransactionTestCase):
                 return None
             if isinstance(value, bool):
                 return str(value)
-            if isinstance(value, (int, float)):
+            if isinstance(value, int | float):
                 return float(value)
             try:
                 return float(value) if re.fullmatch(r"-?(0|[1-9][0-9]*)(\.[0-9]+)?", value) else value

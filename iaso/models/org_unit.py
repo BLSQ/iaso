@@ -190,7 +190,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         elif isinstance(org_unit, models.QuerySet):
             org_unit_qs = org_unit
             query = models.Q(path__descendants=ArraySubquery(org_unit_qs.values("path")))
-        elif isinstance(org_unit, (list,)):
+        elif isinstance(org_unit, list):
             org_unit = org_unit.only("path") if isinstance(org_unit, models.QuerySet) else org_unit
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
 

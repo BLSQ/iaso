@@ -62,7 +62,7 @@ export const AssignmentsContent: FC<Props> = ({ planning, rootTeamId }) => {
                         onToggleTeam={toggleTeam}
                         targetGeographyName={planning.org_unit_details?.name}
                     />
-                    <AssignmentsMainPanel tree={tree} />
+                    <AssignmentsMainPanel />
                 </Stack>
             </Stack>
         </GreyPageWrapper>

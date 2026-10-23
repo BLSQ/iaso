@@ -18,7 +18,13 @@ class MobileReportSerializer(serializers.ModelSerializer):
 
     version_name = serializers.CharField(read_only=True, source="published_version.name")
     version_id = serializers.IntegerField(read_only=True, source="published_version.id")
-    url = serializers.CharField(read_only=True, source="published_version.file.url")
+    url = serializers.SerializerMethodField()
+
+    def get_url(self, obj: Report) -> str:
+        # The app downloads this URL as is: with a local file storage the URL is relative.
+        url = obj.published_version.file.url
+        request = self.context.get("request")
+        return request.build_absolute_uri(url) if request and url.startswith("/") else url
 
 
 @extend_schema(tags=["Reports", "Mobile"])

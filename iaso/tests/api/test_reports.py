@@ -453,3 +453,13 @@ class MobileReportsAPITestCase(APITestCase):
         self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, self.client.patch(url, {"name": "x"}).status_code)
         self.assertEqual(status.HTTP_405_METHOD_NOT_ALLOWED, self.client.post("/api/mobile/reports/", {}).status_code)
         self.assertTrue(Report.objects.filter(pk=report.id, name="REPORT").exists())
+
+    def test_url_is_absolute(self):
+        # The app downloads the URL as is; with a local file storage it would be relative.
+        self.client.force_authenticate(self.kefla)
+        self.make_report("REPORT")
+
+        response = self.client.get("/api/mobile/reports/?app_id=sayanj.app")
+
+        self.assertTrue(response.json()[0]["url"].startswith("http://testserver/"), response.json()[0]["url"])
+        self.assertTrue(response.json()[0]["url"].endswith(".zip"))

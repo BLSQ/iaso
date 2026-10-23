@@ -24,7 +24,7 @@ export const useGetApiParams = (params: StorageDetailsParams): GetAPiParams => {
         page,
     }: StorageDetailsParams = params;
     const apiParams: ApiParams = {
-        limit: pageSize || '20',
+        limit: pageSize || '10',
         types: operationType,
         performed_at: performedAt,
         order,

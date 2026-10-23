@@ -1,31 +1,23 @@
 import React, { FC, useMemo } from 'react';
 import { useTheme } from '@mui/material';
-import L from 'leaflet';
-import { GeoJSON, Pane } from 'react-leaflet';
-import { GeoJson } from 'Iaso/components/maps/types';
+import { FeatureCollection } from 'geojson';
+import { Layer, LineLayerSpecification, Source } from 'react-map-gl/maplibre';
 
-// Above the overlay pane (400) so the outline stays on top of the org units.
-const SCOPE_AREA_PANE_Z_INDEX = 450;
+export const SCOPE_AREA_LAYER_ID = 'scopeArea';
 
 type Props = {
-    orgUnitId: number;
-    geoJson: GeoJson;
+    geoJson: FeatureCollection;
 };
 
-export const ScopeAreaLayer: FC<Props> = ({ orgUnitId, geoJson }) => {
+export const ScopeAreaLayer: FC<Props> = ({ geoJson }) => {
     const theme = useTheme();
-    const pathOptions: L.PathOptions = useMemo(
-        () => ({ color: theme.palette.primary.main, weight: 3, fill: false }),
+    const paint: LineLayerSpecification['paint'] = useMemo(
+        () => ({ 'line-color': theme.palette.primary.main, 'line-width': 3 }),
         [theme.palette.primary.main],
     );
     return (
-        <Pane name="scopeArea" style={{ zIndex: SCOPE_AREA_PANE_Z_INDEX }}>
-            <GeoJSON
-                key={orgUnitId}
-                data={geoJson}
-                interactive={false}
-                pathOptions={pathOptions}
-            />
-        </Pane>
+        <Source id={SCOPE_AREA_LAYER_ID} type="geojson" data={geoJson}>
+            <Layer id={SCOPE_AREA_LAYER_ID} type="line" paint={paint} />
+        </Source>
     );
 };

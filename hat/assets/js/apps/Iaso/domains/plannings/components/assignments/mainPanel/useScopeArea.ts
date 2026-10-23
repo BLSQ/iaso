@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import L from 'leaflet';
+import { FeatureCollection } from 'geojson';
+import { LngLatBounds } from 'maplibre-gl';
 import { useApiMicroplanningPlanningsOrgunitsRootRetrieve } from 'Iaso/api/plannings';
-import { GeoJson } from 'Iaso/components/maps/types';
+import { getGeoJsonBounds } from 'Iaso/components/maps/maplibre/utils';
 
 type ScopeArea = {
-    orgUnitId?: number;
-    geoJson?: GeoJson;
-    bounds?: L.LatLngBounds;
+    geoJson?: FeatureCollection;
+    bounds?: LngLatBounds;
     isLoading: boolean;
 };
 
@@ -15,10 +15,12 @@ export const useScopeArea = (planningId: string): ScopeArea => {
     const { data: rootOrgUnit, isLoading } =
         useApiMicroplanningPlanningsOrgunitsRootRetrieve(planningId);
     // The generated schema types geo_json as a string, the API returns a GeoJSON object.
-    const geoJson = rootOrgUnit?.geo_json as unknown as GeoJson | undefined;
+    const geoJson = rootOrgUnit?.geo_json as unknown as
+        | FeatureCollection
+        | undefined;
     const bounds = useMemo(
-        () => (geoJson ? L.geoJSON(geoJson).getBounds() : undefined),
+        () => (geoJson ? getGeoJsonBounds(geoJson) : undefined),
         [geoJson],
     );
-    return { orgUnitId: rootOrgUnit?.id, geoJson, bounds, isLoading };
+    return { geoJson, bounds, isLoading };
 };

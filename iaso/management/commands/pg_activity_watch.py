@@ -97,7 +97,7 @@ class Command(BaseCommand):
         with connection.cursor() as cursor:
             cursor.execute(sql, {"min_duration": min_duration, "limit": limit})
             columns = [col[0] for col in cursor.description]
-            return [dict(zip(columns, row)) for row in cursor.fetchall()]
+            return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
 
     def _render(self, rows, show_all, min_duration):
         width = shutil.get_terminal_size((120, 40)).columns

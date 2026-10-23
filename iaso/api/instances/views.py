@@ -6,7 +6,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 import pandas as pd
 
@@ -1044,9 +1044,9 @@ def parse_instance_filters_for_user(data, user) -> dict[str, Any]:
 def find_entity(
     account: Account,
     entity_uuid: str,
-    entity_type_id: Optional[int] = None,
-    existing_entities: Optional[list[Entity]] = None,
-    mission: Optional[Mission] = None,
+    entity_type_id: int | None = None,
+    existing_entities: list[Entity] | None = None,
+    mission: Mission | None = None,
 ) -> Entity:
     """
     `existing_entities`: the entities matching (even soft-deleted), when the caller already looked them up - see
@@ -1100,7 +1100,7 @@ def find_entity(
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
 
-def import_data(instances, user, app_id, api_import=None, cache: Optional[InstanceImportCache] = None):
+def import_data(instances, user, app_id, api_import=None, cache: InstanceImportCache | None = None):
     """
     This function creates empty instances (without files) and should be called first when uploading new instances.
     Sometimes, due to some network issues, this function might not properly be called and the instances are created by

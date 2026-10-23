@@ -85,7 +85,7 @@ class DataSource(models.Model):
 
 
 class SourceVersionQuerySet(models.QuerySet):
-    def filter_for_user(self, user: typing.Union[User, AnonymousUser, None]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         queryset = self
         if user and user.is_anonymous:
             return self.none()

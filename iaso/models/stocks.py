@@ -166,7 +166,7 @@ class StockLedgerItem(models.Model):
     )
     question = models.CharField(max_length=255, blank=True)
     value = models.IntegerField()
-    impact = models.CharField(max_length=8, choices=StockImpacts.choices, blank=True)
+    impact = models.CharField(max_length=8, choices=StockImpacts, blank=True)
     created_by = models.ForeignKey(User, related_name="ledger_item", blank=False, on_delete=models.CASCADE)
     created_at = models.DateTimeField()
     received_at = models.DateTimeField(auto_now_add=True)
@@ -208,7 +208,7 @@ class StockItemRule(models.Model):
     )
     form = models.ForeignKey("Form", related_name="stock_item_rules", null=False, blank=False, on_delete=models.CASCADE)
     question = models.CharField(max_length=255, blank=False)
-    impact = models.CharField(max_length=8, choices=StockImpacts.choices, blank=True)
+    impact = models.CharField(max_length=8, choices=StockImpacts, blank=True)
     created_by = models.ForeignKey(
         User, related_name="stock_item_rule_created_by", null=True, blank=True, on_delete=models.SET_NULL
     )
@@ -277,7 +277,7 @@ class StockRulesVersion(SoftDeletableModel):
     name = models.CharField(max_length=NAME_MAX_LENGTH, default="No Name")
     status = models.CharField(
         max_length=12,
-        choices=StockRulesVersionsStatus.choices,
+        choices=StockRulesVersionsStatus,
         default=StockRulesVersionsStatus.DRAFT,
     )
     created_by = models.ForeignKey(

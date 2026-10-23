@@ -68,7 +68,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
                 source=SETUP_ACCOUNT_API,
             )
 
-            if not isinstance(e, (DjangoValidationError, DRFValidationError)):
+            if not isinstance(e, DjangoValidationError | DRFValidationError):
                 logger.error(
                     f"Account setup failed: {audit_data['account_name']} by user {request.user.username if request.user else 'unknown'}: {str(e)}",
                     extra={"audit_data": audit_data, "exception": e},

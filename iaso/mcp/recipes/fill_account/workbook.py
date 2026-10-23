@@ -550,7 +550,7 @@ def _parse_float(value: object) -> float | None:
         return None
     if isinstance(value, bool):
         return None
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return float(value)
     text = _cell_str(value)
     if not text:

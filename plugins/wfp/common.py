@@ -742,7 +742,7 @@ def _format_date(dt):
     """Format a datetime/date as a ``YYYY-MM-DD`` string, or *None*."""
     if dt is None:
         return None
-    if isinstance(dt, (datetime, date)):
+    if isinstance(dt, datetime | date):
         return dt.strftime("%Y-%m-%d")
     return str(dt)[:10]
 

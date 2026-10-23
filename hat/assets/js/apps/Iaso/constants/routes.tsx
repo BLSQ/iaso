@@ -59,6 +59,7 @@ import { PotentialPayments } from '../domains/payments/PotentialPayments';
 import { Planning } from '../domains/plannings';
 import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
+import { Promptness } from '../domains/promptness';
 import { Registry } from '../domains/registry';
 import { SetupAccount } from '../domains/setup';
 import { Storages } from '../domains/storages';
@@ -263,6 +264,13 @@ export const completenessStatsPath = {
     routerUrl: `${baseUrls.completenessStats}/*`,
     permissions: [Permission.COMPLETENESS_STATS],
     element: <CompletenessStats />,
+};
+
+export const promptnessPath = {
+    baseUrl: baseUrls.promptness,
+    routerUrl: `${baseUrls.promptness}/*`,
+    permissions: [Permission.COMPLETENESS_STATS],
+    element: <Promptness />,
 };
 
 export const modulesPath = {
@@ -631,6 +639,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     algosPath,
     completenessPath,
     completenessStatsPath,
+    promptnessPath,
     usersPath,
     userDetailsPath,
     usersHistoryPath,

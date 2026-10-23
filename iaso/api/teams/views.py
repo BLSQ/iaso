@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import typing
 
 from typing import Any, Sequence
@@ -12,6 +13,8 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
+
+from ...services.planning_config import PlanningConfigService
 
 
 if typing.TYPE_CHECKING:
@@ -43,6 +46,9 @@ from .serializers.audit import AuditTeamSerializer
 from .serializers.dropdown import TeamDropdownSerializer
 from .serializers.misc import TeamSerializer
 from .serializers.tree import TeamBuildTreeSerializer, TeamTreeSerializer
+
+
+log = logging.getLogger(__name__)
 
 
 @extend_schema(tags=["Teams"])
@@ -198,3 +204,31 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         queryset = self.get_queryset()
         data = self._build_team_tree(queryset)
         return Response(data)
+
+    def perform_update(self, serializer: TeamTreeSerializer) -> None:
+        account = getattr(getattr(serializer.instance, "project", None), "account", None)
+        existing_depths = PlanningConfigService.get_existing_depths(account)
+        super().perform_update(serializer)
+        new_depths = PlanningConfigService.get_existing_depths(account)
+        if existing_depths != new_depths:
+            try:
+                PlanningConfigService.sync_planning_configs(account, new_depths)
+            except Exception as e:
+                log.exception(
+                    "Exception occurred during the sync with planning configs",
+                    extra={"exception": e, "team_pk": serializer.instance.pk},
+                )
+
+    def perform_destroy(self, instance: Team) -> None:
+        account = getattr(getattr(instance, "project", None), "account", None)
+        existing_depths = PlanningConfigService.get_existing_depths(account)
+        super().perform_destroy(instance)
+        new_depths = PlanningConfigService.get_existing_depths(account)
+        if existing_depths != new_depths:
+            try:
+                PlanningConfigService.sync_planning_configs(account, new_depths)
+            except Exception as e:
+                log.exception(
+                    "Exception occurred during the sync with planning configs",
+                    extra={"exception": e, "team_pk": instance.pk},
+                )

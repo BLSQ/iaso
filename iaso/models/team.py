@@ -6,9 +6,10 @@ from functools import reduce
 from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.db.models import F
-from django_ltree.fields import PathField  # type: ignore
+from django_ltree.fields import PathField
 
 from iaso.models import Account, Project
+from iaso.models.common import CreatedAndUpdatedModel
 from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.color import ColorField
@@ -74,7 +75,7 @@ class TeamType(models.TextChoices):
         return value in cls.values
 
 
-class Team(SoftDeletableModel):
+class Team(CreatedAndUpdatedModel, SoftDeletableModel):
     objects = DefaultSoftDeletableManager.from_queryset(TeamQuerySet)()
     objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
     objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
@@ -89,13 +90,15 @@ class Team(SoftDeletableModel):
     manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="managed_teams")
     parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
     path = PathField(unique=True)
-    # scope = models.ManyToManyField("OrgUnit", related_name="teams")
     type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
     color = ColorField(default=COLOR_CHOICES[0][0])
 
-    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_created_by"
+    )
+    updated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_updated_by"
+    )
 
     # Path management logic, taken from org_unit.
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):

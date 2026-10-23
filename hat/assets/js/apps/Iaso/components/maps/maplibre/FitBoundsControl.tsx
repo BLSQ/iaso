@@ -5,7 +5,7 @@ import { IControl, LngLatBounds } from 'maplibre-gl';
 import { createPortal } from 'react-dom';
 import { useControl, useMap } from 'react-map-gl/maplibre';
 import { SxStyles } from 'Iaso/types/general';
-import { MESSAGES } from '../tools/CustomZoomControl';
+import MESSAGES from '../messages';
 
 export const FIT_BOUNDS_PADDING = 20;
 

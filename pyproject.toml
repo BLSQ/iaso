@@ -13,12 +13,12 @@ dependencies = [
     "cryptography==45.0.7", # https://github.com/pyca/cryptography
     "dateparser==1.2.0", # https://github.com/scrapinghub/dateparser/tags
     "dhis2-py==2.3.0", # https://github.com/davidhuser/dhis2.py/tags
-    "django~=4.2",
+    "django~=5.2",
     "django-allauth==0.54.0", # https://github.com/pennersr/django-allauth/tags
     "django-appconf==1.2.0", # https://github.com/django-compressor/django-appconf
     "django-autoslug==1.9.9", # https://github.com/justinmayer/django-autoslug
     "django-axes==8.0.0", # https://github.com/jazzband/django-axes/tags
-    "django-celery-beat==2.6.0", # https://github.com/celery/django-celery-beat/tags
+    "django-celery-beat==2.8.1", # https://github.com/celery/django-celery-beat/tags
     "django-celery-results==2.5.1", # https://github.com/celery/django-celery-results/tags
     "django-contrib-comments==2.2.0", # https://github.com/django/django-contrib-comments/tags
     "django-cors-headers==4.3.1", # https://github.com/adamchainz/django-cors-headers/tags
@@ -338,5 +338,5 @@ prod = [
     "py-spy==0.4.2", # https://github.com/benfred/py-spy/releases
 ]
 upgrade = [
-    "django-upgrade==1.33.0",
+    "django-upgrade==1.33.0",  # https://github.com/adamchainz/django-upgrade/tags
 ]

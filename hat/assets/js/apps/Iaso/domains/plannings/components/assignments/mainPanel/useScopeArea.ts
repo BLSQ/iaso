@@ -5,6 +5,7 @@ import { useApiMicroplanningPlanningsOrgunitsRootRetrieve } from 'Iaso/api/plann
 import { getGeoJsonBounds } from 'Iaso/components/maps/maplibre/utils';
 
 type ScopeArea = {
+    orgUnitId?: number;
     geoJson?: FeatureCollection;
     bounds?: LngLatBounds;
     isLoading: boolean;
@@ -22,5 +23,5 @@ export const useScopeArea = (planningId: string): ScopeArea => {
         () => (geoJson ? getGeoJsonBounds(geoJson) : undefined),
         [geoJson],
     );
-    return { geoJson, bounds, isLoading };
+    return { orgUnitId: rootOrgUnit?.id, geoJson, bounds, isLoading };
 };

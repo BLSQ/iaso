@@ -248,7 +248,7 @@ class EntityCursorPagination(CursorPagination):
         filter_q = Q()
         accumulated_equals = Q()
 
-        for order, position in zip(self.ordering, current_position_list):
+        for order, position in zip(self.ordering, current_position_list, strict=False):
             order_reversed = order.startswith("-")
             order_attr = order.lstrip("-")
 

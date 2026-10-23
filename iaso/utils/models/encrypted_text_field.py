@@ -10,10 +10,10 @@ class EncryptedTextField(models.TextField):
 
     def from_db_value(
         self,
-        value: typing.Optional[str],
-        expression: typing.Optional[str],
+        value: str | None,
+        expression: str | None,
         connection: typing.Any,
-    ) -> typing.Optional[str]:
+    ) -> str | None:
         if value is None:
             return value
 
@@ -21,10 +21,10 @@ class EncryptedTextField(models.TextField):
 
     def get_db_prep_value(
         self,
-        value: typing.Optional[str],
+        value: str | None,
         connection: typing.Any,
         prepared: bool = False,
-    ) -> typing.Optional[str]:
+    ) -> str | None:
         db_prep_value = super().get_db_prep_value(value, connection, prepared)
         if db_prep_value is None:
             return None

@@ -2,8 +2,7 @@
 limits (see beanstalk_worker/throttle.py)."""
 
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta, timezone as dt_timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
@@ -46,7 +45,7 @@ DURATION_PERCENTILES = {"p50": 0.5, "p90": 0.9, "p99": 0.99}
 DURATION_LABELS = [*DURATION_PERCENTILES, "max"]
 
 
-def format_duration(duration: Optional[timedelta]) -> str:
+def format_duration(duration: timedelta | None) -> str:
     if duration is None:
         return ""
     seconds = int(duration.total_seconds())
@@ -83,7 +82,7 @@ def activity(window: str, task_name: str = "", account_id=None) -> list[dict]:
     first = int((now - WINDOWS[window]).timestamp()) // size + 1
     last = int(now.timestamp()) // size
     tasks = Task.objects.filter(**_filters(account_id, task_name)).filter(
-        created_at__gte=datetime.fromtimestamp(first * size, tz=dt_timezone.utc)
+        created_at__gte=datetime.fromtimestamp(first * size, tz=UTC)
     )
     counts = (
         tasks.order_by()
@@ -98,7 +97,7 @@ def activity(window: str, task_name: str = "", account_id=None) -> list[dict]:
             if status == QUEUED:
                 buckets[number]["throttled"] += throttled
     return [
-        {"start": datetime.fromtimestamp(number * size, tz=dt_timezone.utc).isoformat(), **values}
+        {"start": datetime.fromtimestamp(number * size, tz=UTC).isoformat(), **values}
         for number, values in sorted(buckets.items())
     ]
 
@@ -259,7 +258,7 @@ def _key_labels(concurrency_name, keys) -> dict[str, str]:
     return {}
 
 
-def throttle_rows(tasks: dict[str, Optional[Throttle]], content, account_id=None) -> list[dict]:
+def throttle_rows(tasks: dict[str, Throttle | None], content, account_id=None) -> list[dict]:
     """Per throttled task and limit: how many runs are running and waiting, per key.
 
     With `account_id`, the `account` limits only show that account (the other limits are shared by all the accounts)."""

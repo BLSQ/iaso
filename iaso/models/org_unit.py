@@ -86,7 +86,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         return self.filter(category="COUNTRY")
 
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None, distinct: bool = False
+        self, user: User | AnonymousUser | None, app_id: str | None = None, distinct: bool = False
     ):
         """
         Filter the org unit types by user and app_id.
@@ -223,7 +223,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         return self.filter_for_user_and_app_id(user, None)
 
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+        self, user: User | AnonymousUser | None, app_id: str | None = None
     ) -> "OrgUnitQuerySet":
         try:
             project = Project.objects.get_for_user_and_app_id(user, app_id) if app_id is not None else None
@@ -232,7 +232,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
             return self.none()
 
     def filter_for_user_and_project(
-        self, user: typing.Union[User, AnonymousUser, None], project: typing.Optional[Project] = None
+        self, user: User | AnonymousUser | None, project: Project | None = None
     ) -> "OrgUnitQuerySet":
         """Restrict to the orgunits the User can see, used mainly in the API"""
         if user and user.is_anonymous and project is None:

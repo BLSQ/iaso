@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Annotated, Optional, TypedDict, Union
+from typing import Annotated, TypedDict
 
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
@@ -40,16 +40,16 @@ OrgUnitWithFormStat = Annotated[OrgUnit, FormStatAnnotation]
 
 
 class Params(TypedDict):
-    org_unit_types: Optional[list[OrgUnitType]]
-    parent_org_unit: Optional[OrgUnit]
+    org_unit_types: list[OrgUnitType] | None
+    parent_org_unit: OrgUnit | None
     forms: QuerySet[Form]
-    planning: Optional[Planning]
-    period: Optional[str]  # might migrate to Period in the future
+    planning: Planning | None
+    period: str | None  # might migrate to Period in the future
     order: list[str]
-    org_unit_group: Optional[Group]
+    org_unit_group: Group | None
     without_submissions: bool
     org_unit_validation_status: list[str]
-    teams: Optional[list[Team]]
+    teams: list[Team] | None
 
 
 # noinspection PyMethodMayBeStatic
@@ -165,7 +165,7 @@ class ParamSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid period")
         return period_value
 
-    def validate_form_id(self, forms: Union[list[Form], QuerySet[Form]]):
+    def validate_form_id(self, forms: list[Form] | QuerySet[Form]):
         # reconvert this to a queryset, if this is a List.
         # resolve problem with duplicate Form if form is in multiple project
         # This method seems faster than using a distinct()

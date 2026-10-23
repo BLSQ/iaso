@@ -14,7 +14,7 @@ from iaso.test import TestCase
 
 
 class EnketoUtilsTests(TestCase):
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):

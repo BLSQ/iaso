@@ -3,7 +3,7 @@ import json
 import logging
 import uuid
 
-from typing import Any, Optional
+from typing import Any
 
 import anthropic
 import openpyxl
@@ -177,7 +177,7 @@ def parse_xlsform_to_json(xls_file) -> dict:
     }
 
 
-def call_claude(message: str, conversation_history: list[dict], api_key: Optional[str] = None) -> dict:
+def call_claude(message: str, conversation_history: list[dict], api_key: str | None = None) -> dict:
     """Call Claude API with the conversation and return text plus stop_reason.
 
     Uses streaming because high max_tokens values (needed for large forms) are
@@ -291,7 +291,7 @@ def patch_xlsform_form_id(xlsform_buffer: io.BytesIO, form_odk_id: str) -> io.By
     return buf
 
 
-def convert_to_xform_xml(xlsform_buffer: io.BytesIO) -> Optional[str]:
+def convert_to_xform_xml(xlsform_buffer: io.BytesIO) -> str | None:
     """Convert an XLSForm to XForm XML using pyxform."""
     try:
         xlsform_buffer.seek(0)
@@ -307,8 +307,8 @@ def convert_to_xform_xml(xlsform_buffer: io.BytesIO) -> Optional[str]:
 def generate_form(
     message: str,
     conversation_history: list[dict],
-    existing_form_odk_id: Optional[str] = None,
-    api_key: Optional[str] = None,
+    existing_form_odk_id: str | None = None,
+    api_key: str | None = None,
 ) -> dict:
     """Call the AI and return the parsed form object plus updated conversation history.
 

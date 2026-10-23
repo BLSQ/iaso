@@ -50,8 +50,8 @@ class TenantUserModelTestCase(TestCase):
         self.assertEqual(self.tenant_user_2.account, self.account_2)
 
     def test_get_other_accounts(self):
-        self.assertQuerysetEqual(self.tenant_user_1.get_other_accounts(), [self.account_2])
-        self.assertQuerysetEqual(self.tenant_user_2.get_other_accounts(), [self.account_1])
+        self.assertQuerySetEqual(self.tenant_user_1.get_other_accounts(), [self.account_2])
+        self.assertQuerySetEqual(self.tenant_user_2.get_other_accounts(), [self.account_1])
 
     def test_get_all_account_users(self):
         self.assertCountEqual(

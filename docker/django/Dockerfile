@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/python
-FROM python:3.9
+FROM ghcr.io/astral-sh/uv:python3.12-trixie
 
 RUN apt-get update && apt-get --yes install \
 	curl \
@@ -14,9 +14,6 @@ WORKDIR /opt/app
 
 # install python dependencies
 COPY pyproject.toml /opt/app/pyproject.toml
-
-# install pinned uv version
-COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
 
 # make uv use the system python and install everything in the system, not in a .venv
 ENV UV_PROJECT_ENVIRONMENT=/usr/local

@@ -316,8 +316,8 @@ GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
 
 class GroupSet(models.Model):
     class GroupBelonging(models.TextChoices):
-        SINGLE = _("SINGLE")
-        MULTIPLE = _("MULTIPLE")
+        SINGLE = "SINGLE", _("SINGLE")
+        MULTIPLE = "MULTIPLE", _("MULTIPLE")
 
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)

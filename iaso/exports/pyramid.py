@@ -5,8 +5,19 @@ from collections.abc import Sequence
 
 from django.conf import settings
 from django.contrib.postgres.aggregates import JSONBAgg
-from django.contrib.postgres.fields import JSONField
-from django.db.models import Exists, F, FloatField, Func, IntegerField, Max, OuterRef, QuerySet, Subquery, Value
+from django.db.models import (
+    Exists,
+    F,
+    FloatField,
+    Func,
+    IntegerField,
+    JSONField,
+    Max,
+    OuterRef,
+    QuerySet,
+    Subquery,
+    Value,
+)
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast, Coalesce, JSONObject
 

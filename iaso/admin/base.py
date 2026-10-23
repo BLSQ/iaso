@@ -1239,6 +1239,7 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "change_request_ids", "user")
     autocomplete_fields = ("user", "payment_lot", "task")
 
+    @admin.display(description="Change Request IDs")
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
         if change_requests:
@@ -1248,8 +1249,6 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
-    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(Payment)
@@ -1258,6 +1257,7 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
     autocomplete_fields = ("user", "created_by", "updated_by", "payment_lot")
 
+    @admin.display(description="Change Request IDs")
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
         if change_requests:
@@ -1267,8 +1267,6 @@ class PaymentAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
-    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(PaymentLot)
@@ -1278,6 +1276,7 @@ class PaymentLotAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     autocomplete_fields = ("created_by", "updated_by", "task")
 
+    @admin.display(description="Payment IDs")
     def payment_ids(self, obj):
         payments = obj.payments.all()
         if payments:
@@ -1287,8 +1286,6 @@ class PaymentLotAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
-    payment_ids.short_description = "Payment IDs"
 
 
 @admin.register(DataSource)
@@ -1471,6 +1468,7 @@ class ReportVersionAdmin(admin.ModelAdmin):
     autocomplete_fields = ("created_by", "updated_by")
 
 
+@admin.register(TemporaryForm)
 class TemporaryFormAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "account", "created_at")
     list_filter = ("account",)
@@ -1479,7 +1477,6 @@ class TemporaryFormAdmin(admin.ModelAdmin):
     readonly_fields = ("uuid", "created_at")
 
 
-admin.site.register(TemporaryForm, TemporaryFormAdmin)
 admin.site.register(AccountFeatureFlag)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)

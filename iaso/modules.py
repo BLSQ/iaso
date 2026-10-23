@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Optional
 
 from django.utils.translation import gettext_lazy as _
 from django_stubs_ext import StrOrPromise
@@ -14,7 +13,7 @@ class IasoModule:
     name: StrOrPromise
     codename: str
     permissions: list = field(default_factory=list)
-    related_plugin: Optional[str] = None
+    related_plugin: str | None = None
 
     def add_permission(self, permission):
         self.permissions.append(permission)

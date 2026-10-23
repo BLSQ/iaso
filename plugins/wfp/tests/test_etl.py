@@ -1,7 +1,7 @@
 import json
 import random
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from django.test import TestCase
 
@@ -634,19 +634,19 @@ class BangladeshVisitDateTestCase(TestCase):
     def test_form_visit_date_is_used(self):
         submission = {
             "json": {"visit_date": "2026-08-20"},
-            "source_created_at": datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc),
+            "source_created_at": datetime(2026, 8, 25, 21, 30, tzinfo=UTC),
         }
-        self.assertEqual(extract_form_visit_date(submission), datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc))
+        self.assertEqual(extract_form_visit_date(submission), datetime(2026, 8, 20, 12, 0, tzinfo=UTC))
 
     def test_falls_back_to_the_submission_date(self):
-        created = datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc)
+        created = datetime(2026, 8, 25, 21, 30, tzinfo=UTC)
         self.assertEqual(extract_form_visit_date({"json": {}, "source_created_at": created}), created)
         self.assertEqual(
             extract_form_visit_date({"json": {"visit_date": "not a date"}, "source_created_at": created}), created
         )
 
     def test_other_countries_keep_the_submission_date(self):
-        created = datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc)
+        created = datetime(2026, 8, 25, 21, 30, tzinfo=UTC)
         submission = {"json": {"visit_date": "2026-08-20"}, "source_created_at": created}
         self.assertEqual(ETL("south_sudan_under5")._extract_visit_date(submission), created)
 
@@ -662,7 +662,7 @@ class BangladeshJourneysTestCase(TestCase):
 
     @staticmethod
     def _submissions(*forms):
-        created = datetime(2026, 6, 1, 8, 0, tzinfo=timezone.utc)
+        created = datetime(2026, 6, 1, 8, 0, tzinfo=UTC)
         submissions = []
         for index, (form_id, data) in enumerate(forms):
             submissions.append(

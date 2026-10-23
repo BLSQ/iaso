@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 from django.db import models
 from django.forms import JSONField
@@ -7,13 +7,13 @@ from iaso.models import OrgUnit, OrgUnitType
 
 
 class ValuesSerializer:
-    def serialize(self, values: Union[JSONField, Any]) -> Union[JSONField, list[dict]]:
+    def serialize(self, values: JSONField | Any) -> JSONField | list[dict]:
         return values
 
 
 class OrgUnitValuesSerializer(ValuesSerializer):
     @staticmethod
-    def map_field(field: str, value: str) -> Union[str, dict]:
+    def map_field(field: str, value: str) -> str | dict:
         if field == "org_unit_type":
             try:
                 name = OrgUnitType.objects.get(pk=value).name
@@ -22,7 +22,7 @@ class OrgUnitValuesSerializer(ValuesSerializer):
             return {"id": value, "name": name}
         return value
 
-    def serialize(self, values: Union[JSONField, Any]) -> Union[JSONField, list[dict]]:
+    def serialize(self, values: JSONField | Any) -> JSONField | list[dict]:
         dict = []
         for value in values:
             fields = value["fields"]

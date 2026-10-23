@@ -61,13 +61,13 @@ class PromptnessPeriodTestCase(PromptnessStatsTestCase):
     def test_deadline_end_is_the_start_of_the_day_after_the_deadline(self):
         period = PromptnessPeriod.build("202601", 10, today=datetime.date(2026, 9, 28))
         self.assertEqual(period.deadline, datetime.date(2026, 2, 10))
-        self.assertEqual(period.deadline_end, datetime.datetime(2026, 2, 11, 0, 0, tzinfo=datetime.timezone.utc))
+        self.assertEqual(period.deadline_end, datetime.datetime(2026, 2, 11, 0, 0, tzinfo=datetime.UTC))
         self.assertTrue(timezone.is_aware(period.deadline_end))
 
     def test_deadline_end_includes_the_whole_deadline_day(self):
         period = PromptnessPeriod.build("202601", 10, today=datetime.date(2026, 9, 28))
-        first_instant_of_deadline_day = datetime.datetime(2026, 2, 10, 0, 0, tzinfo=datetime.timezone.utc)
-        last_instant_of_deadline_day = datetime.datetime(2026, 2, 10, 23, 59, 59, 999999, tzinfo=datetime.timezone.utc)
+        first_instant_of_deadline_day = datetime.datetime(2026, 2, 10, 0, 0, tzinfo=datetime.UTC)
+        last_instant_of_deadline_day = datetime.datetime(2026, 2, 10, 23, 59, 59, 999999, tzinfo=datetime.UTC)
         self.assertLess(first_instant_of_deadline_day, period.deadline_end)
         self.assertLess(last_instant_of_deadline_day, period.deadline_end)
 
@@ -75,18 +75,18 @@ class PromptnessPeriodTestCase(PromptnessStatsTestCase):
         # Without grace period, the deadline is the last day of the period
         period = PromptnessPeriod.build("202601", 0, today=datetime.date(2026, 9, 28))
         self.assertEqual(period.deadline, datetime.date(2026, 1, 31))
-        self.assertEqual(period.deadline_end, datetime.datetime(2026, 2, 1, 0, 0, tzinfo=datetime.timezone.utc))
+        self.assertEqual(period.deadline_end, datetime.datetime(2026, 2, 1, 0, 0, tzinfo=datetime.UTC))
 
     def test_deadline_end_in_next_year(self):
         period = PromptnessPeriod.build("202612", 10, today=datetime.date(2026, 9, 28))
         self.assertEqual(period.deadline, datetime.date(2027, 1, 10))
-        self.assertEqual(period.deadline_end, datetime.datetime(2027, 1, 11, 0, 0, tzinfo=datetime.timezone.utc))
+        self.assertEqual(period.deadline_end, datetime.datetime(2027, 1, 11, 0, 0, tzinfo=datetime.UTC))
 
     def test_deadline_end_on_leap_year(self):
         # February 2028 has 29 days
         period = PromptnessPeriod.build("202802", 0, today=datetime.date(2026, 9, 28))
         self.assertEqual(period.deadline, datetime.date(2028, 2, 29))
-        self.assertEqual(period.deadline_end, datetime.datetime(2028, 3, 1, 0, 0, tzinfo=datetime.timezone.utc))
+        self.assertEqual(period.deadline_end, datetime.datetime(2028, 3, 1, 0, 0, tzinfo=datetime.UTC))
 
     def test_deadline_end_uses_the_current_timezone(self):
         # The deadline day ends at midnight in the current timezone (UTC in the settings).
@@ -94,4 +94,4 @@ class PromptnessPeriodTestCase(PromptnessStatsTestCase):
         period = PromptnessPeriod.build("202601", 10, today=datetime.date(2026, 9, 28))
         with timezone.override("Africa/Addis_Ababa"):
             deadline_end = period.deadline_end
-        self.assertEqual(deadline_end, datetime.datetime(2026, 2, 10, 21, 0, tzinfo=datetime.timezone.utc))
+        self.assertEqual(deadline_end, datetime.datetime(2026, 2, 10, 21, 0, tzinfo=datetime.UTC))

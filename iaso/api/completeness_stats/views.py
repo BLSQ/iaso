@@ -30,7 +30,7 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
-from typing import Any, Union
+from typing import Any
 
 import rest_framework.renderers
 
@@ -199,7 +199,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         # Ordering
         # Transform the order parameter to handle the json properly
-        converted_orders: list[Union[str, OrderBy]] = []
+        converted_orders: list[str | OrderBy] = []
         for order in orders:
             # There is an issue with using orgunit__name as it does a supplementary outer join that duplicate lines
             # and break pagination

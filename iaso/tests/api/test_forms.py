@@ -402,7 +402,7 @@ class FormsAPITestCase(APITestCase):
         headers, *rows = self.assertCsvFileResponse(
             response, expected_name="forms.csv", streaming=True, return_as_lists=True
         )
-        return headers, [dict(zip(headers, row)) for row in rows]
+        return headers, [dict(zip(headers, row, strict=False)) for row in rows]
 
     def test_forms_list_csv_default_columns(self):
         """GET /forms/ csv only exports the base columns when no optional column is requested"""

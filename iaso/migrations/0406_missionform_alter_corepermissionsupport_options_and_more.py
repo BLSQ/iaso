@@ -57,7 +57,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         MissionFormThroughForm.objects.bulk_create(
             [
                 MissionFormThroughForm(**through, mission_form_id=mf.id)
-                for (through, mf) in zip(mission_form_through_objects, mission_objs)
+                for (through, mf) in zip(mission_form_through_objects, mission_objs, strict=False)
             ]
         )
 

@@ -14,7 +14,7 @@ from iaso.permissions.core_permissions import (
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
-DT = datetime.datetime(2025, 1, 3, 16, 0, 0, 0, tzinfo=datetime.timezone.utc)
+DT = datetime.datetime(2025, 1, 3, 16, 0, 0, 0, tzinfo=datetime.UTC)
 
 
 @time_machine.travel(DT, tick=False)

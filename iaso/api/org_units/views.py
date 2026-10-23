@@ -6,7 +6,6 @@ import tempfile
 from copy import deepcopy
 from datetime import datetime
 from time import gmtime, strftime
-from typing import Union
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -800,7 +799,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return Response(errors, status=400)
 
-    def get_date(self, date: str) -> Union[datetime.date, None]:
+    def get_date(self, date: str) -> datetime.date | None:
         date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:

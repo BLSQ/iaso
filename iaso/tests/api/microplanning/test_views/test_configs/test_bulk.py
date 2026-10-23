@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.urls import reverse
 from rest_framework import status
@@ -125,7 +125,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertResponseCompliantToSwagger(data, "NestedPlanningConfigBulk", as_array=True)
         self.assertEqual(len(data), expected_length)
 
-    def get_url(self, planning_pk: Optional[int] = None) -> str:
+    def get_url(self, planning_pk: int | None = None) -> str:
         if not planning_pk:
             planning_pk = self.planning.pk
 

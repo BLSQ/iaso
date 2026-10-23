@@ -1,5 +1,3 @@
-from typing import Optional
-
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -64,7 +62,7 @@ class MobileValidationWorkflowListSerializer(ModelSerializer):
         return updated_at.timestamp() if updated_at else None
 
     @extend_schema_field({"type": "string", "nullable": True})
-    def get_display_name(self, obj: Instance) -> Optional[str]:
+    def get_display_name(self, obj: Instance) -> str | None:
         form = obj.form
         label_keys = form.label_keys
         if not label_keys or not obj.json:

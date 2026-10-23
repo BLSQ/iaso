@@ -22,7 +22,7 @@ def parse_csv_rows(response):
     """
     response_csv = response.getvalue().decode("utf-8")
     header, *rows = csv.reader(io.StringIO(response_csv))
-    return [dict(zip(header, row)) for row in rows]
+    return [dict(zip(header, row, strict=False)) for row in rows]
 
 
 class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
@@ -30,7 +30,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     Test actions on the ViewSet.
     """
 
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):

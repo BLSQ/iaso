@@ -1,8 +1,6 @@
 import hashlib
 import os
 
-from typing import Optional
-
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA1
 from Crypto.Protocol.KDF import PBKDF2
@@ -28,7 +26,7 @@ def calculate_md5(file_obj: File, chunk_size: int = 8192) -> str:
     return hasher.hexdigest()
 
 
-def file_content_changed(old_md5: Optional[str], new_file: File) -> bool:
+def file_content_changed(old_md5: str | None, new_file: File) -> bool:
     """Return True if new_file content differs from the previously stored md5."""
     if not old_md5:
         return True

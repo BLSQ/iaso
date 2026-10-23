@@ -5,14 +5,13 @@ import duckdb
 import numpy as np
 import pandas as pd
 
-from django.test import TransactionTestCase
 from jinja2 import Template
 from rest_framework.test import APIClient
 
-from iaso.test import IasoTestCaseMixin
+from iaso.test import APIAssertionsMixin, FastFlushTransactionTestCase
 
 
-class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
+class BaseAPITransactionTestCase(FastFlushTransactionTestCase, APIAssertionsMixin):
     client_class = APIClient
 
     def assert_parquet_content_type(self, response):

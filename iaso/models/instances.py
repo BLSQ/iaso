@@ -143,7 +143,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
             self.exclude(period__isnull=True)
             .exclude(period="")
             .values("period", "form", "org_unit")
-            .annotate(ids=ArrayAgg("id"))
+            .annotate(ids=ArrayAgg("id", default=models.Value([])))
             .annotate(
                 c=models.Func(
                     "ids",

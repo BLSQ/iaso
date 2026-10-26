@@ -439,12 +439,16 @@ class ProfileQuerySet(models.QuerySet):
         qs = self
         return qs.annotate(
             annotated_editable_org_unit_types_ids=ArrayAgg(
-                "editable_org_unit_types__id", distinct=True, filter=Q(editable_org_unit_types__isnull=False)
+                "editable_org_unit_types__id",
+                distinct=True,
+                filter=Q(editable_org_unit_types__isnull=False),
+                default=models.Value([]),
             ),
             annotated_user_roles_editable_org_unit_type_ids=ArrayAgg(
                 "user_roles__editable_org_unit_types__id",
                 distinct=True,
                 filter=Q(user_roles__editable_org_unit_types__isnull=False),
+                default=models.Value([]),
             ),
         )
 

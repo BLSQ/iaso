@@ -22,23 +22,23 @@ class IasoLogoutViewTestCase(TestCase):
         self.logout_url = reverse("logout-iaso")
 
     def test_default_redirect_when_no_next(self):
-        response = self.client.get(self.logout_url)
+        response = self.client.post(self.logout_url)
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)
 
     def test_redirects_to_allowed_next(self):
-        response = self.client.get(self.logout_url, {"next": "/example/allowed-target"})
+        response = self.client.post(self.logout_url, {"next": "/example/allowed-target"})
         self.assertRedirects(response, "/example/allowed-target", fetch_redirect_response=False)
 
     def test_falls_back_when_next_not_in_allowlist(self):
-        response = self.client.get(self.logout_url, {"next": "/dashboard/"})
+        response = self.client.post(self.logout_url, {"next": "/dashboard/"})
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)
 
     def test_falls_back_when_next_is_absolute_url(self):
-        response = self.client.get(self.logout_url, {"next": "https://evil.example.com/example/allowed-target"})
+        response = self.client.post(self.logout_url, {"next": "https://evil.example.com/example/allowed-target"})
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)
 
     def test_falls_back_when_next_has_protocol_relative_host(self):
-        response = self.client.get(self.logout_url, {"next": "//evil.example.com/"})
+        response = self.client.post(self.logout_url, {"next": "//evil.example.com/"})
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)
 
     def test_post_with_allowed_next(self):
@@ -46,23 +46,23 @@ class IasoLogoutViewTestCase(TestCase):
         self.assertRedirects(response, "/example/allowed-target", fetch_redirect_response=False)
 
     def test_user_is_logged_out(self):
-        self.client.get(self.logout_url, {"next": "/example/allowed-target"})
+        self.client.post(self.logout_url, {"next": "/example/allowed-target"})
         # Subsequent request to a login-required endpoint should not show the user as authenticated.
-        response = self.client.get("/api/profiles/me/")
+        response = self.client.post("/api/profiles/me/")
         self.assertIn(response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
 
     # Edge cases: paths are normalized before matching.
     def test_trailing_slash_normalized(self):
         """Trailing slashes are stripped before matching."""
-        response = self.client.get(self.logout_url, {"next": "/example/allowed-target/"})
+        response = self.client.post(self.logout_url, {"next": "/example/allowed-target/"})
         self.assertRedirects(response, "/example/allowed-target", fetch_redirect_response=False)
 
     def test_query_params_not_matched(self):
-        response = self.client.get(self.logout_url, {"next": "/example/allowed-target?foo=bar"})
+        response = self.client.post(self.logout_url, {"next": "/example/allowed-target?foo=bar"})
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)
 
     def test_fragment_not_matched(self):
-        response = self.client.get(self.logout_url, {"next": "/example/allowed-target#section"})
+        response = self.client.post(self.logout_url, {"next": "/example/allowed-target#section"})
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)
 
 
@@ -79,5 +79,5 @@ class IasoLogoutViewWithoutAllowlistTestCase(TestCase):
         self.logout_url = reverse("logout-iaso")
 
     def test_any_next_falls_back(self):
-        response = self.client.get(self.logout_url, {"next": "/example/allowed-target"})
+        response = self.client.post(self.logout_url, {"next": "/example/allowed-target"})
         self.assertRedirects(response, "/login/", fetch_redirect_response=False)

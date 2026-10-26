@@ -446,12 +446,12 @@ class Entity(SoftDeletableModel):
         )
         return max(instance_dates, default=self.created_at)
 
-    def get_mission_id(self) -> typing.Optional[int]:
+    def get_mission_id(self) -> int | None:
         if not self.attributes:
             return None
         return self.attributes.mission_id
 
-    def get_planning_id(self) -> typing.Optional[int]:
+    def get_planning_id(self) -> int | None:
         if not self.attributes:
             return None
         return self.attributes.planning_id

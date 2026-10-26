@@ -1,13 +1,12 @@
 import csv
 import io
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 import xlsxwriter  # type: ignore
 
 from django.conf import settings
 from django.db.models import QuerySet
-from django.utils import timezone
 from xlsxwriter.utility import xl_rowcol_to_cell  # type: ignore
 
 from hat.common.utils import queryset_iterator
@@ -119,7 +118,7 @@ def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
 def timestamp_to_utc_datetime(timestamp):
     """iaso mobile app >= 2.0 send timestamp as second instead of microsecond
     so we do a detection  cf https://bluesquare.atlassian.net/browse/IA-1473"""
-    dt = datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)
+    dt = datetime.fromtimestamp(int(timestamp / 1000), UTC)
     if dt.year < 1972:
-        return datetime.fromtimestamp(int(timestamp), timezone.utc)
+        return datetime.fromtimestamp(int(timestamp), UTC)
     return dt

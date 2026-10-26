@@ -1,6 +1,6 @@
 import React from 'react';
-import { Chip, ChipProps } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { ChipProps } from '@mui/material';
+import { ColorChip, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
 
 const getColor = (status?: string): ChipProps['color'] => {
@@ -30,7 +30,7 @@ export const useGetStatusLabel = (status?: string): string | undefined => {
 };
 export const StatusChip = ({ status }: { status: string }) => {
     return (
-        <Chip
+        <ColorChip
             color={getColor(status)}
             label={useGetStatusLabel(status)}
             data-testid="validation-status-chip"

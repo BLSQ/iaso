@@ -40,6 +40,7 @@ export const getOverriddenTheme = (theme: Theme, themeConfig: ThemeConfig) => {
                 dark: secondaryColor.darken(0.2).hex(),
                 light: secondaryColor.lighten(0.2).hex(),
                 main: secondaryColor.hex(),
+                text: 'red',
             },
             warning: {
                 ...theme.palette.warning,

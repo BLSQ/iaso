@@ -12,6 +12,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
+import { useLogout } from '../hooks/useLogout';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -43,10 +44,7 @@ const WrongAccountModal: FunctionComponent<Props> = ({ isOpen }) => {
     const [open, setOpen] = useState<boolean>(isOpen);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const handleConfirm = () => {
-        setOpen(false);
-        window.location.href = '/logout-iaso';
-    };
+    const { mutate: logout, isLoading: isLoggingOut } = useLogout();
 
     return (
         <Dialog
@@ -80,9 +78,10 @@ const WrongAccountModal: FunctionComponent<Props> = ({ isOpen }) => {
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
                 <Button
-                    onClick={handleConfirm}
+                    onClick={() => logout()}
                     color="primary"
                     data-test="confirm-button"
+                    disabled={isLoggingOut}
                 >
                     {formatMessage(MESSAGES.logout)}
                 </Button>

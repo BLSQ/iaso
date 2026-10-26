@@ -3562,7 +3562,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         # 8 SELECT EXISTS reference instances
         # 9 SELECT details from reference instances
         # 10-15 UPDATES
-        expected_queries = 16
+        expected_queries = 15
 
         with self.assertNumQueries(expected_queries):
             response = self.client.get("/api/instances/?limit=3000")

@@ -126,11 +126,9 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.assertEqual(get_user_model().objects.filter(username=data["user_name"]).count(), 1)
         self.assertEqual(profile.account, self.account)
 
-        self.assertQuerySetEqual(
-            user.user_permissions.all(),
-            ["<Permission: iaso | core permission support | Formulaires>"],
-            transform=repr,
-        )
+        user_permissions = user.user_permissions.all().values_list("codename", flat=True)
+        self.assertEqual(list(user_permissions), [CORE_FORMS_PERMISSION.codename])
+
         org_units = profile.org_units.all()
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
@@ -332,11 +330,9 @@ class ProfileCreateAPITestCase(BaseProfileAPITestCase):
         self.assertEqual(get_user_model().objects.filter(username=data["user_name"]).count(), 1)
         self.assertEqual(profile.account, self.account)
 
-        self.assertQuerySetEqual(
-            user.user_permissions.all(),
-            ["<Permission: iaso | core permission support | Formulaires>"],
-            transform=repr,
-        )
+        user_permissions = user.user_permissions.all().values_list("codename", flat=True)
+        self.assertEqual(list(user_permissions), [CORE_FORMS_PERMISSION.codename])
+
         org_units = profile.org_units.all()
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")

@@ -1,8 +1,9 @@
 from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
 
 from iaso import models as m
-from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION
+from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION, CorePermissionSupport
 from iaso.test import APITestCase
 
 
@@ -27,23 +28,24 @@ class UserRoleAPITestCase(APITestCase):
         )
         cls.user_with_no_permissions = cls.create_user_with_profile(username="userNoPermission", account=account)
 
+        core_perm_content_type = ContentType.objects.get_for_model(CorePermissionSupport)
         cls.permission = Permission.objects.create(
-            name="iaso permission", content_type_id=1, codename="iaso_permission"
+            name="iaso permission", content_type=core_perm_content_type, codename="iaso_permission"
         )
 
         cls.permission1 = Permission.objects.create(
-            name="iaso permission", content_type_id=1, codename="iaso_permission1"
+            name="iaso permission", content_type=core_perm_content_type, codename="iaso_permission1"
         )
 
         cls.permission2 = Permission.objects.create(
-            name="iaso permission", content_type_id=1, codename="iaso_permission2"
+            name="iaso permission", content_type=core_perm_content_type, codename="iaso_permission2"
         )
 
         cls.permission_not_allowable = Permission.objects.create(
-            name="admin permission", content_type_id=1, codename="admin_permission1"
+            name="admin permission", content_type=core_perm_content_type, codename="admin_permission1"
         )
         cls.permission_not_allowable2 = Permission.objects.create(
-            name="admin permission", content_type_id=1, codename="admin_permission2"
+            name="admin permission", content_type=core_perm_content_type, codename="admin_permission2"
         )
         cls.group = Group.objects.create(name=str(account.id) + "user role")
 

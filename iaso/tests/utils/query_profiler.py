@@ -82,7 +82,7 @@ class QueryProfiler:
 
     def _wrapper(self, execute, sql, params, many, context):
         self._total_queries += 1
-        tables = re.findall(r'(?:FROM|UPDATE|INTO)\s+"?(\w+)"?', sql, re.IGNORECASE)
+        tables = re.findall(r'(?:FROM|UPDATE|INTO)\s+(?!UNNEST\b)"?(\w+)"?', sql, re.IGNORECASE)
         self._table_counts.update(tables)
         for table in self.trace_tables:
             if f'"{table}"' in sql:

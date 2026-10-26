@@ -40,7 +40,7 @@ const question = (
 ): Descriptor => ({ name, type, label, children });
 
 /**
- * Descriptor and answers for testdata/field_type_render_check, the same
+ * Descriptor and answers for iaso/tests/fixtures/field_type_render_check.xlsx, the same
  * submission the backend chain test imports from a mobile zip.
  */
 const formDescriptor: Descriptor = {
@@ -48,6 +48,7 @@ const formDescriptor: Descriptor = {
     type: 'survey',
     children: [
         question('q_note_intro', 'note', 'Read me'),
+        question('q_background_audio', 'background-audio', 'Background audio'),
         question('g_scalars', 'group', 'Scalars', [
             question('q_integer', 'integer', 'Integer'),
             question('q_decimal', 'decimal', 'Decimal'),
@@ -140,6 +141,7 @@ const instanceData = {
     q_audio: 'voice.mp3',
     q_video: 'clip.mp4',
     q_file: 'report.pdf',
+    q_background_audio: 'q_background_audio.m4a',
     q_calculate: '45.5',
     deviceid: '354450115013285',
     subscriberid: '608015139845644',
@@ -157,6 +159,7 @@ const files = [
     '/media/voice.mp3',
     '/media/clip.mp4',
     '/media/report.pdf',
+    '/media/q_background_audio.m4a',
 ];
 
 describe('field type render check submission', () => {
@@ -209,8 +212,13 @@ describe('field type render check submission', () => {
         );
         const documents = screen.getAllByRole('link', { name: 'document' });
         expect(documents.map(link => link.getAttribute('href'))).toEqual(
-            expect.arrayContaining(['/media/voice.mp3', '/media/report.pdf']),
+            expect.arrayContaining([
+                '/media/voice.mp3',
+                '/media/report.pdf',
+                '/media/q_background_audio.m4a',
+            ]),
         );
+        expect(screen.getByText('Background audio')).toBeInTheDocument();
         expect(screen.getByText('45.5')).toBeInTheDocument();
         expect(screen.getByText('354450115013285')).toBeInTheDocument();
         expect(screen.getByText('608015139845644')).toBeInTheDocument();

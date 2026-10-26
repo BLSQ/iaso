@@ -19,7 +19,7 @@ type Project = {
     updated_at: string;
     needs_authentication: boolean;
 };
-// fields with problems: 'background-audio', xml-external
+// xml-external is not rendered as a file. background-audio is shown like audio.
 
 // https://xlsform.org/en/#question-types
 export type FieldType =

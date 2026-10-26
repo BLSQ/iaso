@@ -1,7 +1,10 @@
-"""Chain covered by testdata/field_type_render_check/field_type_render_check.xlsx.
+"""Chain covered by iaso/tests/fixtures/field_type_render_check.xlsx.
 
-1. The workbook can be saved as a form version.
-2. A mobile bulk-upload zip of a submission for that version is imported.
+1. The workbook can be saved as a form version. background-audio q_background_audio
+   becomes an odk:recordaudio bind. The file question stays a normal upload.
+   xml-external and select_*_from_file are not in this workbook.
+2. A mobile bulk-upload zip of a submission for that version is imported, including
+   the background recording.
 3. GET /api/instances/<id>/ — the call the submission detail page makes — returns a
    form_descriptor and file_content the submission view can walk.
 """
@@ -21,13 +24,16 @@ from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMIS
 from iaso.test import APITestCase
 
 
-XLS_PATH = "testdata/field_type_render_check/field_type_render_check.xlsx"
+XLS_PATH = "iaso/tests/fixtures/field_type_render_check.xlsx"
 FORM_ID_STRING = "field_type_render_check"
 APP_ID = "field.type.render.check"
+FORM_VERSION_ID = "2026102605"
+BACKGROUND_AUDIO_FILE = "q_background_audio.m4a"
 
 # Question name -> type pyxform emits. image becomes photo; both select spellings collapse.
 EXPECTED_TYPES = {
     "q_note_intro": "note",
+    "q_background_audio": "background-audio",
     "g_scalars": "group",
     "g_scalars/q_integer": "integer",
     "g_scalars/q_decimal": "decimal",
@@ -97,6 +103,7 @@ EXPECTED_ANSWERS = {
     "q_audio": "voice.mp3",
     "q_video": "clip.mp4",
     "q_file": "report.pdf",
+    "q_background_audio": BACKGROUND_AUDIO_FILE,
     "q_calculate": "45.5",
     "deviceid": "354450115013285",
     "subscriberid": "608015139845644",
@@ -114,6 +121,7 @@ MEDIA_FILES = {
     "voice.mp3": b"not-really-audio",
     "clip.mp4": b"not-really-video",
     "report.pdf": b"%PDF-1.1\n",
+    BACKGROUND_AUDIO_FILE: b"not-really-background-audio",
 }
 
 PARENT_TYPES = {"group", "repeat", "survey"}
@@ -171,6 +179,7 @@ def submission_xml(version_id):
     answers = EXPECTED_ANSWERS
     return f"""<?xml version='1.0' ?>
 <data id="{FORM_ID_STRING}" version="{version_id}">
+  <q_background_audio>{answers["q_background_audio"]}</q_background_audio>
   <g_scalars>
     <q_integer>{answers["q_integer"]}</q_integer>
     <q_decimal>{answers["q_decimal"]}</q_decimal>
@@ -282,7 +291,7 @@ class FieldTypeRenderCheckChainTest(APITestCase):
             )
         self.assertEqual(version_response.status_code, status.HTTP_201_CREATED, version_response.content)
         version_id = version_response.json()["version_id"]
-        self.assertEqual(version_id, "2026102306")
+        self.assertEqual(version_id, FORM_VERSION_ID)
 
         self.form.refresh_from_db()
         self.assertEqual(self.form.form_id, FORM_ID_STRING)
@@ -301,8 +310,19 @@ class FieldTypeRenderCheckChainTest(APITestCase):
             self.assertEqual(choice_names, {"red", "green", "blue"})
 
         form_xml = form_version.file.read().decode()
-        self.assertNotIn("<recordaudio", form_xml)
+        self.assertIn(
+            '<odk:recordaudio ref="/data/q_background_audio" event="odk-instance-load"/>',
+            form_xml,
+        )
+        self.assertIn('<bind nodeset="/data/q_background_audio" type="binary"/>', form_xml)
+        self.assertIn('<upload mediatype="application/*" ref="/data/g_media/q_file">', form_xml)
         self.assertNotIn("jr://file", form_xml)
+        self.assertNotIn("q_xml_external", form_xml)
+        self.assertNotIn("items.csv", form_xml)
+
+        background = find_question(descriptor, "q_background_audio")
+        self.assertEqual(background["type"], "background-audio")
+        self.assertEqual(find_question(descriptor, "q_file")["type"], "file")
 
         zip_buffer = mobile_zip(self.form.id, self.org_unit.id, version_id)
         upload_response = self.client.post(

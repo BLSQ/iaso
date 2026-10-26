@@ -4,6 +4,9 @@ import { useFormik } from 'formik';
 import moment from 'moment';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useApiErrorValidation } from 'Iaso/libs/validation';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
+import { configsToLevels } from '../components/orgUnitLevels/utils';
 import { PageMode, Planning } from '../types';
 import {
     convertAPIErrorsToState,
@@ -17,8 +20,10 @@ const toDatePickerFormat = (date?: string) =>
 
 export const usePlanningForm = (
     planning: Planning | undefined,
+    savedConfigs: SavedPlanningConfig[],
     mode: PageMode,
 ) => {
+    const { tab } = useParamsObject(baseUrls.planningDetails);
     const redirectToReplace = useRedirectToReplace();
     const onSaveSuccess = useCallback(
         (result: Planning) => {
@@ -26,12 +31,16 @@ export const usePlanningForm = (
                 redirectToReplace(baseUrls.planningDetails, {
                     mode: 'edit',
                     planningId: `${result.id}`,
+                    tab,
                 });
             }
         },
-        [mode, redirectToReplace],
+        [mode, redirectToReplace, tab],
     );
-    const { mutateAsync: savePlanning } = useSavePlanning({ type: mode });
+    const { mutateAsync: savePlanning } = useSavePlanning({
+        type: mode,
+        savedConfigs,
+    });
     const {
         apiErrors,
         payload,
@@ -53,6 +62,9 @@ export const usePlanningForm = (
             description: planning?.description,
             publishingStatus: planning?.published_at ? 'published' : 'draft',
             missions: planning?.missions,
+            selectedOrgUnit: planning?.org_unit_details?.id,
+            selectedTeam: planning?.team_details?.id,
+            levels: configsToLevels(savedConfigs),
         },
         enableReinitialize: true,
         validateOnBlur: true,

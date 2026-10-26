@@ -278,10 +278,11 @@ describe('Mission edit integration test', () => {
         expect(
             screen.getByRole('textbox', { name: /description/i }),
         ).toHaveValue('some description');
-
-        expect(
-            screen.getByRole('combobox', { name: /entity type/i }),
-        ).toHaveValue('ET 1');
+        await waitFor(() => {
+            expect(
+                screen.getByRole('combobox', { name: /entity type/i }),
+            ).toHaveValue('ET 1');
+        });
         expect(
             screen.getByRole('textbox', { name: /min cardinality/i }),
         ).toHaveValue('12');
@@ -321,9 +322,12 @@ describe('Mission edit integration test', () => {
             screen.getByRole('textbox', { name: /description/i }),
         ).toHaveValue('some description');
 
-        expect(
-            screen.getByRole('combobox', { name: /org unit type/i }),
-        ).toHaveValue('OUT 1');
+        await waitFor(() => {
+            expect(
+                screen.getByRole('combobox', { name: /org unit type/i }),
+            ).toHaveValue('OUT 1');
+        });
+
         expect(
             screen.getByRole('textbox', { name: /min cardinality/i }),
         ).toHaveValue('12');

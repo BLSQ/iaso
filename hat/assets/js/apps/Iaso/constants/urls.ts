@@ -517,6 +517,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'planningId',
             'mode',
             'newMissionId',
+            'tab',
             ...paginationPathParams,
         ],
     },

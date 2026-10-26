@@ -16,7 +16,7 @@ import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
-import { LinkToPlanning } from '../plannings/components/LinkToPlanning';
+import { LinkToPlanning } from '../plannings/components/shared/LinkToPlanning';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { userHasOneOfPermissions, userHasPermission } from '../users/utils';
 import MESSAGES from './messages';

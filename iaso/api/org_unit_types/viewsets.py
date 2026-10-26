@@ -1,7 +1,7 @@
-from django.db.models import Prefetch, Q
+from django.db.models import F, Func, IntegerField, Min, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, status
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -12,11 +12,12 @@ from iaso.api.permission_checks import (
     IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
 )
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
-from iaso.models import Form, OrgUnitType, Project
+from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
 from .serializers import (
+    OrgUnitTypeDescendantSerializer,
     OrgUnitTypeHierarchySerializer,
     OrgUnitTypesDropdownSerializer,
     OrgUnitTypeSerializerV1,
@@ -215,6 +216,37 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
         except OrgUnitType.DoesNotExist:
             return Response({"error": "Org unit type not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+        serializer_class=OrgUnitTypeDescendantSerializer,
+        url_path="descendants",
+    )
+    def descendants(self, request):
+        """
+        Org unit types of the valid org units below an org unit, ordered by depth.
+
+        GET /api/v2/orgunittypes/descendants/?orgUnitId={id}
+        """
+        try:
+            org_unit_id = int(request.query_params["orgUnitId"])
+        except (KeyError, ValueError):
+            raise serializers.ValidationError({"orgUnitId": "A valid org unit id is required"})
+        parent = OrgUnit.objects.filter_for_user(request.user).filter(pk=org_unit_id).first()
+        if not parent:
+            return Response({"error": "Org unit not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        path_depth = Func(F("path"), function="nlevel", output_field=IntegerField())
+        types = (
+            OrgUnit.objects.filter_for_user(request.user)
+            .descendants(parent)
+            .filter(validation_status=OrgUnit.VALIDATION_VALID, org_unit_type__isnull=False)
+            .values("org_unit_type_id", "org_unit_type__name")
+            .annotate(depth=Min(path_depth) - len(parent.path))
+            .order_by("depth", "org_unit_type__name")
+        )
+        return Response(self.get_serializer(types, many=True).data)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

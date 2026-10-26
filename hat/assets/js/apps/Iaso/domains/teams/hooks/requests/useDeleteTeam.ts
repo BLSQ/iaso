@@ -7,6 +7,9 @@ import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
 import MESSAGES from '../../messages';
 
+export const deleteTeam = (teamId: number) =>
+    deleteRequest(`/api/teams/${teamId}/`);
+
 type useDeleteArgs = {
     params: TeamUrlParams;
     count: number;
@@ -26,7 +29,7 @@ export const useDeleteTeam = ({
     });
 
     return useSnackMutation({
-        mutationFn: body => deleteRequest(`/api/teams/${body.id}/`),
+        mutationFn: body => deleteTeam(body.id),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         options: {

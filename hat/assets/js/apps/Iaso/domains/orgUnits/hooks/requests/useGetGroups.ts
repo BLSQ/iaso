@@ -14,6 +14,8 @@ const queryParamsMap = new Map([
     ['appId', 'app_id'],
     ['projectIds', 'projectIds'],
     ['defaultVersion', 'defaultVersion'],
+    ['orgUnitTypeIds', 'orgUnitTypeIds'],
+    ['orgUnitParentId', 'orgUnitParentId'],
 ]);
 
 type ApiParams = {
@@ -25,6 +27,8 @@ type ApiParams = {
     app_id?: string;
     defaultVersion?: string;
     projectIds?: string;
+    orgUnitTypeIds?: string;
+    orgUnitParentId?: number;
 };
 type Params = {
     dataSourceId?: number;
@@ -35,6 +39,9 @@ type Params = {
     appId?: string;
     defaultVersion?: string;
     projectIds?: string;
+    // Keep groups holding org units of these types, under orgUnitParentId when given.
+    orgUnitTypeIds?: string;
+    orgUnitParentId?: number;
 };
 export const useGetGroupDropdown = (
     params: Params,

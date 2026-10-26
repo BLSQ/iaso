@@ -7,13 +7,17 @@ RUN apt-get update && apt-get --yes install \
 	gettext-base \
 	postgresql-client \
 	libgdal-dev \
+    ca-certificates \
 	&&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
 
 # install python dependencies
 COPY pyproject.toml /opt/app/pyproject.toml
-RUN pip install uv
+
+# install pinned uv version
+COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
+
 # make uv use the system python and install everything in the system, not in a .venv
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system

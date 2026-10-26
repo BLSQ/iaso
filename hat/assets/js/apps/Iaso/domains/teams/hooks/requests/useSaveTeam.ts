@@ -14,7 +14,7 @@ export type SaveTeamQuery = {
     project: number;
     type?: TeamType;
     users: Array<number>;
-    parent?: number;
+    parent?: number | null;
     color?: string;
 };
 
@@ -42,7 +42,7 @@ export const convertAPIErrorsToState = (data: Record<string, string>) => {
 
 const ENDPOINT = '/api/teams/';
 
-const patchTeam = async (body: Partial<SaveTeamQuery>) => {
+export const patchTeam = async (body: Partial<SaveTeamQuery>) => {
     const url = `${ENDPOINT}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };

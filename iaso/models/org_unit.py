@@ -26,6 +26,7 @@ from ..utils.expressions import ArraySubquery
 from ..utils.gis import simplify_geom
 from ..utils.models.common import get_creator_name
 from ..utils.models.soft_deletable import SoftDeletableModel
+from .missions import MissionArtefact
 from .project import Project
 
 
@@ -275,7 +276,7 @@ class OrgUnitManager(models.Manager):
         return q
 
 
-class OrgUnit(TreeModel):
+class OrgUnit(MissionArtefact, TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
     VALIDATION_REJECTED = "REJECTED"

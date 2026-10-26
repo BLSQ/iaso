@@ -411,59 +411,59 @@ msgstr "ID de source de données"
 msgid "Validation status"
 msgstr "Statut de validation"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "You cannot create or edit an Org unit of this type"
 msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 #, python-brace-format
 msgid "Invalid validation status : {validation_status}"
 msgstr "Statut de validation invalide : {validation_status}"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Can't parse geo_json"
 msgstr "Impossible d'analyser le champ geo_json"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "You cannot create an Org Unit without a parent"
 msgstr "Vous ne pouvez pas créer une unité organisationnelle sans parent"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
 "cette version"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Org unit name is required"
 msgstr "Le nom de l'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Unauthorized version id"
 msgstr "ID de version non autorisé"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Opening date must be anterior to closed date"
 msgstr "La date d'ouverture doit être antérieure à la date de fermeture"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Org unit type is required"
 msgstr "Le type d'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Parent is not in the same version"
 msgstr "Le parent n'est pas dans la même version"
 
@@ -962,6 +962,10 @@ msgstr "Unité organisationnelle et formulaire"
 #: iaso/models/missions.py
 msgid "Entity and Form"
 msgstr "Entité et formulaire"
+
+#: iaso/models/missions.py
+msgid "The mission it fulfills, within planning"
+msgstr "La mission qu'elle remplit, dans le cadre de la planification"
 
 #: iaso/models/org_unit.py
 msgid "Country"

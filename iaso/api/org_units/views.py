@@ -6,7 +6,7 @@ import tempfile
 from copy import deepcopy
 from datetime import datetime
 from time import gmtime, strftime
-from typing import Dict, List, Union
+from typing import Union
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -37,68 +37,19 @@ from iaso.models.microplanning import Assignment
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
-    CORE_ORG_UNITS_READ_PERMISSION,
-    CORE_REGISTRY_READ_PERMISSION,
-    CORE_REGISTRY_WRITE_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
 )
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
-from ..plugins import extra_org_unit_permissions
-from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
-from .serializers import OrgUnitImportSerializer
+from ...utils.models.common import get_creator_name, get_org_unit_parents_ref
+from .permissions import HasCreateOrgUnitPermission, HasOrgUnitPermission
+from .utils import import_org_units
 
 
 logger = logging.getLogger(__name__)
 
-# noinspection PyMethodMayBeStatic
 
-
-class HasCreateOrgUnitPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if not request.user.is_authenticated:
-            return False
-
-        if not request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()):
-            return False
-
-        return True
-
-
-class HasOrgUnitPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if obj.version.data_source.public and request.method == "GET":
-            return True
-
-        required_perms = [
-            request.user.has_perm(CORE_FORMS_PERMISSION.full_name()),
-            request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()),
-            request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()),
-            request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name()),
-            request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name()),
-            request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name()),
-        ]
-        required_perms.extend(extra_org_unit_permissions(request.user))
-
-        if not (request.user.is_authenticated and any(required_perms)):
-            return False
-
-        read_only = request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()) and not request.user.has_perm(
-            CORE_ORG_UNITS_PERMISSION.full_name()
-        )
-        if (read_only or obj.version.data_source.read_only) and request.method != "GET":
-            return False
-
-        # TODO: can be handled with get_queryset()
-        user_account = request.user.iaso_profile.account
-        projects = obj.version.data_source.projects.all()
-        account_ids = [p.account_id for p in projects]
-
-        return user_account.id in account_ids
-
-
-# noinspection PyMethodMayBeStatic
 @extend_schema(tags=["Org units"])
 class OrgUnitViewSet(viewsets.ViewSet):
     f"""Org units API
@@ -1104,32 +1055,3 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res = {key: value for key, value in res.items() if key in wanted_fields}
 
         return Response(res)
-
-
-def import_org_units(org_units: List[Dict], user, app_id):
-    """Import a list of org units."""
-    new_org_units = []
-    project = Project.objects.get_for_user_and_app_id(user, app_id)
-    version = project.account.default_version
-    if version.data_source.read_only:
-        raise ValidationError("Creation of org unit not authorized on default data source")
-
-    # common values to all new org units
-    extra_save_kwargs = {
-        "custom": True,
-        "validation_status": OrgUnit.VALIDATION_NEW,
-        "version": version,
-        "creator": user if (user and not user.is_anonymous) else None,
-    }
-
-    for org_unit_data in org_units:
-        uuid = org_unit_data.get("id")
-        if OrgUnit.objects.filter(uuid=uuid, version=version).exists():
-            continue  # skip existing org units
-
-        serializer = OrgUnitImportSerializer(data=org_unit_data)
-        serializer.is_valid(raise_exception=True)
-        new_org_unit = serializer.save(**extra_save_kwargs)
-        new_org_units.append(new_org_unit)
-
-    return new_org_units

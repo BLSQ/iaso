@@ -15,6 +15,8 @@ class DumperTestCase(PyramidBaseTest):
     Test Dumper.
     """
 
+    maxDiff = None
+
     def test_dump_as_json_for_partial_update(self):
         """
         Test `Dumper.as_json()` for a partial update.
@@ -73,6 +75,8 @@ class DumperTestCase(PyramidBaseTest):
                     "default_image": None,
                     "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
+                    "mission": None,
+                    "planning": None,
                 },
                 "orgunit_ref": {
                     "id": self.angola_country_to_compare_with.pk,
@@ -101,6 +105,8 @@ class DumperTestCase(PyramidBaseTest):
                     "default_image": None,
                     "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
+                    "mission": None,
+                    "planning": None,
                 },
                 "orgunit_dhis2": {
                     "id": self.angola_country_to_update.pk,
@@ -129,6 +135,8 @@ class DumperTestCase(PyramidBaseTest):
                     "default_image": None,
                     "code": self.code_angola_to_update,
                     "reference_instances": [],
+                    "mission": None,
+                    "planning": None,
                 },
                 "status": Differ.STATUS_MODIFIED,
                 "comparisons": [
@@ -210,6 +218,8 @@ class DumperTestCase(PyramidBaseTest):
                     "default_image": None,
                     "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
+                    "mission": None,
+                    "planning": None,
                 },
                 "orgunit_ref": {
                     "id": self.angola_country_to_compare_with.pk,
@@ -238,6 +248,8 @@ class DumperTestCase(PyramidBaseTest):
                     "default_image": None,
                     "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
+                    "mission": None,
+                    "planning": None,
                 },
                 "orgunit_dhis2": None,
                 "status": Differ.STATUS_NEW,

@@ -1,12 +1,15 @@
 import datetime
+import logging
 
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status
 
-from iaso.api.mobile.org_units import SHAPE_RESULTS_MAX
+from iaso.api.org_units.pagination import SHAPE_RESULTS_MAX
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.models import (
     Account,
@@ -17,11 +20,15 @@ from iaso.models import (
     Group,
     Instance,
     InstanceFile,
+    MissionForm,
+    MissionOrgUnitType,
     OrgUnit,
     OrgUnitReferenceInstance,
     OrgUnitType,
+    Planning,
     Project,
     SourceVersion,
+    Team,
 )
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
@@ -35,6 +42,7 @@ BASE_APP_ID = "dragon.ball.saiyans"
 class MobileOrgUnitAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        super().setUpTestData()
         cls.account = account = Account.objects.create(name="Dragon Ball")
         cls.account2 = account2 = Account.objects.create(name="Saint Seiya")
         cls.project = project = Project.objects.create(
@@ -49,12 +57,22 @@ class MobileOrgUnitAPITestCase(APITestCase):
             account=account,
             needs_authentication=False,
         )
+        cls.project_other_account = Project.objects.create(
+            name="project_other_account",
+            app_id="project.other.account",
+            account=account2,
+            needs_authentication=False,
+        )
         cls.user = user = cls.create_user_with_profile(
             username="user", account=account, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
         cls.user2 = cls.create_user_with_profile(
             username="user2", account=account2, permissions=[CORE_ORG_UNITS_PERMISSION]
         )
+
+        cls.team = Team.objects.create(project=cls.project, name="team1", manager=user)
+        cls.team2 = Team.objects.create(project=cls.project2, name="team2", manager=cls.user2)
+
         cls.sw_source = sw_source = DataSource.objects.create(name="Vegeta Planet")
         sw_source.projects.add(project)
         cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
@@ -132,6 +150,65 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         group_2.org_units.set([bardock, goku])
         user.iaso_profile.org_units.set([raditz, goku])
+
+        # creating missions
+
+        # out
+
+        cls.out = OrgUnitType.objects.create(name="out")
+        cls.out_2 = OrgUnitType.objects.create(name="out2")
+        cls.out_3 = OrgUnitType.objects.create(name="out2")
+
+        cls.out.projects.add(cls.project)
+        cls.out_2.projects.add(cls.project)
+
+        # forms
+        cls.form_1 = Form.objects.create(name="form_1")
+        cls.form_2 = Form.objects.create(name="form_2")
+        cls.form_3 = Form.objects.create(name="form_3")
+
+        cls.form_1.projects.add(cls.project)
+        cls.form_2.projects.add(cls.project)
+        cls.form_3.projects.add(cls.project)
+
+        # missions
+        cls.mission_form_1 = MissionForm.objects.create(name="mission_form_1", account=cls.account)
+
+        cls.mission_out_1 = MissionOrgUnitType.objects.create(
+            name="mission_out_1", account=cls.account, org_unit_type=cls.out, min_cardinality=1, max_cardinality=3
+        )
+        cls.mission_soft_deleted = MissionOrgUnitType.objects.create(
+            name="mission_out_soft_deleted",
+            account=cls.account,
+            org_unit_type=cls.out,
+            min_cardinality=1,
+            max_cardinality=3,
+            deleted_at=timezone.now(),
+        )
+        cls.mission_out_2 = MissionOrgUnitType.objects.create(
+            name="mission_out_2", account=cls.account2, org_unit_type=cls.out_2, min_cardinality=2, max_cardinality=4
+        )
+
+        # creating plannings
+        cls.org_unit = OrgUnit.objects.create(name="ou")
+
+        cls.planning = Planning.objects.create(
+            name="Test Planning", project=cls.project, team=cls.team, org_unit=cls.org_unit
+        )
+        cls.soft_deleted_planning = Planning.objects.create(
+            project=cls.project, team=cls.team, org_unit=cls.org_unit, deleted_at=timezone.now()
+        )
+        cls.other_account_planning = Planning.objects.create(
+            name="Other planning", project=cls.project_other_account, team=cls.team2, org_unit=cls.org_unit
+        )
+
+    def setUp(self):
+        super().setUp()
+        logging.disable(logging.NOTSET)
+
+    def tearDown(self):
+        super().tearDown()
+        logging.disable(logging.CRITICAL)
 
     def test_orgunits_list_without_auth_for_project_requiring_auth(self):
         """GET /mobile/orgunits/ without auth for project which requires it: 401"""
@@ -639,3 +716,352 @@ class MobileOrgUnitAPITestCase(APITestCase):
             exception_contains_string="Could not find project for user",
             exception_contains_code="404",
         )
+
+    def test_create_org_unit_from_different_level_from_mobile(self):
+        self.client.force_authenticate(self.user)
+
+        ou_type = OrgUnitType.objects.create(name="Test_type")
+        org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
+        count_of_orgunits = OrgUnit.objects.all().count()
+
+        data = [
+            {
+                "id": "26668d58-7604-40bb-b783-71c2a2b3e6d1",
+                "name": "A",
+                "time": 1675099612000,
+                "accuracy": 1.5,
+                "altitude": 115.0,
+                "latitude": 50.82521833333333,
+                "longitude": 4.353595,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099611.938,
+                "updated_at": 1675099611.938,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "5738b6b9-88f7-49ee-a211-632030f68f46",
+                "name": "Bluesquare ",
+                "time": 1674833629688,
+                "accuracy": 15.67,
+                "altitude": 127.80000305175781,
+                "latitude": 50.8369448,
+                "longitude": 4.3999539,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1674833640.146,
+                "updated_at": 1674833640.146,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "76097602-92ed-45dd-a15a-a81c3fa44461",
+                "name": "Saint+Luc",
+                "time": 1675099739000,
+                "accuracy": 2.2,
+                "altitude": 113.6,
+                "latitude": 50.825905,
+                "longitude": 4.351918333333333,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099740.112,
+                "updated_at": 1675099740.112,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "8818ed97-f238-4a9c-be90-19621af7edd5",
+                "name": "Martin's place",
+                "time": 1675099856000,
+                "accuracy": 2.1,
+                "altitude": 111.6,
+                "latitude": 50.826703333333334,
+                "longitude": 4.350505,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099855.568,
+                "updated_at": 1675099855.568,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "8c646641-499d-4d65-aafb-5c98ef997e45",
+                "name": "Delicelte",
+                "time": 1675079431779,
+                "accuracy": 11.483,
+                "altitude": 110.5999984741211,
+                "latitude": 50.8376697,
+                "longitude": 4.3963584,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079445.755,
+                "updated_at": 1675079445.755,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "98524cec-fc7d-4fcf-8353-b000786e765f",
+                "name": "Crayon",
+                "time": 1675099637000,
+                "accuracy": 2.6,
+                "altitude": 115.5,
+                "latitude": 50.82513166666666,
+                "longitude": 4.353408333333333,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099637.062,
+                "updated_at": 1675099637.062,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "b579bba1-622c-4001-90bb-62f85a4ffbd1",
+                "name": "mevan",
+                "time": 1675079921000,
+                "accuracy": 2.1,
+                "altitude": 115.30000000000001,
+                "latitude": 50.8376,
+                "longitude": 4.396518333333333,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079920.602,
+                "updated_at": 1675079920.602,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "b779e108-8f2a-48af-aa9e-7f1642cfe5bc",
+                "name": "Pizza Mniam Mniam",
+                "time": 1675079730000,
+                "accuracy": 1.5,
+                "altitude": 115.5,
+                "latitude": 50.837444999999995,
+                "longitude": 4.396443333333334,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079729.65,
+                "updated_at": 1675079729.65,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "name": "Some_New_STUF",
+                "time": 1675099587000,
+                "accuracy": 1.9,
+                "altitude": 113.3,
+                "latitude": 50.82527666666667,
+                "longitude": 4.35383,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675099586.754,
+                "updated_at": 1675099586.755,
+                "org_unit_type_id": ou_type.pk,
+            },
+        ]
+
+        response = self.client.post(
+            f"/api/mobile/orgunits/?app_id={BASE_APP_ID}",
+            data=data,
+            format="json",
+        )
+        new_count = OrgUnit.objects.all().count()
+
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        # ensure results are ordered by creation date ascending and that extra white spaces are trimmed
+        self.assertIn(result[0]["name"], "Bluesquare")
+        self.assertEqual(new_count, count_of_orgunits + 9)
+        saved_org_unit = OrgUnit.objects.get(uuid="5738b6b9-88f7-49ee-a211-632030f68f46")
+        self.assertEqual(saved_org_unit.name, "Bluesquare")
+        self.assertEqual(saved_org_unit.source_created_at.timestamp(), 1674833640)
+
+    def test_create_org_unit_mobile_already_exists(self):
+        self.client.force_authenticate(self.user)
+
+        ou_type = OrgUnitType.objects.create(name="Test_type")
+        org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
+        starting_count = OrgUnit.objects.all().count()
+        url = f"/api/mobile/orgunits/?app_id={BASE_APP_ID}"
+
+        data = [
+            {
+                "id": "26668d58-7604-40bb-b783-71c2a2b3e6d1",
+                "name": "A",
+                "time": 1675099612000,
+                "accuracy": 1.5,
+                "altitude": 115.0,
+                "latitude": 50.82521833333333,
+                "longitude": 4.353595,
+                "parent_id": None,
+                "created_at": 1665099611.938,
+                "updated_at": 1665099611.938,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "5738b6b9-88f7-49ee-a211-632030f68f46",
+                "name": "Bluesquare ",
+                "time": 1674833629688,
+                "accuracy": 15.67,
+                "altitude": 127.80000305175781,
+                "latitude": 50.8369448,
+                "longitude": 4.3999539,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1674833640.146,
+                "updated_at": 1674833640.146,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "76097602-92ed-45dd-a15a-a81c3fa44461",
+                "name": "Saint+Luc",
+                "time": 1675099739000,
+                "accuracy": 2.2,
+                "altitude": 113.6,
+                "latitude": 50.825905,
+                "longitude": 4.351918333333333,
+                "parent_id": None,
+                "created_at": 1685099740.112,
+                "updated_at": 1685099740.112,
+                "org_unit_type_id": ou_type.pk,
+            },
+        ]
+
+        data_single_unit = [data[1]]
+
+        # post a single org unit
+        response = self.client.post(url, data=data_single_unit, format="json")
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertAPIImport("orgUnit", request_body=data_single_unit, has_problems=False)
+        new_count = OrgUnit.objects.all().count()
+        self.assertEqual(new_count, starting_count + 1)
+        self.assertEqual(len(result), 1)
+
+        # post the same org unit a second time
+        response = self.client.post(url, data=data_single_unit, format="json")
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertAPIImport("orgUnit", request_body=data_single_unit, has_problems=False)
+        new_count = OrgUnit.objects.all().count()
+        self.assertEqual(new_count, starting_count + 1)
+        self.assertEqual(len(result), 0)
+
+        # now do it again with all the data
+        response = self.client.post(url, data=data, format="json")
+        new_count = OrgUnit.objects.all().count()
+        result = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertAPIImport("orgUnit", request_body=data, has_problems=False)
+        self.assertEqual(new_count, starting_count + 3)
+        # only the newly created org units will be returned in the api response
+        self.assertEqual(len(result), 2)
+
+    def test_create_with_mission_and_planning_id_raise_an_error_if_not_belonging_to_user(self):
+        self.client.force_authenticate(self.user)
+
+        with self.subTest("planning"):
+            data = [
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                    "planning_id": self.other_account_planning.id,
+                }
+            ]
+            response = self.client.post(
+                f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+                data=data,
+            )
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+            self.assertAPIImport(
+                "orgUnit", request_body=data, has_problems=True, exception_contains_string="planning_id"
+            )
+
+        with self.subTest("mission"):
+            data = [
+                {
+                    "id": "123",
+                    "name": "My OrgUnit",
+                    "time": 0,
+                    "created_at": 1698310800.0,
+                    "updated_at": 1698310800.0,
+                    "mission_id": self.mission_out_2.id,
+                }
+            ]
+            response = self.client.post(
+                f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+                data=data,
+            )
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+            self.assertAPIImport(
+                "orgUnit", request_body=data, has_problems=True, exception_contains_string="mission_id"
+            )
+
+        # todo: kind of odd that the api returns a 200 but nothing is created ...
+        self.assertFalse(
+            OrgUnit.objects.filter(
+                Q(planning_id=self.other_account_planning.id) | Q(mission_id=self.mission_out_2.id)
+            ).exists()
+        )
+
+    def test_create_with_mission_and_planning_allows_soft_deleted(self):
+        self.assertIsNotNone(self.soft_deleted_planning.deleted_at)
+        self.assertIsNotNone(self.mission_soft_deleted.deleted_at)
+
+        self.client.force_authenticate(self.user)
+        data = [
+            {
+                "id": "123",
+                "name": "My OrgUnit",
+                "time": 0,
+                "created_at": 1698310800.0,
+                "updated_at": 1698310800.0,
+                "mission_id": self.mission_soft_deleted.id,
+                "planning_id": self.soft_deleted_planning.id,
+            }
+        ]
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+            data=data,
+        )
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(res_data), 1)
+        ou = OrgUnit.objects.get(pk=res_data[0]["id"])
+        self.assertEqual(ou.mission.id, self.mission_soft_deleted.id)
+        self.assertEqual(ou.planning.id, self.soft_deleted_planning.id)
+
+    def test_create_with_mission_and_planning_id_happy_path(self):
+        self.client.force_authenticate(self.user)
+        data = [
+            {
+                "id": "123",
+                "name": "My OrgUnit",
+                "time": 0,
+                "created_at": 1698310800.0,
+                "updated_at": 1698310800.0,
+                "mission_id": self.mission_out_1.id,
+                "planning_id": self.planning.id,
+            }
+        ]
+        response = self.client.post(
+            f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+            data=data,
+        )
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(len(res_data), 1)
+        ou = OrgUnit.objects.get(pk=res_data[0]["id"])
+        self.assertEqual(ou.mission.id, self.mission_out_1.id)
+        self.assertEqual(ou.planning.id, self.planning.id)
+
+    def test_create_with_wrong_mission_type_assert_log(self):
+        self.client.force_authenticate(self.user)
+        data = [
+            {
+                "id": "123",
+                "name": "My OrgUnit",
+                "time": 0,
+                "created_at": 1698310800.0,
+                "updated_at": 1698310800.0,
+                "mission_id": self.mission_form_1.id,
+            }
+        ]
+        with self.assertLogs(logger="iaso.api.org_units.serializers.misc", level="WARNING") as l:
+            response = self.client.post(
+                f"{BASE_URL}?{APP_ID}={self.project.app_id}",
+                data=data,
+            )
+
+        log_record = l.records[-1]
+        self.assertEqual(log_record.message, "Unexpected mission type")
+        self.assertEqual(log_record.mission_id, self.mission_form_1.id)
+        self.assertEqual(log_record.mission_type, self.mission_form_1.MISSION_TYPE)
+        self.assertEqual(log_record.org_unit_uuid, "123")
+        self.assertEqual(vars(log_record)["from"], "org_unit_creation")
+        self.assertEqual(log_record.model, "OrgUnit")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertTrue(OrgUnit.objects.filter(mission_id=self.mission_form_1.id).exists())

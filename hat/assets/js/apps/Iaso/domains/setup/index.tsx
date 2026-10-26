@@ -12,6 +12,7 @@ import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import { ModulesDropdown } from 'Iaso/domains/modules/components/ModulesDropdown';
+import { useLogout } from 'Iaso/domains/users/hooks/useLogout';
 import InputComponent from '../../components/forms/InputComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -58,6 +59,7 @@ export const SetupAccount = () => {
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const { mutate: logout, isLoading: isLoggingOut } = useLogout();
     const isAdmin = currentUser.is_superuser || currentUser.is_staff;
 
     const { mutateAsync: saveAccount, isLoading } = useSaveAccount();
@@ -161,8 +163,9 @@ export const SetupAccount = () => {
                                         <Button
                                             size="small"
                                             color="primary"
-                                            href="/logout-iaso"
+                                            onClick={() => logout()}
                                             variant="contained"
+                                            disabled={isLoggingOut}
                                         >
                                             <Box
                                                 mr={1}

@@ -5,15 +5,15 @@
     "author": "Bluesquare",
     "license": "Apache-2.0",
     "engines": {
-        "node": "22.18.0",
+        "node": "22.23.4",
         "npm": "11.19.0"
     },
     "packageManager": "npm@11.19.0",
     "scripts": {
-        "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\"",
-        "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
+        "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\"",
+        "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
         "fix-lint-pre-commit": "eslint --cache --fix",
-        "export-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" \"./plugins/polio/js/**/*.{js,jsx,ts,tsx}\" -f html -o ./hat/assets/js/lintErrors.html",
+        "export-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" -f html -o ./hat/assets/js/lintErrors.html",
         "orval": "orval",
         "test": "vitest --config vitest.config.ts --project integration --project unit --project a11y --run",
         "test:api-e2e": "vitest --config vitest.config.ts --project api-e2e --run",
@@ -131,6 +131,7 @@
         "@eslint/js": "^9.27.0",
         "@faker-js/faker": "^10.3.0",
         "@formatjs/cli": "^4.8.2",
+        "@orval/query": "^8.41.0",
         "@playwright/test": "^1.58.2",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^14.0.0",

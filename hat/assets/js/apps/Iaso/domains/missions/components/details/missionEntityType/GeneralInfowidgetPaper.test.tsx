@@ -1,0 +1,45 @@
+import React from 'react';
+import { faker } from '@faker-js/faker';
+import { screen } from '@testing-library/react';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock } from 'Iaso/api/missions/endpoints/missions/missions.msw';
+import { renderWithThemeAndIntlProvider } from '../../../../../../../tests/helpers';
+import { GeneralInfoWidgetPaper } from './GeneralInfoWidgetPaper';
+
+describe('GeneralInfoWidgetPaper test', () => {
+    beforeAll(() => {
+        faker.seed(1);
+    });
+
+    it('renders an inclusive icon if no max cardinality', () => {
+        renderWithThemeAndIntlProvider(
+            <GeneralInfoWidgetPaper
+                // @ts-ignore
+                mission={getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock(
+                    {
+                        max_cardinality: null,
+                        mission_type_label: 'Entity',
+                        mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
+                    },
+                )}
+            />,
+        );
+        expect(screen.getByTestId('AllInclusiveIcon')).toBeInTheDocument();
+    });
+
+    it('renders max cardinality if provided', () => {
+        renderWithThemeAndIntlProvider(
+            <GeneralInfoWidgetPaper
+                // @ts-ignore
+                mission={getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock(
+                    {
+                        max_cardinality: 12,
+                        mission_type_label: 'Entity',
+                        mission_type: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
+                    },
+                )}
+            />,
+        );
+        expect(screen.getByText(12)).toBeInTheDocument();
+    });
+});

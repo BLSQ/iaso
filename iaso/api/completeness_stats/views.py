@@ -30,7 +30,7 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
-from typing import List, Union
+from typing import Any, List, Union
 
 import rest_framework.renderers
 
@@ -45,7 +45,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from iaso.models import Instance, OrgUnit, OrgUnitType
+from iaso.models import Instance, MissionFormThroughForm, MissionWithForms, OrgUnit, OrgUnitType
 from iaso.permissions.core_permissions import (
     CORE_COMPLETENESS_STATS_PERMISSION,
     CORE_REGISTRY_READ_PERMISSION,
@@ -83,7 +83,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         ),  # type: ignore
     ]  # type: ignore
 
-    def list(self, request: Request, *args, **kwargs) -> Response:
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Completeness of form submission"""
         paramsSerializer = ParamSerializer(data=request.query_params, context={"request": request})
         paramsSerializer.is_valid(raise_exception=True)
@@ -106,7 +106,11 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             instance_qs = instance_qs.filter(period=period)
         if planning:
             instance_qs = instance_qs.filter(planning=planning)
-            form_qs = form_qs.filter(plannings=planning)
+            form_qs = form_qs.filter(
+                id__in=MissionFormThroughForm.objects.filter(
+                    mission_form__in=MissionWithForms.objects.filter(plannings=planning)
+                ).values("form_id")
+            ).distinct("id")
 
         # filter instance_qs on users related to selected teams
         if teams:
@@ -339,7 +343,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         )
 
     @action(methods=["GET"], detail=False)
-    def types_for_version_ou(self, request):
+    def types_for_version_ou(self, request: Request) -> Response:
         """all the org unit type below this ou, or all in version.
 
         Used in the type dropdown to provide reasonable choices"""

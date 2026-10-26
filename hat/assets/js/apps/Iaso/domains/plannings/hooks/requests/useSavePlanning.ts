@@ -1,11 +1,21 @@
 import moment from 'moment';
 import { UseMutationResult } from 'react-query';
-import { patchRequest, postRequest } from '../../../../libs/Api';
-import { useSnackMutation } from '../../../../libs/apiHooks';
+import {
+    apiMicroplanningPlanningConfigsBulkCreateCreate,
+    apiMicroplanningPlanningConfigsBulkUpdateUpdate,
+    apiMicroplanningPlanningConfigsDestroy,
+} from 'Iaso/api/planningConfigs';
+import { patchRequest, postRequest } from 'Iaso/libs/Api';
+import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import {
     dateRangePickerToDateApi,
     getApiParamDateTimeString,
-} from '../../../../utils/dates';
+} from 'Iaso/utils/dates';
+import {
+    PlanningLevel,
+    SavedPlanningConfig,
+} from '../../components/orgUnitLevels/types';
+import { getPlanningConfigChanges } from '../../components/orgUnitLevels/utils';
 import { PLANNINGS_API_URL } from '../../constants';
 import { Planning } from '../../types';
 
@@ -14,7 +24,7 @@ export type SavePlanningQuery = {
     name: string;
     startDate: string;
     endDate: string;
-    forms: number[];
+    missions: number[];
     selectedOrgUnit: number;
     selectedTeam: number;
     description?: string;
@@ -23,6 +33,7 @@ export type SavePlanningQuery = {
     pipelineUuids: string[];
     targetOrgUnitTypes: number[];
     selected_sampling_result_id?: number | null;
+    levels?: PlanningLevel[];
 };
 
 const convertToApi = data => {
@@ -34,6 +45,7 @@ const convertToApi = data => {
         publishingStatus,
         pipelineUuids,
         targetOrgUnitTypes,
+        levels: _levels,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {
@@ -105,16 +117,45 @@ export const convertAPIErrorsToState = data => {
     return converted;
 };
 
-const patchPlanning = async (body: Partial<SavePlanningQuery>) => {
+const savePlanningConfigs = async (
+    planningId: number,
+    levels: PlanningLevel[] | undefined,
+    savedConfigs: SavedPlanningConfig[],
+) => {
+    if (!levels) return;
+    const { toCreate, toUpdate, toDeleteIds } = getPlanningConfigChanges(
+        planningId,
+        levels,
+        savedConfigs,
+    );
+    await Promise.all(
+        toDeleteIds.map(id => apiMicroplanningPlanningConfigsDestroy(id)),
+    );
+    if (toUpdate.length > 0) {
+        await apiMicroplanningPlanningConfigsBulkUpdateUpdate(toUpdate);
+    }
+    if (toCreate.length > 0) {
+        await apiMicroplanningPlanningConfigsBulkCreateCreate(toCreate);
+    }
+};
+
+const patchPlanning = async (
+    body: Partial<SavePlanningQuery>,
+    savedConfigs: SavedPlanningConfig[],
+) => {
     const url = `${PLANNINGS_API_URL}${body.id}/`;
-    return patchRequest(url, convertToApi(body));
+    const planning = await patchRequest(url, convertToApi(body));
+    await savePlanningConfigs(planning.id, body.levels, savedConfigs);
+    return planning;
 };
 
 const postPlanning = async (body: SavePlanningQuery) => {
-    return postRequest({
+    const planning = await postRequest({
         url: PLANNINGS_API_URL,
         data: convertToApi(body),
     });
+    await savePlanningConfigs(planning.id, body.levels, []);
+    return planning;
 };
 
 const duplicatePlanning = async (body: SavePlanningQuery) => {
@@ -129,14 +170,17 @@ type UseSavePlanningArgs = {
     type: 'create' | 'edit' | 'copy';
     onSuccess?: (data: Planning) => void;
     showSuccessSnackBar?: boolean;
+    savedConfigs?: SavedPlanningConfig[];
 };
 export const useSavePlanning = ({
     type,
     onSuccess,
     showSuccessSnackBar,
+    savedConfigs = [],
 }: UseSavePlanningArgs): UseMutationResult => {
     const editPlanning = useSnackMutation({
-        mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
+        mutationFn: (data: Partial<SavePlanningQuery>) =>
+            patchPlanning(data, savedConfigs),
         invalidateQueryKey: [
             'planningsList',
             'planningDetails',
@@ -144,6 +188,8 @@ export const useSavePlanning = ({
             'planningSamplingResults',
             'planningRootOrgUnit',
             'planningChildrenOrgUnits',
+            'apiMicroplanningMissionsList',
+            'apiMicroplanningPlanningsConfigsList',
         ],
         options: { onSuccess },
         showSuccessSnackBar,

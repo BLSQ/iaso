@@ -54,6 +54,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Planning List',
         id: 'iaso.label.planningList',
     },
+    missions: {
+        defaultMessage: 'Missions',
+        id: 'iaso.missions.title',
+    },
     dhis2Mappings: {
         defaultMessage: 'DHIS2 mappings',
         id: 'iaso.label.dhis2Mappings',
@@ -129,10 +133,6 @@ const MESSAGES = defineMessages({
     dashboard: {
         defaultMessage: 'Dashboard',
         id: 'iaso.label.dashboard',
-    },
-    polio: {
-        defaultMessage: 'Polio',
-        id: 'iaso.label.polio',
     },
     pages: {
         defaultMessage: 'Embedded links',

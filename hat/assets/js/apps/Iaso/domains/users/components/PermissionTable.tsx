@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { Column, Table, useSafeIntl } from 'bluesquare-components';
 import PermissionTooltip from 'Iaso/domains/users/components/PermissionTooltip';
 import MESSAGES from 'Iaso/domains/users/messages';
-import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
+import { usePermissionsMessages } from 'Iaso/domains/users/permissionsMessages';
 import { SxStyles } from 'Iaso/types/general';
 
 type Props = {
@@ -23,6 +23,7 @@ const styles: SxStyles = {
 
 const usePermissionTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const permissionsMessages = usePermissionsMessages();
     return useMemo(() => {
         const columns: Column[] = [
             {
@@ -60,9 +61,9 @@ const usePermissionTableColumns = (): Column[] => {
                     row: { original: { permissionName: string } };
                 }) => {
                     const message =
-                        permissionName in PERMISSIONS_MESSAGES
-                            ? PERMISSIONS_MESSAGES[
-                                  permissionName as keyof typeof PERMISSIONS_MESSAGES
+                        permissionName in permissionsMessages
+                            ? permissionsMessages[
+                                  permissionName as keyof typeof permissionsMessages
                               ]
                             : undefined;
                     return message ? formatMessage(message) : permissionName;
@@ -70,7 +71,7 @@ const usePermissionTableColumns = (): Column[] => {
             },
         ];
         return columns;
-    }, [formatMessage]);
+    }, [formatMessage, permissionsMessages]);
 };
 export const PermissionTable: FunctionComponent<Props> = ({ data }) => {
     const columns: Column[] = usePermissionTableColumns();

@@ -81,9 +81,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createPlanning',
         defaultMessage: 'Create planning',
     },
-    forms: {
-        defaultMessage: 'Forms',
-        id: 'iaso.forms.title',
+    missions: {
+        defaultMessage: 'Missions',
+        id: 'iaso.missions.title',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -379,6 +379,260 @@ const MESSAGES = defineMessages({
     planning: {
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
+    },
+    add: {
+        defaultMessage: 'Add',
+        id: 'iaso.label.add',
+    },
+    addMissions: {
+        defaultMessage: 'Add missions',
+        id: 'iaso.plannings.label.addMissions',
+    },
+    addMissionsToPlanning: {
+        defaultMessage: 'Add missions to this planning',
+        id: 'iaso.plannings.label.addMissionsToPlanning',
+    },
+    searchMission: {
+        defaultMessage: 'Search a mission',
+        id: 'iaso.plannings.label.searchMission',
+    },
+    alreadyLinked: {
+        defaultMessage: 'Already linked',
+        id: 'iaso.plannings.label.alreadyLinked',
+    },
+    linkMission: {
+        defaultMessage: 'Link mission',
+        id: 'iaso.plannings.label.linkMission',
+    },
+    notSavedYet: {
+        defaultMessage: 'Not saved yet',
+        id: 'iaso.plannings.label.notSavedYet',
+    },
+    willBeUnlinked: {
+        defaultMessage: 'Will be unlinked',
+        id: 'iaso.plannings.label.willBeUnlinked',
+    },
+    unlinkMission: {
+        defaultMessage: 'Unlink mission',
+        id: 'iaso.plannings.label.unlinkMission',
+    },
+    relinkMission: {
+        defaultMessage: 'Undo unlink',
+        id: 'iaso.plannings.label.relinkMission',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.label.type',
+    },
+    linkedMissionsCount: {
+        defaultMessage: '{count} linked',
+        id: 'iaso.plannings.label.linkedMissionsCount',
+    },
+    noMissionLinked: {
+        defaultMessage: 'No mission linked yet',
+        id: 'iaso.plannings.label.noMissionLinked',
+    },
+    noMissionLinkedDescription: {
+        defaultMessage:
+            'Link an existing mission or create a new one to define what agents collect on the field.',
+        id: 'iaso.plannings.label.noMissionLinkedDescription',
+    },
+    planningDetails: {
+        defaultMessage: 'Planning details',
+        id: 'iaso.plannings.label.planningDetails',
+    },
+    openAssignments: {
+        defaultMessage: 'Open assignments',
+        id: 'iaso.plannings.label.openAssignments',
+    },
+    info: {
+        defaultMessage: 'Info',
+        id: 'iaso.plannings.label.info',
+    },
+    levelsAndTeams: {
+        defaultMessage: 'Levels & teams',
+        id: 'iaso.plannings.label.levelsAndTeams',
+    },
+    targetGeographyAndRootTeam: {
+        defaultMessage: 'Target geography and root team',
+        id: 'iaso.plannings.label.targetGeographyAndRootTeam',
+    },
+    targetGeographyAndRootTeamInfos: {
+        defaultMessage:
+            'Select the org unit this planning covers, then the team responsible for it. The team hierarchy defines the levels below.',
+        id: 'iaso.plannings.label.targetGeographyAndRootTeamInfos',
+    },
+    rootTeam: {
+        defaultMessage: 'Root team',
+        id: 'iaso.plannings.label.rootTeam',
+    },
+    createNewRootTeam: {
+        defaultMessage: 'Create new root team',
+        id: 'iaso.plannings.label.createNewRootTeam',
+    },
+    or: {
+        defaultMessage: 'or',
+        id: 'iaso.plannings.label.or',
+    },
+    teamHierarchy: {
+        defaultMessage: 'Team hierarchy',
+        id: 'iaso.plannings.label.teamHierarchy',
+    },
+    teamHierarchyInfos: {
+        defaultMessage:
+            'Build the hierarchy below the root team. Changes update the levels automatically.',
+        id: 'iaso.plannings.label.teamHierarchyInfos',
+    },
+    teamsCount: {
+        defaultMessage: '{count, plural, one {# team} other {# teams}}',
+        id: 'iaso.plannings.label.teamsCount',
+    },
+    usersCount: {
+        defaultMessage: '{count, plural, one {# user} other {# users}}',
+        id: 'iaso.plannings.label.usersCount',
+    },
+    searchTeamsAndUsers: {
+        defaultMessage: 'Search teams and users',
+        id: 'iaso.plannings.label.searchTeamsAndUsers',
+    },
+    expandAll: {
+        defaultMessage: 'Expand all',
+        id: 'iaso.plannings.label.expandAll',
+    },
+    collapseAll: {
+        defaultMessage: 'Collapse all',
+        id: 'iaso.plannings.label.collapseAll',
+    },
+    teamHierarchyDragHint: {
+        defaultMessage:
+            'Drag a team or user onto another team to move it. Use the actions menu for more options.',
+        id: 'iaso.plannings.label.teamHierarchyDragHint',
+    },
+    addTeam: {
+        defaultMessage: 'Add team',
+        id: 'iaso.plannings.label.addTeam',
+    },
+    addSubTeam: {
+        defaultMessage: 'Add subteam',
+        id: 'iaso.plannings.label.addSubTeam',
+    },
+    removeFromTeam: {
+        defaultMessage: 'Remove from team',
+        id: 'iaso.plannings.label.removeFromTeam',
+    },
+    moreActions: {
+        defaultMessage: 'More actions',
+        id: 'iaso.plannings.label.moreActions',
+    },
+    dragToMove: {
+        defaultMessage: 'Drag to move',
+        id: 'iaso.plannings.label.dragToMove',
+    },
+    teamOfTeams: {
+        defaultMessage: 'Team of teams',
+        id: 'iaso.plannings.label.teamOfTeams',
+    },
+    teamOfUsers: {
+        defaultMessage: 'Team of users',
+        id: 'iaso.plannings.label.teamOfUsers',
+    },
+    selectRootTeamFirst: {
+        defaultMessage: 'Select a root team to build its hierarchy.',
+        id: 'iaso.plannings.label.selectRootTeamFirst',
+    },
+    noTeamHierarchyMatch: {
+        defaultMessage: 'No team or user matches your search.',
+        id: 'iaso.plannings.label.noTeamHierarchyMatch',
+    },
+    rename: {
+        defaultMessage: 'Rename',
+        id: 'iaso.plannings.label.rename',
+    },
+    renameTeam: {
+        defaultMessage: 'Rename team',
+        id: 'iaso.plannings.label.renameTeam',
+    },
+    changeToTeamOfUsers: {
+        defaultMessage: 'Change to team of users',
+        id: 'iaso.plannings.label.changeToTeamOfUsers',
+    },
+    changeToTeamOfTeams: {
+        defaultMessage: 'Change to team of teams',
+        id: 'iaso.plannings.label.changeToTeamOfTeams',
+    },
+    moveTo: {
+        defaultMessage: 'Move to…',
+        id: 'iaso.plannings.label.moveTo',
+    },
+    moveItemTo: {
+        defaultMessage: 'Move {name} to',
+        id: 'iaso.plannings.label.moveItemTo',
+    },
+    destinationTeam: {
+        defaultMessage: 'Destination team',
+        id: 'iaso.plannings.label.destinationTeam',
+    },
+    deleteTeam: {
+        defaultMessage: 'Delete team',
+        id: 'iaso.plannings.label.deleteTeam',
+    },
+    orgUnitsToAssign: {
+        defaultMessage: 'Org units to assign',
+        id: 'iaso.plannings.label.orgUnitsToAssign',
+    },
+    orgUnitLevelsInfos: {
+        defaultMessage:
+            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.',
+        id: 'iaso.plannings.label.orgUnitLevelsInfos',
+    },
+    levelNumber: {
+        defaultMessage: 'Level {number}',
+        id: 'iaso.plannings.label.levelNumber',
+    },
+    rootLevel: {
+        defaultMessage: 'Root level',
+        id: 'iaso.plannings.label.rootLevel',
+    },
+    deepestLevel: {
+        defaultMessage: 'Deepest level',
+        id: 'iaso.plannings.label.deepestLevel',
+    },
+    teamsAndUsers: {
+        defaultMessage: 'Teams and users',
+        id: 'iaso.plannings.label.teamsAndUsers',
+    },
+    orgUnitTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.plannings.label.orgUnitTypes',
+    },
+    orgUnitGroups: {
+        defaultMessage: 'Org unit groups',
+        id: 'iaso.plannings.label.orgUnitGroups',
+    },
+    orgUnits: {
+        defaultMessage: 'Org units',
+        id: 'iaso.plannings.label.orgUnits',
+    },
+    allOrgUnits: {
+        defaultMessage: 'All org units',
+        id: 'iaso.plannings.label.allOrgUnits',
+    },
+    selectGeographyAndRootTeamFirst: {
+        defaultMessage:
+            'Select a target geography and a root team to define the levels.',
+        id: 'iaso.plannings.label.selectGeographyAndRootTeamFirst',
+    },
+    mixedOrgUnitTypeDepths: {
+        defaultMessage: 'Org unit types of a level must be at the same depth',
+        id: 'iaso.plannings.label.mixedOrgUnitTypeDepths',
+    },
+    notDeeperThanLevelAbove: {
+        defaultMessage: 'Org unit types must be deeper than the level above',
+        id: 'iaso.plannings.label.notDeeperThanLevelAbove',
+    },
+    groupsWithoutLevelOrgUnits: {
+        defaultMessage: "No org units of this level's types in: {groups}",
+        id: 'iaso.plannings.label.groupsWithoutLevelOrgUnits',
     },
 });
 

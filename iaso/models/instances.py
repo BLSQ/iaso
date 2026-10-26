@@ -258,6 +258,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
         sent_from=None,
         sent_to=None,
         json_content=None,
+        mission_ids=None,
         planning_ids=None,
         project_ids=None,
         only_reference=None,
@@ -363,6 +364,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
 
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
+
+        if mission_ids:
+            queryset = queryset.filter(mission_id__in=mission_ids.split(","))
 
         if planning_ids:
             queryset = queryset.filter(planning_id__in=planning_ids.split(","))
@@ -535,6 +539,14 @@ class Instance(ValidationWorkflowArtefact):
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
     planning = models.ForeignKey("Planning", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")
+    mission = models.ForeignKey(
+        "Mission",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="instances",
+        help_text="The mission this submission fulfills, within Instance.planning",
+    )
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )
@@ -887,6 +899,7 @@ class Instance(ValidationWorkflowArtefact):
                 "color": self.project.color if self.project else None,
             },
             "team_id": self.planning.team_id if self.planning else None,
+            "mission_id": self.mission_id,
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),

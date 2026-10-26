@@ -8,7 +8,7 @@ import { PROJECTS, USER_ROLES } from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import MESSAGES from '../messages';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { usePermissionsMessages } from '../permissionsMessages';
 import { userHasPermission } from '../utils';
 
 const useStyles = makeStyles({
@@ -37,6 +37,7 @@ export const UserLogValue: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const permissionsMessages = usePermissionsMessages();
 
     if (
         (fieldKey !== 'password_updated' && !value) ||
@@ -115,9 +116,9 @@ export const UserLogValue: FunctionComponent<Props> = ({
                     <ul>
                         {(value as Array<string>).map(permCode => (
                             <li key={permCode}>
-                                {PERMISSIONS_MESSAGES[permCode]
+                                {permissionsMessages[permCode]
                                     ? formatMessage(
-                                          PERMISSIONS_MESSAGES[permCode],
+                                          permissionsMessages[permCode],
                                       )
                                     : permCode}
                             </li>

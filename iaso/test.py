@@ -7,7 +7,6 @@ import typing
 from cgi import parse_header
 from unittest import mock
 
-import jsonref
 import jsonschema
 import numpy as np
 import pandas as pd
@@ -17,6 +16,8 @@ from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
+from django.core.management.sql import emit_post_migrate_signal
+from django.db import connections, transaction
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase, TransactionTestCase as BaseTransactionTestCase
 from django.urls import clear_url_caches, reverse
@@ -24,7 +25,8 @@ from django.utils import timezone
 from django_test_migrations.contrib.unittest_case import MigratorTestCase
 from django_test_migrations.migrator import Migrator
 from jinja2 import Environment, FileSystemLoader
-from jsonschema import Draft202012Validator
+from jsonschema import RefResolver
+from openapi_schema_validator import validate
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -200,8 +202,8 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
             SwaggerTestCaseMixin._openapi_schema_cache = res.json()
         return SwaggerTestCaseMixin._openapi_schema_cache
 
-    def resolve_refs(self, schema):
-        return jsonref.replace_refs(schema)
+    # def resolve_refs(self, schema):
+    #     return jsonref.replace_refs(schema)
 
     def normalize_schema(self, schema):
         if isinstance(schema, dict):
@@ -251,17 +253,25 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
         # touch the shared cache (it is reused across every test of the run).
         openapi = copy.deepcopy(self.get_openapi_schema())
 
-        # resolve refs first
-        resolved = self.resolve_refs(openapi)
+        for component_schema in openapi["components"]["schemas"].values():
+            self.normalize_schema(component_schema)
 
         # extract schema AFTER resolution
-        schema = self.get_component_schema(resolved, schema_name, as_array=as_array)
+        schema = self.get_component_schema(openapi, schema_name)
 
         # normalize OpenAPI quirks
         schema = self.normalize_schema(schema)
 
         # validate
-        Draft202012Validator(schema).validate(data)
+        if as_array:
+            schema = {
+                "type": "array",
+                "items": schema,
+            }
+
+        # Resolve local references against the original OpenAPI document.
+        resolver = RefResolver.from_schema(openapi)
+        validate(data, schema, resolver=resolver)
 
     def assertResponseCompliantToSwagger(self, data, schema, as_array=False):
         try:
@@ -274,6 +284,28 @@ class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
 
 
+class FastFlushTransactionTestCase(BaseTransactionTestCase, IasoTestCaseMixin):
+    """
+    Empties the tables after each test with DELETE instead of Django's TRUNCATE of every table:
+    on the ~200 mostly empty tables of the test database, TRUNCATE takes ~1.4s (new files for every
+    table and index), DELETE ~0.05s.
+    Doesn't support `available_apps` / `serialized_rollback` (not used in iaso).
+    """
+
+    def _fixture_teardown(self):
+        for db_name in self._databases_names(include_mirrors=False):
+            connection = connections[db_name]
+            tables = connection.introspection.django_table_names(only_existing=True, include_views=False)
+            # the foreign keys created by Django are deferrable: the tables can be emptied in any order
+            sql = "SET CONSTRAINTS ALL DEFERRED;" + "".join(
+                f"DELETE FROM {connection.ops.quote_name(table)};" for table in tables
+            )
+            with transaction.atomic(using=db_name), connection.cursor() as cursor:
+                cursor.execute(sql)
+            # like the flush command: recreate the content types and permissions
+            emit_post_migrate_signal(verbosity=0, interactive=False, db=db_name)
+
+
 def try_json(response):
     try:
         return response.json()
@@ -281,13 +313,10 @@ def try_json(response):
         return response.content
 
 
-class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
-    client: APIClient
-
-    def setUp(self):
-        """Make sure we have a fresh client at the beginning of each test"""
-
-        self.client = APIClient()
+class APIAssertionsMixin:
+    """
+    Shared by APITestCase and the API tests that can't inherit from it (TransactionTestCase).
+    """
 
     def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, HttpResponse)
@@ -298,6 +327,15 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
         if response.content:
             return response.json()
+
+
+class APITestCase(BaseAPITestCase, IasoTestCaseMixin, APIAssertionsMixin):
+    client: APIClient
+
+    def setUp(self):
+        """Make sure we have a fresh client at the beginning of each test"""
+
+        self.client = APIClient()
 
     def assertFileResponse(
         self,

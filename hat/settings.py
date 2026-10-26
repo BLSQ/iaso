@@ -113,7 +113,7 @@ try:
     version = pyproject_toml["project"]["version"]
 except Exception as e:
     version = "error - unknown version"
-IASO_VERSION = env.str("IASO_VERSION", default=version)
+IASO_VERSION = version
 
 DEV_SERVER = env.bool("DEV_SERVER", default=False)
 ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", default="development").lower()
@@ -516,12 +516,6 @@ AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
 ]
 
-# Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
-if "polio" in PLUGINS:
-    AUTH_CLASSES.append(
-        "rest_framework.authentication.BasicAuthentication",
-    )
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
@@ -538,7 +532,7 @@ REST_FRAMEWORK = {
         "rest_framework_csv.renderers.CSVRenderer",
     ),
     "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "iaso.drf_spectacular_utils.schema.AutoSchemaWithMinItems",
 }
 
 SPECTACULAR_SETTINGS = {
@@ -564,6 +558,7 @@ SPECTACULAR_SETTINGS = {
     },
     "DISABLE_ERRORS_AND_WARNINGS": env.bool("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", default=True),
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {"MissionTypeEnum": "iaso.models.microplanning.MissionType"},
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {
@@ -987,6 +982,11 @@ for plugin_name in PLUGINS:
 
         if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
             REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)
+
+        # Same list object as REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"].
+        for auth_class in getattr(plugin_settings, "AUTHENTICATION_CLASSES", []):
+            if auth_class not in AUTH_CLASSES:
+                AUTH_CLASSES.append(auth_class)
 
     except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
         print(

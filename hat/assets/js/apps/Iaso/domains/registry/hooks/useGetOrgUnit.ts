@@ -6,6 +6,7 @@ import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../libs/utils';
+import { TREEVIEW_ORG_UNIT_FIELDS } from '../../orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { RegistryParams } from '../types';
@@ -23,12 +24,13 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
         async (orgUnit: OrgUnit): Promise<OrgUnit | Error> => {
             setIsFetching(true);
             try {
-                let url = `/api/orgunits/${orgUnit.id}/`;
-                if (appId) {
-                    url += `?app_id=${appId}`;
-                }
+                // Only used to find the ancestors to expand in the treeview.
+                const url = makeUrlWithParams(`/api/orgunits/${orgUnit.id}/`, {
+                    app_id: appId || undefined,
+                    fields: TREEVIEW_ORG_UNIT_FIELDS,
+                });
                 const result = await queryClient.fetchQuery<OrgUnit>(
-                    ['orgUnit', orgUnit.id],
+                    ['orgUnit', orgUnit.id, TREEVIEW_ORG_UNIT_FIELDS],
                     () => getRequest(url),
                     {
                         staleTime: 1000 * 60 * 5, // Example: 5 minutes stale time
@@ -50,13 +52,22 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
     return { fetchOrgUnit, isFetching };
 };
 
+// What the registry page shows (title, breadcrumbs, map, sub types, reference
+// submission); leaving out instances_count and catchment skips their
+// computation on the backend.
+export const REGISTRY_ORG_UNIT_FIELDS =
+    'id,name,org_unit_type,org_unit_type_name,validation_status,parent,geo_json,latitude,longitude,reference_instances';
+
 export const useGetOrgUnit = (
     orgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
-    const queryKey: any[] = ['orgUnit', orgUnitId];
+    const queryKey: any[] = ['orgUnit', orgUnitId, REGISTRY_ORG_UNIT_FIELDS];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getRequest(`/api/orgunits/${orgUnitId}/`),
+        queryFn: () =>
+            getRequest(
+                `/api/orgunits/${orgUnitId}/?fields=${REGISTRY_ORG_UNIT_FIELDS}`,
+            ),
         options: {
             retry: false,
             enabled: Boolean(orgUnitId),

@@ -41,7 +41,7 @@ export type Planning = {
     name: string;
     team_details?: PlanningTeamDetails;
     org_unit_details?: PlanningOrgUnitDetails;
-    forms: number[];
+    missions: number[];
     project_details?: PlanningProjectDetails;
     description?: string;
     published_at?: string;
@@ -51,6 +51,7 @@ export type Planning = {
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails[] | null;
     selected_sampling_result?: SamplingResult;
     assignments_count: number;
+    status?: 'draft' | 'published';
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 

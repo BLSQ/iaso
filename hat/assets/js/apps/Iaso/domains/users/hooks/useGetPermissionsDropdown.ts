@@ -4,7 +4,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import MESSAGES from '../messages';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { usePermissionsMessages } from '../permissionsMessages';
 
 type UseGetPermissionsDropDownParams = {
     outputValueField?: 'codename' | 'id';
@@ -14,6 +14,7 @@ export const useGetPermissionsDropDown = ({
     outputValueField = 'codename',
 }: UseGetPermissionsDropDownParams = {}): UseQueryResult => {
     const { formatMessage } = useSafeIntl();
+    const permissionsMessages = usePermissionsMessages();
     return useSnackQuery({
         queryKey: ['permissions'],
         queryFn: () => getRequest('/api/permissions/'),
@@ -21,16 +22,18 @@ export const useGetPermissionsDropDown = ({
         options: {
             select: data => {
                 if (!data) return [];
-                return data.permissions.map(permission => {
-                    return {
-                        value: get(permission, outputValueField),
-                        label: PERMISSIONS_MESSAGES[permission.codename]
-                            ? formatMessage(
-                                  PERMISSIONS_MESSAGES[permission.codename],
-                              )
-                            : permission.codename,
-                    };
-                });
+                return data.permissions.map(
+                    (permission: { codename: string }) => {
+                        return {
+                            value: get(permission, outputValueField),
+                            label: permissionsMessages[permission.codename]
+                                ? formatMessage(
+                                      permissionsMessages[permission.codename],
+                                  )
+                                : permission.codename,
+                        };
+                    },
+                );
             },
         },
     });

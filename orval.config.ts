@@ -1,9 +1,16 @@
-import { mutationInvalidates as validationWorkflowsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
+import {
+    mutationInvalidates as validationWorkflowsMutationInvalidates,
+} from './hat/assets/js/orval/apiConfiguration/validationWorkflows/configuration';
 import {
     createSchemaTransformer,
     normalizeSchema,
 } from './hat/assets/js/orval/transformer/fakerTransformer';
-import { mutationInvalidates as accountsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import {
+    mutationInvalidates as accountsMutationInvalidates,
+} from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import { mutationInvalidates as missionsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/missions/configuration';
+import { mutationInvalidates as planningConfigsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/planningConfigs/configuration';
+import { mutationInvalidates as planningMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/plannings/configuration';
 
 require('dotenv').config();
 
@@ -59,7 +66,7 @@ const createConfig = (
                     {
                         domains: [
                             process.env.ORVAL_TARGET_URL_DOMAIN ||
-                                'localhost',
+                            'localhost',
                         ],
                         headers: {
                             Authorization: `Bearer ${process.env.API_TOKEN}`,
@@ -122,16 +129,18 @@ const createConfig = (
                     },
                 },
             },
-            mock: {generators: [{
-                type: 'msw',
-                preferredContentType: 'application/json',
-                delay: () =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0,
-                delayFunctionLazyExecute: true,
-                arrayMin: 1,
-            }]},
+            mock: {
+                generators: [{
+                    type: 'msw',
+                    preferredContentType: 'application/json',
+                    delay: () =>
+                        process.env?.MSW_DELAY
+                            ? parseInt(process.env.MSW_DELAY)
+                            : 0,
+                    delayFunctionLazyExecute: true,
+                    arrayMin: 1,
+                }],
+            },
             target: './endpoints',
             schemas: {
                 type: 'zod',
@@ -156,11 +165,13 @@ module.exports = {
     ]),
     apiImports: createConfig('apiImports', ['API import']),
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
+    missions: createConfig('missions', ['Missions'], missionsMutationInvalidates),
     modules: createConfig('modules', ['Modules']),
+    plannings: createConfig('plannings', ['Plannings'], planningMutationInvalidates),
+    planningConfigs: createConfig("planningConfigs", ['Planning configs'], planningConfigsMutationInvalidates),
     validationWorkflows: createConfig(
         'validationWorkflows',
         ['Validation workflows'],
         validationWorkflowsMutationInvalidates,
     ),
-    // profiles: createConfig('profiles', ['Profiles'])
 };

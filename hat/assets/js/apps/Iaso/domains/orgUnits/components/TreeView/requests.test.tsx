@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useGetOrgUnit } from './requests';
+import { TREEVIEW_ORG_UNIT_FIELDS, useGetOrgUnit } from './requests';
 
 const { mockGetRequest } = vi.hoisted(() => ({
     mockGetRequest: vi.fn(),
@@ -37,7 +37,7 @@ describe('useGetOrgUnit', () => {
         mockGetRequest.mockReset();
     });
 
-    it('fetches the full org unit when no fields are requested', async () => {
+    it('requests only the treeview fields by default, skipping instances_count', async () => {
         mockGetRequest.mockResolvedValue(orgUnitResponse);
 
         const { result } = renderHook(() => useGetOrgUnit('1'), {
@@ -48,7 +48,12 @@ describe('useGetOrgUnit', () => {
             expect(result.current.isSuccess).toBe(true);
         });
 
-        expect(mockGetRequest).toHaveBeenCalledWith('/api/orgunits/1/');
+        expect(mockGetRequest).toHaveBeenCalledWith(
+            `/api/orgunits/1/?fields=${TREEVIEW_ORG_UNIT_FIELDS}`,
+        );
+        expect(TREEVIEW_ORG_UNIT_FIELDS.split(',')).not.toContain(
+            'instances_count',
+        );
         expect(result.current.data).toEqual(orgUnitResponse);
     });
 
@@ -98,10 +103,12 @@ describe('useGetOrgUnit', () => {
         );
         await waitFor(() => expect(withFields.current.isSuccess).toBe(true));
 
-        // Both a plain refetch and the `fields=`-scoped variant should have
-        // hit the API separately rather than sharing a cache entry keyed only
-        // on the org unit id.
-        expect(mockGetRequest).toHaveBeenCalledWith('/api/orgunits/1/');
+        // The default fields and the custom `fields=` variant should have hit
+        // the API separately rather than sharing a cache entry keyed only on
+        // the org unit id.
+        expect(mockGetRequest).toHaveBeenCalledWith(
+            `/api/orgunits/1/?fields=${TREEVIEW_ORG_UNIT_FIELDS}`,
+        );
         expect(mockGetRequest).toHaveBeenCalledWith(
             '/api/orgunits/1/?fields=id,name',
         );

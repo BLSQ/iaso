@@ -85,7 +85,8 @@ from .api.microplanning.views import (
     PlanningSamplingResultViewSet,
     PlanningViewSet,
 )
-from .api.microplanning.views_mobile import MobilePlanningViewSet
+from .api.microplanning.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
+from .api.missions.views import MissionViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -110,6 +111,7 @@ from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
+from .api.planning_configs.views import PlanningConfigViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.promptness_stats.views import PromptnessStatsViewSet
@@ -235,15 +237,18 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
+router.register(r"microplanning/missions", MissionViewSet, basename="missions")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
     r"orgunits",
     PlanningOrgunitsViewSet,
     basename="planning-orgunits",
     parents_query_lookups=["pk"],
 )
+router.register(r"microplanning/planning-configs", PlanningConfigViewSet, basename="planning_configs")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"v2/mobile/plannings", MobilePlanningV2ViewSet, basename="v2_mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
@@ -346,10 +351,10 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 if not settings.DISABLE_PASSWORD_LOGINS:
     urlpatterns = urlpatterns + [
         path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-        path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     ]
 
 urlpatterns = urlpatterns + [
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),

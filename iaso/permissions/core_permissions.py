@@ -368,6 +368,25 @@ CORE_PIPELINE_MANAGEMENT_PERMISSION = CorePermission(
     ui_group=PERMISSION_GROUP_ADMIN,
 )
 
+CORE_MISSION_WRITE_PERMISSION = CorePermission(
+    codename="iaso_mission_write",
+    label=_("Edit mission"),
+    module=MODULE_PLANNING,
+    ui_group=PERMISSION_GROUP_PLANNING,
+    ui_category="iaso_mission_permissions",
+    ui_type_in_category="write",
+    ui_order_in_category=4,
+)
+CORE_MISSION_READ_PERMISSION = CorePermission(
+    codename="iaso_mission_read",
+    label=_("Read mission"),
+    module=MODULE_PLANNING,
+    ui_group=PERMISSION_GROUP_PLANNING,
+    ui_category="iaso_mission_permissions",
+    ui_type_in_category="read",
+    ui_order_in_category=3,
+)
+
 permissions = {
     perm.codename: perm
     for variable_name, perm in globals().items()

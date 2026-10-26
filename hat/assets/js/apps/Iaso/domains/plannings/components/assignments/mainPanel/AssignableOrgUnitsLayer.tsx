@@ -10,6 +10,13 @@ import {
 import { Layer, Source } from 'react-map-gl/maplibre';
 
 const SOURCE_ID = 'assignableOrgUnits';
+const FILL_LAYER_ID = `${SOURCE_ID}-fill`;
+const CIRCLE_LAYER_ID = `${SOURCE_ID}-circle`;
+
+export const ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS = [
+    FILL_LAYER_ID,
+    CIRCLE_LAYER_ID,
+];
 
 // Styles by org unit id, so assignment changes never touch the geometry.
 const getFillColor = (
@@ -64,10 +71,10 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
     );
     return (
         <Source id={SOURCE_ID} type="geojson" data={geoJson}>
-            <Layer id={`${SOURCE_ID}-fill`} type="fill" paint={fillPaint} />
+            <Layer id={FILL_LAYER_ID} type="fill" paint={fillPaint} />
             <Layer id={`${SOURCE_ID}-line`} type="line" paint={linePaint} />
             <Layer
-                id={`${SOURCE_ID}-circle`}
+                id={CIRCLE_LAYER_ID}
                 type="circle"
                 paint={circlePaint}
                 layout={{ visibility: showPoints ? 'visible' : 'none' }}

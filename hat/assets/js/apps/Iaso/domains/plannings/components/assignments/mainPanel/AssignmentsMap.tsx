@@ -9,7 +9,11 @@ import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
-import { AssignableOrgUnitsLayer } from './AssignableOrgUnitsLayer';
+import {
+    ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS,
+    AssignableOrgUnitsLayer,
+} from './AssignableOrgUnitsLayer';
+import { OrgUnitTooltip } from './OrgUnitTooltip';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
 import { useAssignments } from './useAssignments';
 import { useLevelGeometry } from './useLevelGeometry';
@@ -85,6 +89,9 @@ export const AssignmentsMap: FC = () => {
                         />
                         <ScopeAreaLayer
                             geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}
+                        />
+                        <OrgUnitTooltip
+                            layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
                         />
                     </BaseMap>
                 </Box>

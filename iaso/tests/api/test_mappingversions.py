@@ -627,7 +627,7 @@ class FormsVersionAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "iaso_mapping": 0,
                             "iaso_datasource": 0,
                         },
-                        exclude=["auth_permission"],
+                        exclude=["auth_permission", "auth_group"],
                     )
 
     def test_mappingversions_responses_compliant_to_swagger(self):

@@ -60,30 +60,6 @@ class OrgUnitImportSerializer(ModelSerializer):
             self.fields["mission_id"].queryset = Mission.objects_include_deleted.filter_for_user(user=user)
             self.fields["planning_id"].queryset = Planning.objects_include_deleted.filter_for_user(user=user)
 
-    def validate_mission_id(self, data: Mission) -> Mission:
-        if not data:
-            return data
-
-        user = self.context.get("user", None)
-
-        if not user:
-            return data
-
-        if data.id not in MissionOrgUnitType.objects_include_deleted.filter_for_user(user=user).values_list(
-            "id", flat=True
-        ):
-            logger.warning(
-                "Unexpected mission type",
-                extra={
-                    "model": "OrgUnit",
-                    "mission_id": data.id,
-                    "mission_type": data.MISSION_TYPE,
-                    "from": "org_unit_creation",
-                },
-            )
-
-        return data
-
     def to_internal_value(self, data):
         """Pre-process the incoming dictionary and handle legacy data formats."""
         processed_data = {}
@@ -118,7 +94,7 @@ class OrgUnitImportSerializer(ModelSerializer):
 
         return super().to_internal_value(processed_data)
 
-    def validate(self, data):
+    def validate(self, data: dict) -> dict:
         # Resolve parent passed as id or uuid
         parent_lookup = data.pop("parent_lookup", None)
         if parent_lookup is not None:
@@ -144,4 +120,21 @@ class OrgUnitImportSerializer(ModelSerializer):
             except (ValueError, TypeError):
                 raise serializers.ValidationError({"created_at": "Invalid timestamp."})
 
+        mission = data.get("mission")
+        user = self.context.get("user", None)
+
+        if mission and user:
+            if mission.id not in MissionOrgUnitType.objects_include_deleted.filter_for_user(user=user).values_list(
+                "id", flat=True
+            ):
+                logger.warning(
+                    "Unexpected mission type",
+                    extra={
+                        "model": "OrgUnit",
+                        "mission_id": mission.id,
+                        "mission_type": mission.MISSION_TYPE,
+                        "from": "org_unit_creation",
+                        "org_unit_uuid": data.get("uuid"),
+                    },
+                )
         return data

@@ -1134,6 +1134,7 @@ def find_entity(
                         "mission_id": mission.id,
                         "mission_type": mission.MISSION_TYPE,
                         "from": "instance_creation",
+                        "entity_uuid": entity_uuid,
                     },
                 )
             return Entity.objects.create(**filters)

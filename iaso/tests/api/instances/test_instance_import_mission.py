@@ -288,6 +288,7 @@ class InstanceImportMissionTestCase(APITestCase):
             self.assertEqual(log_record.message, "Unexpected mission type")
             self.assertEqual(log_record.mission_id, mission.id)
             self.assertEqual(log_record.mission_type, mission.MISSION_TYPE)
+            self.assertEqual(log_record.entity_uuid, str(entity_uuid))
             self.assertEqual(vars(log_record)["from"], "instance_creation")
             self.assertEqual(log_record.model, "Entity")
 

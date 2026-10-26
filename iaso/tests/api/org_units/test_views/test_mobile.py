@@ -1059,6 +1059,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(log_record.message, "Unexpected mission type")
         self.assertEqual(log_record.mission_id, self.mission_form_1.id)
         self.assertEqual(log_record.mission_type, self.mission_form_1.MISSION_TYPE)
+        self.assertEqual(log_record.org_unit_uuid, "123")
         self.assertEqual(vars(log_record)["from"], "org_unit_creation")
         self.assertEqual(log_record.model, "OrgUnit")
         self.assertJSONResponse(response, status.HTTP_200_OK)

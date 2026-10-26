@@ -968,6 +968,11 @@ msgstr "Population"
 msgid "Any"
 msgstr "Quelconque"
 
+#: iaso/models/microplanning/plannings.py
+#, python-brace-format
+msgid "Planning Config for planning {planning} at level {level}"
+msgstr "Configuration de planning pour le planning {planning} au niveau {level}"
+
 #: iaso/models/missions.py
 msgid "Form Filling"
 msgstr "Remplissage de formulaires"

@@ -22,6 +22,6 @@ repos:
       name: tsc
       language: node
       pass_filenames: false
-      files: ^hat/assets/js/apps/Iaso/domains/(teams|app|forms|accounts|algorithmRuns|validationWorkflowsConfiguration|validationWorkflowsInstance)/
+      files: ^hat/assets/js/apps/Iaso/domains/(teams|app|forms|accounts|algorithmRuns|missions|validationWorkflowsConfiguration|validationWorkflowsInstance)/
       types_or: [ ts, tsx ]
       entry: node ./ts-incremental.mjs

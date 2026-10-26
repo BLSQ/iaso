@@ -1,29 +1,6 @@
-import { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { collectTeamTreeNodes } from 'Iaso/domains/teams/utils';
-import {
-    AssignableOrgUnit,
-    Assignment,
-    OrgUnitFeatureProperties,
-} from './types';
-
-export const toFeatureCollection = (
-    orgUnits: AssignableOrgUnit[],
-): FeatureCollection<Polygon | MultiPolygon, OrgUnitFeatureProperties> => ({
-    type: 'FeatureCollection',
-    features: orgUnits.flatMap(orgUnit =>
-        (orgUnit.geo_json?.features ?? []).map(
-            (
-                feature,
-            ): Feature<Polygon | MultiPolygon, OrgUnitFeatureProperties> => ({
-                type: 'Feature',
-                id: orgUnit.id,
-                geometry: feature.geometry,
-                properties: { id: orgUnit.id, name: orgUnit.name },
-            }),
-        ),
-    ),
-});
+import { Assignment } from './types';
 
 export const getAssigneeColorByOrgUnitId = (
     tree: TeamTreeNode,

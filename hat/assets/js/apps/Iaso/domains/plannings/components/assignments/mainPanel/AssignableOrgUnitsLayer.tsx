@@ -1,13 +1,12 @@
 import React, { FC, useMemo } from 'react';
 import { useTheme } from '@mui/material';
+import { FeatureCollection } from 'geojson';
 import {
     ExpressionSpecification,
     FillLayerSpecification,
     LineLayerSpecification,
 } from 'maplibre-gl';
 import { Layer, Source } from 'react-map-gl/maplibre';
-import { AssignableOrgUnit } from './types';
-import { toFeatureCollection } from './utils';
 
 const SOURCE_ID = 'assignableOrgUnits';
 
@@ -26,19 +25,15 @@ const getFillColor = (
 ];
 
 type Props = {
-    orgUnits: AssignableOrgUnit[];
+    geoJson: FeatureCollection;
     colorByOrgUnitId: Map<number, string>;
 };
 
 export const AssignableOrgUnitsLayer: FC<Props> = ({
-    orgUnits,
+    geoJson,
     colorByOrgUnitId,
 }) => {
     const theme = useTheme();
-    const featureCollection = useMemo(
-        () => toFeatureCollection(orgUnits),
-        [orgUnits],
-    );
     const fillPaint: FillLayerSpecification['paint'] = useMemo(
         () => ({
             'fill-color': getFillColor(
@@ -57,7 +52,7 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         [theme.palette.common.white],
     );
     return (
-        <Source id={SOURCE_ID} type="geojson" data={featureCollection}>
+        <Source id={SOURCE_ID} type="geojson" data={geoJson}>
             <Layer id={`${SOURCE_ID}-fill`} type="fill" paint={fillPaint} />
             <Layer id={`${SOURCE_ID}-line`} type="line" paint={linePaint} />
         </Source>

@@ -1,16 +1,16 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useRef } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
+import { FeatureCollection } from 'geojson';
 import { BaseMap } from 'Iaso/components/maps/maplibre/BaseMap';
-import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
+import { getGeoJsonBounds } from 'Iaso/components/maps/maplibre/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
-import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { AssignableOrgUnitsLayer } from './AssignableOrgUnitsLayer';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
-import { useAssignableOrgUnits } from './useAssignableOrgUnits';
 import { useAssignments } from './useAssignments';
-import { useScopeArea } from './useScopeArea';
+import { useLevelGeometry } from './useLevelGeometry';
 import { getAssigneeColorByOrgUnitId } from './utils';
 
 const styles = {
@@ -25,45 +25,57 @@ const styles = {
     },
 } satisfies SxStyles;
 
+const EMPTY_FEATURE_COLLECTION: FeatureCollection = {
+    type: 'FeatureCollection',
+    features: [],
+};
+
 const INITIAL_VIEW_STATE = {
     longitude: defaultCenter.lng,
     latitude: defaultCenter.lat,
     zoom: 3,
 };
 
-type Props = {
-    tree: TeamTreeNode;
-};
-
-export const AssignmentsMap: FC<Props> = ({ tree }) => {
-    const { planningId } = useAssignmentsParams();
-    const { orgUnitId, geoJson, bounds, isLoading } = useScopeArea(planningId);
-    const { data: assignableOrgUnits } = useAssignableOrgUnits(
-        planningId,
-        orgUnitId,
-    );
-    const { data: assignments } = useAssignments(planningId);
+// The selected team's level is outlined, its members' level is filled with their assignee's color.
+export const AssignmentsMap: FC = () => {
+    const { planning, tree, selectedLevel } = useAssignmentsContext();
+    const area = useLevelGeometry(selectedLevel);
+    const members = useLevelGeometry(selectedLevel + 1);
+    const { data: assignments } = useAssignments(`${planning.id}`);
     const colorByOrgUnitId = useMemo(
         () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
         [tree, assignments],
     );
+    const areaBounds = useMemo(
+        () => area.geoJson && getGeoJsonBounds(area.geoJson),
+        [area.geoJson],
+    );
+
+    // Created once the first area is known, then kept when selecting other teams.
+    const isMapCreated = useRef(false);
+    if (area.geoJson) isMapCreated.current = true;
+
     return (
         <Box sx={styles.container}>
-            {isLoading ? (
+            {(area.isFetching || members.isFetching) && (
                 <LoadingSpinner absolute fixed={false} />
-            ) : (
+            )}
+            {isMapCreated.current && (
                 <Box sx={styles.map}>
                     <BaseMap
                         initialViewState={INITIAL_VIEW_STATE}
-                        bounds={bounds}
+                        bounds={areaBounds}
                     >
-                        {assignableOrgUnits && (
-                            <AssignableOrgUnitsLayer
-                                orgUnits={assignableOrgUnits}
-                                colorByOrgUnitId={colorByOrgUnitId}
-                            />
-                        )}
-                        {geoJson && <ScopeAreaLayer geoJson={geoJson} />}
+                        {/* Always mounted, in this order, so the area border stays above the org units. */}
+                        <AssignableOrgUnitsLayer
+                            geoJson={
+                                members.geoJson ?? EMPTY_FEATURE_COLLECTION
+                            }
+                            colorByOrgUnitId={colorByOrgUnitId}
+                        />
+                        <ScopeAreaLayer
+                            geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}
+                        />
                     </BaseMap>
                 </Box>
             )}

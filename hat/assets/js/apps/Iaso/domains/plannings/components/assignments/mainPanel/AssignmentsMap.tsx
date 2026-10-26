@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FeatureCollection } from 'geojson';
 import { BaseMap } from 'Iaso/components/maps/maplibre/BaseMap';
+import { FitBoundsOnChange } from 'Iaso/components/maps/maplibre/FitBoundsOnChange';
 import { getGeoJsonBounds } from 'Iaso/components/maps/maplibre/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
@@ -38,7 +39,8 @@ const INITIAL_VIEW_STATE = {
 
 // The selected team's level is outlined, its members' level is filled with their assignee's color.
 export const AssignmentsMap: FC = () => {
-    const { planning, tree, selectedLevel } = useAssignmentsContext();
+    const { planning, tree, selectedTeam, selectedLevel } =
+        useAssignmentsContext();
     const area = useLevelGeometry(selectedLevel);
     const members = useLevelGeometry(selectedLevel + 1);
     const { data: assignments } = useAssignments(`${planning.id}`);
@@ -51,7 +53,7 @@ export const AssignmentsMap: FC = () => {
         [area.geoJson],
     );
 
-    // Created once the first area is known, then kept when selecting other teams.
+    // Created once the first area is known, then kept and refitted when selecting other teams.
     const isMapCreated = useRef(false);
     if (area.geoJson) isMapCreated.current = true;
 
@@ -66,6 +68,10 @@ export const AssignmentsMap: FC = () => {
                         initialViewState={INITIAL_VIEW_STATE}
                         bounds={areaBounds}
                     >
+                        <FitBoundsOnChange
+                            bounds={areaBounds}
+                            fitKey={selectedTeam.id}
+                        />
                         {/* Always mounted, in this order, so the area border stays above the org units. */}
                         <AssignableOrgUnitsLayer
                             geoJson={

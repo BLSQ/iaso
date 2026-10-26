@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 05:51+0000\n"
+"POT-Creation-Date: 2026-10-26 12:30+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -232,6 +232,14 @@ msgstr "ID du parent de l'unité organisationnelle"
 #: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
 msgid "Org unit type IDs (comma-separated)"
 msgstr "IDs des types d'unité organisationnelle (séparés par des virgules)"
+
+#: iaso/api/microplanning/serializers/planning_config/bulk.py
+#: iaso/api/planning_configs/serializers/bulk_update.py
+#: iaso/api/planning_configs/serializers/update.py
+msgid ""
+"A planning configuration with this level already exists for this planning."
+msgstr ""
+"Une configuration de planning avec ce niveau existe déjà pour ce planning."
 
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
@@ -516,12 +524,6 @@ msgstr "Formulaire : %(name)s"
 msgid "Level and planning must be unique together"
 msgstr "La combinaison niveau et planning doit être unique"
 
-#: iaso/api/planning_configs/serializers/bulk_update.py
-#: iaso/api/planning_configs/serializers/update.py
-msgid ""
-"A planning configuration with this level already exists for this planning."
-msgstr "Une configuration de planning avec ce niveau existe déjà pour ce planning."
-
 #: iaso/api/profile_logs/filters.py
 msgid "User IDs"
 msgstr "IDs utilisateurs"
@@ -620,7 +622,32 @@ msgstr "ID de Version de Formulaire"
 msgid ""
 "The maximum depth of the tree to return, counting from the root of the "
 "entire hierarchy. Selecting a subtree does not reset the depth."
-msgstr "La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne réinitialise pas la profondeur."
+msgstr ""
+"La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de "
+"la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne "
+"réinitialise pas la profondeur."
+
+#: iaso/api/teams/serializer_fields.py
+#, python-brace-format
+msgid "Invalid team type, expected {expected_type}."
+msgstr "Type d'équipe non valide, {expected_type} attendu."
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+msgid "Sub teams must be in the same project"
+msgstr "Les sous-équipes doivent appartenir au même projet"
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+msgid "Teams cannot have both users and sub teams"
+msgstr "Les équipes ne peuvent pas comporter à la fois des utilisateurs et des sous-équipes."
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+#, python-format
+msgid "Incorrect type: expected %(expected_type)s"
+msgstr "Type incorrect : %(expected_type)s attendu"
+
+#: iaso/api/teams/serializers/update.py
+msgid "Cannot create loop in teams tree"
+msgstr "Impossible de créer une boucle dans l’arborescence des équipes"
 
 #: iaso/api/validation_workflow_instances/filters.py
 msgid "Org unit IDs (comma-separated)"

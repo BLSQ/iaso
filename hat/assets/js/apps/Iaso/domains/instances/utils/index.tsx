@@ -145,7 +145,7 @@ export type LocaleCode = 'en' | 'fr' | 'es' | 'pt';
 const localizeLabel = (field: Field): string => {
     // Localize a label. Sometimes a label may be a string, that is somewhat json but not totally
     // sometime it's already a Mapping.
-    const locale: LocaleCode = getCookie('django_language') ?? 'en';
+    const locale = (getCookie('django_language') ?? 'en') as LocaleCode;
     let localeOptions: Record<string, string> = { [field.name]: field.name };
 
     if (typeof field === 'object') {

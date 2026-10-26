@@ -15,6 +15,7 @@ const domainsToCheck = [
     "forms",
     "accounts",
     "algorithmRuns",
+    "missions",
     "validationWorkflowsConfiguration",
     "validationWorkflowsInstance"
 

@@ -48,7 +48,7 @@ class EnketoUtilsTests(TestCase):
 
         # Checking ENKETO_SIGNED
         enketo_signed_param = query_params[ENKETO_SIGNED][0]
-        signer = TimestampSigner(self.secret)
+        signer = TimestampSigner(key=self.secret)
         decoded_path = signer.unsign(enketo_signed_param)
         self.assertEqual(self.path, decoded_path)
 

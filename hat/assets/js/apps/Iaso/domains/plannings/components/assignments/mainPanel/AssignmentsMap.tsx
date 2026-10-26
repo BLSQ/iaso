@@ -5,6 +5,7 @@ import { FeatureCollection } from 'geojson';
 import { BaseMap } from 'Iaso/components/maps/maplibre/BaseMap';
 import { FitBoundsOnChange } from 'Iaso/components/maps/maplibre/FitBoundsOnChange';
 import { getGeoJsonBounds } from 'Iaso/components/maps/maplibre/utils';
+import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
@@ -78,6 +79,9 @@ export const AssignmentsMap: FC = () => {
                                 members.geoJson ?? EMPTY_FEATURE_COLLECTION
                             }
                             colorByOrgUnitId={colorByOrgUnitId}
+                            showPoints={
+                                selectedTeam.type === TeamType.TEAM_OF_USERS
+                            }
                         />
                         <ScopeAreaLayer
                             geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}

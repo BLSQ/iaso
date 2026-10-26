@@ -2,6 +2,7 @@ import React, { FC, useMemo } from 'react';
 import { useTheme } from '@mui/material';
 import { FeatureCollection } from 'geojson';
 import {
+    CircleLayerSpecification,
     ExpressionSpecification,
     FillLayerSpecification,
     LineLayerSpecification,
@@ -27,22 +28,32 @@ const getFillColor = (
 type Props = {
     geoJson: FeatureCollection;
     colorByOrgUnitId: Map<number, string>;
+    // Org units without a shape are drawn at their location.
+    showPoints: boolean;
 };
 
 export const AssignableOrgUnitsLayer: FC<Props> = ({
     geoJson,
     colorByOrgUnitId,
+    showPoints,
 }) => {
     const theme = useTheme();
-    const fillPaint: FillLayerSpecification['paint'] = useMemo(
-        () => ({
-            'fill-color': getFillColor(
-                colorByOrgUnitId,
-                theme.palette.grey[400],
-            ),
-            'fill-opacity': 0.6,
-        }),
+    const fillColor = useMemo(
+        () => getFillColor(colorByOrgUnitId, theme.palette.grey[400]),
         [colorByOrgUnitId, theme.palette.grey],
+    );
+    const fillPaint: FillLayerSpecification['paint'] = useMemo(
+        () => ({ 'fill-color': fillColor, 'fill-opacity': 0.6 }),
+        [fillColor],
+    );
+    const circlePaint: CircleLayerSpecification['paint'] = useMemo(
+        () => ({
+            'circle-color': fillColor,
+            'circle-radius': 6,
+            'circle-stroke-color': theme.palette.common.white,
+            'circle-stroke-width': 2,
+        }),
+        [fillColor, theme.palette.common.white],
     );
     const linePaint: LineLayerSpecification['paint'] = useMemo(
         () => ({
@@ -55,6 +66,12 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         <Source id={SOURCE_ID} type="geojson" data={geoJson}>
             <Layer id={`${SOURCE_ID}-fill`} type="fill" paint={fillPaint} />
             <Layer id={`${SOURCE_ID}-line`} type="line" paint={linePaint} />
+            <Layer
+                id={`${SOURCE_ID}-circle`}
+                type="circle"
+                paint={circlePaint}
+                layout={{ visibility: showPoints ? 'visible' : 'none' }}
+            />
         </Source>
     );
 };

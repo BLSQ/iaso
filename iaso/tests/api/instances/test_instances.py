@@ -3553,16 +3553,16 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.projects.add(self.project)
 
-        # 15, not 21: org_unit__org_unit_type and project are now select_related (previously
-        # only org_unit__version__data_source was), which folds what used to be one extra
-        # per-instance lazy-load query each into the single main query.
-        #
-        # (Was 21, not 14, before that: with_lock_info() is now applied only to the page's ids
-        # (fetched via a separate, cheap id-only query) instead of to the whole queryset before
-        # pagination, to avoid forcing PostgreSQL to evaluate (join, group, sort) the entire
-        # matching instance set before truncating it to a page, which is extremely expensive on
-        # large accounts.)
-        expected_queries = 15
+        # 1-2 SELECT permissions
+        # 3 SELECT EXISTS profile org units (geo locked)
+        # 4 SELECT profile projects (project locked)
+        # 5 COUNT
+        # 6 SELECT instances with prefetches (form, org_unit, project, device)
+        # 7 SELECT EXISTS profile org units (geo locked) - like 3, but used for lock annotations
+        # 8 SELECT EXISTS reference instances
+        # 9 SELECT details from reference instances
+        # 10-15 UPDATES
+        expected_queries = 16
 
         with self.assertNumQueries(expected_queries):
             response = self.client.get("/api/instances/?limit=3000")

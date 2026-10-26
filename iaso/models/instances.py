@@ -20,7 +20,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
+from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -99,12 +99,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
         Implementation: we decided to make the lock calculation via annotations, so it's a lot faster with large querysets.
         """
 
+        # Wrapped in a Subquery because Django doesn't allow a QuerySet inside a FilteredRelation condition.
+        user_org_unit_ids = Subquery(OrgUnit.objects.filter_for_user(user).values("id"))
+
         return (
             self.annotate(
                 lock_applying_to_user=FilteredRelation(
                     "instancelock",
                     condition=Q(
-                        ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(user)),
+                        ~Q(instancelock__top_org_unit__in=user_org_unit_ids),
                         Q(instancelock__unlocked_by__isnull=True),
                     ),
                 )

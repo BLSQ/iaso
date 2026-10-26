@@ -4,7 +4,7 @@ from .models import APIImport
 
 
 @admin.register(APIImport)
-class APIImportAdmin(admin.GeoModelAdmin):
+class APIImportAdmin(admin.GISModelAdmin):
     date_hierarchy = "created_at"
     search_fields = ("app_id", "json_body", "headers", "exception")
     autocomplete_fields = ("user",)

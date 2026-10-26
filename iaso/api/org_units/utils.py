@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.core.exceptions import ValidationError
 
@@ -36,7 +34,7 @@ def import_org_units(org_units: list[dict], user, app_id) -> list[OrgUnit]:
     return new_org_units
 
 
-def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
+def bbox_merge(a: tuple | None, b: tuple | None) -> tuple | None:
     if not a and not b:
         return None
     if not a:

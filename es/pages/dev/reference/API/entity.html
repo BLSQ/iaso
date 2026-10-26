@@ -1578,7 +1578,17 @@ submission</p>
 <span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
-<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""An entity represents a physical object or person with a known Entity Type</span>
 
 <span class="sd">    Contrary to forms, they are not linked to a specific OrgUnit.</span>
@@ -1701,6 +1711,16 @@ submission</p>
             <span class="k">if</span> <span class="p">(</span><span class="n">saved_at</span> <span class="o">:=</span> <span class="n">instance</span><span class="o">.</span><span class="n">source_created_at</span> <span class="ow">or</span> <span class="n">instance</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">instance_dates</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mission_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">mission_id</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_planning_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">planning_id</span>
 </code></pre></div></td></tr></tbody></table></div>
         </details>
 

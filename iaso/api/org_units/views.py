@@ -40,8 +40,8 @@ from iaso.permissions.core_permissions import (
 )
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
+from iaso.utils.models.common import get_creator_name, get_org_unit_parents_ref
 
-from ...utils.models.common import get_creator_name, get_org_unit_parents_ref
 from .permissions import HasCreateOrgUnitPermission, HasOrgUnitPermission
 from .utils import import_org_units
 

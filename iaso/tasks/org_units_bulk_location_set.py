@@ -90,7 +90,7 @@ def org_units_bulk_location_set(
     )
 
     with transaction.atomic():
-        for index, org_unit in enumerate(annotated_queryset.iterator()):
+        for index, org_unit in enumerate(annotated_queryset.iterator(chunk_size=2000)):
             res_string = f"{time() - start:.2f} sec, processed {index} org units"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             update_single_org_unit_location_from_bulk(

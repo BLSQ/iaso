@@ -10,8 +10,8 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
-    def setUpClass(cls) -> None:
-        super().setUpClass()
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
         cls.account = account = Account.objects.create(name="test")
         cls.other_account = other_account = Account.objects.create(name="other_account")
 

@@ -56,7 +56,7 @@ class TeamUpdateSerializer(ModelSerializer):
         if user:
             team_queryset = Team.objects.filter_for_user(user)
             self.fields["parent"].queryset = team_queryset
-            self.fields["sub_teams"].queryset = team_queryset
+            self.fields["sub_teams"].child_relation.queryset = team_queryset
             self.fields["project"].queryset = Project.objects.filter_on_user_projects(user)
 
         account = getattr(getattr(user, "iaso_profile", None), "account", None)

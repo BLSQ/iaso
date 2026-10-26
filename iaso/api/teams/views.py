@@ -8,10 +8,11 @@ import django_filters
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Count, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import filters, permissions, serializers
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.settings import api_settings
@@ -118,6 +119,13 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
         queryset = self.queryset.filter_for_user(user)
 
+        if self.action in ["destroy", "update", "partial_update"]:
+            # necessary because of the audit mixin that serialize it all before/after the mutation
+            return queryset.select_related("project", "manager", "parent").prefetch_related(
+                Prefetch("users", queryset=get_user_model().objects.only("id")),
+                Prefetch("sub_teams", queryset=Team.objects.only("id", "parent")),
+            )
+
         if self.action == "dropdown":
             return queryset.only("id", "name", "color")
 
@@ -150,7 +158,8 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                             "iaso_profile__id",
                             "iaso_profile__color",
                         )
-                        .select_related("iaso_profile"),
+                        .select_related("iaso_profile")
+                        .order_by("id"),
                     )
                 )
                 .only("path", "id", "parent", "name", "type", "color")
@@ -159,12 +168,12 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
         if self.action == "list":
             queryset = queryset.select_related("project").prefetch_related(
-                Prefetch("users", get_user_model().objects.only("id", "username")),
+                Prefetch("users", get_user_model().objects.only("id", "username").order_by("id")),
                 Prefetch(
                     "sub_teams",
-                    Team.objects_include_deleted.filter_for_user(user).only(
-                        "id", "name", "deleted_at", "color", "parent"
-                    ),
+                    Team.objects_include_deleted.filter_for_user(user)
+                    .only("id", "name", "deleted_at", "color", "parent")
+                    .order_by("id"),
                 ),
             )
 
@@ -193,9 +202,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                 ),
                 Prefetch(
                     "sub_teams",
-                    Team.objects_include_deleted.filter_for_user(user).only(
-                        "id", "name", "deleted_at", "color", "parent"
-                    ),
+                    Team.objects_include_deleted.filter_for_user(user)
+                    .only("id", "name", "deleted_at", "color", "parent")
+                    .order_by("id"),
                 ),
             )
             return queryset
@@ -233,3 +242,13 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         queryset = self.get_queryset()
         data = self._build_team_tree(queryset)
         return Response(data)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # soft deletable
+        instance.updated_by = request.user
+        instance.save(update_fields=["updated_by"])
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

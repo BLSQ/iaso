@@ -22,9 +22,14 @@ class TeamCreateSerializer(ModelSerializer):
     manager = serializers.PrimaryKeyRelatedField(
         write_only=True, required=True, allow_null=False, queryset=get_user_model().objects.none()
     )
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.none(), required=True)
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.none(), required=True, write_only=True)
     users = serializers.PrimaryKeyRelatedField(
-        queryset=get_user_model().objects.none(), required=False, allow_null=True, allow_empty=True, many=True
+        queryset=get_user_model().objects.none(),
+        required=False,
+        allow_null=True,
+        allow_empty=True,
+        many=True,
+        write_only=True,
     )
 
     class Meta:
@@ -56,7 +61,7 @@ class TeamCreateSerializer(ModelSerializer):
         if user:
             team_queryset = Team.objects.filter_for_user(user)
             self.fields["parent"].queryset = team_queryset
-            self.fields["sub_teams"].queryset = team_queryset
+            self.fields["sub_teams"].child_relation.queryset = team_queryset
             self.fields["project"].queryset = Project.objects.filter_on_user_projects(user)
 
         account = getattr(getattr(user, "iaso_profile", None), "account", None)
@@ -87,10 +92,10 @@ class TeamCreateSerializer(ModelSerializer):
     def validate(self, attrs: dict) -> dict:
         validated_data = super().validate(attrs)
 
-        project = validated_data.get("project", self.instance.project)
-        sub_teams = validated_data.get("sub_teams", self.instance.sub_teams.all())
-        users = validated_data.get("users", self.instance.users.all())
-        team_type = validated_data.get("type", self.instance.type)
+        project = validated_data.get("project", None)
+        sub_teams = validated_data.get("sub_teams", [])
+        users = validated_data.get("users", [])
+        team_type = validated_data.get("type", None)
 
         if any(sub_team.project != project for sub_team in sub_teams):
             raise serializers.ValidationError(_("Sub teams must be in the same project"))

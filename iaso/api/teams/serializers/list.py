@@ -37,8 +37,8 @@ class TeamListSerializer(ModelSerializer, DynamicFieldsModelSerializerBackwardCo
 
     class Meta:
         model = Team
-        fields = ["id", "name", "color", "type", "project", "members_count", "users", "sub_teams"]
-        default_fields = fields
+        fields = ["id", "name", "color", "type", "project", "users", "sub_teams", "members_count"]
+        default_fields = [f for f in fields if f != "members_count"]
         read_only_fields = fields
 
     @extend_schema_field(serializers.IntegerField)

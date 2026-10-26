@@ -122,7 +122,7 @@ def handle_enketo_error(response):
 
 
 def generate_signed_url(path: str, secret: str, expiry_seconds=300, extra_params: dict = {}) -> str:
-    signer = TimestampSigner(secret)
+    signer = TimestampSigner(key=secret)
     signed_path = signer.sign(path)
     expires = int(time.time()) + expiry_seconds
     params = urlencode({**extra_params, "expires": expires, "signed": signed_path})
@@ -140,7 +140,7 @@ def verify_signed_url(request, secret: str) -> bool:
     if int(expires) < int(time.time()):
         return False
 
-    signer = TimestampSigner(secret)
+    signer = TimestampSigner(key=secret)
     try:
         original = signer.unsign(signed)
         return original == path

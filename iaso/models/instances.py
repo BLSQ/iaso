@@ -37,6 +37,7 @@ from ..utils.dhis2 import generate_id_for_dhis_2
 from .common import ValidationWorkflowArtefact, ValidationWorkflowArtefactQuerySet
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
+from .missions import MissionArtefact
 from .org_unit import OrgUnit, OrgUnitReferenceInstance
 
 
@@ -488,7 +489,7 @@ class InMemoryTask:
         pass
 
 
-class Instance(ValidationWorkflowArtefact):
+class Instance(MissionArtefact, ValidationWorkflowArtefact):
     """A series of answers by an individual for a specific form
 
     Note that instances are called "Submissions" in the UI
@@ -499,9 +500,14 @@ class Instance(ValidationWorkflowArtefact):
     STATUS_EXPORTED = "EXPORTED"
     STATUSES = [STATUS_READY, STATUS_DUPLICATED, STATUS_EXPORTED]
 
-    ALWAYS_ALLOWED_PATHS_XML = set(
-        ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]
-    )
+    ALWAYS_ALLOWED_PATHS_XML = {
+        "formhub",
+        "formhub/uuid",
+        "meta",
+        "meta/instanceID",
+        "meta/editUserID",
+        "meta/deprecatedID",
+    }
 
     REFERENCE_FLAG_CODE = "flag"
     REFERENCE_UNFLAG_CODE = "unflag"
@@ -538,15 +544,6 @@ class Instance(ValidationWorkflowArtefact):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
-    planning = models.ForeignKey("Planning", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")
-    mission = models.ForeignKey(
-        "Mission",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="instances",
-        help_text="The mission this submission fulfills, within Instance.planning",
-    )
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )

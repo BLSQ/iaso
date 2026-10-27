@@ -194,3 +194,20 @@ class MissionEntityType(MissionWithForms):
 
     def get_form_assignments(self, org_unit: "OrgUnit") -> list[MissionFormThroughForm]:
         return []
+
+
+class MissionArtefact(models.Model):
+    mission = models.ForeignKey(
+        "Mission", on_delete=models.SET_NULL, blank=True, null=True, related_name="%(class)ss"
+    )  # double s to make it plural
+    planning = models.ForeignKey(
+        "Planning",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text=_("The mission it fulfills, within planning"),
+        related_name="%(class)ss",
+    )  # double s to make it plural
+
+    class Meta:
+        abstract = True

@@ -32,7 +32,7 @@ const ChipListComponent = <T extends string | boolean | number>({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const toggleChip = useCallback(
-        chipValue => {
+        (chipValue: T) => {
             const newValue = value.includes(chipValue)
                 ? value.filter(singleValue => singleValue !== chipValue)
                 : [...value, chipValue];
@@ -48,6 +48,7 @@ const ChipListComponent = <T extends string | boolean | number>({
                 return (
                     <Chip
                         disabled={value.length === 1 && isActive}
+                        variant="outlined"
                         key={option.value}
                         label={option.label}
                         className={classes.marginLeft}

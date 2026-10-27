@@ -64,6 +64,9 @@ class HelpOrDocTest(SimpleTestCase):
         self.assertIn("project", content)
         self.assertIn("api_token=iaso_token", content)
         self.assertIn("client.raw", content)
+        self.assertIn("client.login(api_token=iaso_token)", content)
+        self.assertNotIn("set_api_token", content)
+        self.assertNotIn("base_url=iaso_url, api_token", content)
 
     def test_mcp_auth_instructions_forbid_openhexa_connections(self):
         from iaso.mcp.help import mcp_auth_instructions
@@ -119,7 +122,11 @@ class HelpOrDocTest(SimpleTestCase):
         self.assertIn("api_token=iaso_token", params["secrets"])
         self.assertEqual(
             params["iaso_client"]["construct"],
-            "IasoClient(base_url=iaso_url, api_token=iaso_token)",
+            "IasoClient(base_url=iaso_url)",
+        )
+        self.assertEqual(
+            params["iaso_client"]["authenticate"],
+            "client.login(api_token=iaso_token)",
         )
         self.assertIn("client.raw", params["iaso_client"]["raw_get"])
         self.assertEqual(

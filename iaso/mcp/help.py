@@ -46,7 +46,7 @@ Read tools are paginated (default 10, max 50).
 
 **Escape hatch**
 - `iaso_raw` — any `/api/` path in this process. GET runs immediately. POST/PATCH/PUT/DELETE preview unless `confirm=true`.
-- In an OpenHEXA pipeline, the Python client is separate: `IasoClient(base_url=iaso_url, api_token=iaso_token)`, then `client.raw("entities/")` for a GET that has no typed method. Topic `openhexa`.
+- In an OpenHEXA pipeline, the Python client is separate: `IasoClient(base_url=iaso_url)` + `client.login(api_token=iaso_token)`, then `client.raw("entities/")` for a GET that has no typed method. Topic `openhexa`.
 
 **Writes**
 Before any write (`iaso_raw` with confirm=true, apply tools, or an OpenHEXA
@@ -112,7 +112,8 @@ Do not hard-code credentials in `pipeline.py`.
 
 ## iaso-client in the pipeline
 
-Prefer the API token. Skip `login()` when `iaso_token` is available.
+Prefer the API token. `login(api_token=...)` is the only way to pass
+it, and it makes no request.
 `iaso_url` is a normal parameter from `iaso_openhexa_auth_params`.
 `iaso_token` is an OpenHEXA Secret from this same session (the JWT from
 `GET /api/apitoken/` or the `access` field of `POST /api/token/`).
@@ -121,14 +122,17 @@ Do not read `IASO_API_TOKEN` from `.env`.
 ```python
 from iaso_client import IasoClient
 
-client = IasoClient(base_url=iaso_url, api_token=iaso_token)
+client = IasoClient(base_url=iaso_url)
+client.login(api_token=iaso_token)
 ```
 
-A value that already starts with `Bearer ` is accepted.
-`client.set_api_token(token)` sets the token after construction.
+A value that already starts with `Bearer ` is accepted. Pass either
+`api_token` or credentials, not both. Calling `login()` again replaces
+the previous token.
 
-Use `client.login(iaso_login, iaso_password)` only when there is no token.
-`iaso_password` is also an OpenHEXA Secret.
+Use `client.login(username=iaso_login, password=iaso_password)` only
+when there is no token. Always pass arguments by name: positional
+credentials are deprecated. `iaso_password` is also an OpenHEXA Secret.
 
 Typed reads: `org_units_list`, `org_unit_types_list`, `forms_list`,
 `form_versions_list`, `instances_list`, `instance_files_list`.
@@ -331,8 +335,9 @@ def mcp_auth_instructions() -> str:
         "iaso_whoami is the account. Tools run in-process with that user's "
         "permissions — no stored remote tokens. "
         "With OpenHEXA, pass iaso_url / iaso_login from iaso_openhexa_auth_params. "
-        "In pipeline code: IasoClient(base_url=iaso_url, api_token=iaso_token) "
-        "and skip login(). iaso_token is an OpenHEXA Secret from this session, "
+        "In pipeline code: client = IasoClient(base_url=iaso_url); "
+        "client.login(api_token=iaso_token) (no password, no token request). "
+        "iaso_token is an OpenHEXA Secret from this session, "
         "not .env. Untyped GETs: client.raw(path) relative to /api/ "
         "(page=1, max_page_size=50). "
         "NEVER use .env / IASO_* env vars. "
@@ -382,13 +387,17 @@ def openhexa_pipeline_auth_params(whoami: dict[str, Any]) -> dict[str, Any]:
             "iaso_login": login,
         },
         "secrets": (
-            "Pass iaso_token (preferred) as an OpenHEXA Secret and construct "
-            "IasoClient(base_url=iaso_url, api_token=iaso_token). Skip login(). "
-            "Use iaso_password and client.login() only when there is no token. "
+            "Pass iaso_token (preferred) as an OpenHEXA Secret: "
+            "IasoClient(base_url=iaso_url), then "
+            "client.login(api_token=iaso_token) (no request). "
+            "Use iaso_password with "
+            "client.login(username=iaso_login, password=iaso_password) "
+            "only when there is no token. "
             "Never copy secrets from .env or an OpenHEXA connection."
         ),
         "iaso_client": {
-            "construct": "IasoClient(base_url=iaso_url, api_token=iaso_token)",
+            "construct": "IasoClient(base_url=iaso_url)",
+            "authenticate": "client.login(api_token=iaso_token)",
             "raw_get": (
                 "client.raw(path) for a GET with no typed method. "
                 "Path is relative to /api/. Paginated: page=1, max_page_size=50. "

@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
 from iaso.models import Project, Team
+from iaso.utils.serializer.color import ColorFieldSerializer
 
 
 class TeamRetrieveNestedProjectSerializer(ModelSerializer):
@@ -14,10 +15,11 @@ class TeamRetrieveNestedProjectSerializer(ModelSerializer):
 
 class TeamRetrieveNestedUserSerializer(ModelSerializer):
     iaso_profile_id = serializers.IntegerField(source="iaso_profile.id", read_only=True, allow_null=True)
+    color = ColorFieldSerializer(read_only=True, source="iaso_profile.color", allow_null=True)
 
     class Meta:
         model = get_user_model()
-        fields = ["id", "username", "first_name", "last_name", "iaso_profile_id"]
+        fields = ["id", "username", "first_name", "last_name", "iaso_profile_id", "color"]
         read_only_fields = fields
 
 

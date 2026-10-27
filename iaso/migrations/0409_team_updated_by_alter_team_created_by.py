@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0407_planningconfig_planningconfig_level_gte_1_and_more"),
+        ("iaso", "0408_orgunit_mission_orgunit_planning_and_more"),
     ]
 
     operations = [

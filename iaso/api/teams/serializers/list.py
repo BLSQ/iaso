@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -15,29 +14,14 @@ class TeamListNestedProjectSerializer(ModelSerializer):
         read_only_fields = fields
 
 
-class TeamListNestedUserSerializer(ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ["id", "username"]
-        read_only_fields = fields
-
-
-class TeamListNestedTeamSerializer(ModelSerializer):
-    class Meta:
-        model = Team
-        fields = ["id", "name", "deleted_at", "color"]
-        read_only_fields = fields
-
-
 class TeamListSerializer(ModelSerializer, DynamicFieldsModelSerializerBackwardCompatible):
-    users = TeamListNestedUserSerializer(many=True, read_only=True, allow_null=True, allow_empty=True)
     project = TeamListNestedProjectSerializer(many=False, read_only=True, allow_null=False)
-    sub_teams = TeamListNestedTeamSerializer(many=True, read_only=True, allow_null=True, allow_empty=True)
     members_count = serializers.SerializerMethodField()
+    type = serializers.ChoiceField(read_only=True, allow_null=True, choices=TeamType.choices)
 
     class Meta:
         model = Team
-        fields = ["id", "name", "color", "type", "project", "users", "sub_teams", "members_count"]
+        fields = ["id", "name", "color", "type", "project", "members_count"]
         default_fields = [f for f in fields if f != "members_count"]
         read_only_fields = fields
 

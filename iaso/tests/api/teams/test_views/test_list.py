@@ -103,7 +103,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             res = self.client.get(
                 self.url,
                 data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE},
@@ -374,11 +374,12 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidResponse(res_data, 10)
         self.assertTrue(all(members_count_field in x for x in res_data["results"]))
 
-    def test_should_see_soft_deleted_sub_teams(self):
+    def test_members_count_include_soft_deleted_sub_teams(self):
         self.team.delete()
         self.team.refresh_from_db()
 
         self.assertIsNotNone(self.team.deleted_at)
+        self.assertEqual(self.root_team.type, TeamType.TEAM_OF_TEAMS)
 
         self.client.force_authenticate(self.superuser)
         res = self.client.get(
@@ -394,13 +395,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         root_team = res_data["results"][0]
         self.assertEqual(root_team["id"], self.root_team.pk)
 
-        self.assertEqual(len(root_team["sub_teams"]), 1)
         self.assertEqual(root_team["members_count"], 1)
-
-        root_team_sub_team = root_team["sub_teams"][0]
-
-        self.assertEqual(root_team_sub_team["id"], self.team.pk)
-        self.assertIsNotNone(root_team_sub_team["deleted_at"])
 
     def test_response(self):
         self.client.force_authenticate(self.superuser)
@@ -423,10 +418,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#0000FF",
                     "type": "TEAM_OF_TEAMS",
                     "project": {"id": self.project1.pk, "name": "project1", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [
-                        {"id": self.team.pk, "name": "team1", "deleted_at": None, "color": "#0000FF"},
-                    ],
                     "members_count": 1,
                 },
                 {
@@ -435,14 +426,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#0000FF",
                     "type": "TEAM_OF_TEAMS",
                     "project": {"id": self.project1.pk, "name": "project1", "color": "#1976D2"},
-                    "users": [
-                        {"id": self.user_with_perms.pk, "username": "user_with_perms"},
-                        {"id": self.superuser.pk, "username": "superuser"},
-                    ],
-                    "sub_teams": [
-                        {"id": self.sub_team_1.pk, "name": "sub_team_1", "deleted_at": None, "color": "#EF5350"},
-                        {"id": self.sub_team_2.pk, "name": "sub_team_2", "deleted_at": None, "color": "#EF5350"},
-                    ],
                     "members_count": 2,
                 },
                 {
@@ -451,15 +434,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": "TEAM_OF_TEAMS",
                     "project": {"id": self.project2.pk, "name": "project2", "color": "#1976D2"},
-                    "users": [
-                        {"id": self.user_no_perm.pk, "username": "user_no_perm"},
-                        {"id": self.user_with_perms.pk, "username": "user_with_perms"},
-                        {"id": self.superuser.pk, "username": "superuser"},
-                    ],
-                    "sub_teams": [
-                        {"id": self.sub_team_3.pk, "name": "sub_team_3", "deleted_at": None, "color": "#EF5350"},
-                        {"id": self.sub_team_4.pk, "name": "sub_team_4", "deleted_at": None, "color": "#EF5350"},
-                    ],
                     "members_count": 2,
                 },
                 {
@@ -468,11 +442,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": "TEAM_OF_TEAMS",
                     "project": {"id": self.project1.pk, "name": "project1", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [
-                        {"id": self.sub_team_1_2.pk, "name": "sub_team_1_2", "deleted_at": None, "color": "#EF5350"},
-                        {"id": self.sub_team_1_3.pk, "name": "sub_team_1_3", "deleted_at": None, "color": "#EF5350"},
-                    ],
                     "members_count": 2,
                 },
                 {
@@ -481,10 +450,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": "TEAM_OF_TEAMS",
                     "project": {"id": self.project1.pk, "name": "project1", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [
-                        {"id": self.sub_team_2_1.pk, "name": "sub_team_2_1", "deleted_at": None, "color": "#EF5350"},
-                    ],
                     "members_count": 1,
                 },
                 {
@@ -493,8 +458,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": None,
                     "project": {"id": self.project1.pk, "name": "project1", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [],
                     "members_count": 0,
                 },
                 {
@@ -503,8 +466,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": None,
                     "project": {"id": self.project2.pk, "name": "project2", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [],
                     "members_count": 0,
                 },
                 {
@@ -513,8 +474,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": None,
                     "project": {"id": self.project2.pk, "name": "project2", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [],
                     "members_count": 0,
                 },
                 {
@@ -523,8 +482,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": None,
                     "project": {"id": self.project2.pk, "name": "project2", "color": "#1976D2"},
-                    "users": [],
-                    "sub_teams": [],
                     "members_count": 0,
                 },
                 {
@@ -533,11 +490,6 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "color": "#EF5350",
                     "type": "TEAM_OF_USERS",
                     "project": {"id": self.project1.pk, "name": "project1", "color": "#1976D2"},
-                    "users": [
-                        {"id": self.user_no_perm.pk, "username": "user_no_perm"},
-                        {"id": self.user_with_perms.pk, "username": "user_with_perms"},
-                    ],
-                    "sub_teams": [],
                     "members_count": 2,
                 },
             ],

@@ -17,9 +17,11 @@ from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.settings import api_settings
 
+from .pagination import TeamPagination
 from .serializers.create import TeamCreateSerializer
 from .serializers.list import TeamListSerializer
 from .serializers.retrieve import TeamRetrieveSerializer
+from .serializers.types_dropdown import TeamTypeDropdownSerializer
 from .serializers.update import TeamUpdateSerializer
 
 
@@ -37,7 +39,7 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
     is_field_referenced,
 )
-from iaso.models.team import Team, TeamQuerySet
+from iaso.models.team import Team, TeamQuerySet, TeamType
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 
 from .filters import (
@@ -63,12 +65,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     queryset = Team.objects.all()
     ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
     ordering = ["name"]
-
-    filterset_fields = {
-        "id": ["in"],
-        "name": ["icontains"],
-        "project": ["exact"],
-    }
+    pagination_class = TeamPagination
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     audit_serializer = AuditTeamSerializer
 
@@ -109,12 +106,17 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             return TeamUpdateSerializer
         if self.action == "destroy":
             return serializers.Serializer
+        if self.action == "types_dropdown":
+            return TeamTypeDropdownSerializer
         raise NotImplementedError(f"Serializer not implemented for action: {self.action}.")
 
     def get_queryset(self) -> TeamQuerySet:
         user = self.request.user
 
         if not user.is_authenticated:
+            return self.queryset.none()
+
+        if self.action == "types_dropdown":
             return self.queryset.none()
 
         queryset = self.queryset.filter_for_user(user)
@@ -127,7 +129,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             )
 
         if self.action == "dropdown":
-            return queryset.only("id", "name", "color")
+            return queryset.only("id", "name", "color", "type")
 
         if self.action == "tree":
             filterset = TeamTreeFilter(
@@ -167,15 +169,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             )
 
         if self.action == "list":
-            queryset = queryset.select_related("project").prefetch_related(
-                Prefetch("users", get_user_model().objects.only("id", "username").order_by("id")),
-                Prefetch(
-                    "sub_teams",
-                    Team.objects_include_deleted.filter_for_user(user)
-                    .only("id", "name", "deleted_at", "color", "parent")
-                    .order_by("id"),
-                ),
-            )
+            queryset = queryset.select_related("project")
 
             order = self.request.query_params.get(api_settings.ORDERING_PARAM, "")
 
@@ -198,7 +192,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                     "users",
                     get_user_model()
                     .objects.select_related("iaso_profile")
-                    .only("id", "username", "first_name", "last_name", "iaso_profile"),
+                    .only("id", "username", "first_name", "last_name", "iaso_profile", "iaso_profile__color"),
                 ),
                 Prefetch(
                     "sub_teams",
@@ -252,3 +246,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(responses=TeamTypeDropdownSerializer(many=True))
+    @action(detail=False, methods=["GET"], pagination_class=None, url_path="types-dropdown")
+    def types_dropdown(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(TeamType, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

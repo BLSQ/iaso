@@ -1,34 +1,53 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
+import { useApiTeamsList } from 'Iaso/api/teams';
 import { ColumnsSelectDrawer } from 'Iaso/components/tables/ColumnSelectDrawer';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useActiveParams } from 'Iaso/routing/hooks/useActiveParams';
-import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { useUrlParams } from 'Iaso/hooks/useUrlParams';
+import {
+    ParamsWithAccountId,
+    useParamsObject,
+} from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
 import { AddTeamModal } from './components/CreateEditTeam';
 import { TeamFilters } from './components/TeamFilters';
-import { useTeamsColumnSelectDrawer } from './components/useTeamColumnSelectDrawer';
+import {
+    DEFAULT_TEAMS_COLUMNS,
+    useTeamsColumnSelectDrawer,
+} from './components/useTeamColumnSelectDrawer';
 import { useTeamColumns } from './config';
-import { useGetTeams } from './hooks/requests/useGetTeams';
 import MESSAGES from './messages';
-import { TeamUrlParams } from './types/team';
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
+const defaults = {
+    order: 'name',
+    pageSize: 20,
+    page: 1,
+};
+
 const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl);
-    const apiParams = useActiveParams(params) as unknown as TeamUrlParams;
+    const params: ParamsWithAccountId & Partial<UrlParams> =
+        useParamsObject(baseUrl);
+    const urlParams = useUrlParams(params, defaults);
+    const { limit, page, fields, types, ...apiParams } = urlParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetTeams(apiParams);
+    const { data, isFetching } = useApiTeamsList({
+        limit: limit ? parseInt(limit) : undefined,
+        page: page ? parseInt(page) : undefined,
+        fields: fields ? fields.split(',') : DEFAULT_TEAMS_COLUMNS,
+        types: types ? types.split(',') : [],
+        ...apiParams,
+    });
     const defaultSorted = [{ id: 'id', desc: true }];
-    const rawColumns = useTeamColumns({ params: apiParams, data });
+    const rawColumns = useTeamColumns();
 
     const {
         options,
@@ -36,7 +55,7 @@ export const Teams: FunctionComponent = () => {
         visibleColumns,
         handleApplyOptions,
         isDisabled,
-    } = useTeamsColumnSelectDrawer(rawColumns, apiParams, baseUrl);
+    } = useTeamsColumnSelectDrawer(rawColumns, urlParams, baseUrl);
 
     return (
         <>
@@ -45,7 +64,7 @@ export const Teams: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <TeamFilters params={apiParams} />
+                <TeamFilters params={urlParams} />
                 <Box display="flex" justifyContent="flex-end" mb={2}>
                     <ColumnsSelectDrawer
                         options={options}

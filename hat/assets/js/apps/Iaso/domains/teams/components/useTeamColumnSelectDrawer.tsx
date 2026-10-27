@@ -8,7 +8,7 @@ export const DEFAULT_TEAMS_COLUMNS = [
     'id',
     'color',
     'name',
-    'project_details',
+    'project',
     'type',
     'members_count',
 ];

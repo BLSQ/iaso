@@ -6,6 +6,7 @@ from functools import reduce
 from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.db.models import F
+from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField
 
 from iaso.models import Account, Project
@@ -67,8 +68,8 @@ class TeamQuerySet(models.QuerySet):
 
 
 class TeamType(models.TextChoices):
-    TEAM_OF_TEAMS = "TEAM_OF_TEAMS", "Team of teams"
-    TEAM_OF_USERS = "TEAM_OF_USERS", "Team of users"
+    TEAM_OF_TEAMS = "TEAM_OF_TEAMS", _("Team of teams")
+    TEAM_OF_USERS = "TEAM_OF_USERS", _("Team of users")
 
     @classmethod
     def is_valid_team_type(cls, value):

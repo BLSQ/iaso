@@ -16,6 +16,7 @@ import {
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -30,7 +31,6 @@ import PeriodPicker from '../periods/components/PeriodPicker';
 import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { PlanningsDropdown } from '../plannings/components/shared/PlanningsDropdown';
 import { useGetProjectsDropdownOptions } from '../projects/hooks/requests';
-import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
 import MESSAGES from './messages';
 
@@ -72,7 +72,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const { data: orgUnitTypes, isFetching: fetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown({});
+        useApiTeamsDropdownList();
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
     }, [params]);

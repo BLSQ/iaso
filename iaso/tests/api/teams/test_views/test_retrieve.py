@@ -180,6 +180,7 @@ class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "first_name": user.first_name,
                     "last_name": user.last_name,
                     "iaso_profile_id": user.iaso_profile.id,
+                    "color": user.iaso_profile.color,
                 }
                 for user in [self.user_with_perms, self.superuser]
             ],
@@ -220,6 +221,7 @@ class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "first_name": self.user_with_perms.first_name,
                 "last_name": self.user_with_perms.last_name,
                 "iaso_profile_id": self.user_with_perms.iaso_profile.id,
+                "color": self.user_with_perms.iaso_profile.color,
             },
         )
 

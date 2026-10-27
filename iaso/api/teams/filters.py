@@ -32,5 +32,6 @@ class TeamListFilter(django_filters.FilterSet):
 
 class TeamDropdownFilter(django_filters.FilterSet):
     ids = NumberInFilter(field_name="id")
+    exclude_ids = NumberInFilter(field_name="id", exclude=True)
     projects = NumberInFilter(field_name="project_id")
     types = django_filters.MultipleChoiceFilter(field_name="type", choices=TeamType.choices)

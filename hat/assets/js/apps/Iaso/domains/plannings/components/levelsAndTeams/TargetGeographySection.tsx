@@ -2,12 +2,12 @@ import React, { FC, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Grid, Stack, Typography } from '@mui/material';
 import { makeFullModal, useSafeIntl } from 'bluesquare-components';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { CreateEditTeam } from 'Iaso/domains/teams/components/CreateEditTeam';
-import { useGetTeamsDropdown } from 'Iaso/domains/teams/hooks/requests/useGetTeams';
 import { Team } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
@@ -58,10 +58,13 @@ export const TargetGeographySection: FC = () => {
         values.selectedOrgUnit?.toString(),
     );
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown(
-            { project: values.project },
-            undefined,
-            Boolean(values.project),
+        useApiTeamsDropdownList(
+            { projects: values?.project ? [values.project] : [] },
+            {
+                query: {
+                    enabled: Boolean(values.project),
+                },
+            },
         );
 
     const onConfirmOrgUnit = useCallback(

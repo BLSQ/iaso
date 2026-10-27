@@ -120,7 +120,7 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # Check that only the expected fields are present
         team_data = next(iter([i for i in r if i["value"] == self.team1.pk]))
-        expected_fields = {"label", "value", "color"}
+        expected_fields = {"label", "value", "color", "type"}
         self.assertEqual(set(team_data.keys()), expected_fields)
 
         # check some fields
@@ -130,17 +130,14 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "value": self.team1.pk,
                 "label": self.team1.name,
                 "color": self.team1.color.upper(),
+                "type": TeamType.TEAM_OF_TEAMS,
             },
         )
 
         second_team = next(iter([i for i in r if i["value"] == self.team2.pk]))
         self.assertEqual(
             second_team,
-            {
-                "value": self.team2.pk,
-                "label": self.team2.name,
-                "color": "#FF5733",
-            },
+            {"value": self.team2.pk, "label": self.team2.name, "color": "#FF5733", "type": TeamType.TEAM_OF_TEAMS},
         )
 
     def test_filters_ids(self):
@@ -157,6 +154,24 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res = self.client.get(self.url, data={"ids": ",".join([str(Team.objects.order_by("-id").first().pk + 1)])})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)
+
+    def test_filters_exclude_ids(self):
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.url)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 9)
+
+        res = self.client.get(self.url, data={"exclude_ids": ",".join(map(str, [self.team1.pk, self.team2.pk]))})
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 7)
+        self.assertNotIn(self.team1.pk, [x["value"] for x in res_data])
+        self.assertNotIn(self.team2.pk, [x["value"] for x in res_data])
+
+        res = self.client.get(
+            self.url, data={"exclude_ids": ",".join([str(Team.objects.order_by("-id").first().pk + 1)])}
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 9)
 
     def test_filters_projects(self):
         self.client.force_authenticate(self.superuser)

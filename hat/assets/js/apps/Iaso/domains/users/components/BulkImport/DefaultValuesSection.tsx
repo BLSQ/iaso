@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Grid } from '@mui/material';
 import { useFormikContext } from 'formik';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import { useAppLocales } from 'Iaso/domains/app/constants';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
-import { useGetTeamsDropdown } from 'Iaso/domains/teams/hooks/requests/useGetTeams';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
 import { useGetPermissionsDropDown } from 'Iaso/domains/users/hooks/useGetPermissionsDropdown';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -31,7 +31,7 @@ export const DefaultValuesSection: React.FC<DefaultValuesSectionProps> = ({
     const { data: userRolesData, isLoading: isLoadingUserRoles } =
         useGetUserRolesDropDown();
     const { data: teamsData, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown({});
+        useApiTeamsDropdownList();
     const appLocales = useAppLocales();
 
     const availableProjects = useMemo(() => {

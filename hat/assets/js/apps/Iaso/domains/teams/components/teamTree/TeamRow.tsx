@@ -33,12 +33,12 @@ const styles = {
 } satisfies SxStyles;
 
 const TEAM_TYPE_DISPLAY = {
-    [TeamType.TEAM_OF_TEAMS]: {
+    [TeamType.enum.TEAM_OF_TEAMS]: {
         label: MESSAGES.teamOfTeams,
         countLabel: MESSAGES.teamsCount,
         getCount: (team: TeamTreeNode) => team.children.length,
     },
-    [TeamType.TEAM_OF_USERS]: {
+    [TeamType.enum.TEAM_OF_USERS]: {
         label: MESSAGES.teamOfUsers,
         countLabel: MESSAGES.usersCount,
         getCount: (team: TeamTreeNode) => team.users.length,
@@ -91,7 +91,7 @@ export const TeamRow: FC<TeamRowProps> = ({
                 )
             }
         >
-            {team.type === TeamType.TEAM_OF_USERS ? (
+            {team.type === TeamType.enum.TEAM_OF_USERS ? (
                 <GroupsIcon color="primary" sx={styles.icon} />
             ) : (
                 <AccountTreeIcon color="primary" sx={styles.icon} />
@@ -178,7 +178,7 @@ export const EditableTeamRow: FC<EditableTeamRowProps> = ({
         {
             key: 'changeType',
             label: formatMessage(
-                getToggledType(team) === TeamType.TEAM_OF_TEAMS
+                getToggledType(team) === TeamType.enum.TEAM_OF_TEAMS
                     ? MESSAGES.changeToTeamOfTeams
                     : MESSAGES.changeToTeamOfUsers,
             ),

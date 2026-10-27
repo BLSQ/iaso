@@ -12,7 +12,7 @@ class ValidationNodeTemplateMoveSerializer(serializers.Serializer):
     position = serializers.ChoiceField(choices=PositionChoices.choices, write_only=True, required=True)
 
     def __init__(self, *args, **kwargs):
-        super(ValidationNodeTemplateMoveSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         request = self.context.get("request")
         user = getattr(request, "user", None)
         iaso_profile = getattr(user, "iaso_profile", None)

@@ -84,7 +84,7 @@ def instance_reference_bulk_link(
         if AllowedActions.LINK.value in actions:
             instances_to_link = queryset.filter(id__in=infos["not_linked"])
             for index, instance in enumerate(instances_to_link):
-                res_string = "%.2f sec, processed %i instances" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} instances"
                 task.report_progress_and_stop_if_killed(
                     progress_message=res_string, end_value=total, progress_value=index
                 )
@@ -95,10 +95,10 @@ def instance_reference_bulk_link(
         if AllowedActions.UNLINK.value in actions:
             instances_to_unlink = queryset.filter(id__in=infos["linked"])
             for index, instance in enumerate(instances_to_unlink):
-                res_string = "%.2f sec, processed %i instances" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} instances"
                 task.report_progress_and_stop_if_killed(
                     progress_message=res_string, end_value=total, progress_value=index
                 )
                 unlink_single_reference_instance_from_org_unit(user, instance)
 
-        task.report_success(message="%d modified" % total)
+        task.report_success(message=f"{total} modified")

@@ -433,7 +433,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         task_service.run_all()
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
-        response = self.client.get("/api/tasks/%d/" % task.id)
+        response = self.client.get(f"/api/tasks/{task.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Task completion status
         return self.assertValidTaskAndInDB(response.json(), new_status)

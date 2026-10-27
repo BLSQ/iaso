@@ -812,7 +812,7 @@ class DataValueExporter:
             )
 
             if map_errors:
-                message = "ERROR while processing " + prefix + ", instance_id %d" % (instance.id,)
+                message = f"ERROR while processing {prefix}, instance_id {instance.id}"
                 exception = InstanceExportError(message, {}, list(map(lambda x: x[0] + " " + str(x[1]), map_errors)))
 
                 raise exception
@@ -900,7 +900,7 @@ class DataValueExporter:
         export_statuses = []
         for page in range(1, paginator.num_pages + 1):
             page_start = timer()
-            prefix = "page %d/%d" % (page, paginator.num_pages)
+            prefix = f"page {page}/{paginator.num_pages}"
 
             try:
                 export_statuses = paginator.page(page).object_list
@@ -928,11 +928,9 @@ class DataValueExporter:
 
                 page_end = timer()
                 page_time = page_end - page_start
-                message = prefix + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped, %d error count" % (
-                    page_time,
-                    stats["batched_time"],
-                    len(skipped),
-                    stats["errored_count"],
+                message = (
+                    f"{prefix} in {page_time:1.2f} sec (dhis2 time {stats['batched_time']:1.2f} batched): "
+                    f"{len(skipped)} skipped, {stats['errored_count']} error count"
                 )
                 logger.debug(message)
 

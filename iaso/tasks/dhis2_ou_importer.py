@@ -442,7 +442,7 @@ def import_orgunits_and_groups(
 
         # log progress every 100 orgunits
         if index % 100 == 0:
-            res_string = "%.2f sec, processed %i org units" % (time.time() - start, index + 1)
+            res_string = f"{time.time() - start:.2f} sec, processed {index + 1} org units"
             task.report_progress_and_stop_if_killed(
                 progress_message=res_string, progress_value=index, end_value=len(orgunits)
             )

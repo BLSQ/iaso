@@ -79,7 +79,7 @@ class CopyVersionTestCase(APITestCase):
             response.status_code, status.HTTP_200_OK
         )  # you can overwrite a version when setting force=true
 
-        response = self.client.get("/api/tasks/%d/" % task["id"])
+        response = self.client.get(f"/api/tasks/{task['id']}/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         body = response.json()
@@ -144,7 +144,7 @@ class CopyVersionTestCase(APITestCase):
 
         task_service.run_all()
 
-        response = self.client.get("/api/tasks/%d/" % task["id"])
+        response = self.client.get(f"/api/tasks/{task['id']}/")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         body = response.json()

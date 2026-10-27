@@ -95,7 +95,7 @@ class Dumper:
             if field == "geometry":
                 header.append("distance diff (KM)")
         for i in range(1, number_of_parents + 1):
-            header.extend(["parent %d name before" % i, "parent %d name after" % i])
+            header.extend([f"parent {i} name before", f"parent {i} name after"])
 
         writer.writerow(header)
 

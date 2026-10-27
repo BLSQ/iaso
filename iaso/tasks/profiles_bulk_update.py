@@ -335,7 +335,7 @@ def profiles_bulk_update(
                 "id", flat=True
             )
         for index, profile in enumerate(queryset.iterator()):
-            res_string = "%.2f sec, processed %i profiles" % (time() - start, index)
+            res_string = f"{time() - start:.2f} sec, processed {index} profiles"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             update_single_profile_from_bulk(
                 user=user,
@@ -353,4 +353,4 @@ def profiles_bulk_update(
                 organization=organization,
             )
 
-        task.report_success(message="%d modified" % total)
+        task.report_success(message=f"{total} modified")

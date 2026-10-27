@@ -42,8 +42,8 @@ def copy_version(
     destination_version_count = OrgUnit.objects.filter(version=destination_version).count()
     if destination_version_count > 0 and not force:
         res_string = (
-            "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
-            % destination_version_count
+            f"This is going to delete {destination_version_count} org units records. "
+            "If you want to proceed, add the -f option to the command"
         )
         logger.debug(res_string)
         the_task.status = ERRORED
@@ -51,7 +51,7 @@ def copy_version(
         the_task.save()
         return None
     OrgUnit.objects.filter(version=destination_version).delete()
-    logger.debug(("%d org units records deleted" % destination_version_count).upper())
+    logger.debug(f"{destination_version_count} org units records deleted".upper())
 
     group_sets = GroupSet.objects.filter(source_version=source_version)
     group_set_matching = {}
@@ -123,6 +123,6 @@ def copy_version(
         logger.debug(f"Setting path for the hierarchy starting with org unit {unit.name}")
         unit.save(update_fields=["path"])
 
-    the_task.report_success(message="%d copied" % source_version_count)
+    the_task.report_success(message=f"{source_version_count} copied")
 
     return the_task

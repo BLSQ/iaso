@@ -182,7 +182,7 @@ class Command(BaseCommand):
                             leaf_units.append(unit)
                             index += 1
                         except Exception as e:
-                            print("Error %s for row %d" % (e, index), row)
+                            print(f"Error {e} for row {index}", row)
                             break
                     index = index + 1
 

@@ -226,7 +226,7 @@ def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
         new_entity_type["reference_form"]["latest_form_version"] = form["latest_form_version"]
         new_entity_type["id"] = entity_type["id"]
 
-    print("-- Submitting %d submissions" % limit)
+    print(f"-- Submitting {limit} submissions")
     count = 0
     for orgunit in orgunits:
         if entity_type["name"] == "Children less than 5":

@@ -60,7 +60,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
             "fields": "id,longitude,latitude,altitude",
         },
     )["orgunits"]
-    print("-- Submitting %d submissions" % limit)
+    print(f"-- Submitting {limit} submissions")
 
     for orgunit in orgunits:
         the_uuid = str(uuid.uuid4())

@@ -104,7 +104,7 @@ def payments_bulk_update(
         # FIXME Task don't handle rollback properly if task is killed by user or other error
         with transaction.atomic():
             for index, payment in enumerate(queryset.iterator()):
-                res_string = "%.2f sec, processed %i payments" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} payments"
                 report_progress_and_stop_if_killed_and_update_payment_lot(
                     payment_lot=payment_lot,
                     task=the_task,
@@ -130,7 +130,7 @@ def payments_bulk_update(
             else:
                 payment_lot.task = None
                 payment_lot.save()
-            the_task.report_success(message="%d modified" % total)
+            the_task.report_success(message=f"{total} modified")
 
 
 @task_decorator(task_name="mark_payments_as_read")
@@ -169,7 +169,7 @@ def mark_payments_as_read(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         for index, payment in enumerate(payments.iterator()):
-            res_string = "%.2f sec, processed %i payments" % (time() - start, index)
+            res_string = f"{time() - start:.2f} sec, processed {index} payments"
             report_progress_and_stop_if_killed_and_update_payment_lot(
                 payment_lot=payment_lot,
                 task=the_task,
@@ -185,4 +185,4 @@ def mark_payments_as_read(
         payment_lot.save()
         audit_logger.log_modification(old_data_dump=old_payment_lot, instance=payment_lot, request_user=user)
 
-        the_task.report_success(message="%d modified" % total)
+        the_task.report_success(message=f"{total} modified")

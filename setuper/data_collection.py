@@ -72,7 +72,7 @@ def setup_instances(account_name, iaso_client):
                 "fields": "id,longitude,latitude,altitude,org_unit_type_name",
             },
         )["orgunits"]
-        print("-- Submitting %d submissions" % limit)
+        print(f"-- Submitting {limit} submissions")
         count = 0
         for orgunit in orgunits:
             the_uuid = str(uuid.uuid4())
@@ -212,7 +212,7 @@ def setup_instances(account_name, iaso_client):
             # https://github.com/BLSQ/iaso-mobile-app/blob/0c6d821056e41d5beb6f745ea807451b07eb35f2/odk-collect/src/main/java/org/odk/collect/android/upload/InstanceServerUploader.java#L70
             # https://github.com/BLSQ/iaso-mobile-app/blob/0c6d821056e41d5beb6f745ea807451b07eb35f2/collect_app/src/main/java/com/bluesquare/iaso/usecase/SyncInstances.kt
             if count % 5 == 0:
-                print("\t%d submissions done" % count)
+                print(f"\t{count} submissions done")
 
             # Creating default reference submission for the org unit
             create_default_reference_submission(account_name, iaso_client, orgunit["id"], form_id, the_uuid)

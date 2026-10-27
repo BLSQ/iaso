@@ -98,7 +98,7 @@ def org_units_bulk_update(
                 )
                 continue
 
-            res_string = "%.2f sec, processed %i org units" % (time() - start, index)
+            res_string = f"{time() - start:.2f} sec, processed {index} org units"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             update_single_unit_from_bulk(
                 user,

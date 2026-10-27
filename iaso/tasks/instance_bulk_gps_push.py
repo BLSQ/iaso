@@ -77,11 +77,11 @@ def instance_bulk_gps_push(
 
     with transaction.atomic():
         for index, instance in enumerate(queryset.iterator()):
-            res_string = "%.2f sec, processed %i instances" % (time() - start, index)
+            res_string = f"{time() - start:.2f} sec, processed {index} instances"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             push_single_instance_gps_to_org_unit(
                 user,
                 instance,
             )
 
-        task.report_success(message="%d modified" % total)
+        task.report_success(message=f"{total} modified")

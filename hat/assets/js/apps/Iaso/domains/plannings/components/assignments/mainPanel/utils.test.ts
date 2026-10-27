@@ -1,6 +1,7 @@
+import { PlanningLevelTreeNode } from 'Iaso/api/plannings';
 import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
 import { Assignment } from './types';
-import { getAssigneeColorByOrgUnitId } from './utils';
+import { countOrgUnitsOffMap, getAssigneeColorByOrgUnitId } from './utils';
 
 const makeTeam = (
     id: number,
@@ -45,5 +46,34 @@ describe('getAssigneeColorByOrgUnitId', () => {
             makeAssignment(12, { team: 99 }),
         ]);
         expect(colors.has(12)).toBe(false);
+    });
+});
+
+describe('countOrgUnitsOffMap', () => {
+    const makeNode = (
+        id: number,
+        level: number,
+        hasShape: boolean,
+        hasLocation: boolean,
+    ): PlanningLevelTreeNode =>
+        ({
+            id,
+            level,
+            has_geo_json: hasShape,
+            has_location: hasLocation,
+        }) as PlanningLevelTreeNode;
+    const levelTree = [
+        makeNode(1, 1, true, false),
+        makeNode(2, 1, false, true),
+        makeNode(3, 1, false, false),
+        makeNode(4, 2, false, false),
+    ];
+
+    it('counts the org units of the level with neither a shape nor a drawn point', () => {
+        expect(countOrgUnitsOffMap(levelTree, 1, true)).toBe(1);
+    });
+
+    it('counts org units with only a location when points are not drawn', () => {
+        expect(countOrgUnitsOffMap(levelTree, 1, false)).toBe(2);
     });
 });

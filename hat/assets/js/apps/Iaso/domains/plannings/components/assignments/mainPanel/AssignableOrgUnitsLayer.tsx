@@ -1,5 +1,5 @@
 import React, { FC, useMemo } from 'react';
-import { useTheme } from '@mui/material';
+import { Theme, useTheme } from '@mui/material';
 import { FeatureCollection } from 'geojson';
 import {
     CircleLayerSpecification,
@@ -12,6 +12,10 @@ import { Layer, Source } from 'react-map-gl/maplibre';
 const SOURCE_ID = 'assignableOrgUnits';
 const FILL_LAYER_ID = `${SOURCE_ID}-fill`;
 const CIRCLE_LAYER_ID = `${SOURCE_ID}-circle`;
+
+export const FILL_OPACITY = 0.6;
+export const getUnassignedColor = (theme: Theme): string =>
+    theme.palette.grey[400];
 
 export const ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS = [
     FILL_LAYER_ID,
@@ -46,11 +50,11 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
 }) => {
     const theme = useTheme();
     const fillColor = useMemo(
-        () => getFillColor(colorByOrgUnitId, theme.palette.grey[400]),
-        [colorByOrgUnitId, theme.palette.grey],
+        () => getFillColor(colorByOrgUnitId, getUnassignedColor(theme)),
+        [colorByOrgUnitId, theme],
     );
     const fillPaint: FillLayerSpecification['paint'] = useMemo(
-        () => ({ 'fill-color': fillColor, 'fill-opacity': 0.6 }),
+        () => ({ 'fill-color': fillColor, 'fill-opacity': FILL_OPACITY }),
         [fillColor],
     );
     const circlePaint: CircleLayerSpecification['paint'] = useMemo(

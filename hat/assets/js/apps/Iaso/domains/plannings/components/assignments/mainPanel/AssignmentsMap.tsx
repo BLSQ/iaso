@@ -13,11 +13,13 @@ import {
     ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS,
     AssignableOrgUnitsLayer,
 } from './AssignableOrgUnitsLayer';
+import { MapHint } from './MapHint';
+import { MapLegend } from './MapLegend';
 import { OrgUnitTooltip } from './OrgUnitTooltip';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
 import { useAssignments } from './useAssignments';
 import { useLevelGeometry } from './useLevelGeometry';
-import { getAssigneeColorByOrgUnitId } from './utils';
+import { countOrgUnitsOffMap, getAssigneeColorByOrgUnitId } from './utils';
 
 const styles = {
     container: {
@@ -44,8 +46,9 @@ const INITIAL_VIEW_STATE = {
 
 // The selected team's level is outlined, its members' level is filled with their assignee's color.
 export const AssignmentsMap: FC = () => {
-    const { planning, tree, selectedTeam, selectedLevel } =
+    const { planning, tree, levelTree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
+    const showPoints = selectedTeam.type === TeamType.TEAM_OF_USERS;
     const area = useLevelGeometry(selectedLevel);
     const members = useLevelGeometry(selectedLevel + 1);
     const { data: assignments } = useAssignments(`${planning.id}`);
@@ -83,9 +86,7 @@ export const AssignmentsMap: FC = () => {
                                 members.geoJson ?? EMPTY_FEATURE_COLLECTION
                             }
                             colorByOrgUnitId={colorByOrgUnitId}
-                            showPoints={
-                                selectedTeam.type === TeamType.TEAM_OF_USERS
-                            }
+                            showPoints={showPoints}
                         />
                         <ScopeAreaLayer
                             geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}
@@ -94,6 +95,14 @@ export const AssignmentsMap: FC = () => {
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
                         />
                     </BaseMap>
+                    <MapHint />
+                    <MapLegend
+                        offMapCount={countOrgUnitsOffMap(
+                            levelTree,
+                            selectedLevel + 1,
+                            showPoints,
+                        )}
+                    />
                 </Box>
             )}
         </Box>

@@ -1,3 +1,4 @@
+import { PlanningLevelTreeNode } from 'Iaso/api/plannings';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { collectTeamTreeNodes } from 'Iaso/domains/teams/utils';
 import { Assignment } from './types';
@@ -20,3 +21,16 @@ export const getAssigneeColorByOrgUnitId = (
     });
     return colors;
 };
+
+// Points are only drawn on the level assigned to users.
+export const countOrgUnitsOffMap = (
+    levelTree: PlanningLevelTreeNode[],
+    level: number,
+    showPoints: boolean,
+): number =>
+    levelTree.filter(
+        node =>
+            node.level === level &&
+            !node.has_geo_json &&
+            !(showPoints && node.has_location),
+    ).length;

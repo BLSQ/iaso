@@ -1,6 +1,6 @@
 import re
 
-from typing import Iterable
+from collections.abc import Iterable
 
 
 MAX_COL_LEN = 63

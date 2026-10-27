@@ -1,10 +1,10 @@
-from typing import Mapping, Optional, TypedDict, Union
+from collections.abc import Mapping
+from typing import Annotated, Optional, TypedDict, Union
 
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from typing_extensions import Annotated
 
 from iaso.api.common.serializer_fields import CommaSeparatedPrimaryKeysField
 from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project

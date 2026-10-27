@@ -1,6 +1,7 @@
 import json
 
-from typing import Iterable, Union
+from collections.abc import Iterable
+from typing import Union
 
 from django.db.models import Max, Min
 

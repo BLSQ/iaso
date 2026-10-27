@@ -4,7 +4,8 @@ instead of editing its JSON by hand."""
 import json
 
 from collections import Counter
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 from django import forms
 from django.db.models import Count

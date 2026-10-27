@@ -7,7 +7,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Optional, Union
+from typing import Annotated, Any, Optional, Union
 
 import pandas as pd
 
@@ -25,7 +25,7 @@ from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from typing_extensions import Annotated, TypedDict
+from typing_extensions import TypedDict
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification

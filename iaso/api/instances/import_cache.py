@@ -1,7 +1,8 @@
 import uuid as uuid_lib
 
 from collections import defaultdict
-from typing import Iterable, Optional
+from collections.abc import Iterable
+from typing import Optional
 
 from iaso.models import Account, Entity, Form, Instance, OrgUnit
 

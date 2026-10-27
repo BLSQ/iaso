@@ -1,7 +1,7 @@
 import codecs
 import csv
 
-from typing import Iterator
+from collections.abc import Iterator
 
 from django.db.models import QuerySet
 from rest_framework import serializers

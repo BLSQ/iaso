@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TeamType } from 'Iaso/domains/teams/constants';
-import { User } from 'Iaso/domains/teams/types/team';
-import { TeamNode } from '../teamHierarchy/types';
+import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
 import { LevelOrgUnitType, PlanningLevel, SavedPlanningConfig } from './types';
 import {
     configsToLevels,
@@ -22,17 +21,16 @@ const makeUser = (id: number): User => ({
 
 const makeNode = (
     id: number,
-    children: TeamNode[] = [],
+    children: TeamTreeNode[] = [],
     users: User[] = [],
-): TeamNode => ({
-    team: {
-        id,
-        name: `Team ${id}`,
-        type: users.length ? TeamType.TEAM_OF_USERS : TeamType.TEAM_OF_TEAMS,
-        color: '',
-        project: 1,
-        users_details: users,
-    },
+): TeamTreeNode => ({
+    id,
+    name: `Team ${id}`,
+    type: users.length ? TeamType.TEAM_OF_USERS : TeamType.TEAM_OF_TEAMS,
+    color: '',
+    parent: null,
+    depth: 0,
+    users,
     children,
 });
 

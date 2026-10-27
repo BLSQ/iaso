@@ -13,7 +13,7 @@ def link_published_versions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0407_planningconfig_planningconfig_level_gte_1_and_more"),
+        ("iaso", "0408_orgunit_mission_orgunit_planning_and_more"),
     ]
 
     operations = [

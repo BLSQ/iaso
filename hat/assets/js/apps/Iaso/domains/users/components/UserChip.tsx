@@ -8,5 +8,11 @@ type Props = {
 };
 
 export const UserChip: FunctionComponent<Props> = ({ user }) => {
-    return <ColorChip label={getDisplayName(user)} size="small" />;
+    return (
+        <ColorChip
+            label={getDisplayName(user)}
+            size="small"
+            color={user.color}
+        />
+    );
 };

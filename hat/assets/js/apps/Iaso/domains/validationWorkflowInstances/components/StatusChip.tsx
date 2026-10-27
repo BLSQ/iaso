@@ -1,18 +1,19 @@
 import React from 'react';
-import { ChipProps } from '@mui/material';
+import { useTheme } from '@mui/material';
 import { ColorChip, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
 
-const getColor = (status?: string): ChipProps['color'] => {
+const useGetColor = (status?: string): string => {
+    const theme = useTheme();
     switch (status?.toUpperCase()) {
         case 'APPROVED':
-            return 'success';
+            return theme.palette.success.main;
         case 'REJECTED':
-            return 'error';
+            return theme.palette.error.main;
         case 'PENDING':
-            return 'primary';
+            return theme.palette.primary.main;
         default:
-            return 'primary';
+            return theme.palette.primary.main;
     }
 };
 export const useGetStatusLabel = (status?: string): string | undefined => {
@@ -29,10 +30,12 @@ export const useGetStatusLabel = (status?: string): string | undefined => {
     }
 };
 export const StatusChip = ({ status }: { status: string }) => {
+    const color = useGetColor(status);
+    const label = useGetStatusLabel(status) || '';
     return (
         <ColorChip
-            color={getColor(status)}
-            label={useGetStatusLabel(status)}
+            color={color}
+            label={label}
             data-testid="validation-status-chip"
         />
     );

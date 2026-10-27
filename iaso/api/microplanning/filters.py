@@ -4,6 +4,7 @@ from django import forms
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
+from django_filters import NumberFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, serializers
 
@@ -120,3 +121,13 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningDropdownFilterSet(django_filters.FilterSet):
     form_ids = NumberInFilter(field_name="missions__missionwithforms__forms__id", distinct=True)
+
+
+class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
+    level = django_filters.NumberFilter(label="Level")
+    max_depth = NumberFilter(
+        min_value=1,
+        help_text=_(
+            "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
+        ),
+    )

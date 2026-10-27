@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Sequence
 
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import Count, F, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -13,6 +13,8 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
+from ...models.microplanning.plannings import PlanningConfigQuerySet, PlanningQuerySet
+from .serializers.org_unit_level import OrgUnitBuildTreeSerializer
 from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
 from .serializers.planning_config.list import NestedPlanningConfigListSerializer
 
@@ -38,8 +40,8 @@ from iaso.api.common import (
 )
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.models.microplanning import Assignment, Planning
-from iaso.models.missions import MissionWithForms
-from iaso.models.org_unit import OrgUnit, OrgUnitType
+from iaso.models.missions import MissionQuerySet, MissionWithForms
+from iaso.models.org_unit import OrgUnit, OrgUnitQuerySet, OrgUnitType
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 
 from ...models import (
@@ -52,6 +54,7 @@ from .filters import (
     PlanningDropdownFilterSet,
     PlanningOrgUnitChildrenFilter,
     PlanningOrgUnitChildrenFilterBackend,
+    PlanningOrgUnitTreeFilterSet,
     PlanningSearchFilterBackend,
     PublishingStatusFilterBackend,
     validate_planning_has_org_unit_scope,
@@ -180,6 +183,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     def filterset_class(self) -> type[BaseFilterSet] | None:
         if self.action == "dropdown":
             return PlanningDropdownFilterSet
+        if self.action == "org_unit_tree":
+            return PlanningOrgUnitTreeFilterSet
         return None
 
     @property
@@ -233,7 +238,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             ctx.update({"planning_id": self.kwargs.get("pk")})
         return ctx
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self) -> PlanningQuerySet | PlanningConfigQuerySet | MissionQuerySet | OrgUnitQuerySet:
         user = self.request.user
         qs = self.queryset.filter_for_user(user)
 
@@ -278,6 +283,59 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                 pk=self.kwargs["pk"],
             )
             return planning.missions.all()
+
+        if self.action == "org_unit_tree":
+            planning = get_object_or_404(
+                qs,
+                pk=self.kwargs["pk"],
+            )
+
+            filterset = PlanningOrgUnitTreeFilterSet(
+                data=self.request.query_params,
+                queryset=OrgUnit.objects.all(),
+                request=self.request,
+            )
+            if not filterset.is_valid():
+                raise serializers.ValidationError(filterset.errors)
+
+            level = filterset.form.cleaned_data.get("level")
+            max_depth = filterset.form.cleaned_data.get("max_depth")
+            root = planning.org_unit
+            root_level = len(str(root.path).split("."))
+
+            if max_depth:
+                max_depth += root_level - 1
+
+            if level:
+                config = get_object_or_404(planning.configs.all(), level=int(level))
+
+                # from the config and level we filter out the possible roots
+                nodes_level = root_level + level
+                filter_kwargs = {
+                    "path__depth": nodes_level,
+                }
+                org_unit_types_ids = config.org_unit_types.values_list("id", flat=True)
+                if org_unit_types_ids:
+                    filter_kwargs["org_unit_type__in"] = org_unit_types_ids
+
+                org_unit_groups_ids = config.org_unit_groups.values_list("id", flat=True)
+                if org_unit_groups_ids:
+                    filter_kwargs["groups__in"] = org_unit_groups_ids
+
+                root = (
+                    OrgUnit.objects.filter_for_user(user)
+                    .hierarchy(root)
+                    .filter(**filter_kwargs)
+                    .only("id", "parent", "name", "path")
+                    .distinct("id")
+                )
+
+            queryset = OrgUnit.objects.filter_for_user(user).hierarchy(root)
+
+            if max_depth is not None:
+                queryset = queryset.filter(path__depth__lte=max_depth)
+
+            return queryset.only("id", "parent", "name", "path").annotate(depth=F("path__depth"))
 
         return (
             self.queryset.filter_for_user(user)
@@ -351,6 +409,38 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         super(ModelViewSet, self).perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+    @staticmethod
+    def _build_org_unit_tree(org_units: list[OrgUnit] | OrgUnitQuerySet) -> list[dict]:
+        # associate each node with its data
+        nodes = {org_unit.pk: {**OrgUnitBuildTreeSerializer(org_unit).data, "children": []} for org_unit in org_units}
+
+        roots = []
+
+        for org_unit in org_units:
+            node = nodes[org_unit.pk]
+            parent = nodes.get(org_unit.parent_id)
+
+            if parent is None or org_unit.parent_id not in nodes:
+                roots.append(node)
+            else:
+                parent["children"].append(node)
+        return roots
+
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+        url_path="org-unit-tree",
+    )
+    def org_unit_tree(self, request, pk=None, *args: Any, **kwargs: Any) -> Response:
+        queryset = self.get_queryset()
+
+        if not isinstance(queryset, OrgUnitQuerySet):
+            raise ValueError
+
+        data = self._build_org_unit_tree(queryset)
+        return Response(data)
 
 
 @extend_schema(tags=["Micro plannings", "Planning samplings", "Plannings"])

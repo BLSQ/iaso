@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../../messages';
+import MESSAGES from './messages';
 
 const styles = {
     search: {
@@ -26,7 +26,7 @@ type Props = {
     onCollapseAll: () => void;
 };
 
-export const HierarchyToolbar: FC<Props> = ({
+export const TeamTreeToolbar: FC<Props> = ({
     search,
     onSearchChange,
     onExpandAll,

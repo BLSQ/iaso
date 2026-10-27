@@ -3,7 +3,7 @@ import {
     PlanningConfigBulkCreateRequest,
     PlanningConfigBulkUpdateRequest,
 } from 'Iaso/api/planningConfigs';
-import { TeamNode } from '../teamHierarchy/types';
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import {
     LevelMembers,
     LevelOrgUnitType,
@@ -15,16 +15,16 @@ import {
 export const EMPTY_LEVEL: PlanningLevel = { orgUnitTypeIds: [], groupIds: [] };
 
 // Level N holds the teams at depth N of the hierarchy, and the users of the teams at depth N - 1.
-export const getLevelMembers = (root: TeamNode): LevelMembers[] => {
+export const getLevelMembers = (root: TeamTreeNode): LevelMembers[] => {
     const teamsCounts: number[] = [];
     const userIdsByLevel: Set<number>[] = [];
-    const visit = ({ team, children }: TeamNode, depth: number) => {
+    const visit = ({ users, children }: TeamTreeNode, depth: number) => {
         if (depth > 0) {
             teamsCounts[depth - 1] = (teamsCounts[depth - 1] ?? 0) + 1;
         }
-        if (team.users_details?.length) {
+        if (users.length) {
             const userIds = userIdsByLevel[depth] ?? new Set<number>();
-            team.users_details.forEach(user => userIds.add(user.id));
+            users.forEach(user => userIds.add(user.id));
             userIdsByLevel[depth] = userIds;
         }
         children.forEach(child => visit(child, depth + 1));

@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, ReactNode, useCallback } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -13,19 +13,14 @@ import { IconButton, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { TeamType } from 'Iaso/domains/teams/constants';
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { canHaveSubTeams, getToggledType } from 'Iaso/domains/teams/utils';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../../messages';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
+import MESSAGES from './messages';
 import { RowAction, RowActionsMenu } from './RowActionsMenu';
-import {
-    DraggedItem,
-    HierarchyAction,
-    HierarchyTeam,
-    TeamNode,
-    TeamRowData,
-} from './types';
+import { DraggedItem, HierarchyAction, TeamRowData } from './types';
 import { teamKey } from './utils';
 
 const styles = {
@@ -41,34 +36,106 @@ const TEAM_TYPE_DISPLAY = {
     [TeamType.TEAM_OF_TEAMS]: {
         label: MESSAGES.teamOfTeams,
         countLabel: MESSAGES.teamsCount,
-        getCount: (node: TeamNode) => node.children.length,
+        getCount: (team: TeamTreeNode) => team.children.length,
     },
     [TeamType.TEAM_OF_USERS]: {
         label: MESSAGES.teamOfUsers,
         countLabel: MESSAGES.usersCount,
-        getCount: (node: TeamNode) => node.team.users_details?.length ?? 0,
+        getCount: (team: TeamTreeNode) => team.users.length,
     },
 };
 
-type Props = {
+type TeamRowProps = {
     row: TeamRowData;
-    canDropOn: (team: HierarchyTeam) => boolean;
+    onToggle: (teamId: number) => void;
+    rowRef?: (element: HTMLElement | null) => void;
+    handle?: ReactNode;
+    menu?: ReactNode;
+    isDropTarget?: boolean;
+    isDragging?: boolean;
+};
+
+export const TeamRow: FC<TeamRowProps> = ({
+    row: { team, depth, isExpanded },
+    onToggle,
+    rowRef,
+    handle,
+    menu,
+    isDropTarget,
+    isDragging,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const hasContent = team.children.length > 0 || team.users.length > 0;
+    const typeDisplay = team.type ? TEAM_TYPE_DISPLAY[team.type] : undefined;
+    const handleToggle = useCallback(
+        () => onToggle(team.id),
+        [onToggle, team.id],
+    );
+
+    return (
+        <HierarchyRowLayout
+            depth={depth}
+            rowRef={rowRef}
+            isDropTarget={isDropTarget}
+            isDragging={isDragging}
+            handle={handle}
+            toggle={
+                hasContent && (
+                    <IconButton size="small" onClick={handleToggle}>
+                        {isExpanded ? (
+                            <ExpandMoreIcon fontSize="small" />
+                        ) : (
+                            <ChevronRightIcon fontSize="small" />
+                        )}
+                    </IconButton>
+                )
+            }
+        >
+            {team.type === TeamType.TEAM_OF_USERS ? (
+                <GroupsIcon color="primary" sx={styles.icon} />
+            ) : (
+                <AccountTreeIcon color="primary" sx={styles.icon} />
+            )}
+            <Typography noWrap sx={styles.name}>
+                {team.name}
+            </Typography>
+            {typeDisplay && (
+                <>
+                    <Typography variant="body2">
+                        {formatMessage(typeDisplay.label)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {formatMessage(
+                            typeDisplay.countLabel,
+                            numericValues({
+                                count: typeDisplay.getCount(team),
+                            }),
+                        )}
+                    </Typography>
+                </>
+            )}
+            {menu}
+        </HierarchyRowLayout>
+    );
+};
+
+type EditableTeamRowProps = {
+    row: TeamRowData;
+    canDropOn: (team: TeamTreeNode) => boolean;
     onToggle: (teamId: number) => void;
     onAction: (action: HierarchyAction) => void;
 };
 
-export const TeamRow: FC<Props> = ({
-    row: { node, depth, isExpanded },
+export const EditableTeamRow: FC<EditableTeamRowProps> = ({
+    row,
     canDropOn,
     onToggle,
     onAction,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { team, children } = node;
+    const { team, depth } = row;
     const isRoot = depth === 0;
-    const hasContent =
-        children.length > 0 || (team.users_details?.length ?? 0) > 0;
-    const typeDisplay = team.type ? TEAM_TYPE_DISPLAY[team.type] : undefined;
+    const hasContent = team.children.length > 0 || team.users.length > 0;
     const draggedItem: DraggedItem = { kind: 'team', team };
 
     const {
@@ -92,10 +159,6 @@ export const TeamRow: FC<Props> = ({
             setDroppableRef(element);
         },
         [setDraggableRef, setDroppableRef],
-    );
-    const handleToggle = useCallback(
-        () => onToggle(team.id),
-        [onToggle, team.id],
     );
 
     const actions: (RowAction | false)[] = [
@@ -136,14 +199,15 @@ export const TeamRow: FC<Props> = ({
             icon: <DeleteIcon fontSize="small" />,
             danger: true,
             // Teams are soft-deleted: sub-teams would be orphaned out of the hierarchy.
-            disabled: children.length > 0,
+            disabled: team.children.length > 0,
             onClick: () => onAction({ kind: 'delete', team }),
         },
     ];
 
     return (
-        <HierarchyRowLayout
-            depth={depth}
+        <TeamRow
+            row={row}
+            onToggle={onToggle}
             rowRef={rowRef}
             isDropTarget={isOver && canDropOn(team)}
             isDragging={isDragging}
@@ -156,42 +220,7 @@ export const TeamRow: FC<Props> = ({
                     />
                 )
             }
-            toggle={
-                hasContent && (
-                    <IconButton size="small" onClick={handleToggle}>
-                        {isExpanded ? (
-                            <ExpandMoreIcon fontSize="small" />
-                        ) : (
-                            <ChevronRightIcon fontSize="small" />
-                        )}
-                    </IconButton>
-                )
-            }
-        >
-            {team.type === TeamType.TEAM_OF_USERS ? (
-                <GroupsIcon color="primary" sx={styles.icon} />
-            ) : (
-                <AccountTreeIcon color="primary" sx={styles.icon} />
-            )}
-            <Typography noWrap sx={styles.name}>
-                {team.name}
-            </Typography>
-            {typeDisplay && (
-                <>
-                    <Typography variant="body2">
-                        {formatMessage(typeDisplay.label)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {formatMessage(
-                            typeDisplay.countLabel,
-                            numericValues({
-                                count: typeDisplay.getCount(node),
-                            }),
-                        )}
-                    </Typography>
-                </>
-            )}
-            <RowActionsMenu actions={actions} />
-        </HierarchyRowLayout>
+            menu={<RowActionsMenu actions={actions} />}
+        />
     );
 };

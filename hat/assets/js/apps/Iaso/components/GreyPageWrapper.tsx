@@ -41,6 +41,10 @@ const styles = {
         flexDirection: 'column',
         flex: 1,
     },
+    // Keeps the content within the screen height: it must scroll its own parts.
+    fillHeightBody: {
+        minHeight: 0,
+    },
 } satisfies SxStyles;
 
 const getContentWidthStyle = (
@@ -60,6 +64,7 @@ type Props = {
     title: ReactNode;
     actions?: ReactNode;
     maxWidth?: Breakpoint;
+    fillHeight?: boolean;
     children: ReactNode;
 };
 
@@ -67,15 +72,20 @@ export const GreyPageWrapper: FC<Props> = ({
     title,
     actions,
     maxWidth,
+    fillHeight = false,
     children,
 }) => {
     const { header, body } = useMemo(() => {
         const contentWidthStyle = getContentWidthStyle(maxWidth);
         return {
             header: { ...styles.header, ...contentWidthStyle },
-            body: { ...styles.body, ...contentWidthStyle },
+            body: {
+                ...styles.body,
+                ...contentWidthStyle,
+                ...(fillHeight ? styles.fillHeightBody : {}),
+            },
         };
-    }, [maxWidth]);
+    }, [maxWidth, fillHeight]);
     return (
         <MainWrapper sx={styles.root}>
             <Box sx={styles.headerContainer}>

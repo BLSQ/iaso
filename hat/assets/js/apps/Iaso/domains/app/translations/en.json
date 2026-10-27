@@ -1603,7 +1603,6 @@
     "iaso.plannings.label.orgUnitLevelsInfos": "{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.",
     "iaso.plannings.label.orgUnits": "Org units",
     "iaso.plannings.label.orgUnitsCount": "Org units count",
-    "iaso.plannings.label.orgUnitsListPlaceholder": "The org units of the selected team will be listed here.",
     "iaso.plannings.label.orgUnitsToAssign": "Org units to assign",
     "iaso.plannings.label.orgUnitTypes": "Org unit types",
     "iaso.plannings.label.planningDetails": "Planning details",
@@ -2248,5 +2247,10 @@
     "iaso.plannings.label.assignedTo": "Assigned to",
     "iaso.plannings.label.unassigned": "Unassigned",
     "iaso.plannings.label.areaOf": "Area of {name}",
-    "iaso.plannings.label.orgUnitsOffMap": "{count, plural, one {# org unit has no shape or point. It is not on the map but appears in the list.} other {# org units have no shape or point. They are not on the map but appear in the list.}}"
+    "iaso.plannings.label.orgUnitsOffMap": "{count, plural, one {# org unit has no shape or point. It is not on the map but appears in the list.} other {# org units have no shape or point. They are not on the map but appear in the list.}}",
+    "iaso.plannings.label.assignment": "Assignment",
+    "iaso.plannings.label.below": "Below",
+    "iaso.plannings.label.belowAssigned": "{assigned} of {total} assigned",
+    "iaso.plannings.label.notOnMap": "No shape or point: not shown on the map",
+    "iaso.plannings.label.noOrgUnitsToAssign": "No org units to assign on this level"
 }

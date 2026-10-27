@@ -172,12 +172,7 @@ class Link(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s - %s - %s -%d" % (
-            self.destination,
-            self.source,
-            self.algorithm_run,
-            self.similarity_score,
-        )
+        return f"{self.destination} - {self.source} - {self.algorithm_run} -{self.similarity_score:d}"
 
     def as_dict(self):
         return {

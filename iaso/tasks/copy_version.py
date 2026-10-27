@@ -116,7 +116,7 @@ def copy_version(
 
         index = index + 1
         if index % 100 == 0:
-            logger.debug("Parent fixed: %d" % index)
+            logger.debug("Parent fixed: %d", index)
             the_task.report_progress_and_stop_if_killed(progress_message=_("Fixing parents"))
 
     for unit in new_root_units:

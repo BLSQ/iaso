@@ -15,28 +15,40 @@ describe('StatusChip', () => {
     it('renders APPROVED with success color', () => {
         renderWithThemeAndIntlProvider(<StatusChip status="APPROVED" />);
 
-        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
-            'MuiChip-colorSuccess',
-        );
-        expect(screen.getByText('Approved')).toBeInTheDocument();
+        const chip = screen.getByTestId('validation-status-chip');
+        expect(chip).toHaveStyle({
+            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+            borderColor: '#4caf50',
+        });
+        expect(screen.getByText('Approved')).toHaveStyle({
+            color: 'rgb(46, 105, 48)',
+        });
     });
 
     it('renders REJECTED with error color', () => {
         renderWithThemeAndIntlProvider(<StatusChip status="REJECTED" />);
 
-        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
-            'MuiChip-colorError',
-        );
-        expect(screen.getByText('Rejected')).toBeInTheDocument();
+        const chip = screen.getByTestId('validation-status-chip');
+        expect(chip).toHaveStyle({
+            backgroundColor: 'rgba(215, 25, 28, 0.2)',
+            borderColor: 'rgb(215, 25, 28)',
+        });
+        expect(screen.getByText('Rejected')).toHaveStyle({
+            color: 'rgb(129, 15, 17)',
+        });
     });
 
     it('renders PENDING with primary color', () => {
         renderWithThemeAndIntlProvider(<StatusChip status="PENDING" />);
 
-        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
-            'MuiChip-colorPrimary',
-        );
-        expect(screen.getByText('Pending')).toBeInTheDocument();
+        const chip = screen.getByTestId('validation-status-chip');
+        expect(chip).toHaveStyle({
+            backgroundColor: 'rgba(0, 102, 153, 0.2)',
+            borderColor: '#006699',
+        });
+        expect(screen.getByText('Pending')).toHaveStyle({
+            color: 'rgb(0, 61, 92)',
+        });
     });
 
     it('renders any other option with primary color', () => {
@@ -45,9 +57,11 @@ describe('StatusChip', () => {
         // @ts-ignore
         renderWithThemeAndIntlProvider(<StatusChip status={word} />);
 
-        expect(screen.getByTestId('validation-status-chip')).toHaveClass(
-            'MuiChip-colorPrimary',
-        );
+        const chip = screen.getByTestId('validation-status-chip');
+        expect(chip).toHaveStyle({
+            backgroundColor: 'rgba(0, 102, 153, 0.2)',
+            borderColor: '#006699',
+        });
         expect(screen.getByText(word)).toBeInTheDocument();
     });
 });

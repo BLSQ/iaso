@@ -1,7 +1,9 @@
 from django.utils.translation import gettext as _
 
+from hat.settings import THEME_PRIMARY_COLOR
 
-DEFAULT_COLOR = "#1976D2"
+
+DEFAULT_COLOR = THEME_PRIMARY_COLOR
 COLOR_FORMAT_ERROR = _("Color must be a valid hex code (#RRGGBB).")
 
 

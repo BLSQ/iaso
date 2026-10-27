@@ -1314,5 +1314,9 @@
     "iaso.stock.sku.dialog.delete": "¿Estás seguro de que quieres eliminar este SKU?",
     "iaso.stock.sku.update": "Actualizar SKU",
     "iaso.stock.version.dialog.delete": "¿Estás seguro de que quieres eliminar esta versión?",
-    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar."
+    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar.",
+    "iaso.workInProgress.description": "El equipo está colocando los últimos ladrillos de esta página. Tómese un café, pronto estará lista.",
+    "iaso.workInProgress.goBack": "Volver",
+    "iaso.workInProgress.plannedRelease": "Lanzamiento previsto: {release}",
+    "iaso.workInProgress.title": "Esta página todavía está en construcción"
 }

@@ -3,7 +3,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.api.instances.permissions import HasInstanceBulkPermission
-from iaso.api.org_units import HasCreateOrgUnitPermission
+from iaso.api.org_units.permissions import HasCreateOrgUnitPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.instance_bulk_gps_push import instance_bulk_gps_push
 

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
-from iaso.api.mobile.org_units import ReferenceInstancesSerializer
+from iaso.api.org_units.serializers.mobile import ReferenceInstancesSerializer
 from iaso.models import OrgUnitChangeRequest
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 

@@ -1,5 +1,5 @@
 # ── Stage 1: JS / webpack build ───────────────────────────────────────────────
-FROM node:22.18.0-bookworm-slim AS npmbuilder
+FROM node:22.23.4-bookworm-slim AS npmbuilder
 
 # Set environment variables
 ENV PROJECT_ROOT=/opt

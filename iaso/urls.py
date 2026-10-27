@@ -92,7 +92,6 @@ from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.groups import MobileGroupsViewSet
-from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules.views import ModulesViewSet
@@ -106,7 +105,8 @@ from .api.org_unit_tree.views import OrgUnitTreeViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_unit_validation_status import ValidationStatusViewSet
-from .api.org_units import OrgUnitViewSet
+from .api.org_units.views import OrgUnitViewSet
+from .api.org_units.views_mobile import MobileOrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
@@ -351,10 +351,10 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 if not settings.DISABLE_PASSWORD_LOGINS:
     urlpatterns = urlpatterns + [
         path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-        path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     ]
 
 urlpatterns = urlpatterns + [
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),

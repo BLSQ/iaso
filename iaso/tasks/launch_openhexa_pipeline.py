@@ -128,21 +128,20 @@ def _query_pipeline_runs(openhexa_url: str, openhexa_token: str, pipeline_id: st
     client = Client(transport=transport, fetch_schema_from_transport=True)
 
     query = gql(
-        """
-        query pipeline {
-            pipeline(id: "%s"){
-                runs{
-                    items{
+        f"""
+        query pipeline {{
+            pipeline(id: "{pipeline_id}"){{
+                runs{{
+                    items{{
                         run_id
                         status
                         config
                         logs
-                    }
-                }
-            }
-        }
+                    }}
+                }}
+            }}
+        }}
         """
-        % pipeline_id
     )
 
     result = client.execute(query)

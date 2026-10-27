@@ -200,7 +200,7 @@ class AggregateHandler(BaseHandler):
         complete_data_set_registrations = list(map(to_complete_data_set_registration, data))
         request = {"completeDataSetRegistrations": complete_data_set_registrations}
         resp_complete = api.post("completeDataSetRegistrations", request)
-        self.logger.debug("completeDataSetRegistrations response %s" % resp_complete.text)
+        self.logger.debug(f"completeDataSetRegistrations response {resp_complete.text}")
         export_log = ExportLog()
         export_log.sent = request
         try:

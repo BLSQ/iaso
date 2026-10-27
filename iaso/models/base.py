@@ -90,11 +90,7 @@ class MatchingAlgorithm(models.Model):
     projects = models.ManyToManyField("Project", related_name="match_algos", blank=True)
 
     def __str__(self):
-        return "%s - %s %s" % (
-            self.name,
-            self.description,
-            self.created_at.timestamp() if self.created_at else None,
-        )
+        return f"{self.name} - {self.description} {self.created_at.timestamp() if self.created_at else None}"
 
     def as_dict(self):
         return {"name": self.name, "id": self.id, "description": self.description}
@@ -123,7 +119,7 @@ class AlgorithmRun(models.Model):
     )
 
     def __str__(self):
-        return "%s - %s - %s" % (self.algorithm, self.created_at, self.launcher)
+        return f"{self.algorithm} - {self.created_at} - {self.launcher}"
 
     def as_dict(self):
         links_count = Link.objects.filter(algorithm_run=self.id).count()
@@ -249,7 +245,7 @@ class Group(models.Model):
     objects = models.Manager.from_queryset(GroupQuerySet)()
 
     def __str__(self):
-        return "%s | %s " % (self.name, self.source_version)
+        return f"{self.name} | {self.source_version} "
 
     def as_small_dict(self):
         return {
@@ -336,7 +332,7 @@ class GroupSet(models.Model):
     objects = GroupSetManager()
 
     def __str__(self):
-        return "%s | %s " % (self.name, self.source_version)
+        return f"{self.name} | {self.source_version} "
 
 
 class Mapping(models.Model):
@@ -348,7 +344,7 @@ class Mapping(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s" % (self.form, self.mapping_type)
+        return f"{self.form} {self.mapping_type}"
 
     def is_aggregate(self):
         return self.mapping_type == AGGREGATE
@@ -405,7 +401,7 @@ class MappingVersion(models.Model):
         unique_together = [["form_version", "name"]]
 
     def __str__(self):
-        return "%s - %s" % (self.form_version, self.name)
+        return f"{self.form_version} - {self.name}"
 
     def as_dict(self):
         return {
@@ -435,7 +431,7 @@ class ExternalCredentials(models.Model):
         return bool(self.url and self.password and self.login)
 
     def __str__(self):
-        return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
+        return f"{self.name} - {self.login} - {self.url} ({self.account})"
 
     def as_dict(self):
         return {
@@ -488,7 +484,7 @@ class Profile(models.Model):
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
 
     def __str__(self):
-        return "%s -- %s" % (self.user, self.account)
+        return f"{self.user} -- {self.account}"
 
     def get_ordered_user_roles(self):
         return self.user_roles.all().order_by("group__name")

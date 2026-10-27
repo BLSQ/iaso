@@ -76,7 +76,8 @@ def instance_reference_bulk_link(
     # Checking if any reference submission link or unlink can be performed with what was requested
     success, infos, errors, _ = check_instance_reference_bulk_link(queryset)
     if not success:
-        raise Exception("Cannot proceed with the bulk reference submission link or unlink due to errors: %s" % errors)
+        msg = f"Cannot proceed with the bulk reference submission link or unlink due to errors: {errors}"
+        raise Exception(msg)
 
     total = queryset.count()
     with transaction.atomic():

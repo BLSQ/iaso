@@ -22,7 +22,7 @@ def copy_version(
     source_source = DataSource.objects.get(id=source_source_id)
     source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)
     logger.debug("source_version", source_version)
-    logger.debug("copying source_version %s" % str(source_version))
+    logger.debug(f"copying source_version {str(source_version)}")
 
     if not destination_source_id:
         destination_source_id = source_source_id

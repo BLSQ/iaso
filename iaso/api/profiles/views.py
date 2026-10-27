@@ -442,7 +442,7 @@ class ProfilesViewSet(ModelViewSet):
         else:
             raise ValueError(f"Unknown file format requested: {file_format}")
 
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
     def perform_destroy(self, instance):

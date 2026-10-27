@@ -85,7 +85,7 @@ class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
 
     def as_sql(self, compiler, connection):
         sql, params = compiler.compile(self.lhs)
-        sql = "CAST(%s AS DOUBLE PRECISION)" % sql
+        sql = f"CAST({sql} AS DOUBLE PRECISION)"
         return sql, params
 
 

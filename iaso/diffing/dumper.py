@@ -175,7 +175,7 @@ class Dumper:
                     else:
                         results.append(
                             " vs ".join([str(comparison.before), str(comparison.after)])
-                            + ((" Dist : %.2f " % comparison.distance) if comparison.distance else "")
+                            + ((f" Dist : {comparison.distance:.2f} ") if comparison.distance else "")
                         )
 
                 display.append(results)

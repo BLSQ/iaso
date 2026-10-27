@@ -264,20 +264,19 @@ class ExternalTaskModelViewSet(ModelViewSet):
         )
         client = Client(transport=transport, fetch_schema_from_transport=True)
         get_runs = gql(
-            """
-        query pipeline {
-            pipeline(id: "%s"){
-                runs{
-                    items{
+            f"""
+        query pipeline {{
+            pipeline(id: "{pipeline}"){{
+                runs{{
+                    items{{
                         run_id
                         status
                         config
-                    }
-                }
-            }
-        }
+                    }}
+                }}
+            }}
+        }}
         """
-            % (pipeline)
         )
         try:
             latest_runs = client.execute(get_runs)

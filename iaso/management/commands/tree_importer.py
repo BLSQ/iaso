@@ -29,7 +29,7 @@ def get_or_create(
     source_ref,
     save=True,
 ):
-    id_string = "%s%s" % (name, parent_id)
+    id_string = f"{name}{parent_id}"
     org_unit = unit_dict.get(id_string, None)
     if save and org_unit is None:
         org_units = OrgUnit.objects.filter(

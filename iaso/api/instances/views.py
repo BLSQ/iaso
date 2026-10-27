@@ -326,13 +326,13 @@ class InstancesViewSet(viewsets.ViewSet):
         form = get_form_from_instance_filters(filters)
 
         if form:
-            filename = "%s-%s" % (filename, form.id)
+            filename = f"{filename}-{form.id}"
         else:
             return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
         columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
 
-        filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "{}-{}".format(filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
             created_at_timestamp = instance.source_created_at_with_fallback.timestamp()
@@ -435,7 +435,7 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             raise ValueError(f"Unknown file format requested: {file_format}")
 
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
     def list_file_export_duckdb(
@@ -451,7 +451,7 @@ class InstancesViewSet(viewsets.ViewSet):
         columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
         export_queryset = build_submissions_tabular_queryset(queryset, form, file_content_template, columns)
 
-        filename = "instances-%s-%s" % (form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "instances-{}-{}".format(form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"
             content_type = CONTENT_TYPE_XLSX

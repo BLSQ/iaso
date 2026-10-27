@@ -12,7 +12,8 @@ def create_entity_duplicates(task: Task, potential_duplicates: List[PotentialDup
     eda = task.entity_duplicate_analyzis.first()
 
     if not eda:
-        raise Exception("No entity duplicate analyze found for task %s" % task)
+        msg = f"No entity duplicate analyze found for task {task}"
+        raise Exception(msg)
 
     task.report_progress_and_stop_if_killed(progress_message="Started creation of entity duplicates")
 

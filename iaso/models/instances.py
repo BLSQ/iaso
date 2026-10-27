@@ -577,7 +577,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
         ]
 
     def __str__(self):
-        return "%s %s %s" % (self.id, self.form, self.name)
+        return f"{self.id} {self.form} {self.name}"
 
     @property
     def is_instance_of_reference_form(self) -> bool:
@@ -1109,7 +1109,7 @@ class InstanceFile(models.Model):
     objects_with_file_extensions = InstanceFileExtensionManager.from_queryset(InstanceFileExtensionQuerySet)()
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"{self.name} "
 
     def as_dict(self):
         return {

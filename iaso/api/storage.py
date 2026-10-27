@@ -245,7 +245,7 @@ def device_generate_export(
             streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
         )
 
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
 
@@ -518,7 +518,7 @@ def logs_for_device_generate_export(
         # Raise InvalidFileFormat
         pass
 
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
 

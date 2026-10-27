@@ -69,7 +69,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -108,7 +108,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -118,7 +118,7 @@ class CorrelationAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+        with open(f"iaso/tests/fixtures/{file_name}") as fp:
             self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
 
         instance = m.Instance.objects.get(uuid=uuid)
@@ -153,7 +153,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -170,7 +170,7 @@ class CorrelationAPITestCase(APITestCase):
 
         self.client.credentials(HTTP_AUTHORIZATION="Token: {}".format(jwt_token.json()["access"]))
 
-        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+        with open(f"iaso/tests/fixtures/{file_name}") as fp:
             response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
 
         updated_instance = Instance.objects.get(uuid=anonymous_uploaded_instance.uuid)
@@ -191,7 +191,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -200,7 +200,7 @@ class CorrelationAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+        with open(f"iaso/tests/fixtures/{file_name}") as fp:
             self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
 
         return m.Instance.objects.get(uuid=uuid)
@@ -290,7 +290,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -300,7 +300,7 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         with (
-            open("iaso/tests/fixtures/%s" % file_name) as fp,
+            open(f"iaso/tests/fixtures/{file_name}") as fp,
             open("iaso/tests/fixtures/clamav/safe.jpg", "rb") as photo1,
             open("iaso/tests/fixtures/clamav/safe.jpg", "rb") as photo2,
         ):
@@ -408,7 +408,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/%s" % file_name,
+                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -418,7 +418,7 @@ class CorrelationAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+        with open(f"iaso/tests/fixtures/{file_name}") as fp:
             self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
 
         instance = m.Instance.objects.get(uuid=uuid)

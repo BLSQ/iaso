@@ -63,9 +63,9 @@ def setup_registry(account_name, iaso_client):
     print("-- Submitting %d submissions" % limit)
     for org_unit_id in org_unit_ids:
         the_uuid = str(uuid.uuid4())
-        file_name = "example_%s.xml" % the_uuid
+        file_name = f"example_{the_uuid}.xml"
 
-        local_path = "generated/%s" % file_name
+        local_path = f"generated/{file_name}"
         current_datetime = int(datetime.now().timestamp())
 
         instance_data = {

@@ -70,7 +70,8 @@ def instance_bulk_gps_push(
     # Checking if any gps push can be performed with what was requested
     success, errors, _ = check_instance_bulk_gps_push(queryset)
     if not success:
-        raise Exception("Cannot proceed with the gps push due to errors: %s" % errors)
+        msg = f"Cannot proceed with the gps push due to errors: {errors}"
+        raise Exception(msg)
 
     total = queryset.count()
 

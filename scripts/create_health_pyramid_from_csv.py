@@ -22,7 +22,7 @@ create_org_unit_url = SERVER_BASE_URL + "/api/orgunits/create_org_unit/"
 org_unit_types_url = SERVER_BASE_URL + "/api/v2/orgunittypes/"
 
 AUTH_TOKEN = "XXX"
-headers = {"Authorization": "Bearer %s" % AUTH_TOKEN}
+headers = {"Authorization": f"Bearer {AUTH_TOKEN}"}
 
 SOURCE_ID = 1  # ID of the default source
 COUNTRY_ID = 1  # ID of the main node of the org unit tree

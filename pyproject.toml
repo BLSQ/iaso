@@ -269,7 +269,7 @@ ignore = [
 #    "UP022",   # replace-stdout-stderr
 #    "UP028",   # yield-in-for-loop
 #    "UP030",   # format-literals
-    "UP031",   # printf-string-formatting
+#    "UP031",   # printf-string-formatting
     "UP035",   # deprecated-import
 ]
 

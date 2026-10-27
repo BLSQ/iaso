@@ -2,7 +2,7 @@ import { SxStyles } from 'Iaso/types/general';
 
 export const missionTypeChipStyles: SxStyles = {
     chip: {
-        backgroundColor: theme => theme.palette.background.blueGrey,
+        backgroundColor: theme => theme.palette.primary.background,
         border: `1px solid #cfd8dc`,
         color: theme => theme.palette.primary.main,
         fontWeight: 700,

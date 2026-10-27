@@ -15,7 +15,6 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import { MissionPolymorphicRetrieve } from 'Iaso/api/missions';
 import MESSAGES from 'Iaso/domains/missions/messages';
-import { getOverriddenTheme } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
 
 type FormWidgetPaperProps = {
@@ -31,9 +30,7 @@ const styles: SxStyles = {
         overscrollBehavior: 'none',
     },
     row: {
-        '&:nth-of-type(odd)': (
-            theme: ReturnType<typeof getOverriddenTheme>,
-        ) => ({
+        '&:nth-of-type(odd)': theme => ({
             backgroundColor: theme.palette.gray.background,
         }),
         '&:nth-of-type(even)': {
@@ -76,7 +73,6 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
                         stickyHeader
                         sx={{
                             border: theme =>
-                                // @ts-ignore
                                 `1px solid ${theme.palette.lightGray.border}`,
                         }}
                     >

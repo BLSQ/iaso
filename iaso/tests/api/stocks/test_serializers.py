@@ -23,6 +23,7 @@ from iaso.api.stocks.serializers import (
     StockRulesVersionWriteSerializer,
 )
 from iaso.test import TestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 @time_machine.travel("2025-08-19T13:00:00.000Z", tick=False)
@@ -84,14 +85,14 @@ class StockKeepingUnitSerializerTestCase(TestCase):
                         {
                             "id": self.project_1.pk,
                             "name": "Project 1",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         }
                     ),
                     collections.OrderedDict(
                         {
                             "id": self.project_2.pk,
                             "name": "Project 2",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ),
                 ],

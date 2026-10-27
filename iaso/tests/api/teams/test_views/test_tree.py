@@ -6,6 +6,7 @@ from rest_framework import status
 from iaso.models import Account, Team
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
@@ -146,7 +147,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -218,7 +219,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "user_no_perm",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                         {
                             "id": self.user_with_perms.pk,
@@ -234,7 +235,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -294,7 +295,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -426,7 +427,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [],
@@ -445,7 +446,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "user_no_perm",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                         {
                             "id": self.user_with_perms.pk,
@@ -461,7 +462,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [],
@@ -498,7 +499,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -538,7 +539,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "user_no_perm",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                         {
                             "id": self.user_with_perms.pk,
@@ -554,7 +555,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [

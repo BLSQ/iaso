@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Chip } from '@mui/material';
-import Color from 'color';
+
+import { ColorChip } from 'bluesquare-components';
 import { Project } from 'Iaso/domains/projects/types/project';
 
 export type ProjectChipProps = {
@@ -10,18 +10,7 @@ export type ProjectChipProps = {
 export const ProjectChip: FunctionComponent<ProjectChipProps> = ({
     project,
 }) => {
-    const textColor = Color(project?.color || undefined).isDark()
-        ? 'white'
-        : 'black';
     return (
-        <Chip
-            label={project.name}
-            size="small"
-            sx={{
-                backgroundColor: project.color,
-                color: textColor,
-                fontSize: '0.8rem',
-            }}
-        />
+        <ColorChip label={project.name} color={project?.color || undefined} />
     );
 };

@@ -14,7 +14,12 @@ export const ChipsGroup = (objects: any[]) => {
             }}
         >
             {objects.map(object => (
-                <Chip key={object.id} label={object.name} size="small" />
+                <Chip
+                    variant="outlined"
+                    key={object.id}
+                    label={object.name}
+                    size="small"
+                />
             ))}
         </Box>
     );

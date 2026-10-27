@@ -665,7 +665,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
 
     def xml_file_to_json(
         self, file: typing.IO, form_versions_cache: typing.Optional[dict] = None
-    ) -> typing.Dict[str, typing.Any]:
+    ) -> dict[str, typing.Any]:
         raw_content = file.read().decode("utf-8")
         fixed_content = fix_emoji(raw_content).decode("utf-8")
         copy_io_utf8 = StringIO(fixed_content)

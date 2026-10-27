@@ -1,6 +1,5 @@
 from copy import deepcopy
 from time import time
-from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -51,8 +50,8 @@ def update_payment_from_bulk(user, payment, *, status, api):
 @task_decorator(task_name="payments_bulk_update")
 def payments_bulk_update(
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
+    selected_ids: list[int],
+    unselected_ids: list[int],
     status: str,
     payment_lot_id: int,
     api: str,

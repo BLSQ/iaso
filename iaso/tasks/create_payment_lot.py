@@ -1,5 +1,4 @@
 from time import time
-from typing import List
 
 from django.db import transaction
 from django.utils import timezone
@@ -65,7 +64,7 @@ def end_task_and_delete_payment_lot(payment_lot, potential_payments, task, messa
 def create_payment_lot(
     comment: str,
     name: str,
-    potential_payment_ids: List[int],
+    potential_payment_ids: list[int],
     task: Task,
 ):
     """Background Task to create Payment Lot and convert Potential Payments into Payments

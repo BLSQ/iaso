@@ -16,7 +16,7 @@ import sys
 import tempfile
 
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import urlparse
 
 import rtoml
@@ -184,7 +184,7 @@ ENKETO = {
 
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
-LOGGING: Dict[str, Any] = {
+LOGGING: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},

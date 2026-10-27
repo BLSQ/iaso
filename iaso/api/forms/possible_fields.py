@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List, Optional, Sequence
+from typing import Any, Iterable, Optional, Sequence
 
 from iaso.models import EntityDuplicateAnalyzis
 
@@ -79,7 +79,7 @@ def field_type_allowed(field_type: Any, allowed_types: Sequence[Any]) -> bool:
 def filter_possible_fields_by_usage(
     possible_fields: Optional[Iterable[dict]],
     usage: Optional[str] = None,
-) -> List[dict]:
+) -> list[dict]:
     """
     Filter form possible_fields for a given usage preset.
 

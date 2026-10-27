@@ -1,6 +1,6 @@
 import json
 
-from typing import Iterable, List, Union
+from typing import Iterable, Union
 
 from django.db.models import Max, Min
 
@@ -117,7 +117,7 @@ ORDINAL = {
 ORDINAL_MAX_ITEMS = 12
 
 
-def get_ordinal_range(count: int) -> List[str]:
+def get_ordinal_range(count: int) -> list[str]:
     if count in ORDINAL:
         return list(ORDINAL[count])
     if count == 11:
@@ -250,7 +250,7 @@ def is_categorical_values(values: Iterable[LegendValue]) -> bool:
     return any(isinstance(value, str) for value in values)
 
 
-def ordinal_legend_config(domain: List) -> dict:
+def ordinal_legend_config(domain: list) -> dict:
     palette = list(SEVEN_SHADES)
     colors = [palette[index % len(palette)] for index in range(len(domain))]
     return {"domain": list(domain), "range": colors}
@@ -275,7 +275,7 @@ def threshold_legend_config(low: float, high: float, num_colors: int = len(SEVEN
 
     round_digits = 2 if low < 1 else 0
     step = (high - low) / num_colors
-    breakpoints: List[float] = []
+    breakpoints: list[float] = []
     for index in range(1, num_colors):
         value = round(low + step * index, round_digits)
         # Rounding can collapse neighbouring breakpoints on a small range; keep them distinct.
@@ -285,7 +285,7 @@ def threshold_legend_config(low: float, high: float, num_colors: int = len(SEVEN
 
 
 def build_auto_legend_config(
-    legend_type: str, values: Iterable[LegendValue], category_order: "List[str] | None" = None
+    legend_type: str, values: Iterable[LegendValue], category_order: "list[str] | None" = None
 ) -> dict:
     """Build a `{domain, range}` legend config from a metric's actual values.
 

@@ -43,7 +43,5 @@ class TeamTreeSerializer(TeamBuildTreeSerializer):
         read_only_fields = fields
 
     @extend_schema_field(lazy_serializer("iaso.api.teams.serializers.tree.TeamTreeSerializer")(many=True))
-    def get_children(self, obj: Team) -> typing.List[dict]:
-        return typing.cast(
-            typing.List[dict], typing.cast(object, TeamTreeSerializer(obj.sub_teams.all(), many=True).data)
-        )
+    def get_children(self, obj: Team) -> list[dict]:
+        return typing.cast(list[dict], typing.cast(object, TeamTreeSerializer(obj.sub_teams.all(), many=True).data))

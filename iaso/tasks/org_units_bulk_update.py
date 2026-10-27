@@ -1,6 +1,6 @@
 from copy import deepcopy
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 from django.db import transaction
 
@@ -39,12 +39,12 @@ def update_single_unit_from_bulk(
 def org_units_bulk_update(
     app_id: Optional[str],
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
-    searches: List,
-    org_unit_type_id: Optional[List[int]],
-    groups_ids_added: Optional[List[int]],
-    groups_ids_removed: Optional[List[int]],
+    selected_ids: list[int],
+    unselected_ids: list[int],
+    searches: list,
+    org_unit_type_id: Optional[list[int]],
+    groups_ids_added: Optional[list[int]],
+    groups_ids_removed: Optional[list[int]],
     validation_status: Optional[str],
     task: Task,
 ):

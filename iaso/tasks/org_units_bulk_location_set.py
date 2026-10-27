@@ -1,7 +1,7 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import GeometryCollectionField
@@ -45,9 +45,9 @@ def update_single_org_unit_location_from_bulk(user: Optional[User], org_unit: Or
 def org_units_bulk_location_set(
     app_id: Optional[str],
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
-    searches: List,
+    selected_ids: list[int],
+    unselected_ids: list[int],
+    searches: list,
     task: Task,
 ):
     """Background Task to bulk update org units."""

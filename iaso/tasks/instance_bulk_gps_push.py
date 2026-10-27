@@ -1,7 +1,7 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -35,8 +35,8 @@ def push_single_instance_gps_to_org_unit(user: Optional[User], instance: Instanc
 @task_decorator(task_name="instance_bulk_gps_push")
 def instance_bulk_gps_push(
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
+    selected_ids: list[int],
+    unselected_ids: list[int],
     filters: dict,
     task: Task,
 ):

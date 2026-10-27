@@ -1,6 +1,6 @@
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -37,10 +37,10 @@ def unlink_single_reference_instance_from_org_unit(user: Optional[User], instanc
 
 @task_decorator(task_name="instance_reference_bulk_link")
 def instance_reference_bulk_link(
-    actions: List[str],
+    actions: list[str],
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
+    selected_ids: list[int],
+    unselected_ids: list[int],
     filters: dict,
     task: Task,
 ):

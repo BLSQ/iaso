@@ -3,7 +3,7 @@ import logging
 import time
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from dhis2 import Api
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
@@ -51,7 +51,7 @@ class DhisOrgunit(TypedDict):
     parent: Optional[str]  # "qtr8GGlm4gg"
     coordinates: Optional[str]  # in old version
     geometry: Optional[DhisGeom]
-    organisationUnitGroups: List[DhisGroup]
+    organisationUnitGroups: list[DhisGroup]
     path: str  # e.g. "/ImspTQPwCqd/at6UHUQatSo/qtr8GGlm4gg/Rp268JB6Ne4"
     level: int  # e.g 4
     openingDate: str
@@ -66,8 +66,8 @@ def get_api(options_or_url, login=None, password=None):
     return Api(options_or_url, login, password)
 
 
-def fetch_orgunits(api: Api) -> List[DhisOrgunit]:
-    orgunits: List[DhisOrgunit] = []
+def fetch_orgunits(api: Api) -> list[DhisOrgunit]:
+    orgunits: list[DhisOrgunit] = []
 
     for page in api.get_paged(
         "organisationUnits",
@@ -97,10 +97,10 @@ def map_parent(row, org_unit, unit_dict):
 
 
 def find_org_unit_type(
-    groups: List[DhisGroup],
+    groups: list[DhisGroup],
     group_type_dict,
     level: int,
-    level_to_type: Dict[int, OrgUnitType],
+    level_to_type: dict[int, OrgUnitType],
 ):
     # Group matching startegy (to deprecate?) then by level
     for group in groups:
@@ -118,7 +118,7 @@ def orgunit_from_row(
     group_type_dict,
     validate,
     unknown_unit_type: OrgUnitType,  # fall back org unit type
-    level_to_type: Dict[int, OrgUnitType],
+    level_to_type: dict[int, OrgUnitType],
 ) -> OrgUnit:
     org_unit = OrgUnit()
     org_unit.name = row["name"].strip()
@@ -223,7 +223,7 @@ def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
             logger.warning("Failed at parsing geo ", feature_type, coordinates, bad_coord, row)
 
 
-def get_or_create_group(dhis2_group: DhisGroup, group_dict: Dict[str, Group], source_version: SourceVersion):
+def get_or_create_group(dhis2_group: DhisGroup, group_dict: dict[str, Group], source_version: SourceVersion):
     name = dhis2_group["name"]
     if name in group_dict:
         return group_dict[name]
@@ -263,7 +263,7 @@ def load_groupsets(api: Api, version, group_dict):
 
 def get_api_config(
     url: Optional[str], login: Optional[str], password: Optional[str], source: DataSource
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if url and login and password:
         connection_config = {
             "dhis2_url": url,
@@ -330,7 +330,7 @@ def dhis2_ou_importer(
         account.save()  # type: ignore
 
     # name of group to an orgunit type. If an orgunit belong to one of these group it will get that type
-    group_type_dict: Dict[str, OrgUnitType] = {}
+    group_type_dict: dict[str, OrgUnitType] = {}
     error_count, unit_dict = import_orgunits_and_groups(
         api, source, version, validate, continue_on_error, group_type_dict, start, update_mode, the_task
     )
@@ -357,7 +357,7 @@ class LeveLDict(TypedDict):
     name: str
 
 
-def get_org_unit_levels(api: Api) -> List[LeveLDict]:
+def get_org_unit_levels(api: Api) -> list[LeveLDict]:
     res = api.get_paged(
         "organisationUnitLevels",
         merge=True,
@@ -392,7 +392,7 @@ def import_orgunits_and_groups(
 
     # Create OrgUnit from levels
     levels = get_org_unit_levels(api)
-    level_to_type: Dict = {}
+    level_to_type: dict = {}
     for level in levels:
         out = OrgUnitType.objects.filter(projects__in=source_projects, name=level["name"]).first()
         if not out:

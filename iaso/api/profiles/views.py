@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, Union
 
 import django.core.exceptions as django_exceptions
 
@@ -397,7 +397,7 @@ class ProfilesViewSet(ModelViewSet):
     ) -> Union[HttpResponse, StreamingHttpResponse]:
         columns = [{"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST]
 
-        def get_row(profile: Profile, **_) -> List[Any]:
+        def get_row(profile: Profile, **_) -> list[Any]:
             org_units = profile.org_units.order_by("id").only("id", "source_ref")
             editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
 

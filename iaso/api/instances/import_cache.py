@@ -1,12 +1,12 @@
 import uuid as uuid_lib
 
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Iterable, Optional
 
 from iaso.models import Account, Entity, Form, Instance, OrgUnit
 
 
-EntityKey = Tuple[str, int]
+EntityKey = tuple[str, int]
 
 
 class InstanceImportCache:
@@ -28,19 +28,19 @@ class InstanceImportCache:
         # first one is the one `.first()` would pick.
         # With their entity, read (never saved) when updating them: the entities the import saves are the ones from
         # `prefetch_entities()`.
-        self._instances_by_uuid: Dict[str, List[Instance]] = defaultdict(list)
+        self._instances_by_uuid: dict[str, list[Instance]] = defaultdict(list)
         existing = Instance.objects.filter(uuid__in=[uuid for uuid in instance_uuids if uuid]).select_related("entity")
         for instance in existing.order_by("id"):
             self._instances_by_uuid[instance.uuid].append(instance)
-        self._org_units: Dict[Tuple[str, Optional[int]], OrgUnit] = {}
+        self._org_units: dict[tuple[str, Optional[int]], OrgUnit] = {}
         # Lists too: older entities can share a uuid. Only for the keys given to `prefetch_entities()`.
-        self._entities: Dict[EntityKey, List[Entity]] = {}
-        self._forms: Dict[int, Form] = {}
-        self._reference_form_ids: Dict[int, Optional[int]] = {}
+        self._entities: dict[EntityKey, list[Entity]] = {}
+        self._forms: dict[int, Form] = {}
+        self._reference_form_ids: dict[int, Optional[int]] = {}
         # See `FormVersionManager.find_for_form()`
         self.form_versions: dict = {}
 
-    def instances(self, uuid: str) -> List[Instance]:
+    def instances(self, uuid: str) -> list[Instance]:
         """All the instances with this uuid, oldest first."""
         return self._instances_by_uuid.get(uuid, [])
 
@@ -59,7 +59,7 @@ class InstanceImportCache:
             self._org_units[key] = OrgUnit.objects.get(uuid=uuid, version_id=version_id)
         return self._org_units[key]
 
-    def prefetch_entities(self, account: Account, entity_uuids_and_type_ids: Iterable[Tuple[str, str]]) -> None:
+    def prefetch_entities(self, account: Account, entity_uuids_and_type_ids: Iterable[tuple[str, str]]) -> None:
         """Look up, in a single query, the entities (even soft-deleted) of `account` for these (uuid, entity type)."""
         keys = {_entity_key(entity_uuid, entity_type_id) for entity_uuid, entity_type_id in entity_uuids_and_type_ids}
         keys.discard(None)
@@ -77,7 +77,7 @@ class InstanceImportCache:
             if key in self._entities:
                 self._entities[key].append(entity)
 
-    def entities(self, entity_uuid: str, entity_type_id: str) -> Optional[List[Entity]]:
+    def entities(self, entity_uuid: str, entity_type_id: str) -> Optional[list[Entity]]:
         """The entities for this (uuid, entity type) - see `find_entity()` - or None if they weren't prefetched."""
         entities = self._entities.get(_entity_key(entity_uuid, entity_type_id))
         return list(entities) if entities is not None else None

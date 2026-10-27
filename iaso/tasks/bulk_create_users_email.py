@@ -1,7 +1,5 @@
 """Background task for sending bulk email invitations."""
 
-from typing import List
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -18,7 +16,7 @@ from iaso.mail.branding import core_email_branding_context
 
 
 @task_decorator(task_name="send_bulk_email_invitations")
-def send_bulk_email_invitations(user_ids: List[int], is_secure: bool, task=None):
+def send_bulk_email_invitations(user_ids: list[int], is_secure: bool, task=None):
     """
     Background task to send email invitations to newly created users.
 

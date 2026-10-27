@@ -7,7 +7,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import pandas as pd
 
@@ -319,7 +319,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         return columns, sub_columns, file_content_template
 
-    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+    def list_file_export(self, filters: dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""
         filename = "instances"
 
@@ -439,7 +439,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return response
 
     def list_file_export_duckdb(
-        self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
+        self, filters: dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
     ):
         """Same content as list_file_export, but the rows are computed by postgres and written by duckdb"""
         # TODO once the legacy csv/xlsx exports (list_file_export, engine=legacy) are removed: also handle the
@@ -593,7 +593,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 page_ids = list(page.object_list.values_list("id", flat=True))
                 locked_page = queryset.filter(pk__in=page_ids).with_lock_info(user=request.user)
 
-                def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
+                def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> dict:
                     d = (
                         instance.as_dict_with_descriptor(fields=requested_fields)
                         if with_descriptor == "true"
@@ -1100,7 +1100,7 @@ def find_entity(
     account: Account,
     entity_uuid: str,
     entity_type_id: Optional[int] = None,
-    existing_entities: Optional[List[Entity]] = None,
+    existing_entities: Optional[list[Entity]] = None,
     mission: Optional[Mission] = None,
 ) -> Entity:
     """

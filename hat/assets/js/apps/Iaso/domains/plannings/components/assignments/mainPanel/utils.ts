@@ -34,3 +34,13 @@ export const countOrgUnitsOffMap = (
             !node.has_geo_json &&
             !(showPoints && node.has_location),
     ).length;
+
+// Only assignments to a team: users can't be opened.
+export const getTeamIdByOrgUnitId = (
+    assignments: Assignment[],
+): Map<number, number> =>
+    new Map(
+        assignments.flatMap(({ org_unit, team }) =>
+            team ? [[org_unit, team]] : [],
+        ),
+    );

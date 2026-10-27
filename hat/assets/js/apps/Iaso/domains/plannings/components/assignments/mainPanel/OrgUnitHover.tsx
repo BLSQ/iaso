@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Typography } from '@mui/material';
-import { LngLat, MapLayerMouseEvent } from 'maplibre-gl';
+import { LngLat, MapGeoJSONFeature, MapLayerMouseEvent } from 'maplibre-gl';
 import { Popup, useMap } from 'react-map-gl/maplibre';
 import { SxStyles } from 'Iaso/types/general';
 
@@ -17,15 +17,24 @@ type Props = {
     layerIds: string[];
 };
 
-export const OrgUnitTooltip: FC<Props> = ({ layerIds }) => {
+// Highlights the hovered org unit through its `hover` feature state, and shows its name.
+export const OrgUnitHover: FC<Props> = ({ layerIds }) => {
     const { current: mapRef } = useMap();
     const [hovered, setHovered] = useState<HoveredOrgUnit>();
 
     useEffect(() => {
         const map = mapRef?.getMap();
         if (!map) return undefined;
+        let highlighted: MapGeoJSONFeature | undefined;
+        const setHighlighted = (feature?: MapGeoJSONFeature) => {
+            if (highlighted?.id === feature?.id) return;
+            if (highlighted) map.setFeatureState(highlighted, { hover: false });
+            if (feature) map.setFeatureState(feature, { hover: true });
+            highlighted = feature;
+        };
         const handleMove = (event: MapLayerMouseEvent) => {
             const feature = event.features?.[0];
+            setHighlighted(feature);
             setHovered(
                 feature && {
                     lngLat: event.lngLat,
@@ -33,13 +42,18 @@ export const OrgUnitTooltip: FC<Props> = ({ layerIds }) => {
                 },
             );
         };
-        const handleLeave = () => setHovered(undefined);
+        const handleLeave = () => {
+            setHighlighted(undefined);
+            setHovered(undefined);
+        };
         const subscriptions = [
             map.on('mousemove', layerIds, handleMove),
             map.on('mouseleave', layerIds, handleLeave),
         ];
-        return () =>
+        return () => {
             subscriptions.forEach(subscription => subscription.unsubscribe());
+            handleLeave();
+        };
     }, [mapRef, layerIds]);
 
     if (!hovered) return null;

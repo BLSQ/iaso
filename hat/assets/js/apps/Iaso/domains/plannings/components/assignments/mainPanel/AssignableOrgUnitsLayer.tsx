@@ -14,12 +14,19 @@ const FILL_LAYER_ID = `${SOURCE_ID}-fill`;
 const CIRCLE_LAYER_ID = `${SOURCE_ID}-circle`;
 
 export const FILL_OPACITY = 0.6;
+const HOVER_FILL_OPACITY = 0.85;
 export const getUnassignedColor = (theme: Theme): string =>
     theme.palette.grey[400];
 
 export const ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS = [
     FILL_LAYER_ID,
     CIRCLE_LAYER_ID,
+];
+
+const isHovered: ExpressionSpecification = [
+    'boolean',
+    ['feature-state', 'hover'],
+    false,
 ];
 
 // Styles by org unit id, so assignment changes never touch the geometry.
@@ -54,13 +61,21 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         [colorByOrgUnitId, theme],
     );
     const fillPaint: FillLayerSpecification['paint'] = useMemo(
-        () => ({ 'fill-color': fillColor, 'fill-opacity': FILL_OPACITY }),
+        () => ({
+            'fill-color': fillColor,
+            'fill-opacity': [
+                'case',
+                isHovered,
+                HOVER_FILL_OPACITY,
+                FILL_OPACITY,
+            ],
+        }),
         [fillColor],
     );
     const circlePaint: CircleLayerSpecification['paint'] = useMemo(
         () => ({
             'circle-color': fillColor,
-            'circle-radius': 6,
+            'circle-radius': ['case', isHovered, 8, 6],
             'circle-stroke-color': theme.palette.common.white,
             'circle-stroke-width': 2,
         }),

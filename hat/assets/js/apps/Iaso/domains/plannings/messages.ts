@@ -615,7 +615,7 @@ const MESSAGES = defineMessages({
     },
     mapExploreHintTeams: {
         defaultMessage:
-            'Explore: each org unit is colored by the sub-team it is assigned to. Open a sub-team to see how its area is split. Switch to Assign to change assignments.',
+            'Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.',
         id: 'iaso.plannings.label.mapExploreHintTeams',
     },
     mapExploreHintUsers: {

@@ -2237,7 +2237,7 @@
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
     "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé",
-    "iaso.plannings.label.mapExploreHintTeams": "Explorer : chaque unité d'organisation est colorée selon la sous-équipe à laquelle elle est assignée. Ouvrez une sous-équipe pour voir comment sa zone est répartie. Passez en mode Assigner pour modifier les assignations.",
+    "iaso.plannings.label.mapExploreHintTeams": "Explorer : chaque unité d'organisation est colorée selon la sous-équipe à laquelle elle est assignée. Cliquez dessus pour ouvrir la sous-équipe et voir comment sa zone est répartie. Passez en mode Assigner pour modifier les assignations.",
     "iaso.plannings.label.mapExploreHintUsers": "Explorer : chaque unité d'organisation est colorée selon l'utilisateur auquel elle est assignée. Passez en mode Assigner pour modifier les assignations.",
     "iaso.plannings.label.mapHintNoMember": "Cette équipe n'a aucun membre. Ajoutez des membres dans la hiérarchie d'équipes du planning.",
     "iaso.plannings.label.showHelp": "Afficher l'aide",

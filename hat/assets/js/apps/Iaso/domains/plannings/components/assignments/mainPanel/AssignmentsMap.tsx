@@ -9,17 +9,23 @@ import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
+import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import {
     ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS,
     AssignableOrgUnitsLayer,
 } from './AssignableOrgUnitsLayer';
 import { MapHint } from './MapHint';
 import { MapLegend } from './MapLegend';
-import { OrgUnitTooltip } from './OrgUnitTooltip';
+import { OpenTeamOnClick } from './OpenTeamOnClick';
+import { OrgUnitHover } from './OrgUnitHover';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
 import { useAssignments } from './useAssignments';
 import { useLevelGeometry } from './useLevelGeometry';
-import { countOrgUnitsOffMap, getAssigneeColorByOrgUnitId } from './utils';
+import {
+    countOrgUnitsOffMap,
+    getAssigneeColorByOrgUnitId,
+    getTeamIdByOrgUnitId,
+} from './utils';
 
 const styles = {
     container: {
@@ -51,10 +57,15 @@ export const AssignmentsMap: FC = () => {
     const showPoints = selectedTeam.type === TeamType.TEAM_OF_USERS;
     const area = useLevelGeometry(selectedLevel);
     const members = useLevelGeometry(selectedLevel + 1);
+    const { openTeam } = useAssignmentsParams();
     const { data: assignments } = useAssignments(`${planning.id}`);
     const colorByOrgUnitId = useMemo(
         () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
         [tree, assignments],
+    );
+    const teamIdByOrgUnitId = useMemo(
+        () => getTeamIdByOrgUnitId(assignments ?? []),
+        [assignments],
     );
     const areaBounds = useMemo(
         () => area.geoJson && getGeoJsonBounds(area.geoJson),
@@ -91,8 +102,13 @@ export const AssignmentsMap: FC = () => {
                         <ScopeAreaLayer
                             geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}
                         />
-                        <OrgUnitTooltip
+                        <OrgUnitHover
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
+                        />
+                        <OpenTeamOnClick
+                            layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
+                            teamIdByOrgUnitId={teamIdByOrgUnitId}
+                            onOpenTeam={openTeam}
                         />
                     </BaseMap>
                     <MapHint />

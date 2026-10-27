@@ -2239,7 +2239,7 @@
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
     "trypelim.permissions.zones_shapes_edit": "Edit zone shapes",
-    "iaso.plannings.label.mapExploreHintTeams": "Explore: each org unit is colored by the sub-team it is assigned to. Open a sub-team to see how its area is split. Switch to Assign to change assignments.",
+    "iaso.plannings.label.mapExploreHintTeams": "Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.",
     "iaso.plannings.label.mapExploreHintUsers": "Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.",
     "iaso.plannings.label.mapHintNoMember": "This team has no member. Add members in the team hierarchy of the planning.",
     "iaso.plannings.label.showHelp": "Show help",

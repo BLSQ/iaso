@@ -1,7 +1,11 @@
 import { PlanningLevelTreeNode } from 'Iaso/api/plannings';
 import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
 import { Assignment } from './types';
-import { countOrgUnitsOffMap, getAssigneeColorByOrgUnitId } from './utils';
+import {
+    countOrgUnitsOffMap,
+    getAssigneeColorByOrgUnitId,
+    getTeamIdByOrgUnitId,
+} from './utils';
 
 const makeTeam = (
     id: number,
@@ -75,5 +79,16 @@ describe('countOrgUnitsOffMap', () => {
 
     it('counts org units with only a location when points are not drawn', () => {
         expect(countOrgUnitsOffMap(levelTree, 1, false)).toBe(2);
+    });
+});
+
+describe('getTeamIdByOrgUnitId', () => {
+    it('maps org units assigned to a team to the team, and skips those assigned to a user', () => {
+        const teamIds = getTeamIdByOrgUnitId([
+            makeAssignment(10, { team: 2 }),
+            makeAssignment(11, { user: 7 }),
+        ]);
+        expect(teamIds.get(10)).toBe(2);
+        expect(teamIds.has(11)).toBe(false);
     });
 });

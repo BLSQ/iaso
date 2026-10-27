@@ -7,7 +7,8 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, parsers, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
@@ -64,7 +65,7 @@ class ReportVersionSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     url = serializers.SerializerMethodField()
-    created_by = serializers.CharField(source="created_by.username", read_only=True, default=None)
+    created_by = serializers.CharField(source="created_by.username", read_only=True, default=None, allow_null=True)
 
     def get_url(self, obj: ReportVersion) -> typing.Optional[str]:
         return obj.file.url if obj.file else None
@@ -190,6 +191,15 @@ class ReportsViewSet(ModelViewSet):
             queryset = queryset.filter(name__icontains=search)
         return queryset.order_by("id")
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("project", OpenApiTypes.INT, description="Only the report of this project"),
+            OpenApiParameter("search", OpenApiTypes.STR, description="Part of the report name"),
+        ]
+    )
+    def list(self, request: Request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     @extend_schema(request={"multipart/form-data": ReportCreateSerializer}, responses={201: ReportSerializer})
     def create(self, request: Request, *args, **kwargs):
         serializer = ReportCreateSerializer(data=request.data, context=self.get_serializer_context())
@@ -209,7 +219,8 @@ class ReportsViewSet(ModelViewSet):
         responses={201: ReportVersionSerializer},
         description="Upload a new version of the report. It is published unless `publish` is false.",
     )
-    @action(detail=True, methods=["get", "post"])
+    # Not paginated: a report has few versions, and the web shows them all.
+    @action(detail=True, methods=["get", "post"], pagination_class=None)
     def versions(self, request: Request, pk=None):
         report = self.get_object()
         if request.method == "GET":

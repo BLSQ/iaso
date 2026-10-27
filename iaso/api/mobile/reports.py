@@ -27,7 +27,7 @@ class MobileReportSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(url) if request and url.startswith("/") else url
 
 
-@extend_schema(tags=["Reports", "Mobile"])
+@extend_schema(tags=["Mobile"])
 class MobileReportsViewSet(ModelViewSet):
     """
     api/mobile/reports

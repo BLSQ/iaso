@@ -35,6 +35,13 @@ export type Team = {
     members_count?: number;
 };
 
+export type TeamTreeNode = Pick<Team, 'id' | 'name' | 'type' | 'color'> & {
+    parent: number | null;
+    depth: number;
+    users: User[];
+    children: TeamTreeNode[];
+};
+
 export type TeamDropdown = {
     id: number;
     name: string;

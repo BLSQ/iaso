@@ -3,20 +3,23 @@ import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { noop } from 'lodash';
 import { DeleteRestoreModal } from 'Iaso/components/DeleteRestoreModals/DeleteRestoreModal';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { CreateEditTeam } from 'Iaso/domains/teams/components/CreateEditTeam';
+import TEAM_MESSAGES from 'Iaso/domains/teams/messages';
+import { Team, TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../../messages';
-import { DraggedItem, HierarchyTeam } from './types';
-import { MoveTarget } from './utils';
+import MESSAGES from './messages';
+import { DraggedItem, HierarchyDialog } from './types';
+import { MoveTarget, getMoveTargets } from './utils';
 
 const DIALOG_DEFAULTS = {
     open: true,
     onClose: noop,
     onCancel: noop,
-    cancelMessage: MESSAGES.cancel,
+    cancelMessage: TEAM_MESSAGES.cancel,
 };
 
 type RenameProps = {
-    team: HierarchyTeam;
+    team: TeamTreeNode;
     onConfirm: (name: string) => void;
     closeDialog: () => void;
 };
@@ -38,14 +41,14 @@ export const RenameTeamDialog: FC<RenameProps> = ({
             onConfirm={() => onConfirm(trimmedName)}
             allowConfirm={Boolean(trimmedName) && trimmedName !== team.name}
             titleMessage={formatMessage(MESSAGES.renameTeam)}
-            confirmMessage={MESSAGES.save}
+            confirmMessage={TEAM_MESSAGES.save}
         >
             <InputComponent
                 type="text"
                 keyValue="name"
                 value={name}
                 onChange={(_key, value) => setName(value)}
-                label={MESSAGES.name}
+                label={TEAM_MESSAGES.name}
                 required
                 withMarginTop={false}
             />
@@ -56,7 +59,7 @@ export const RenameTeamDialog: FC<RenameProps> = ({
 type MoveProps = {
     item: DraggedItem;
     targets: MoveTarget[];
-    onConfirm: (target: HierarchyTeam) => void;
+    onConfirm: (target: TeamTreeNode) => void;
     closeDialog: () => void;
 };
 
@@ -82,7 +85,7 @@ export const MoveToDialog: FC<MoveProps> = ({
             titleMessage={formatMessage(MESSAGES.moveItemTo, {
                 name: itemName,
             })}
-            confirmMessage={MESSAGES.confirm}
+            confirmMessage={TEAM_MESSAGES.confirm}
         >
             <InputComponent
                 type="select"
@@ -102,7 +105,7 @@ export const MoveToDialog: FC<MoveProps> = ({
 };
 
 type DeleteProps = {
-    team: HierarchyTeam;
+    team: TeamTreeNode;
     onConfirm: () => void;
     closeDialog: () => void;
 };
@@ -122,7 +125,70 @@ export const DeleteTeamDialog: FC<DeleteProps> = ({
             onConfirm={onConfirm}
             titleMessage={formatMessage(MESSAGES.deleteTeam)}
         >
-            {formatMessage(MESSAGES.deleteWarning, { name: team.name })}
+            {formatMessage(TEAM_MESSAGES.deleteWarning, { name: team.name })}
         </DeleteRestoreModal>
     );
+};
+
+type HierarchyDialogsProps = {
+    dialog: HierarchyDialog;
+    tree: TeamTreeNode;
+    projectId?: number;
+    onMove: (item: DraggedItem, target: TeamTreeNode) => void;
+    onRename: (team: TeamTreeNode, name: string) => void;
+    onDelete: (variables: { id: number }) => void;
+    onTeamCreated: (team: Team) => void;
+    closeDialog: () => void;
+};
+
+export const HierarchyDialogs: FC<HierarchyDialogsProps> = ({
+    dialog,
+    tree,
+    projectId,
+    onMove,
+    onRename,
+    onDelete,
+    onTeamCreated,
+    closeDialog,
+}) => {
+    switch (dialog.kind) {
+        case 'create':
+            return (
+                <CreateEditTeam
+                    isOpen
+                    dialogType="create"
+                    defaultValues={{
+                        project: projectId,
+                        parent: dialog.parent.id,
+                    }}
+                    closeDialog={closeDialog}
+                    onSuccess={onTeamCreated}
+                />
+            );
+        case 'rename':
+            return (
+                <RenameTeamDialog
+                    team={dialog.team}
+                    onConfirm={name => onRename(dialog.team, name)}
+                    closeDialog={closeDialog}
+                />
+            );
+        case 'move':
+            return (
+                <MoveToDialog
+                    item={dialog.item}
+                    targets={getMoveTargets(tree, dialog.item)}
+                    onConfirm={target => onMove(dialog.item, target)}
+                    closeDialog={closeDialog}
+                />
+            );
+        case 'delete':
+            return (
+                <DeleteTeamDialog
+                    team={dialog.team}
+                    onConfirm={() => onDelete({ id: dialog.team.id })}
+                    closeDialog={closeDialog}
+                />
+            );
+    }
 };

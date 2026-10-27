@@ -11,6 +11,7 @@ import {
 import { mutationInvalidates as missionsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/missions/configuration';
 import { mutationInvalidates as planningConfigsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/planningConfigs/configuration';
 import { mutationInvalidates as planningMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/plannings/configuration';
+import { mutationInvalidates as teamsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/teams/configuration';
 
 require('dotenv').config();
 
@@ -169,6 +170,7 @@ module.exports = {
     modules: createConfig('modules', ['Modules']),
     plannings: createConfig('plannings', ['Plannings'], planningMutationInvalidates),
     planningConfigs: createConfig("planningConfigs", ['Planning configs'], planningConfigsMutationInvalidates),
+    teams: createConfig('teams', ['Teams'], teamsMutationInvalidates),
     validationWorkflows: createConfig(
         'validationWorkflows',
         ['Validation workflows'],

@@ -1,6 +1,7 @@
 import { useQueryClient } from 'react-query';
 import { patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { TEAM_QUERY_KEYS } from '../../constants';
 import { Team } from '../../types/team';
 
 type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
@@ -59,7 +60,7 @@ export const useSaveTeam = (
     const queryClient = useQueryClient();
     const editTeam = useSnackMutation({
         mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        invalidateQueryKey: ['teamsList', 'teamsDropdown', 'team'],
+        invalidateQueryKey: TEAM_QUERY_KEYS,
         ignoreErrorCodes,
         showSuccessSnackBar,
         options: {
@@ -70,7 +71,7 @@ export const useSaveTeam = (
     });
     const createTeam = useSnackMutation({
         mutationFn: (data: SaveTeamQuery) => postTeam(data),
-        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
+        invalidateQueryKey: TEAM_QUERY_KEYS,
         ignoreErrorCodes,
     });
 

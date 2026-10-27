@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, ReactNode } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -7,9 +7,9 @@ import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
-import MESSAGES from '../../messages';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
+import MESSAGES from './messages';
 import { RowAction, RowActionsMenu } from './RowActionsMenu';
 import { DraggedItem, HierarchyAction, UserRowData } from './types';
 import { userKey } from './utils';
@@ -21,17 +21,46 @@ const styles = {
     },
 } satisfies SxStyles;
 
-type Props = {
+type UserRowProps = {
+    row: UserRowData;
+    rowRef?: (element: HTMLElement | null) => void;
+    handle?: ReactNode;
+    menu?: ReactNode;
+    isDragging?: boolean;
+};
+
+export const UserRow: FC<UserRowProps> = ({
+    row: { user, depth },
+    rowRef,
+    handle,
+    menu,
+    isDragging,
+}) => (
+    <HierarchyRowLayout
+        depth={depth}
+        rowRef={rowRef}
+        isDragging={isDragging}
+        handle={handle}
+    >
+        <PersonOutlineIcon sx={styles.icon} />
+        <Typography variant="body2" noWrap>
+            {getDisplayName(user)}
+        </Typography>
+        {menu}
+    </HierarchyRowLayout>
+);
+
+type EditableUserRowProps = {
     row: UserRowData;
     onAction: (action: HierarchyAction) => void;
 };
 
-export const UserRow: FC<Props> = ({
-    row: { user, team, depth },
+export const EditableUserRow: FC<EditableUserRowProps> = ({
+    row,
     onAction,
 }) => {
     const { formatMessage } = useSafeIntl();
-
+    const { user, team } = row;
     const draggedItem: DraggedItem = { kind: 'user', user, team };
     const {
         setNodeRef,
@@ -61,8 +90,8 @@ export const UserRow: FC<Props> = ({
     ];
 
     return (
-        <HierarchyRowLayout
-            depth={depth}
+        <UserRow
+            row={row}
             rowRef={setNodeRef}
             isDragging={isDragging}
             handle={
@@ -72,12 +101,7 @@ export const UserRow: FC<Props> = ({
                     listeners={listeners}
                 />
             }
-        >
-            <PersonOutlineIcon sx={styles.icon} />
-            <Typography variant="body2" noWrap>
-                {getDisplayName(user)}
-            </Typography>
-            <RowActionsMenu actions={actions} />
-        </HierarchyRowLayout>
+            menu={<RowActionsMenu actions={actions} />}
+        />
     );
 };

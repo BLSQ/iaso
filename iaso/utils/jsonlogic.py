@@ -3,8 +3,8 @@
 import operator
 import re
 
-from collections.abc import Iterator
-from typing import Any, Callable
+from collections.abc import Callable, Iterator
+from typing import Any
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression

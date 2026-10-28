@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+
 PERIOD_TYPE_DAY = "DAY"
 PERIOD_TYPE_MONTH = "MONTH"
 PERIOD_TYPE_QUARTER = "QUARTER"

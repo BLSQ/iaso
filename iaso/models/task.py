@@ -53,12 +53,7 @@ class Task(models.Model):
         ]
 
     def __str__(self):
-        return "%s - %s - %s -%s" % (
-            self.name,
-            self.created_by,
-            self.status,
-            self.created_at,
-        )
+        return f"{self.name} - {self.created_by} - {self.status} -{self.created_at}"
 
     def as_dict(self):
         return {

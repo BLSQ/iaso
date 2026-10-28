@@ -1,6 +1,6 @@
 import re
 
-from typing import Dict, Iterable
+from collections.abc import Iterable
 
 
 MAX_COL_LEN = 63
@@ -38,9 +38,9 @@ def make_safe_name(orig: str, idx: int, used_lower: set) -> str:
     return candidate
 
 
-def generate_safe_mapping(keys: Iterable[str]) -> Dict[str, str]:
+def generate_safe_mapping(keys: Iterable[str]) -> dict[str, str]:
     used_lower = set()
-    mapping: Dict[str, str] = {}
+    mapping: dict[str, str] = {}
     for idx, k in enumerate(keys, start=1):
         safe = make_safe_name(k, idx, used_lower)
         mapping[k] = safe

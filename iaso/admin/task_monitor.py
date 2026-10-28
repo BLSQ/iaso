@@ -3,7 +3,7 @@ limits (see beanstalk_worker/throttle.py)."""
 
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone as dt_timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
@@ -76,7 +76,7 @@ class DurationPercentiles(Aggregate):
         super().__init__(expression, fractions=[float(f) for f in fractions], **extra)
 
 
-def activity(window: str, task_name: str = "", account_id=None) -> List[dict]:
+def activity(window: str, task_name: str = "", account_id=None) -> list[dict]:
     """Tasks created per time bucket of the window, by current status; `throttled` is part of `waiting`."""
     size = int(BUCKETS[window].total_seconds())
     now = timezone.now()
@@ -107,7 +107,7 @@ def alive_leases():
     return TaskLease.objects.filter(heartbeat_at__gte=timezone.now() - LOST_AFTER)
 
 
-def _status_counts(since, field, filters) -> Tuple[Dict, Dict]:
+def _status_counts(since, field, filters) -> tuple[dict, dict]:
     """Per value of `field` of the tasks matching `filters`: the queued and running tasks now, and the tasks created
     since `since` per final status. Also returns when the oldest queued task was created."""
     tasks = Task.objects.filter(**filters)
@@ -166,7 +166,7 @@ def _filters(account_id=None, task_name="") -> dict:
     return filters
 
 
-def task_rows(since, account_id=None) -> List[dict]:
+def task_rows(since, account_id=None) -> list[dict]:
     """Per task name: the queued and running tasks now, and the tasks created since `since` per final status."""
     tasks = Task.objects.filter(**_filters(account_id))
     counts, oldest_queued = _status_counts(since, "name", _filters(account_id))
@@ -195,7 +195,7 @@ def task_rows(since, account_id=None) -> List[dict]:
     return result
 
 
-def account_rows(since, task_name="") -> List[dict]:
+def account_rows(since, task_name="") -> list[dict]:
     """The same counts as task_rows, per account: the busiest first."""
     counts, oldest_queued = _status_counts(since, "account_id", _filters(task_name=task_name))
     names = dict(Account.objects.filter(id__in=list(counts)).values_list("id", "name"))
@@ -212,7 +212,7 @@ def account_rows(since, task_name="") -> List[dict]:
     return result
 
 
-def list_filters(since) -> Dict[str, dict]:
+def list_filters(since) -> dict[str, dict]:
     """Per column of the tables, the filters of the task list showing the counted tasks.
 
     Queued can't exclude the throttled tasks, and no heartbeat can't be expressed as a filter."""
@@ -225,7 +225,7 @@ def list_filters(since) -> Dict[str, dict]:
     }
 
 
-def totals(rows) -> Dict[str, int]:
+def totals(rows) -> dict[str, int]:
     fields = ["queued", "throttled", "running", "no_heartbeat", *FINISHED_STATUSES]
     return {field: sum(row[field] for row in rows) for field in fields}
 
@@ -249,7 +249,7 @@ def _is_limited(concurrency, configured) -> bool:
     return any(v is not None for v in values) or (not values and concurrency.limit is not None)
 
 
-def _key_labels(concurrency_name, keys) -> Dict[str, str]:
+def _key_labels(concurrency_name, keys) -> dict[str, str]:
     """Names of the accounts and users, for the built-in keys"""
     ids = [int(key) for key in keys if str(key).isdigit()]
     if concurrency_name == "account":
@@ -259,7 +259,7 @@ def _key_labels(concurrency_name, keys) -> Dict[str, str]:
     return {}
 
 
-def throttle_rows(tasks: Dict[str, Optional[Throttle]], content, account_id=None) -> List[dict]:
+def throttle_rows(tasks: dict[str, Optional[Throttle]], content, account_id=None) -> list[dict]:
     """Per throttled task and limit: how many runs are running and waiting, per key.
 
     With `account_id`, the `account` limits only show that account (the other limits are shared by all the accounts)."""

@@ -76,8 +76,8 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
     current_datetime = int(datetime.now().timestamp())
     the_uuid = str(uuid.uuid4())
     entity_uuid = str(uuid.uuid4())
-    file_name = "example_%s.xml" % the_uuid
-    local_path = "generated/%s" % file_name
+    file_name = f"example_{the_uuid}.xml"
+    local_path = f"generated/{file_name}"
     org_unit_id = orgunit["id"]
 
     instance_data = {
@@ -124,8 +124,8 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
 
     the_uuid = str(uuid.uuid4())
     entity_uuid = str(uuid.uuid4())
-    file_name = "example_%s.xml" % the_uuid
-    local_path = "generated/%s" % file_name
+    file_name = f"example_{the_uuid}.xml"
+    local_path = f"generated/{file_name}"
     org_unit_id = orgunit["id"]
 
     instance_data = {
@@ -166,9 +166,9 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
     )
     for i in range(randint(0, 5)):
         the_uuid = str(uuid.uuid4())
-        file_name = "example_%s.xml" % the_uuid
+        file_name = f"example_{the_uuid}.xml"
 
-        local_path = "generated/%s" % file_name
+        local_path = f"generated/{file_name}"
         current_datetime = int(datetime.now().timestamp())
         created_at = datetime.now() - timedelta(days=4)
         created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
@@ -226,7 +226,7 @@ def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
         new_entity_type["reference_form"]["latest_form_version"] = form["latest_form_version"]
         new_entity_type["id"] = entity_type["id"]
 
-    print("-- Submitting %d submissions" % limit)
+    print(f"-- Submitting {limit} submissions")
     count = 0
     for orgunit in orgunits:
         if entity_type["name"] == "Children less than 5":

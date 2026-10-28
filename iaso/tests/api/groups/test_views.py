@@ -832,7 +832,7 @@ class GroupsAPITestCase(APITestCase):
         for group_data in list_data["groups"]:
             self.assertValidGroupData(group_data)
 
-    def assertValidGroupData(self, group_data: typing.Mapping, skip: typing.Optional[typing.List] = None):
+    def assertValidGroupData(self, group_data: typing.Mapping, skip: typing.Optional[list] = None):
         skip = skip if skip is not None else []
 
         self.assertHasField(group_data, "id", int)

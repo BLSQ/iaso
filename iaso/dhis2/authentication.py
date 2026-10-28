@@ -49,7 +49,7 @@ def dhis2_callback(request, dhis2_slug):
                 return HttpResponseRedirect(redirect_to="/")
             except ObjectDoesNotExist:
                 return HttpResponse(
-                    "Iaso User with DHIS2 credentials < {0} > does not exists.".format(
+                    "Iaso User with DHIS2 credentials < {} > does not exists.".format(
                         user_info.json()["userCredentials"]["name"]
                     )
                 )

@@ -12,9 +12,9 @@ if typing.TYPE_CHECKING:
 
 def workflows_impacts(
     previous_form_version: "FormVersion",
-    removed_question_names: typing.Set[str],
-    modified_question_names: typing.Set[str],
-) -> typing.List[ConfigurationImpact]:
+    removed_question_names: set[str],
+    modified_question_names: set[str],
+) -> list[ConfigurationImpact]:
     """What in the entity workflows reads it (target: the workflow version):
     - `follow_up_condition`: a follow-up's condition (JsonLogic, `{"var": "age"}`) reads it, the form being the
       reference form of the workflow's entity type (the entity's attributes);

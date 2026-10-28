@@ -98,12 +98,12 @@ class MultiTenantTestCase(APITestCase):
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        response = raccoon_client.get("/api/orgunits/%s/" % coruscant_id, accept="application/json")
+        response = raccoon_client.get(f"/api/orgunits/{coruscant_id}/", accept="application/json")
         self.assertEqual(
             response.status_code, status.HTTP_404_NOT_FOUND
         )  # raccoon not authorized to see Star Wars data
 
-        response = yoda_client.get("/api/orgunits/%s/" % coruscant_id, accept="application/json")
+        response = yoda_client.get(f"/api/orgunits/{coruscant_id}/", accept="application/json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # yoda authorized to see Star Wars data
 
     def test_instance_access(self):
@@ -159,10 +159,10 @@ class MultiTenantTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         instance = Instance.objects.get(uuid=instance_uuid)
 
-        response = yoda_client.get("/api/instances/%s/" % instance.id, accept="application/json")
+        response = yoda_client.get(f"/api/instances/{instance.id}/", accept="application/json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # yoda authorized to see Star Wars data
 
-        response = raccoon_client.get("/api/instances/%s/" % instance.id, accept="application/json")
+        response = raccoon_client.get(f"/api/instances/{instance.id}/", accept="application/json")
         self.assertEqual(
             response.status_code, status.HTTP_404_NOT_FOUND
         )  # raccoon not authorized to see Star Wars data

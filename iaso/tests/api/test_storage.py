@@ -3,7 +3,6 @@ import csv
 
 from datetime import datetime
 from io import StringIO
-from typing import List
 from unittest import mock
 
 import pytz
@@ -1603,7 +1602,7 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(received_data[::-1], sorted(received_data))
 
     @staticmethod
-    def _csv_response_to_list(response: StreamingHttpResponse) -> List[List[str]]:
+    def _csv_response_to_list(response: StreamingHttpResponse) -> list[list[str]]:
         """Convert a StreamingHttpResponse for CSV data to a list of lists"""
 
         # We use weird \r\n\n line separators, I don't want to change the working behavior so this helper just replace

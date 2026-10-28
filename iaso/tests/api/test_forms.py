@@ -395,7 +395,7 @@ class FormsAPITestCase(APITestCase):
             expected_attachment_filename="forms.xlsx",
         )
 
-    def get_csv_export(self, query: str) -> typing.Tuple[typing.List[str], typing.List[typing.Dict[str, str]]]:
+    def get_csv_export(self, query: str) -> tuple[list[str], list[dict[str, str]]]:
         """returns the headers and the rows (keyed by header) of the forms csv export"""
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/?csv=1&{query}")

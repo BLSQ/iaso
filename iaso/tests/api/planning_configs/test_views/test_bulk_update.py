@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from django.urls import reverse
 from rest_framework import status
@@ -121,7 +121,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         cls.planning_config_other_account = PlanningConfig.objects.create(level=1, planning=cls.planning_other_account)
 
-    def assertValidBody(self, body: List[Dict[str, Any]]):
+    def assertValidBody(self, body: list[dict[str, Any]]):
         self.assertResponseCompliantToSwagger(body, "PlanningConfigBulkUpdateRequest", True)
 
     def test_permissions(self):

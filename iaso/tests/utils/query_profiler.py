@@ -74,8 +74,8 @@ class QueryProfiler:
         self._table_seconds: Counter = Counter()
         self._storage_counts: Counter = Counter()
         self._storage_seconds: Counter = Counter()
-        self._storage_stacks: typing.Dict[str, list] = {}
-        self._storage_names: typing.Dict[str, list] = {}
+        self._storage_stacks: dict[str, list] = {}
+        self._storage_names: dict[str, list] = {}
         self._storage_patches = None
         self._started_at = None
         self.elapsed: typing.Optional[float] = None
@@ -178,7 +178,7 @@ class QueryProfiler:
         when outside the project (e.g. Django's `Storage.save()`), then up to 3 project frames."""
         return Counter(self._storage_stacks.get(method_name, []))
 
-    def storage_names(self, method_name: str, suffix: typing.Union[str, typing.Tuple[str, ...]] = "") -> list:
+    def storage_names(self, method_name: str, suffix: typing.Union[str, tuple[str, ...]] = "") -> list:
         """The file names a storage method was called with, in call order - for `_save()`, the final names the
         files were stored under (after `get_available_name()` and the field's `max_length` truncation).
         `suffix` keeps only the names ending with it (or with one of them), e.g. ".webp" for the attachments."""
@@ -188,13 +188,13 @@ class QueryProfiler:
         path = self._relpath(filename) or filename.rpartition("site-packages/")[2]
         return f"{path}:{lineno} in {name}"
 
-    def time_breakdown(self) -> typing.Dict[str, float]:
+    def time_breakdown(self) -> dict[str, float]:
         """Seconds spent in the queries, in the storage calls and in the rest (Python) of the profiled block."""
         db = sum(self._table_seconds.values())
         storage = sum(self._storage_seconds.values())
         return {"total": self.elapsed, "db": db, "storage": storage, "python": self.elapsed - db - storage}
 
-    def _time_report_lines(self, per: int = 1) -> typing.List[str]:
+    def _time_report_lines(self, per: int = 1) -> list[str]:
         """`per`: also divide the timings by this count, e.g. the number of imported items."""
 
         def fmt(seconds):
@@ -239,7 +239,7 @@ class QueryProfiler:
     def print_time_report(self, per: int = 1):
         print("\n".join(self._time_report_lines(per)))
 
-    def assertLessEqualQueryCount(self, expected: typing.Dict[str, int], exclude: typing.Sequence[str] = ()) -> None:
+    def assertLessEqualQueryCount(self, expected: dict[str, int], exclude: typing.Sequence[str] = ()) -> None:
         """
         Assert that every table in `expected` was queried at most the given number of times, AND
         that every *other* table hit (not listed in `expected`) is in `exclude`. The latter is
@@ -263,7 +263,7 @@ class QueryProfiler:
         if violations:
             raise AssertionError("Query count(s) exceeded expected bound:\n" + "\n".join(violations))
 
-    def assertStorageCalls(self, expected: typing.Dict[str, typing.Sequence[str]], exclude: typing.Sequence[str] = ()):
+    def assertStorageCalls(self, expected: dict[str, typing.Sequence[str]], exclude: typing.Sequence[str] = ()):
         """
         Assert that every storage method in `expected` was called with exactly these file names (in any order, but
         each as many times as listed), AND - as in `assertLessEqualQueryCount` - that every *other* method called is in
@@ -286,7 +286,7 @@ class QueryProfiler:
         if violations:
             raise AssertionError("Unexpected storage call(s):\n" + "\n".join(violations))
 
-    def assertStorageCounts(self, expected: typing.Dict[str, int], exclude: typing.Sequence[str] = ()) -> None:
+    def assertStorageCounts(self, expected: dict[str, int], exclude: typing.Sequence[str] = ()) -> None:
         """
         Assert that every storage method in `expected` was called exactly the given number of times, AND - as in
         `assertLessEqualQueryCount` - that every *other* method called is in `exclude`. Exact rather than an upper
@@ -422,7 +422,7 @@ class QueryProfiler:
 
         return "\n".join(lines)
 
-    def _markdown_call_site(self, prefix: str, filename: str, lineno: int, name: str) -> typing.List[str]:
+    def _markdown_call_site(self, prefix: str, filename: str, lineno: int, name: str) -> list[str]:
         """A call site as a markdown list item: its location (a GitHub link for the project files) and its code."""
         github_url = self._github_url(filename, lineno)
         path = self._frame_label(filename, lineno, name).rpartition(" in ")[0]
@@ -482,7 +482,7 @@ class QueryProfiler:
 STORAGE_METHODS = ("_save", "_open", "exists", "delete", "size", "listdir", "get_modified_time")
 
 
-def _is_project_frame(filename: str, top_dirs: typing.Tuple[str, ...]) -> bool:
+def _is_project_frame(filename: str, top_dirs: tuple[str, ...]) -> bool:
     """Whether the frame is non-test code under one of the project's `top_dirs`. Matched on the path relative to
     `BASE_DIR`, not on the absolute one: in CI, the checkout itself lives in `/home/runner/work/iaso/iaso/`."""
     relpath = os.path.relpath(filename, settings.BASE_DIR)

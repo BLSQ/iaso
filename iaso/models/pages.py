@@ -85,7 +85,7 @@ class Page(models.Model):
     )
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"{self.name} "
 
     @property
     def language_code(self) -> str:

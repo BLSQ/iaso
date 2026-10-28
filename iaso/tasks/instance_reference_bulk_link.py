@@ -1,6 +1,6 @@
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -37,10 +37,10 @@ def unlink_single_reference_instance_from_org_unit(user: Optional[User], instanc
 
 @task_decorator(task_name="instance_reference_bulk_link")
 def instance_reference_bulk_link(
-    actions: List[str],
+    actions: list[str],
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
+    selected_ids: list[int],
+    unselected_ids: list[int],
     filters: dict,
     task: Task,
 ):
@@ -76,14 +76,15 @@ def instance_reference_bulk_link(
     # Checking if any reference submission link or unlink can be performed with what was requested
     success, infos, errors, _ = check_instance_reference_bulk_link(queryset)
     if not success:
-        raise Exception("Cannot proceed with the bulk reference submission link or unlink due to errors: %s" % errors)
+        msg = f"Cannot proceed with the bulk reference submission link or unlink due to errors: {errors}"
+        raise Exception(msg)
 
     total = queryset.count()
     with transaction.atomic():
         if AllowedActions.LINK.value in actions:
             instances_to_link = queryset.filter(id__in=infos["not_linked"])
             for index, instance in enumerate(instances_to_link):
-                res_string = "%.2f sec, processed %i instances" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} instances"
                 task.report_progress_and_stop_if_killed(
                     progress_message=res_string, end_value=total, progress_value=index
                 )
@@ -94,10 +95,10 @@ def instance_reference_bulk_link(
         if AllowedActions.UNLINK.value in actions:
             instances_to_unlink = queryset.filter(id__in=infos["linked"])
             for index, instance in enumerate(instances_to_unlink):
-                res_string = "%.2f sec, processed %i instances" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} instances"
                 task.report_progress_and_stop_if_killed(
                     progress_message=res_string, end_value=total, progress_value=index
                 )
                 unlink_single_reference_instance_from_org_unit(user, instance)
 
-        task.report_success(message="%d modified" % total)
+        task.report_success(message=f"{total} modified")

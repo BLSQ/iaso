@@ -1,6 +1,6 @@
 import json
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404
@@ -15,7 +15,7 @@ from iaso.periods import DayPeriod, Period
 from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 
 
-def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
+def parse_instance_filters(req: QueryDict) -> dict[str, Any]:
     periods_bound = None
     if req.get(query.START_PERIOD, None) or req.get(query.END_PERIOD, None):
         # as a compromise for now to limit the performance impact when we search for higher level we don't include
@@ -97,7 +97,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
 
 
 # TODO: if we end up with multiple function that deal with instance filters, we should probably move this to a class
-def get_form_from_instance_filters(instance_filters: Dict[str, Any]) -> Optional[Form]:
+def get_form_from_instance_filters(instance_filters: dict[str, Any]) -> Optional[Form]:
     """
     Inspect the form_id and form_ids fields of the filters and return a Form object
 

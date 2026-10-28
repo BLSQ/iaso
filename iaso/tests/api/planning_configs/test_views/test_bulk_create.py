@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from django.urls import reverse
 from rest_framework import status
@@ -103,10 +103,10 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             org_unit=cls.ou,
         )
 
-    def assertValidBody(self, body: List[Dict[str, Any]]):
+    def assertValidBody(self, body: list[dict[str, Any]]):
         self.assertResponseCompliantToSwagger(body, "PlanningConfigBulkCreateRequest", True)
 
-    def assertValidResponse(self, data: List[Dict[str, Any]], expected_length: int):
+    def assertValidResponse(self, data: list[dict[str, Any]], expected_length: int):
         self.assertResponseCompliantToSwagger(data, "PlanningConfigBulkCreate", True)
         self.assertEqual(len(data), expected_length)
 

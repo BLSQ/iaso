@@ -3,7 +3,7 @@ import base64
 import binascii
 import datetime
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from django.core.paginator import Paginator
 from django.db.models import Case, Q, QuerySet, When
@@ -86,7 +86,7 @@ class StorageStatusSerializer(serializers.Serializer):
     comment = serializers.CharField(source="status_comment", required=False, allow_blank=True)
 
     def to_representation(self, obj):
-        ret = super(StorageStatusSerializer, self).to_representation(obj)
+        ret = super().to_representation(obj)
 
         # If status is OK, we don't want to return the reason nor the comment
         if obj.status == StorageDevice.OK:
@@ -125,7 +125,7 @@ class StorageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StorageDevice
-        fields: Tuple[str, ...] = (
+        fields: tuple[str, ...] = (
             "updated_at",
             "created_at",
             "id",
@@ -209,7 +209,7 @@ def device_generate_export(
         {"title": "Entity id"},
     ]
 
-    def get_row(device: StorageDevice, **_) -> List[Any]:
+    def get_row(device: StorageDevice, **_) -> list[Any]:
         created_at_str = ""
         if device.created_at is not None:
             created_at_str = device.created_at.strftime(EXPORTS_DATETIME_FORMAT)
@@ -245,7 +245,7 @@ def device_generate_export(
             streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
         )
 
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
 
@@ -478,7 +478,7 @@ def logs_for_device_generate_export(
         {"title": "status_comment"},
     ]
 
-    def get_row(log_entry: StorageLogEntry, **_) -> List[Any]:
+    def get_row(log_entry: StorageLogEntry, **_) -> list[Any]:
         instances_ids_list = ",".join([str(i.id) for i in log_entry.instances.all()])
 
         performed_at_str = ""
@@ -518,7 +518,7 @@ def logs_for_device_generate_export(
         # Raise InvalidFileFormat
         pass
 
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
 
@@ -612,7 +612,7 @@ class StorageSerializerForBlacklisted(serializers.ModelSerializer):
 
     class Meta:
         model = StorageDevice
-        fields: Tuple[str, ...] = (
+        fields: tuple[str, ...] = (
             "storage_id",
             "storage_type",
             "storage_status",

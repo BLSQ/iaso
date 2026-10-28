@@ -14,6 +14,7 @@ class Command(BaseCommand):
         try:
             current_user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise CommandError('User "%s" does not exist' % username)
+            msg = f'User "{username}" does not exist'
+            raise CommandError(msg)
 
-        self.stdout.write(self.style.SUCCESS('Successfully loaded user "%s"' % username))
+        self.stdout.write(self.style.SUCCESS(f'Successfully loaded user "{username}"'))

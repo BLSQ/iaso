@@ -1,5 +1,4 @@
 from collections import Counter
-from typing import Dict, List
 
 from django.db.models import Exists, OuterRef, QuerySet
 
@@ -29,7 +28,7 @@ def get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_field_names
     return None
 
 
-def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]):
+def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, dict[str, list[int]], dict[str, list[int]]):
     """
     Determines if there are any warnings or errors if the given Instances were to push their own location to their OrgUnit.
 
@@ -92,7 +91,7 @@ def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[in
     return success, errors, warnings
 
 
-def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]):  # type: ignore
+def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, dict[str, list[int]], dict[str, list[int]]):  # type: ignore
     from iaso.models.org_unit import OrgUnitReferenceInstance, OrgUnitType
 
     queryset = queryset.annotate(

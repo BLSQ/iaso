@@ -1,5 +1,4 @@
 import logging
-import typing
 import uuid
 
 
@@ -35,7 +34,7 @@ def seed_event_mapping(api, program_id):
     return (mapping, missing_data_elements)
 
 
-def mapped_question_names(mapping_json: dict) -> typing.Set[str]:
+def mapped_question_names(mapping_json: dict) -> set[str]:
     """The questions a mapping version exports:
     - aggregate and event mappings: the keys of `question_mappings`, `<question>__<choice>` for a multiple select
       exported as booleans, except the ones marked as never mapped;

@@ -577,7 +577,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
         ]
 
     def __str__(self):
-        return "%s %s %s" % (self.id, self.form, self.name)
+        return f"{self.id} {self.form} {self.name}"
 
     @property
     def is_instance_of_reference_form(self) -> bool:
@@ -665,7 +665,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
 
     def xml_file_to_json(
         self, file: typing.IO, form_versions_cache: typing.Optional[dict] = None
-    ) -> typing.Dict[str, typing.Any]:
+    ) -> dict[str, typing.Any]:
         raw_content = file.read().decode("utf-8")
         fixed_content = fix_emoji(raw_content).decode("utf-8")
         copy_io_utf8 = StringIO(fixed_content)
@@ -1109,7 +1109,7 @@ class InstanceFile(models.Model):
     objects_with_file_extensions = InstanceFileExtensionManager.from_queryset(InstanceFileExtensionQuerySet)()
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"{self.name} "
 
     def as_dict(self):
         return {

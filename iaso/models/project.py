@@ -84,7 +84,7 @@ class Project(models.Model):
         ordering = ["id"]
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"{self.name} "
 
     def as_dict(self):
         return {

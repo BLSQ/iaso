@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from django.db import IntegrityError, models, transaction
 from django.db.models.constraints import UniqueConstraint
@@ -32,7 +32,7 @@ class PlanningConfigBulkUpdateListSerializer(BulkUpdateListSerializer):
         return constraint.name
 
     @transaction.atomic
-    def update(self, instances: List[models.Model], validated_data: List[dict]) -> List[models.Model]:
+    def update(self, instances: list[models.Model], validated_data: list[dict]) -> list[models.Model]:
         try:
             return super().update(instances, validated_data)
         except IntegrityError as e:

@@ -35,10 +35,10 @@ keeps every run of the task waiting.
 import importlib
 import pkgutil
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Callable
+from typing import Any
 
 from django.apps import apps
 

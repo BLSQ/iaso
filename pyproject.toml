@@ -142,7 +142,6 @@ exclude = [
     "dist",
     "locust",
     "node_modules",
-    "notebooks",
     "src/django-webpack-loader",
 ]
 indent-width = 4

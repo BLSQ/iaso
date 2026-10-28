@@ -28,8 +28,6 @@ services:
             - ./htmlcov:/opt/app/htmlcov
             # test data
             - ./testdata:/opt/app/testdata
-            # jupyter notebooks
-            - ./notebooks:/opt/notebooks
             # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
             - ../bluesquare-components:/opt/bluesquare-components
             # Optional Used to load dev snt-malaria-budgeting Python package.

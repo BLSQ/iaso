@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+import typing
+
 from typing import TYPE_CHECKING, Any, Sequence
 
+from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Count, F, Prefetch, Q
+from django.db.models import Count, F, Min, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 from ...models.microplanning.plannings import PlanningConfigQuerySet, PlanningQuerySet
-from .serializers.org_unit_level import OrgUnitBuildTreeSerializer
+from .serializers.org_unit_tree import OrgUnitBuildTreeSerializer
 from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
 from .serializers.planning_config.list import NestedPlanningConfigListSerializer
 
@@ -81,6 +84,9 @@ from .serializers.dropdown import PlanningDropdownSerializer
 from .serializers.missions.base import PlanningMissionPolymorphicListSerializer
 
 
+User = get_user_model()
+
+
 @extend_schema(tags=["Micro plannings", "Org units", "Plannings"])
 class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewSet):
     """Org units scoped to a planning (nested under ``/microplanning/plannings/{pk}/orgunits/``)."""
@@ -95,6 +101,7 @@ class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewS
     pagination_class = PlanningOrgUnitChildrenPagination
     filter_backends = [PlanningOrgUnitChildrenFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     filterset_class = PlanningOrgUnitChildrenFilter
+    _planning_for_orgunits = None
 
     def get_serializer_class(self):
         if self.action == "children":
@@ -106,7 +113,7 @@ class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewS
         return self.serializer_class
 
     def get_planning_or_404(self) -> Planning:
-        cached = getattr(self, "_planning_for_orgunits", None)
+        cached: Planning | None = getattr(self, "_planning_for_orgunits", None)
         if cached is not None:
             return cached
         pk = self.kwargs.get("parent_lookup_pk")
@@ -238,8 +245,73 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             ctx.update({"planning_id": self.kwargs.get("pk")})
         return ctx
 
+    @staticmethod
+    def _get_org_unit_tree_queryset(
+        filterset: PlanningOrgUnitTreeFilterSet, planning: Planning, user: User
+    ) -> OrgUnitQuerySet:
+        level = filterset.form.cleaned_data.get("level")
+        max_depth = filterset.form.cleaned_data.get("max_depth")
+        root = planning.org_unit
+        root_level = len(str(root.path).split("."))
+
+        # fetching the planning configs
+        configs = [
+            {
+                "level": x.level,
+                "org_unit_types": list(x.org_unit_types.values_list("id", flat=True)),
+                "org_unit_groups": list(x.org_unit_groups.values_list("id", flat=True)),
+            }
+            for x in planning.configs.all()
+        ]
+
+        if max_depth:
+            max_depth += root_level - 1
+
+        if level:
+            nodes_level = root_level + level
+            filter_kwargs = {
+                "path__depth": nodes_level,
+            }
+
+            root = (
+                OrgUnit.objects.filter_for_user(user)
+                .hierarchy(root)
+                .filter(**filter_kwargs)
+                .only("id", "parent", "name", "path")
+                .distinct("id")
+            )
+
+        queryset = OrgUnit.objects.filter_for_user(user).hierarchy(root)
+
+        if max_depth is not None:
+            queryset = queryset.filter(path__depth__lte=max_depth)
+
+        # filtering out per config
+        filter_qs = Q()
+        processed_levels = []
+        for config in configs:
+            processed_levels.append(config["level"] + root_level)
+            sub_filter = Q(path__depth=config["level"] + root_level)
+            if config["org_unit_types"]:
+                sub_filter &= Q(org_unit_type__in=config["org_unit_types"])
+
+            if config["org_unit_groups"]:
+                sub_filter &= Q(groups__in=config["org_unit_groups"])
+
+            filter_qs |= sub_filter
+
+        # keep nodes that are not in the config
+        filter_qs |= ~Q(path__depth__in=processed_levels)
+
+        return (
+            queryset.only("id", "parent", "name", "path")
+            .annotate(depth=F("path__depth"))
+            .filter(filter_qs)
+            .order_by("id")
+        )
+
     def get_queryset(self) -> PlanningQuerySet | PlanningConfigQuerySet | MissionQuerySet | OrgUnitQuerySet:
-        user = self.request.user
+        user = typing.cast(User, self.request.user)
         qs = self.queryset.filter_for_user(user)
 
         if self.action == "dropdown":
@@ -298,44 +370,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             if not filterset.is_valid():
                 raise serializers.ValidationError(filterset.errors)
 
-            level = filterset.form.cleaned_data.get("level")
-            max_depth = filterset.form.cleaned_data.get("max_depth")
-            root = planning.org_unit
-            root_level = len(str(root.path).split("."))
-
-            if max_depth:
-                max_depth += root_level - 1
-
-            if level:
-                config = get_object_or_404(planning.configs.all(), level=int(level))
-
-                # from the config and level we filter out the possible roots
-                nodes_level = root_level + level
-                filter_kwargs = {
-                    "path__depth": nodes_level,
-                }
-                org_unit_types_ids = config.org_unit_types.values_list("id", flat=True)
-                if org_unit_types_ids:
-                    filter_kwargs["org_unit_type__in"] = org_unit_types_ids
-
-                org_unit_groups_ids = config.org_unit_groups.values_list("id", flat=True)
-                if org_unit_groups_ids:
-                    filter_kwargs["groups__in"] = org_unit_groups_ids
-
-                root = (
-                    OrgUnit.objects.filter_for_user(user)
-                    .hierarchy(root)
-                    .filter(**filter_kwargs)
-                    .only("id", "parent", "name", "path")
-                    .distinct("id")
-                )
-
-            queryset = OrgUnit.objects.filter_for_user(user).hierarchy(root)
-
-            if max_depth is not None:
-                queryset = queryset.filter(path__depth__lte=max_depth)
-
-            return queryset.only("id", "parent", "name", "path").annotate(depth=F("path__depth"))
+            return self._get_org_unit_tree_queryset(filterset, planning, user)
 
         return (
             self.queryset.filter_for_user(user)
@@ -411,8 +446,13 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @staticmethod
-    def _build_org_unit_tree(org_units: list[OrgUnit] | OrgUnitQuerySet) -> list[dict]:
+    def _build_org_unit_tree(org_units: OrgUnitQuerySet) -> list[dict]:
         # associate each node with its data
+        if not org_units:
+            return []
+
+        min_depth = org_units.aggregate(min_depth=Min("path__depth"))["min_depth"]
+
         nodes = {org_unit.pk: {**OrgUnitBuildTreeSerializer(org_unit).data, "children": []} for org_unit in org_units}
 
         roots = []
@@ -421,10 +461,11 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             node = nodes[org_unit.pk]
             parent = nodes.get(org_unit.parent_id)
 
-            if parent is None or org_unit.parent_id not in nodes:
-                roots.append(node)
-            else:
+            if parent is not None:
                 parent["children"].append(node)
+            elif node["depth"] == min_depth:
+                roots.append(node)
+
         return roots
 
     @action(

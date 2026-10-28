@@ -3,6 +3,8 @@ import re
 from django.core.validators import RegexValidator
 from django.db import models
 
+from iaso.utils.colors import get_default_color
+
 
 HEX_COLOR_REGEX = re.compile(r"#[0-9A-Fa-f]{6}$")
 
@@ -18,6 +20,7 @@ class ColorField(models.CharField):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("max_length", 7)  # Length for hex color code (#RRGGBB)
+        kwargs.setdefault("default", get_default_color)
         super().__init__(*args, **kwargs)
 
     def to_python(self, value):

@@ -1,7 +1,10 @@
+from unittest import mock
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from iaso.test import TestCase
+from iaso.utils.colors import DEFAULT_COLOR, get_default_color
 from iaso.utils.models.color import ColorField
 
 
@@ -58,3 +61,20 @@ class ColorFieldTest(TestCase):
         obj = ColorFieldTestModel(color=None)
         with self.assertRaisesMessage(ValidationError, "This field cannot be null."):
             obj.full_clean()
+
+    def test_color_field_uses_default_color_when_no_value_given(self):
+        obj = ColorFieldTestModel()
+        self.assertEqual(obj.color, DEFAULT_COLOR)
+
+    def test_color_field_default_is_callable_so_theme_change_does_not_alter_migrations(self):
+        _, _, _, kwargs = ColorField().deconstruct()
+        self.assertIs(kwargs["default"], get_default_color)
+
+    def test_color_field_default_follows_current_theme_color(self):
+        with mock.patch("iaso.utils.colors.DEFAULT_COLOR", "#123456"):
+            obj = ColorFieldTestModel()
+        self.assertEqual(obj.color, "#123456")
+
+    def test_color_field_explicit_default_overrides_theme_color(self):
+        field = ColorField(default="#ABCDEF")
+        self.assertEqual(field.get_default(), "#ABCDEF")

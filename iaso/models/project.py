@@ -5,7 +5,6 @@ from uuid import uuid4
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
-from iaso.utils.colors import DEFAULT_COLOR
 from iaso.utils.models.color import ColorField
 
 
@@ -76,7 +75,7 @@ class Project(models.Model):
     min_version = models.IntegerField(null=True, blank=False)
     redirection_url = models.URLField(null=True, blank=True)
     description = models.TextField(blank=True, default="", null=False)
-    color = ColorField(null=True, blank=True, default=DEFAULT_COLOR)
+    color = ColorField(null=True, blank=True)
 
     objects = ProjectManager()
 

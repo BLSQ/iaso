@@ -7,6 +7,11 @@ DEFAULT_COLOR = THEME_PRIMARY_COLOR
 COLOR_FORMAT_ERROR = _("Color must be a valid hex code (#RRGGBB).")
 
 
+def get_default_color() -> str:
+    """Callable model default, so changing THEME_PRIMARY_COLOR doesn't generate a migration."""
+    return DEFAULT_COLOR
+
+
 def validate_hex_color(value: str) -> str:
     """Validate and normalize a hex RGB color code (#RRGGBB)."""
     if not value:

@@ -191,6 +191,9 @@ class ReportsUploadAPITestCase(APITestCase):
         )
         cls.beerus = cls.create_user_with_profile(username="Beerus", account=kame_house)
         cls.tao = cls.create_user_with_profile(username="Tao", account=rr_army, permissions=[CORE_REPORTS_PERMISSION])
+        cls.goku = cls.create_user_with_profile(
+            username="Goku", account=kame_house, permissions=[CORE_REPORTS_PERMISSION], projects=[cls.sayanj]
+        )
 
     def create_report(self, project=None, file=None, **extra):
         data = {"project": (project or self.sayanj).id, "name": "Campaign progress", "file": file or valid_zip()}
@@ -259,6 +262,37 @@ class ReportsUploadAPITestCase(APITestCase):
 
         self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
         self.assertIn("project", response.json())
+
+    def test_create_report_project_not_in_user_projects(self):
+        self.client.force_authenticate(self.goku)
+
+        response = self.create_report(project=self.freeza_project)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertIn("project", response.json())
+
+        response = self.create_report(project=self.sayanj)
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code, response.content)
+
+    def test_reports_of_other_projects_are_hidden_from_restricted_users(self):
+        self.client.force_authenticate(self.kefla)
+        sayanj_report_id = self.create_report().json()["id"]
+        freeza_report_id = self.create_report(project=self.freeza_project).json()["id"]
+        freeza_version_id = Report.objects.get(pk=freeza_report_id).published_version_id
+        self.client.force_authenticate(self.goku)
+
+        response = self.client.get("/api/reports/")
+        self.assertEqual([r["id"] for r in response.json()], [sayanj_report_id])
+        url = f"/api/reports/{freeza_report_id}/"
+        self.assertEqual(status.HTTP_404_NOT_FOUND, self.client.get(url).status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, self.client.get(f"{url}versions/").status_code)
+        response = self.client.post(f"{url}versions/", {"file": valid_zip()}, format="multipart")
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        response = self.client.post(f"{url}publish/", {"version_id": freeza_version_id})
+        self.assertEqual(status.HTTP_404_NOT_FOUND, response.status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, self.client.patch(url, {"name": "x"}).status_code)
+        self.assertEqual(status.HTTP_404_NOT_FOUND, self.client.delete(url).status_code)
+        self.assertEqual(ReportVersion.objects.filter(report_id=freeza_report_id).count(), 1)
+        self.assertEqual(Report.objects.get(pk=freeza_report_id).name, "Campaign progress")
 
     def test_create_report_requires_permission(self):
         self.client.force_authenticate(self.beerus)

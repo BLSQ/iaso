@@ -107,7 +107,9 @@ class ReportCreateSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
         if request:
-            self.fields["project"].queryset = Project.objects.filter(account=request.user.iaso_profile.account)
+            self.fields["project"].queryset = Project.objects.filter(
+                account=request.user.iaso_profile.account
+            ).filter_on_user_projects(request.user)
 
     def validate_project(self, project: Project):
         # The mobile app only downloads one report per project.
@@ -184,9 +186,11 @@ class ReportsViewSet(ModelViewSet):
 
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
-        queryset = Report.objects.filter(project__account=self.request.user.iaso_profile.account).select_related(
-            "published_version"
+        # A user restricted to some projects only manages the reports of these projects.
+        projects = Project.objects.filter(account=self.request.user.iaso_profile.account).filter_on_user_projects(
+            self.request.user
         )
+        queryset = Report.objects.filter(project__in=projects).select_related("published_version")
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset.order_by("id")

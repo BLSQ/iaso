@@ -63,9 +63,6 @@ case "$1" in
   "vitest_watch" )
     npm run test:watch
   ;;
-  "gen_docs" )
-    ./scripts/gen_docs.sh
-  ;;
   "start_dev" )
     export DEV_SERVER=true
     ./scripts/wait_for_dbs.sh

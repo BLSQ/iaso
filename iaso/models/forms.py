@@ -222,7 +222,7 @@ class Form(SoftDeletableModel):
             return self.form_versions.order_by("-created_at").first()
 
     def __str__(self):
-        return "%s %s " % (self.name, self.form_id)
+        return f"{self.name} {self.form_id} "
 
     def as_dict(self, additional_fields=None, show_version=True):
         res = {
@@ -403,7 +403,7 @@ class FormVersion(models.Model):
         return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
 
     def __str__(self):
-        return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+        return f"{self.form.name} - {self.version_id} - {self.created_at}"
 
 
 def update_possible_fields(sender, instance, **kwargs):

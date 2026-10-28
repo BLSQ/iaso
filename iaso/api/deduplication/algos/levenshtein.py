@@ -1,5 +1,3 @@
-from typing import List
-
 from django.db import connection
 
 from iaso.models.task import Task
@@ -208,7 +206,7 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
     above_score_display: the minimum score to display (defaults to ABOVE_SCORE_DISPLAY)
     """
 
-    def run(self, params: dict, task: Task) -> List[PotentialDuplicate]:
+    def run(self, params: dict, task: Task) -> list[PotentialDuplicate]:
         task.report_progress_and_stop_if_killed(progress_message="Started Levenshtein Algorithm")
 
         cursor = connection.cursor()

@@ -1,7 +1,5 @@
 import unicodedata
 
-from typing import Tuple
-
 from django.utils.functional import SimpleLazyObject
 from lxml import etree  # type: ignore
 from lxml.etree import XMLParser
@@ -233,7 +231,7 @@ def extract_xml_instance_from_form_xml(form_version_xml, instance_uuid):
 
 
 # we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
-def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instance=None) -> Tuple[str, bytes]:
+def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instance=None) -> tuple[str, bytes]:
     """ "Inject the attribute in different place in the xml
     Return the uuid found in the xml
     """

@@ -58,10 +58,11 @@ class CustomPaginationListModelMixin(ListModelMixin):
         }
         """
         if self.results_key is None:
-            raise ValueError(
-                "'%s' should either include a `results_key` attribute, "
-                "or override the `get_result_key()` method." % self.__class__.__name__
+            msg = (
+                f"'{self.__class__.__name__}' should either include a `results_key` attribute, "
+                "or override the `get_result_key()` method."
             )
+            raise ValueError(msg)
 
         return self.results_key
 

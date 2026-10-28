@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
@@ -109,7 +109,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         return queryset
 
-    def get_serializer_context(self) -> Dict[str, Any]:
+    def get_serializer_context(self) -> dict[str, Any]:
         context = super().get_serializer_context()
         context["include_geo_json"] = self.check_include_geo_json()
         context["app_id"] = self.get_app_id()

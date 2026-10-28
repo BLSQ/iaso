@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import cast
 
 from django.db import transaction
 from django.db.models import Q
@@ -21,8 +21,8 @@ class ValidationNodeTemplateBulkUpdateListSerializer(BulkUpdateListSerializer):
 
     @transaction.atomic
     def update(
-        self, instances: List[ValidationNodeTemplate], validated_data: List[dict]
-    ) -> List[ValidationNodeTemplate]:
+        self, instances: list[ValidationNodeTemplate], validated_data: list[dict]
+    ) -> list[ValidationNodeTemplate]:
         rtn_instances = cast(list[ValidationNodeTemplate], super().update(instances, validated_data))
 
         instances = {x.slug: x for x in rtn_instances}

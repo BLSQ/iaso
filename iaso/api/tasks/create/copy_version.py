@@ -50,7 +50,7 @@ class CopyVersionSerializer(serializers.Serializer):
         version_count = OrgUnit.objects.filter(version=destination_version).count()
         if version_count > 0 and not force and destination_version is not None:
             raise serializers.ValidationError(
-                "This is going to delete %d org units records. Use the force parameter to proceed" % version_count
+                f"This is going to delete {version_count} org units records. Use the force parameter to proceed"
             )
 
         if validated_data["source_source_id"] not in possible_data_sources:

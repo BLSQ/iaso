@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any
 
 from django.db import IntegrityError, models, transaction
 from django.db.models.constraints import UniqueConstraint
@@ -35,7 +35,7 @@ class NestedPlanningConfigBulkListSerializer(BulkUpdateListSerializer):
         return constraint.name
 
     @transaction.atomic
-    def update(self, instances: List[models.Model], validated_data: List[dict]) -> List[models.Model]:
+    def update(self, instances: list[models.Model], validated_data: list[dict]) -> list[models.Model]:
         try:
             return self._update(instances, validated_data)
         except IntegrityError as e:
@@ -58,7 +58,7 @@ class NestedPlanningConfigBulkListSerializer(BulkUpdateListSerializer):
 
             raise
 
-    def _update(self, instances: List[models.Model], validated_data: List[dict]) -> List[models.Model]:
+    def _update(self, instances: list[models.Model], validated_data: list[dict]) -> list[models.Model]:
         # get the existing instances and do a comparison so we know :
         instances_ids = {instance.id for instance in instances}
         instances_by_ids = {instance.id: instance for instance in instances}

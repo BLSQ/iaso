@@ -222,6 +222,11 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
             file="report.pdf", name=f"report_version_{suffix}", created_by=user
         )
         report = m.Report.objects.create(name=f"report_{suffix}", published_version=report_version, project=project)
+        report_version.report = report
+        report_version.save()
+        older_report_version = m.ReportVersion.objects.create(
+            report=report, file="older_report.zip", name=f"older_report_version_{suffix}", created_by=user
+        )
 
         stock_keeping_unit = m.StockKeepingUnit.objects.create(
             name=f"sku_{suffix}", short_name=f"sku_{suffix}", account=account
@@ -365,6 +370,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
             "payment": payment,
             "potential_payment": potential_payment,
             "report_version": report_version,
+            "older_report_version": older_report_version,
             "report": report,
             "stock_keeping_unit": stock_keeping_unit,
             "stock_keeping_unit_children": stock_keeping_unit_children,
@@ -534,6 +540,9 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(m.RecordType.objects.filter(pk=other_models["record_type"].pk).exists())
         self.assertFalse(m.Report.objects.filter(pk=other_models["report"].pk).exists())
         self.assertFalse(m.ReportVersion.objects.filter(pk=other_models["report_version"].pk).exists())
+        self.assertFalse(
+            m.ReportVersion.objects_include_deleted.filter(pk=other_models["older_report_version"].pk).exists()
+        )
         self.assertFalse(m.SourceVersion.objects.filter(pk=source_version.pk).exists())
         self.assertFalse(m.StockItem.objects.filter(pk=other_models["stock_item"].pk).exists())
         self.assertFalse(m.StockItemRule.objects.filter(pk=other_models["stock_item_rule"].pk).exists())
@@ -704,6 +713,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(m.RecordType.objects.filter(pk=other_models["record_type"].pk).exists())
         self.assertTrue(m.Report.objects.filter(pk=other_models["report"].pk).exists())
         self.assertTrue(m.ReportVersion.objects.filter(pk=other_models["report_version"].pk).exists())
+        self.assertTrue(m.ReportVersion.objects.filter(pk=other_models["older_report_version"].pk).exists())
         self.assertTrue(m.SourceVersion.objects.filter(pk=source_version.pk).exists())
         self.assertTrue(m.StockItem.objects.filter(pk=other_models["stock_item"].pk).exists())
         self.assertTrue(m.StockItemRule.objects.filter(pk=other_models["stock_item_rule"].pk).exists())

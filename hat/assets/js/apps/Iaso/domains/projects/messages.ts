@@ -431,6 +431,92 @@ const MESSAGES = defineMessages({
         id: 'iaso.projets.featureflag.submission_validation_workflow',
         defaultMessage: 'Web: Validation workflows',
     },
+    mobileReport: {
+        id: 'iaso.projects.mobileReport',
+        defaultMessage: 'Mobile report',
+    },
+    mobileReportHelp: {
+        id: 'iaso.projects.mobileReport.help',
+        defaultMessage:
+            'A mobile report is a zip file with an index.html at its root. The mobile app downloads the published version and displays it offline.',
+    },
+    mobileReportFeatureFlagWarning: {
+        id: 'iaso.projects.mobileReport.featureFlagWarning',
+        defaultMessage:
+            'The mobile app only shows the report when the project has the “Enable reports” feature flag.',
+    },
+    mobileReportSaveProjectFirst: {
+        id: 'iaso.projects.mobileReport.saveProjectFirst',
+        defaultMessage: 'Save the project before uploading a mobile report.',
+    },
+    mobileReportCurrent: {
+        id: 'iaso.projects.mobileReport.current',
+        defaultMessage: 'Current report',
+    },
+    mobileReportPublishedVersion: {
+        id: 'iaso.projects.mobileReport.publishedVersion',
+        defaultMessage: 'published version',
+    },
+    mobileReportNone: {
+        id: 'iaso.projects.mobileReport.none',
+        defaultMessage: 'This project has no mobile report yet.',
+    },
+    mobileReportUploadFirst: {
+        id: 'iaso.projects.mobileReport.uploadFirst',
+        defaultMessage: 'Upload a mobile report',
+    },
+    mobileReportUploadVersion: {
+        id: 'iaso.projects.mobileReport.uploadVersion',
+        defaultMessage: 'Upload a new version',
+    },
+    mobileReportZip: {
+        id: 'iaso.projects.mobileReport.zip',
+        defaultMessage: 'Zip file of the report',
+    },
+    mobileReportName: {
+        id: 'iaso.projects.mobileReport.name',
+        defaultMessage: 'Report name',
+    },
+    mobileReportVersionName: {
+        id: 'iaso.projects.mobileReport.versionName',
+        defaultMessage: 'Version name',
+    },
+    mobileReportPublishNow: {
+        id: 'iaso.projects.mobileReport.publishNow',
+        defaultMessage: 'Publish this version',
+    },
+    mobileReportUpload: {
+        id: 'iaso.projects.mobileReport.upload',
+        defaultMessage: 'Upload',
+    },
+    mobileReportVersions: {
+        id: 'iaso.projects.mobileReport.versions',
+        defaultMessage: 'Versions',
+    },
+    mobileReportUploadedAt: {
+        id: 'iaso.projects.mobileReport.uploadedAt',
+        defaultMessage: 'Uploaded',
+    },
+    mobileReportPublished: {
+        id: 'iaso.projects.mobileReport.published',
+        defaultMessage: 'Published',
+    },
+    mobileReportUnpublished: {
+        id: 'iaso.projects.mobileReport.unpublished',
+        defaultMessage: 'Unpublished',
+    },
+    mobileReportPublish: {
+        id: 'iaso.projects.mobileReport.publish',
+        defaultMessage: 'Publish',
+    },
+    download: {
+        id: 'iaso.label.download',
+        defaultMessage: 'Download',
+    },
+    status: {
+        id: 'iaso.label.status',
+        defaultMessage: 'Status',
+    },
 });
 
 export default MESSAGES;

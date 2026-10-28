@@ -15,6 +15,7 @@ import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInst
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
+import { PageWorkInProgress } from '../components/workInProgress/PageWorkInProgress';
 import { Accounts } from '../domains/accounts';
 import AccountsDetails from '../domains/accounts/details';
 import { AccountsEdit } from '../domains/accounts/edit';
@@ -83,6 +84,9 @@ export type RoutePath = {
     isRootUrl?: boolean;
     allowAnonymous?: boolean;
     featureFlag?: string;
+    // Incomplete page: redirects to the work in progress page unless SHOW_DEV_FEATURES is active
+    dev?: boolean;
+    plannedRelease?: string;
 };
 
 export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
@@ -455,6 +459,7 @@ export const assignmentsPath = {
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <Assignments />,
+    dev: true,
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,
@@ -613,6 +618,13 @@ export const page500 = {
     permissions: [],
 };
 
+export const workInProgressPath = {
+    baseUrl: baseUrls.workInProgress,
+    routerUrl: `${baseUrls.workInProgress}/*`,
+    element: <PageWorkInProgress />,
+    permissions: [],
+};
+
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
     formAIPath,
@@ -650,6 +662,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     page403,
     page404,
     page500,
+    workInProgressPath,
     teamsPath,
     planningPath,
     planningDetailsPath,

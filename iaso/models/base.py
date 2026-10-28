@@ -15,7 +15,7 @@ from phonenumbers.phonenumberutil import region_code_for_number
 from iaso.models import Account
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit
-from iaso.utils.colors import DEFAULT_COLOR, get_default_color
+from iaso.utils.colors import DEFAULT_COLOR
 
 from .. import periods
 from ..utils.models.color import ColorField
@@ -475,7 +475,7 @@ class Profile(models.Model):
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
     phone_number = PhoneNumberField(blank=True)
-    color = ColorField(blank=True, default=get_default_color)
+    color = ColorField(blank=True)
     # Each user can have restricted write access to OrgUnits, based on their type.
     # By default, empty `editable_org_unit_types` means access to everything.
     editable_org_unit_types = models.ManyToManyField(

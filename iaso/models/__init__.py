@@ -4,7 +4,7 @@ from .bulk_create_user_csv_file import BulkCreateUserFile
 from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
-from .device import Device, DeviceOwnership, DevicePosition
+from .device import Device, DeviceLog, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
 from .feature_flags import FeatureFlag, ProjectFeatureFlags
 from .form_ai import TemporaryForm
@@ -61,6 +61,7 @@ __all__ = [
     "DataSourceVersionsSynchronization",
     "Device",
     "DeviceOwnership",
+    "DeviceLog",
     "DevicePosition",
     "Entity",
     "EntityDuplicate",

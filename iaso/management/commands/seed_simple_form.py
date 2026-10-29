@@ -23,7 +23,7 @@ class Command(BaseCommand):
         Instance.objects.filter(name="Test form 2 (ssf)").delete()
         Form.objects.filter(name="Test form 1 (ssf)").delete()
         Form.objects.filter(name="Test form 2 (ssf)").delete()
-        Device.objects.filter(imei="ssf123456").delete()
+        Device.objects.filter(installation_id="ssf123456").delete()
         OrgUnit.objects.filter(name="Test org unit (ssf)").delete()
         OrgUnitType.objects.filter(name="Test org unit type (ssf)").delete()
         Project.objects.filter(name="Test project (ssf)").delete()
@@ -32,7 +32,7 @@ class Command(BaseCommand):
             name="Test project (ssf)", account=Account.objects.get(pk=options["account_id"])
         )
 
-        device = Device.objects.create(imei="ssf123456")
+        device = Device.objects.create(installation_id="ssf123456")
         device.projects.add(project)
 
         org_unit_type = OrgUnitType.objects.create(name="Test org unit type (ssf)", short_name="Ou")

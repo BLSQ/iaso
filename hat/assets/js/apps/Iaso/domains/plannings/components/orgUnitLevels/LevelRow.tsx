@@ -1,11 +1,10 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import { TableCell, TableRow, Typography } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { SxStyles } from 'Iaso/types/general';
-import { DropdownOptions } from 'Iaso/types/utils';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import MESSAGES from '../../messages';
 import { LevelMembersChips } from './LevelMembersChips';
@@ -16,6 +15,7 @@ import {
     PlanningLevel,
 } from './types';
 import { useGetLevelOrgUnitCounts } from './useGetLevelOrgUnitCounts';
+import { getGroupIds } from './utils';
 
 const styles = {
     row: {
@@ -33,7 +33,6 @@ type Props = {
     isDeepest: boolean;
     typeOptions: LevelOrgUnitType[];
     typeError?: LevelTypeError;
-    versionGroupOptions: DropdownOptions<number>[];
     sourceVersionId?: number;
     rootOrgUnitId?: number;
     onChange: (index: number, changes: Partial<PlanningLevel>) => void;
@@ -46,7 +45,6 @@ export const LevelRow: FC<Props> = ({
     isDeepest,
     typeOptions,
     typeError,
-    versionGroupOptions,
     sourceVersionId,
     rootOrgUnitId,
     onChange,
@@ -58,7 +56,7 @@ export const LevelRow: FC<Props> = ({
     });
 
     const hasTypes = level.orgUnitTypeIds.length > 0;
-    const { data: levelGroupOptions = [] } = useGetGroupDropdown(
+    const { data: levelGroupOptions } = useGetGroupDropdown(
         {
             sourceVersionId,
             orgUnitTypeIds: level.orgUnitTypeIds.join(','),
@@ -69,13 +67,24 @@ export const LevelRow: FC<Props> = ({
 
     // A group holding none of this level's org unit types belongs to another level.
     // It is no longer offered, but stays listed so it can be seen and removed.
-    const misalignedGroupOptions = versionGroupOptions.filter(
-        option => counts?.countByGroupId.get(option.value) === 0,
+    const misalignedGroups = useMemo(
+        () =>
+            level.groups.filter(
+                group => counts?.countByGroupId.get(group.id) === 0,
+            ),
+        [level.groups, counts],
     );
-    const misalignedGroupNames = misalignedGroupOptions.map(
-        option => option.label,
+    const misalignedGroupNames = misalignedGroups.map(group => group.name);
+    const groupOptions = useMemo(
+        () => [
+            ...(levelGroupOptions ?? []),
+            ...misalignedGroups.map(group => ({
+                value: group.id,
+                label: group.name,
+            })),
+        ],
+        [levelGroupOptions, misalignedGroups],
     );
-    const groupOptions = [...levelGroupOptions, ...misalignedGroupOptions];
 
     const handleTypesChange = useCallback(
         (_key: string, value: string) =>
@@ -85,9 +94,14 @@ export const LevelRow: FC<Props> = ({
         [index, onChange],
     );
     const handleGroupsChange = useCallback(
-        (_key: string, value: string) =>
-            onChange(index, { groupIds: commaSeparatedIdsToArray(value) }),
-        [index, onChange],
+        (_key: string, value: string) => {
+            const selectedIds = commaSeparatedIdsToArray(value);
+            const groups = groupOptions
+                .filter(option => selectedIds.includes(option.value))
+                .map(option => ({ id: option.value, name: option.label }));
+            onChange(index, { groups });
+        },
+        [groupOptions, index, onChange],
     );
 
     return (
@@ -132,7 +146,7 @@ export const LevelRow: FC<Props> = ({
                     type="select"
                     multi
                     keyValue={`level-${index}-groups`}
-                    value={level.groupIds}
+                    value={getGroupIds(level)}
                     onChange={handleGroupsChange}
                     options={groupOptions}
                     disabled={!hasTypes}

@@ -7,6 +7,7 @@ import { defineMessages } from 'react-intl';
 import { useMap } from 'react-leaflet';
 
 import tiles from '../../../constants/mapTiles';
+import MAP_MESSAGES from '../messages';
 
 import './zoom-bar';
 
@@ -25,11 +26,7 @@ type ZoomOptions = {
     zoomInfoTitle: string;
 };
 
-export const MESSAGES = defineMessages({
-    fitToBounds: {
-        defaultMessage: 'Center the map',
-        id: 'map.label.fitToBounds',
-    },
+const MESSAGES = defineMessages({
     boxZoomTitle: {
         defaultMessage: 'Draw a square on the map to zoom in to an area',
         id: 'map.label.zoom.box',
@@ -71,7 +68,7 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
         const control = L.control.zoom({
             zoomBoxTitle: formatMessage(MESSAGES.boxZoomTitle),
             zoomInfoTitle: formatMessage(MESSAGES.infoZoomTitle),
-            fitToBoundsTitle: formatMessage(MESSAGES.fitToBounds),
+            fitToBoundsTitle: formatMessage(MAP_MESSAGES.fitToBounds),
             fitToBounds,
             position: 'topleft',
         });

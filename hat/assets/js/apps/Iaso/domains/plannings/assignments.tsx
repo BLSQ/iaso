@@ -5,6 +5,7 @@ import { SxStyles } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { AssignmentsContent } from './components/assignments/AssignmentsContent';
 import { PlanningStatusChip } from './components/shared/PlanningStatusChip';
+import { AssignmentsProvider } from './contexts/AssignmentsContext';
 import { useGetPlanningDetails } from './hooks/requests/useGetPlanningDetails';
 import { useAssignmentsParams } from './hooks/useAssignmentsParams';
 import MESSAGES from './messages';
@@ -45,10 +46,12 @@ export const Assignments: FC = () => {
             />
             {isLoading && <LoadingSpinner />}
             {planning && rootTeamId && (
-                <AssignmentsContent
+                <AssignmentsProvider
                     planning={planning}
                     rootTeamId={rootTeamId}
-                />
+                >
+                    <AssignmentsContent />
+                </AssignmentsProvider>
             )}
         </>
     );

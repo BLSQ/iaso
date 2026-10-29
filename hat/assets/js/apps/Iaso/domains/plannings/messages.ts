@@ -600,6 +600,65 @@ const MESSAGES = defineMessages({
         defaultMessage: '{name} (target geography)',
         id: 'iaso.plannings.label.targetGeographyCaption',
     },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    orgUnitsListPlaceholder: {
+        defaultMessage:
+            'The org units of the selected team will be listed here.',
+        id: 'iaso.plannings.label.orgUnitsListPlaceholder',
+    },
+    mapExploreHintTeams: {
+        defaultMessage:
+            'Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.mapExploreHintTeams',
+    },
+    mapExploreHintUsers: {
+        defaultMessage:
+            'Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.mapExploreHintUsers',
+    },
+    mapHintNoMember: {
+        defaultMessage:
+            'This team has no member. Add members in the team hierarchy of the planning.',
+        id: 'iaso.plannings.label.mapHintNoMember',
+    },
+    showHelp: {
+        defaultMessage: 'Show help',
+        id: 'iaso.plannings.label.showHelp',
+    },
+    hideHelp: {
+        defaultMessage: 'Hide help',
+        id: 'iaso.plannings.label.hideHelp',
+    },
+    legend: {
+        defaultMessage: 'Legend',
+        id: 'iaso.plannings.label.legend',
+    },
+    assignedTo: {
+        defaultMessage: 'Assigned to',
+        id: 'iaso.plannings.label.assignedTo',
+    },
+    unassigned: {
+        defaultMessage: 'Unassigned',
+        id: 'iaso.plannings.label.unassigned',
+    },
+    areaOf: {
+        defaultMessage: 'Area of {name}',
+        id: 'iaso.plannings.label.areaOf',
+    },
+    orgUnitsOffMap: {
+        defaultMessage:
+            '{count, plural, ' +
+            'one {# org unit has no shape or point. It is not on the map but appears in the list.} ' +
+            'other {# org units have no shape or point. They are not on the map but appear in the list.}}',
+        id: 'iaso.plannings.label.orgUnitsOffMap',
+    },
 });
 
 export default MESSAGES;

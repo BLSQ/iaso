@@ -1,4 +1,5 @@
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
+import { TeamMember } from '../utils';
 
 export type TeamNavRowData = {
     kind: 'team';
@@ -10,14 +11,9 @@ export type TeamNavRowData = {
     isExpandable: boolean;
 };
 
-export type TeamMemberRowData = {
+export type TeamMemberRowData = TeamMember & {
     kind: 'member';
-    key: string;
     depth: number;
-    name: string;
-    color: string;
-    // Only sub-teams can be opened; users have none.
-    team?: TeamTreeNode;
 };
 
 export type TeamsPanelRow = TeamNavRowData | TeamMemberRowData;

@@ -1,28 +1,17 @@
-import { teamKey, userKey } from 'Iaso/domains/teams/components/teamTree/utils';
+import { teamKey } from 'Iaso/domains/teams/components/teamTree/utils';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
-import { getDisplayName } from 'Iaso/utils/usersUtils';
+import { getTeamMembers } from '../utils';
 import { TeamMemberRowData, TeamsPanelRow } from './types';
 
 const getMemberRows = (
     team: TeamTreeNode,
     depth: number,
-): TeamMemberRowData[] => [
-    ...team.children.map(child => ({
+): TeamMemberRowData[] =>
+    getTeamMembers(team).map(member => ({
         kind: 'member' as const,
-        key: teamKey(child.id),
         depth,
-        name: child.name,
-        color: child.color,
-        team: child,
-    })),
-    ...team.users.map(user => ({
-        kind: 'member' as const,
-        key: userKey(team.id, user.id),
-        depth,
-        name: getDisplayName(user),
-        color: user.color,
-    })),
-];
+        ...member,
+    }));
 
 // The scope team lists its sub-teams and users as members; the other teams only show their sub-teams.
 export const flattenTeamsPanelRows = (

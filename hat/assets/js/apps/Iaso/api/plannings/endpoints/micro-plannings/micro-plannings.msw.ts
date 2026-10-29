@@ -24,6 +24,8 @@ import type {
     PaginatedPlanningReadList,
     PaginatedPlanningSamplingResultReadList,
     PlanningDropdown,
+    PlanningLevelGeometry,
+    PlanningLevelTreeNode,
     PlanningMissionEntityTypeListTyped,
     PlanningMissionFormListTyped,
     PlanningMissionOrgUnitTypeListTyped,
@@ -365,6 +367,90 @@ export const getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveRespon
                         ]),
                     },
                 },
+                ...overrideResponse,
+            },
+        ]);
+
+export const getApiMicroplanningPlanningsOrgunitsLevelTreeListResponseMock =
+    (): PlanningLevelTreeNode[] =>
+        faker.helpers.arrayElement([
+            Array.from(
+                { length: faker.number.int({ min: 1, max: 10 }) },
+                (_, i) => i + 1,
+            ).map(() => ({
+                id: faker.number.int(),
+                name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                org_unit_type_id: faker.helpers.arrayElement([
+                    faker.number.int(),
+                    null,
+                ]),
+                level: faker.number.int(),
+                parent_id: faker.helpers.arrayElement([
+                    faker.number.int(),
+                    null,
+                ]),
+                has_geo_json: faker.datatype.boolean(),
+                has_location: faker.datatype.boolean(),
+            })),
+            Array.from(
+                { length: faker.number.int({ min: 1, max: 10 }) },
+                (_, i) => i + 1,
+            ).map(() => ({
+                id: faker.number.int(),
+                name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                org_unit_type_id: faker.helpers.arrayElement([
+                    faker.number.int(),
+                    null,
+                ]),
+                level: faker.number.int(),
+                parent_id: faker.helpers.arrayElement([
+                    faker.number.int(),
+                    null,
+                ]),
+                has_geo_json: faker.datatype.boolean(),
+                has_location: faker.datatype.boolean(),
+            })),
+        ]);
+
+export const getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveResponseMock =
+    (
+        overrideResponse: Partial<Extract<PlanningLevelGeometry, object>> = {},
+    ): PlanningLevelGeometry =>
+        faker.helpers.arrayElement([
+            {
+                type: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                features: Array.from(
+                    { length: faker.number.int({ min: 1, max: 10 }) },
+                    (_, i) => i + 1,
+                ).map(() => ({
+                    type: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    id: faker.number.int(),
+                    geometry: {},
+                    properties: {
+                        id: faker.number.int(),
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                    },
+                })),
+                ...overrideResponse,
+            },
+            {
+                type: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                features: Array.from(
+                    { length: faker.number.int({ min: 1, max: 10 }) },
+                    (_, i) => i + 1,
+                ).map(() => ({
+                    type: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    id: faker.number.int(),
+                    geometry: {},
+                    properties: {
+                        id: faker.number.int(),
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                    },
+                })),
                 ...overrideResponse,
             },
         ]);
@@ -1495,6 +1581,69 @@ export const getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveMockHa
         );
     };
 
+export const getApiMicroplanningPlanningsOrgunitsLevelTreeListMockHandler = (
+    overrideResponse?:
+        | PlanningLevelTreeNode[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0],
+          ) => Promise<PlanningLevelTreeNode[]> | PlanningLevelTreeNode[]),
+    options?: RequestHandlerOptions,
+) => {
+    return http.get(
+        '*/api/microplanning/plannings/:parentLookupPk/orgunits/level-tree/',
+        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningPlanningsOrgunitsLevelTreeListResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
+export const getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveMockHandler =
+    (
+        overrideResponse?:
+            | PlanningLevelGeometry
+            | ((
+                  info: Parameters<Parameters<typeof http.get>[1]>[0],
+              ) => Promise<PlanningLevelGeometry> | PlanningLevelGeometry),
+        options?: RequestHandlerOptions,
+    ) => {
+        return http.get(
+            '*/api/microplanning/plannings/:parentLookupPk/orgunits/level-tree/geometry/',
+            async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+                await delay(
+                    (() =>
+                        process.env?.MSW_DELAY
+                            ? parseInt(process.env.MSW_DELAY)
+                            : 0)(),
+                );
+
+                return HttpResponse.json(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveResponseMock(),
+                    { status: 200 },
+                );
+            },
+            options,
+        );
+    };
+
 export const getApiMicroplanningPlanningsOrgunitsRootRetrieveMockHandler = (
     overrideResponse?:
         | PlanningOrgUnit
@@ -1945,6 +2094,8 @@ export const getMicroPlanningsMock = () => [
     getApiMicroplanningPlanningsCreateMockHandler(),
     getApiMicroplanningPlanningsOrgunitsChildrenRetrieveMockHandler(),
     getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveMockHandler(),
+    getApiMicroplanningPlanningsOrgunitsLevelTreeListMockHandler(),
+    getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveMockHandler(),
     getApiMicroplanningPlanningsOrgunitsRootRetrieveMockHandler(),
     getApiMicroplanningPlanningsRetrieveMockHandler(),
     getApiMicroplanningPlanningsUpdateMockHandler(),

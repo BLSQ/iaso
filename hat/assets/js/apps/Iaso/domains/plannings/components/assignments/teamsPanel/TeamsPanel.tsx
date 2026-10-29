@@ -11,9 +11,9 @@ import {
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import USERS_MESSAGES from 'Iaso/domains/users/messages';
 import { SxStyles } from 'Iaso/types/general';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { TeamMemberRow } from './TeamMemberRow';
@@ -61,23 +61,12 @@ const styles = {
     },
 } satisfies SxStyles;
 
-type Props = {
-    tree: TeamTreeNode;
-    teamChain: TeamTreeNode[];
-    expandedTeamIds: Set<number>;
-    onToggleTeam: (teamId: number) => void;
-    targetGeographyName?: string;
-};
-
-export const TeamsPanel: FC<Props> = ({
-    tree,
-    teamChain,
-    expandedTeamIds,
-    onToggleTeam,
-    targetGeographyName,
-}) => {
+export const TeamsPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { openTeam } = useAssignmentsParams();
+    const { planning, tree, teamChain, expandedTeamIds, toggleTeam } =
+        useAssignmentsContext();
+    const targetGeographyName = planning.org_unit_details?.name;
     const [isOpen, setIsOpen] = useState(true);
     const toggleOpen = useCallback(() => setIsOpen(open => !open), []);
 
@@ -130,7 +119,7 @@ export const TeamsPanel: FC<Props> = ({
                             row={row}
                             caption={row.depth === 0 ? rootCaption : undefined}
                             onOpen={openTeam}
-                            onToggle={onToggleTeam}
+                            onToggle={toggleTeam}
                         />
                     ) : (
                         <TeamMemberRow

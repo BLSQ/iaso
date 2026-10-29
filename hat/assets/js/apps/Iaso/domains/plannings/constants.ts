@@ -8,6 +8,7 @@ export const publishingStatuses = ['all', 'published', 'draft'];
 
 export const PLANNINGS_API_URL = '/api/microplanning/plannings/';
 export const SAMPLINGS_API_URL = '/api/microplanning/samplings/';
+export const ASSIGNMENTS_API_URL = '/api/microplanning/assignments/';
 
 export const useGetPublishingStatusOptions = () => {
     const { formatMessage } = useSafeIntl();

@@ -3,6 +3,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
 import { PlanningLevel } from './types';
+import { getGroupIds } from './utils';
 
 type SearchCountsResponse = {
     counts: { index: number; count: number }[];
@@ -21,8 +22,10 @@ type Params = {
 // One request: the first search counts the whole level, the others count each selected group on its own.
 export const useGetLevelOrgUnitCounts = ({
     rootOrgUnitId,
-    level: { orgUnitTypeIds, groupIds },
+    level,
 }: Params): UseQueryResult<LevelOrgUnitCounts, Error> => {
+    const { orgUnitTypeIds } = level;
+    const groupIds = getGroupIds(level);
     const baseSearch = {
         orgUnitParentId: rootOrgUnitId,
         orgUnitTypeId: orgUnitTypeIds.join(','),

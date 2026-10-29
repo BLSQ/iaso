@@ -39,9 +39,7 @@ from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
 from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
 from .api.derived_instances import DerivedInstancesViewSet
-from .api.devices import DevicesViewSet
-from .api.devices_ownership import DevicesOwnershipViewSet
-from .api.devices_position import DevicesPositionViewSet
+from .api.devices.views import DevicesPositionViewSet, DevicesViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.enketo import (
     EnketoSubmissionAPIView,
@@ -186,7 +184,6 @@ router.register(r"formattachments", FormAttachmentsViewSet, basename="formattach
 router.register(r"formpredefinedfilters", FormPredefinedFiltersViewSet, basename="formpredefinedfilters")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
-router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
 router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesposition")
 router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_synchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")

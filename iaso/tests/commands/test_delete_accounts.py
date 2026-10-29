@@ -124,7 +124,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
             openhexa_instance=openhexa_instance, account=account, slug=f"workspace-{suffix}"
         )
 
-        device = m.Device.objects.create(imei=f"imei_{suffix}")
+        device = m.Device.objects.create(installation_id=f"imei_{suffix}")
         device.projects.set([project])
         device_ownership = m.DeviceOwnership.objects.create(device=device, project=project, user=user)
         device_position = m.DevicePosition.objects.create(
@@ -428,7 +428,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
                 name="orphan_form_no_project", form_id="orphan_form_no_project_id"
             ),
             "form_no_form_id": form_no_form_id,
-            "device_no_project": m.Device.objects.create(imei="orphan-device"),
+            "device_no_project": m.Device.objects.create(installation_id="orphan-device"),
             "session": Session.objects.create(
                 session_key="orphansessionkey", session_data="", expire_date=timezone.now()
             ),
@@ -1089,6 +1089,7 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.DataSource",
             "iaso.DataSourceVersionsSynchronization",
             "iaso.Device",
+            "iaso.DeviceLog",
             "iaso.DeviceOwnership",
             "iaso.DevicePosition",
             "iaso.Entity",

@@ -5,12 +5,12 @@ import { makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { CreateEditTeam } from 'Iaso/domains/teams/components/CreateEditTeam';
 import { Team } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
+import { useGetPlanningRootOrgUnit } from '../../hooks/requests/useGetPlanningRootOrgUnit';
 import { usePlanningFieldHandlers } from '../../hooks/usePlanningFieldHandlers';
 import MESSAGES from '../../messages';
 import { PlanningStepCard } from '../shared/PlanningStepCard';
@@ -54,8 +54,8 @@ export const TargetGeographySection: FC = () => {
     const { values } = formik;
     const { onChange, getErrors } = usePlanningFieldHandlers(formik);
 
-    const { data: selectedOrgUnit } = useGetOrgUnit(
-        values.selectedOrgUnit?.toString(),
+    const { data: selectedOrgUnit } = useGetPlanningRootOrgUnit(
+        values.selectedOrgUnit,
     );
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useApiTeamsDropdownList(

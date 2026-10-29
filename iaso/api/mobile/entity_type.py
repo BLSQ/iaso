@@ -88,7 +88,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         ).distinct()
         possible_form_versions_dict = {}
         for version in possible_form_versions:
-            key = "%s|%s" % (version.version_id, str(version.form_id))
+            key = f"{version.version_id}|{str(version.form_id)}"
             possible_form_versions_dict[key] = version.id
 
         return possible_form_versions_dict

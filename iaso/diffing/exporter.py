@@ -1,8 +1,6 @@
 import json
 import logging
 
-from typing import List
-
 import dhis2.exceptions
 
 from dhis2 import Api
@@ -72,7 +70,7 @@ def format_error(action, exc, errors):
 
 
 class Exporter:
-    def export_to_dhis2(self, api: Api, diffs: List[Diff], fields, task=None):
+    def export_to_dhis2(self, api: Api, diffs: list[Diff], fields, task=None):
         if task:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating new Org Units", progress_value=0, end_value=3
@@ -90,7 +88,7 @@ class Exporter:
         logger.info("   ------ Modified groups----")
         self.update_groups_without_groupsets(api, diffs, fields)
 
-    def create_missings(self, api, diffs: List[Diff], task=None):
+    def create_missings(self, api, diffs: list[Diff], task=None):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
         logger.info(f"orgunits to create : {len(to_create_diffs)}")
 
@@ -161,7 +159,7 @@ class Exporter:
             payload["coordinates"] = json.dumps(geometry["coordinates"])
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
-    def update_orgunits(self, api: Api, diffs: List[Diff], task=None):
+    def update_orgunits(self, api: Api, diffs: list[Diff], task=None):
         support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date", "code")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
@@ -276,7 +274,7 @@ class Exporter:
         if comparison.after:
             payload["parent"] = {"id": comparison.after}
 
-    def update_groups_with_groupsets(self, api, diffs: List[Diff], fields):
+    def update_groups_with_groupsets(self, api, diffs: list[Diff], fields):
         # IA-4106 - this is no longer used, groupsets are no longer supported by differ
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
@@ -343,7 +341,7 @@ class Exporter:
                     logger.info(f"updated  {dhis2_group['id']} {dhis2_group['name']} {resp} {resp.json()}")
         return
 
-    def update_groups_without_groupsets(self, api, diffs: List[Diff], fields):
+    def update_groups_without_groupsets(self, api, diffs: list[Diff], fields):
         support_by_update_fields = [field for field in fields if field.startswith("group:")]
         to_update_diffs = list(
             filter(

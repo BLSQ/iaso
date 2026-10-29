@@ -1,6 +1,7 @@
+import { IntlMessage } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 
-const MESSAGES = defineMessages({
+const MESSAGES: Record<string, IntlMessage> = defineMessages({
     title: {
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',

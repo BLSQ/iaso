@@ -9,7 +9,7 @@ const HEADER_HEIGHT = '80px';
 
 const styles = {
     root: {
-        backgroundColor: theme => theme.palette.background.blueGrey,
+        backgroundColor: theme => theme.palette.primary.background,
         padding: 0,
     },
     headerContainer: {

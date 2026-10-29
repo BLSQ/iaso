@@ -49,7 +49,7 @@ class AccountRetrieveCurrentSerializer(ModelSerializer):
     def __init__(self, *args, **kwargs):
         self.other_account_qs = kwargs.pop("other_account_qs", None)
 
-        super(AccountRetrieveCurrentSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if self.other_account_qs is None:
             if getattr(self.context.get("request", None), "user", None):

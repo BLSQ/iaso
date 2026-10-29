@@ -222,12 +222,12 @@ class FormSerializer(DynamicFieldsModelSerializerBackwardCompatible):
 
     def update(self, form, validated_data):
         original = copy(form)
-        form = super(FormSerializer, self).update(form, validated_data)
+        form = super().update(form, validated_data)
         log_modification(original, form, FORM_API, user=self.context["request"].user)
         return form
 
     def create(self, validated_data):
-        form = super(FormSerializer, self).create(validated_data)
+        form = super().create(validated_data)
         log_modification(None, form, FORM_API, user=self.context["request"].user)
         return form
 

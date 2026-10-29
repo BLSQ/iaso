@@ -4,8 +4,8 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { Chip, Stack } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
+import MESSAGES from 'Iaso/domains/teams/components/teamTree/messages';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../../messages';
 import { LevelMembers } from './types';
 
 type Props = {

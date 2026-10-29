@@ -3,7 +3,8 @@
 import operator
 import re
 
-from typing import Any, Callable, Dict, Iterator, Optional, Union
+from collections.abc import Iterator
+from typing import Any, Callable, Optional, Union
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression
@@ -85,14 +86,14 @@ class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
 
     def as_sql(self, compiler, connection):
         sql, params = compiler.compile(self.lhs)
-        sql = "CAST(%s AS DOUBLE PRECISION)" % sql
+        sql = f"CAST({sql} AS DOUBLE PRECISION)"
         return sql, params
 
 
 JSONField.register_lookup(ExtractForceFloat)
 
 
-def extract_field_name(op: str, jsonlogic: Dict[str, Any], params: Any) -> str:
+def extract_field_name(op: str, jsonlogic: dict[str, Any], params: Any) -> str:
     if len(params) != 2:
         raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
 
@@ -115,7 +116,7 @@ def extract_field_name(op: str, jsonlogic: Dict[str, Any], params: Any) -> str:
 
 
 def annotate_suffixed_json_fields(
-    queryset: QuerySet, jsonlogic: Dict[str, Any], json_field: str, index: int = 1
+    queryset: QuerySet, jsonlogic: dict[str, Any], json_field: str, index: int = 1
 ) -> tuple[QuerySet, int]:
     """
     Keys in JSONField with `__` in their names cannot be used as is. We first have to annotate the key to a temporary
@@ -158,7 +159,7 @@ def annotate_suffixed_json_fields(
 
 
 def jsonlogic_to_q(
-    jsonlogic: Dict[str, Any],
+    jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
     recursion_func: Callable = None,
@@ -235,7 +236,7 @@ def jsonlogic_to_q(
 
 
 def instance_jsonlogic_to_q(
-    jsonlogic: Dict[str, Any],
+    jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
     recursion_func: Callable = None,
@@ -367,7 +368,7 @@ def _handle_or_operator(conditions: list, field_prefix: str, index: int, recursi
 
 
 def _handle_array_operators(
-    jsonlogic: Dict[str, Any], field_prefix: str, index: int, recursion_function: Callable
+    jsonlogic: dict[str, Any], field_prefix: str, index: int, recursion_function: Callable
 ) -> tuple[Q, int]:
     """Handle 'some' and 'all' operators for array-like string fields.
 
@@ -449,7 +450,7 @@ def _build_all_query(field: str, value_list: list, field_prefix: str, index: int
     return Q(**{f"{field_name}__regex": pattern}), index
 
 
-def _handle_binary_operators(jsonlogic: Dict[str, Any], field_prefix: str, index: int) -> tuple[Q, int]:
+def _handle_binary_operators(jsonlogic: dict[str, Any], field_prefix: str, index: int) -> tuple[Q, int]:
     """Handle binary comparison operators (==, !=, >, >=, <, <=, in).
 
     Args:
@@ -550,7 +551,7 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str, index
 
 
 def jsonlogic_to_exists_q_clauses(
-    jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, group_by_field_name: str
+    jsonlogic: dict[str, Any], queryset: Any, id_field_name: str, group_by_field_name: str
 ) -> Q:
     """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
     This is used to filter entities based on the existence of certain conditions
@@ -618,7 +619,7 @@ def jsonlogic_to_exists_q_clauses(
 
 
 def entities_jsonlogic_to_q(
-    jsonlogic: Dict[str, Any],
+    jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
 ) -> tuple[Union[None, Exists, Q, NegatedExpression], int]:

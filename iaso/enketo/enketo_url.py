@@ -60,7 +60,7 @@ def enketo_url_for_edition(
                 "instance": instance_xml,
                 "instance_id": instance_id,
                 # convert to unicode string in python3 compatible way
-                "return_url": "%s" % return_url,
+                "return_url": f"{return_url}",
             }
         )
 

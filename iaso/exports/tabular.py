@@ -25,7 +25,7 @@ import time
 import zipfile
 
 from logging import getLogger
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 from xml.sax.saxutils import escape as xml_escape
 
 from django.db.models import QuerySet
@@ -55,7 +55,7 @@ def sql_identifier(name: str) -> str:
     return '"' + name.replace('"', '""') + '"'
 
 
-def export_django_query_to_csv_via_duckdb(qs: QuerySet, output_file_path: str, columns: List[Dict]):
+def export_django_query_to_csv_via_duckdb(qs: QuerySet, output_file_path: str, columns: list[dict]):
     start = time.perf_counter()
     fields = ", ".join(sql_identifier(c["field"]) for c in columns)
     rows_file_path = output_file_path + ".rows.csv"
@@ -80,8 +80,8 @@ def export_django_query_to_xlsx_via_duckdb(
     qs: QuerySet,
     output_file_path: str,
     sheet_name: str,
-    columns: List[Dict],
-    sub_columns: Optional[List[str]] = None,
+    columns: list[dict],
+    sub_columns: Optional[list[str]] = None,
 ):
     """
     sub_columns: optional second header row (legacy export: the question labels under the question names)
@@ -151,7 +151,7 @@ def export_django_query_to_xlsx_via_duckdb(
     )
 
 
-def style_xlsx(raw_file_path: str, output_file_path: str, columns: List[Dict], sub_columns: Optional[List[str]]):
+def style_xlsx(raw_file_path: str, output_file_path: str, columns: list[dict], sub_columns: Optional[list[str]]):
     """
     Styles the duckdb xlsx like the legacy export (bold header, frozen header, columns widths) and adds the sub
     columns row. The files parts are patched directly: loading the workbook (openpyxl) would be much too slow.
@@ -174,7 +174,7 @@ def style_xlsx(raw_file_path: str, output_file_path: str, columns: List[Dict], s
                     output.writestr(info, raw.read(info.filename))
 
 
-def _patch_styles(styles: str) -> Tuple[str, int]:
+def _patch_styles(styles: str) -> tuple[str, int]:
     """adds a bold (and wrapped, like the legacy export) style for the header cells, returns it with its index"""
     fonts = re.search(r'<fonts count="(\d+)">(.*?)</fonts>', styles, re.S)
     cell_xfs = re.search(r'<cellXfs count="(\d+)">(.*?)</cellXfs>', styles, re.S)
@@ -190,7 +190,7 @@ def _patch_styles(styles: str) -> Tuple[str, int]:
     return styles, xf_count
 
 
-def _patch_sheet_head(head: str, header_style: int, columns: List[Dict], sub_columns: Optional[List[str]]) -> str:
+def _patch_sheet_head(head: str, header_style: int, columns: list[dict], sub_columns: Optional[list[str]]) -> str:
     header_end = head.find("</row>")
     if "<sheetData>" not in head or header_end == -1:
         raise ValueError("xlsx header row not found")
@@ -242,7 +242,7 @@ def _column_width(width: float) -> float:
     return int((width * max_digit_width + padding) / max_digit_width * 256) / 256
 
 
-def infer_number_types(duckdb_connection, fields: List[str]) -> Dict[str, str]:
+def infer_number_types(duckdb_connection, fields: list[str]) -> dict[str, str]:
     """BIGINT or DOUBLE for the text fields of export_source only holding numbers (or nothing)"""
     if not fields:
         return {}

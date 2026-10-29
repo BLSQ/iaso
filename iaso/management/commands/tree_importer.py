@@ -29,7 +29,7 @@ def get_or_create(
     source_ref,
     save=True,
 ):
-    id_string = "%s%s" % (name, parent_id)
+    id_string = f"{name}{parent_id}"
     org_unit = unit_dict.get(id_string, None)
     if save and org_unit is None:
         org_units = OrgUnit.objects.filter(
@@ -182,7 +182,7 @@ class Command(BaseCommand):
                             leaf_units.append(unit)
                             index += 1
                         except Exception as e:
-                            print("Error %s for row %d" % (e, index), row)
+                            print(f"Error {e} for row {index}", row)
                             break
                     index = index + 1
 

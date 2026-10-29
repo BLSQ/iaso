@@ -217,13 +217,46 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidResponse(res_data)
 
         self.assertEqual(len(res_data), 1)
-        print(res_data)
+
+        # tree should be
+        # root
+        # |── children_2
+        # |── children_2_1
+        #     |── children_2_1_1
+        #     |── children_2_1_2
 
         # getting first child which should be root
         root = res_data[0]
 
-        self.assertEqual(root.get("id"), 1)
-        self.assertEqual(root.get("name"), "Planning")
+        self.assertCountEqual(
+            list(root.keys()), ["id", "name", "depth", "parent", "org_unit_type", "has_geo_json", "has_location"]
+        )
+        self.assertEqual(root.get("id"), self.ou_root.pk)
+        self.assertEqual(root.get("name"), "ou_root")
+        self.assertEqual(root.get("depth"), 1)
+        self.assertIsNone(root.get("parent"))
+        self.assertIsNone(root.get("org_unit_type"))
+        self.assertFalse(root.get("has_geo_json"))
+        self.assertFalse(root.get("has_location"))
+
+        # checking children_2
+        children = root.get("children")
+        self.assertEqual(len(children), 1)
+        children = children[0]
+
+        self.assertEqual(children.get("id"), self.children_2.pk)
+        self.assertEqual(children.get("name"), "children_2")
+
+        # checking children_2_1
+        sub_children = children.get("children")
+        self.assertEqual(len(sub_children), 1)
+        sub_children = sub_children[0]
+
+        self.assertEqual(sub_children.get("id"), self.children_2_1.pk)
+
+        # checking children_2_1_1 and children_2_1_2
+        sub_sub_children = sub_children.get("children")
+        self.assertEqual(len(sub_sub_children), 2)
 
     def test_build_org_unit_tree_should_remove_orphan(self):
         """

@@ -39,6 +39,8 @@ class TeamUpdateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         cls.project1 = project1 = account.project_set.create(name="project1")
         cls.project2 = project2 = account.project_set.create(name="project2")
+        cls.superuser.iaso_profile.projects.set([cls.project1, cls.project2])
+
         cls.project_other_account = other_account.project_set.create(name="project3")
 
         cls.root_team = Team.objects.create(

@@ -608,10 +608,29 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
-    orgUnitsListPlaceholder: {
-        defaultMessage:
-            'The org units of the selected team will be listed here.',
-        id: 'iaso.plannings.label.orgUnitsListPlaceholder',
+    parent: {
+        defaultMessage: 'Parent',
+        id: 'iaso.label.parent',
+    },
+    assignment: {
+        defaultMessage: 'Assignment',
+        id: 'iaso.plannings.label.assignment',
+    },
+    below: {
+        defaultMessage: 'Below',
+        id: 'iaso.plannings.label.below',
+    },
+    belowAssigned: {
+        defaultMessage: '{assigned} of {total} assigned',
+        id: 'iaso.plannings.label.belowAssigned',
+    },
+    notOnMap: {
+        defaultMessage: 'No shape or point: not shown on the map',
+        id: 'iaso.plannings.label.notOnMap',
+    },
+    noOrgUnitsToAssign: {
+        defaultMessage: 'No org units to assign on this level',
+        id: 'iaso.plannings.label.noOrgUnitsToAssign',
     },
     mapExploreHintTeams: {
         defaultMessage:

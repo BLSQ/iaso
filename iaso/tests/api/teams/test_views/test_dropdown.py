@@ -69,6 +69,7 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
             project=cls.project1,
             type=TeamType.TEAM_OF_USERS,
         )
+        cls.sub_team_2_1.users.set([cls.superuser])
 
         cls.team_other_account = Team.objects.create(
             name="team other account", manager=cls.user_other_account, project=cls.project_other_account
@@ -197,6 +198,26 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         data = {"projects": ",".join([str(Project.objects.order_by("-id").first().pk + 1)])}
+        res = self.client.get(self.url, data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 0)
+
+    def test_filters_users(self):
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.url)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 9)
+
+        data = {"users": ",".join(map(str, [self.superuser.pk]))}
+        res = self.client.get(self.url, data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 1)
+        self.assertCountEqual(
+            [x["value"] for x in res_data],
+            [self.sub_team_2_1.pk],
+        )
+
+        data = {"users": ",".join(map(str, [self.user_with_perms.pk]))}
         res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)

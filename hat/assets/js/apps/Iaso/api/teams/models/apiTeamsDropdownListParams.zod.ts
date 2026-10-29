@@ -23,6 +23,7 @@ export const ApiTeamsDropdownListParams = zod.strictObject({
                 .nullable(),
         )
         .optional(),
+    users: zod.array(zod.int()).optional(),
 });
 
 export type ApiTeamsDropdownListParams = zod.input<

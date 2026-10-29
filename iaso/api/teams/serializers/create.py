@@ -56,7 +56,7 @@ class TeamCreateSerializer(ModelSerializer):
         }
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(TeamCreateSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         user = getattr(self.context.get("request"), "user", None)
         if user:
             team_queryset = Team.objects.filter_for_user(user)

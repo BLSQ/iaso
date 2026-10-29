@@ -98,6 +98,9 @@ class Planning(SoftDeletableModel):
         blank=True,
         related_name="selected_by_planning",
     )
+    read_only = models.BooleanField(
+        default=False, help_text=_("An attribute to disable edition on old planning (before the mission feature)")
+    )
 
     def __str__(self):
         return self.name

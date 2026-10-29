@@ -283,8 +283,11 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         qs = self.queryset.filter_for_user(user)
 
+        if self.action not in ["list", "dropdown"]:
+            qs = qs.exclude(read_only=True)
+
         if self.action == "dropdown":
-            return qs.only("id", "name")
+            return qs.only("id", "name", "read_only")
 
         if self.action == "configs":
             qs = qs.prefetch_related(

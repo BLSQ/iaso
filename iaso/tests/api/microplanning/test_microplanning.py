@@ -77,6 +77,7 @@ class PlanningTestCase(APITestCase):
             mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
         )
         cls.planning = Planning.objects.create(
+            read_only=True,
             project=project1,
             name="planning1",
             team=cls.team1,
@@ -115,6 +116,7 @@ class PlanningTestCase(APITestCase):
             {
                 "id": self.planning.id,
                 "name": "planning1",
+                "read_only": True,
                 "team_details": {
                     "id": self.team1.id,
                     "name": self.team1.name,

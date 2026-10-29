@@ -163,6 +163,7 @@ class PlanningReadSerializer(serializers.ModelSerializer):
             "org_unit_details",
             "project_details",
             "target_org_unit_type_details",
+            "read_only",
         ]
         read_only_fields = fields
 

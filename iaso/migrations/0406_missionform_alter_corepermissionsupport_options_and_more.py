@@ -4,6 +4,8 @@ import django.db.models.deletion
 
 from django.conf import settings
 from django.db import connection, migrations, models
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+from django.db.migrations.state import ProjectState
 
 
 def migrate_forms_to_missions(apps, schema_editor):
@@ -64,6 +66,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         planning.missions.set(mission_objs)
 
     PlanningFormThrough.objects.all().delete()
+    Planning.objects.all().update(read_only=True)
 
 
 def reverse_migrate_missions_to_forms(apps, schema_editor):
@@ -78,6 +81,31 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
                     planning.forms.add(form)
 
     PlanningMissionsThrough.objects.all().delete()
+
+
+class SafeAddField(migrations.AddField):
+    """
+    This is for the read only field.
+    We modified this migration post-migrate, for the existing env, we will need to reverse;
+    But reversing will mean it will try to remove a column that does not exist, we prevent the crash in that case
+
+    We can delete this and fallback to classic AddField once the related envs have been migrated
+    """
+
+    def database_backwards(
+        self, app_label: str, schema_editor: BaseDatabaseSchemaEditor, from_state: ProjectState, to_state: ProjectState
+    ) -> None:
+        from_model = from_state.apps.get_model(app_label, self.model_name)
+
+        table_name = from_model._meta.db_table
+
+        with schema_editor.connection.cursor() as cursor:
+            columns = schema_editor.connection.introspection.get_table_description(cursor, table_name)
+
+        if self.name not in {column.name for column in columns}:
+            return None
+
+        return super().database_backwards(app_label, schema_editor, from_state, to_state)
 
 
 class Migration(migrations.Migration):
@@ -241,6 +269,13 @@ class Migration(migrations.Migration):
             model_name="planning",
             name="missions",
             field=models.ManyToManyField(blank=True, related_name="plannings", to="iaso.mission"),
+        ),
+        SafeAddField(
+            model_name="planning",
+            name="read_only",
+            field=models.BooleanField(
+                default=False, help_text="An attribute to disable edition on old planning (before the mission feature)"
+            ),
         ),
         migrations.CreateModel(
             name="MissionForm",

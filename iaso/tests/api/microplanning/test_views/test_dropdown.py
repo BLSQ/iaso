@@ -19,7 +19,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        super(APITestCase, cls).setUpClass()
+        super().setUpClass()
         # create account
         cls.account = Account.objects.create(name="Account")
         cls.other_account = Account.objects.create(name="OtherAccount")
@@ -61,7 +61,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
         # set up some data for the plannings
         cls.planning = Planning.objects.create(
-            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit
+            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit, read_only=True
         )
         cls.planning_2 = Planning.objects.create(
             name="planning_2", project=cls.project, team=cls.team, org_unit=cls.org_unit
@@ -116,99 +116,114 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(len(response), expected_length)
         self.assertResponseCompliantToSwagger(response, "PlanningDropdown", True)
 
+    @property
+    def url(self) -> str:
+        return reverse("planning-dropdown")
+
     def test_num_queries(self):
         self.client.force_authenticate(user=self.superuser)
         with self.assertNumQueries(1):
-            res = self.client.get(reverse("planning-dropdown"))
+            res = self.client.get(self.url)
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 4)
 
     def test_permissions(self):
-        res = self.client.get(reverse("planning-dropdown"))
+        res = self.client.get(self.url)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.user_no_perm)
-        res = self.client.get(reverse("planning-dropdown"))
+        res = self.client.get(self.url)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_other_perm)
-        res = self.client.get(reverse("planning-dropdown"))
+        res = self.client.get(self.url)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_read_perm)
-        res = self.client.get(reverse("planning-dropdown"))
+        res = self.client.get(self.url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-dropdown"))
+        res = self.client.get(self.url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_filters(self):
         self.client.force_authenticate(user=self.superuser)
         with self.subTest("ordering"):
-            res = self.client.get(reverse("planning-dropdown"), data={"order": "-name"})
+            res = self.client.get(self.url, data={"order": "-name"})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 4)
 
             self.assertEqual(
                 res_data,
                 [
-                    {"value": p.id, "label": p.name}
+                    {"value": p.id, "label": p.name, "read_only": p.read_only}
                     for p in [self.planning_4, self.planning_3, self.planning_2, self.planning]
                 ],
             )
 
         with self.subTest("form_ids"):
-            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": f"{self.form_1.pk}"})
+            res = self.client.get(self.url, data={"form_ids": f"{self.form_1.pk}"})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 1)
 
-            self.assertEqual(res_data, [{"value": self.planning.id, "label": self.planning.name}])
+            self.assertEqual(
+                res_data,
+                [{"value": self.planning.id, "label": self.planning.name, "read_only": self.planning.read_only}],
+            )
 
-            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": f"{self.form_1.pk},{self.form_2.pk}"})
+            res = self.client.get(self.url, data={"form_ids": f"{self.form_1.pk},{self.form_2.pk}"})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 1)
 
-            self.assertEqual(res_data, [{"value": self.planning.id, "label": self.planning.name}])
+            self.assertEqual(
+                res_data,
+                [{"value": self.planning.id, "label": self.planning.name, "read_only": self.planning.read_only}],
+            )
 
-            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": f"{self.form_1.pk},{self.form_3.pk}"})
+            res = self.client.get(self.url, data={"form_ids": f"{self.form_1.pk},{self.form_3.pk}"})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 2)
 
             self.assertEqual(
                 res_data,
                 [
-                    {"value": self.planning.id, "label": self.planning.name},
-                    {"value": self.planning_2.id, "label": self.planning_2.name},
+                    {"value": self.planning.id, "label": self.planning.name, "read_only": self.planning.read_only},
+                    {
+                        "value": self.planning_2.id,
+                        "label": self.planning_2.name,
+                        "read_only": self.planning_2.read_only,
+                    },
                 ],
             )
 
-            res = self.client.get(reverse("planning-dropdown"), data={"form_ids": "1000"})
+            res = self.client.get(self.url, data={"form_ids": "1000"})
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidData(res_data, 0)
 
     def test_should_see_plannings_related_to_account(self):
         self.client.force_authenticate(self.user_other_account)
-        res = self.client.get(reverse("planning-dropdown"))
+        res = self.client.get(self.url)
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 1)
 
         self.assertEqual(
-            res_data, [{"value": self.planning_other_account.id, "label": self.planning_other_account.name}]
+            res_data,
+            [{"value": self.planning_other_account.id, "label": self.planning_other_account.name, "read_only": False}],
         )
 
     def test_response(self):
         self.client.force_authenticate(user=self.superuser)
-        res = self.client.get(reverse("planning-dropdown"), data={"ordering": "-name"})
+        res = self.client.get(self.url, data={"ordering": "-name"})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 4)
 
         self.assertEqual(
             res_data,
             [
-                {"value": p.id, "label": p.name}
+                {"value": p.id, "label": p.name, "read_only": p.read_only}
                 for p in [self.planning, self.planning_2, self.planning_3, self.planning_4]
             ],
         )

@@ -7,7 +7,7 @@ from iaso.test import IasoMigratorTestCase
 class Test0406DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0405_merge_20261012_1003")
     migrate_to = ("iaso", "0406_missionform_alter_corepermissionsupport_options_and_more")
-    num_queries = 67
+    num_queries = 70
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
@@ -68,6 +68,10 @@ class Test0406DirectMigration(IasoMigratorTestCase):
         self.assertEqual(planning_1.missions.count(), 2)
         self.assertEqual(planning_2.missions.count(), 1)
         self.assertEqual(planning_3.missions.count(), 0)
+
+        self.assertTrue(planning_1.read_only)
+        self.assertTrue(planning_2.read_only)
+        self.assertTrue(planning_3.read_only)
 
         self.assertEqual(MissionForm.objects.count(), 3)
 

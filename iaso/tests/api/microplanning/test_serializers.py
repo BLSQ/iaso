@@ -32,6 +32,7 @@ class PlanningSerializersTestCase(PlanningSerializersTestBase):
             {
                 "id": self.planning.id,
                 "name": "planning_1",
+                "read_only": False,
                 "missions": [self.mission_1.id, self.mission_2.id],
                 "description": "A test planning",
                 "published_at": None,

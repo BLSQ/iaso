@@ -25,8 +25,9 @@ class PlanningAdmin(admin.ModelAdmin):
         "org_unit",
         # "forms",
         "team",
+        "read_only",
     )
-    list_filter = ("project",)
+    list_filter = ("project", "read_only")
     date_hierarchy = "started_at"
 
     fieldsets = [
@@ -36,6 +37,7 @@ class PlanningAdmin(admin.ModelAdmin):
                 "fields": (
                     "name",
                     "description",
+                    "read_only",
                     "project",
                     "missions",
                     "org_unit",

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.core.exceptions import ValidationError
@@ -7,7 +7,7 @@ from iaso.api.org_units.serializers.misc import OrgUnitImportSerializer
 from iaso.models import OrgUnit, Project
 
 
-def import_org_units(org_units: List[Dict], user, app_id) -> List[OrgUnit]:
+def import_org_units(org_units: list[dict], user, app_id) -> list[OrgUnit]:
     """Import a list of org units."""
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)

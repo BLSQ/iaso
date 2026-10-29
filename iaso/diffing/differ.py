@@ -17,7 +17,7 @@ def index_pyramid(orgunits):
         if orgunits_by_source_ref.get(orgunit.source_ref, None) is None:
             orgunits_by_source_ref[orgunit.source_ref] = [orgunit]
         else:
-            print("TWO ORG UNITS WITH THE SAME source_ref: %s (THIS SHOULD NOT HAPPEN!)" % orgunit.source_ref)
+            print(f"TWO ORG UNITS WITH THE SAME source_ref: {orgunit.source_ref} (THIS SHOULD NOT HAPPEN!)")
 
             orgunits_by_source_ref[orgunit.source_ref].append(orgunit)
     return orgunits_by_source_ref

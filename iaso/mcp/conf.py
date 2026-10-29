@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import os
 
-from typing import Any, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 
 
 LOGOUT_NEXT_PATHS = (

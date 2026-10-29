@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
@@ -15,7 +15,7 @@ class PlanningConfigBulkCreateListSerializer(serializers.ListSerializer):
         model = PlanningConfig
 
     @staticmethod
-    def validate(data: Dict[str, Any]) -> Dict[str, Any]:
+    def validate(data: dict[str, Any]) -> dict[str, Any]:
         level_planning = [(x["level"], x["planning"]) for x in data]
 
         if len(level_planning) != len(set(level_planning)):
@@ -24,12 +24,12 @@ class PlanningConfigBulkCreateListSerializer(serializers.ListSerializer):
         return data
 
     @staticmethod
-    def _get_instance_dict(data: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_instance_dict(data: dict[str, Any]) -> dict[str, Any]:
         return {k: v for k, v in data.items() if k in ["level", "planning"]}
 
     @transaction.atomic
-    def create(self, validated_data: dict) -> List[PlanningConfig]:
-        instances: List[PlanningConfig] = [PlanningConfig(**self._get_instance_dict(x)) for x in validated_data]
+    def create(self, validated_data: dict) -> list[PlanningConfig]:
+        instances: list[PlanningConfig] = [PlanningConfig(**self._get_instance_dict(x)) for x in validated_data]
 
         PlanningConfig.objects.bulk_create(instances, batch_size=100)
 

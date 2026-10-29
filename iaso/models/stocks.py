@@ -260,7 +260,7 @@ StockRulesVersionStatusAllowedTransitions = {
 
 
 def is_transition_allowed(self: "StockRulesVersion", new_status: str):
-    allowed_set: typing.Set[str] = StockRulesVersionStatusAllowedTransitions.get(self.status, set())
+    allowed_set: set[str] = StockRulesVersionStatusAllowedTransitions.get(self.status, set())
     return new_status in allowed_set
 
 

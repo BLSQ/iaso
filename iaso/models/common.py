@@ -94,10 +94,7 @@ class BulkAutoSlugField(AutoSlugField):
 
             # pragma: nocover
             if __debug__ and not value and not self.blank:
-                print(
-                    "Failed to populate slug %s.%s from %s"
-                    % (instance._meta.object_name, self.name, self.populate_from)
-                )
+                print(f"Failed to populate slug {instance._meta.object_name}.{self.name} from {self.populate_from}")
 
         slug = None
         if value:

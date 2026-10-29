@@ -5,8 +5,6 @@ Each annotation mirrors a value of the legacy `get_row()` in `InstancesViewSet.l
 by postgres instead of python.
 """
 
-from typing import Dict, List
-
 from django.conf import settings
 from django.db import models
 from django.db.models import Case, Exists, F, Func, OuterRef, Q, QuerySet, Subquery, TextField, Value, When
@@ -83,7 +81,7 @@ def creator_name():
 
 
 def build_submissions_tabular_queryset(
-    qs: QuerySet, form: m.Form, file_content_template: Dict, columns: List[Dict]
+    qs: QuerySet, form: m.Form, file_content_template: dict, columns: list[dict]
 ) -> QuerySet:
     """
     columns: the legacy export columns, each one gets a "field" key with the matching queryset column.

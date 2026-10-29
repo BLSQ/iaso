@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, List
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -166,7 +166,7 @@ class BulkUpdateListSerializer(serializers.ListSerializer):
             )
 
     @transaction.atomic
-    def update(self, instances: List[models.Model], validated_data: List[dict]) -> List[models.Model]:
+    def update(self, instances: list[models.Model], validated_data: list[dict]) -> list[models.Model]:
         instances_by_pk = {getattr(obj, self.lookup_field): obj for obj in instances}
 
         for data in validated_data:

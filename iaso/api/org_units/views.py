@@ -298,7 +298,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             user_account_name = profile.account.name if profile else ""
             environment = settings.ENVIRONMENT
             filename = "org_units"
-            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+            filename = "{}-{}-{}-{}".format(
+                environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime())
+            )
             return self.list_to_gpkg(queryset, filename)
         # When filtering the org units by group, the values_list will return the groups also filtered.
         #  In order to get the all groups independently of filters, we should get the groups
@@ -371,7 +373,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         user_account_name = profile.account.name if profile else ""
         environment = settings.ENVIRONMENT
         filename = "org_units"
-        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "{}-{}-{}-{}".format(environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(org_unit, **kwargs):
             location = org_unit.get("location", None)
@@ -428,7 +430,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
             )
             filename = filename + ".csv"
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
     def list_to_gpkg(self, queryset, filename):
@@ -499,7 +501,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         user_account_name = profile.account.name if profile else ""
         environment = settings.ENVIRONMENT
         filename = "org_units"
-        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "{}-{}-{}-{}".format(environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
         extra_fields = [x for x in request.GET.get("extra_fields", "").split(",") if x]
 
         try:

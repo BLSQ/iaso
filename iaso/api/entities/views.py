@@ -270,7 +270,7 @@ class EntityViewSet(ModelViewSet):
                 # Avoid duplicates
                 if Entity.objects.filter(attributes=instance):
                     raise serializers.ValidationError(
-                        {"attributes": "Entity with the attribute '{0}' already exists.".format(entity["attributes"])}
+                        {"attributes": "Entity with the attribute '{}' already exists.".format(entity["attributes"])}
                     )
                 entity_type = get_object_or_404(EntityType, pk=int(entity["entity_type"]))
                 account = request.user.iaso_profile.account

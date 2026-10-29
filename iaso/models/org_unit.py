@@ -182,9 +182,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
-    def hierarchy(
-        self, org_unit: typing.Union[typing.List["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]
-    ) -> "OrgUnitQuerySet":
+    def hierarchy(self, org_unit: typing.Union[list["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
@@ -398,7 +396,7 @@ class OrgUnit(MissionArtefact, TreeModel):
                 super().save(*args, **kwargs)
                 OrgUnit.objects.bulk_update(self.calculate_paths(force_recalculate=force_recalculate), ["path"])
 
-    def calculate_paths(self, force_recalculate: bool = False) -> typing.List["OrgUnit"]:
+    def calculate_paths(self, force_recalculate: bool = False) -> list["OrgUnit"]:
         """Calculate the path for this org unit and all its children.
 
         This method will check if this org unit path should change. If it is the case (or if force_recalculate is
@@ -872,7 +870,7 @@ class OrgUnitChangeRequest(SoftDeletableModel):
             rejected_org_unit.save()
         self.save()
 
-    def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
+    def approve(self, user: User, approved_fields: list[str], rejection_comment: str = "") -> None:
         self.__apply_changes(user, approved_fields)
         self.updated_by = user
         self.status = self.Statuses.APPROVED
@@ -884,7 +882,7 @@ class OrgUnitChangeRequest(SoftDeletableModel):
             approved_org_unit.save()
         self.save()
 
-    def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
+    def __apply_changes(self, user: User, approved_fields: list[str]) -> None:
         from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
 
         initial_org_unit = deepcopy(self.org_unit)
@@ -933,7 +931,7 @@ class OrgUnitChangeRequest(SoftDeletableModel):
         )
 
     @classmethod
-    def get_new_fields(cls) -> typing.List[str]:
+    def get_new_fields(cls) -> list[str]:
         """
         Returns the list of fields names which can store a change request.
         """

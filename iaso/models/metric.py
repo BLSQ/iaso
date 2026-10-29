@@ -78,7 +78,7 @@ class MetricType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s" % (self.name, self.id)
+        return f"{self.name} {self.id}"
 
     def mark_complete(self):
         """Explicitly flip an incomplete shell to complete, e.g. a user finishing the
@@ -109,4 +109,4 @@ class MetricValue(models.Model):
     string_value = models.TextField(blank=True, default="")
 
     def __str__(self):
-        return "%s %s %s %s" % (self.metric_type, self.org_unit, self.year, self.value)
+        return f"{self.metric_type} {self.org_unit} {self.year} {self.value}"

@@ -37,7 +37,7 @@ class TeamQuerySet(models.QuerySet):
     def annotate_with_depth(self) -> "TeamQuerySet":
         return self.annotate(depth=F("path__depth"))
 
-    def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
+    def hierarchy(self, teams: typing.Union[list["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
         """The Team and all their descendants"""
         if isinstance(teams, Team):
             query = models.Q(path__descendants=teams.path)
@@ -53,7 +53,7 @@ class TeamQuerySet(models.QuerySet):
 
     def get_tree(
         self,
-        root: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team", None] = None,
+        root: typing.Union[list["Team"], "models.QuerySet[Team]", "Team", None] = None,
         max_depth: typing.Optional[int] = None,
     ):
         if not root:
@@ -122,7 +122,7 @@ class Team(CreatedAndUpdatedModel, SoftDeletableModel):
                 super().save(*args, **kwargs)
                 Team.objects.bulk_update(self.calculate_paths(force_recalculate=force_recalculate), ["path"])
 
-    def calculate_paths(self, force_recalculate: bool = False) -> typing.List["Team"]:
+    def calculate_paths(self, force_recalculate: bool = False) -> list["Team"]:
         """Calculate the path for this Team and all its children recursively.
 
         This method will check if this instance path should change. If it is the case (or if force_recalculate is

@@ -5,7 +5,7 @@ import mimetypes
 import os
 
 from email.utils import parseaddr
-from typing import Optional, Tuple
+from typing import Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -59,7 +59,7 @@ def _static_logo_data_uri() -> Optional[str]:
     return f"data:{mime};base64,{b64}"
 
 
-def _contact_from_default_from_email() -> Tuple[str, str]:
+def _contact_from_default_from_email() -> tuple[str, str]:
     """Return (mailto_href, display_label) derived from ``DEFAULT_FROM_EMAIL``."""
     raw = settings.DEFAULT_FROM_EMAIL or ""
     name, addr = parseaddr(raw)

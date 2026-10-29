@@ -74,7 +74,7 @@ class OrgUnitUniqueUUIDIndex:
             sql = (
                 "CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS iaso_orgunit_uuid_version_idx_unicity_newer "
                 "ON iaso_orgunit (uuid, version_id) "
-                "WHERE uuid IS NOT NULL AND version_id IS NOT NULL AND created_at >= '%s';" % tomorrow
+                f"WHERE uuid IS NOT NULL AND version_id IS NOT NULL AND created_at >= '{tomorrow}';"
             )
         else:
             sql = (
@@ -119,7 +119,7 @@ class InstanceUniqueUUIDIndex:
             sql = (
                 "CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS iaso_instance_uuidx_unicity_newer "
                 "ON iaso_instance (uuid) "
-                "WHERE uuid IS NOT NULL AND created_at >= '%s';" % tomorrow
+                f"WHERE uuid IS NOT NULL AND created_at >= '{tomorrow}';"
             )
         else:
             sql = (
@@ -170,7 +170,7 @@ class EntityUniqueUUIDIndex:
                 "CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS iaso_entity_uuidx_unicity_newer "
                 "ON iaso_entity (uuid) "
                 "WHERE uuid IS NOT NULL "
-                "AND created_at >= '%s';" % tomorrow
+                f"AND created_at >= '{tomorrow}';"
             )
         else:
             sql = (

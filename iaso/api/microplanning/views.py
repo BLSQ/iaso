@@ -283,7 +283,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         qs = self.queryset.filter_for_user(user)
 
-        if self.action not in ["list", "dropdown"]:
+        if self.action not in ["list", "dropdown", "destroy", "retrieve"]:
             qs = qs.exclude(read_only=True)
 
         if self.action == "dropdown":
@@ -329,8 +329,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return planning.missions.all()
 
         return (
-            self.queryset.filter_for_user(user)
-            .select_related("project", "org_unit", "team", "selected_sampling_result")
+            qs.select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related(
                 "target_org_unit_types",
                 Prefetch(

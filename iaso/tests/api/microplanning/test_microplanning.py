@@ -77,7 +77,6 @@ class PlanningTestCase(APITestCase):
             mission_form=cls.mission2, form=cls.form2, min_cardinality=1, max_cardinality=1
         )
         cls.planning = Planning.objects.create(
-            read_only=True,
             project=project1,
             name="planning1",
             team=cls.team1,
@@ -97,6 +96,22 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(r), 1)
 
+    def test_cannot_update_a_read_only_planning(self):
+        self.planning.read_only = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.user_with_perms)
+        res = self.client.patch(f"/api/microplanning/plannings/{self.planning.pk}/", data={"name": "test"})
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_can_destroy_a_read_only_planning(self):
+        self.planning.read_only = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.user_with_perms)
+        res = self.client.delete(f"/api/microplanning/plannings/{self.planning.pk}/")
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
     def test_permissions(self):
         res = self.client.get("/api/microplanning/plannings/")
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -108,6 +123,8 @@ class PlanningTestCase(APITestCase):
     def test_query_id(self):
         self.client.force_authenticate(self.user_with_perms)
         id = self.planning.id
+        self.planning.read_only = True
+        self.planning.save()
         response = self.client.get(f"/api/microplanning/plannings/{id}/", format="json")
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(r["name"], self.planning.name)

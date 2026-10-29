@@ -17,17 +17,18 @@ import zipfile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
-from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
-from iaso.test import APITestCase
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 XLS_PATH = "iaso/tests/fixtures/field_type_render_check.xlsx"
+FIXTURES_PATH = "iaso/tests/fixtures"
 FORM_ID_STRING = "field_type_render_check"
 APP_ID = "field.type.render.check"
 FORM_VERSION_ID = "2026102605"
+INSTANCE_ID = "uuid:3c185364-e5dc-4912-98b2-e9aeb23049f5"
 BACKGROUND_AUDIO_FILE = "q_background_audio.m4a"
 
 # Question name -> type pyxform emits. image becomes photo; both select spellings collapse.
@@ -77,7 +78,9 @@ EXPECTED_TYPES = {
     "meta/instanceID": "calculate",
 }
 
-# Answers a device would store. Groups are flattened; the repeat stays a list.
+# Values the device stored. Groups are flattened in file_content; the repeat stays a list of iterations.
+# Notes are labels only, so they are absent here. meta/instanceID is asserted separately because the
+# parser stores it as instanceID plus _version, not under the meta group.
 EXPECTED_ANSWERS = {
     "q_integer": "42",
     "q_decimal": "3.5",
@@ -110,6 +113,10 @@ EXPECTED_ANSWERS = {
     "simserial": "8922101051398456440",
     "phonenumber": "+32470123456",
     "household_count": "2",
+    "household": [
+        {"member_name": "Ada", "member_age": "7"},
+        {"member_name": "Grace", "member_age": "8"},
+    ],
 }
 
 MEDIA_FILES = {
@@ -128,6 +135,7 @@ PARENT_TYPES = {"group", "repeat", "survey"}
 
 
 def index_questions(node, path=""):
+    """Flatten a form descriptor to {path: type}, skipping choice options."""
     indexed = {}
     for child in node.get("children") or []:
         if child.get("type") == "option":
@@ -139,127 +147,7 @@ def index_questions(node, path=""):
     return indexed
 
 
-def find_question(node, name):
-    for child in node.get("children") or []:
-        if child.get("name") == name:
-            return child
-        found = find_question(child, name)
-        if found is not None:
-            return found
-    return None
-
-
-def empty_rendered_fields(descriptor, data):
-    """Names the submission view would render with no value. Notes and meta are skipped."""
-    missing = []
-
-    def walk(node, node_data):
-        for child in node.get("children") or []:
-            name = child.get("name")
-            child_type = child.get("type")
-            if name == "meta" or child_type == "note":
-                continue
-            if child_type == "group":
-                walk(child, node_data)
-            elif child_type == "repeat":
-                iterations = node_data.get(name)
-                if not isinstance(iterations, list) or not iterations:
-                    missing.append(name)
-                else:
-                    for iteration in iterations:
-                        walk(child, iteration)
-            elif node_data.get(name) in (None, ""):
-                missing.append(name)
-
-    walk(descriptor, data)
-    return missing
-
-
-def submission_xml(version_id):
-    answers = EXPECTED_ANSWERS
-    return f"""<?xml version='1.0' ?>
-<data id="{FORM_ID_STRING}" version="{version_id}">
-  <q_background_audio>{answers["q_background_audio"]}</q_background_audio>
-  <g_scalars>
-    <q_integer>{answers["q_integer"]}</q_integer>
-    <q_decimal>{answers["q_decimal"]}</q_decimal>
-    <q_range>{answers["q_range"]}</q_range>
-    <q_text>{answers["q_text"]}</q_text>
-    <q_barcode>{answers["q_barcode"]}</q_barcode>
-    <q_date>{answers["q_date"]}</q_date>
-    <q_time>{answers["q_time"]}</q_time>
-    <q_datetime>{answers["q_datetime"]}</q_datetime>
-    <q_geopoint>{answers["q_geopoint"]}</q_geopoint>
-    <q_geotrace>{answers["q_geotrace"]}</q_geotrace>
-    <q_geoshape>{answers["q_geoshape"]}</q_geoshape>
-    <q_start>{answers["q_start"]}</q_start>
-    <q_end>{answers["q_end"]}</q_end>
-    <q_acknowledge>{answers["q_acknowledge"]}</q_acknowledge>
-  </g_scalars>
-  <g_selects>
-    <q_select_one_underscore>{answers["q_select_one_underscore"]}</q_select_one_underscore>
-    <q_select_one_space>{answers["q_select_one_space"]}</q_select_one_space>
-    <q_select_multiple_underscore>{answers["q_select_multiple_underscore"]}</q_select_multiple_underscore>
-    <q_select_all_that_apply>{answers["q_select_all_that_apply"]}</q_select_all_that_apply>
-    <q_rank>{answers["q_rank"]}</q_rank>
-  </g_selects>
-  <g_media>
-    <q_image>{answers["q_image"]}</q_image>
-    <q_photo>{answers["q_photo"]}</q_photo>
-    <q_audio>{answers["q_audio"]}</q_audio>
-    <q_video>{answers["q_video"]}</q_video>
-    <q_file>{answers["q_file"]}</q_file>
-  </g_media>
-  <g_special>
-    <q_calculate>{answers["q_calculate"]}</q_calculate>
-    <deviceid>{answers["deviceid"]}</deviceid>
-    <subscriberid>{answers["subscriberid"]}</subscriberid>
-    <simserial>{answers["simserial"]}</simserial>
-    <phonenumber>{answers["phonenumber"]}</phonenumber>
-  </g_special>
-  <household_count>{answers["household_count"]}</household_count>
-  <household>
-    <member_name>Ada</member_name>
-    <member_age>7</member_age>
-  </household>
-  <household>
-    <member_name>Grace</member_name>
-    <member_age>8</member_age>
-  </household>
-  <meta><instanceID>uuid:3c185364-e5dc-4912-98b2-e9aeb23049f5</instanceID></meta>
-</data>
-""".encode()
-
-
-def mobile_zip(form_pk, org_unit_pk, version_id):
-    instance_uuid = str(uuid.uuid4())
-    xml_name = "submission.xml"
-    instances = [
-        {
-            "id": instance_uuid,
-            "created_at": 1712326182450,
-            "updated_at": 1712326182450,
-            "file": f"/storage/emulated/0/instances/{xml_name}",
-            "name": "Field type render check",
-            "formId": str(form_pk),
-            "orgUnitId": str(org_unit_pk),
-            "latitude": 50.8503,
-            "longitude": 4.3517,
-            "altitude": 0,
-            "accuracy": 5,
-        }
-    ]
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as archive:
-        archive.writestr("instances.json", json.dumps(instances))
-        archive.writestr(f"{instance_uuid}/{xml_name}", submission_xml(version_id))
-        for name, content in MEDIA_FILES.items():
-            archive.writestr(f"{instance_uuid}/{name}", content)
-    buffer.seek(0)
-    return buffer
-
-
-class FieldTypeRenderCheckChainTest(APITestCase):
+class FieldTypeRenderCheckChainTest(TaskAPITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="Field type render check")
@@ -280,6 +168,45 @@ class FieldTypeRenderCheckChainTest(APITestCase):
         cls.form.org_unit_types.set([cls.org_unit_type])
         cls.project.forms.set([cls.form])
 
+    def submission_xml(self, version_id):
+        return self.load_fixture_with_jinja_template(
+            path_to_fixtures=FIXTURES_PATH,
+            fixture_name="field_type_render_check_submission.xml",
+            context={
+                "form_id": FORM_ID_STRING,
+                "version_id": version_id,
+                "instance_id": INSTANCE_ID,
+                "answers": EXPECTED_ANSWERS,
+            },
+        ).encode()
+
+    def mobile_zip(self, form_pk, org_unit_pk, version_id):
+        instance_uuid = str(uuid.uuid4())
+        xml_name = "submission.xml"
+        instances = [
+            {
+                "id": instance_uuid,
+                "created_at": 1712326182450,
+                "updated_at": 1712326182450,
+                "file": f"/storage/emulated/0/instances/{xml_name}",
+                "name": "Field type render check",
+                "formId": str(form_pk),
+                "orgUnitId": str(org_unit_pk),
+                "latitude": 50.8503,
+                "longitude": 4.3517,
+                "altitude": 0,
+                "accuracy": 5,
+            }
+        ]
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            archive.writestr("instances.json", json.dumps(instances))
+            archive.writestr(f"{instance_uuid}/{xml_name}", self.submission_xml(version_id))
+            for name, content in MEDIA_FILES.items():
+                archive.writestr(f"{instance_uuid}/{name}", content)
+        buffer.seek(0)
+        return buffer
+
     def test_form_version_mobile_zip_and_submission_detail(self):
         self.client.force_authenticate(self.user)
 
@@ -289,8 +216,8 @@ class FieldTypeRenderCheckChainTest(APITestCase):
                 data={"form_id": self.form.id, "xls_file": xls_file},
                 format="multipart",
             )
-        self.assertEqual(version_response.status_code, status.HTTP_201_CREATED, version_response.content)
-        version_id = version_response.json()["version_id"]
+        response_data = self.assertJSONResponse(version_response, status.HTTP_201_CREATED)
+        version_id = response_data["version_id"]
         self.assertEqual(version_id, FORM_VERSION_ID)
 
         self.form.refresh_from_db()
@@ -298,45 +225,39 @@ class FieldTypeRenderCheckChainTest(APITestCase):
         form_version = self.form.form_versions.get()
         self.assertEqual(form_version.version_id, version_id)
         descriptor = form_version.get_or_save_form_descriptor()
+        # Paths and types the submission view switches on. A rewritten type (image -> photo, select spellings) fails here.
         self.assertEqual(index_questions(descriptor), EXPECTED_TYPES)
-        for select_name in (
-            "q_select_one_underscore",
-            "q_select_one_space",
-            "q_select_multiple_underscore",
-            "q_select_all_that_apply",
-            "q_rank",
-        ):
-            choice_names = {child["name"] for child in find_question(descriptor, select_name)["children"]}
-            self.assertEqual(choice_names, {"red", "green", "blue"})
+        # Choice names are not in EXPECTED_TYPES. The view resolves "red" to its label from these children.
+        selects = next(child for child in descriptor["children"] if child["name"] == "g_selects")
+        for question in selects["children"]:
+            self.assertCountEqual([choice["name"] for choice in question["children"]], ["red", "green", "blue"])
 
         form_xml = form_version.file.read().decode()
+        # background-audio stays in the workbook: pyxform emits a binary bind plus odk:recordaudio, not a top-level tag.
         self.assertIn(
             '<odk:recordaudio ref="/data/q_background_audio" event="odk-instance-load"/>',
             form_xml,
         )
         self.assertIn('<bind nodeset="/data/q_background_audio" type="binary"/>', form_xml)
+        # q_file stays a normal upload. xml-external and select_*_from_file are left out: they need media files the
+        # current Collect build cannot open (no manifest, missing label node).
         self.assertIn('<upload mediatype="application/*" ref="/data/g_media/q_file">', form_xml)
         self.assertNotIn("jr://file", form_xml)
         self.assertNotIn("q_xml_external", form_xml)
         self.assertNotIn("items.csv", form_xml)
 
-        background = find_question(descriptor, "q_background_audio")
-        self.assertEqual(background["type"], "background-audio")
-        self.assertEqual(find_question(descriptor, "q_file")["type"], "file")
-
-        zip_buffer = mobile_zip(self.form.id, self.org_unit.id, version_id)
+        zip_buffer = self.mobile_zip(self.form.id, self.org_unit.id, version_id)
         upload_response = self.client.post(
             f"/api/mobile/bulkupload/?app_id={APP_ID}",
             {"zip_file": SimpleUploadedFile("field-type-render-check.zip", zip_buffer.read())},
             format="multipart",
         )
-        self.assertEqual(upload_response.status_code, status.HTTP_204_NO_CONTENT, upload_response.content)
+        self.assertJSONResponse(upload_response, status.HTTP_204_NO_CONTENT)
 
         task = m.Task.objects.get(name="process_mobile_bulk_upload")
-        TestTaskService().run_all()
-        task.refresh_from_db()
+        self.runAndValidateTask(task, m.SUCCESS)
         api_import = APIImport.objects.get()
-        self.assertEqual(task.status, m.SUCCESS, api_import.exception)
+        self.assertFalse(api_import.has_problem, api_import.exception)
 
         instance = m.Instance.objects.get()
         self.assertEqual(instance.form_id, self.form.id)
@@ -345,9 +266,7 @@ class FieldTypeRenderCheckChainTest(APITestCase):
         self.assertEqual(instance.form_version_id, form_version.id)
         self.assertEqual(instance.instancefile_set.count(), len(MEDIA_FILES))
 
-        detail_response = self.client.get(f"/api/instances/{instance.id}/")
-        self.assertEqual(detail_response.status_code, status.HTTP_200_OK, detail_response.content)
-        detail = detail_response.json()
+        detail = self.assertJSONResponse(self.client.get(f"/api/instances/{instance.id}/"), status.HTTP_200_OK)
 
         self.assertEqual(detail["form_name"], self.form.name)
         self.assertEqual(detail["org_unit"]["name"], self.org_unit.name)
@@ -355,17 +274,8 @@ class FieldTypeRenderCheckChainTest(APITestCase):
         file_content = detail["file_content"]
         for name, value in EXPECTED_ANSWERS.items():
             self.assertEqual(file_content[name], value, name)
-        self.assertEqual(
-            file_content["household"],
-            [
-                {"member_name": "Ada", "member_age": "7"},
-                {"member_name": "Grace", "member_age": "8"},
-            ],
-        )
         self.assertEqual(file_content["_version"], version_id)
-        self.assertEqual(file_content["instanceID"], "uuid:3c185364-e5dc-4912-98b2-e9aeb23049f5")
-        self.assertEqual(empty_rendered_fields(detail["form_descriptor"], file_content), [])
+        self.assertEqual(file_content["instanceID"], INSTANCE_ID)
 
-        file_urls = detail["files"]
-        for filename in MEDIA_FILES:
-            self.assertTrue(any(filename in url for url in file_urls), file_urls)
+        matched_files = [filename for filename in MEDIA_FILES if any(filename in url for url in detail["files"])]
+        self.assertCountEqual(matched_files, MEDIA_FILES)

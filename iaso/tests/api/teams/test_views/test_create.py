@@ -142,6 +142,10 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidBody(create_data)
 
         with self.assertNumQueries(17):
+            # 1-4: PERMISSION + SERIALIZER VALIDATION QUERYSETS
+            # 5-10: TRANSACTION, TEAM INSERT AND PATH RECALCULATE
+            # 11-15: M2M ASSIGNEMENTS + AUDIT SERIALIZATION
+            # 16-17: AUDIT MODIFICATION CREATE
             response = self.client.post(self.url, create_data)
 
         response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -236,14 +240,16 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_create_rejects_parent_from_another_account(self):
         self.client.force_authenticate(self.superuser)
 
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "parent": self.team_other_account.pk,
+        }
+
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_with_perms.pk,
-                "project": self.project1.pk,
-                "parent": self.team_other_account.pk,
-            },
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -253,17 +259,39 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             f'Invalid pk "{self.team_other_account.pk}" - object does not exist.',
         )
 
-    def test_create_rejects_sub_team_from_another_account(self):
+    def test_create_rejects_users_from_another_account(self):
         self.client.force_authenticate(self.superuser)
+
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "users": [self.user_other_account.pk],
+        }
 
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_with_perms.pk,
-                "project": self.project1.pk,
-                "sub_teams": [self.team_other_account.pk],
-            },
+            data,
+        )
+
+        response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            response_data,
+            "users",
+            f'Invalid pk "{self.user_other_account.pk}" - object does not exist.',
+        )
+
+    def test_create_rejects_sub_team_from_another_account(self):
+        self.client.force_authenticate(self.superuser)
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "sub_teams": [self.team_other_account.pk],
+        }
+        response = self.client.post(
+            self.url,
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -275,15 +303,15 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_create_rejects_sub_team_from_another_project(self):
         self.client.force_authenticate(self.superuser)
-
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "sub_teams": [self.sub_team_4.pk],
+        }
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_with_perms.pk,
-                "project": self.project1.pk,
-                "sub_teams": [self.sub_team_4.pk],
-            },
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -295,16 +323,16 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_create_rejects_users_and_sub_teams_together(self):
         self.client.force_authenticate(self.superuser)
-
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "sub_teams": [self.sub_team_1.pk],
+            "users": [self.user_with_perms.pk],
+        }
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_with_perms.pk,
-                "project": self.project1.pk,
-                "sub_teams": [self.sub_team_1.pk],
-                "users": [self.user_with_perms.pk],
-            },
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -316,16 +344,16 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_create_rejects_incorrect_type_for_users(self):
         self.client.force_authenticate(self.superuser)
-
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "type": TeamType.TEAM_OF_TEAMS,
+            "users": [self.user_with_perms.pk],
+        }
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_with_perms.pk,
-                "project": self.project1.pk,
-                "type": TeamType.TEAM_OF_TEAMS,
-                "users": [self.user_with_perms.pk],
-            },
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -337,14 +365,14 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_create_rejects_manager_from_another_account(self):
         self.client.force_authenticate(self.superuser)
-
+        data = {
+            "name": "invalid team",
+            "manager": self.user_other_account.pk,
+            "project": self.project1.pk,
+        }
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_other_account.pk,
-                "project": self.project1.pk,
-            },
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -356,14 +384,14 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_create_rejects_project_from_another_account(self):
         self.client.force_authenticate(self.superuser)
-
+        data = {
+            "name": "invalid team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project_other_account.pk,
+        }
         response = self.client.post(
             self.url,
-            {
-                "name": "invalid team",
-                "manager": self.user_with_perms.pk,
-                "project": self.project_other_account.pk,
-            },
+            data,
         )
 
         response_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -372,3 +400,50 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             "project",
             f'Invalid pk "{self.project_other_account.pk}" - object does not exist.',
         )
+
+    def test_create_kidnap_team(self):
+        """
+        Allowing to create new team and specify a children could mean we could kidnap a child team from another one
+
+        """
+
+        self.client.force_authenticate(self.superuser)
+
+        original_parent = self.sub_team_1.parent
+
+        self.assertEqual(original_parent, self.team)
+
+        data = {
+            "name": "new parent team",
+            "manager": self.user_with_perms.pk,
+            "project": self.project1.pk,
+            "sub_teams": [self.sub_team_1.pk],
+        }
+
+        response = self.client.post(self.url, data)
+
+        response_data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertValidResponse(response_data)
+
+        new_parent = Team.objects.get(pk=response_data["id"])
+        self.sub_team_1.refresh_from_db()
+        original_parent.refresh_from_db()
+
+        # The existing team has been moved away from its original parent.
+        self.assertEqual(self.sub_team_1.parent_id, new_parent.pk)
+        self.assertNotEqual(self.sub_team_1.parent_id, original_parent.pk)
+
+        # The original parent's children no longer include the moved team.
+        self.assertNotIn(
+            self.sub_team_1.pk,
+            list(original_parent.sub_teams.values_list("id", flat=True)),
+        )
+
+        # The moved team's path has been recalculated.
+        self.assertEqual(
+            str(self.sub_team_1.path),
+            f"{new_parent.path}.{self.sub_team_1.pk}",
+        )
+
+        # The new parent has the expected type.
+        self.assertEqual(new_parent.type, TeamType.TEAM_OF_TEAMS)

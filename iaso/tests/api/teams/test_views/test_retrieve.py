@@ -116,6 +116,9 @@ class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
         with self.assertNumQueries(3):
+            # 1 SELECT OBJECT
+            # 2 SELECT PREFETCH USERS
+            # 3 SELECT PREFETCH SUB TEAMS
             res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)

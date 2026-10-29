@@ -22,6 +22,12 @@ class TeamTreeFilter(django_filters.FilterSet):
         model = Team
         fields = []
 
+    def filter_queryset(self, queryset):
+        return queryset.get_tree(
+            root=self.form.cleaned_data.get("root"),
+            max_depth=self.form.cleaned_data.get("max_depth"),
+        )
+
 
 class TeamListFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(field_name="name", lookup_expr="icontains", distinct=True)

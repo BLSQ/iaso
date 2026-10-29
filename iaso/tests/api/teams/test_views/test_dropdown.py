@@ -106,6 +106,7 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.superuser)
 
         with self.assertNumQueries(1):
+            # SELECT
             res = self.client.get(self.url)
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -146,12 +147,14 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
 
-        res = self.client.get(self.url, data={"ids": ",".join(map(str, [self.team1.pk, self.team2.pk]))})
+        data = {"ids": ",".join(map(str, [self.team1.pk, self.team2.pk]))}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 2)
         self.assertCountEqual([x["value"] for x in res_data], [self.team1.pk, self.team2.pk])
 
-        res = self.client.get(self.url, data={"ids": ",".join([str(Team.objects.order_by("-id").first().pk + 1)])})
+        data = {"ids": ",".join([str(Team.objects.order_by("-id").first().pk + 1)])}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)
 
@@ -161,15 +164,15 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
 
-        res = self.client.get(self.url, data={"exclude_ids": ",".join(map(str, [self.team1.pk, self.team2.pk]))})
+        data = {"exclude_ids": ",".join(map(str, [self.team1.pk, self.team2.pk]))}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 7)
         self.assertNotIn(self.team1.pk, [x["value"] for x in res_data])
         self.assertNotIn(self.team2.pk, [x["value"] for x in res_data])
 
-        res = self.client.get(
-            self.url, data={"exclude_ids": ",".join([str(Team.objects.order_by("-id").first().pk + 1)])}
-        )
+        data = {"exclude_ids": ",".join([str(Team.objects.order_by("-id").first().pk + 1)])}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
 
@@ -179,11 +182,13 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
 
-        res = self.client.get(self.url, data={"projects": ",".join(map(str, [self.project1.pk, self.project2.pk]))})
+        data = {"projects": ",".join(map(str, [self.project1.pk, self.project2.pk]))}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
 
-        res = self.client.get(self.url, data={"projects": ",".join(map(str, [self.project1.pk]))})
+        data = {"projects": ",".join(map(str, [self.project1.pk]))}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 5)
         self.assertCountEqual(
@@ -191,9 +196,8 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [self.team1.pk, self.sub_team_1.pk, self.sub_team_2.pk, self.sub_team_3.pk, self.sub_team_2_1.pk],
         )
 
-        res = self.client.get(
-            self.url, data={"projects": ",".join([str(Project.objects.order_by("-id").first().pk + 1)])}
-        )
+        data = {"projects": ",".join([str(Project.objects.order_by("-id").first().pk + 1)])}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)
 
@@ -203,7 +207,8 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
 
-        res = self.client.get(self.url, data={"types": [TeamType.TEAM_OF_USERS, TeamType.TEAM_OF_TEAMS]})
+        data = {"types": [TeamType.TEAM_OF_USERS, TeamType.TEAM_OF_TEAMS]}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 5)
         self.assertCountEqual(
@@ -211,7 +216,8 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [self.team1.pk, self.team2.pk, self.sub_team_1.pk, self.sub_team_2.pk, self.sub_team_2_1.pk],
         )
 
-        res = self.client.get(self.url, data={"types": TeamType.TEAM_OF_USERS})
+        data = {"types": TeamType.TEAM_OF_USERS}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
         self.assertCountEqual(
@@ -219,7 +225,8 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [self.sub_team_2_1.pk],
         )
 
-        res = self.client.get(self.url, data={"types": "WRONG_TYPE"})
+        data = {"types": "WRONG_TYPE"}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "types")
 
@@ -235,7 +242,8 @@ class TeamDropdownAPITestCase(SwaggerTestCaseMixin, APITestCase):
             list(Team.objects.filter_for_user(self.superuser).order_by("name").values_list("id", flat=True)),
         )
 
-        response = self.client.get(self.url, data={"order": "id"})
+        data = {"order": "id"}
+        response = self.client.get(self.url, data=data)
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidResponse(r, 9)
 

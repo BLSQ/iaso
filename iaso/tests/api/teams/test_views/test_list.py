@@ -103,10 +103,13 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
         with self.assertNumQueries(2):
+            # SELECT COUNT
+            # SELECT
             res = self.client.get(
                 self.url,
-                data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE},
+                data=data,
             )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
@@ -129,28 +132,28 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_filters_projects(self):
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
 
+        data = {
+            "projects": ",".join(map(str, [self.project1.pk, self.project2.pk])),
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                "projects": ",".join(map(str, [self.project1.pk, self.project2.pk])),
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
-
+        data = {
+            "projects": ",".join(map(str, [self.project1.pk])),
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                "projects": ",".join(map(str, [self.project1.pk])),
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 6)
@@ -165,31 +168,31 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 self.sub_team_2_1.pk,
             ],
         )
-
+        data = {
+            "projects": ",".join([str(Project.objects.order_by("-id").first().pk + 1)]),
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                "projects": ",".join([str(Project.objects.order_by("-id").first().pk + 1)]),
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)
 
     def test_filters_type(self):
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
 
+        data = {
+            "types": [TeamType.TEAM_OF_USERS, TeamType.TEAM_OF_TEAMS],
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                "types": [TeamType.TEAM_OF_USERS, TeamType.TEAM_OF_TEAMS],
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 6)
@@ -205,12 +208,13 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             ],
         )
 
+        data = {
+            "types": TeamType.TEAM_OF_USERS,
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                "types": TeamType.TEAM_OF_USERS,
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
@@ -219,12 +223,13 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             [self.sub_team_2_1.pk],
         )
 
+        data = {
+            "types": "WRONG_TYPE",
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                "types": "WRONG_TYPE",
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "types")
@@ -232,40 +237,43 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_filters_search(self):
         self.client.force_authenticate(self.superuser)
 
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
 
+        data = {
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+            "search": "root",
+        }
+
         res = self.client.get(
             self.url,
-            data={
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-                "search": "root",
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
         self.assertEqual(res_data["results"][0]["id"], self.root_team.pk)
 
+        data = {
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+            "search": "ROOT",
+        }
         res = self.client.get(
             self.url,
-            data={
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-                "search": "ROOT",
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
         self.assertEqual(res_data["results"][0]["id"], self.root_team.pk)
 
+        data = {
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+            "search": "wrong",
+        }
         res = self.client.get(
             self.url,
-            data={
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-                "search": "wrong",
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)
@@ -273,29 +281,30 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_filters_managers(self):
         self.client.force_authenticate(self.superuser)
 
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
 
+        data = {
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+            "managers": self.user_no_perm.id,
+        }
         res = self.client.get(
             self.url,
-            data={
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-                "managers": self.user_no_perm.id,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
         self.assertEqual(res_data["results"][0]["id"], self.root_team.pk)
 
+        data = {
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+            "managers": self.user_with_perms.id,
+        }
         res = self.client.get(
             self.url,
-            data={
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-                "managers": self.user_with_perms.id,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
@@ -303,9 +312,8 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_ordering(self):
         self.client.force_authenticate(self.superuser)
-        response = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        response = self.client.get(self.url, data=data)
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidResponse(r, 10)
 
@@ -315,12 +323,13 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             list(Team.objects.filter_for_user(self.superuser).order_by("name").values_list("id", flat=True)),
         )
 
+        data = {
+            api_settings.ORDERING_PARAM: "id",
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         response = self.client.get(
             self.url,
-            data={
-                api_settings.ORDERING_PARAM: "id",
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         r = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidResponse(r, 10)
@@ -339,9 +348,8 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_should_not_see_soft_deleted_teams(self):
         self.client.force_authenticate(self.superuser)
 
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
         self.assertIn(self.root_team.pk, [x["id"] for x in res_data["results"]])
@@ -350,9 +358,8 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.root_team.refresh_from_db()
         self.assertIsNotNone(self.root_team.deleted_at)
 
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
         self.assertNotIn(self.root_team.pk, [x["id"] for x in res_data["results"]])
@@ -367,9 +374,8 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertTrue(all(members_count_field not in x for x in res_data["results"]))
 
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(
-            self.url, data={settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
-        )
+        data = {settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)
         self.assertTrue(all(members_count_field in x for x in res_data["results"]))
@@ -382,12 +388,14 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(self.root_team.type, TeamType.TEAM_OF_TEAMS)
 
         self.client.force_authenticate(self.superuser)
+        data = {
+            api_settings.ORDERING_PARAM: "id",
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
+
         res = self.client.get(
             self.url,
-            data={
-                api_settings.ORDERING_PARAM: "id",
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 9)
@@ -399,12 +407,13 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_response(self):
         self.client.force_authenticate(self.superuser)
+        data = {
+            api_settings.ORDERING_PARAM: "id",
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
         res = self.client.get(
             self.url,
-            data={
-                api_settings.ORDERING_PARAM: "id",
-                settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
-            },
+            data=data,
         )
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 10)

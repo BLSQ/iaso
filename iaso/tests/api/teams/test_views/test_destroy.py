@@ -76,6 +76,14 @@ class TeamDestroyViewAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.superuser)
         with self.assertNumQueries(13):
+            # 1 SAVEPOINT
+            # 2-4 SELECT + PREFETCH
+            # 5 SAVEPOINT
+            # 6 SET UPDATED_BY
+            # 7 RELEASE SAVEPOINT
+            # 8-10: UPDATE (soft delete)
+            # 11-12: AUDIT
+            # 13: RELEASE SAVEPOINT
             res = self.client.delete(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 

@@ -11,7 +11,7 @@ from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
+class TeamUpdateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         super().setUpTestData()
@@ -177,6 +177,19 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(res_data, "parent", "Cannot create loop in teams tree")
 
+    def test_partial_update_rejects_sub_team_cycle(self):
+        self.client.force_authenticate(self.superuser)
+
+        data = {"sub_teams": [self.team.pk]}
+
+        response = self.client.patch(
+            self.get_url(),
+            data,
+        )
+
+        res_data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "sub_teams", "Cannot create loop in teams tree")
+
     def test_partial_update_recalculates_paths_when_sub_teams_change(self):
         self.client.force_authenticate(self.superuser)
 
@@ -261,6 +274,12 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidBody(update_data)
 
         with self.assertNumQueries(30):
+            # 1 - 7: SELECT + SERIALIZER QUERYSETS
+            # 8 - 10 SAVEPOINT - SELECT PARENT - SAVEPOINT
+            # 11 - 17: UPDATE
+            # 18 - 24: RECALCULATE PATH
+            # 25 - 27 : RELEASE + SELECT CHILDREN
+            # 28 - 30: AUDIT
             response = self.client.put(self.get_url(), update_data)
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -309,6 +328,9 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update(self):
+        # checking the updated_by
+        self.assertIsNone(self.team.updated_by)
+
         self.client.force_authenticate(self.superuser)
 
         update_data = {
@@ -358,3 +380,85 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 source=f"API PUT /api/teams/{self.team.pk}/",
             ).exists()
         )
+
+        # reupdating with another user to check the updated_by
+        self.client.force_authenticate(self.user_with_perms)
+
+        data = {
+            "name": "updated team",
+        }
+        response = self.client.patch(self.get_url(), data=data)
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.team.refresh_from_db()
+
+        self.assertEqual(self.team.name, data["name"])
+        self.assertEqual(self.team.updated_by, self.user_with_perms)
+
+    def test_update_rejects_users_from_another_account(self):
+        self.client.force_authenticate(self.superuser)
+        data = {
+            "users": [self.user_other_account.pk],
+        }
+
+        res = self.client.put(self.get_url(), data)
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "users", f'Invalid pk "{self.user_other_account.pk}" - object does not exist.')
+
+    def test_update_rejects_manager_from_another_account(self):
+        self.client.force_authenticate(self.superuser)
+        data = {
+            "manager": self.user_other_account.pk,
+        }
+
+        res = self.client.put(self.get_url(), data)
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "manager", f'Invalid pk "{self.user_other_account.pk}" - object does not exist.')
+
+    def test_update_rejects_project_from_another_account(self):
+        self.client.force_authenticate(self.superuser)
+        data = {
+            "project": self.project_other_account.pk,
+        }
+
+        res = self.client.put(self.get_url(), data)
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data, "project", f'Invalid pk "{self.project_other_account.pk}" - object does not exist.'
+        )
+
+    def test_update_type(self):
+        self.client.force_authenticate(self.superuser)
+
+        self.assertEqual(self.team.type, TeamType.TEAM_OF_TEAMS)
+
+        data = {"users": [self.superuser.pk], "sub_teams": []}
+        res = self.client.patch(self.get_url(), data)
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(
+            res_data, api_settings.NON_FIELD_ERRORS_KEY, f"Incorrect type: expected {TeamType.TEAM_OF_USERS.label}"
+        )
+
+        data = {"users": [self.superuser.pk], "sub_teams": [], "type": TeamType.TEAM_OF_USERS}
+        res = self.client.patch(self.get_url(), data)
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.team.refresh_from_db()
+        self.assertEqual(self.team.type, TeamType.TEAM_OF_USERS)
+        self.assertEqual(list(self.team.users.values_list("id", flat=True)), [self.superuser.pk])
+
+        self.sub_team_1.refresh_from_db()
+        self.assertIsNone(self.sub_team_1.parent)
+        self.assertEqual(str(self.sub_team_1.path), str(self.sub_team_1.pk))
+
+        data = {"sub_teams": [self.sub_team_1.pk], "users": [], "type": TeamType.TEAM_OF_TEAMS}
+        res = self.client.patch(self.get_url(), data)
+        self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.team.refresh_from_db()
+        self.assertEqual(self.team.type, TeamType.TEAM_OF_TEAMS)
+        self.assertEqual(list(self.team.sub_teams.values_list("id", flat=True)), [self.sub_team_1.pk])
+
+        self.sub_team_1.refresh_from_db()
+        self.assertEqual(self.sub_team_1.parent, self.team)

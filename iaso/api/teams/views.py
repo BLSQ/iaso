@@ -133,21 +133,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             return queryset.only("id", "name", "color", "type")
 
         if self.action == "tree":
-            filterset = TeamTreeFilter(
-                data=self.request.query_params,
-                queryset=queryset,
-                request=self.request,
-            )
-            if not filterset.is_valid():
-                raise serializers.ValidationError(filterset.errors)
-
+            # the get_tree happens in the TeamTreeFilter filter_queryset method
             return (
-                queryset.get_tree(
-                    root=filterset.form.cleaned_data.get("root"),
-                    max_depth=filterset.form.cleaned_data.get("max_depth"),
-                )
-                .annotate_with_depth()
-                .select_related("parent")
+                queryset.select_related("parent")
                 .prefetch_related(
                     Prefetch(
                         "users",
@@ -166,7 +154,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                     )
                 )
                 .only("path", "id", "parent", "name", "type", "color")
-                .order_by("id")
             )
 
         if self.action == "list":
@@ -234,7 +221,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     @extend_schema(responses={200: TeamTreeSerializer(many=True)})
     @action(detail=False, methods=["GET"], pagination_class=None)
     def tree(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        queryset = self.get_queryset()
+        queryset = (
+            typing.cast(TeamQuerySet, self.filter_queryset(self.get_queryset())).annotate_with_depth().order_by("id")
+        )
         data = self._build_team_tree(queryset)
         return Response(data)
 

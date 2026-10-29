@@ -1,4 +1,5 @@
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -89,6 +90,9 @@ class TeamUpdateSerializer(ModelSerializer):
 
     @transaction.atomic
     def save(self, **kwargs: Any) -> Team:
+        # needed for PATCH as DRF don't includes HiddenField in patches
+        kwargs.setdefault("updated_by", self.context["request"].user)
+
         if not isinstance(self.instance, Team):
             raise ValueError
 

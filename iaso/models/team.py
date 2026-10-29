@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import operator
-import typing
 
 from functools import reduce
 
@@ -8,6 +9,7 @@ from django.db import models, transaction
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField
+from typing_extensions import Self
 
 from iaso.models import Account, Project
 from iaso.models.common import CreatedAndUpdatedModel
@@ -24,20 +26,20 @@ from iaso.utils.models.soft_deletable import (
 
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        account: Account | None = getattr(getattr(user, "iaso_profile", None), "account", None)
         if not account:
             return self.none()
         return self.filter_for_account(account)
 
-    def filter_for_account(self, account: Account) -> "TeamQuerySet":
+    def filter_for_account(self, account: Account) -> Self:
         if not account:
             return self.none()
         return self.filter(project__account=account)
 
-    def annotate_with_depth(self) -> "TeamQuerySet":
+    def annotate_with_depth(self) -> Self:
         return self.annotate(depth=F("path__depth"))
 
-    def hierarchy(self, teams: typing.Union[list["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
+    def hierarchy(self, teams: list[Team] | Self | Team) -> Self:
         """The Team and all their descendants"""
         if isinstance(teams, Team):
             query = models.Q(path__descendants=teams.path)
@@ -53,9 +55,9 @@ class TeamQuerySet(models.QuerySet):
 
     def get_tree(
         self,
-        root: typing.Union[list["Team"], "models.QuerySet[Team]", "Team", None] = None,
-        max_depth: typing.Optional[int] = None,
-    ):
+        root: list[Team] | Self | Team | None = None,
+        max_depth: int | None = None,
+    ) -> Self:
         if not root:
             root = self.filter(parent__isnull=True)
 
@@ -122,7 +124,7 @@ class Team(CreatedAndUpdatedModel, SoftDeletableModel):
                 super().save(*args, **kwargs)
                 Team.objects.bulk_update(self.calculate_paths(force_recalculate=force_recalculate), ["path"])
 
-    def calculate_paths(self, force_recalculate: bool = False) -> list["Team"]:
+    def calculate_paths(self, force_recalculate: bool = False) -> list[Team]:
         """Calculate the path for this Team and all its children recursively.
 
         This method will check if this instance path should change. If it is the case (or if force_recalculate is

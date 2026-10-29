@@ -15,6 +15,12 @@ const styles = {
         flex: 1,
         minHeight: 0,
     },
+    // Wrapping would size the row on the panels' content, so only small screens wrap.
+    panels: {
+        flex: 1,
+        minHeight: 0,
+        flexWrap: { xs: 'wrap', md: 'nowrap' },
+    },
 } satisfies SxStyles;
 
 export const AssignmentsContent: FC = () => {
@@ -24,6 +30,7 @@ export const AssignmentsContent: FC = () => {
         <GreyPageWrapper
             title={<AssignmentsBreadcrumbs />}
             actions={<ModeToggle />}
+            fillHeight
         >
             <Stack gap={2} sx={styles.fill}>
                 {mode === 'assign' && planning.status === 'published' && (
@@ -31,10 +38,9 @@ export const AssignmentsContent: FC = () => {
                 )}
                 <Stack
                     direction="row"
-                    flexWrap="wrap"
                     alignItems="stretch"
                     gap={2}
-                    sx={styles.fill}
+                    sx={styles.panels}
                 >
                     <TeamsPanel />
                     <AssignmentsMainPanel />

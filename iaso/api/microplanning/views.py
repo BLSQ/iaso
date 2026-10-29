@@ -5,8 +5,11 @@ import typing
 from typing import TYPE_CHECKING, Any, Sequence
 
 from django.contrib.auth import get_user_model
+from django.contrib.gis.db.models import PointField
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
-from django.db.models import Count, F, Min, Prefetch, Q
+from django.db.models import BooleanField, Case, Count, F, Min, Prefetch, Q, Value, When
+from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -17,7 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 from ...models.microplanning.plannings import PlanningConfigQuerySet, PlanningQuerySet
-from .serializers.org_unit_tree import OrgUnitBuildTreeSerializer
+from .serializers.org_unit_tree import OrgUnitBuildTreeSerializer, OrgUnitTreeSerializer
 from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
 from .serializers.planning_config.list import NestedPlanningConfigListSerializer
 
@@ -202,6 +205,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return PlanningConfigPagination
         if self.action == "dropdown":
             return None
+        if self.action == "org_unit_tree":
+            return None
         return Paginator
 
     @property
@@ -258,8 +263,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         configs = [
             {
                 "level": x.level,
-                "org_unit_types": list(x.org_unit_types.values_list("id", flat=True)),
-                "org_unit_groups": list(x.org_unit_groups.values_list("id", flat=True)),
+                "org_unit_types": [out.id for out in x.org_unit_types.all()],
+                "org_unit_groups": [oug.id for oug in x.org_unit_groups.all()],
             }
             for x in planning.configs.all()
         ]
@@ -303,9 +308,25 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         # keep nodes that are not in the config
         filter_qs |= ~Q(path__depth__in=processed_levels)
 
+        empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
+
         return (
-            queryset.only("id", "parent", "name", "path")
-            .annotate(depth=F("path__depth"))
+            queryset.only("id", "parent", "name", "path", "org_unit_type")
+            .select_related("org_unit_type")
+            .annotate(location_as_geom=Cast("location", PointField(dim=3)))
+            .annotate(
+                depth=F("path__depth"),
+                has_geo_json=Case(
+                    When(simplified_geom__isnull=False, then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                ),
+                has_location=Case(
+                    When(Q(location__isnull=False) & (~Q(location_as_geom=empty_point)), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                ),
+            )
             .filter(filter_qs)
             .order_by("id")
         )
@@ -357,6 +378,20 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return planning.missions.all()
 
         if self.action == "org_unit_tree":
+            qs = (
+                qs.prefetch_related(
+                    Prefetch(
+                        "configs",
+                        queryset=PlanningConfig.objects.prefetch_related(
+                            "org_unit_types",
+                            "org_unit_groups",
+                        ),
+                    )
+                )
+                .select_related("org_unit")
+                .only("id", "org_unit", "org_unit__id", "org_unit__path")
+            )
+
             planning = get_object_or_404(
                 qs,
                 pk=self.kwargs["pk"],
@@ -468,6 +503,9 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
         return roots
 
+    @extend_schema(
+        responses={200: OrgUnitTreeSerializer(many=True)},
+    )
     @action(
         detail=True,
         methods=["get"],

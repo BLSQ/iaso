@@ -18,10 +18,12 @@ class OrgUnitTreeNestedOrgUnitTypeSerializer(ModelSerializer):
 class OrgUnitBuildTreeSerializer(ModelSerializer):
     depth = serializers.IntegerField(read_only=True)
     org_unit_type = OrgUnitTreeNestedOrgUnitTypeSerializer(read_only=True, allow_null=True)
+    has_geo_json = serializers.BooleanField(read_only=True)
+    has_location = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "parent", "depth", "org_unit_type"]
+        fields = ["id", "name", "parent", "depth", "org_unit_type", "has_geo_json", "has_location"]
         read_only_fields = fields
 
 

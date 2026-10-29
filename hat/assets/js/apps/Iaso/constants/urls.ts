@@ -558,13 +558,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: [
-            'accountId',
-            'planningId',
-            'tab',
-            'search',
-            ...paginationPathParams,
-        ],
+        params: ['accountId', 'planningId', 'teamId', 'mode', 'view'],
     },
     teams: {
         url: 'settings/users/teams',
@@ -738,6 +732,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     error403: { url: '403', params: [] },
     error404: { url: '404', params: [] },
     error500: { url: '500', params: [] },
+    workInProgress: { url: 'wip', params: [] },
     login: { url: 'login', params: [] },
     apiLogs: { url: 'api/logs', params: [] }, // used in FormFormComponents only
 };
@@ -848,6 +843,7 @@ type IasoBaseUrls = {
     error403: string;
     error404: string;
     error500: string;
+    workInProgress: string;
     login: string;
     apiLogs: string;
     adminApiImport: string;

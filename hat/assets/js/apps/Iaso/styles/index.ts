@@ -1,9 +1,11 @@
+import { alpha, Theme } from '@mui/material';
 import Color from 'color';
+import { ThemeConfig } from 'Iaso/domains/app/contexts/ThemeConfigContext';
 import { SxStyles } from 'Iaso/types/general';
 import { styles as mapCluster } from './mapCluster';
 import { styles as mapCustomControl } from './mapCustomControl';
 
-export const getOverriddenTheme = (theme, themeConfig) => {
+export const getOverriddenTheme = (theme: Theme, themeConfig: ThemeConfig) => {
     const primaryColor = Color(themeConfig.THEME_PRIMARY_COLOR);
     const primaryBackgroundColor = Color(
         themeConfig.THEME_PRIMARY_BACKGROUND_COLOR,
@@ -24,7 +26,6 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 warning: theme.palette.warning.main,
                 error: theme.palette.error.main,
                 success: theme.palette.success.main,
-                blueGrey: '#edf1f4',
             },
             primary: {
                 contrastText: primaryContrastText,
@@ -57,10 +58,35 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 fontFamily: '"Roboto", "Arial", sans-serif',
             },
         },
+        components: {
+            ...theme.components,
+            MuiToggleButton: {
+                styleOverrides: {
+                    // segmented control: blue icons, active filled blue
+                    root: ({ theme: currentTheme }: { theme: Theme }) => ({
+                        color: currentTheme.palette.primary.main,
+                        '&:hover': {
+                            backgroundColor: alpha(
+                                currentTheme.palette.primary.main,
+                                0.08,
+                            ),
+                        },
+                        '&.Mui-selected': {
+                            color: currentTheme.palette.primary.contrastText,
+                            backgroundColor: currentTheme.palette.primary.main,
+                            '&:hover': {
+                                backgroundColor:
+                                    currentTheme.palette.primary.dark,
+                            },
+                        },
+                    }),
+                },
+            },
+        },
     };
 };
 
-export const getGlobalOverrides = theme => ({
+export const getGlobalOverrides = (theme: Theme) => ({
     ...mapCluster,
     ...mapCustomControl,
     body: {

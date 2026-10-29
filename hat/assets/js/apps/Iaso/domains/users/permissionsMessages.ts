@@ -295,12 +295,12 @@ const PERMISSIONS_MESSAGES: PermissionsMessages = defineMessages({
     },
     iaso_reports: {
         id: 'iaso.permission.reports',
-        defaultMessage: 'Devices',
+        defaultMessage: 'Mobile reports',
     },
     iaso_reports_tooltip: {
         id: 'iaso.permission.tooltip.reports',
         defaultMessage:
-            'Monitor devices linked to the instance (synchronisation, owner, etc.)',
+            'Upload, publish and roll back the mobile reports of the projects',
     },
     iaso_users_managed: {
         id: 'iaso.permissions.users_management',

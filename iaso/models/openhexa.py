@@ -22,7 +22,7 @@ class OpenHEXAInstance(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s" % (self.name, self.url)
+        return f"{self.name} {self.url}"
 
 
 class OpenHEXAWorkspace(SoftDeletableModel):
@@ -50,4 +50,4 @@ class OpenHEXAWorkspace(SoftDeletableModel):
     objects_include_deleted = IncludeDeletedSoftDeletableManager()
 
     def __str__(self):
-        return "%s %s %s" % (self.openhexa_instance_id, self.account_id, self.slug)
+        return f"{self.openhexa_instance_id} {self.account_id} {self.slug}"

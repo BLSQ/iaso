@@ -1,6 +1,5 @@
 from copy import deepcopy
 from time import time
-from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -51,8 +50,8 @@ def update_payment_from_bulk(user, payment, *, status, api):
 @task_decorator(task_name="payments_bulk_update")
 def payments_bulk_update(
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
+    selected_ids: list[int],
+    unselected_ids: list[int],
     status: str,
     payment_lot_id: int,
     api: str,
@@ -104,7 +103,7 @@ def payments_bulk_update(
         # FIXME Task don't handle rollback properly if task is killed by user or other error
         with transaction.atomic():
             for index, payment in enumerate(queryset.iterator()):
-                res_string = "%.2f sec, processed %i payments" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} payments"
                 report_progress_and_stop_if_killed_and_update_payment_lot(
                     payment_lot=payment_lot,
                     task=the_task,
@@ -130,7 +129,7 @@ def payments_bulk_update(
             else:
                 payment_lot.task = None
                 payment_lot.save()
-            the_task.report_success(message="%d modified" % total)
+            the_task.report_success(message=f"{total} modified")
 
 
 @task_decorator(task_name="mark_payments_as_read")
@@ -169,7 +168,7 @@ def mark_payments_as_read(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         for index, payment in enumerate(payments.iterator()):
-            res_string = "%.2f sec, processed %i payments" % (time() - start, index)
+            res_string = f"{time() - start:.2f} sec, processed {index} payments"
             report_progress_and_stop_if_killed_and_update_payment_lot(
                 payment_lot=payment_lot,
                 task=the_task,
@@ -185,4 +184,4 @@ def mark_payments_as_read(
         payment_lot.save()
         audit_logger.log_modification(old_data_dump=old_payment_lot, instance=payment_lot, request_user=user)
 
-        the_task.report_success(message="%d modified" % total)
+        the_task.report_success(message=f"{total} modified")

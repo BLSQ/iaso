@@ -445,6 +445,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Open assignments',
         id: 'iaso.plannings.label.openAssignments',
     },
+    assignmentsForPlanning: {
+        defaultMessage: 'Assignments for planning: {name}',
+        id: 'iaso.plannings.label.assignmentsForPlanning',
+    },
     info: {
         defaultMessage: 'Info',
         id: 'iaso.plannings.label.info',
@@ -483,98 +487,9 @@ const MESSAGES = defineMessages({
             'Build the hierarchy below the root team. Changes update the levels automatically.',
         id: 'iaso.plannings.label.teamHierarchyInfos',
     },
-    teamsCount: {
-        defaultMessage: '{count, plural, one {# team} other {# teams}}',
-        id: 'iaso.plannings.label.teamsCount',
-    },
-    usersCount: {
-        defaultMessage: '{count, plural, one {# user} other {# users}}',
-        id: 'iaso.plannings.label.usersCount',
-    },
-    searchTeamsAndUsers: {
-        defaultMessage: 'Search teams and users',
-        id: 'iaso.plannings.label.searchTeamsAndUsers',
-    },
-    expandAll: {
-        defaultMessage: 'Expand all',
-        id: 'iaso.plannings.label.expandAll',
-    },
-    collapseAll: {
-        defaultMessage: 'Collapse all',
-        id: 'iaso.plannings.label.collapseAll',
-    },
-    teamHierarchyDragHint: {
-        defaultMessage:
-            'Drag a team or user onto another team to move it. Use the actions menu for more options.',
-        id: 'iaso.plannings.label.teamHierarchyDragHint',
-    },
-    addTeam: {
-        defaultMessage: 'Add team',
-        id: 'iaso.plannings.label.addTeam',
-    },
-    addSubTeam: {
-        defaultMessage: 'Add subteam',
-        id: 'iaso.plannings.label.addSubTeam',
-    },
-    removeFromTeam: {
-        defaultMessage: 'Remove from team',
-        id: 'iaso.plannings.label.removeFromTeam',
-    },
-    moreActions: {
-        defaultMessage: 'More actions',
-        id: 'iaso.plannings.label.moreActions',
-    },
-    dragToMove: {
-        defaultMessage: 'Drag to move',
-        id: 'iaso.plannings.label.dragToMove',
-    },
-    teamOfTeams: {
-        defaultMessage: 'Team of teams',
-        id: 'iaso.plannings.label.teamOfTeams',
-    },
-    teamOfUsers: {
-        defaultMessage: 'Team of users',
-        id: 'iaso.plannings.label.teamOfUsers',
-    },
     selectRootTeamFirst: {
         defaultMessage: 'Select a root team to build its hierarchy.',
         id: 'iaso.plannings.label.selectRootTeamFirst',
-    },
-    noTeamHierarchyMatch: {
-        defaultMessage: 'No team or user matches your search.',
-        id: 'iaso.plannings.label.noTeamHierarchyMatch',
-    },
-    rename: {
-        defaultMessage: 'Rename',
-        id: 'iaso.plannings.label.rename',
-    },
-    renameTeam: {
-        defaultMessage: 'Rename team',
-        id: 'iaso.plannings.label.renameTeam',
-    },
-    changeToTeamOfUsers: {
-        defaultMessage: 'Change to team of users',
-        id: 'iaso.plannings.label.changeToTeamOfUsers',
-    },
-    changeToTeamOfTeams: {
-        defaultMessage: 'Change to team of teams',
-        id: 'iaso.plannings.label.changeToTeamOfTeams',
-    },
-    moveTo: {
-        defaultMessage: 'Move to…',
-        id: 'iaso.plannings.label.moveTo',
-    },
-    moveItemTo: {
-        defaultMessage: 'Move {name} to',
-        id: 'iaso.plannings.label.moveItemTo',
-    },
-    destinationTeam: {
-        defaultMessage: 'Destination team',
-        id: 'iaso.plannings.label.destinationTeam',
-    },
-    deleteTeam: {
-        defaultMessage: 'Delete team',
-        id: 'iaso.plannings.label.deleteTeam',
     },
     orgUnitsToAssign: {
         defaultMessage: 'Org units to assign',
@@ -633,6 +548,116 @@ const MESSAGES = defineMessages({
     groupsWithoutLevelOrgUnits: {
         defaultMessage: "No org units of this level's types in: {groups}",
         id: 'iaso.plannings.label.groupsWithoutLevelOrgUnits',
+    },
+    explore: {
+        defaultMessage: 'Explore',
+        id: 'iaso.plannings.label.explore',
+    },
+    exploreModeTooltip: {
+        defaultMessage: 'Browse teams and open subteams',
+        id: 'iaso.plannings.label.exploreModeTooltip',
+    },
+    assign: {
+        defaultMessage: 'Assign',
+        id: 'iaso.plannings.label.assign',
+    },
+    assignModeTooltip: {
+        defaultMessage: 'Assign org units to team members',
+        id: 'iaso.plannings.label.assignModeTooltip',
+    },
+    assignmentsMode: {
+        defaultMessage: 'Mode',
+        id: 'iaso.plannings.label.assignmentsMode',
+    },
+    editingPublishedPlanning: {
+        defaultMessage: 'You are editing a published planning.',
+        id: 'iaso.plannings.label.editingPublishedPlanning',
+    },
+    editingPublishedPlanningDetails: {
+        defaultMessage:
+            'Every assignment change is sent to the agents concerned at their next synchronisation and can change the work they are doing on the field.',
+        id: 'iaso.plannings.label.editingPublishedPlanningDetails',
+    },
+    teamsPanelExploreHelp: {
+        defaultMessage:
+            'Click a member to open it and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.teamsPanelExploreHelp',
+    },
+    teamsPanelAssignNote: {
+        defaultMessage:
+            'Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.',
+        id: 'iaso.plannings.label.teamsPanelAssignNote',
+    },
+    hideTeams: {
+        defaultMessage: 'Hide teams',
+        id: 'iaso.plannings.label.hideTeams',
+    },
+    openTeam: {
+        defaultMessage: 'Open {name}',
+        id: 'iaso.plannings.label.openTeam',
+    },
+    targetGeographyCaption: {
+        defaultMessage: '{name} (target geography)',
+        id: 'iaso.plannings.label.targetGeographyCaption',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    orgUnitsListPlaceholder: {
+        defaultMessage:
+            'The org units of the selected team will be listed here.',
+        id: 'iaso.plannings.label.orgUnitsListPlaceholder',
+    },
+    mapExploreHintTeams: {
+        defaultMessage:
+            'Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.mapExploreHintTeams',
+    },
+    mapExploreHintUsers: {
+        defaultMessage:
+            'Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.mapExploreHintUsers',
+    },
+    mapHintNoMember: {
+        defaultMessage:
+            'This team has no member. Add members in the team hierarchy of the planning.',
+        id: 'iaso.plannings.label.mapHintNoMember',
+    },
+    showHelp: {
+        defaultMessage: 'Show help',
+        id: 'iaso.plannings.label.showHelp',
+    },
+    hideHelp: {
+        defaultMessage: 'Hide help',
+        id: 'iaso.plannings.label.hideHelp',
+    },
+    legend: {
+        defaultMessage: 'Legend',
+        id: 'iaso.plannings.label.legend',
+    },
+    assignedTo: {
+        defaultMessage: 'Assigned to',
+        id: 'iaso.plannings.label.assignedTo',
+    },
+    unassigned: {
+        defaultMessage: 'Unassigned',
+        id: 'iaso.plannings.label.unassigned',
+    },
+    areaOf: {
+        defaultMessage: 'Area of {name}',
+        id: 'iaso.plannings.label.areaOf',
+    },
+    orgUnitsOffMap: {
+        defaultMessage:
+            '{count, plural, ' +
+            'one {# org unit has no shape or point. It is not on the map but appears in the list.} ' +
+            'other {# org units have no shape or point. They are not on the map but appear in the list.}}',
+        id: 'iaso.plannings.label.orgUnitsOffMap',
     },
 });
 

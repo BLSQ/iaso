@@ -11,14 +11,12 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
-import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
-import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { useGetTeamTree } from 'Iaso/domains/teams/hooks/requests/useGetTeamTree';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
+import { useGetPlanningRootOrgUnit } from '../../hooks/requests/useGetPlanningRootOrgUnit';
 import MESSAGES from '../../messages';
 import { PlanningStepCard } from '../shared/PlanningStepCard';
-import { useGetTeamHierarchy } from '../teamHierarchy/useTeamHierarchy';
-import { buildTeamTree } from '../teamHierarchy/utils';
 import { LevelMembersChips } from './LevelMembersChips';
 import { LevelRow } from './LevelRow';
 import { PlanningLevel } from './types';
@@ -59,18 +57,14 @@ export const OrgUnitLevelsSection: FC = () => {
     const { selectedOrgUnit, selectedTeam, levels = [] } = formik.values;
     const { setFieldValue } = formik;
 
-    const { data: rootOrgUnit } = useGetOrgUnit(selectedOrgUnit?.toString());
+    const { data: rootOrgUnit } = useGetPlanningRootOrgUnit(selectedOrgUnit);
     const { data: types = [] } = useGetDescendantOrgUnitTypes(selectedOrgUnit);
-    const { data: teams = [] } = useGetTeamHierarchy(selectedTeam);
-    const { data: versionGroupOptions = [] } = useGetGroupDropdown(
-        { sourceVersionId: rootOrgUnit?.version_id },
-        Boolean(rootOrgUnit),
-    );
+    const { data: teamTree } = useGetTeamTree(selectedTeam);
 
-    const levelMembers = useMemo(() => {
-        const tree = selectedTeam && buildTeamTree(teams, selectedTeam);
-        return tree ? getLevelMembers(tree) : [];
-    }, [teams, selectedTeam]);
+    const levelMembers = useMemo(
+        () => (teamTree ? getLevelMembers(teamTree) : []),
+        [teamTree],
+    );
     const levelsCount = levelMembers.length;
 
     // Required errors only show once a level was edited, other errors show right away.
@@ -183,7 +177,6 @@ export const OrgUnitLevelsSection: FC = () => {
                                     types,
                                 )}
                                 typeError={typeErrors[index]}
-                                versionGroupOptions={versionGroupOptions}
                                 sourceVersionId={rootOrgUnit.version_id}
                                 rootOrgUnitId={selectedOrgUnit}
                                 onChange={updateLevel}

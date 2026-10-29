@@ -190,6 +190,8 @@ export const useSavePlanning = ({
             'planningChildrenOrgUnits',
             'apiMicroplanningMissionsList',
             'apiMicroplanningPlanningsConfigsList',
+            'apiMicroplanningPlanningsOrgunitsLevelTreeList',
+            'apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve',
         ],
         options: { onSuccess },
         showSuccessSnackBar,

@@ -4,7 +4,8 @@ instead of editing its JSON by hand."""
 import json
 
 from collections import Counter
-from typing import Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Optional
 
 from django import forms
 from django.db.models import Count
@@ -34,7 +35,7 @@ def code_limit_label(concurrency: Concurrency) -> str:
     return "unlimited" if concurrency.limit is None else str(concurrency.limit)
 
 
-def parse_key_overrides(text: str) -> Dict[str, Optional[int]]:
+def parse_key_overrides(text: str) -> dict[str, Optional[int]]:
     overrides = {}
     for number, line in enumerate(text.splitlines(), start=1):
         line = line.strip()
@@ -55,7 +56,7 @@ def parse_key_overrides(text: str) -> Dict[str, Optional[int]]:
     return overrides
 
 
-def format_key_overrides(overrides: Dict[str, Optional[int]]) -> str:
+def format_key_overrides(overrides: dict[str, Optional[int]]) -> str:
     return "\n".join(f"{key} = {MODE_UNLIMITED if limit is None else limit}" for key, limit in overrides.items())
 
 
@@ -67,12 +68,12 @@ class TaskThrottlesForm(forms.Form):
     version = forms.CharField(widget=forms.HiddenInput, required=False)
     tasks = forms.CharField(widget=forms.HiddenInput, required=False)
 
-    def __init__(self, *args, throttled_tasks: Sequence[Tuple[str, Throttle]], content, **kwargs):
+    def __init__(self, *args, throttled_tasks: Sequence[tuple[str, Throttle]], content, **kwargs):
         super().__init__(*args, **kwargs)
         self.throttled_tasks = throttled_tasks
         self.content = content if isinstance(content, dict) else {}
         # values of the saved config this form can't represent: they are replaced when saving
-        self.invalid_values: List[str] = [] if isinstance(content, dict) or content is None else [repr(content)]
+        self.invalid_values: list[str] = [] if isinstance(content, dict) or content is None else [repr(content)]
 
         for t, (task_name, throttle) in enumerate(throttled_tasks):
             entry = self.content.get(task_name, {})
@@ -122,7 +123,7 @@ class TaskThrottlesForm(forms.Form):
                 label="Per key",
             )
 
-    def sections(self, running: Counter, queued: Dict[str, int], code_throttles: Dict[str, Optional[Throttle]]):
+    def sections(self, running: Counter, queued: dict[str, int], code_throttles: dict[str, Optional[Throttle]]):
         """What the template displays for each task: its bound fields and the current usage of its slots."""
         for t, (task_name, throttle) in enumerate(self.throttled_tasks):
             limits = []
@@ -197,7 +198,7 @@ def running_throttle_keys(db="default") -> Counter:
     return counts
 
 
-def queued_counts(task_names) -> Dict[str, int]:
+def queued_counts(task_names) -> dict[str, int]:
     return dict(
         Task.objects.filter(name__in=task_names, status=QUEUED)
         .order_by()

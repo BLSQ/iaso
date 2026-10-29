@@ -11,9 +11,9 @@ if typing.TYPE_CHECKING:
 
 def entity_types_impacts(
     previous_form_version: "FormVersion",
-    removed_question_names: typing.Set[str],
-    modified_question_names: typing.Set[str],
-) -> typing.List[ConfigurationImpact]:
+    removed_question_names: set[str],
+    modified_question_names: set[str],
+) -> list[ConfigurationImpact]:
     """`entity_type_list_field`, `entity_type_detail_field`, `entity_type_duplicate_field`: an entity type of which the
     form is the reference form shows it in its list, its detail or its duplicate search (target: the entity type)."""
     question_names = removed_question_names | modified_question_names

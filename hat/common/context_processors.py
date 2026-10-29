@@ -1,25 +1,25 @@
 import json
 import os
 
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings
 from django.http.request import HttpRequest
 
 
-def appversions(request: HttpRequest) -> Dict[str, bool]:
+def appversions(request: HttpRequest) -> dict[str, bool]:
     return {"DEV_SERVER": settings.DEV_SERVER}
 
 
-def app_title(request: HttpRequest) -> Dict[str, str]:
+def app_title(request: HttpRequest) -> dict[str, str]:
     return {"app_title": settings.APP_TITLE}
 
 
-def favicon_path(request: HttpRequest) -> Dict[str, str]:
+def favicon_path(request: HttpRequest) -> dict[str, str]:
     return {"favicon_path": settings.FAVICON_PATH}
 
 
-def logo_path(request: HttpRequest) -> Dict[str, str]:
+def logo_path(request: HttpRequest) -> dict[str, str]:
     path = settings.LOGIN_LOGO_PATH
     directory = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isfile(f"{directory}/../../iaso/static/{path}"):
@@ -27,7 +27,7 @@ def logo_path(request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": path}
 
 
-def sentry_config(request: HttpRequest) -> Dict[str, Any]:
+def sentry_config(request: HttpRequest) -> dict[str, Any]:
     config = {
         "sentry_config": {
             "SENTRY_URL": settings.SENTRY_URL or None,
@@ -38,22 +38,22 @@ def sentry_config(request: HttpRequest) -> Dict[str, Any]:
     return {"sentry_config": json.dumps(config["sentry_config"])}
 
 
-def available_languages(request: HttpRequest) -> Dict[str, Any]:
+def available_languages(request: HttpRequest) -> dict[str, Any]:
     return {"AVAILABLE_LANGUAGES": json.dumps(settings.AVAILABLE_LANGUAGES)}
 
 
-def product_fruits_config(request: HttpRequest) -> Dict[str, Any]:
+def product_fruits_config(request: HttpRequest) -> dict[str, Any]:
     config = {
         "PRODUCT_FRUITS_WORKSPACE_CODE": settings.PRODUCT_FRUITS_WORKSPACE_CODE or None,
     }
     return {"product_fruits_config": json.dumps(config)}
 
 
-def learn_more_url(request: HttpRequest) -> Dict[str, Any]:
+def learn_more_url(request: HttpRequest) -> dict[str, Any]:
     return {"LEARN_MORE_URL": settings.LEARN_MORE_URL}
 
 
-def theme(request: HttpRequest) -> Dict[str, Any]:
+def theme(request: HttpRequest) -> dict[str, Any]:
     return {
         # TODO: Duplicated data: refactor?
         "THEME_PRIMARY_COLOR": settings.THEME_PRIMARY_COLOR,
@@ -72,9 +72,9 @@ def theme(request: HttpRequest) -> Dict[str, Any]:
     }
 
 
-def default_app_id(request: HttpRequest) -> Dict[str, Any]:
+def default_app_id(request: HttpRequest) -> dict[str, Any]:
     return {"DEFAULT_APP_ID": settings.DEFAULT_APP_ID}
 
 
-def dns_domain(request: HttpRequest) -> Dict[str, Any]:
+def dns_domain(request: HttpRequest) -> dict[str, Any]:
     return {"DNS_DOMAIN": settings.DNS_DOMAIN}

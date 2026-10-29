@@ -67,8 +67,8 @@ def create_submission_with_picture(account_name, iaso_client):
         picture = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
         org_unit_id = orgunit["id"]
         the_uuid = str(uuid.uuid4())
-        file_name = "example_%s.xml" % the_uuid
-        local_path = "generated/%s" % file_name
+        file_name = f"example_{the_uuid}.xml"
+        local_path = f"generated/{file_name}"
         form_id = form["form_ids"][0]
 
         instance_body = [

@@ -21,6 +21,9 @@ export type RouteCustom = {
     isRootUrl?: boolean;
     element: ReactNode;
     featureFlag?: string;
+    // Incomplete page: redirects to the work in progress page unless SHOW_DEV_FEATURES is active
+    dev?: boolean;
+    plannedRelease?: string;
 };
 
 export type Redirection = {

@@ -18,6 +18,22 @@ export const planningOperations = {
             },
         },
     },
+    apiMicroplanningPlanningsOrgunitsLevelTreeList: {
+        query: {
+            options: {
+                staleTime: Infinity,
+                cacheTime: Infinity,
+            },
+        },
+    },
+    apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve: {
+        query: {
+            options: {
+                staleTime: Infinity,
+                cacheTime: Infinity,
+            },
+        },
+    },
     apiMicroplanningPlanningsConfigsList: {
         query: {
             options: {

@@ -7,7 +7,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, List, Optional, Union
+from typing import Annotated, Any, Optional, Union
 
 import pandas as pd
 
@@ -25,7 +25,7 @@ from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from typing_extensions import Annotated, TypedDict
+from typing_extensions import TypedDict
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
@@ -53,7 +53,7 @@ from iaso.api.instances.serializers import (
     UnlockSerializer,
 )
 from iaso.api.instances.zip import generate_zip
-from iaso.api.org_units import HasCreateOrgUnitPermission
+from iaso.api.org_units.permissions import HasCreateOrgUnitPermission
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.engine.validation_workflow import ValidationWorkflowEngine
 from iaso.exports import CleaningFileResponse, parquet, tabular
@@ -74,6 +74,7 @@ from iaso.models import (
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import resolve_status_form_ids
+from iaso.models.missions import Mission, MissionType
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -318,20 +319,20 @@ class InstancesViewSet(viewsets.ViewSet):
 
         return columns, sub_columns, file_content_template
 
-    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+    def list_file_export(self, filters: dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""
         filename = "instances"
 
         form = get_form_from_instance_filters(filters)
 
         if form:
-            filename = "%s-%s" % (filename, form.id)
+            filename = f"{filename}-{form.id}"
         else:
             return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
         columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
 
-        filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "{}-{}".format(filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
             created_at_timestamp = instance.source_created_at_with_fallback.timestamp()
@@ -434,11 +435,11 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             raise ValueError(f"Unknown file format requested: {file_format}")
 
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
     def list_file_export_duckdb(
-        self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
+        self, filters: dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
     ):
         """Same content as list_file_export, but the rows are computed by postgres and written by duckdb"""
         # TODO once the legacy csv/xlsx exports (list_file_export, engine=legacy) are removed: also handle the
@@ -450,7 +451,7 @@ class InstancesViewSet(viewsets.ViewSet):
         columns, sub_columns, file_content_template = self._file_export_columns(form, queryset)
         export_queryset = build_submissions_tabular_queryset(queryset, form, file_content_template, columns)
 
-        filename = "instances-%s-%s" % (form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "instances-{}-{}".format(form.id, strftime("%Y-%m-%d-%H-%M", gmtime()))
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"
             content_type = CONTENT_TYPE_XLSX
@@ -592,7 +593,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 page_ids = list(page.object_list.values_list("id", flat=True))
                 locked_page = queryset.filter(pk__in=page_ids).with_lock_info(user=request.user)
 
-                def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
+                def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> dict:
                     d = (
                         instance.as_dict_with_descriptor(fields=requested_fields)
                         if with_descriptor == "true"
@@ -1099,7 +1100,8 @@ def find_entity(
     account: Account,
     entity_uuid: str,
     entity_type_id: Optional[int] = None,
-    existing_entities: Optional[List[Entity]] = None,
+    existing_entities: Optional[list[Entity]] = None,
+    mission: Optional[Mission] = None,
 ) -> Entity:
     """
     `existing_entities`: the entities matching (even soft-deleted), when the caller already looked them up - see
@@ -1107,22 +1109,34 @@ def find_entity(
     """
     # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
     # If a non-deleted entity was found, ignore potential duplicates.
+
+    filters = {
+        "uuid": entity_uuid,
+        "account": account,
+    }
+
     if entity_type_id is not None:
         filters = {
-            "uuid": entity_uuid,
+            **filters,
             "entity_type_id": entity_type_id,
-            "account": account,
         }
-    else:
-        filters = {
-            "uuid": entity_uuid,
-            "account": account,
-        }
+
     if existing_entities is None:
         existing_entities = list(Entity.objects_include_deleted.filter(**filters))
 
     if len(existing_entities) == 0:
         if entity_type_id is not None:
+            if mission and getattr(mission, "MISSION_TYPE", None) != MissionType.ENTITY_AND_FORM:
+                logger.warning(
+                    "Unexpected mission type",
+                    extra={
+                        "model": "Entity",
+                        "mission_id": mission.id,
+                        "mission_type": mission.MISSION_TYPE,
+                        "from": "instance_creation",
+                        "entity_uuid": entity_uuid,
+                    },
+                )
             return Entity.objects.create(**filters)
 
         raise Entity.DoesNotExist()
@@ -1242,7 +1256,13 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
         entity_type_id = instance_data.get("entityTypeId", None)
         if entity_uuid and entity_type_id:
             existing_entities = cache.entities(entity_uuid, entity_type_id)
-            entity = find_entity(project.account, entity_uuid, entity_type_id, existing_entities=existing_entities)
+            entity = find_entity(
+                project.account,
+                entity_uuid,
+                entity_type_id,
+                existing_entities=existing_entities,
+                mission=instance.mission,
+            )
             if existing_entities == []:  # none yet: `find_entity()` created it
                 cache.add_entity(entity)
 

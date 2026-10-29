@@ -94,12 +94,7 @@ class Modification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (
-            self.content_type,
-            self.object_id,
-            self.user,
-            self.created_at,
-        )
+        return f"{self.content_type} - {self.object_id} - {self.user} - {self.created_at}"
 
     def as_dict(self):
         values_serializer = get_values_serializer(self.content_object)

@@ -5,7 +5,7 @@ Provides DRF serializers that convert Iaso OrgUnit objects
 to FHIR R4 compliant Location resources.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -68,14 +68,14 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         return str(obj.id)
 
     @extend_schema_field(serializers.DictField())
-    def get_meta(self, obj: OrgUnit) -> Dict[str, Any]:
+    def get_meta(self, obj: OrgUnit) -> dict[str, Any]:
         meta = {"versionId": "1", "profile": ["https://hl7.org/fhir/StructureDefinition/Location"]}
         if obj.updated_at:
             meta["lastUpdated"] = obj.updated_at.isoformat()
         return meta
 
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
-    def get_identifier(self, obj: OrgUnit) -> List[Dict[str, Any]]:
+    def get_identifier(self, obj: OrgUnit) -> list[dict[str, Any]]:
         identifiers = []
 
         # Source reference identifier
@@ -112,7 +112,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         return "instance"
 
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
-    def get_type(self, obj: OrgUnit) -> List[Dict[str, Any]]:
+    def get_type(self, obj: OrgUnit) -> list[dict[str, Any]]:
         if not obj.org_unit_type:
             return []
 
@@ -130,14 +130,14 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         ]
 
     @extend_schema_field(serializers.DictField())
-    def get_physicalType(self, obj: OrgUnit) -> Dict[str, Any]:
+    def get_physicalType(self, obj: OrgUnit) -> dict[str, Any]:
         if not obj.org_unit_type or not obj.org_unit_type.category:
             return {}
         code = PHYSICAL_TYPE_MAPPING.get(obj.org_unit_type.category, DEFAULT_PHYSICAL_TYPE)
         return {"coding": [{"system": "https://terminology.hl7.org/CodeSystem/location-physical-type", "code": code}]}
 
     @extend_schema_field(serializers.DictField(child=serializers.FloatField()))
-    def get_position(self, obj: OrgUnit) -> Dict[str, float]:
+    def get_position(self, obj: OrgUnit) -> dict[str, float]:
         if not obj.location:
             return {}
 
@@ -149,21 +149,21 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         return position
 
     @extend_schema_field(serializers.DictField(child=serializers.CharField()))
-    def get_partOf(self, obj: OrgUnit) -> Dict[str, str]:
+    def get_partOf(self, obj: OrgUnit) -> dict[str, str]:
         if not obj.parent:
             return {}
 
         return {"reference": f"Location/{obj.parent.id}", "display": obj.parent.name}
 
     @extend_schema_field(serializers.DictField(child=serializers.CharField()))
-    def get_managingOrganization(self, obj: OrgUnit) -> Dict[str, str]:
+    def get_managingOrganization(self, obj: OrgUnit) -> dict[str, str]:
         if not obj.version or not obj.version.data_source:
             return {}
 
         return {"display": obj.version.data_source.name}
 
     @extend_schema_field(serializers.DictField())
-    def get_operationalStatus(self, obj: OrgUnit) -> Dict[str, Any]:
+    def get_operationalStatus(self, obj: OrgUnit) -> dict[str, Any]:
         # Determine operational status based on dates
         if obj.closed_date:
             return {
@@ -178,7 +178,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         return {}
 
     @extend_schema_field(serializers.ListField(child=serializers.DictField()))
-    def get_extension(self, obj: OrgUnit) -> List[Dict[str, Any]]:
+    def get_extension(self, obj: OrgUnit) -> list[dict[str, Any]]:
         extensions = []
 
         # Validation status extension

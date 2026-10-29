@@ -16,7 +16,7 @@ import sys
 import tempfile
 
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import urlparse
 
 import rtoml
@@ -184,7 +184,7 @@ ENKETO = {
 
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
-LOGGING: Dict[str, Any] = {
+LOGGING: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
@@ -585,24 +585,21 @@ if USE_S3:
     AWS_S3_FILE_OVERWRITE = False
     S3_USE_SIGV4 = True
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
+    AWS_S3_HOST = f"s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     AWS_DEFAULT_ACL = None
     S3_ENDPOINT_URL = env.str("AWS_S3_ENDPOINT_URL", default=None)
 
     # s3 static settings
     if CDN_URL:
         # Only static files, not media files
-        STATIC_URL = "//%s/static/" % (CDN_URL)
+        STATIC_URL = f"//{CDN_URL}/static/"
     else:
         STATIC_LOCATION = "iasostatics"
         STATICFILES_STORAGE = "iaso.storage.StaticStorage"
-        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (
-            AWS_STORAGE_BUCKET_NAME,
-            STATIC_LOCATION,
-        )
+        STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{STATIC_LOCATION}/"
 
     # subdirectories will depend on field
-    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
 
     if S3_ENDPOINT_URL:
         AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
@@ -651,7 +648,7 @@ elif USE_AZURE_STORAGE:
     # Static files configuration
     if CDN_URL:
         # Use CDN URL if provided
-        STATIC_URL = "//%s/static/" % (CDN_URL)
+        STATIC_URL = f"//{CDN_URL}/static/"
     elif AZURE_CUSTOM_DOMAIN:
         # Use custom domain if provided
         STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/static/"
@@ -810,9 +807,9 @@ APP_TITLE = env.str("APP_TITLE", default="IASO")
 FAVICON_PATH = env.str("FAVICON_PATH", default="images/iaso-favicon.png")
 LOGO_PATH = env.str("LOGO_PATH", default="images/logo.png")
 LOGIN_LOGO_PATH = env.str("LOGIN_LOGO_PATH", default=None)
-THEME_PRIMARY_COLOR = env.str("THEME_PRIMARY_COLOR", default="#006699")
-THEME_SECONDARY_COLOR = env.str("THEME_SECONDARY_COLOR", default="#ff7961")
-THEME_PRIMARY_BACKGROUND_COLOR = env.str("THEME_PRIMARY_BACKGROUND_COLOR", default="#F5F5F5")
+THEME_PRIMARY_COLOR = env.str("THEME_PRIMARY_COLOR", default="#192041")
+THEME_SECONDARY_COLOR = env.str("THEME_SECONDARY_COLOR", default="#FFC200")
+THEME_PRIMARY_BACKGROUND_COLOR = env.str("THEME_PRIMARY_BACKGROUND_COLOR", default="#edf1f4")
 SHOW_NAME_WITH_LOGO = env.str("SHOW_NAME_WITH_LOGO", default="yes")
 HIDE_BASIC_NAV_ITEMS = env.str("HIDE_BASIC_NAV_ITEMS", default="no")
 

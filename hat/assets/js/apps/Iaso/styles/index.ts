@@ -1,4 +1,4 @@
-import { Theme } from '@mui/material';
+import { alpha, Theme } from '@mui/material';
 import Color from 'color';
 import { ThemeConfig } from 'Iaso/domains/app/contexts/ThemeConfigContext';
 import { SxStyles } from 'Iaso/types/general';
@@ -56,6 +56,31 @@ export const getOverriddenTheme = (theme: Theme, themeConfig: ThemeConfig) => {
             button: {
                 ...theme.typography.button,
                 fontFamily: '"Roboto", "Arial", sans-serif',
+            },
+        },
+        components: {
+            ...theme.components,
+            MuiToggleButton: {
+                styleOverrides: {
+                    // segmented control: blue icons, active filled blue
+                    root: ({ theme: currentTheme }: { theme: Theme }) => ({
+                        color: currentTheme.palette.primary.main,
+                        '&:hover': {
+                            backgroundColor: alpha(
+                                currentTheme.palette.primary.main,
+                                0.08,
+                            ),
+                        },
+                        '&.Mui-selected': {
+                            color: currentTheme.palette.primary.contrastText,
+                            backgroundColor: currentTheme.palette.primary.main,
+                            '&:hover': {
+                                backgroundColor:
+                                    currentTheme.palette.primary.dark,
+                            },
+                        },
+                    }),
+                },
             },
         },
     };

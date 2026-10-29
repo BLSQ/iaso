@@ -140,3 +140,12 @@ export type PaginatedPlanningOrgUnit = {
 export interface PaginatedPlanningOrgUnits extends PaginationType {
     results: Array<PaginatedPlanningOrgUnit>;
 }
+
+export type AssignmentsMode = 'explore' | 'assign';
+export type AssignmentsView = 'map' | 'list';
+export type AssignmentsParams = {
+    planningId: string;
+    teamId?: string;
+    mode?: AssignmentsMode;
+    view?: AssignmentsView;
+};

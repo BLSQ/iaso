@@ -3,9 +3,11 @@ import * as Sentry from '@sentry/browser';
 import { useLocation, useNavigate } from 'react-router-dom';
 import PageError from '../../../components/errors/PageError';
 import PageNoPerms from '../../../components/errors/PageNoPerms';
+import { WorkInProgressLocationState } from '../../../components/workInProgress/PageWorkInProgress';
+import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { getRawSplat } from '../../../routing/utils';
-import { hasFeatureFlag } from '../../../utils/featureFlags';
+import { SHOW_DEV_FEATURES, hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
@@ -22,8 +24,15 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     allRoutes = [],
     component,
 }) => {
-    const { featureFlag, permissions, isRootUrl, baseUrl, routerUrl } =
-        routeConfig;
+    const {
+        featureFlag,
+        permissions,
+        isRootUrl,
+        baseUrl,
+        routerUrl,
+        dev,
+        plannedRelease,
+    } = routeConfig;
     const params = useParamsObject(baseUrl);
     const navigate = useNavigate();
     const location = useLocation();
@@ -42,6 +51,15 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
         isAuthorized = false;
     }
+    const isHiddenDevPage =
+        Boolean(dev) && !hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
+
+    useEffect(() => {
+        if (isHiddenDevPage) {
+            const state: WorkInProgressLocationState = { plannedRelease };
+            navigate(`/${baseUrls.workInProgress}`, { replace: true, state });
+        }
+    }, [isHiddenDevPage, navigate, plannedRelease]);
     // TODO merge both effects for simpler redirect
     useEffect(() => {
         if (!isAuthorized && isRootUrl) {
@@ -66,6 +84,7 @@ const ProtectedRoute: FunctionComponent<Props> = ({
     useEffect(() => {
         // Checking with paramsString because params maybe empty if the config is not correct for useParamsObject
         if (
+            !isHiddenDevPage &&
             !(paramsString ?? '').includes('accountId') &&
             currentUser.account
         ) {
@@ -74,7 +93,14 @@ const ProtectedRoute: FunctionComponent<Props> = ({
                 state: location.state ? { ...location.state } : null,
             });
         }
-    }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);
+    }, [
+        currentUser.account,
+        baseUrl,
+        navigate,
+        paramsString,
+        location.state,
+        isHiddenDevPage,
+    ]);
 
     useEffect(() => {
         if (currentUser && Sentry?.setUser) {
@@ -99,7 +125,7 @@ const ProtectedRoute: FunctionComponent<Props> = ({
         <>
             <SidebarMenu location={location} />
             <WrongAccountModal isOpen={isWrongAccount} />
-            {isAuthorized && component}
+            {isAuthorized && !isHiddenDevPage && component}
             {hasNoPermWarning && <PageNoPerms />}
             {!isAuthorized && !hasNoPermWarning && (
                 <PageError errorCode="403" />

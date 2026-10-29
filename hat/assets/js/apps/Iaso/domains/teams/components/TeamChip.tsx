@@ -7,5 +7,5 @@ type Props = {
 };
 
 export const TeamChip: FunctionComponent<Props> = ({ team }) => {
-    return <ColorChip label={team.name} size="small" />;
+    return team?.name ? <ColorChip label={team.name} size="small" /> : null;
 };

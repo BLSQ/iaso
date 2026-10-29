@@ -23,7 +23,6 @@ import {
     ToggleButtonGroup,
     Tooltip,
     Typography,
-    alpha,
 } from '@mui/material';
 import { ErrorBoundary, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
@@ -108,22 +107,6 @@ const styles: SxStyles = {
         fontSize: 40,
         color: 'text.disabled',
     },
-    toggleButtonGroup: theme => ({
-        // segmented control: blue icons, active filled blue
-        '& .MuiToggleButton-root': {
-            color: theme.palette.primary.main,
-            '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.08),
-            },
-            '&.Mui-selected': {
-                color: theme.palette.primary.contrastText,
-                backgroundColor: theme.palette.primary.main,
-                '&:hover': {
-                    backgroundColor: theme.palette.primary.dark,
-                },
-            },
-        },
-    }),
 };
 const NO_FILES: string[] = [];
 
@@ -333,7 +316,6 @@ export const SubmissionContent: FunctionComponent<Props> = ({
                             if (value) setTwoColumns(value === 'two');
                         }}
                         aria-label={formatMessage(MESSAGES.layoutDensity)}
-                        sx={styles.toggleButtonGroup}
                     >
                         <ToggleButton
                             value="one"

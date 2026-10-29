@@ -1,13 +1,11 @@
 import React, { FC, ReactNode, useCallback } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import GroupsIcon from '@mui/icons-material/Groups';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { IconButton, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
@@ -20,6 +18,7 @@ import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
 import MESSAGES from './messages';
 import { RowAction, RowActionsMenu } from './RowActionsMenu';
+import { TEAM_TYPE_DISPLAY, TeamTypeIcon } from './teamType';
 import { DraggedItem, HierarchyAction, TeamRowData } from './types';
 import { teamKey } from './utils';
 
@@ -31,19 +30,6 @@ const styles = {
         fontSize: '1.2rem',
     },
 } satisfies SxStyles;
-
-const TEAM_TYPE_DISPLAY = {
-    [TeamType.TEAM_OF_TEAMS]: {
-        label: MESSAGES.teamOfTeams,
-        countLabel: MESSAGES.teamsCount,
-        getCount: (team: TeamTreeNode) => team.children.length,
-    },
-    [TeamType.TEAM_OF_USERS]: {
-        label: MESSAGES.teamOfUsers,
-        countLabel: MESSAGES.usersCount,
-        getCount: (team: TeamTreeNode) => team.users.length,
-    },
-};
 
 type TeamRowProps = {
     row: TeamRowData;
@@ -91,11 +77,7 @@ export const TeamRow: FC<TeamRowProps> = ({
                 )
             }
         >
-            {team.type === TeamType.TEAM_OF_USERS ? (
-                <GroupsIcon color="primary" sx={styles.icon} />
-            ) : (
-                <AccountTreeIcon color="primary" sx={styles.icon} />
-            )}
+            <TeamTypeIcon type={team.type} color="primary" sx={styles.icon} />
             <Typography noWrap sx={styles.name}>
                 {team.name}
             </Typography>

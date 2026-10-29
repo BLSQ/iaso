@@ -1,5 +1,6 @@
 import { isEqual, pick } from 'lodash';
 import moment from 'moment';
+import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningFormik } from './hooks/usePlanningForm';
 import { PageMode, Planning } from './types';
 
@@ -52,3 +53,6 @@ export const shouldWarnBeforeSave = (
         pick(initialValues, SAVE_WARNING_FIELDS),
     );
 };
+
+export const getAssignmentsUrl = (planningId: number): string =>
+    `/${baseUrls.assignments}/planningId/${planningId}`;

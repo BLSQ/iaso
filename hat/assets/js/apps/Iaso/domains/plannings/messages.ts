@@ -445,6 +445,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Open assignments',
         id: 'iaso.plannings.label.openAssignments',
     },
+    assignmentsForPlanning: {
+        defaultMessage: 'Assignments for planning: {name}',
+        id: 'iaso.plannings.label.assignmentsForPlanning',
+    },
     info: {
         defaultMessage: 'Info',
         id: 'iaso.plannings.label.info',
@@ -544,6 +548,57 @@ const MESSAGES = defineMessages({
     groupsWithoutLevelOrgUnits: {
         defaultMessage: "No org units of this level's types in: {groups}",
         id: 'iaso.plannings.label.groupsWithoutLevelOrgUnits',
+    },
+    explore: {
+        defaultMessage: 'Explore',
+        id: 'iaso.plannings.label.explore',
+    },
+    exploreModeTooltip: {
+        defaultMessage: 'Browse teams and open subteams',
+        id: 'iaso.plannings.label.exploreModeTooltip',
+    },
+    assign: {
+        defaultMessage: 'Assign',
+        id: 'iaso.plannings.label.assign',
+    },
+    assignModeTooltip: {
+        defaultMessage: 'Assign org units to team members',
+        id: 'iaso.plannings.label.assignModeTooltip',
+    },
+    assignmentsMode: {
+        defaultMessage: 'Mode',
+        id: 'iaso.plannings.label.assignmentsMode',
+    },
+    editingPublishedPlanning: {
+        defaultMessage: 'You are editing a published planning.',
+        id: 'iaso.plannings.label.editingPublishedPlanning',
+    },
+    editingPublishedPlanningDetails: {
+        defaultMessage:
+            'Every assignment change is sent to the agents concerned at their next synchronisation and can change the work they are doing on the field.',
+        id: 'iaso.plannings.label.editingPublishedPlanningDetails',
+    },
+    teamsPanelExploreHelp: {
+        defaultMessage:
+            'Click a member to open it and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.teamsPanelExploreHelp',
+    },
+    teamsPanelAssignNote: {
+        defaultMessage:
+            'Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.',
+        id: 'iaso.plannings.label.teamsPanelAssignNote',
+    },
+    hideTeams: {
+        defaultMessage: 'Hide teams',
+        id: 'iaso.plannings.label.hideTeams',
+    },
+    openTeam: {
+        defaultMessage: 'Open {name}',
+        id: 'iaso.plannings.label.openTeam',
+    },
+    targetGeographyCaption: {
+        defaultMessage: '{name} (target geography)',
+        id: 'iaso.plannings.label.targetGeographyCaption',
     },
 });
 

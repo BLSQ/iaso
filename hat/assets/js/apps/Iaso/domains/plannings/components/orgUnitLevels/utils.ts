@@ -12,7 +12,7 @@ import {
     SavedPlanningConfig,
 } from './types';
 
-export const EMPTY_LEVEL: PlanningLevel = { orgUnitTypeIds: [], groupIds: [] };
+export const EMPTY_LEVEL: PlanningLevel = { orgUnitTypeIds: [], groups: [] };
 
 // Level N holds the teams at depth N of the hierarchy, and the users of the teams at depth N - 1.
 export const getLevelMembers = (root: TeamTreeNode): LevelMembers[] => {
@@ -100,15 +100,21 @@ export const configsToLevels = (
     configs.forEach(config => {
         levels[config.level - 1] = {
             orgUnitTypeIds: (config.org_unit_types ?? []).map(type => type.id),
-            groupIds: (config.org_unit_groups ?? []).map(group => group.id),
+            groups: (config.org_unit_groups ?? []).map(({ id, name }) => ({
+                id,
+                name,
+            })),
         };
     });
     return levels;
 };
 
+export const getGroupIds = (level: PlanningLevel): number[] =>
+    level.groups.map(group => group.id);
+
 const isSameLevel = (a: PlanningLevel, b: PlanningLevel): boolean =>
     xor(a.orgUnitTypeIds, b.orgUnitTypeIds).length === 0 &&
-    xor(a.groupIds, b.groupIds).length === 0;
+    xor(getGroupIds(a), getGroupIds(b)).length === 0;
 
 export type PlanningConfigChanges = {
     toCreate: PlanningConfigBulkCreateRequest[];
@@ -132,7 +138,7 @@ export const getPlanningConfigChanges = (
         const payload = {
             level: index + 1,
             org_unit_types: level.orgUnitTypeIds,
-            org_unit_groups: level.groupIds,
+            org_unit_groups: getGroupIds(level),
         };
         const saved = savedByLevel.get(payload.level);
         if (!saved) {

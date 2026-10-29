@@ -47,7 +47,7 @@ const level = (
     groupIds: number[] = [],
 ): PlanningLevel => ({
     orgUnitTypeIds,
-    groupIds,
+    groups: groupIds.map(id => ({ id, name: '' })),
 });
 const optionNames = (levels: PlanningLevel[], index: number) =>
     getLevelTypeOptions(levels, index, TYPES).map(type => type.name);
@@ -146,11 +146,7 @@ describe('configsToLevels', () => {
                 makeConfig(10, 1, [2], [7]),
                 makeConfig(11, 3, [4]),
             ]),
-        ).toEqual([
-            { orgUnitTypeIds: [2], groupIds: [7] },
-            { orgUnitTypeIds: [], groupIds: [] },
-            { orgUnitTypeIds: [4], groupIds: [] },
-        ]);
+        ).toEqual([level([2], [7]), level([]), level([4])]);
     });
 
     it('treats null types and groups as empty', () => {
@@ -163,7 +159,7 @@ describe('configsToLevels', () => {
                     org_unit_groups: null,
                 },
             ]),
-        ).toEqual([{ orgUnitTypeIds: [], groupIds: [] }]);
+        ).toEqual([level([])]);
     });
 });
 

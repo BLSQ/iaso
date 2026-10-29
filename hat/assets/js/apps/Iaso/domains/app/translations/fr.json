@@ -1602,6 +1602,7 @@
     "iaso.plannings.label.orgUnitLevelsInfos": "{count, plural, one {# niveau calculé} other {# niveaux calculés}} à partir de la hiérarchie des équipes. Chaque niveau utilise des types d'unités d'organisation plus profonds que le niveau supérieur, éventuellement limités à des groupes.",
     "iaso.plannings.label.orgUnits": "Unités d'organisation",
     "iaso.plannings.label.orgUnitsCount": "Nombre d'unités d'org.",
+    "iaso.plannings.label.orgUnitsListPlaceholder": "Les unités d'organisation de l'équipe sélectionnée seront listées ici.",
     "iaso.plannings.label.orgUnitsToAssign": "Unités d'organisation à assigner",
     "iaso.plannings.label.orgUnitTypes": "Types d'unités d'organisation",
     "iaso.plannings.label.planningDetails": "Détails du planning",
@@ -2235,5 +2236,15 @@
     "trypelim.permissions.workzones": "Rayons d'actions",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé"
+    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé",
+    "iaso.plannings.label.mapExploreHintTeams": "Explorer : chaque unité d'organisation est colorée selon la sous-équipe à laquelle elle est assignée. Cliquez dessus pour ouvrir la sous-équipe et voir comment sa zone est répartie. Passez en mode Assigner pour modifier les assignations.",
+    "iaso.plannings.label.mapExploreHintUsers": "Explorer : chaque unité d'organisation est colorée selon l'utilisateur auquel elle est assignée. Passez en mode Assigner pour modifier les assignations.",
+    "iaso.plannings.label.mapHintNoMember": "Cette équipe n'a aucun membre. Ajoutez des membres dans la hiérarchie d'équipes du planning.",
+    "iaso.plannings.label.showHelp": "Afficher l'aide",
+    "iaso.plannings.label.hideHelp": "Masquer l'aide",
+    "iaso.plannings.label.legend": "Légende",
+    "iaso.plannings.label.assignedTo": "Assigné à",
+    "iaso.plannings.label.unassigned": "Non assigné",
+    "iaso.plannings.label.areaOf": "Zone de {name}",
+    "iaso.plannings.label.orgUnitsOffMap": "{count, plural, one {# unité d'organisation n'a ni forme ni point. Elle n'est pas sur la carte mais apparaît dans la liste.} other {# unités d'organisation n'ont ni forme ni point. Elles ne sont pas sur la carte mais apparaissent dans la liste.}}"
 }

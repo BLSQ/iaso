@@ -11,11 +11,10 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
-import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
-import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useGetTeamTree } from 'Iaso/domains/teams/hooks/requests/useGetTeamTree';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
+import { useGetPlanningRootOrgUnit } from '../../hooks/requests/useGetPlanningRootOrgUnit';
 import MESSAGES from '../../messages';
 import { PlanningStepCard } from '../shared/PlanningStepCard';
 import { LevelMembersChips } from './LevelMembersChips';
@@ -58,13 +57,9 @@ export const OrgUnitLevelsSection: FC = () => {
     const { selectedOrgUnit, selectedTeam, levels = [] } = formik.values;
     const { setFieldValue } = formik;
 
-    const { data: rootOrgUnit } = useGetOrgUnit(selectedOrgUnit?.toString());
+    const { data: rootOrgUnit } = useGetPlanningRootOrgUnit(selectedOrgUnit);
     const { data: types = [] } = useGetDescendantOrgUnitTypes(selectedOrgUnit);
     const { data: teamTree } = useGetTeamTree(selectedTeam);
-    const { data: versionGroupOptions = [] } = useGetGroupDropdown(
-        { sourceVersionId: rootOrgUnit?.version_id },
-        Boolean(rootOrgUnit),
-    );
 
     const levelMembers = useMemo(
         () => (teamTree ? getLevelMembers(teamTree) : []),
@@ -182,7 +177,6 @@ export const OrgUnitLevelsSection: FC = () => {
                                     types,
                                 )}
                                 typeError={typeErrors[index]}
-                                versionGroupOptions={versionGroupOptions}
                                 sourceVersionId={rootOrgUnit.version_id}
                                 rootOrgUnitId={selectedOrgUnit}
                                 onChange={updateLevel}

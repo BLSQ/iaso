@@ -1,8 +1,13 @@
 import { PaginatedPlanningConfigList } from 'Iaso/api/plannings';
 
+export type LevelGroup = {
+    id: number;
+    name: string;
+};
+
 export type PlanningLevel = {
     orgUnitTypeIds: number[];
-    groupIds: number[];
+    groups: LevelGroup[];
 };
 
 export type LevelMembers = {

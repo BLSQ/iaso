@@ -258,7 +258,19 @@ module.exports = {
                 },
             },
             {
+                // Files imported with `?raw` (e.g. the MapLibre web worker) are inlined as a string.
+                resourceQuery: /raw/,
+                type: 'asset/source',
+            },
+            {
+                // MapLibre's worker is set with setWorkerUrl: skip webpack's handling
+                // of its runtime `new URL(expression, import.meta.url)` fallback.
+                test: /maplibre-gl\.mjs$/,
+                parser: { url: false },
+            },
+            {
                 test: /\.mjs$/,
+                resourceQuery: { not: [/raw/] },
                 type: 'javascript/auto',
                 use: 'babel-loader',
             },

@@ -1603,6 +1603,7 @@
     "iaso.plannings.label.orgUnitLevelsInfos": "{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.",
     "iaso.plannings.label.orgUnits": "Org units",
     "iaso.plannings.label.orgUnitsCount": "Org units count",
+    "iaso.plannings.label.orgUnitsListPlaceholder": "The org units of the selected team will be listed here.",
     "iaso.plannings.label.orgUnitsToAssign": "Org units to assign",
     "iaso.plannings.label.orgUnitTypes": "Org unit types",
     "iaso.plannings.label.planningDetails": "Planning details",
@@ -2237,5 +2238,15 @@
     "trypelim.permissions.workzones": "Workzones",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes"
+    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes",
+    "iaso.plannings.label.mapExploreHintTeams": "Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.",
+    "iaso.plannings.label.mapExploreHintUsers": "Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.",
+    "iaso.plannings.label.mapHintNoMember": "This team has no member. Add members in the team hierarchy of the planning.",
+    "iaso.plannings.label.showHelp": "Show help",
+    "iaso.plannings.label.hideHelp": "Hide help",
+    "iaso.plannings.label.legend": "Legend",
+    "iaso.plannings.label.assignedTo": "Assigned to",
+    "iaso.plannings.label.unassigned": "Unassigned",
+    "iaso.plannings.label.areaOf": "Area of {name}",
+    "iaso.plannings.label.orgUnitsOffMap": "{count, plural, one {# org unit has no shape or point. It is not on the map but appears in the list.} other {# org units have no shape or point. They are not on the map but appear in the list.}}"
 }

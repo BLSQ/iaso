@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from django.urls import reverse
@@ -88,29 +90,34 @@ class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertResponseCompliantToSwagger(data, "PaginatedNestedPlanningConfigListList")
         self.assertEqual(len(data["results"]), expected_length)
 
+    def get_url(self, pk: int | None = None) -> str:
+        if not pk:
+            pk = self.planning.pk
+        return reverse("planning-configs", kwargs={"pk": pk})
+
     def test_permissions(self) -> None:
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.user_no_perm)
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_other_perm)
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_read_perm)
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_should_raise_a_404_if_planning_does_not_exist(self):
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": 1000}))
+        res = self.client.get(self.get_url(1000))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_should_raise_a_404_if_planning_does_not_belong_to_user(self):
@@ -118,16 +125,24 @@ class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning_other_account.pk}))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_should_not_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.read_only = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
         with self.assertNumQueries(4):
-            res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+            res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 2)
 
     def test_response(self):
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 2)
 

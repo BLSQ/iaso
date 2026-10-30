@@ -7,7 +7,7 @@ from iaso.test import IasoMigratorTestCase
 class Test0406DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0405_merge_20261012_1003")
     migrate_to = ("iaso", "0406_missionform_alter_corepermissionsupport_options_and_more")
-    num_queries = 67
+    num_queries = 64
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
@@ -111,7 +111,7 @@ class Test0406DirectMigration(IasoMigratorTestCase):
 
 
 class Test0406ReverseMigration(IasoMigratorTestCase):
-    num_queries = 50
+    num_queries = 47
 
     migrate_from = ("iaso", "0406_missionform_alter_corepermissionsupport_options_and_more")
     migrate_to = ("iaso", "0405_merge_20261012_1003")

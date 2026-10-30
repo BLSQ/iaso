@@ -191,7 +191,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 
 @admin.register(OrgUnit)
 @admin_attr_decorator
-class OrgUnitAdmin(admin.GeoModelAdmin):
+class OrgUnitAdmin(admin.GISModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
     list_filter = (
@@ -232,7 +232,7 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
 
 @admin.register(OrgUnitType)
 @admin_attr_decorator
-class OrgUnitTypeAdmin(admin.GeoModelAdmin):
+class OrgUnitTypeAdmin(admin.GISModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
     list_filter = ("projects",)
@@ -246,7 +246,7 @@ class OrgUnitTypeAdmin(admin.GeoModelAdmin):
 
 @admin.register(Form)
 @admin_attr_decorator
-class FormAdmin(admin.GeoModelAdmin):
+class FormAdmin(admin.GISModelAdmin):
     search_fields = ("name", "form_id")
     list_display = (
         "name",
@@ -277,7 +277,7 @@ class FormAdmin(admin.GeoModelAdmin):
 
 @admin.register(FormVersion)
 @admin_attr_decorator
-class FormVersionAdmin(admin.GeoModelAdmin):
+class FormVersionAdmin(admin.GISModelAdmin):
     search_fields = ("form__name", "form__form_id", "version_id")
     ordering = ("form__name",)
     autocomplete_fields = ("form", "created_by", "updated_by")
@@ -332,7 +332,7 @@ class InstanceFileAdminInline(admin.TabularInline):
 
 @admin.register(Instance)
 @admin_attr_decorator
-class InstanceAdmin(admin.GeoModelAdmin):
+class InstanceAdmin(admin.GISModelAdmin):
     raw_id_fields = ("api_import",)
     search_fields = ("file_name", "uuid", "form__name", "form__form_id")
     list_display = (
@@ -445,7 +445,7 @@ class DeviceAdmin(admin.ModelAdmin):
 
 @admin.register(InstanceFile)
 @admin_attr_decorator
-class InstanceFileAdmin(admin.GeoModelAdmin):
+class InstanceFileAdmin(admin.GISModelAdmin):
     raw_id_fields = ("instance",)
     search_fields = ("name", "file")
 
@@ -481,14 +481,14 @@ class FeatureFlagAdmin(admin.ModelAdmin):
 
 @admin.register(Link)
 @admin_attr_decorator
-class LinkAdmin(admin.GeoModelAdmin):
+class LinkAdmin(admin.GISModelAdmin):
     raw_id_fields = ("source", "destination")
     autocomplete_fields = ("validator",)
 
 
 @admin.register(Mapping)
 @admin_attr_decorator
-class MappingAdmin(admin.GeoModelAdmin):
+class MappingAdmin(admin.GISModelAdmin):
     list_filter = ("mapping_type",)
     search_fields = ("name", "form__name", "form__form_id")
     list_display = ("id", "name", "form", "mapping_type", "data_source", "created_at")
@@ -499,7 +499,7 @@ class MappingAdmin(admin.GeoModelAdmin):
 
 @admin.register(MappingVersion)
 @admin_attr_decorator
-class MappingVersionAdmin(admin.GeoModelAdmin):
+class MappingVersionAdmin(admin.GISModelAdmin):
     search_fields = ("name", "form_version__form__name", "form_version__form__form_id", "form_version__version_id")
     # `name` is very often empty, so it can't be the only clickable column.
     list_display = ("id", "name", "form_version", "mapping", "created_at", "updated_at")
@@ -523,7 +523,7 @@ class GroupAdmin(admin.ModelAdmin):
 
 @admin.register(Profile)
 @admin_attr_decorator
-class ProfileAdmin(admin.GeoModelAdmin):
+class ProfileAdmin(admin.GISModelAdmin):
     raw_id_fields = ("org_units",)
     search_fields = ("user__username", "user__first_name", "user__last_name", "account__name")
     list_select_related = ("user", "account")
@@ -534,7 +534,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
 
 @admin.register(ExportRequest)
 @admin_attr_decorator
-class ExportRequestAdmin(admin.GeoModelAdmin):
+class ExportRequestAdmin(admin.GISModelAdmin):
     list_filter = ("status",)
     search_fields = ("launcher__username", "launcher__email")
     list_display = ("status", "launcher", "params", "last_error_message")
@@ -544,14 +544,14 @@ class ExportRequestAdmin(admin.GeoModelAdmin):
 
 @admin.register(ExportLog)
 @admin_attr_decorator
-class ExportLogAdmin(admin.GeoModelAdmin):
+class ExportLogAdmin(admin.GISModelAdmin):
     list_display = ("id", "http_status", "url", "sent", "received")
     readonly_fields = list_display
 
 
 @admin.register(ExportStatus)
 @admin_attr_decorator
-class ExportStatusAdmin(admin.GeoModelAdmin):
+class ExportStatusAdmin(admin.GISModelAdmin):
     list_display = ("id", "status", "last_error_message")
     readonly_fields = (
         "id",
@@ -1315,6 +1315,7 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "change_request_ids", "user")
     autocomplete_fields = ("user", "payment_lot", "task")
 
+    @admin.display(description="Change Request IDs")
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
         if change_requests:
@@ -1324,8 +1325,6 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
-    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(Payment)
@@ -1334,6 +1333,7 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
     autocomplete_fields = ("user", "created_by", "updated_by", "payment_lot")
 
+    @admin.display(description="Change Request IDs")
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
         if change_requests:
@@ -1343,8 +1343,6 @@ class PaymentAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
-    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(PaymentLot)
@@ -1354,6 +1352,7 @@ class PaymentLotAdmin(admin.ModelAdmin):
     search_fields = ("id",)
     autocomplete_fields = ("created_by", "updated_by", "task")
 
+    @admin.display(description="Payment IDs")
     def payment_ids(self, obj):
         payments = obj.payments.all()
         if payments:
@@ -1363,8 +1362,6 @@ class PaymentLotAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
-    payment_ids.short_description = "Payment IDs"
 
 
 @admin.register(DataSource)
@@ -1547,6 +1544,7 @@ class ReportVersionAdmin(admin.ModelAdmin):
     autocomplete_fields = ("created_by", "updated_by")
 
 
+@admin.register(TemporaryForm)
 class TemporaryFormAdmin(admin.ModelAdmin):
     list_display = ("uuid", "user", "account", "created_at")
     list_filter = ("account",)
@@ -1555,7 +1553,6 @@ class TemporaryFormAdmin(admin.ModelAdmin):
     readonly_fields = ("uuid", "created_at")
 
 
-admin.site.register(TemporaryForm, TemporaryFormAdmin)
 admin.site.register(AccountFeatureFlag)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)

@@ -45,7 +45,7 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
 
         instance_role_pairs = [
             (instance.id, role.pk)
-            for instance, data in zip(instances, validated_data)
+            for instance, data in zip(instances, validated_data, strict=False)
             for role in data.get("roles_required", [])
         ]
         if instance_role_pairs:
@@ -62,7 +62,7 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
             ValidationNodeTemplate.next_node_templates.through(
                 from_validationnodetemplate_id=prev.id, to_validationnodetemplate_id=curr.id
             )
-            for prev, curr in zip(instances, instances[1:])
+            for prev, curr in zip(instances, instances[1:], strict=False)
         ]
 
         if next_links:

@@ -1,5 +1,3 @@
-from typing import Union
-
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
@@ -27,7 +25,7 @@ from iaso.permissions.core_permissions import (
 from iaso.plugins import plugin_log_access
 
 
-def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
+def has_access_to(user: User, obj: OrgUnit | Instance | models.Model):
     if isinstance(obj, OrgUnit):
         ous = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         return ous.filter(id=obj.id).exists()

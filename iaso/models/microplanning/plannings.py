@@ -145,7 +145,7 @@ class PlanningConfig(models.Model):
     class Meta:
         ordering = ("level",)
         constraints = [
-            CheckConstraint(check=Q(level__gte=1), name="level_gte_1"),
+            CheckConstraint(condition=Q(level__gte=1), name="level_gte_1"),
             UniqueConstraint(
                 fields=("planning", "level"),
                 name="planning_config_planning_level_uniq",

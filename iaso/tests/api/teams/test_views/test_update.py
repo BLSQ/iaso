@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.urls import reverse
 from rest_framework import status
@@ -95,7 +95,7 @@ class TeamUpdateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             name="team other account", manager=cls.user_other_account, project=cls.project_other_account
         )
 
-    def get_url(self, pk: Optional[int] = None) -> str:
+    def get_url(self, pk: int | None = None) -> str:
         if not pk:
             pk = self.team.pk
         return reverse("teams-detail", kwargs={"pk": pk})

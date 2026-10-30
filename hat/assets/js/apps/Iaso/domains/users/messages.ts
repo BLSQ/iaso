@@ -638,6 +638,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submit',
         id: 'iaso.users.submit',
     },
+    logoutError: {
+        defaultMessage: 'Error while logging out',
+        id: 'iaso.snackBar.logoutError',
+    },
 });
 
 export default MESSAGES;

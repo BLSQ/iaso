@@ -16,7 +16,7 @@ class Payment(models.Model):
     User is the user that will receive the payment for the change request he did
     """
 
-    status = models.CharField(choices=PaymentStatuses.choices, default=PaymentStatuses.PENDING, max_length=40)
+    status = models.CharField(choices=PaymentStatuses, default=PaymentStatuses.PENDING, max_length=40)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="payment")
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment_created_set"

@@ -1,7 +1,4 @@
-from typing import Union
-
-
-def clean_url(dhis2_url: Union[str, None]) -> Union[str, None]:
+def clean_url(dhis2_url: str | None) -> str | None:
     if not dhis2_url:
         return ""
     cleaned_url = dhis2_url.replace("dhis-web-commons/security/login.action", "")

@@ -1,5 +1,6 @@
 # TODO: need better type annotations in this file
 import csv
+import datetime as dt
 
 from datetime import datetime
 from io import StringIO
@@ -8,7 +9,6 @@ from unittest import mock
 import pytz
 
 from django.http import StreamingHttpResponse
-from django.utils import timezone
 from rest_framework import status
 
 from hat.api_import.models import APIImport
@@ -67,7 +67,7 @@ class StorageAPITestCase(APITestCase):
             device=cls.existing_storage_device,
             operation_type="WRITE_PROFILE",
             performed_by=cls.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
             status="OK",
         )
 
@@ -1028,7 +1028,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_PROFILE",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
             org_unit=self.org_unit,
             status="BLACKLISTED",
             status_reason="DAMAGED",
@@ -1188,7 +1188,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_RECORD",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
             org_unit=self.org_unit,
         )
 
@@ -1348,7 +1348,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_RECORD",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 11, 3, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 11, 3, 13, 12, 56, 0, tzinfo=dt.UTC),
             org_unit=self.org_unit,
         )
 
@@ -1369,7 +1369,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_PROFILE",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
         )
 
         # We request the first page
@@ -1543,7 +1543,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device_2,
             operation_type="WRITE_PROFILE",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
         )
 
         # We request the first page
@@ -1561,7 +1561,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_RECORD",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 15, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 15, 13, 12, 56, 0, tzinfo=dt.UTC),
             org_unit=self.org_unit,
         )
 
@@ -1917,7 +1917,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_RECORD",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
             org_unit=self.org_unit,
         )
 
@@ -1955,7 +1955,7 @@ class StorageAPITestCase(APITestCase):
             device=self.existing_storage_device,
             operation_type="WRITE_RECORD",
             performed_by=self.yoda,
-            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=dt.UTC),
             org_unit=self.org_unit,
         )
 

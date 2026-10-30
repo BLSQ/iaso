@@ -13,7 +13,7 @@ from iaso.models import OrgUnit
 from iaso.test import TestCase
 
 
-DT = datetime.datetime(2025, 1, 3, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
+DT = datetime.datetime(2025, 1, 3, 14, 0, 0, 0, tzinfo=datetime.UTC)
 
 
 @time_machine.travel(DT, tick=False)

@@ -1,7 +1,6 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -18,7 +17,7 @@ from iaso.utils.models.common import check_instance_bulk_gps_push
 logger = getLogger(__name__)
 
 
-def push_single_instance_gps_to_org_unit(user: Optional[User], instance: Instance):
+def push_single_instance_gps_to_org_unit(user: User | None, instance: Instance):
     org_unit = instance.org_unit
     original_copy = deepcopy(org_unit)
     org_unit.location = convert_2d_point_to_3d(instance.location) if instance.location else None
@@ -76,7 +75,7 @@ def instance_bulk_gps_push(
     total = queryset.count()
 
     with transaction.atomic():
-        for index, instance in enumerate(queryset.iterator()):
+        for index, instance in enumerate(queryset.iterator(chunk_size=1000)):
             res_string = f"{time() - start:.2f} sec, processed {index} instances"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             push_single_instance_gps_to_org_unit(

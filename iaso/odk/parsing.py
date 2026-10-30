@@ -182,7 +182,7 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
     return Survey(survey, xls_file_name=xls_file.name)
 
 
-def _generate_form_version(previous_version: typing.Optional[str]) -> str:
+def _generate_form_version(previous_version: str | None) -> str:
     """Generate a form version in the yyyymmddrr format.
     If a previous version is provided, and is also in the yyyymmddrr, it will be used to check if we should increment
     the revision part(rr) or create a new revision for the day

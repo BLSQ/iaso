@@ -3,8 +3,23 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
+import { QuestionStatus } from './types';
 
 export const baseUrl = baseUrls.mappings;
+
+// status of one question
+export const QUESTION_STATUS_MESSAGES = {
+    [QuestionStatus.MAPPED]: MESSAGES.questionMapped,
+    [QuestionStatus.UNMAPPED]: MESSAGES.questionUnmapped,
+    [QuestionStatus.NEVER]: MESSAGES.questionNever,
+};
+
+// status filter chips, plural
+export const STATUS_FILTER_MESSAGES = {
+    [QuestionStatus.MAPPED]: MESSAGES.statusMapped,
+    [QuestionStatus.UNMAPPED]: MESSAGES.statusUnmapped,
+    [QuestionStatus.NEVER]: MESSAGES.statusNever,
+};
 
 const safePercent = (a, b) => {
     if (b === 0) {

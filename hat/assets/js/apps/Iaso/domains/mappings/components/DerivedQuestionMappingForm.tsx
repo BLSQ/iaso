@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import ObjectDumper from './ObjectDumper';
+import { MappingCard } from './QuestionPanel/MappingCard';
 
 type Props = {
     question: Record<string, any>;
@@ -10,14 +11,13 @@ const DerivedQuestionMappingForm: FunctionComponent<Props> = ({
     question,
     mappingVersion,
 }) => (
-    <>
-        <h2>Aggregation</h2>
+    <MappingCard title="Aggregation">
         {mappingVersion.derivate_settings.aggregations
             .filter(agg => agg.id === question.name)
             .map(agg => (
                 <ObjectDumper key={agg.id} object={agg} />
             ))}
-    </>
+    </MappingCard>
 );
 
 export default DerivedQuestionMappingForm;

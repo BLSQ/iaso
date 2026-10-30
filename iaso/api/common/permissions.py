@@ -2,7 +2,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions
 
 
-# Typing: it seems quite hard to type this, so I'm not doing it for now. Use "type: ignore" comment to silence mypy
 class HasPermission:
     """
     Permission class factory for simple permission checks.

@@ -5,7 +5,6 @@ IGNORE_ARGS = [
     "--ignore=beanstalk_worker",
     "--ignore=django_sql_dashboard_export",
     "--ignore=locust",
-    "--ignore=notebooks",
     "--ignore=setuper",
     "--ignore=scripts",
 ]

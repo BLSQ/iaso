@@ -75,7 +75,9 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
     PlanningMissionsThrough = apps.get_model("iaso", "Planning_missions")
 
     for mission_form in MissionForm.objects.filter(plannings__isnull=False).prefetch_related("forms"):
-        for planning in mission_form.plannings.all():
+        for planning in mission_form.plannings.only(
+            "id", "forms"
+        ):  # especially made up to avoid the read_only field that might not been there
             for form in mission_form.forms.all():
                 if form not in planning.forms.all():
                     planning.forms.add(form)

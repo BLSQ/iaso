@@ -26,6 +26,16 @@ export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
         moment().isAfter(moment(planning.started_at, 'DD/MM/YYYY'), 'day'),
     );
     const cannotDelete = Boolean(planning.published_at || hasStarted);
+    if (planning.deprecated) {
+        return (
+            <IconButtonComponent
+                url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/edit`}
+                tooltipMessage={MESSAGES.viewDetails}
+                icon="remove-red-eye"
+                size="small"
+            />
+        );
+    }
     return (
         <>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>

@@ -7,17 +7,28 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { SxStyles } from '../../types/general';
 import { PlanningFilters } from './components/list/PlanningFilters';
 import { usePlanningColumns } from './config';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
-import { PlanningParams } from './types';
+import { Planning as PlanningType, PlanningParams } from './types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 const baseUrl = baseUrls.planning;
+
+const styles = {
+    deprecatedRow: {
+        '& td:not(:last-child)': { opacity: 0.5 },
+    },
+} satisfies SxStyles;
+
+const getRowProps = ({ original }: { original: PlanningType }) =>
+    original.deprecated ? { sx: styles.deprecatedRow } : {};
+
 export const Planning: FunctionComponent = () => {
     const params = useParamsObject(baseUrl);
     const apiParams = useActiveParams(params) as PlanningParams;
@@ -47,6 +58,7 @@ export const Planning: FunctionComponent = () => {
                     extraProps={{ loading: isFetching }}
                     columnSelectorEnabled
                     countOnTop={false}
+                    rowProps={getRowProps}
                 />
             </Box>
         </>

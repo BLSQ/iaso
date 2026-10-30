@@ -1605,6 +1605,8 @@
     "iaso.plannings.label.orgUnitsToAssign": "Unités d'organisation à assigner",
     "iaso.plannings.label.orgUnitTypes": "Types d'unités d'organisation",
     "iaso.plannings.label.planningDetails": "Détails du planning",
+    "iaso.plannings.label.deprecated": "Obsolète",
+    "iaso.plannings.label.deprecatedPlanningInfos": "Ce planning a été créé avant l'introduction des missions. Il est en lecture seule.",
     "iaso.plannings.label.relinkMission": "Annuler la suppression du lien",
     "iaso.plannings.label.rootLevel": "Niveau racine",
     "iaso.plannings.label.rootTeam": "Équipe racine",

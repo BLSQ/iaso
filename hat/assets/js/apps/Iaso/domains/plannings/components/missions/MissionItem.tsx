@@ -44,7 +44,7 @@ const styles = {
 
 export const MissionItem: FC<Props> = ({ mission, status }) => {
     const { formatMessage } = useSafeIntl();
-    const { unlinkMission, relinkMission } = usePlanningContext();
+    const { unlinkMission, relinkMission, isReadOnly } = usePlanningContext();
     const isUnlinked = status === 'unlinked';
     const handleUnlink = useCallback(
         () => unlinkMission(mission.id),
@@ -91,29 +91,47 @@ export const MissionItem: FC<Props> = ({ mission, status }) => {
                             sx={planningPanelStyles.smallIcon}
                         />
                     </IconButton>
-                    <IconButton size="small">
-                        <CreateOutlinedIcon
-                            color="primary"
-                            sx={planningPanelStyles.smallIcon}
-                        />
-                    </IconButton>
-                    {isUnlinked ? (
-                        <Tooltip title={formatMessage(MESSAGES.relinkMission)}>
-                            <IconButton size="small" onClick={handleRelink}>
-                                <LinkOutlinedIcon
+                    {!isReadOnly && (
+                        <>
+                            <IconButton size="small">
+                                <CreateOutlinedIcon
                                     color="primary"
                                     sx={planningPanelStyles.smallIcon}
                                 />
                             </IconButton>
-                        </Tooltip>
-                    ) : (
-                        <Tooltip title={formatMessage(MESSAGES.unlinkMission)}>
-                            <IconButton size="small" onClick={handleUnlink}>
-                                <LinkOffOutlinedIcon
-                                    sx={planningPanelStyles.smallIcon}
-                                />
-                            </IconButton>
-                        </Tooltip>
+                            {isUnlinked ? (
+                                <Tooltip
+                                    title={formatMessage(
+                                        MESSAGES.relinkMission,
+                                    )}
+                                >
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleRelink}
+                                    >
+                                        <LinkOutlinedIcon
+                                            color="primary"
+                                            sx={planningPanelStyles.smallIcon}
+                                        />
+                                    </IconButton>
+                                </Tooltip>
+                            ) : (
+                                <Tooltip
+                                    title={formatMessage(
+                                        MESSAGES.unlinkMission,
+                                    )}
+                                >
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleUnlink}
+                                    >
+                                        <LinkOffOutlinedIcon
+                                            sx={planningPanelStyles.smallIcon}
+                                        />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </>
                     )}
                 </Stack>
             </Stack>

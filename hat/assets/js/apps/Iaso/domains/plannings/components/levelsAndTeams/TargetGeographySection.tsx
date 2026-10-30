@@ -49,7 +49,7 @@ const CreateTeamButton: FC<{ onClick: () => void }> = ({ onClick }) => {
 const CreateRootTeamModal = makeFullModal(CreateEditTeam, CreateTeamButton);
 
 export const TargetGeographySection: FC = () => {
-    const { formik } = usePlanningContext();
+    const { formik, isReadOnly } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
     const { values } = formik;
     const { onChange, getErrors } = usePlanningFieldHandlers(formik);
@@ -99,6 +99,7 @@ export const TargetGeographySection: FC = () => {
                         }
                         errors={getErrors('selectedOrgUnit')}
                         required
+                        disabled={isReadOnly}
                     />
                     {values.selectedOrgUnit && selectedOrgUnit?.parent_name && (
                         <Typography
@@ -121,14 +122,16 @@ export const TargetGeographySection: FC = () => {
                         required
                         options={teamsDropdown ?? []}
                         loading={isFetchingTeams}
-                        disabled={!values.project}
+                        disabled={isReadOnly || !values.project}
                         withMarginTop={false}
                     />
-                    <CreateRootTeamModal
-                        dialogType="create"
-                        defaultValues={{ project: values.project }}
-                        onSuccess={onTeamCreated}
-                    />
+                    {!isReadOnly && (
+                        <CreateRootTeamModal
+                            dialogType="create"
+                            defaultValues={{ project: values.project }}
+                            onSuccess={onTeamCreated}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </PlanningStepCard>

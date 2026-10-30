@@ -142,6 +142,46 @@ class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res = self.client.get(self.get_url())
         self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)
 
+    def test_sub_teams_should_not_include_soft_deleted(self):
+        self.client.force_authenticate(self.superuser)
+
+        res = self.client.get(self.get_url())
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
+
+        self.assertCountEqual(
+            res_data["sub_teams"],
+            [
+                {
+                    "id": self.sub_team_1.id,
+                    "name": self.sub_team_1.name,
+                    "color": self.sub_team_1.color.upper(),
+                },
+                {
+                    "id": self.sub_team_2.id,
+                    "name": self.sub_team_2.name,
+                    "color": self.sub_team_2.color.upper(),
+                },
+            ],
+        )
+
+        self.sub_team_1.delete()
+
+        res = self.client.get(self.get_url())
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
+
+        self.assertCountEqual(
+            res_data["sub_teams"],
+            [
+                {
+                    "id": self.sub_team_2.id,
+                    "name": self.sub_team_2.name,
+                    "color": self.sub_team_2.color.upper(),
+                },
+            ],
+        )
+
     def test_retrieve(self):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url())
@@ -204,13 +244,11 @@ class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 {
                     "id": self.sub_team_1.id,
                     "name": self.sub_team_1.name,
-                    "deleted_at": None,
                     "color": self.sub_team_1.color.upper(),
                 },
                 {
                     "id": self.sub_team_2.id,
                     "name": self.sub_team_2.name,
-                    "deleted_at": None,
                     "color": self.sub_team_2.color.upper(),
                 },
             ],

@@ -111,10 +111,6 @@ export const getApiTeamsRetrieveResponseMock = (
         ).map(() => ({
             id: faker.number.int(),
             name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-            deleted_at: faker.helpers.arrayElement([
-                faker.date.past().toISOString().slice(0, 19) + 'Z',
-                null,
-            ]),
             color: faker.helpers.fromRegExp('#[0-9A-Fa-f]{6}'),
         })),
         null,

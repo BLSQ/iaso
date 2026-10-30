@@ -65,7 +65,6 @@ export const TeamRetrieve = zod.strictObject({
             zod.strictObject({
                 id: zod.int(),
                 name: zod.string(),
-                deleted_at: zod.iso.datetime({ offset: true }).nullable(),
                 color: zod
                     .string()
                     .max(teamRetrieveSubTeamsItemColorMax)

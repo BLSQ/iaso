@@ -8,9 +8,11 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { smallTabsOverrides } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
+import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { InfoTab } from '../info/InfoTab';
 import { LevelsAndTeamsTab } from '../levelsAndTeams/LevelsAndTeamsTab';
+import { DeprecatedPlanningWarning } from './DeprecatedPlanningWarning';
 import { PlanningHeaderActions, PlanningHeaderTitle } from './PlanningHeader';
 
 const styles = {
@@ -30,6 +32,7 @@ const isTabKey = (tab?: string): tab is TabKey =>
 
 export const PlanningDetails: FC = () => {
     const { formatMessage } = useSafeIntl();
+    const { isReadOnly } = usePlanningContext();
     const params = useParamsObject(baseUrls.planningDetails);
     const activeTab: TabKey = isTabKey(params.tab) ? params.tab : 'info';
     const redirectToReplace = useRedirectToReplace();
@@ -44,6 +47,7 @@ export const PlanningDetails: FC = () => {
             title={<PlanningHeaderTitle />}
             actions={<PlanningHeaderActions />}
         >
+            {isReadOnly && <DeprecatedPlanningWarning />}
             <Tabs value={activeTab} onChange={handleChangeTab} sx={styles.tabs}>
                 <Tab
                     value="info"

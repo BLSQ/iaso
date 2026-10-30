@@ -449,9 +449,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Deprecated',
         id: 'iaso.plannings.label.deprecated',
     },
+    readOnlyPlanning: {
+        defaultMessage: 'This planning is read only.',
+        id: 'iaso.plannings.label.readOnlyPlanning',
+    },
     deprecatedPlanningInfos: {
         defaultMessage:
-            'This planning was created before missions were introduced. It is read only.',
+            'It was created before missions were introduced and can no longer be edited.',
         id: 'iaso.plannings.label.deprecatedPlanningInfos',
     },
     openAssignments: {

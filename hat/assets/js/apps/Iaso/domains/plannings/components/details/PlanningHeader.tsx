@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import { Button, Chip, Stack, Tooltip } from '@mui/material';
+import { Button, Chip, Stack } from '@mui/material';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
@@ -27,15 +27,11 @@ export const PlanningHeaderTitle: FC = () => {
             {planning?.name}
             <PlanningStatusChip status={planning?.status ?? 'draft'} />
             {isReadOnly && (
-                <Tooltip
-                    title={formatMessage(MESSAGES.deprecatedPlanningInfos)}
-                >
-                    <Chip
-                        label={formatMessage(MESSAGES.deprecated)}
-                        size="small"
-                        variant="outlined"
-                    />
-                </Tooltip>
+                <Chip
+                    label={formatMessage(MESSAGES.deprecated)}
+                    size="small"
+                    variant="outlined"
+                />
             )}
         </>
     );

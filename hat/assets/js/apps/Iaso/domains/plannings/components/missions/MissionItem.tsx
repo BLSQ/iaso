@@ -11,8 +11,9 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { MissionPolymorphicList } from 'Iaso/api/missions';
+import { baseUrls } from 'Iaso/constants/urls';
 import { MissionInfoCaption } from 'Iaso/domains/missions/components/chips/MissionInfoCaption';
 import { MissionTypeChip } from 'Iaso/domains/missions/components/chips/MissionTypeChip';
 import { SxStyles } from 'Iaso/types/general';
@@ -86,14 +87,22 @@ export const MissionItem: FC<Props> = ({ mission, status }) => {
                     )}
                 </Stack>
                 <Stack direction="row" gap={1}>
-                    <IconButton size="small">
+                    <IconButton
+                        size="small"
+                        component={LinkWithLocation}
+                        to={`/${baseUrls.missionsDetails}/id/${mission.id}`}
+                    >
                         <VisibilityOutlinedIcon
                             sx={planningPanelStyles.smallIcon}
                         />
                     </IconButton>
                     {!isReadOnly && (
                         <>
-                            <IconButton size="small">
+                            <IconButton
+                                size="small"
+                                component={LinkWithLocation}
+                                to={`/${baseUrls.missionsEdit}/id/${mission.id}`}
+                            >
                                 <CreateOutlinedIcon
                                     color="primary"
                                     sx={planningPanelStyles.smallIcon}

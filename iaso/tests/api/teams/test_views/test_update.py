@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
@@ -96,7 +96,7 @@ class TeamUpdateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             name="team other account", manager=cls.user_other_account, project=cls.project_other_account
         )
 
-    def get_url(self, pk: Optional[int] = None) -> str:
+    def get_url(self, pk: int | None = None) -> str:
         if not pk:
             pk = self.team.pk
         return reverse("teams-detail", kwargs={"pk": pk})

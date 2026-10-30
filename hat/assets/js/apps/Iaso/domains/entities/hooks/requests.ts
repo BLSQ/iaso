@@ -234,7 +234,7 @@ const getSubmissions = (
 ): Promise<PaginatedInstances> => {
     const baseUrl = '/api/instances/';
     const apiParams = {
-        limit: pageSize || 20,
+        limit: pageSize || 10,
         order,
         page,
         entityId,

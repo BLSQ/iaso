@@ -1,27 +1,18 @@
 import React, { ReactElement } from 'react';
-import { Column, useSafeIntl } from 'bluesquare-components';
+import { Column, Setting, useSafeIntl } from 'bluesquare-components';
+import { PaginatedTeamListList, useApiTeamsDestroy } from 'Iaso/api/teams';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { ProjectChip } from '../projects/components/ProjectChip';
+import {
+    ProjectChip,
+    ProjectChipProps,
+} from '../projects/components/ProjectChip';
 import { EditTeamModal } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
-import { UsersTeamsCell } from './components/UsersTeamsCell';
-import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
-import { TeamList } from './hooks/requests/useGetTeams';
 import MESSAGES from './messages';
-import { TeamUrlParams } from './types/team';
 
-export const useTeamColumns = ({
-    params,
-    data,
-}: {
-    params: TeamUrlParams;
-    data?: TeamList;
-}): Column[] => {
-    const { mutate: deleteTeam } = useDeleteTeam({
-        params,
-        count: data?.count ?? 0,
-    });
+export const useTeamColumns = (): Column[] => {
+    const { mutate: deleteTeam } = useApiTeamsDestroy();
     const { formatMessage } = useSafeIntl();
     return [
         {
@@ -35,7 +26,11 @@ export const useTeamColumns = ({
             id: 'color',
             width: 10,
             sortable: false,
-            Cell: settings => (
+            Cell: (
+                settings: Setting<
+                    NonNullable<PaginatedTeamListList['results']>[number]
+                >,
+            ) => (
                 <ColorBadge
                     data-testid={'team-badge-color'}
                     backgroundColor={settings.row.original.color}
@@ -49,33 +44,30 @@ export const useTeamColumns = ({
         },
         {
             Header: formatMessage(MESSAGES.project),
-            accessor: 'project_details',
+            accessor: 'project',
             id: 'project__name',
-            Cell: settings => (
-                <ProjectChip project={settings.row.original.project_details} />
+            Cell: (
+                settings: Setting<
+                    NonNullable<PaginatedTeamListList['results']>[number]
+                >,
+            ) => (
+                <ProjectChip
+                    project={
+                        settings.row.original
+                            .project satisfies ProjectChipProps['project']
+                    }
+                />
             ),
         },
         {
             Header: formatMessage(MESSAGES.type),
             accessor: 'type',
             id: 'type',
-            Cell: (settings): ReactElement => (
-                <TypeCell type={settings.row.original.type} />
-            ),
-        },
-        {
-            Header: formatMessage(MESSAGES.usersTeams),
-            accessor: 'users_details',
-            sortable: false,
-            Cell: (settings): ReactElement => (
-                <UsersTeamsCell
-                    type={settings.row.original.type}
-                    subTeamsDetails={
-                        settings.row.original.sub_teams_details || []
-                    }
-                    usersDetails={settings.row.original.users_details || []}
-                />
-            ),
+            Cell: (
+                settings: Setting<
+                    NonNullable<PaginatedTeamListList['results']>[number]
+                >,
+            ): ReactElement => <TypeCell type={settings.row.original.type} />,
         },
         {
             Header: formatMessage(MESSAGES.membersCount),
@@ -88,7 +80,11 @@ export const useTeamColumns = ({
             accessor: 'actions',
             resizable: false,
             sortable: false,
-            Cell: (settings): ReactElement => {
+            Cell: (
+                settings: Setting<
+                    NonNullable<PaginatedTeamListList['results']>[number]
+                >,
+            ): ReactElement => {
                 return (
                     // TODO: limit to user permissions
                     <>
@@ -100,7 +96,9 @@ export const useTeamColumns = ({
                         <DeleteDialog
                             keyName="team"
                             titleMessage={MESSAGES.delete}
-                            onConfirm={() => deleteTeam(settings.row.original)}
+                            onConfirm={() =>
+                                deleteTeam({ id: settings.row.original.id })
+                            }
                         />
                     </>
                 );

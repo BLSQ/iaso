@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -16,7 +17,6 @@ import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { TeamType } from '../../../teams/constants';
-import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { ALGORITHM_DROPDOWN } from '../../constants';
 import { useGetEntityTypesDropdown } from '../../hooks/requests';
 import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
@@ -69,8 +69,8 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
     });
 
     const { data: submitterTeamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown({
-            type: TeamType.TEAM_OF_USERS,
+        useApiTeamsDropdownList({
+            types: [TeamType.enum.TEAM_OF_USERS],
         });
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =

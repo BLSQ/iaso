@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query';
 import {
-    PatchedTeamRequest,
+    PatchedTeamUpdateRequest,
     TeamTree,
     apiTeamsPartialUpdate,
     useApiTeamsDestroy,
@@ -16,7 +16,7 @@ import { useCustomMutationOptions } from '../../../../../../orval/mutator/custom
 const userIds = (team: TeamTreeNode) => team.users.map(user => user.id);
 
 type TeamChanges = Pick<Partial<TeamTreeNode>, 'name' | 'type' | 'parent'>;
-type UpdateTeamVariables = { id: number; data?: PatchedTeamRequest };
+type UpdateTeamVariables = { id: number; data?: PatchedTeamUpdateRequest };
 type DeleteTeamVariables = { id: number };
 type MoveUserVariables = {
     userId: number;

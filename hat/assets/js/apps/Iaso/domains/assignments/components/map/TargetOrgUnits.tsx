@@ -1,12 +1,12 @@
 import { FunctionComponent, useMemo } from 'react';
 import React from 'react';
 import { Pane } from 'react-leaflet';
+import { TeamRetrieve } from 'Iaso/api/teams';
 import { useGetAssignmentColor } from 'Iaso/domains/app/hooks/useGetAssignmentColor';
 import { FilterOrgUnitsResult } from 'Iaso/domains/assignments/utils';
 import { OrgUnitTypeHierarchyDropdownValue } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { Planning } from 'Iaso/domains/plannings/types';
-import { Team } from 'Iaso/domains/teams/types/team';
 import { AssignmentsResult } from '../../types/assigment';
 import { filterOrgUnits, getValidShapes, getValidLocations } from '../../utils';
 import { MAP_PANE_Z_INDEX } from './AssignmentsMap';
@@ -20,7 +20,7 @@ type Props = {
     planning?: Planning;
     assignments?: AssignmentsResult;
     selectedOrgUnitTypes: OrgUnitTypeHierarchyDropdownValue[];
-    rootTeam?: Team;
+    rootTeam?: TeamRetrieve;
 };
 
 export const TargetOrgUnits: FunctionComponent<Props> = ({

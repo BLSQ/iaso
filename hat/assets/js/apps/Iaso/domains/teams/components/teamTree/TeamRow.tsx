@@ -160,7 +160,7 @@ export const EditableTeamRow: FC<EditableTeamRowProps> = ({
         {
             key: 'changeType',
             label: formatMessage(
-                getToggledType(team) === TeamType.TEAM_OF_TEAMS
+                getToggledType(team) === TeamType.enum.TEAM_OF_TEAMS
                     ? MESSAGES.changeToTeamOfTeams
                     : MESSAGES.changeToTeamOfUsers,
             ),

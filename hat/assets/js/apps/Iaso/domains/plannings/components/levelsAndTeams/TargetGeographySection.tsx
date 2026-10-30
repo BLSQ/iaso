@@ -123,6 +123,13 @@ export const TargetGeographySection: FC = () => {
                         options={teamsDropdown ?? []}
                         loading={isFetchingTeams}
                         disabled={isReadOnly || !values.project}
+                        helperText={
+                            values.project
+                                ? undefined
+                                : formatMessage(
+                                      MESSAGES.selectProjectToPickRootTeam,
+                                  )
+                        }
                         withMarginTop={false}
                     />
                     {!isReadOnly && (

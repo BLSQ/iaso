@@ -3,11 +3,11 @@
 import django.db.models.deletion
 
 from django.conf import settings
-from django.db import connection, migrations, models
+from django.db import migrations, models
 
 
 def migrate_forms_to_missions(apps, schema_editor):
-    """Convert each Planning-Form pair to a FORM_FILLING Mission with MissionForm."""
+    """Convert each unique Account-Form pair to a FORM_FILLING Mission."""
     ContentType = apps.get_model("contenttypes", "ContentType")
     Planning = apps.get_model("iaso", "Planning")
     Mission = apps.get_model("iaso", "Mission")
@@ -16,54 +16,100 @@ def migrate_forms_to_missions(apps, schema_editor):
     MissionFormThroughForm = apps.get_model("iaso", "MissionFormThroughForm")
     PlanningFormThrough = apps.get_model("iaso", "Planning_forms")
 
-    # get content_type for mission_form
-    mission_form_ct = ContentType.objects.get_for_model(MissionForm)
+    db_alias = schema_editor.connection.alias
 
-    for planning in (
-        Planning.objects.filter(project__account__isnull=False, project__isnull=False)
+    mission_form_ct = ContentType.objects.db_manager(db_alias).get_for_model(MissionForm)
+
+    plannings = (
+        Planning.objects.using(db_alias)
+        .filter(project__account__isnull=False)
         .prefetch_related("forms")
-        .select_related("project__account")
-        .all()
-    ):
-        account = planning.project.account
+        .select_related("project")
+    )
 
-        mission_objects = []
-        mission_form_through_objects = []
+    # Collect unique missions and their planning associations.
+    unique_missions = {}
+    planning_missions = {}
+
+    for planning in plannings:
+        account_id = planning.project.account_id
 
         for form in planning.forms.all():
-            mission_objects.append(
-                Mission(
-                    name=form.name,
-                    account_id=account.id,
-                    mission_type="FORM_FILLING",
-                    polymorphic_ctype_id=mission_form_ct.id,
-                    created_by_id=planning.created_by.id if planning.created_by else None,
-                )
+            key = (account_id, form.id)
+
+            unique_missions.setdefault(
+                key,
+                {
+                    "name": form.name,
+                    "account_id": account_id,
+                    "created_by_id": planning.created_by_id,
+                    "form_id": form.id,
+                },
             )
-            mission_form_through_objects.append({"form_id": form.id, "min_cardinality": 1, "max_cardinality": 1})
 
-        mission_objs = Mission.objects.bulk_create(mission_objects)
+            planning_missions.setdefault(planning.id, []).append(key)
 
-        with connection.cursor() as cursor:
-            sql = f"INSERT INTO {MissionWithForms._meta.db_table} (mission_ptr_id) VALUES (%s)"
-            params = [[m.id] for m in mission_objs]
-            cursor.executemany(sql, params)
+    # Create unique missions.
+    mission_objects = [
+        Mission(
+            name=data["name"],
+            account_id=data["account_id"],
+            mission_type="FORM_FILLING",
+            polymorphic_ctype_id=mission_form_ct.id,
+            created_by_id=data["created_by_id"],
+        )
+        for data in unique_missions.values()
+    ]
 
-        with connection.cursor() as cursor:
-            sql = f"INSERT INTO {MissionForm._meta.db_table} (missionwithforms_ptr_id) VALUES (%s)"
-            params = [[m.id] for m in mission_objs]
-            cursor.executemany(sql, params)
+    mission_objects = Mission.objects.using(db_alias).bulk_create(
+        mission_objects,
+        batch_size=500,
+    )
 
-        MissionFormThroughForm.objects.bulk_create(
-            [
-                MissionFormThroughForm(**through, mission_form_id=mf.id)
-                for (through, mf) in zip(mission_form_through_objects, mission_objs)
-            ]
+    mission_by_key = dict(zip(unique_missions, mission_objects))
+
+    # Create multi-table inheritance records.
+    with schema_editor.connection.cursor() as cursor:
+        cursor.executemany(
+            f"INSERT INTO {MissionWithForms._meta.db_table} (mission_ptr_id) VALUES (%s)",
+            [[mission.id] for mission in mission_objects],
         )
 
-        planning.missions.set(mission_objs)
+        cursor.executemany(
+            f"INSERT INTO {MissionForm._meta.db_table} (missionwithforms_ptr_id) VALUES (%s)",
+            [[mission.id] for mission in mission_objects],
+        )
 
-    PlanningFormThrough.objects.all().delete()
+    # Associate each mission with exactly one form.
+    MissionFormThroughForm.objects.using(db_alias).bulk_create(
+        [
+            MissionFormThroughForm(
+                mission_form_id=mission.id,
+                form_id=data["form_id"],
+                min_cardinality=1,
+                max_cardinality=1,
+            )
+            for data, mission in zip(unique_missions.values(), mission_objects)
+        ],
+        batch_size=500,
+    )
+
+    # Restore Planning-Mission associations.
+    planning_mission_through = Planning.missions.through
+
+    planning_mission_through.objects.using(db_alias).bulk_create(
+        [
+            planning_mission_through(
+                planning_id=planning_id,
+                mission_id=mission_by_key[key].id,
+            )
+            for planning_id, keys in planning_missions.items()
+            for key in keys
+        ],
+        batch_size=500,
+    )
+
+    PlanningFormThrough.objects.using(db_alias).all().delete()
 
 
 def reverse_migrate_missions_to_forms(apps, schema_editor):

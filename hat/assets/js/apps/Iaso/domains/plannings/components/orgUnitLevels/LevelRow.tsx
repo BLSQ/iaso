@@ -194,7 +194,9 @@ export const LevelRow: FC<Props> = ({
                             label: type.name,
                         }))}
                         label={MESSAGES.orgUnitTypes}
-                        disabled={isLevelAboveMissingTypes && !hasTypes}
+                        disabled={
+                            disabled || (isLevelAboveMissingTypes && !hasTypes)
+                        }
                         helperText={
                             isLevelAboveMissingTypes
                                 ? formatMessage(
@@ -209,7 +211,6 @@ export const LevelRow: FC<Props> = ({
                         }
                         required
                         withMarginTop={false}
-                        disabled={disabled}
                     />
                 </TableCell>
                 <TableCell>

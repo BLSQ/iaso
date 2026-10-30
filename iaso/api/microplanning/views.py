@@ -427,7 +427,9 @@ class PlanningSamplingResultViewSet(AuditMixin, ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return (
-            PlanningSamplingResult.objects.filter(planning__project__account=user.iaso_profile.account)
+            PlanningSamplingResult.objects.filter(
+                Q(planning__deleted_at__isnull=True) & Q(planning__project__account=user.iaso_profile.account)
+            )
             .select_related("planning", "created_by", "group", "task")
             .prefetch_related("group__org_units")
         )

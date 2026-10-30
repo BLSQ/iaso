@@ -116,6 +116,10 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(len(response), expected_length)
         self.assertResponseCompliantToSwagger(response, "PlanningDropdown", True)
 
+    @property
+    def url(self) -> str:
+        return reverse("planning-dropdown")
+
     def test_num_queries(self):
         self.client.force_authenticate(user=self.superuser)
         with self.assertNumQueries(1):
@@ -198,6 +202,21 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data, [{"value": self.planning_other_account.id, "label": self.planning_other_account.name}]
         )
+
+    def test_should_not_see_soft_deleted_plannings(self):
+        self.client.force_authenticate(self.user_other_account)
+        res = self.client.get(self.url)
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidData(res_data, 1)
+
+        self.planning_other_account.delete()
+        self.planning_other_account.refresh_from_db()
+        self.assertIsNotNone(self.planning_other_account.deleted_at)
+
+        res = self.client.get(self.url)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidData(res_data, 0)
 
     def test_response(self):
         self.client.force_authenticate(user=self.superuser)

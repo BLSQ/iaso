@@ -2325,3 +2325,6 @@ class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):
         )
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertResponseCompliantToSwagger(data, "BulkDeleteAssignmentResponse")
+
+
+# TODO: reorganize this, and add tests about the fact that soft deleted planning should not be visible/raise a 404

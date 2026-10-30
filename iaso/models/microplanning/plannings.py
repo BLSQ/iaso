@@ -10,6 +10,7 @@ from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.models.team import Team, TeamQuerySet
 from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
@@ -52,10 +53,7 @@ class PlanningQuerySet(models.QuerySet):
 
 
 class Planning(SoftDeletableModel):
-    # Currently, does the same thing as `objects_include_deleted`, we should as some point,
-    # filter out the deleted plannings. `objects_include_deleted` and `objects_only_deleted` have been added to be
-    # explicit about what we want when we use them for when/if we'll change `objects`'s behavior.
-    objects = PlanningQuerySet.as_manager()
+    objects = DefaultSoftDeletableManager.from_queryset(PlanningQuerySet)()
     objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
     objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
 
@@ -129,7 +127,7 @@ class PlanningConfigQuerySet(models.QuerySet):
         if not account:
             return self.none()
 
-        return self.filter(planning__project__account=account)
+        return self.filter(Q(planning__deleted_at__isnull=True) & Q(planning__project__account=account))
 
 
 class PlanningConfig(models.Model):

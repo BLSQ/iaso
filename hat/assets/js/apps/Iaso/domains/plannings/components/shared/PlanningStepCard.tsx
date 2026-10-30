@@ -15,6 +15,7 @@ const styles = {
         fontSize: '0.8rem',
         fontWeight: 'bold',
         bgcolor: 'primary.main',
+        mt: 2,
     },
     titleBlock: {
         flex: 1,
@@ -42,7 +43,7 @@ export const PlanningStepCard: FC<Props> = ({
     children,
 }) => (
     <Card variant="outlined" sx={styles.card}>
-        <Stack direction="row" alignItems="center" gap={1.5} sx={styles.header}>
+        <Stack direction="row" gap={1.5} sx={styles.header}>
             <Avatar sx={styles.stepNumber}>{step}</Avatar>
             <Box sx={styles.titleBlock}>
                 <Typography variant="h6" component="h2">

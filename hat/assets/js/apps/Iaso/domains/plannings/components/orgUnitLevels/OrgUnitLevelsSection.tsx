@@ -40,8 +40,6 @@ const styles = {
     },
     rootCount: {
         fontWeight: 'bold',
-        // Aligns with the level counts, followed by their expand icon.
-        pr: 3.75,
     },
     levelColumn: { width: 140 },
     membersColumn: { width: 200 },

@@ -1,10 +1,8 @@
 import React, { FC } from 'react';
 import ErrorIcon from '@mui/icons-material/Error';
-import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Stack, Typography } from '@mui/material';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
-import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { LevelIssue } from './types';
@@ -40,16 +38,6 @@ const getIssueDisplay = (
                 Icon: ErrorIcon,
                 color: 'error.main',
                 message: MESSAGES.noOrgUnitInGroups,
-            };
-        case 'excludedByGroups':
-            return {
-                Icon: FilterAltOutlinedIcon,
-                color: 'text.secondary',
-                message: MESSAGES.excludedByGroups,
-                values: numericValues({
-                    excluded: issue.excludedCount,
-                    total: issue.totalCount,
-                }),
             };
         case 'emptyLevelAbove':
             return {

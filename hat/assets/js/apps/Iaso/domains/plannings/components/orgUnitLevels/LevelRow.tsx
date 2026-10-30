@@ -1,15 +1,13 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import React, { FC, useCallback, useMemo } from 'react';
 import {
-    ButtonBase,
     Stack,
     TableBody,
     TableCell,
     TableRow,
+    Tooltip,
     Typography,
 } from '@mui/material';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
@@ -44,18 +42,13 @@ const styles = {
     emptyCount: {
         color: 'error.main',
     },
-    countButton: {
-        gap: 0.5,
-        ml: 'auto',
-        py: 0.5,
-        pl: 0.75,
-        pr: 0.25,
-        borderRadius: 1,
-        textAlign: 'right',
-        '&:hover': { bgcolor: 'action.hover' },
+    countTrigger: {
+        display: 'inline-flex',
+        cursor: 'help',
+        mt: 2,
     },
-    countButtonIcon: {
-        color: 'action.active',
+    countTooltip: {
+        maxWidth: 360,
     },
 } satisfies SxStyles;
 
@@ -121,13 +114,7 @@ export const LevelRow: FC<Props> = ({
                 : [],
         [levelCounts, selectedTypes, hasGroups, levelAboveCounts],
     );
-    const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
-    const toggleBreakdown = useCallback(
-        () => setIsBreakdownOpen(isOpen => !isOpen),
-        [],
-    );
-    const hasDetails =
-        issues.length > 0 || (isBreakdownOpen && Boolean(levelCounts));
+    const hasDetails = issues.length > 0;
     const { data: levelGroupOptions } = useGetGroupDropdown(
         {
             sourceVersionId,
@@ -255,13 +242,23 @@ export const LevelRow: FC<Props> = ({
                 </TableCell>
                 <TableCell align="right">
                     {levelCounts ? (
-                        <ButtonBase
-                            onClick={toggleBreakdown}
-                            aria-expanded={isBreakdownOpen}
-                            title={formatMessage(MESSAGES.whyThisCount)}
-                            sx={styles.countButton}
+                        <Tooltip
+                            slotProps={{ tooltip: { sx: styles.countTooltip } }}
+                            title={
+                                <LevelCountBreakdown
+                                    levelNumber={index + 1}
+                                    selectedTypes={selectedTypes}
+                                    counts={levelCounts}
+                                    hasGroups={hasGroups}
+                                    rootOrgUnitName={rootOrgUnitName}
+                                />
+                            }
                         >
-                            <Stack alignItems="flex-end">
+                            <Stack
+                                alignItems="baseline"
+                                direction="row"
+                                sx={styles.countTrigger}
+                            >
                                 <Typography
                                     sx={[
                                         styles.count,
@@ -276,47 +273,22 @@ export const LevelRow: FC<Props> = ({
                                         variant="caption"
                                         color="text.secondary"
                                     >
-                                        {formatMessage(
-                                            MESSAGES.ofTotal,
-                                            numericValues({
-                                                total: levelCounts.typesTotal,
-                                            }),
-                                        )}
+                                        /{levelCounts.typesTotal}
                                     </Typography>
                                 )}
                             </Stack>
-                            {isBreakdownOpen ? (
-                                <ExpandLessIcon sx={styles.countButtonIcon} />
-                            ) : (
-                                <ExpandMoreIcon sx={styles.countButtonIcon} />
-                            )}
-                        </ButtonBase>
-                    ) : (
-                        <Typography sx={styles.count}>
-                            {textPlaceholder}
-                        </Typography>
-                    )}
+                        </Tooltip>
+                    ) : null}
                 </TableCell>
             </TableRow>
             {hasDetails && (
                 <TableRow>
                     <TableCell />
                     <TableCell colSpan={4} sx={styles.detailsCell}>
-                        <Stack gap={1.5}>
-                            <LevelIssues
-                                issues={issues}
-                                rootOrgUnitName={rootOrgUnitName}
-                            />
-                            {isBreakdownOpen && levelCounts && (
-                                <LevelCountBreakdown
-                                    levelNumber={index + 1}
-                                    selectedTypes={selectedTypes}
-                                    counts={levelCounts}
-                                    hasGroups={hasGroups}
-                                    rootOrgUnitName={rootOrgUnitName}
-                                />
-                            )}
-                        </Stack>
+                        <LevelIssues
+                            issues={issues}
+                            rootOrgUnitName={rootOrgUnitName}
+                        />
                     </TableCell>
                 </TableRow>
             )}

@@ -10,32 +10,32 @@ import MESSAGES from '../../messages';
 import { LevelOrgUnitCounts, LevelOrgUnitType } from './types';
 
 const styles = {
-    container: {
-        border: 1,
-        borderColor: 'divider',
-        borderRadius: 1,
-        bgcolor: 'background.paper',
-    },
     header: {
         display: 'block',
-        px: 1.5,
-        py: 1,
+        mb: 0.5,
         fontWeight: 'medium',
-        color: 'text.secondary',
     },
     step: {
         display: 'grid',
-        gridTemplateColumns: '20px minmax(0, 1fr) 80px',
-        gap: 1,
+        gridTemplateColumns: '14px minmax(0, 1fr) auto',
+        gap: 0.75,
         alignItems: 'center',
-        px: 1.5,
-        py: 0.75,
+        py: 0.25,
+    },
+    total: {
+        mt: 0.25,
+        pt: 0.5,
         borderTop: 1,
-        borderColor: 'divider',
+        borderColor: 'grey.600',
+        fontWeight: 'medium',
+    },
+    // Tooltips have a dark background, error.main lacks contrast on it.
+    empty: {
+        color: 'error.light',
     },
     icon: {
-        fontSize: 16,
-        color: 'text.secondary',
+        fontSize: 14,
+        opacity: 0.7,
     },
     value: {
         textAlign: 'right',
@@ -97,7 +97,7 @@ export const LevelCountBreakdown: FC<Props> = ({
     });
 
     return (
-        <Box sx={styles.container}>
+        <Box>
             <Typography variant="caption" sx={styles.header}>
                 {formatMessage(
                     MESSAGES.howCountIsComputed,
@@ -107,11 +107,13 @@ export const LevelCountBreakdown: FC<Props> = ({
             {React.Children.toArray(
                 steps.map(({ Icon, label, value, isEmpty, isTotal }) => (
                     <Typography
-                        variant="body2"
+                        variant="caption"
                         component="div"
-                        sx={styles.step}
-                        color={isEmpty ? 'error.main' : 'text.primary'}
-                        fontWeight={isTotal ? 'medium' : undefined}
+                        sx={[
+                            styles.step,
+                            Boolean(isTotal) && styles.total,
+                            Boolean(isEmpty) && styles.empty,
+                        ]}
                     >
                         <Icon sx={styles.icon} />
                         <span>{label}</span>

@@ -380,7 +380,25 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidResponse(res_data, 10)
         self.assertTrue(all(members_count_field in x for x in res_data["results"]))
 
-    def test_members_count_include_soft_deleted_sub_teams(self):
+    def test_members_count_should_not_include_soft_deleted_sub_teams(self):
+        self.client.force_authenticate(self.superuser)
+        data = {
+            api_settings.ORDERING_PARAM: "id",
+            settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME: settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
+        }
+
+        res = self.client.get(
+            self.url,
+            data=data,
+        )
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 10)
+
+        root_team = res_data["results"][0]
+        self.assertEqual(root_team["id"], self.root_team.pk)
+
+        self.assertEqual(root_team["members_count"], 1)
+
         self.team.delete()
         self.team.refresh_from_db()
 
@@ -403,7 +421,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         root_team = res_data["results"][0]
         self.assertEqual(root_team["id"], self.root_team.pk)
 
-        self.assertEqual(root_team["members_count"], 1)
+        self.assertEqual(root_team["members_count"], 0)
 
     def test_response(self):
         self.client.force_authenticate(self.superuser)

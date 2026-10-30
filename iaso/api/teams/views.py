@@ -10,7 +10,7 @@ import django_filters
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
@@ -168,7 +168,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             if needs_members_count:
                 queryset = queryset.annotate(
                     annotated_users_count=Count("users", distinct=True),
-                    annotated_sub_teams_count=Count("sub_teams", distinct=True),
+                    annotated_sub_teams_count=Count(
+                        "sub_teams", distinct=True, filter=Q(sub_teams__deleted_at__isnull=True)
+                    ),
                 )
             return queryset
 
@@ -184,7 +186,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                 ),
                 Prefetch(
                     "sub_teams",
-                    Team.objects_include_deleted.filter_for_user(user)
+                    Team.objects.filter_for_user(user)
                     .only("id", "name", "deleted_at", "color", "parent")
                     .order_by("id"),
                 ),

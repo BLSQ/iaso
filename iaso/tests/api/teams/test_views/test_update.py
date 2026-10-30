@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
@@ -274,14 +275,15 @@ class TeamUpdateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         }
 
         self.assertValidBody(update_data)
+        ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(30):
+        with self.assertNumQueries(31):
             # 1 - 7: SELECT + SERIALIZER QUERYSETS
             # 8 - 10 SAVEPOINT - SELECT PARENT - SAVEPOINT
             # 11 - 17: UPDATE
             # 18 - 24: RECALCULATE PATH
-            # 25 - 27 : RELEASE + SELECT CHILDREN
-            # 28 - 30: AUDIT
+            # 25 - 28 : RELEASE + SELECT CHILDREN
+            # 29 - 31: AUDIT
             response = self.client.put(self.get_url(), update_data)
 
         self.assertJSONResponse(response, status.HTTP_200_OK)

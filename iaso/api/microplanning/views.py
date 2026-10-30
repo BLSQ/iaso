@@ -5,11 +5,8 @@ import typing
 from typing import TYPE_CHECKING, Any, Sequence
 
 from django.contrib.auth import get_user_model
-from django.contrib.gis.db.models import PointField
-from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, F, Min, Prefetch, Q, Value, When
-from django.db.models.functions import Cast
+from django.db.models import Count, Min, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -250,87 +247,6 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             ctx.update({"planning_id": self.kwargs.get("pk")})
         return ctx
 
-    @staticmethod
-    def _get_org_unit_tree_queryset(
-        filterset: PlanningOrgUnitTreeFilterSet, planning: Planning, user: User
-    ) -> OrgUnitQuerySet:
-        level = filterset.form.cleaned_data.get("level")
-        max_depth = filterset.form.cleaned_data.get("max_depth")
-        root = planning.org_unit
-        root_level = len(str(root.path).split("."))
-
-        # fetching the planning configs
-        configs = [
-            {
-                "level": x.level,
-                "org_unit_types": [out.id for out in x.org_unit_types.all()],
-                "org_unit_groups": [oug.id for oug in x.org_unit_groups.all()],
-            }
-            for x in planning.configs.all()
-        ]
-
-        if max_depth:
-            max_depth += root_level - 1
-
-        if level:
-            nodes_level = root_level + level
-            filter_kwargs = {
-                "path__depth": nodes_level,
-            }
-
-            root = (
-                OrgUnit.objects.filter_for_user(user)
-                .hierarchy(root)
-                .filter(**filter_kwargs)
-                .only("id", "parent", "name", "path")
-                .distinct("id")
-            )
-
-        queryset = OrgUnit.objects.filter_for_user(user).hierarchy(root)
-
-        if max_depth is not None:
-            queryset = queryset.filter(path__depth__lte=max_depth)
-
-        # filtering out per config
-        filter_qs = Q()
-        processed_levels = []
-        for config in configs:
-            processed_levels.append(config["level"] + root_level)
-            sub_filter = Q(path__depth=config["level"] + root_level)
-            if config["org_unit_types"]:
-                sub_filter &= Q(org_unit_type__in=config["org_unit_types"])
-
-            if config["org_unit_groups"]:
-                sub_filter &= Q(groups__in=config["org_unit_groups"])
-
-            filter_qs |= sub_filter
-
-        # keep nodes that are not in the config
-        filter_qs |= ~Q(path__depth__in=processed_levels)
-
-        empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
-
-        return (
-            queryset.only("id", "parent", "name", "path", "org_unit_type")
-            .select_related("org_unit_type")
-            .annotate(location_as_geom=Cast("location", PointField(dim=3)))
-            .annotate(
-                depth=F("path__depth"),
-                has_geo_json=Case(
-                    When(simplified_geom__isnull=False, then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField(),
-                ),
-                has_location=Case(
-                    When(Q(location__isnull=False) & (~Q(location_as_geom=empty_point)), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField(),
-                ),
-            )
-            .filter(filter_qs)
-            .order_by("id")
-        )
-
     def get_queryset(self) -> PlanningQuerySet | PlanningConfigQuerySet | MissionQuerySet | OrgUnitQuerySet:
         user = typing.cast(User, self.request.user)
         qs = self.queryset.filter_for_user(user)
@@ -401,11 +317,14 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                 data=self.request.query_params,
                 queryset=OrgUnit.objects.all(),
                 request=self.request,
+                planning=planning,
+                user=user,
             )
             if not filterset.is_valid():
                 raise serializers.ValidationError(filterset.errors)
 
-            return self._get_org_unit_tree_queryset(filterset, planning, user)
+            # filter does all the magic there
+            return filterset.qs
 
         return (
             self.queryset.filter_for_user(user)

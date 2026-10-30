@@ -1,6 +1,7 @@
 import django_filters
 
 from django import forms
+from django.core.validators import MinValueValidator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
@@ -124,8 +125,9 @@ class PlanningDropdownFilterSet(django_filters.FilterSet):
 
 
 class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
-    level = django_filters.NumberFilter(label="Level")
+    level = django_filters.NumberFilter(label="Level", min_value=1)
     max_depth = NumberFilter(
+        validators=[MinValueValidator(1)],
         min_value=1,
         help_text=_(
             "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."

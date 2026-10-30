@@ -14,13 +14,14 @@ import {
     Optional,
     useRedirectToReplace,
 } from 'bluesquare-components';
+import { useApiTeamsRetrieve } from 'Iaso/api/teams';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { smallInputOverrides } from 'Iaso/styles';
 import TopBar from '../../components/nav/TopBarComponent';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
 import { filterOrgUnitTypesByForms } from '../forms/utils';
 import {
@@ -31,7 +32,6 @@ import {
 import { flattenOrgUnitTypeHierarchy } from '../orgUnits/orgUnitTypes/utils';
 import { useGetPlanningDetails } from '../plannings/hooks/requests/useGetPlanningDetails';
 import { Planning } from '../plannings/types';
-import { useGetTeam } from '../teams/hooks/requests/useGetTeams';
 import { SubTeam, User } from '../teams/types/team';
 import { AssignmentsMap } from './components/map/AssignmentsMap';
 import { AssignmentsTable } from './components/table/AssignmentsTable';
@@ -102,9 +102,8 @@ export const Assignments: FunctionComponent = () => {
         extraFields: ['project_ids', 'org_unit_type_ids'],
     });
 
-    const { data: rootTeam, isLoading: isLoadingRootTeam } = useGetTeam(
-        planning?.team_details?.id,
-    );
+    const { data: rootTeam, isLoading: isLoadingRootTeam } =
+        useApiTeamsRetrieve(planning?.team_details?.id as number);
     const {
         data: assignments,
         isLoading: isLoadingAssignments,

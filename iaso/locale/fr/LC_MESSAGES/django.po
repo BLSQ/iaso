@@ -627,6 +627,30 @@ msgstr ""
 "la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne "
 "réinitialise pas la profondeur."
 
+#: iaso/api/teams/serializer_fields.py
+#, python-brace-format
+msgid "Invalid team type, expected {expected_type}."
+msgstr "Type d'équipe non valide, {expected_type} attendu."
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+msgid "Sub teams must be in the same project"
+msgstr "Les sous-équipes doivent appartenir au même projet"
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+msgid "Teams cannot have both users and sub teams"
+msgstr ""
+"Les équipes ne peuvent pas comporter à la fois des utilisateurs et des sous-"
+"équipes."
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+#, python-format
+msgid "Incorrect type: expected %(expected_type)s"
+msgstr "Type incorrect : %(expected_type)s attendu"
+
+#: iaso/api/teams/serializers/update.py
+msgid "Cannot create loop in teams tree"
+msgstr "Impossible de créer une boucle dans l’arborescence des équipes"
+
 #: iaso/api/validation_workflow_instances/filters.py
 msgid "Org unit IDs (comma-separated)"
 msgstr "IDs des unités organisationnelles (séparés par des virgules)"
@@ -1060,6 +1084,14 @@ msgstr "Payé"
 #: iaso/models/payments.py
 msgid "Partially Paid"
 msgstr "Partiellement payé"
+
+#: iaso/models/team.py
+msgid "Team of teams"
+msgstr "Equipe d'équipes"
+
+#: iaso/models/team.py
+msgid "Team of users"
+msgstr "Equipe d'utilisateurs"
 
 #: iaso/models/validation_workflow/validation_node.py
 msgid "Accepted"

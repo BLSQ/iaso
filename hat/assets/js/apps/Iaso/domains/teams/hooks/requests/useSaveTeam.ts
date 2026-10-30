@@ -1,8 +1,8 @@
 import { useQueryClient } from 'react-query';
+import { getApiTeamsRetrieveQueryKey } from 'Iaso/api/teams';
+import { TEAM_QUERY_KEYS } from 'Iaso/domains/teams/constants';
 import { patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { TEAM_QUERY_KEYS } from '../../constants';
-import { Team } from '../../types/team';
 
 type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
 
@@ -64,8 +64,10 @@ export const useSaveTeam = (
         ignoreErrorCodes,
         showSuccessSnackBar,
         options: {
-            onSuccess: (data: Team) => {
-                queryClient.invalidateQueries(['team', `team-${data.id}`]);
+            onSuccess: (data: { id: number }) => {
+                queryClient.invalidateQueries(
+                    getApiTeamsRetrieveQueryKey(data.id),
+                );
             },
         },
     });

@@ -15,6 +15,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { useApiTeamsDropdownList, useApiTeamsRetrieve } from 'Iaso/api/teams';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';
@@ -31,10 +32,6 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
-import {
-    useGetTeamsDropdown,
-    useGetTeam,
-} from '../../teams/hooks/requests/useGetTeams';
 import { baseUrl } from '../config';
 import {
     useGetEntitiesApiParams,
@@ -99,9 +96,14 @@ const Filters: FunctionComponent<Props> = ({
 
     const { data: types, isFetching: isFetchingTypes } =
         useGetEntityTypesDropdown();
-    const { data: teamOptions } = useGetTeamsDropdown({});
-    const { data: selectedTeam } = useGetTeam(
+    const { data: teamOptions } = useApiTeamsDropdownList();
+    const { data: selectedTeam } = useApiTeamsRetrieve(
         filters?.submitterTeamId ? parseInt(filters.submitterTeamId, 10) : 0,
+        {
+            query: {
+                enabled: !!filters?.submitterTeamId,
+            },
+        },
     );
     const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
     const sourceVersionId = currentUser?.account?.default_version?.id;

@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.settings import api_settings
@@ -140,7 +141,7 @@ class TeamCreateViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         }
 
         self.assertValidBody(create_data)
-
+        ContentType.objects.clear_cache()
         with self.assertNumQueries(17):
             # 1-4: PERMISSION + SERIALIZER VALIDATION QUERYSETS
             # 5-10: TRANSACTION, TEAM INSERT AND PATH RECALCULATE

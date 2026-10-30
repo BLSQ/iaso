@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
@@ -64,7 +62,7 @@ class TeamDestroyViewAPITestCase(APITestCase):
             name="sub_team_2", parent=cls.team, manager=cls.user_with_perms, project=cls.project1
         )
 
-    def get_url(self, pk: Optional[int] = None) -> str:
+    def get_url(self, pk: int | None = None) -> str:
         if not pk:
             pk = self.team.pk
         return reverse("teams-detail", kwargs={"pk": pk})

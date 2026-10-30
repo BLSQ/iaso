@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from django.urls import reverse
@@ -88,6 +90,11 @@ class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertResponseCompliantToSwagger(data, "PaginatedNestedPlanningConfigListList")
         self.assertEqual(len(data["results"]), expected_length)
 
+    def get_url(self, pk: int | None = None) -> str:
+        if not pk:
+            pk = self.planning.pk
+        return reverse("planning-configs", kwargs={"pk": pk})
+
     def test_permissions(self) -> None:
         res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning.pk}))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -116,6 +123,16 @@ class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_should_raise_a_404_if_planning_does_not_belong_to_user(self):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(reverse("planning-configs", kwargs={"pk": self.planning_other_account.pk}))
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_should_raise_a_404_if_planning_is_soft_deleted(self):
+        self.planning.delete()
+        self.planning.refresh_from_db()
+
+        self.assertIsNotNone(self.planning.deleted_at)
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_num_queries(self):

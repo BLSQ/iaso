@@ -215,6 +215,22 @@ class V2MobilePlanningListAPITestCase(APITestCase):
 
         self.assertValidData(res_data, 3)
 
+    def test_should_not_include_soft_deleted_plannings(self):
+        self.client.force_authenticate(self.user)
+
+        res = self.client.get(reverse("v2_mobileplanning-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidData(res_data, 3)
+
+        Planning.objects.all().delete()
+        self.assertTrue(all([x.deleted_at is not None for x in Planning.objects.values_list("deleted_at", flat=True)]))
+
+        res = self.client.get(reverse("v2_mobileplanning-list"))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidData(res_data, 0)
+
     def test_list(self):
         self.assertEqual(Planning.objects.filter(assignment__user=self.user).distinct().count(), 5)
 

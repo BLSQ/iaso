@@ -16,6 +16,7 @@ import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
 import { ActionsCell } from './components/list/ActionsCell';
 import { ViewSamplingResultDialog } from './components/sampling/SamplingResultDialog';
+import { DeprecatedPlanningChip } from './components/shared/DeprecatedPlanningChip';
 import { PlanningStatusChip } from './components/shared/PlanningStatusChip';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { SavePlanningQuery } from './hooks/requests/useSavePlanning';
@@ -123,9 +124,14 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
                 Header: formatMessage(MESSAGES.status),
                 accessor: 'status',
                 id: 'status',
-                Cell: settings => (
-                    <PlanningStatusChip status={settings.row.original.status} />
-                ),
+                Cell: settings =>
+                    settings.row.original.deprecated ? (
+                        <DeprecatedPlanningChip />
+                    ) : (
+                        <PlanningStatusChip
+                            status={settings.row.original.status}
+                        />
+                    ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),

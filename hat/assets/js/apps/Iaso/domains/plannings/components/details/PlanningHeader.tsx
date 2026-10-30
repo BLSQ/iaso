@@ -2,12 +2,13 @@ import React, { FC } from 'react';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
-import { Button, Chip, Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { getAssignmentsUrl } from '../../utils';
+import { DeprecatedPlanningChip } from '../shared/DeprecatedPlanningChip';
 import { PlanningStatusChip } from '../shared/PlanningStatusChip';
 import { planningPanelStyles } from '../shared/styles';
 import { SaveWarningDialog } from './SaveWarningDialog';
@@ -21,18 +22,11 @@ const styles = {
 
 export const PlanningHeaderTitle: FC = () => {
     const { planning, isReadOnly } = usePlanningContext();
-    const { formatMessage } = useSafeIntl();
     return (
         <>
             {planning?.name}
             <PlanningStatusChip status={planning?.status ?? 'draft'} />
-            {isReadOnly && (
-                <Chip
-                    label={formatMessage(MESSAGES.deprecated)}
-                    size="small"
-                    variant="outlined"
-                />
-            )}
+            {isReadOnly && <DeprecatedPlanningChip />}
         </>
     );
 };

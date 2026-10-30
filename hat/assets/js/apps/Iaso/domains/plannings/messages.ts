@@ -504,6 +504,11 @@ const MESSAGES = defineMessages({
             'Build the hierarchy below the root team. Changes update the levels automatically.',
         id: 'iaso.plannings.label.teamHierarchyInfos',
     },
+    selectProjectToPickRootTeam: {
+        defaultMessage:
+            'Select a project in the Info tab to choose a root team.',
+        id: 'iaso.plannings.label.selectProjectToPickRootTeam',
+    },
     selectRootTeamFirst: {
         defaultMessage: 'Select a root team to build its hierarchy.',
         id: 'iaso.plannings.label.selectRootTeamFirst',
@@ -514,8 +519,19 @@ const MESSAGES = defineMessages({
     },
     orgUnitLevelsInfos: {
         defaultMessage:
-            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.',
+            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy.',
         id: 'iaso.plannings.label.orgUnitLevelsInfos',
+    },
+    orgUnitLevelsTypesInfos: {
+        defaultMessage:
+            'Each level goes one step down the org unit tree: level 1 offers the org unit types directly below the root org unit, ' +
+            'and each next level offers the types directly below the ones of the level above.',
+        id: 'iaso.plannings.label.orgUnitLevelsTypesInfos',
+    },
+    orgUnitLevelsGroupsInfos: {
+        defaultMessage:
+            'Groups only list those containing org units of the selected types, to narrow the level down.',
+        id: 'iaso.plannings.label.orgUnitLevelsGroupsInfos',
     },
     levelNumber: {
         defaultMessage: 'Level {number}',
@@ -558,9 +574,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org unit types of a level must be at the same depth',
         id: 'iaso.plannings.label.mixedOrgUnitTypeDepths',
     },
-    notDeeperThanLevelAbove: {
-        defaultMessage: 'Org unit types must be deeper than the level above',
-        id: 'iaso.plannings.label.notDeeperThanLevelAbove',
+    notDirectlyBelowLevelAbove: {
+        defaultMessage: 'Org unit types must be directly below the level above',
+        id: 'iaso.plannings.label.notDirectlyBelowLevelAbove',
+    },
+    selectLevelAboveTypesFirst: {
+        defaultMessage: 'Select the org unit types of the level above first',
+        id: 'iaso.plannings.label.selectLevelAboveTypesFirst',
     },
     groupsWithoutLevelOrgUnits: {
         defaultMessage: "No org units of this level's types in: {groups}",
@@ -694,6 +714,50 @@ const MESSAGES = defineMessages({
             'one {# org unit has no shape or point. It is not on the map but appears in the list.} ' +
             'other {# org units have no shape or point. They are not on the map but appear in the list.}}',
         id: 'iaso.plannings.label.orgUnitsOffMap',
+    },
+    newPlanning: {
+        defaultMessage: 'New planning',
+        id: 'iaso.plannings.label.newPlanning',
+    },
+    fieldsToFix: {
+        defaultMessage: 'Fields to fix: {fields}',
+        id: 'iaso.plannings.label.fieldsToFix',
+    },
+    cantSaveFieldsToFix: {
+        defaultMessage:
+            "Can't save, required fields are missing or invalid in:",
+        id: 'iaso.plannings.label.cantSaveFieldsToFix',
+    },
+    noOrgUnitOfType: {
+        defaultMessage:
+            'No org unit of type {type} under {orgUnit}. Remove it or pick a deeper type.',
+        id: 'iaso.plannings.label.noOrgUnitOfType',
+    },
+    noOrgUnitInGroups: {
+        defaultMessage:
+            'The selected groups contain none of these org units. Nothing will be assigned at this level.',
+        id: 'iaso.plannings.label.noOrgUnitInGroups',
+    },
+    emptyLevelAbove: {
+        defaultMessage:
+            'The level above has no org unit, so these org units have no parent to be assigned from.',
+        id: 'iaso.plannings.label.emptyLevelAbove',
+    },
+    howCountIsComputed: {
+        defaultMessage: 'How {count} org units are computed',
+        id: 'iaso.plannings.label.howCountIsComputed',
+    },
+    typeUnderOrgUnit: {
+        defaultMessage: '{type} under {orgUnit}',
+        id: 'iaso.plannings.label.typeUnderOrgUnit',
+    },
+    notInSelectedGroups: {
+        defaultMessage: 'Not in the selected groups',
+        id: 'iaso.plannings.label.notInSelectedGroups',
+    },
+    assignableAtLevel: {
+        defaultMessage: 'Assignable at level {number}',
+        id: 'iaso.plannings.label.assignableAtLevel',
     },
 });
 

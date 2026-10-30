@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { EntityCard } from './EntityCard';
@@ -9,18 +10,6 @@ vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual('bluesquare-components');
     return {
         ...actual,
-        LinkWithLocation: ({
-            children,
-            to,
-            ...props
-        }: {
-            children: React.ReactNode;
-            to: string;
-        }) => (
-            <a href={to} {...props}>
-                {children}
-            </a>
-        ),
         useSafeIntl: () => ({
             formatMessage: (msg: { defaultMessage?: string } | string) =>
                 typeof msg === 'string' ? msg : (msg?.defaultMessage ?? 'msg'),
@@ -42,11 +31,13 @@ describe('EntityCard', () => {
 
     it('shows a link to the entity when requested', () => {
         renderWithThemeAndIntlProvider(
-            <EntityCard
-                entity={makeEntity({ id: 9 })}
-                fields={makeEntityFields()}
-                withLinkToEntity
-            />,
+            <MemoryRouter>
+                <EntityCard
+                    entity={makeEntity({ id: 9 })}
+                    fields={makeEntityFields()}
+                    withLinkToEntity
+                />
+            </MemoryRouter>,
         );
         const link = screen.getByRole('link');
         expect(link).toHaveAttribute(

@@ -3,7 +3,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import { Button, Stack } from '@mui/material';
-import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocationForwardRef } from 'Iaso/components/nav/LinkWithLocationForwardRef';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
@@ -21,10 +22,11 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningHeaderTitle: FC = () => {
-    const { planning, isReadOnly } = usePlanningContext();
+    const { planning, isReadOnly, formik } = usePlanningContext();
+    const { formatMessage } = useSafeIntl();
     return (
         <>
-            {planning?.name}
+            {formik.values.name?.trim() || formatMessage(MESSAGES.newPlanning)}
             <PlanningStatusChip status={planning?.status ?? 'draft'} />
             {isReadOnly && <DeprecatedPlanningChip />}
         </>
@@ -49,7 +51,7 @@ export const PlanningHeaderActions: FC = () => {
             <Button
                 variant="outlined"
                 size="small"
-                component={LinkWithLocation}
+                component={LinkWithLocationForwardRef}
                 to={planning ? getAssignmentsUrl(planning.id) : ''}
                 disabled={!planning}
             >

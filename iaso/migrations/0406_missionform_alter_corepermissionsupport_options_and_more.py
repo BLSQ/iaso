@@ -4,6 +4,8 @@ import django.db.models.deletion
 
 from django.conf import settings
 from django.db import migrations, models
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+from django.db.migrations.state import ProjectState
 
 
 def migrate_forms_to_missions(apps, schema_editor):
@@ -66,7 +68,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         batch_size=500,
     )
 
-    mission_by_key = dict(zip(unique_missions, mission_objects))
+    mission_by_key = dict(zip(unique_missions, mission_objects, strict=False))
 
     # Create multi-table inheritance records.
     with schema_editor.connection.cursor() as cursor:
@@ -89,7 +91,7 @@ def migrate_forms_to_missions(apps, schema_editor):
                 min_cardinality=1,
                 max_cardinality=1,
             )
-            for data, mission in zip(unique_missions.values(), mission_objects)
+            for data, mission in zip(unique_missions.values(), mission_objects, strict=False)
         ],
         batch_size=500,
     )
@@ -110,6 +112,7 @@ def migrate_forms_to_missions(apps, schema_editor):
     )
 
     PlanningFormThrough.objects.using(db_alias).all().delete()
+    Planning.objects.all().update(deprecated=True)
 
 
 def reverse_migrate_missions_to_forms(apps, schema_editor):
@@ -118,12 +121,39 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
     PlanningMissionsThrough = apps.get_model("iaso", "Planning_missions")
 
     for mission_form in MissionForm.objects.filter(plannings__isnull=False).prefetch_related("forms"):
-        for planning in mission_form.plannings.all():
+        for planning in mission_form.plannings.only(
+            "id", "forms"
+        ):  # especially made up to avoid the "deprecated" field that might not been there
             for form in mission_form.forms.all():
                 if form not in planning.forms.all():
                     planning.forms.add(form)
 
     PlanningMissionsThrough.objects.all().delete()
+
+
+class SafeAddField(migrations.AddField):
+    """
+    This is for the read only field.
+    We modified this migration post-migrate, for the existing env, we will need to reverse;
+    But reversing will mean it will try to remove a column that does not exist, we prevent the crash in that case
+
+    We can delete this and fallback to classic AddField once the related envs have been migrated
+    """
+
+    def database_backwards(
+        self, app_label: str, schema_editor: BaseDatabaseSchemaEditor, from_state: ProjectState, to_state: ProjectState
+    ) -> None:
+        from_model = from_state.apps.get_model(app_label, self.model_name)
+
+        table_name = from_model._meta.db_table
+
+        with schema_editor.connection.cursor() as cursor:
+            columns = schema_editor.connection.introspection.get_table_description(cursor, table_name)
+
+        if self.name not in {column.name for column in columns}:
+            return None
+
+        return super().database_backwards(app_label, schema_editor, from_state, to_state)
 
 
 class Migration(migrations.Migration):
@@ -287,6 +317,14 @@ class Migration(migrations.Migration):
             model_name="planning",
             name="missions",
             field=models.ManyToManyField(blank=True, related_name="plannings", to="iaso.mission"),
+        ),
+        SafeAddField(
+            model_name="planning",
+            name="deprecated",
+            field=models.BooleanField(
+                default=False,
+                help_text="Indicates that this planning is now considered deprecated as it was created before the mission feature was launched.",
+            ),
         ),
         migrations.CreateModel(
             name="MissionForm",

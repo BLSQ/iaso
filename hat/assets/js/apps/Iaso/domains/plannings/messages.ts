@@ -519,8 +519,19 @@ const MESSAGES = defineMessages({
     },
     orgUnitLevelsInfos: {
         defaultMessage:
-            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy. Each level uses org unit types deeper than the level above, optionally limited to groups.',
+            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy.',
         id: 'iaso.plannings.label.orgUnitLevelsInfos',
+    },
+    orgUnitLevelsTypesInfos: {
+        defaultMessage:
+            'Each level goes one step down the org unit tree: level 1 offers the org unit types directly below the root org unit, ' +
+            'and each next level offers the types directly below the ones of the level above.',
+        id: 'iaso.plannings.label.orgUnitLevelsTypesInfos',
+    },
+    orgUnitLevelsGroupsInfos: {
+        defaultMessage:
+            'Groups only list those containing org units of the selected types, to narrow the level down.',
+        id: 'iaso.plannings.label.orgUnitLevelsGroupsInfos',
     },
     levelNumber: {
         defaultMessage: 'Level {number}',
@@ -563,9 +574,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org unit types of a level must be at the same depth',
         id: 'iaso.plannings.label.mixedOrgUnitTypeDepths',
     },
-    notDeeperThanLevelAbove: {
-        defaultMessage: 'Org unit types must be deeper than the level above',
-        id: 'iaso.plannings.label.notDeeperThanLevelAbove',
+    notDirectlyBelowLevelAbove: {
+        defaultMessage: 'Org unit types must be directly below the level above',
+        id: 'iaso.plannings.label.notDirectlyBelowLevelAbove',
+    },
+    selectLevelAboveTypesFirst: {
+        defaultMessage: 'Select the org unit types of the level above first',
+        id: 'iaso.plannings.label.selectLevelAboveTypesFirst',
     },
     groupsWithoutLevelOrgUnits: {
         defaultMessage: "No org units of this level's types in: {groups}",

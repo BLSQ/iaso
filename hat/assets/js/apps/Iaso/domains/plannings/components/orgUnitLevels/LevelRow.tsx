@@ -100,6 +100,8 @@ export const LevelRow: FC<Props> = ({
         level: levelAbove ?? EMPTY_LEVEL,
     });
     const hasTypes = level.orgUnitTypeIds.length > 0;
+    const isLevelAboveMissingTypes =
+        index > 0 && !levelAbove?.orgUnitTypeIds.length;
     const hasGroups = level.groups.length > 0;
     const levelCounts = hasTypes ? counts : undefined;
     const selectedTypes = useMemo(
@@ -205,6 +207,14 @@ export const LevelRow: FC<Props> = ({
                             label: type.name,
                         }))}
                         label={MESSAGES.orgUnitTypes}
+                        disabled={isLevelAboveMissingTypes && !hasTypes}
+                        helperText={
+                            isLevelAboveMissingTypes
+                                ? formatMessage(
+                                      MESSAGES.selectLevelAboveTypesFirst,
+                                  )
+                                : undefined
+                        }
                         errors={
                             typeError
                                 ? [formatMessage(MESSAGES[typeError])]

@@ -38,7 +38,7 @@ export type LevelIssue =
 export type LevelTypeError =
     | 'requiredField'
     | 'mixedOrgUnitTypeDepths'
-    | 'notDeeperThanLevelAbove';
+    | 'notDirectlyBelowLevelAbove';
 
 export type SavedPlanningConfig = NonNullable<
     PaginatedPlanningConfigList['results']

@@ -77,26 +77,26 @@ describe('getLevelMembers', () => {
 });
 
 describe('getLevelTypeOptions', () => {
-    it('only offers types deeper than the level above', () => {
+    it('offers the types directly below the root org unit on the first level', () => {
+        expect(optionNames([level([])], 0)).toEqual(['Zone']);
+    });
+
+    it('offers the types directly below the level above', () => {
         expect(optionNames([level([2]), level([])], 1)).toEqual([
             'Area',
             'Hospital',
+        ]);
+    });
+
+    it('offers nothing when the level above has no type', () => {
+        expect(optionNames([level([]), level([])], 1)).toEqual([]);
+    });
+
+    it('keeps selected types listed even when no longer directly below', () => {
+        expect(optionNames([level([2]), level([4])], 1)).toEqual([
+            'Area',
+            'Hospital',
             'Centre',
-        ]);
-    });
-
-    it('only offers types shallower than the level below', () => {
-        expect(optionNames([level([]), level([4])], 0)).toEqual([
-            'Zone',
-            'Area',
-            'Hospital',
-        ]);
-    });
-
-    it('restricts to the depth of the types already selected on the level', () => {
-        expect(optionNames([level([2]), level([3])], 1)).toEqual([
-            'Area',
-            'Hospital',
         ]);
     });
 });
@@ -125,10 +125,16 @@ describe('validateLevelTypes', () => {
         ]);
     });
 
-    it('rejects a level that is not deeper than the level above', () => {
-        expect(validateLevelTypes([level([3]), level([5])], 2, TYPES)).toEqual([
+    it('rejects a first level that is not directly below the root org unit', () => {
+        expect(validateLevelTypes([level([3])], 1, TYPES)).toEqual([
+            'notDirectlyBelowLevelAbove',
+        ]);
+    });
+
+    it('rejects a level that skips a depth below the level above', () => {
+        expect(validateLevelTypes([level([2]), level([4])], 2, TYPES)).toEqual([
             undefined,
-            'notDeeperThanLevelAbove',
+            'notDirectlyBelowLevelAbove',
         ]);
     });
 });

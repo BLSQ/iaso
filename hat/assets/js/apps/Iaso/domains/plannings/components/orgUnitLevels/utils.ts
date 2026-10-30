@@ -49,28 +49,29 @@ const getDepths = (
             .filter((depth): depth is number => depth !== undefined),
     );
 
+const ROOT_DEPTH = 0;
+
+// Each level goes exactly one depth below the level above, the root org unit being the level above level 1.
+const getExpectedDepth = (
+    levels: PlanningLevel[],
+    levelIndex: number,
+    depthByTypeId: Map<number, number>,
+): number | undefined => {
+    if (levelIndex === 0) return ROOT_DEPTH + 1;
+    const depthsAbove = getDepths(levels[levelIndex - 1], depthByTypeId);
+    return depthsAbove.length === 1 ? depthsAbove[0] + 1 : undefined;
+};
+
 export const getLevelTypeOptions = (
     levels: PlanningLevel[],
     levelIndex: number,
     types: LevelOrgUnitType[],
 ): LevelOrgUnitType[] => {
     const depthByTypeId = new Map(types.map(type => [type.id, type.depth]));
-    const depthsAbove = levels
-        .slice(0, levelIndex)
-        .flatMap(level => getDepths(level, depthByTypeId));
-    const depthsBelow = levels
-        .slice(levelIndex + 1)
-        .flatMap(level => getDepths(level, depthByTypeId));
-    const minDepth = Math.max(0, ...depthsAbove);
-    const maxDepth = Math.min(Infinity, ...depthsBelow);
-    const [currentDepth] = getDepths(levels[levelIndex], depthByTypeId);
+    const expectedDepth = getExpectedDepth(levels, levelIndex, depthByTypeId);
     const selectedIds = levels[levelIndex]?.orgUnitTypeIds ?? [];
     return types.filter(
-        type =>
-            selectedIds.includes(type.id) ||
-            (type.depth > minDepth &&
-                type.depth < maxDepth &&
-                (currentDepth === undefined || type.depth === currentDepth)),
+        type => selectedIds.includes(type.id) || type.depth === expectedDepth,
     );
 };
 
@@ -80,17 +81,19 @@ export const validateLevelTypes = (
     types: LevelOrgUnitType[],
 ): (LevelTypeError | undefined)[] => {
     const depthByTypeId = new Map(types.map(type => [type.id, type.depth]));
-    let depthAbove = 0;
     return Array.from({ length: levelsCount }, (_, index) => {
         const level = levels[index];
         if (!level?.orgUnitTypeIds.length) return 'requiredField';
         const depths = getDepths(level, depthByTypeId);
         if (depths.length > 1) return 'mixedOrgUnitTypeDepths';
         const [depth] = depths;
-        if (depth === undefined) return undefined;
-        const isDeeper = depth > depthAbove;
-        depthAbove = Math.max(depthAbove, depth);
-        return isDeeper ? undefined : 'notDeeperThanLevelAbove';
+        const expectedDepth = getExpectedDepth(levels, index, depthByTypeId);
+        if (depth === undefined || expectedDepth === undefined) {
+            return undefined;
+        }
+        return depth === expectedDepth
+            ? undefined
+            : 'notDirectlyBelowLevelAbove';
     });
 };
 

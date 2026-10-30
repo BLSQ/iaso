@@ -69,6 +69,11 @@ describe('getFieldKind', () => {
         expect(getFieldKind({ name: 'a', type: 'start' })).to.equal('date');
         expect(getFieldKind({ name: 'a', type: 'end' })).to.equal('date');
         expect(getFieldKind({ name: 'a', type: 'image' })).to.equal('photo');
+        expect(getFieldKind({ name: 'a', type: 'audio' })).to.equal('file');
+        expect(getFieldKind({ name: 'a', type: 'background-audio' })).to.equal(
+            'file',
+        );
+        expect(getFieldKind({ name: 'a', type: 'file' })).to.equal('file');
         expect(getFieldKind({ name: 'a', type: 'calculate' })).to.equal(
             'calculated',
         );

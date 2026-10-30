@@ -46,9 +46,6 @@ const styles = {
     levelColumn: { width: 140 },
     membersColumn: { width: 200 },
     countColumn: { width: 120 },
-    emptyMessage: {
-        p: 2,
-    },
 } satisfies SxStyles;
 
 const ROOT_LEVEL_MEMBERS = { teamsCount: 1, usersCount: 0 };
@@ -111,10 +108,18 @@ export const OrgUnitLevelsSection: FC = () => {
         <PlanningStepCard
             step={3}
             title={title}
-            description={formatMessage(
-                MESSAGES.orgUnitLevelsInfos,
-                numericValues({ count: levelsCount + 1 }),
-            )}
+            description={
+                <>
+                    {formatMessage(
+                        MESSAGES.orgUnitLevelsInfos,
+                        numericValues({ count: levelsCount + 1 }),
+                    )}
+                    <br />
+                    {formatMessage(MESSAGES.orgUnitLevelsTypesInfos)}
+                    <br />
+                    {formatMessage(MESSAGES.orgUnitLevelsGroupsInfos)}
+                </>
+            }
             disableContentPadding
         >
             <Table sx={styles.table}>

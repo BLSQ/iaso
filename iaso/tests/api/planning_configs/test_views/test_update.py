@@ -58,6 +58,7 @@ class PlanningConfigUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # Create test project
         cls.project = Project.objects.create(name="Test Project", app_id="test.app", account=cls.account)
+        cls.project2 = Project.objects.create(name="Test Project2", app_id="test.app2", account=cls.account)
         cls.project_other_account = Project.objects.create(
             name="Test Project other account", app_id="test.app.other_account", account=cls.other_account
         )
@@ -67,7 +68,8 @@ class PlanningConfigUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # Create test org unit types
         cls.org_unit_type = OrgUnitType.objects.create(name="Test Country Type")
-        cls.org_unit_type.projects.set([cls.project])
+        # setting up two projects to be sure that the queryset in serializer PK field is returning distinct values
+        cls.org_unit_type.projects.set([cls.project, cls.project2])
 
         cls.org_unit_type_2 = OrgUnitType.objects.create(name="Test Country Type 2")
         cls.org_unit_type_2.projects.set([cls.project])

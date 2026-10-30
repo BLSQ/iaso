@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from django.urls import reverse
 from rest_framework import status
@@ -89,7 +89,7 @@ class TeamRetrieveAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.create_user_with_profile(username="user", account=other_account)
         account.project_set.create(name="other_project")
 
-    def get_url(self, pk: Optional[int] = None) -> str:
+    def get_url(self, pk: int | None = None) -> str:
         if pk is None:
             pk = self.team.pk
         return reverse("teams-detail", kwargs={"pk": pk})

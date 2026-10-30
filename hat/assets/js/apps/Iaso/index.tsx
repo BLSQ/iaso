@@ -49,6 +49,7 @@ declare global {
             userHomePage: string,
             defaultAppId: string,
             domainName: string,
+            siteAnnouncementMessage: string,
         ) => void;
         __TANSTACK_QUERY_CLIENT__: QueryClient;
     }
@@ -61,6 +62,7 @@ const IasoApp: React.FC<{
     userHomePage: string;
     defaultAppId: string;
     domainName: string;
+    siteAnnouncementMessage: string;
 }> = ({
     element,
     enabledPluginsName,
@@ -68,6 +70,7 @@ const IasoApp: React.FC<{
     userHomePage,
     defaultAppId,
     domainName,
+    siteAnnouncementMessage,
 }) => {
     const { plugins, pluginHomePage, pluginTheme } =
         usePlugins(enabledPluginsName);
@@ -78,6 +81,7 @@ const IasoApp: React.FC<{
             <BackendEnvContextProvider
                 defaultAppId={defaultAppId}
                 domainName={domainName}
+                siteAnnouncementMessage={siteAnnouncementMessage}
             >
                 <PluginsContext.Provider value={{ plugins }}>
                     <ThemeConfigContext.Provider value={themeConfig}>
@@ -125,6 +129,7 @@ window.iasoApp = (
     userHomePage,
     defaultAppId,
     domainName,
+    siteAnnouncementMessage,
 ) => {
     const root = createRoot(element!); // createRoot(container!) if you use TypeScript
     root.render(
@@ -135,6 +140,7 @@ window.iasoApp = (
             userHomePage={userHomePage}
             defaultAppId={defaultAppId}
             domainName={domainName}
+            siteAnnouncementMessage={siteAnnouncementMessage}
         />,
     );
 };

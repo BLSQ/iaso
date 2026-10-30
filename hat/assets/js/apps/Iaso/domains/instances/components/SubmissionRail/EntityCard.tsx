@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
-import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocationForwardRef } from 'Iaso/components/nav/LinkWithLocationForwardRef';
 import { baseUrls } from '../../../../constants/urls';
 import ENTITY_MESSAGES from '../../../entities/messages';
 import { Entity } from '../../../entities/types/entity';
@@ -48,7 +49,7 @@ export const EntityCard: FunctionComponent<Props> = ({
                         <IconButton
                             size="small"
                             color="primary"
-                            component={LinkWithLocation}
+                            component={LinkWithLocationForwardRef}
                             to={`/${baseUrls.entityDetails}/entityId/${entity.id}`}
                         >
                             <VisibilityOutlinedIcon fontSize="small" />

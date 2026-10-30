@@ -9,7 +9,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { useGetTeamTree } from 'Iaso/domains/teams/hooks/requests/useGetTeamTree';
 import { SxStyles } from 'Iaso/types/general';
@@ -31,15 +31,17 @@ import {
 const styles = {
     table: {
         tableLayout: 'fixed',
-        '& tbody tr:nth-of-type(even)': { bgcolor: 'action.hover' },
+        '& tbody:nth-of-type(even)': { bgcolor: 'action.hover' },
         '& td': { verticalAlign: 'middle' },
     },
     rootIcon: {
         fontSize: '1.1rem',
         color: 'text.secondary',
     },
-    count: {
+    rootCount: {
         fontWeight: 'bold',
+        // Aligns with the level counts, followed by their expand icon.
+        pr: 3.75,
     },
     levelColumn: { width: 140 },
     membersColumn: { width: 200 },
@@ -159,32 +161,34 @@ export const OrgUnitLevelsSection: FC = () => {
                                 </Typography>
                             </Stack>
                         </TableCell>
-                        <TableCell>--</TableCell>
+                        <TableCell>{textPlaceholder}</TableCell>
                         <TableCell align="right">
-                            <Typography sx={styles.count}>1</Typography>
+                            <Typography sx={styles.rootCount}>1</Typography>
                         </TableCell>
                     </TableRow>
-                    {React.Children.toArray(
-                        levelMembers.map((members, index) => (
-                            <LevelRow
-                                index={index}
-                                level={levels[index] ?? EMPTY_LEVEL}
-                                members={members}
-                                isDeepest={index === levelsCount - 1}
-                                typeOptions={getLevelTypeOptions(
-                                    levels,
-                                    index,
-                                    types,
-                                )}
-                                typeError={typeErrors[index]}
-                                sourceVersionId={rootOrgUnit.version_id}
-                                rootOrgUnitId={selectedOrgUnit}
-                                onChange={updateLevel}
-                                disabled={isReadOnly}
-                            />
-                        )),
-                    )}
                 </TableBody>
+                {React.Children.toArray(
+                    levelMembers.map((members, index) => (
+                        <LevelRow
+                            index={index}
+                            level={levels[index] ?? EMPTY_LEVEL}
+                            members={members}
+                            isDeepest={index === levelsCount - 1}
+                            typeOptions={getLevelTypeOptions(
+                                levels,
+                                index,
+                                types,
+                            )}
+                            typeError={typeErrors[index]}
+                            sourceVersionId={rootOrgUnit.version_id}
+                            rootOrgUnitId={selectedOrgUnit}
+                            rootOrgUnitName={rootOrgUnit.name}
+                            levelAbove={levels[index - 1]}
+                            onChange={updateLevel}
+                            disabled={isReadOnly}
+                        />
+                    )),
+                )}
             </Table>
         </PlanningStepCard>
     );

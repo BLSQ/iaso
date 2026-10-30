@@ -21,10 +21,11 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningHeaderTitle: FC = () => {
-    const { planning, isReadOnly } = usePlanningContext();
+    const { planning, isReadOnly, formik } = usePlanningContext();
+    const { formatMessage } = useSafeIntl();
     return (
         <>
-            {planning?.name}
+            {formik.values.name?.trim() || formatMessage(MESSAGES.newPlanning)}
             <PlanningStatusChip status={planning?.status ?? 'draft'} />
             {isReadOnly && <DeprecatedPlanningChip />}
         </>

@@ -30,9 +30,9 @@ class DevicesPositionAPITestCase(APITestCase):
             needs_authentication=True,
         )
 
-        cls.device_1 = m.Device.objects.create()
+        cls.device_1 = m.Device.objects.create(installation_id="device1", account=star_wars)
         cls.device_1.projects.set([cls.project_1])
-        cls.device_2 = m.Device.objects.create()
+        cls.device_2 = m.Device.objects.create(installation_id="device2", account=star_wars)
         cls.device_2.projects.set([cls.project_2])
 
     def test_post_ok_no_auth(self):

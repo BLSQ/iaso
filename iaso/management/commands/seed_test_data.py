@@ -776,10 +776,12 @@ class Command(BaseCommand):
                         UploadedFile()
 
                     if instance.json["imei"] is not None:
-                        device, created = Device.objects.get_or_create(imei=instance.json["imei"])
+                        device, created = Device.objects.get_or_create(installation_id=instance.json["imei"])
                         instance.device = device
                         if created:
+                            device.account = instance.project.account
                             device.projects.add(instance.project)
+                            device.save()
 
                     instances.append(instance)
             Instance.objects.bulk_create(instances)

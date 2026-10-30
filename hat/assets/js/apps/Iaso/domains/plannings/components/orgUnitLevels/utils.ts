@@ -5,7 +5,9 @@ import {
 } from 'Iaso/api/planningConfigs';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import {
+    LevelIssue,
     LevelMembers,
+    LevelOrgUnitCounts,
     LevelOrgUnitType,
     LevelTypeError,
     PlanningLevel,
@@ -151,4 +153,36 @@ export const getPlanningConfigChanges = (
         .filter(config => config.level > levels.length)
         .map(config => config.id);
     return { toCreate, toUpdate, toDeleteIds };
+};
+
+type LevelIssuesParams = {
+    selectedTypes: LevelOrgUnitType[];
+    counts: LevelOrgUnitCounts;
+    hasGroups: boolean;
+    levelAboveCount?: number;
+};
+
+export const getLevelIssues = ({
+    selectedTypes,
+    counts,
+    hasGroups,
+    levelAboveCount,
+}: LevelIssuesParams): LevelIssue[] => {
+    const issues: LevelIssue[] = selectedTypes
+        .filter(type => !counts.countByTypeId.get(type.id))
+        .map(type => ({ type: 'noOrgUnitOfType', typeName: type.name }));
+    const { total, typesTotal } = counts;
+    if (hasGroups && typesTotal > 0 && total === 0) {
+        issues.push({ type: 'noOrgUnitInGroups' });
+    } else if (hasGroups && typesTotal > total) {
+        issues.push({
+            type: 'excludedByGroups',
+            excludedCount: typesTotal - total,
+            totalCount: typesTotal,
+        });
+    }
+    if (levelAboveCount === 0 && total > 0) {
+        issues.push({ type: 'emptyLevelAbove' });
+    }
+    return issues;
 };

@@ -695,6 +695,63 @@ const MESSAGES = defineMessages({
             'other {# org units have no shape or point. They are not on the map but appear in the list.}}',
         id: 'iaso.plannings.label.orgUnitsOffMap',
     },
+    newPlanning: {
+        defaultMessage: 'New planning',
+        id: 'iaso.plannings.label.newPlanning',
+    },
+    fieldsToFix: {
+        defaultMessage: 'Fields to fix: {fields}',
+        id: 'iaso.plannings.label.fieldsToFix',
+    },
+    cantSaveFieldsToFix: {
+        defaultMessage:
+            "Can't save, required fields are missing or invalid in:",
+        id: 'iaso.plannings.label.cantSaveFieldsToFix',
+    },
+    noOrgUnitOfType: {
+        defaultMessage:
+            'No org unit of type {type} under {orgUnit}. Remove it or pick a deeper type.',
+        id: 'iaso.plannings.label.noOrgUnitOfType',
+    },
+    noOrgUnitInGroups: {
+        defaultMessage:
+            'The selected groups contain none of these org units. Nothing will be assigned at this level.',
+        id: 'iaso.plannings.label.noOrgUnitInGroups',
+    },
+    excludedByGroups: {
+        defaultMessage:
+            '{excluded} of {total} org units are excluded because they are in none of the selected groups.',
+        id: 'iaso.plannings.label.excludedByGroups',
+    },
+    emptyLevelAbove: {
+        defaultMessage:
+            'The level above has no org unit, so these org units have no parent to be assigned from.',
+        id: 'iaso.plannings.label.emptyLevelAbove',
+    },
+    whyThisCount: {
+        defaultMessage: 'Why this count',
+        id: 'iaso.plannings.label.whyThisCount',
+    },
+    howCountIsComputed: {
+        defaultMessage: 'How {count} org units are computed',
+        id: 'iaso.plannings.label.howCountIsComputed',
+    },
+    typeUnderOrgUnit: {
+        defaultMessage: '{type} under {orgUnit}',
+        id: 'iaso.plannings.label.typeUnderOrgUnit',
+    },
+    notInSelectedGroups: {
+        defaultMessage: 'Not in the selected groups',
+        id: 'iaso.plannings.label.notInSelectedGroups',
+    },
+    assignableAtLevel: {
+        defaultMessage: 'Assignable at level {number}',
+        id: 'iaso.plannings.label.assignableAtLevel',
+    },
+    ofTotal: {
+        defaultMessage: 'of {total}',
+        id: 'iaso.plannings.label.ofTotal',
+    },
 });
 
 export default MESSAGES;

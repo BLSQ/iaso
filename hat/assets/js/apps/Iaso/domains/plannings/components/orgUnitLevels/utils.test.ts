@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
-import { LevelOrgUnitType, PlanningLevel, SavedPlanningConfig } from './types';
+import {
+    LevelOrgUnitCounts,
+    LevelOrgUnitType,
+    PlanningLevel,
+    SavedPlanningConfig,
+} from './types';
 import {
     configsToLevels,
+    getLevelIssues,
     getLevelMembers,
     getPlanningConfigChanges,
     getLevelTypeOptions,
@@ -212,5 +218,76 @@ describe('getPlanningConfigChanges', () => {
             toUpdate: [],
             toDeleteIds: [11],
         });
+    });
+});
+
+const makeCounts = (
+    total: number,
+    countByTypeId: [number, number][],
+): LevelOrgUnitCounts => ({
+    total,
+    typesTotal: countByTypeId.reduce((acc, [, count]) => acc + count, 0),
+    countByGroupId: new Map(),
+    countByTypeId: new Map(countByTypeId),
+});
+
+describe('getLevelIssues', () => {
+    const [zone, area] = TYPES;
+
+    it('returns no issue when every type has org units and no group filters them out', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone],
+                counts: makeCounts(4, [[zone.id, 4]]),
+                hasGroups: false,
+                levelAboveCount: 1,
+            }),
+        ).toEqual([]);
+    });
+
+    it('flags each selected type without org units under the target geography', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone, area],
+                counts: makeCounts(3, [
+                    [zone.id, 3],
+                    [area.id, 0],
+                ]),
+                hasGroups: false,
+            }),
+        ).toEqual([{ type: 'noOrgUnitOfType', typeName: 'Area' }]);
+    });
+
+    it('reports org units excluded by the groups', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone],
+                counts: makeCounts(3, [[zone.id, 10]]),
+                hasGroups: true,
+            }),
+        ).toEqual([
+            { type: 'excludedByGroups', excludedCount: 7, totalCount: 10 },
+        ]);
+    });
+
+    it('reports groups that contain none of the level org units', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone],
+                counts: makeCounts(0, [[zone.id, 10]]),
+                hasGroups: true,
+            }),
+        ).toEqual([{ type: 'noOrgUnitInGroups' }]);
+    });
+
+    it('warns when the level above has no org unit to assign from', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [area],
+                counts: makeCounts(5, [[area.id, 5]]),
+                hasGroups: false,
+                levelAboveCount: 0,
+            }),
+        ).toEqual([{ type: 'emptyLevelAbove' }]);
     });
 });

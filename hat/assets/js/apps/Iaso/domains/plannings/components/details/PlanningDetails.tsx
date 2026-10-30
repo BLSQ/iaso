@@ -1,17 +1,23 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
-import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
-import TuneIcon from '@mui/icons-material/Tune';
 import { Tab, Tabs } from '@mui/material';
-import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { smallTabsOverrides } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
-import MESSAGES from '../../messages';
+import { usePlanningContext } from '../../contexts/PlanningContext';
 import { InfoTab } from '../info/InfoTab';
 import { LevelsAndTeamsTab } from '../levelsAndTeams/LevelsAndTeamsTab';
 import { PlanningHeaderActions, PlanningHeaderTitle } from './PlanningHeader';
+import {
+    getActiveTab,
+    getFieldsToFix,
+    PLANNING_TABS,
+    TabKey,
+    useSelectPlanningTab,
+} from './planningTabs';
+import { TabErrorIcon } from './TabErrorIcon';
 
 const styles = {
     tabs: {
@@ -19,24 +25,23 @@ const styles = {
         flexShrink: 0,
         marginBottom: 3,
     },
+    tabWithError: {
+        '&, &.Mui-selected': { color: 'error.main' },
+    },
 } satisfies SxStyles;
-
-type TabKey = 'info' | 'levelsAndTeams';
-
-const TAB_KEYS: TabKey[] = ['info', 'levelsAndTeams'];
-
-const isTabKey = (tab?: string): tab is TabKey =>
-    TAB_KEYS.includes(tab as TabKey);
 
 export const PlanningDetails: FC = () => {
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrls.planningDetails);
-    const activeTab: TabKey = isTabKey(params.tab) ? params.tab : 'info';
-    const redirectToReplace = useRedirectToReplace();
+    const activeTab = getActiveTab(params.tab);
+    const selectTab = useSelectPlanningTab();
+    const { formik } = usePlanningContext();
+    const { errors, isValid, submitCount } = formik;
+    const hasSubmitFailed = submitCount > 0 && !isValid;
+
     const handleChangeTab = useCallback(
-        (_event: SyntheticEvent, tab: TabKey) =>
-            redirectToReplace(baseUrls.planningDetails, { ...params, tab }),
-        [redirectToReplace, params],
+        (_event: SyntheticEvent, tab: TabKey) => selectTab(tab),
+        [selectTab],
     );
 
     return (
@@ -45,18 +50,38 @@ export const PlanningDetails: FC = () => {
             actions={<PlanningHeaderActions />}
         >
             <Tabs value={activeTab} onChange={handleChangeTab} sx={styles.tabs}>
-                <Tab
-                    value="info"
-                    label={formatMessage(MESSAGES.info)}
-                    icon={<TuneIcon />}
-                    iconPosition="start"
-                />
-                <Tab
-                    value="levelsAndTeams"
-                    label={formatMessage(MESSAGES.levelsAndTeams)}
-                    icon={<AccountTreeOutlinedIcon />}
-                    iconPosition="start"
-                />
+                {PLANNING_TABS.map(tab => {
+                    const { key, label, Icon } = tab;
+                    // The active tab's fields show their own errors.
+                    const fieldsToFix =
+                        hasSubmitFailed && key !== activeTab
+                            ? getFieldsToFix(tab, errors, formatMessage)
+                            : [];
+                    return (
+                        <Tab
+                            key={key}
+                            value={key}
+                            label={formatMessage(label)}
+                            iconPosition="start"
+                            icon={
+                                fieldsToFix.length > 0 ? (
+                                    // Remounted on every failed save to replay its shake.
+                                    <TabErrorIcon
+                                        key={submitCount}
+                                        fieldsToFix={fieldsToFix}
+                                    />
+                                ) : (
+                                    <Icon />
+                                )
+                            }
+                            sx={
+                                fieldsToFix.length > 0
+                                    ? styles.tabWithError
+                                    : undefined
+                            }
+                        />
+                    );
+                })}
             </Tabs>
             {activeTab === 'info' && <InfoTab />}
             {activeTab === 'levelsAndTeams' && <LevelsAndTeamsTab />}

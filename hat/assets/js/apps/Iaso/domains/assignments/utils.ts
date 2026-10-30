@@ -1,9 +1,10 @@
 import L from 'leaflet';
+import { TeamRetrieve } from 'Iaso/api/teams';
 import { OrgUnitTypeHierarchyDropdownValue } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { isValidCoordinate } from 'Iaso/utils/map/mapUtils';
-import { SubTeam, User } from '../teams/types/team';
+import { User } from '../teams/types/team';
 import { AssignmentsResult } from './types/assigment';
 
 export const defaultViewport = {
@@ -85,7 +86,7 @@ export const assignmentsCountForUser = (
     );
 };
 export const countTeams = (
-    subTeam: SubTeam,
+    subTeam: NonNullable<TeamRetrieve['sub_teams']>[number],
     assignments?: AssignmentsResult,
 ) => {
     return (

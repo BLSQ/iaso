@@ -44,14 +44,14 @@ const bob = makeUser(101, 'bob');
 
 // root(1) -> alpha(2) -> alpha-users(4: alice, bob)
 //         -> bravo(3)
-const ALPHA_USERS = makeTeam(4, 'Alpha users', 2, TeamType.TEAM_OF_USERS, {
+const ALPHA_USERS = makeTeam(4, 'Alpha users', 2, TeamType.enum.TEAM_OF_USERS, {
     users: [alice, bob],
 });
-const ALPHA = makeTeam(2, 'Alpha', 1, TeamType.TEAM_OF_TEAMS, {
+const ALPHA = makeTeam(2, 'Alpha', 1, TeamType.enum.TEAM_OF_TEAMS, {
     children: [ALPHA_USERS],
 });
-const BRAVO = makeTeam(3, 'Bravo', 1, TeamType.TEAM_OF_TEAMS);
-const ROOT = makeTeam(1, 'Root', null, TeamType.TEAM_OF_TEAMS, {
+const BRAVO = makeTeam(3, 'Bravo', 1, TeamType.enum.TEAM_OF_TEAMS);
+const ROOT = makeTeam(1, 'Root', null, TeamType.enum.TEAM_OF_TEAMS, {
     children: [ALPHA, BRAVO],
 });
 

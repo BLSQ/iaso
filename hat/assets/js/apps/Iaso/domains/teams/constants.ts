@@ -1,16 +1,14 @@
-import { getApiTeamsTreeListQueryKey } from 'Iaso/api/teams';
+import {
+    getApiTeamsDropdownListQueryKey,
+    getApiTeamsListQueryKey,
+    getApiTeamsTreeListQueryKey,
+    Value8edEnum,
+} from 'Iaso/api/teams';
 
-export const TEAM_OF_TEAMS = 'TEAM_OF_TEAMS';
-export const TEAM_OF_USERS = 'TEAM_OF_USERS';
-
-export enum TeamType {
-    TEAM_OF_USERS = 'TEAM_OF_USERS',
-    TEAM_OF_TEAMS = 'TEAM_OF_TEAMS',
-}
+export { Value8edEnum as TeamType };
 
 export const TEAM_QUERY_KEYS = [
-    'teamsList',
-    'teamsDropdown',
-    'team',
+    getApiTeamsDropdownListQueryKey()[0],
+    getApiTeamsListQueryKey()[0],
     getApiTeamsTreeListQueryKey()[0],
 ];

@@ -42,14 +42,6 @@ export type TeamTreeNode = Pick<Team, 'id' | 'name' | 'type' | 'color'> & {
     children: TeamTreeNode[];
 };
 
-export type TeamDropdown = {
-    id: number;
-    name: string;
-    color: string;
-    type?: TeamType;
-    project: number;
-};
-
 export type TeamFilterParams = {
     project?: number;
     type?: TeamType;
@@ -57,13 +49,4 @@ export type TeamFilterParams = {
     fields?: string;
 };
 
-export type TeamDropdownFilterParams = TeamFilterParams;
-
 export type TeamUrlParams = UrlParams & TeamFilterParams;
-
-export type DropdownTeamsOptions = {
-    label: string;
-    value: string;
-    original: TeamDropdown;
-    color: string;
-};

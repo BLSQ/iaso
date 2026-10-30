@@ -1,16 +1,18 @@
-import { TEAM_OF_TEAMS, TEAM_OF_USERS, TeamType } from './constants';
+import { TeamType } from './constants';
 import { Team, TeamTreeNode } from './types/team';
 
 type TeamWithType = Pick<Team, 'type'>;
 
 export const canHaveSubTeams = ({ type }: TeamWithType): boolean =>
-    type !== TEAM_OF_USERS;
+    type !== TeamType.enum.TEAM_OF_USERS;
 
 export const canHaveUsers = ({ type }: TeamWithType): boolean =>
-    type !== TEAM_OF_TEAMS;
+    type !== TeamType.enum.TEAM_OF_TEAMS;
 
 export const getToggledType = ({ type }: TeamWithType): TeamType =>
-    type === TEAM_OF_USERS ? TeamType.TEAM_OF_TEAMS : TeamType.TEAM_OF_USERS;
+    type === TeamType.enum.TEAM_OF_USERS
+        ? TeamType.enum.TEAM_OF_TEAMS
+        : TeamType.enum.TEAM_OF_USERS;
 
 export const collectTeamTreeNodes = (root: TeamTreeNode): TeamTreeNode[] => {
     const nodes: TeamTreeNode[] = [];

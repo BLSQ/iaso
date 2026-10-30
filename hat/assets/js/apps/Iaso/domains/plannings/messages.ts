@@ -504,6 +504,11 @@ const MESSAGES = defineMessages({
             'Build the hierarchy below the root team. Changes update the levels automatically.',
         id: 'iaso.plannings.label.teamHierarchyInfos',
     },
+    selectProjectToPickRootTeam: {
+        defaultMessage:
+            'Select a project in the Info tab to choose a root team.',
+        id: 'iaso.plannings.label.selectProjectToPickRootTeam',
+    },
     selectRootTeamFirst: {
         defaultMessage: 'Select a root team to build its hierarchy.',
         id: 'iaso.plannings.label.selectRootTeamFirst',

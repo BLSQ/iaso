@@ -1630,6 +1630,7 @@
     "iaso.plannings.label.seeSamplingResults": "Voir les résultats d'échantillonnage",
     "iaso.plannings.label.selectGeographyAndRootTeamFirst": "Sélectionnez une zone géographique cible et une équipe racine pour définir les niveaux.",
     "iaso.plannings.label.selectOrgUnit": "Zone géographique cible",
+    "iaso.plannings.label.selectProjectToPickRootTeam": "Sélectionnez un projet dans l'onglet Infos pour choisir une équipe racine.",
     "iaso.plannings.label.selectRootTeamFirst": "Sélectionnez une équipe racine pour construire sa hiérarchie.",
     "iaso.plannings.label.selectSamplingResult": "Sélectionner le résultat d'échantillonnage",
     "iaso.plannings.label.targetGeographyAndRootTeam": "Zone géographique cible et équipe racine",

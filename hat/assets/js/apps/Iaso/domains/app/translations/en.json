@@ -1631,6 +1631,7 @@
     "iaso.plannings.label.seeSamplingResults": "See sampling results",
     "iaso.plannings.label.selectGeographyAndRootTeamFirst": "Select a target geography and a root team to define the levels.",
     "iaso.plannings.label.selectOrgUnit": "Target geography",
+    "iaso.plannings.label.selectProjectToPickRootTeam": "Select a project in the Info tab to choose a root team.",
     "iaso.plannings.label.selectRootTeamFirst": "Select a root team to build its hierarchy.",
     "iaso.plannings.label.selectSamplingResult": "Select sampling result",
     "iaso.plannings.label.targetGeographyAndRootTeam": "Target geography and root team",

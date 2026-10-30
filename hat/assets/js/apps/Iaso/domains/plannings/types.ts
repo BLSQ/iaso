@@ -52,6 +52,7 @@ export type Planning = {
     selected_sampling_result?: SamplingResult;
     assignments_count: number;
     status?: 'draft' | 'published';
+    deprecated?: boolean;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 

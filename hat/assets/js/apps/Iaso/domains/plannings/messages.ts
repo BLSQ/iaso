@@ -441,6 +441,23 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Planning details',
         id: 'iaso.plannings.label.planningDetails',
     },
+    viewDetails: {
+        defaultMessage: 'View details',
+        id: 'iaso.label.viewDetails',
+    },
+    deprecated: {
+        defaultMessage: 'Deprecated',
+        id: 'iaso.plannings.label.deprecated',
+    },
+    readOnlyPlanning: {
+        defaultMessage: 'This planning is read only.',
+        id: 'iaso.plannings.label.readOnlyPlanning',
+    },
+    deprecatedPlanningInfos: {
+        defaultMessage:
+            'It was created before missions were introduced and can no longer be edited.',
+        id: 'iaso.plannings.label.deprecatedPlanningInfos',
+    },
     openAssignments: {
         defaultMessage: 'Open assignments',
         id: 'iaso.plannings.label.openAssignments',

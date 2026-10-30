@@ -134,6 +134,11 @@ export const PaginatedPlanningReadList = zod.strictObject({
                         name: zod.string(),
                     }),
                 ),
+                deprecated: zod
+                    .boolean()
+                    .describe(
+                        'Indicates that this planning is now considered deprecated as it was created before the mission feature was launched.',
+                    ),
             }),
         )
         .optional(),

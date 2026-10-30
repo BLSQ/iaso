@@ -146,6 +146,7 @@ export const getApiMicroplanningPlanningsListResponseMock = (
                 id: faker.number.int(),
                 name: faker.string.alpha({ length: { min: 10, max: 20 } }),
             })),
+            deprecated: faker.datatype.boolean(),
         })),
         undefined,
     ]),
@@ -190,6 +191,10 @@ export const getApiMicroplanningPlanningsCreateResponseMock = (
     ]),
     created_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
     updated_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
+    deprecated: faker.helpers.arrayElement([
+        faker.datatype.boolean(),
+        undefined,
+    ]),
     project: faker.number.int(),
     team: faker.number.int(),
     org_unit: faker.number.int(),
@@ -574,6 +579,7 @@ export const getApiMicroplanningPlanningsRetrieveResponseMock = (
         id: faker.number.int(),
         name: faker.string.alpha({ length: { min: 10, max: 20 } }),
     })),
+    deprecated: faker.datatype.boolean(),
     ...overrideResponse,
 });
 
@@ -615,6 +621,10 @@ export const getApiMicroplanningPlanningsUpdateResponseMock = (
     ]),
     created_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
     updated_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
+    deprecated: faker.helpers.arrayElement([
+        faker.datatype.boolean(),
+        undefined,
+    ]),
     project: faker.number.int(),
     team: faker.number.int(),
     org_unit: faker.number.int(),
@@ -674,6 +684,10 @@ export const getApiMicroplanningPlanningsPartialUpdateResponseMock = (
     ]),
     created_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
     updated_at: faker.date.past().toISOString().slice(0, 19) + 'Z',
+    deprecated: faker.helpers.arrayElement([
+        faker.datatype.boolean(),
+        undefined,
+    ]),
     project: faker.number.int(),
     team: faker.number.int(),
     org_unit: faker.number.int(),
@@ -910,6 +924,7 @@ export const getApiMicroplanningPlanningsDropdownListResponseMock =
         ).map(() => ({
             label: faker.string.alpha({ length: { min: 10, max: 20 } }),
             value: faker.number.int(),
+            deprecated: faker.datatype.boolean(),
         }));
 
 export const getApiMicroplanningSamplingsListResponseMock = (

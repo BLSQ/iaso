@@ -36,6 +36,7 @@ type Props = {
     sourceVersionId?: number;
     rootOrgUnitId?: number;
     onChange: (index: number, changes: Partial<PlanningLevel>) => void;
+    disabled?: boolean;
 };
 
 export const LevelRow: FC<Props> = ({
@@ -48,6 +49,7 @@ export const LevelRow: FC<Props> = ({
     sourceVersionId,
     rootOrgUnitId,
     onChange,
+    disabled = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: counts } = useGetLevelOrgUnitCounts({
@@ -139,6 +141,7 @@ export const LevelRow: FC<Props> = ({
                     }
                     required
                     withMarginTop={false}
+                    disabled={disabled}
                 />
             </TableCell>
             <TableCell>
@@ -149,7 +152,7 @@ export const LevelRow: FC<Props> = ({
                     value={getGroupIds(level)}
                     onChange={handleGroupsChange}
                     options={groupOptions}
-                    disabled={!hasTypes}
+                    disabled={disabled || !hasTypes}
                     label={MESSAGES.orgUnitGroups}
                     placeholder={formatMessage(MESSAGES.allOrgUnits)}
                     errors={

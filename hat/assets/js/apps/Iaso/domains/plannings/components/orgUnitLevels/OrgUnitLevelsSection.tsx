@@ -53,7 +53,7 @@ const ROOT_LEVEL_MEMBERS = { teamsCount: 1, usersCount: 0 };
 
 export const OrgUnitLevelsSection: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { formik } = usePlanningContext();
+    const { formik, isReadOnly } = usePlanningContext();
     const { selectedOrgUnit, selectedTeam, levels = [] } = formik.values;
     const { setFieldValue } = formik;
 
@@ -180,6 +180,7 @@ export const OrgUnitLevelsSection: FC = () => {
                                 sourceVersionId={rootOrgUnit.version_id}
                                 rootOrgUnitId={selectedOrgUnit}
                                 onChange={updateLevel}
+                                disabled={isReadOnly}
                             />
                         )),
                     )}

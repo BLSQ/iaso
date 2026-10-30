@@ -22,7 +22,7 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningForm: FC = () => {
-    const { formik, isLoadingPlanning } = usePlanningContext();
+    const { formik, isLoadingPlanning, isReadOnly } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
@@ -60,6 +60,7 @@ export const PlanningForm: FC = () => {
                     label={MESSAGES.name}
                     required
                     withMarginTop={false}
+                    disabled={isReadOnly}
                 />
                 <InputComponent
                     keyValue="description"
@@ -68,6 +69,7 @@ export const PlanningForm: FC = () => {
                     errors={getErrors('description')}
                     type="textarea"
                     label={MESSAGES.description}
+                    disabled={isReadOnly}
                 />
 
                 <DatesRange
@@ -80,6 +82,7 @@ export const PlanningForm: FC = () => {
                     keyDateTo="endDate"
                     errors={[getErrors('startDate'), getErrors('endDate')]}
                     blockInvalidDates={false}
+                    disabled={isReadOnly}
                 />
                 <InputComponent
                     type="select"
@@ -91,6 +94,7 @@ export const PlanningForm: FC = () => {
                     required
                     options={projectsDropdown || []}
                     loading={isFetchingProjects}
+                    disabled={isReadOnly}
                 />
                 <ToggleButtonGroupInput
                     keyValue="publishingStatus"
@@ -100,6 +104,7 @@ export const PlanningForm: FC = () => {
                     label={formatMessage(MESSAGES.publishingStatus)}
                     options={publishingStatusOptions}
                     required
+                    disabled={isReadOnly}
                 />
             </FormikProvider>
         </Card>

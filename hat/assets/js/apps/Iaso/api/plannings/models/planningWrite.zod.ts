@@ -21,6 +21,12 @@ export const PlanningWrite = zod.strictObject({
     published_at: zod.iso.datetime({ offset: true }).nullish(),
     created_at: zod.iso.datetime({ offset: true }),
     updated_at: zod.iso.datetime({ offset: true }),
+    deprecated: zod
+        .boolean()
+        .optional()
+        .describe(
+            'Indicates that this planning is now considered deprecated as it was created before the mission feature was launched.',
+        ),
     project: zod.int(),
     team: zod.int(),
     org_unit: zod

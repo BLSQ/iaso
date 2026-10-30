@@ -21,6 +21,12 @@ export const ApiMicroplanningPlanningsPartialUpdateBody = zod.strictObject({
     started_at: zod.iso.date().nullish(),
     ended_at: zod.iso.date().nullish(),
     published_at: zod.iso.datetime({ offset: true }).nullish(),
+    deprecated: zod
+        .boolean()
+        .optional()
+        .describe(
+            'Indicates that this planning is now considered deprecated as it was created before the mission feature was launched.',
+        ),
     project: zod.int().optional(),
     team: zod.int().optional(),
     org_unit: zod

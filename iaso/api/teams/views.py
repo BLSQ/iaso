@@ -2,16 +2,28 @@ from __future__ import annotations
 
 import typing
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import django_filters
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Count, Prefetch
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import filters, permissions, serializers
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+from rest_framework.settings import api_settings
+
+from .pagination import TeamPagination
+from .serializers.create import TeamCreateSerializer
+from .serializers.list import TeamListSerializer
+from .serializers.retrieve import TeamRetrieveSerializer
+from .serializers.types_dropdown import TeamTypeDropdownSerializer
+from .serializers.update import TeamUpdateSerializer
 
 
 if typing.TYPE_CHECKING:
@@ -28,20 +40,16 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
     is_field_referenced,
 )
-from iaso.models.team import Team, TeamQuerySet
+from iaso.models.team import Team, TeamQuerySet, TeamType
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 
 from .filters import (
-    TeamAncestorFilterBackend,
-    TeamManagersFilterBackend,
-    TeamProjectsFilterBackend,
-    TeamSearchFilterBackend,
+    TeamDropdownFilter,
+    TeamListFilter,
     TeamTreeFilter,
-    TeamTypesFilterBackend,
 )
 from .serializers.audit import AuditTeamSerializer
 from .serializers.dropdown import TeamDropdownSerializer
-from .serializers.misc import TeamSerializer
 from .serializers.tree import TeamBuildTreeSerializer, TeamTreeSerializer
 
 
@@ -54,84 +62,80 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     The tree assignation are handled by settings the child subteams (parent is readonly)
     """
 
-    include_results_key_if_not_paginated = False
     permission_classes = [permissions.IsAuthenticated & ReadOnlyOrHasPermission(CORE_TEAMS_PERMISSION)]  # type: ignore
-    serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
-    filterset_fields = {
-        "id": ["in"],
-        "name": ["icontains"],
-        "project": ["exact"],
-    }
-
-    audit_serializer = AuditTeamSerializer  # type: ignore
+    ordering = ["name"]
+    pagination_class = TeamPagination
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+    audit_serializer = AuditTeamSerializer
 
     @property
     def filterset_class(self) -> type[django_filters.FilterSet] | None:
         if self.action == "tree":
             return TeamTreeFilter
+        if self.action == "list":
+            return TeamListFilter
+        if self.action == "dropdown":
+            return TeamDropdownFilter
         return None
 
     @property
     def filter_backends(self) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol]]:
         if self.action == "dropdown":
-            return [
-                TeamAncestorFilterBackend,
-                filters.OrderingFilter,
-                DjangoFilterBackend,
-                TeamSearchFilterBackend,
-                TeamManagersFilterBackend,
-                TeamTypesFilterBackend,
-                TeamProjectsFilterBackend,
-            ]
+            return [filters.OrderingFilter, DjangoFilterBackend]
         if self.action == "tree":
             return [DjangoFilterBackend]
 
-        return [
-            TeamAncestorFilterBackend,
-            filters.OrderingFilter,
-            DjangoFilterBackend,
-            TeamSearchFilterBackend,
-            TeamManagersFilterBackend,
-            TeamTypesFilterBackend,
-            TeamProjectsFilterBackend,
-            DynamicFieldsFilterBackendBackwardCompatible,
-        ]
+        if self.action == "list":
+            return [filters.OrderingFilter, DjangoFilterBackend, DynamicFieldsFilterBackendBackwardCompatible]
+
+        return []
 
     def get_serializer_class(self) -> type[BaseSerializer]:
         if self.action == "dropdown":
             return TeamDropdownSerializer
         if self.action == "tree":
             return TeamTreeSerializer
-        return TeamSerializer
+        if self.action == "list":
+            return TeamListSerializer
+        if self.action == "retrieve":
+            return TeamRetrieveSerializer
+        if self.action == "create":
+            return TeamCreateSerializer
+        if self.action in ("update", "partial_update"):
+            return TeamUpdateSerializer
+        if self.action == "destroy":
+            return serializers.Serializer
+        if self.action == "types_dropdown":
+            return TeamTypeDropdownSerializer
+        raise NotImplementedError(f"Serializer not implemented for action: {self.action}.")
 
     def get_queryset(self) -> TeamQuerySet:
         user = self.request.user
+
         if not user.is_authenticated:
+            return self.queryset.none()
+
+        if self.action == "types_dropdown":
             return self.queryset.none()
 
         queryset = self.queryset.filter_for_user(user)
 
+        if self.action in ["destroy", "update", "partial_update"]:
+            # necessary because of the audit mixin that serialize it all before/after the mutation
+            return queryset.select_related("project", "manager", "parent").prefetch_related(
+                Prefetch("users", queryset=get_user_model().objects.only("id")),
+                Prefetch("sub_teams", queryset=Team.objects.only("id", "parent")),
+            )
+
         if self.action == "dropdown":
-            return queryset.select_related("project")
+            return queryset.only("id", "name", "color", "type")
 
         if self.action == "tree":
-            filterset = TeamTreeFilter(
-                data=self.request.query_params,
-                queryset=queryset,
-                request=self.request,
-            )
-            if not filterset.is_valid():
-                raise serializers.ValidationError(filterset.errors)
-
+            # the get_tree happens in the TeamTreeFilter filter_queryset method
             return (
-                queryset.get_tree(
-                    root=filterset.form.cleaned_data.get("root"),
-                    max_depth=filterset.form.cleaned_data.get("max_depth"),
-                )
-                .annotate_with_depth()
-                .select_related("parent")
+                queryset.select_related("parent")
                 .prefetch_related(
                     Prefetch(
                         "users",
@@ -145,25 +149,47 @@ class TeamViewSet(AuditMixin, ModelViewSet):
                             "iaso_profile__id",
                             "iaso_profile__color",
                         )
-                        .select_related("iaso_profile"),
+                        .select_related("iaso_profile")
+                        .order_by("id"),
                     )
                 )
                 .only("path", "id", "parent", "name", "type", "color")
-                .order_by("id")
             )
 
-        queryset = queryset.select_related("project").prefetch_related("users", "users__iaso_profile", "sub_teams")
+        if self.action == "list":
+            queryset = queryset.select_related("project")
 
-        requested_fields = self.request.query_params.get("fields", None)
-        order = self.request.query_params.get("order", "")
+            order = self.request.query_params.get(api_settings.ORDERING_PARAM, "")
 
-        needs_members_count = is_field_referenced("members_count", requested_fields, order)
+            requested_fields = self.request.query_params.get(settings.DYNAMIC_FIELDS_QUERY_PARAM_NAME, None)
 
-        if needs_members_count:
-            queryset = queryset.annotate(
-                annotated_users_count=Count("users", distinct=True),
-                annotated_sub_teams_count=Count("sub_teams", distinct=True),
+            needs_members_count = is_field_referenced("members_count", requested_fields, order)
+
+            if needs_members_count:
+                queryset = queryset.annotate(
+                    annotated_users_count=Count("users", distinct=True),
+                    annotated_sub_teams_count=Count("sub_teams", distinct=True),
+                )
+            return queryset
+
+        if self.action == "retrieve":
+            queryset = queryset.select_related(
+                "project", "manager", "parent", "manager__iaso_profile"
+            ).prefetch_related(
+                Prefetch(
+                    "users",
+                    get_user_model()
+                    .objects.select_related("iaso_profile")
+                    .only("id", "username", "first_name", "last_name", "iaso_profile", "iaso_profile__color"),
+                ),
+                Prefetch(
+                    "sub_teams",
+                    Team.objects_include_deleted.filter_for_user(user)
+                    .only("id", "name", "deleted_at", "color", "parent")
+                    .order_by("id"),
+                ),
             )
+            return queryset
 
         return queryset
 
@@ -195,6 +221,24 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     @extend_schema(responses={200: TeamTreeSerializer(many=True)})
     @action(detail=False, methods=["GET"], pagination_class=None)
     def tree(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        queryset = self.get_queryset()
+        queryset = (
+            typing.cast(TeamQuerySet, self.filter_queryset(self.get_queryset())).annotate_with_depth().order_by("id")
+        )
         data = self._build_team_tree(queryset)
         return Response(data)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # soft deletable
+        instance.updated_by = request.user
+        instance.save(update_fields=["updated_by"])
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(responses=TeamTypeDropdownSerializer(many=True))
+    @action(detail=False, methods=["GET"], pagination_class=None, url_path="types-dropdown")
+    def types_dropdown(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(TeamType, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

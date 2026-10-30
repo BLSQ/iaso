@@ -122,7 +122,7 @@ class RelatedPolymorphicQuerySet(PolymorphicQuerySet):
             else:
                 real_objects = real_concrete_class._base_objects.db_manager(self.db)
 
-            real_objects = real_objects.filter(**{("%s__in" % pk_name): idlist})
+            real_objects = real_objects.filter(**{(f"{pk_name}__in"): idlist})
 
             # copy select_related() fields from base objects to real objects
             real_objects.query.select_related = self.query.select_related

@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
     from iaso.models import FormVersion
 
 
-IMPACT_FUNCTIONS: typing.Tuple[ImpactFunction, ...] = (
+IMPACT_FUNCTIONS: tuple[ImpactFunction, ...] = (
     forms_impacts,
     entity_types_impacts,
     stock_impacts,
@@ -27,9 +27,9 @@ IMPACT_FUNCTIONS: typing.Tuple[ImpactFunction, ...] = (
 
 def compute_configuration_impacts(
     previous_form_version: "FormVersion",
-    removed_question_names: typing.Set[str],
-    modified_question_names: typing.Set[str],
-) -> typing.List[ConfigurationImpact]:
+    removed_question_names: set[str],
+    modified_question_names: set[str],
+) -> list[ConfigurationImpact]:
     """The configuration reading these removed or modified questions of the form of `previous_form_version`."""
     if not removed_question_names | modified_question_names:
         return []

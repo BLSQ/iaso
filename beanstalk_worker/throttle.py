@@ -35,9 +35,10 @@ keeps every run of the task waiting.
 import importlib
 import pkgutil
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from logging import getLogger
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Callable, Optional, Union
 
 from django.apps import apps
 
@@ -87,7 +88,7 @@ def effective_throttle(throttle: Optional[Throttle]) -> Throttle:
 
 
 # task name -> Throttle declared in the code (None if none), filled by `task_decorator` when a task module is imported
-TASKS: Dict[str, Optional[Throttle]] = {}
+TASKS: dict[str, Optional[Throttle]] = {}
 
 
 def register_task(task_name: str, throttle: Optional[Throttle]) -> None:
@@ -96,7 +97,7 @@ def register_task(task_name: str, throttle: Optional[Throttle]) -> None:
         TASKS[task_name] = throttle
 
 
-def discover_tasks() -> Dict[str, Optional[Throttle]]:
+def discover_tasks() -> dict[str, Optional[Throttle]]:
     """Import the `tasks` modules of the installed apps, so that TASKS lists all the tasks."""
     for app_config in apps.get_app_configs():
         package_name = f"{app_config.name}.tasks"

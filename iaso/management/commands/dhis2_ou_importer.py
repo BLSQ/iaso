@@ -128,13 +128,13 @@ class Command(BaseCommand):
             if version_count > 0:
                 if not force:
                     iaso_logger.error(
-                        "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
-                        % version_count
+                        f"This is going to delete {version_count} org units records. "
+                        "If you want to proceed, add the -f option to the command"
                     )
                     return
                 deleted = OrgUnit.objects.filter(version=version).delete()
                 iaso_logger.warn(deleted)
-                iaso_logger.warn(("%d org units records deleted" % version_count).upper())
+                iaso_logger.warn(f"{version_count} org units records deleted".upper())
 
             type_dict = {}
             if org_unit_type_csv_file:

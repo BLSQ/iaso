@@ -10,9 +10,16 @@ import {
 } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
+import {
+    type TeamDropdown,
+    useApiTeamsDropdownList,
+    useApiTeamsRetrieve,
+} from 'Iaso/api/teams';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { TeamTypeDropdown } from 'Iaso/domains/teams/components/TeamTypeDropdown';
+import { TeamType } from 'Iaso/domains/teams/constants';
 import { useGetColors } from 'Iaso/hooks/useGetColors';
 import {
     useApiErrorValidation,
@@ -24,16 +31,13 @@ import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
-import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
-import { useGetTeam } from '../hooks/requests/useGetTeams';
 import {
     convertAPIErrorsToState,
     SaveTeamQuery,
     useSaveTeam,
 } from '../hooks/requests/useSaveTeam';
 import MESSAGES from '../messages';
-import { DropdownTeamsOptions, Team } from '../types/team';
+import { Team } from '../types/team';
 import { useTeamValidation } from '../validation';
 
 type ModalMode = 'create' | 'edit';
@@ -72,18 +76,23 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const { data: team, isFetching: isFetchingTeam } = useGetTeam(
-        isOpen ? id : undefined,
+    const { data: team, isFetching: isFetchingTeam } = useApiTeamsRetrieve(
+        id as number,
+        {
+            query: {
+                enabled: isOpen && !!id,
+            },
+        },
     );
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
+    const projects = team?.project?.id ?? defaultValues?.project;
+
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
-        useGetTeamsDropdown(
-            {
-                project: team?.project ?? defaultValues?.project,
-            },
-            id,
-        );
+        useApiTeamsDropdownList({
+            projects: projects ? [projects] : [],
+            exclude_ids: id ? [id] : [],
+        });
 
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
@@ -108,18 +117,21 @@ const CreateEditTeam: FunctionComponent<Props> = ({
             id,
             name: team?.name,
             description: team?.description,
-            project: team?.project ?? defaultValues?.project,
-            manager: team?.manager || currentUser.user_id,
-            subTeams: team?.sub_teams || [],
-            type: team?.type,
-            users: team?.users || [],
+            project: team?.project?.id ?? defaultValues?.project,
+            manager: team?.manager?.id || currentUser.user_id,
+            subTeams:
+                team?.sub_teams
+                    ?.filter(({ deleted_at }) => !deleted_at)
+                    ?.map(({ id }) => id) || [],
+            type: team?.type || undefined,
+            users: team?.users?.map(({ id }) => id) || [],
             parent: team?.parent ?? defaultValues?.parent,
             color: team?.color,
         },
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: save, // TODO: convert forms string to Array of IDs
+        onSubmit: save,
     });
 
     const {
@@ -153,27 +165,28 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     const titleMessage = formatTitle(dialogType, formatMessage);
 
     useEffect(() => {
-        if (values.type === TEAM_OF_USERS) {
+        if (values.type === TeamType.enum.TEAM_OF_USERS) {
             setFieldValue('subTeams', []);
         }
-        if (values.type === TEAM_OF_TEAMS) {
+        if (values.type === TeamType.enum.TEAM_OF_TEAMS) {
             setFieldValue('users', []);
         }
     }, [setFieldValue, values.type]);
 
-    const availableChildren: DropdownTeamsOptions[] = useMemo(
-        () => teamsDropdown.filter(team => values?.parent !== team.original.id),
+    const availableChildren: TeamDropdown[] = useMemo(
+        () => teamsDropdown.filter(team => values?.parent !== team.value),
         [teamsDropdown, values?.parent],
     );
-    const availableParents: DropdownTeamsOptions[] | undefined = useMemo(
+    const availableParents: TeamDropdown[] | undefined = useMemo(
         () =>
             teamsDropdown.filter(
                 team =>
-                    team.original.type === TEAM_OF_TEAMS &&
-                    !values?.subTeams?.includes(team.original.id),
+                    team.type === TeamType.enum.TEAM_OF_TEAMS &&
+                    !values?.subTeams?.includes(team.value),
             ),
         [teamsDropdown, values?.subTeams],
     );
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -232,23 +245,11 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     type="text"
                     label={MESSAGES.description}
                 />
-                <InputComponent
-                    type="select"
-                    keyValue="type"
+                <TeamTypeDropdown
+                    keyValue={'type'}
                     onChange={onChange}
                     value={values.type}
                     errors={getErrors('type')}
-                    label={MESSAGES.type}
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.teamsOfTeams),
-                            value: TEAM_OF_TEAMS,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.teamsOfUsers),
-                            value: TEAM_OF_USERS,
-                        },
-                    ]}
                 />
                 <Box mt={2}>
                     {colors && (
@@ -260,7 +261,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                         />
                     )}
                 </Box>
-                {values.type === TEAM_OF_USERS && (
+                {values.type === TeamType.enum.TEAM_OF_USERS && (
                     <Box mt={2}>
                         <UserAsyncSelect
                             keyValue="users"
@@ -275,7 +276,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                         />
                     </Box>
                 )}
-                {values.type === TEAM_OF_TEAMS && (
+                {values.type === TeamType.enum.TEAM_OF_TEAMS && (
                     <InputComponent
                         type="select"
                         keyValue="subTeams"

@@ -26,6 +26,7 @@ import {
 
 import { isEqual } from 'lodash';
 import { UseMutateAsyncFunction } from 'react-query';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -37,7 +38,6 @@ import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Selection } from '../../orgUnits/types/selection';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { TeamType } from '../../teams/constants';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { Profile } from '../../teams/types/profile';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import MESSAGES from '../messages';
@@ -128,9 +128,10 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
 
-    const { data: teams, isFetching: isFetchingTeams } = useGetTeamsDropdown({
-        type: TeamType.TEAM_OF_USERS,
-    });
+    const { data: teams, isFetching: isFetchingTeams } =
+        useApiTeamsDropdownList({
+            types: [TeamType.enum.TEAM_OF_USERS],
+        });
     const handleChange = useCallback(
         (key, value) => {
             setBulkState({

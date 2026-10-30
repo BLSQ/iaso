@@ -12,8 +12,8 @@ from submissions import (
 
 def create_form_submissions(account_name, iaso_client, form, orgunit):
     the_uuid = str(uuid.uuid4())
-    file_name = "example_%s.xml" % the_uuid
-    local_path = "generated/%s" % file_name
+    file_name = f"example_{the_uuid}.xml"
+    local_path = f"generated/{file_name}"
     current_datetime = int(datetime.now().timestamp())
 
     instance_body = [

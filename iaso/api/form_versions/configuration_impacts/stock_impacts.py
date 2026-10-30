@@ -11,9 +11,9 @@ if typing.TYPE_CHECKING:
 
 def stock_impacts(
     previous_form_version: "FormVersion",
-    removed_question_names: typing.Set[str],
-    modified_question_names: typing.Set[str],
-) -> typing.List[ConfigurationImpact]:
+    removed_question_names: set[str],
+    modified_question_names: set[str],
+) -> list[ConfigurationImpact]:
     """`stock_rule`: a stock rule updates a stock from it (target: the rules version). Deleted rules versions left
     out."""
     rules = StockItemRule.objects.filter(

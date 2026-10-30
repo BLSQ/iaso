@@ -3,7 +3,7 @@ import {
     PlanningConfigBulkCreateRequest,
     PlanningConfigBulkUpdateRequest,
 } from 'Iaso/api/planningConfigs';
-import { TeamNode } from '../teamHierarchy/types';
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import {
     LevelMembers,
     LevelOrgUnitType,
@@ -12,19 +12,19 @@ import {
     SavedPlanningConfig,
 } from './types';
 
-export const EMPTY_LEVEL: PlanningLevel = { orgUnitTypeIds: [], groupIds: [] };
+export const EMPTY_LEVEL: PlanningLevel = { orgUnitTypeIds: [], groups: [] };
 
 // Level N holds the teams at depth N of the hierarchy, and the users of the teams at depth N - 1.
-export const getLevelMembers = (root: TeamNode): LevelMembers[] => {
+export const getLevelMembers = (root: TeamTreeNode): LevelMembers[] => {
     const teamsCounts: number[] = [];
     const userIdsByLevel: Set<number>[] = [];
-    const visit = ({ team, children }: TeamNode, depth: number) => {
+    const visit = ({ users, children }: TeamTreeNode, depth: number) => {
         if (depth > 0) {
             teamsCounts[depth - 1] = (teamsCounts[depth - 1] ?? 0) + 1;
         }
-        if (team.users_details?.length) {
+        if (users.length) {
             const userIds = userIdsByLevel[depth] ?? new Set<number>();
-            team.users_details.forEach(user => userIds.add(user.id));
+            users.forEach(user => userIds.add(user.id));
             userIdsByLevel[depth] = userIds;
         }
         children.forEach(child => visit(child, depth + 1));
@@ -100,15 +100,21 @@ export const configsToLevels = (
     configs.forEach(config => {
         levels[config.level - 1] = {
             orgUnitTypeIds: (config.org_unit_types ?? []).map(type => type.id),
-            groupIds: (config.org_unit_groups ?? []).map(group => group.id),
+            groups: (config.org_unit_groups ?? []).map(({ id, name }) => ({
+                id,
+                name,
+            })),
         };
     });
     return levels;
 };
 
+export const getGroupIds = (level: PlanningLevel): number[] =>
+    level.groups.map(group => group.id);
+
 const isSameLevel = (a: PlanningLevel, b: PlanningLevel): boolean =>
     xor(a.orgUnitTypeIds, b.orgUnitTypeIds).length === 0 &&
-    xor(a.groupIds, b.groupIds).length === 0;
+    xor(getGroupIds(a), getGroupIds(b)).length === 0;
 
 export type PlanningConfigChanges = {
     toCreate: PlanningConfigBulkCreateRequest[];
@@ -132,7 +138,7 @@ export const getPlanningConfigChanges = (
         const payload = {
             level: index + 1,
             org_unit_types: level.orgUnitTypeIds,
-            org_unit_groups: level.groupIds,
+            org_unit_groups: getGroupIds(level),
         };
         const saved = savedByLevel.get(payload.level);
         if (!saved) {

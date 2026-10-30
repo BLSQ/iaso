@@ -1,7 +1,14 @@
-export const TEAM_OF_TEAMS = 'TEAM_OF_TEAMS';
-export const TEAM_OF_USERS = 'TEAM_OF_USERS';
+import {
+    getApiTeamsDropdownListQueryKey,
+    getApiTeamsListQueryKey,
+    getApiTeamsTreeListQueryKey,
+    Value8edEnum,
+} from 'Iaso/api/teams';
 
-export enum TeamType {
-    TEAM_OF_USERS = 'TEAM_OF_USERS',
-    TEAM_OF_TEAMS = 'TEAM_OF_TEAMS',
-}
+export { Value8edEnum as TeamType };
+
+export const TEAM_QUERY_KEYS = [
+    getApiTeamsDropdownListQueryKey()[0],
+    getApiTeamsListQueryKey()[0],
+    getApiTeamsTreeListQueryKey()[0],
+];

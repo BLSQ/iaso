@@ -5,7 +5,7 @@ This file contains example code showing how to use the FHIR Location API
 both as a client and for testing purposes.
 """
 
-from typing import Dict, List, Optional
+from typing import Optional
 
 import requests
 
@@ -23,7 +23,7 @@ class FHIRLocationClient:
             "Accept": "application/fhir+json",
         }
 
-    def get_all_locations(self, count: int = 20, skip: int = 0) -> Dict:
+    def get_all_locations(self, count: int = 20, skip: int = 0) -> dict:
         """
         Get all locations with pagination
 
@@ -41,7 +41,7 @@ class FHIRLocationClient:
         response.raise_for_status()
         return response.json()
 
-    def get_location(self, location_id: str) -> Dict:
+    def get_location(self, location_id: str) -> dict:
         """
         Get a specific location by ID
 
@@ -57,7 +57,7 @@ class FHIRLocationClient:
         response.raise_for_status()
         return response.json()
 
-    def search_locations_by_name(self, name: str) -> Dict:
+    def search_locations_by_name(self, name: str) -> dict:
         """
         Search locations by name
 
@@ -74,7 +74,7 @@ class FHIRLocationClient:
         response.raise_for_status()
         return response.json()
 
-    def search_locations_by_status(self, status: str) -> Dict:
+    def search_locations_by_status(self, status: str) -> dict:
         """
         Search locations by status
 
@@ -91,7 +91,7 @@ class FHIRLocationClient:
         response.raise_for_status()
         return response.json()
 
-    def search_locations_by_identifier(self, identifier: str) -> Dict:
+    def search_locations_by_identifier(self, identifier: str) -> dict:
         """
         Search locations by any identifier (source_ref, uuid, alias)
 
@@ -108,7 +108,7 @@ class FHIRLocationClient:
         response.raise_for_status()
         return response.json()
 
-    def get_child_locations(self, parent_id: str) -> Dict:
+    def get_child_locations(self, parent_id: str) -> dict:
         """
         Get child locations of a specific location
 
@@ -124,7 +124,7 @@ class FHIRLocationClient:
         response.raise_for_status()
         return response.json()
 
-    def get_capability_statement(self) -> Dict:
+    def get_capability_statement(self) -> dict:
         """
         Get the FHIR CapabilityStatement for the Location API
 
@@ -194,7 +194,7 @@ def example_usage():
         print(f"Unexpected response format: {e}")
 
 
-def extract_location_hierarchy(bundle: Dict) -> List[Dict]:
+def extract_location_hierarchy(bundle: dict) -> list[dict]:
     """
     Extract and organize location hierarchy from a FHIR Bundle
 
@@ -256,7 +256,7 @@ def extract_location_hierarchy(bundle: Dict) -> List[Dict]:
     return locations
 
 
-def print_location_tree(locations: List[Dict], parent_id: Optional[str] = None, indent: int = 0):
+def print_location_tree(locations: list[dict], parent_id: Optional[str] = None, indent: int = 0):
     """
     Print locations in a tree structure
 

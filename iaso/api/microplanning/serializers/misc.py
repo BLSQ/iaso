@@ -7,7 +7,6 @@ from iaso.api.microplanning.filters import (
     validate_planning_has_org_unit_scope,
     validate_planning_org_unit_type_ids,
 )
-from iaso.api.teams.serializers.misc import NestedTeamSerializer
 from iaso.models import (
     Group,
     Mission,
@@ -143,6 +142,12 @@ class PlanningWriteSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class PlanningReadNestedTeamSerializer(ModelSerializer):
+    class Meta:
+        model = Team
+        fields = ["id", "name", "deleted_at", "color"]
+
+
 class PlanningReadSerializer(serializers.ModelSerializer):
     assignments_count = serializers.SerializerMethodField()
 
@@ -170,7 +175,7 @@ class PlanningReadSerializer(serializers.ModelSerializer):
         return getattr(obj, "assignments_count", 0)
 
     selected_sampling_result = NestedPlanningSamplingResultSerializer(read_only=True)
-    team_details = NestedTeamSerializer(source="team", read_only=True)
+    team_details = PlanningReadNestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
     target_org_unit_type_details = NestedOrgUnitTypeSerializer(

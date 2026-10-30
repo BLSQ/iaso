@@ -6,6 +6,7 @@ from rest_framework import status
 from iaso.models import Account, Team
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
@@ -146,7 +147,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -218,7 +219,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "user_no_perm",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                         {
                             "id": self.user_with_perms.pk,
@@ -234,7 +235,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -266,7 +267,8 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_parent_filter_param(self):
         self.client.force_authenticate(self.superuser)
 
-        res = self.client.get(self.url, data={"root": self.team1.pk})
+        data = {"root": self.team1.pk}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
         self.assertEqual(
@@ -294,7 +296,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -355,7 +357,8 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
             ],
         )
 
-        res = self.client.get(self.url, data={"root": self.sub_team_1.pk})
+        data = {"root": self.sub_team_1.pk}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)
         self.assertEqual(
@@ -398,7 +401,8 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_max_depth_filter_param(self):
         self.client.force_authenticate(self.superuser)
 
-        res = self.client.get(self.url, data={"max_depth": 1})
+        data = {"max_depth": 1}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 2)
         self.assertEqual(
@@ -426,7 +430,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [],
@@ -445,7 +449,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "user_no_perm",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                         {
                             "id": self.user_with_perms.pk,
@@ -461,7 +465,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [],
@@ -469,7 +473,8 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
             ],
         )
 
-        res = self.client.get(self.url, data={"max_depth": 2})
+        data = {"max_depth": 2}
+        res = self.client.get(self.url, data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 2)
 
@@ -498,7 +503,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -538,7 +543,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "user_no_perm",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                         {
                             "id": self.user_with_perms.pk,
@@ -554,7 +559,7 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
                             "username": "superuser",
                             "first_name": "",
                             "last_name": "",
-                            "color": "#1976D2",
+                            "color": DEFAULT_COLOR,
                         },
                     ],
                     "children": [
@@ -590,8 +595,8 @@ class TeamTreeAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertIsNotNone(self.team1.deleted_at)
 
         self.client.force_authenticate(self.superuser)
-
-        res = self.client.get(self.url, data={"max_depth": 1})
+        data = {"max_depth": 1}
+        res = self.client.get(self.url, data=data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 1)

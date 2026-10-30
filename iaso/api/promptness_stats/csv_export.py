@@ -1,7 +1,7 @@
 import codecs
 import csv
 
-from typing import Iterator, List
+from collections.abc import Iterator
 
 from django.db.models import QuerySet
 from rest_framework import serializers
@@ -16,7 +16,7 @@ class Echo:
 
 
 def stream_csv(
-    rows: QuerySet, row_serializer: serializers.Serializer, columns: List[str], chunk_size: int = 2000
+    rows: QuerySet, row_serializer: serializers.Serializer, columns: list[str], chunk_size: int = 2000
 ) -> Iterator[str]:
     """Lines of the CSV, header first.
 

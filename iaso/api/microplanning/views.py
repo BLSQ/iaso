@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import typing
 
-from typing import TYPE_CHECKING, Any, Sequence
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -62,6 +63,7 @@ from .filters import (
     PublishingStatusFilterBackend,
     validate_planning_has_org_unit_scope,
 )
+from .level_tree import build_level_geometry, build_level_tree
 from .mixins import PlanningOrgUnitChildrenQuerysetMixin
 from .pagination import PlanningConfigPagination, PlanningMissionPagination, PlanningOrgUnitChildrenPagination
 from .serializers import (
@@ -81,6 +83,11 @@ from .serializers import (
     PlanningWriteSerializer,
 )
 from .serializers.dropdown import PlanningDropdownSerializer
+from .serializers.level_tree import (
+    PlanningLevelGeometryQuerySerializer,
+    PlanningLevelGeometrySerializer,
+    PlanningLevelTreeNodeSerializer,
+)
 from .serializers.missions.base import PlanningMissionPolymorphicListSerializer
 
 
@@ -134,6 +141,10 @@ class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewS
         if action == "root":
             return OrgUnit.objects.with_geo_json().filter(pk=planning.org_unit_id)
 
+        # The level tree is scoped by the planning levels, not by target types or sampling.
+        if action in ("level_tree", "level_geometry"):
+            return self._valid_org_units_base_queryset(user)
+
         validate_planning_has_org_unit_scope(planning)
         queryset = self.get_planning_children_base_queryset(planning, user)
 
@@ -171,6 +182,41 @@ class PlanningOrgunitsViewSet(PlanningOrgUnitChildrenQuerysetMixin, GenericViewS
         instance = self.get_queryset().first()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        responses=PlanningLevelTreeNodeSerializer(many=True),
+        description=(
+            "Org units of every planning level, level 0 being the target geography. "
+            "A level holds the org units of its types (and groups) located below an org unit of the level above; "
+            "`parent_id` is that closest ancestor."
+        ),
+    )
+    @action(detail=False, methods=["get"], url_path="level-tree", pagination_class=None, filter_backends=[])
+    def level_tree(self, request, *args, **kwargs):
+        nodes = build_level_tree(self.get_planning_or_404(), self._valid_org_units_base_queryset(request.user))
+        return Response(PlanningLevelTreeNodeSerializer(nodes, many=True).data)
+
+    @extend_schema(
+        parameters=[PlanningLevelGeometryQuerySerializer],
+        responses=PlanningLevelGeometrySerializer,
+        description="GeoJSON of a level of the level tree: the simplified shape, or the location without shape.",
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="level-tree/geometry",
+        pagination_class=None,
+        filter_backends=[],
+    )
+    def level_geometry(self, request, *args, **kwargs):
+        query = PlanningLevelGeometryQuerySerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        geometry = build_level_geometry(
+            self.get_planning_or_404(),
+            self._valid_org_units_base_queryset(request.user),
+            query.validated_data["level"],
+        )
+        return Response(geometry)
 
 
 @extend_schema(tags=["Micro plannings", "Plannings"])

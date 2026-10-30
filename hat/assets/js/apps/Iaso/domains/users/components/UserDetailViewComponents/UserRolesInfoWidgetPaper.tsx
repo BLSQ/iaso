@@ -1,6 +1,6 @@
 import React from 'react';
-import { Alert, Box, Chip } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { Alert, Box } from '@mui/material';
+import { ColorChip, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from 'Iaso/domains/users/messages';
 import { ProfileRetrieveResponseItem } from 'Iaso/domains/users/types';
@@ -31,10 +31,7 @@ export const UserRolesInfoWidgetPaper = ({ savingProfile, profile }: Props) => {
                     {profile?.user_roles_permissions?.map(userRole => {
                         return (
                             <Box key={userRole.id}>
-                                <Chip
-                                    color={'secondary'}
-                                    label={userRole.name}
-                                />
+                                <ColorChip label={userRole.name} />
                             </Box>
                         );
                     })}

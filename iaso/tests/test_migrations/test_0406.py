@@ -7,11 +7,12 @@ from iaso.test import IasoMigratorTestCase
 class Test0406DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0405_merge_20261012_1003")
     migrate_to = ("iaso", "0406_missionform_alter_corepermissionsupport_options_and_more")
-    num_queries = 70
+    num_queries = 59
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")
         account = Account.objects.create(name="account")
+        account2 = Account.objects.create(name="account2")
 
         Planning = self.old_state.apps.get_model("iaso", "Planning")
         Project = self.old_state.apps.get_model("iaso", "Project")
@@ -23,6 +24,7 @@ class Test0406DirectMigration(IasoMigratorTestCase):
         Form = self.old_state.apps.get_model("iaso", "Form")
 
         project = Project.objects.create(name="project", account=account)
+        project2 = Project.objects.create(name="project2", account=account2)
         user = User.objects.create(username="user")
         team = Team.objects.create(name="team", project=project, manager=user)
 
@@ -35,6 +37,8 @@ class Test0406DirectMigration(IasoMigratorTestCase):
         form2 = self.form2 = Form.objects.create(name="form2")
         form1.projects.add(project)
         form2.projects.add(project)
+        form3 = self.form3 = Form.objects.create(name="form2")
+        form3.projects.add(project2)
 
         # create Plannings
         planning_1 = Planning.objects.create(
@@ -57,6 +61,14 @@ class Test0406DirectMigration(IasoMigratorTestCase):
             org_unit=org_unit,
         )
 
+        planning_4 = Planning.objects.create(
+            name="planning_4",
+            project=project2,
+            team=team,
+            org_unit=org_unit,
+        )
+        planning_4.forms.set([form3])
+
     def test_migration(self):
         Planning = self.new_state.apps.get_model("iaso", "Planning")
         MissionForm = self.new_state.apps.get_model("iaso", "MissionForm")
@@ -64,16 +76,20 @@ class Test0406DirectMigration(IasoMigratorTestCase):
         planning_1 = Planning.objects.get(name="planning_1")
         planning_2 = Planning.objects.get(name="planning_2")
         planning_3 = Planning.objects.get(name="planning_3")
+        planning_4 = Planning.objects.get(name="planning_4")
 
         self.assertEqual(planning_1.missions.count(), 2)
         self.assertEqual(planning_2.missions.count(), 1)
         self.assertEqual(planning_3.missions.count(), 0)
+        self.assertEqual(planning_4.missions.count(), 1)
 
         self.assertTrue(planning_1.deprecated)
         self.assertTrue(planning_2.deprecated)
         self.assertTrue(planning_3.deprecated)
+        self.assertTrue(planning_4.deprecated)
 
         self.assertEqual(MissionForm.objects.count(), 3)
+        self.assertEqual(MissionForm.objects.values("name", "forms", "account").distinct().count(), 3)
 
         planning_1_first_mission = planning_1.missions.all()[0].missionwithforms.missionform
 
@@ -111,6 +127,19 @@ class Test0406DirectMigration(IasoMigratorTestCase):
                 )
             ),
             [(self.form2.pk, 1, 1)],
+        )
+
+        planning_4_first_mission = planning_4.missions.all()[0].missionwithforms.missionform
+
+        self.assertEqual(planning_4_first_mission.forms.count(), 1)
+        self.assertEqual(planning_4_first_mission.forms.first().name, "form2")
+        self.assertEqual(
+            list(
+                planning_4_first_mission.missionformthroughform_set.values_list(
+                    "form_id", "min_cardinality", "max_cardinality"
+                )
+            ),
+            [(self.form3.pk, 1, 1)],
         )
 
 

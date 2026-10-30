@@ -69,9 +69,9 @@ class Test0406DirectMigration(IasoMigratorTestCase):
         self.assertEqual(planning_2.missions.count(), 1)
         self.assertEqual(planning_3.missions.count(), 0)
 
-        self.assertTrue(planning_1.read_only)
-        self.assertTrue(planning_2.read_only)
-        self.assertTrue(planning_3.read_only)
+        self.assertTrue(planning_1.deprecated)
+        self.assertTrue(planning_2.deprecated)
+        self.assertTrue(planning_3.deprecated)
 
         self.assertEqual(MissionForm.objects.count(), 3)
 

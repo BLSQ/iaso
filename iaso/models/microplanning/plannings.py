@@ -98,8 +98,11 @@ class Planning(SoftDeletableModel):
         blank=True,
         related_name="selected_by_planning",
     )
-    read_only = models.BooleanField(
-        default=False, help_text=_("An attribute to disable edition on old planning (before the mission feature)")
+    deprecated = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Indicates that this planning is now considered deprecated as it was created before the mission feature was launched."
+        ),
     )
 
     def __str__(self):

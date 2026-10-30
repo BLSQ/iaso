@@ -61,7 +61,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
         # set up some data for the plannings
         cls.planning = Planning.objects.create(
-            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit, read_only=True
+            name="planning", project=cls.project, team=cls.team, org_unit=cls.org_unit, deprecated=True
         )
         cls.planning_2 = Planning.objects.create(
             name="planning_2", project=cls.project, team=cls.team, org_unit=cls.org_unit
@@ -158,7 +158,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertEqual(
                 res_data,
                 [
-                    {"value": p.id, "label": p.name, "read_only": p.read_only}
+                    {"value": p.id, "label": p.name, "deprecated": p.deprecated}
                     for p in [self.planning_4, self.planning_3, self.planning_2, self.planning]
                 ],
             )
@@ -170,7 +170,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
             self.assertEqual(
                 res_data,
-                [{"value": self.planning.id, "label": self.planning.name, "read_only": self.planning.read_only}],
+                [{"value": self.planning.id, "label": self.planning.name, "deprecated": self.planning.deprecated}],
             )
 
             res = self.client.get(self.url, data={"form_ids": f"{self.form_1.pk},{self.form_2.pk}"})
@@ -179,7 +179,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
             self.assertEqual(
                 res_data,
-                [{"value": self.planning.id, "label": self.planning.name, "read_only": self.planning.read_only}],
+                [{"value": self.planning.id, "label": self.planning.name, "deprecated": self.planning.deprecated}],
             )
 
             res = self.client.get(self.url, data={"form_ids": f"{self.form_1.pk},{self.form_3.pk}"})
@@ -189,11 +189,11 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertEqual(
                 res_data,
                 [
-                    {"value": self.planning.id, "label": self.planning.name, "read_only": self.planning.read_only},
+                    {"value": self.planning.id, "label": self.planning.name, "deprecated": self.planning.deprecated},
                     {
                         "value": self.planning_2.id,
                         "label": self.planning_2.name,
-                        "read_only": self.planning_2.read_only,
+                        "deprecated": self.planning_2.deprecated,
                     },
                 ],
             )
@@ -211,7 +211,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.assertEqual(
             res_data,
-            [{"value": self.planning_other_account.id, "label": self.planning_other_account.name, "read_only": False}],
+            [{"value": self.planning_other_account.id, "label": self.planning_other_account.name, "deprecated": False}],
         )
 
     def test_response(self):
@@ -223,7 +223,7 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             [
-                {"value": p.id, "label": p.name, "read_only": p.read_only}
+                {"value": p.id, "label": p.name, "deprecated": p.deprecated}
                 for p in [self.planning, self.planning_2, self.planning_3, self.planning_4]
             ],
         )

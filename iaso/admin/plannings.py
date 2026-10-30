@@ -25,9 +25,9 @@ class PlanningAdmin(admin.ModelAdmin):
         "org_unit",
         # "forms",
         "team",
-        "read_only",
+        "deprecated",
     )
-    list_filter = ("project", "read_only")
+    list_filter = ("project", "deprecated")
     date_hierarchy = "started_at"
 
     fieldsets = [
@@ -37,7 +37,7 @@ class PlanningAdmin(admin.ModelAdmin):
                 "fields": (
                     "name",
                     "description",
-                    "read_only",
+                    "deprecated",
                     "project",
                     "missions",
                     "org_unit",

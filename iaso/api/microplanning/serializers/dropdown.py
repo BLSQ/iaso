@@ -10,5 +10,5 @@ class PlanningDropdownSerializer(ModelSerializer):
 
     class Meta:
         model = Planning
-        fields = ["label", "value", "read_only"]
+        fields = ["label", "value", "deprecated"]
         read_only_fields = fields

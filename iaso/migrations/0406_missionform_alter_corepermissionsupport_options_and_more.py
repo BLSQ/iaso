@@ -66,7 +66,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         planning.missions.set(mission_objs)
 
     PlanningFormThrough.objects.all().delete()
-    Planning.objects.all().update(read_only=True)
+    Planning.objects.all().update(deprecated=True)
 
 
 def reverse_migrate_missions_to_forms(apps, schema_editor):
@@ -77,7 +77,7 @@ def reverse_migrate_missions_to_forms(apps, schema_editor):
     for mission_form in MissionForm.objects.filter(plannings__isnull=False).prefetch_related("forms"):
         for planning in mission_form.plannings.only(
             "id", "forms"
-        ):  # especially made up to avoid the read_only field that might not been there
+        ):  # especially made up to avoid the "deprecated" field that might not been there
             for form in mission_form.forms.all():
                 if form not in planning.forms.all():
                     planning.forms.add(form)
@@ -274,9 +274,10 @@ class Migration(migrations.Migration):
         ),
         SafeAddField(
             model_name="planning",
-            name="read_only",
+            name="deprecated",
             field=models.BooleanField(
-                default=False, help_text="An attribute to disable edition on old planning (before the mission feature)"
+                default=False,
+                help_text="Indicates that this planning is now considered deprecated as it was created before the mission feature was launched.",
             ),
         ),
         migrations.CreateModel(

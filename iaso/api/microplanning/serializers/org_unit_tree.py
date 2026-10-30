@@ -42,7 +42,7 @@ class OrgUnitTreeSerializer(OrgUnitBuildTreeSerializer):
     @extend_schema_field(
         lazy_serializer("iaso.api.microplanning.serializers.org_unit_tree.OrgUnitTreeSerializer")(many=True)
     )
-    def get_children(self, obj: OrgUnit) -> typing.List[dict]:
+    def get_children(self, obj: OrgUnit) -> list[dict]:
         return typing.cast(
-            typing.List[dict], typing.cast(object, OrgUnitTreeSerializer(obj.descendants().all(), many=True).data)
+            list[dict], typing.cast(object, OrgUnitTreeSerializer(obj.descendants().all(), many=True).data)
         )

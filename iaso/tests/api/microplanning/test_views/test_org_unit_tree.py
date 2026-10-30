@@ -183,8 +183,16 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
-        with self.assertNumQueries(7):
-            res = self.client.get(self.get_url())
+        with self.assertNumQueries(8):
+            # 1. SELECT PLANNING
+            # 2. PREFETCH CONFIGS
+            # 3. PREFETCH CONFIGS ORG UNIT TYPES
+            # 4. PREFETCH CONFIGS ORG UNIT GROUPS
+            # 5. SELECT ROOT
+            # 6. SELECT INITIAL QS FOR OU WITH HIERARCHY
+            # 7. RETURN QS
+            # 8. MIN AGGREGATE IN BUILD TREE
+            res = self.client.get(self.get_url(), data={"level": 1})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
 

@@ -738,19 +738,10 @@ const MESSAGES = defineMessages({
             'The selected groups contain none of these org units. Nothing will be assigned at this level.',
         id: 'iaso.plannings.label.noOrgUnitInGroups',
     },
-    excludedByGroups: {
-        defaultMessage:
-            '{excluded} of {total} org units are excluded because they are in none of the selected groups.',
-        id: 'iaso.plannings.label.excludedByGroups',
-    },
     emptyLevelAbove: {
         defaultMessage:
             'The level above has no org unit, so these org units have no parent to be assigned from.',
         id: 'iaso.plannings.label.emptyLevelAbove',
-    },
-    whyThisCount: {
-        defaultMessage: 'Why this count',
-        id: 'iaso.plannings.label.whyThisCount',
     },
     howCountIsComputed: {
         defaultMessage: 'How {count} org units are computed',
@@ -767,10 +758,6 @@ const MESSAGES = defineMessages({
     assignableAtLevel: {
         defaultMessage: 'Assignable at level {number}',
         id: 'iaso.plannings.label.assignableAtLevel',
-    },
-    ofTotal: {
-        defaultMessage: 'of {total}',
-        id: 'iaso.plannings.label.ofTotal',
     },
 });
 

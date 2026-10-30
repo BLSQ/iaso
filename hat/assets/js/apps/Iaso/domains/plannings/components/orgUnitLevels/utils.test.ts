@@ -264,16 +264,14 @@ describe('getLevelIssues', () => {
         ).toEqual([{ type: 'noOrgUnitOfType', typeName: 'Area' }]);
     });
 
-    it('reports org units excluded by the groups', () => {
+    it('reports no issue when groups only exclude some of the level org units', () => {
         expect(
             getLevelIssues({
                 selectedTypes: [zone],
                 counts: makeCounts(3, [[zone.id, 10]]),
                 hasGroups: true,
             }),
-        ).toEqual([
-            { type: 'excludedByGroups', excludedCount: 7, totalCount: 10 },
-        ]);
+        ).toEqual([]);
     });
 
     it('reports groups that contain none of the level org units', () => {

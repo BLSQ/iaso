@@ -177,12 +177,6 @@ export const getLevelIssues = ({
     const { total, typesTotal } = counts;
     if (hasGroups && typesTotal > 0 && total === 0) {
         issues.push({ type: 'noOrgUnitInGroups' });
-    } else if (hasGroups && typesTotal > total) {
-        issues.push({
-            type: 'excludedByGroups',
-            excludedCount: typesTotal - total,
-            totalCount: typesTotal,
-        });
     }
     if (levelAboveCount === 0 && total > 0) {
         issues.push({ type: 'emptyLevelAbove' });

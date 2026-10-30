@@ -32,7 +32,6 @@ export type LevelOrgUnitCounts = {
 export type LevelIssue =
     | { type: 'noOrgUnitOfType'; typeName: string }
     | { type: 'noOrgUnitInGroups' }
-    | { type: 'excludedByGroups'; excludedCount: number; totalCount: number }
     | { type: 'emptyLevelAbove' };
 
 export type LevelTypeError =

@@ -53,7 +53,7 @@ dependencies = [
     "environs==14.4.0", # https://github.com/sloria/environs/tags
     "fiona==1.10.1", # https://github.com/Toblerity/Fiona/tags
     "geopandas==1.0.1", # https://github.com/geopandas/geopandas/tags
-    "geopy==2.4.1", # https://github.com/geopy/geopy/tags
+    "geopy==2.4.1", # trypelim - https://github.com/geopy/geopy/tags
     "gpxpy==1.4.0", # trypelim - https://github.com/tkrajina/gpxpy/tags
     "gql[requests]==3.4.1", # https://github.com/graphql-python/gql/tags
     "gspread==5.12.3", # https://github.com/burnash/gspread/tags

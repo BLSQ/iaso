@@ -328,16 +328,16 @@ describe('Mission create a11y tests', () => {
         });
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', { name: /min entities/i }),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', { name: /min entities/i }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', { name: /max entities/i }),
                 '20',
             );
         });

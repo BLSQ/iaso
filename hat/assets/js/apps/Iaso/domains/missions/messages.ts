@@ -208,6 +208,44 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Per form, min is the number of submissions required on each new org unit, max the number allowed (empty = no limit).',
     },
+    entitiesAgentCreates: {
+        id: 'iaso.missions.label.entitiesAgentCreates',
+        defaultMessage: 'Entities the agent creates',
+    },
+    entitiesAgentCreatesInfo: {
+        id: 'iaso.missions.label.entitiesAgentCreatesInfo',
+        defaultMessage:
+            'In each assigned org unit, the agent registers new entities of this type.',
+    },
+    entityTypeToCreate: {
+        id: 'iaso.missions.label.entityTypeToCreate',
+        defaultMessage: 'Entity type to create',
+    },
+    minEntities: {
+        id: 'iaso.missions.label.minEntities',
+        defaultMessage: 'Min entities per assigned org unit',
+    },
+    maxEntities: {
+        id: 'iaso.missions.label.maxEntities',
+        defaultMessage: 'Max entities per assigned org unit',
+    },
+    formsOnCreatedEntity: {
+        id: 'iaso.missions.label.formsOnCreatedEntity',
+        defaultMessage: 'Forms submitted on each created entity',
+    },
+    formsOnCreatedEntityInfo: {
+        id: 'iaso.missions.label.formsOnCreatedEntityInfo',
+        defaultMessage:
+            'Per form, min is the number of submissions required on each entity, max the number allowed (empty = no limit).',
+    },
+    minPerEntity: {
+        id: 'iaso.missions.label.minPerEntity',
+        defaultMessage: 'Min / entity',
+    },
+    maxPerEntity: {
+        id: 'iaso.missions.label.maxPerEntity',
+        defaultMessage: 'Max / entity',
+    },
 });
 
 export default MESSAGES;

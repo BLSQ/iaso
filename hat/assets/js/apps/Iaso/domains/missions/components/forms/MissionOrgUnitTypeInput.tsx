@@ -1,31 +1,15 @@
 import React from 'react';
-import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field } from 'formik';
 import { FormikProps } from 'formik/dist/types';
 import {
     MissionOrgUnitTypeCreateRequest,
     MissionOrgUnitTypeUpdateRequest,
 } from 'Iaso/api/missions';
-import { NumberInput } from 'Iaso/components/forms/NumberInput';
-import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
-import { MissionStepHeader } from './MissionStepHeader';
-
-const styles: SxStyles = {
-    orgUnitStep: {
-        border: theme => `1px solid ${theme.palette.lightGray.border}`,
-        borderRadius: 1,
-        p: 2,
-        mb: 3,
-    },
-};
-
-const numberInputOptions = { showArrows: true, showInfo: false } as const;
+import { MissionCreatedTypeStep } from './MissionCreatedTypeStep';
 
 type MissionOrgUnitTypeInputProps<TSchema> = {
     formik: FormikProps<TSchema>;
@@ -73,51 +57,17 @@ export const MissionOrgUnitTypeInput = <
 
     return (
         <>
-            <Box sx={styles.orgUnitStep}>
-                <MissionStepHeader
-                    step={1}
-                    title={formatMessage(MESSAGES.orgUnitsAgentCreates)}
-                    description={formatMessage(
-                        MESSAGES.orgUnitsAgentCreatesInfo,
-                    )}
-                />
-                <Field
-                    name={'org_unit_type'}
-                    label={formatMessage(MESSAGES.orgUnitTypeToCreate)}
-                    required
-                    clearable
-                    component={SelectInput}
-                    options={orgUnitTypesOptions}
-                    loading={isLoadingOrgUnitTypeOptions}
-                    onChange={handleOrgUnitTypeChange}
-                />
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                        <Field
-                            label={formatMessage(MESSAGES.minNewOrgUnits)}
-                            name={`min_cardinality`}
-                            initialValue={1}
-                            min={1}
-                            component={NumberInput}
-                            numberInputOptions={numberInputOptions}
-                            required
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Field
-                            label={formatMessage(MESSAGES.maxNewOrgUnits)}
-                            name={`max_cardinality`}
-                            initialValue={1}
-                            type={'number'}
-                            min={0}
-                            placeholder="∞"
-                            component={NumberInput}
-                            numberInputOptions={numberInputOptions}
-                        />
-                    </Grid>
-                </Grid>
-            </Box>
-
+            <MissionCreatedTypeStep
+                title={formatMessage(MESSAGES.orgUnitsAgentCreates)}
+                description={formatMessage(MESSAGES.orgUnitsAgentCreatesInfo)}
+                typeFieldName="org_unit_type"
+                typeLabel={formatMessage(MESSAGES.orgUnitTypeToCreate)}
+                typeOptions={orgUnitTypesOptions}
+                isLoadingTypeOptions={isLoadingOrgUnitTypeOptions}
+                onTypeChange={handleOrgUnitTypeChange}
+                minLabel={formatMessage(MESSAGES.minNewOrgUnits)}
+                maxLabel={formatMessage(MESSAGES.maxNewOrgUnits)}
+            />
             <MissionFormsBaseInput
                 step={2}
                 title={formatMessage(MESSAGES.formsOnCreatedOrgUnit)}

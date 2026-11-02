@@ -77,6 +77,8 @@ type Props<TSchema> = {
         helperText?: string;
     };
     arrayHelpers: FieldArrayRenderProps;
+    minColumnLabel?: string;
+    maxColumnLabel?: string;
 };
 
 export const MissionFormsFieldArray = <
@@ -86,6 +88,8 @@ export const MissionFormsFieldArray = <
     formik,
     formSelectProps,
     arrayHelpers,
+    minColumnLabel,
+    maxColumnLabel,
 }: Props<TSchema>) => {
     const { values, errors, setFieldTouched } = formik;
     const { data: formsOptions, isLoading } =
@@ -164,10 +168,16 @@ export const MissionFormsFieldArray = <
                                         {formatMessage(MESSAGES.form)}
                                     </TableCell>
                                     <TableCell sx={styles.numberHeaderCell}>
-                                        {formatMessage(MESSAGES.minPerOrgUnit)}
+                                        {minColumnLabel ??
+                                            formatMessage(
+                                                MESSAGES.minPerOrgUnit,
+                                            )}
                                     </TableCell>
                                     <TableCell sx={styles.numberHeaderCell}>
-                                        {formatMessage(MESSAGES.maxPerOrgUnit)}
+                                        {maxColumnLabel ??
+                                            formatMessage(
+                                                MESSAGES.maxPerOrgUnit,
+                                            )}
                                     </TableCell>
                                     <TableCell sx={styles.actionsHeaderCell}>
                                         <Box

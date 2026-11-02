@@ -19,6 +19,8 @@ type MissionFormsInput<TSchema> = {
     title?: string;
     description?: string;
     step?: number;
+    minColumnLabel?: string;
+    maxColumnLabel?: string;
 };
 
 export const MissionFormsBaseInput = <
@@ -30,6 +32,8 @@ export const MissionFormsBaseInput = <
     title,
     description,
     step,
+    minColumnLabel,
+    maxColumnLabel,
 }: MissionFormsInput<TSchema>) => {
     const { formatMessage } = useSafeIntl();
 
@@ -48,6 +52,8 @@ export const MissionFormsBaseInput = <
                         formik={formik}
                         formSelectProps={formSelectProps}
                         arrayHelpers={arrayHelpers}
+                        minColumnLabel={minColumnLabel}
+                        maxColumnLabel={maxColumnLabel}
                     />
                 )}
             />

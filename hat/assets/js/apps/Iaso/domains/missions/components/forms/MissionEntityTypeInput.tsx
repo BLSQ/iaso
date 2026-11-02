@@ -1,18 +1,15 @@
 import React from 'react';
-import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field } from 'formik';
 import { FormikProps } from 'formik/dist/types';
 import {
     MissionEntityTypeUpdateRequest,
     MissionEntityTypeCreateRequest,
 } from 'Iaso/api/missions';
-import { NumberInput } from 'Iaso/components/forms/NumberInput';
-import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { useGetEntityTypesDropdown } from 'Iaso/domains/entities/hooks/requests';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import MESSAGES from '../../messages';
+import { MissionCreatedTypeStep } from './MissionCreatedTypeStep';
 
 type MissionEntityTypeInputProps<TSchema> = {
     formik: FormikProps<TSchema>;
@@ -54,40 +51,24 @@ export const MissionEntityTypeInput = <
 
     return (
         <>
-            <Field
-                name={'entity_type'}
-                label={formatMessage(MESSAGES.entityType)}
-                required
-                clearable
-                component={SelectInput}
-                options={entityTypesOptions}
-                loading={isLoadingEntityTypeOptions}
-                onChange={handleEntityTypeChange}
+            <MissionCreatedTypeStep
+                title={formatMessage(MESSAGES.entitiesAgentCreates)}
+                description={formatMessage(MESSAGES.entitiesAgentCreatesInfo)}
+                typeFieldName="entity_type"
+                typeLabel={formatMessage(MESSAGES.entityTypeToCreate)}
+                typeOptions={entityTypesOptions}
+                isLoadingTypeOptions={isLoadingEntityTypeOptions}
+                onTypeChange={handleEntityTypeChange}
+                minLabel={formatMessage(MESSAGES.minEntities)}
+                maxLabel={formatMessage(MESSAGES.maxEntities)}
             />
-            <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                    <Field
-                        label={formatMessage(MESSAGES.minCardinality)}
-                        name={`min_cardinality`}
-                        initialValue={1}
-                        min={1}
-                        component={NumberInput}
-                        required
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <Field
-                        label={formatMessage(MESSAGES.maxCardinality)}
-                        name={`max_cardinality`}
-                        initialValue={1}
-                        type={'number'}
-                        min={0}
-                        component={NumberInput}
-                    />
-                </Grid>
-            </Grid>
 
             <MissionFormsBaseInput
+                step={2}
+                title={formatMessage(MESSAGES.formsOnCreatedEntity)}
+                description={formatMessage(MESSAGES.formsOnCreatedEntityInfo)}
+                minColumnLabel={formatMessage(MESSAGES.minPerEntity)}
+                maxColumnLabel={formatMessage(MESSAGES.maxPerEntity)}
                 params={params}
                 formik={formik}
                 formSelectProps={{

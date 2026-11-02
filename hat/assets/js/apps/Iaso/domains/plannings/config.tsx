@@ -5,6 +5,7 @@ import {
     formatThousand,
     IconButton,
     makeRedirectionUrl,
+    Setting,
     useSafeIntl,
 } from 'bluesquare-components';
 
@@ -90,17 +91,21 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
                 Header: formatMessage(MESSAGES.project),
                 accessor: 'project__name',
                 id: 'project__name',
-                Cell: settings => (
-                    <ProjectChip
-                        project={settings.row.original.project_details}
-                    />
-                ),
+                Cell: (settings: Setting<Planning>) =>
+                    settings.row.original.project_details ? (
+                        <ProjectChip
+                            project={settings.row.original.project_details}
+                        />
+                    ) : (
+                        ''
+                    ),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnit),
                 accessor: 'org_unit__name',
                 id: 'org_unit__name',
-                Cell: settings => settings.row.original.org_unit_details.name,
+                Cell: (settings: Setting<Planning>) =>
+                    settings.row.original.org_unit_details?.name ?? '',
             },
             {
                 Header: formatMessage(MESSAGES.startDate),
@@ -116,20 +121,23 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
                 Header: formatMessage(MESSAGES.team),
                 accessor: 'team',
                 id: 'team',
-                Cell: settings => (
-                    <TeamChip team={settings.row.original.team_details} />
-                ),
+                Cell: (settings: Setting<Planning>) =>
+                    settings.row.original.team_details ? (
+                        <TeamChip team={settings.row.original.team_details} />
+                    ) : (
+                        ''
+                    ),
             },
             {
                 Header: formatMessage(MESSAGES.status),
                 accessor: 'status',
                 id: 'status',
-                Cell: settings =>
+                Cell: (settings: Setting<Planning>) =>
                     settings.row.original.deprecated ? (
                         <DeprecatedPlanningChip />
                     ) : (
                         <PlanningStatusChip
-                            status={settings.row.original.status}
+                            status={settings.row.original.status ?? 'draft'}
                         />
                     ),
             },
@@ -138,7 +146,7 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: settings => (
+                Cell: (settings: Setting<Planning>) => (
                     <ActionsCell
                         {...settings}
                         deletePlanning={deletePlanning}
@@ -195,7 +203,7 @@ export const useSamplingResultsColumns = (
                 accessor: 'group_details_org_unit_count',
                 id: 'group_details_org_unit_count',
                 sortable: false,
-                Cell: settings =>
+                Cell: (settings: Setting<SamplingResult>) =>
                     formatThousand(
                         settings.row.original.group_details?.org_unit_count,
                     ),
@@ -204,7 +212,7 @@ export const useSamplingResultsColumns = (
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'actions',
                 sortable: false,
-                Cell: settings => (
+                Cell: (settings: Setting<SamplingResult>) => (
                     <ActionCell
                         planning={planning}
                         samplingResult={settings.row.original}
@@ -214,7 +222,7 @@ export const useSamplingResultsColumns = (
             {
                 Header: formatMessage(MESSAGES.selectSamplingResult),
                 accessor: 'selected_sampling_result',
-                Cell: settings => (
+                Cell: (settings: Setting<SamplingResult>) => (
                     <Checkbox
                         checked={
                             planning.selected_sampling_result &&

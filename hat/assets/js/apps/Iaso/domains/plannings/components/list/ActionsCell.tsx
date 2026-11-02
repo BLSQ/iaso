@@ -1,18 +1,20 @@
 import React, { FunctionComponent } from 'react';
 import { Assignment } from '@mui/icons-material';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    Setting,
+} from 'bluesquare-components';
 import moment from 'moment';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
-import { ColumnCell } from 'Iaso/types/general';
 import { PLANNING_WRITE } from 'Iaso/utils/permissions';
 import MESSAGES from '../../messages';
 import { Planning } from '../../types';
 import { canAssignPlanning, getAssignmentsUrl } from '../../utils';
 
-interface ActionsCellProps extends ColumnCell<Planning> {
+interface ActionsCellProps extends Setting<Planning> {
     deletePlanning: (id: number) => void;
 }
 

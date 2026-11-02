@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect, useRef } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-import { Button, IconButton, Stack } from '@mui/material';
+import { Button, ButtonProps, IconButton, Stack } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
@@ -21,7 +21,10 @@ const styles = {
     },
 } satisfies SxStyles;
 
-type TabButtonProps = {
+type TabButtonProps = Omit<
+    ButtonProps,
+    'tab' | 'color' | 'title' | 'onClick' | 'sx'
+> & {
     tab: TabKey;
     label: string;
     fieldsToFix: string[];
@@ -33,6 +36,7 @@ const TabButton: FC<TabButtonProps> = ({
     label,
     fieldsToFix,
     onSelectTab,
+    ...props
 }) => {
     const handleClick = useCallback(() => onSelectTab(tab), [onSelectTab, tab]);
     return (
@@ -42,11 +46,14 @@ const TabButton: FC<TabButtonProps> = ({
             title={fieldsToFix.join(', ')}
             onClick={handleClick}
             sx={styles.tabButton}
+            {...props}
         >
             {label}
         </Button>
     );
 };
+
+let snackBarCount = 0;
 
 type MissingFieldsSnackBar = {
     openMissingFieldsSnackBar: (errors: PlanningFormik['errors']) => void;
@@ -70,7 +77,8 @@ export const useMissingFieldsSnackBar = (): MissingFieldsSnackBar => {
             })).filter(({ fieldsToFix }) => fieldsToFix.length > 0);
             // Replaced on every failed save so it never lists outdated tabs.
             closeMissingFieldsSnackBar();
-            snackBarKey.current = `planningMissingFields-${Date.now()}`;
+            snackBarCount += 1;
+            snackBarKey.current = `planningMissingFields-${snackBarCount}`;
             openSnackBar({
                 messageObject: formatMessage(MESSAGES.cantSaveFieldsToFix),
                 id: snackBarKey.current,

@@ -81,8 +81,14 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         return self.filter(category="COUNTRY")
 
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None, distinct: bool = False
     ):
+        """
+        Filter the org unit types by user and app_id.
+
+        This might return duplicates if distinct is set to False (default). Set it to True to get distinct values.
+        """
+
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -105,7 +111,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
             except Project.DoesNotExist:
                 return self.none()
 
-        return queryset
+        return queryset.distinct() if distinct else queryset
 
     def filter_for_project(self, project: Project, queryset=None):
         if queryset is None:

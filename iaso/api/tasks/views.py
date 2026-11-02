@@ -127,8 +127,12 @@ class TaskSourceViewSet(ModelViewSet):
 
             try:
                 presigned_url = generate_presigned_url_from_s3(s3_object_name)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception:
+                logger.exception("Failed to generate presigned URL for task %s", task.pk)
+                return Response(
+                    {"error": "Could not generate a presigned URL at this time."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             serializer = TaskPresignedUrlSerializer(
                 {"presigned_url": presigned_url, "expires_at": task.result_file_expires_at}

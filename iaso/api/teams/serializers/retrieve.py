@@ -26,7 +26,7 @@ class TeamRetrieveNestedUserSerializer(ModelSerializer):
 class TeamRetrieveNestedTeamSerializer(ModelSerializer):
     class Meta:
         model = Team
-        fields = ["id", "name", "deleted_at", "color"]
+        fields = ["id", "name", "color"]
         read_only_fields = fields
 
 

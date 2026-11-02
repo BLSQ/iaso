@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import rest_framework.status
 
@@ -466,8 +466,8 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
 
 
 class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
-    CREATED_AT = datetime(2026, 1, 15, 10, 0, tzinfo=timezone.utc)
-    LAST_SYNC = datetime(2026, 2, 1, tzinfo=timezone.utc)
+    CREATED_AT = datetime(2026, 1, 15, 10, 0, tzinfo=UTC)
+    LAST_SYNC = datetime(2026, 2, 1, tzinfo=UTC)
 
     @classmethod
     def setUpTestData(cls):

@@ -60,7 +60,6 @@ dependencies = [
     "gspread-formatting==1.1.2", # https://github.com/robin900/gspread-formatting/tags
     "ipython==8.18.1", # https://github.com/ipython/ipython/tags
     "jsonpatch==1.33", # https://github.com/stefankoegl/python-json-patch
-    "jsonref==1.1.0", # https://github.com/gazpachoking/jsonref
     "jsonschema==4.20.0", # https://github.com/python-jsonschema/jsonschema/tags
     "libsass==0.23.0", # provides the 'sass' module used by compile_index_scss
     "lxml==4.9.4", # https://github.com/lxml/lxml/tags

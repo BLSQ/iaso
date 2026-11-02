@@ -1,7 +1,10 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
+import {
+    GREY_PAGE_BODY_PADDING_Y,
+    GreyPageWrapper,
+} from 'Iaso/components/GreyPageWrapper';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { smallTabsOverrides } from 'Iaso/styles';
@@ -24,6 +27,12 @@ const styles = {
         ...smallTabsOverrides,
         flexShrink: 0,
         marginBottom: 3,
+        position: 'sticky',
+        // Sticky offsets start below the scroll container's padding.
+        top: theme => theme.spacing(-GREY_PAGE_BODY_PADDING_Y),
+        zIndex: 'appBar',
+        // Opaque so the scrolled content doesn't show through.
+        backgroundColor: theme => theme.palette.primary.background,
     },
     tabWithError: {
         '&, &.Mui-selected': { color: 'error.main' },

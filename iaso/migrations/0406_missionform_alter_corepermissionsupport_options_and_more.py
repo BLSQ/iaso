@@ -18,15 +18,10 @@ def migrate_forms_to_missions(apps, schema_editor):
     MissionFormThroughForm = apps.get_model("iaso", "MissionFormThroughForm")
     PlanningFormThrough = apps.get_model("iaso", "Planning_forms")
 
-    db_alias = schema_editor.connection.alias
-
-    mission_form_ct = ContentType.objects.db_manager(db_alias).get_for_model(MissionForm)
+    mission_form_ct = ContentType.objects.get_for_model(MissionForm)
 
     plannings = (
-        Planning.objects.using(db_alias)
-        .filter(project__account__isnull=False)
-        .prefetch_related("forms")
-        .select_related("project")
+        Planning.objects.filter(project__account__isnull=False).prefetch_related("forms").select_related("project")
     )
 
     # Collect unique missions and their planning associations.
@@ -63,7 +58,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         for data in unique_missions.values()
     ]
 
-    mission_objects = Mission.objects.using(db_alias).bulk_create(
+    mission_objects = Mission.objects.bulk_create(
         mission_objects,
         batch_size=500,
     )
@@ -83,7 +78,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         )
 
     # Associate each mission with exactly one form.
-    MissionFormThroughForm.objects.using(db_alias).bulk_create(
+    MissionFormThroughForm.objects.bulk_create(
         [
             MissionFormThroughForm(
                 mission_form_id=mission.id,
@@ -99,7 +94,7 @@ def migrate_forms_to_missions(apps, schema_editor):
     # Restore Planning-Mission associations.
     planning_mission_through = Planning.missions.through
 
-    planning_mission_through.objects.using(db_alias).bulk_create(
+    planning_mission_through.objects.bulk_create(
         [
             planning_mission_through(
                 planning_id=planning_id,
@@ -111,7 +106,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         batch_size=500,
     )
 
-    PlanningFormThrough.objects.using(db_alias).all().delete()
+    PlanningFormThrough.objects.all().delete()
     Planning.objects.all().update(deprecated=True)
 
 

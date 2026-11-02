@@ -1,5 +1,4 @@
 import React from 'react';
-import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldArray } from 'formik';
 import { FormikProps } from 'formik/dist/types';
@@ -8,6 +7,7 @@ import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import MESSAGES from '../../messages';
 import { MissionFormsFieldArray } from './MissionFormsFieldArray';
+import { MissionStepHeader } from './MissionStepHeader';
 
 type MissionFormsInput<TSchema> = {
     params?: UseGetFormsDropdownParams;
@@ -16,6 +16,9 @@ type MissionFormsInput<TSchema> = {
         disabled?: boolean;
         helperText?: string;
     };
+    title?: string;
+    description?: string;
+    step?: number;
 };
 
 export const MissionFormsBaseInput = <
@@ -24,14 +27,19 @@ export const MissionFormsBaseInput = <
     params,
     formik,
     formSelectProps,
+    title,
+    description,
+    step,
 }: MissionFormsInput<TSchema>) => {
     const { formatMessage } = useSafeIntl();
 
     return (
         <>
-            <Typography variant="body2" fontWeight="bold" mb={1}>
-                {formatMessage(MESSAGES.forms)}
-            </Typography>
+            <MissionStepHeader
+                title={title ?? formatMessage(MESSAGES.forms)}
+                description={description ?? formatMessage(MESSAGES.formInfo)}
+                step={step}
+            />
             <FieldArray
                 name="forms"
                 render={arrayHelpers => (

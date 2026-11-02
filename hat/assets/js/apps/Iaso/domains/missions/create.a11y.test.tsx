@@ -145,7 +145,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /select a form to add/i,
+                name: /add a form/i,
             }),
         );
     });
@@ -256,7 +256,7 @@ describe('Mission create a11y tests', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', { name: /min new org units/i }),
             );
             await userEvent.type(
                 screen.getByRole('textbox', { name: /name/i }),
@@ -277,13 +277,13 @@ describe('Mission create a11y tests', () => {
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', { name: /min new org units/i }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', { name: /max new org units/i }),
                 '20',
             );
         });

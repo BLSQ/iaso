@@ -9,7 +9,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Typography,
 } from '@mui/material';
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
@@ -130,17 +129,15 @@ export const MissionFormsFieldArray = <
     const hasForms = Boolean(values.forms?.length);
 
     return (
-        <Box sx={{ mt: 2 }}>
-            <Typography variant="caption">
-                {formatMessage(MESSAGES.formInfo)}
-            </Typography>
+        <Box>
             <Stack direction={'row'}>
                 <Box sx={{ width: '100%' }}>
                     <Select
                         key={selectKey}
                         loading={isLoading}
                         options={availableFormOptions}
-                        label={formatMessage(MESSAGES.addForm)}
+                        label={formatMessage(MESSAGES.addFormLabel)}
+                        placeholder={formatMessage(MESSAGES.addForm)}
                         clearable
                         value={null}
                         keyValue={'add_form'}

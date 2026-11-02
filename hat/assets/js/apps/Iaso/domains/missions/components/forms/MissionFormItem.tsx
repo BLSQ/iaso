@@ -1,6 +1,6 @@
 import React from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import DescriptionIcon from '@mui/icons-material/Description';
+import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
 import {
     Alert,
     Box,

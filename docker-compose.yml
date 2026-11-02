@@ -26,8 +26,6 @@ services:
             - ./babel-register.js:/opt/app/babel-register.js
             - ./pyproject.toml:/opt/app/pyproject.toml
             - ./htmlcov:/opt/app/htmlcov
-            # test data
-            - ./testdata:/opt/app/testdata
             # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
             - ../bluesquare-components:/opt/bluesquare-components
             # Optional Used to load dev snt-malaria-budgeting Python package.

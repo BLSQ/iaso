@@ -326,8 +326,8 @@ org units (these are childcare schools in the West of DRC):
 
 ```bash
 docker compose exec iaso ./manage.py tree_importer \
-    --org_unit_csv_file testdata/schools.csv \
-    --data_dict testdata/data_dict.json \
+    --org_unit_csv_file iaso/fixtures/seed_data/schools.csv \
+    --data_dict iaso/fixtures/seed_data/schools_data_dict.json \
     --source_name wb_schools_2019 \
     --version_number=1 \
     --project_id=1\

@@ -11,8 +11,9 @@ import {
     Tooltip,
     Typography,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { MissionPolymorphicList } from 'Iaso/api/missions';
+import { baseUrls } from 'Iaso/constants/urls';
 import { MissionInfoCaption } from 'Iaso/domains/missions/components/chips/MissionInfoCaption';
 import { MissionTypeChip } from 'Iaso/domains/missions/components/chips/MissionTypeChip';
 import { SxStyles } from 'Iaso/types/general';
@@ -44,7 +45,7 @@ const styles = {
 
 export const MissionItem: FC<Props> = ({ mission, status }) => {
     const { formatMessage } = useSafeIntl();
-    const { unlinkMission, relinkMission } = usePlanningContext();
+    const { unlinkMission, relinkMission, isReadOnly } = usePlanningContext();
     const isUnlinked = status === 'unlinked';
     const handleUnlink = useCallback(
         () => unlinkMission(mission.id),
@@ -86,34 +87,60 @@ export const MissionItem: FC<Props> = ({ mission, status }) => {
                     )}
                 </Stack>
                 <Stack direction="row" gap={1}>
-                    <IconButton size="small">
+                    <IconButton
+                        size="small"
+                        component={LinkWithLocation}
+                        to={`/${baseUrls.missionsDetails}/id/${mission.id}`}
+                    >
                         <VisibilityOutlinedIcon
                             sx={planningPanelStyles.smallIcon}
                         />
                     </IconButton>
-                    <IconButton size="small">
-                        <CreateOutlinedIcon
-                            color="primary"
-                            sx={planningPanelStyles.smallIcon}
-                        />
-                    </IconButton>
-                    {isUnlinked ? (
-                        <Tooltip title={formatMessage(MESSAGES.relinkMission)}>
-                            <IconButton size="small" onClick={handleRelink}>
-                                <LinkOutlinedIcon
+                    {!isReadOnly && (
+                        <>
+                            <IconButton
+                                size="small"
+                                component={LinkWithLocation}
+                                to={`/${baseUrls.missionsEdit}/id/${mission.id}`}
+                            >
+                                <CreateOutlinedIcon
                                     color="primary"
                                     sx={planningPanelStyles.smallIcon}
                                 />
                             </IconButton>
-                        </Tooltip>
-                    ) : (
-                        <Tooltip title={formatMessage(MESSAGES.unlinkMission)}>
-                            <IconButton size="small" onClick={handleUnlink}>
-                                <LinkOffOutlinedIcon
-                                    sx={planningPanelStyles.smallIcon}
-                                />
-                            </IconButton>
-                        </Tooltip>
+                            {isUnlinked ? (
+                                <Tooltip
+                                    title={formatMessage(
+                                        MESSAGES.relinkMission,
+                                    )}
+                                >
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleRelink}
+                                    >
+                                        <LinkOutlinedIcon
+                                            color="primary"
+                                            sx={planningPanelStyles.smallIcon}
+                                        />
+                                    </IconButton>
+                                </Tooltip>
+                            ) : (
+                                <Tooltip
+                                    title={formatMessage(
+                                        MESSAGES.unlinkMission,
+                                    )}
+                                >
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleUnlink}
+                                    >
+                                        <LinkOffOutlinedIcon
+                                            sx={planningPanelStyles.smallIcon}
+                                        />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </>
                     )}
                 </Stack>
             </Stack>

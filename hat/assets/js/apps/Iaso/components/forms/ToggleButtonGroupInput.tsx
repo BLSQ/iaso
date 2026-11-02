@@ -23,6 +23,7 @@ type Props = {
     errors?: string[];
     required?: boolean;
     size?: 'small' | 'medium' | 'large';
+    disabled?: boolean;
 };
 
 const styles = {
@@ -41,6 +42,7 @@ export const ToggleButtonGroupInput: FC<Props> = ({
     errors = [],
     required = false,
     size = 'medium',
+    disabled = false,
 }) => {
     const handleChange = useCallback(
         (_event: React.MouseEvent, newValue: string | null) => {
@@ -64,6 +66,7 @@ export const ToggleButtonGroupInput: FC<Props> = ({
                 color="primary"
                 value={value}
                 onChange={handleChange}
+                disabled={disabled}
                 sx={styles.toggleButtonGroup}
             >
                 {options.map(({ icon: Icon, ...option }) => (

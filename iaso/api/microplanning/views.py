@@ -266,6 +266,9 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return []
         if self.action == "configs":
             return []
+        if self.action == "org_unit_tree":
+            # only used to document level/max_depth in the schema, the action applies the filterset itself
+            return [DjangoFilterBackend]
         return [
             filters.OrderingFilter,
             DjangoFilterBackend,
@@ -293,7 +296,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             ctx.update({"planning_id": self.kwargs.get("pk")})
         return ctx
 
-    def get_queryset(self) -> PlanningQuerySet | PlanningConfigQuerySet | MissionQuerySet | OrgUnitQuerySet:
+    def get_queryset(self) -> PlanningQuerySet | PlanningConfigQuerySet | MissionQuerySet:
         user = typing.cast(User, self.request.user)
         qs = self.queryset.filter_for_user(user)
 
@@ -354,23 +357,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                 .only("id", "org_unit", "org_unit__id", "org_unit__path")
             )
 
-            planning = get_object_or_404(
-                qs,
-                pk=self.kwargs["pk"],
-            )
-
-            filterset = PlanningOrgUnitTreeFilterSet(
-                data=self.request.query_params,
-                queryset=OrgUnit.objects.all(),
-                request=self.request,
-                planning=planning,
-                user=user,
-            )
-            if not filterset.is_valid():
-                raise serializers.ValidationError(filterset.errors)
-
-            # filter does all the magic there
-            return filterset.qs
+            return qs
 
         return (
             self.queryset.filter_for_user(user)
@@ -478,12 +465,19 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         url_path="org-unit-tree",
     )
     def org_unit_tree(self, request, pk=None, *args: Any, **kwargs: Any) -> Response:
-        queryset = self.get_queryset()
+        # not self.get_object(): it would run filter_queryset() and instantiate the filterset without the planning
+        planning = get_object_or_404(self.get_queryset(), pk=pk)
 
-        if not isinstance(queryset, OrgUnitQuerySet):
-            raise ValueError
+        filterset = PlanningOrgUnitTreeFilterSet(
+            data=request.query_params,
+            queryset=OrgUnit.objects.filter_for_user(request.user),
+            request=request,
+            planning=planning,
+        )
+        if not filterset.is_valid():
+            raise serializers.ValidationError(filterset.errors)
 
-        data = self._build_org_unit_tree(queryset)
+        data = self._build_org_unit_tree(filterset.qs)
         return Response(data)
 
 

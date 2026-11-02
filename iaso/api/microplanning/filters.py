@@ -6,12 +6,10 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import PointField
 from django.contrib.gis.geos import GEOSGeometry
-from django.core.validators import MinValueValidator
 from django.db.models import BooleanField, Case, F, Q, Value, When
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
-from django_filters import NumberFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, serializers
 
@@ -135,22 +133,19 @@ class PlanningDropdownFilterSet(django_filters.FilterSet):
 
 class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
     level = django_filters.NumberFilter(label="Level", min_value=1)
-    max_depth = NumberFilter(
-        validators=[MinValueValidator(1)],
+    max_depth = django_filters.NumberFilter(
         min_value=1,
         help_text=_(
             "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
         ),
     )
 
-    def __init__(self, *args: Any, planning: Planning, user: User, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, planning: Planning, **kwargs: Any) -> None:
         self.planning = planning
-        self.user = user
         super().__init__(*args, **kwargs)
 
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
         planning = self.planning
-        user = self.user
 
         root = planning.org_unit
         root_level = len(str(root.path).split("."))
@@ -165,14 +160,13 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
             nodes_level = root_level + level
 
             root = (
-                OrgUnit.objects.filter_for_user(user)
-                .hierarchy(root)
+                queryset.hierarchy(root)
                 .filter(path__depth=nodes_level)
                 .only("id", "parent", "name", "path")
                 .distinct("id")
             )
 
-        queryset = OrgUnit.objects.filter_for_user(user).hierarchy(root)
+        queryset = queryset.hierarchy(root)
 
         if max_depth is not None:
             queryset = queryset.filter(path__depth__lte=max_depth)

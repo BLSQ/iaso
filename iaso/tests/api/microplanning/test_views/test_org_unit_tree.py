@@ -11,14 +11,12 @@ from rest_framework import status
 from iaso.api.microplanning.views import PlanningViewSet
 from iaso.models import (
     Account,
-    DataSource,
     Group,
     OrgUnit,
     OrgUnitType,
     Planning,
     PlanningConfig,
     Project,
-    SourceVersion,
     Team,
 )
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
@@ -31,11 +29,9 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         super().setUpTestData()
 
         # create account
-        cls.account = Account.objects.create(name="Account")
-        cls.data_source = DataSource.objects.create(name="Test Data Source")
-        cls.source_version = SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.account.default_version = cls.source_version
-        cls.account.save()
+        [cls.account, cls.data_source, cls.source_version, cls.project] = cls.create_account_datasource_version_project(
+            "Test Data Source", "Account", "Test Project"
+        )
 
         cls.other_account = Account.objects.create(name="OtherAccount")
 
@@ -56,11 +52,9 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         # create projects
-        cls.project = Project.objects.create(name="Test Project", app_id="test.app", account=cls.account)
         cls.project_other_account = Project.objects.create(
             name="Test Project other account", app_id="test.app.other_account", account=cls.other_account
         )
-        cls.data_source.projects.add(cls.project)
 
         # create teams
         cls.team = Team.objects.create(name="Test Team", project=cls.project, manager=cls.superuser)
@@ -121,13 +115,16 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         )
 
         cls.children_2_1_1 = OrgUnit.objects.create(
-            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.1"
+            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.1", org_unit_type=cls.org_unit_type
         )
+        cls.children_2_1_1.groups.set([cls.org_unit_group])
+
         cls.children_2_1_2 = OrgUnit.objects.create(
-            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.2"
+            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.2", org_unit_type=cls.org_unit_type
         )
+        cls.children_2_1_2.groups.set([cls.org_unit_group_2])
         cls.children_2_2_1 = OrgUnit.objects.create(
-            parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.1"
+            parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.1", org_unit_type=cls.org_unit_type
         )
         cls.children_2_2_2 = OrgUnit.objects.create(
             parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.2"
@@ -137,6 +134,9 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         cls.planning = Planning.objects.create(
             name="planning", project=cls.project, team=cls.team, org_unit=cls.ou_root
         )
+        cls.planning_2 = Planning.objects.create(
+            name="planning 2", project=cls.project, team=cls.team, org_unit=cls.children_2
+        )
 
         cls.planning_other_account = Planning.objects.create(
             name="planning_other_account",
@@ -145,13 +145,22 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             org_unit=cls.ou_root,
         )
 
-        # create planning configs for level 1 and 2
+        # create planning configs for level 1 and 2 for planning
         cls.planning_config_level_1 = PlanningConfig.objects.create(level=1, planning=cls.planning)
         cls.planning_config_level_1.org_unit_types.set([cls.org_unit_type])
 
         cls.planning_config_level_2 = PlanningConfig.objects.create(level=2, planning=cls.planning)
         cls.planning_config_level_2.org_unit_types.set([cls.org_unit_type_2])
         cls.planning_config_level_2.org_unit_groups.set([cls.org_unit_group_2])
+
+        # create planning configs for level 1 and 2 for planning_2
+        cls.planning_2_config_level_1 = PlanningConfig.objects.create(level=1, planning=cls.planning_2)
+        cls.planning_2_config_level_1.org_unit_types.set([cls.org_unit_type_2])
+        cls.planning_2_config_level_1.org_unit_groups.set([cls.org_unit_group_2])
+
+        cls.planning_2_config_level_2 = PlanningConfig.objects.create(level=2, planning=cls.planning_2)
+        cls.planning_2_config_level_2.org_unit_types.set([cls.org_unit_type])
+        cls.planning_2_config_level_2.org_unit_groups.set([cls.org_unit_group])
 
     def get_url(self, pk: int | None = None) -> str:
         if not pk:
@@ -183,12 +192,11 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(7):
             # 1. SELECT PLANNING
             # 2. PREFETCH CONFIGS
             # 3. PREFETCH CONFIGS ORG UNIT TYPES
             # 4. PREFETCH CONFIGS ORG UNIT GROUPS
-            # 5. SELECT ROOT
             # 6. SELECT INITIAL QS FOR OU WITH HIERARCHY
             # 7. RETURN QS
             # 8. MIN AGGREGATE IN BUILD TREE
@@ -199,24 +207,144 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_filters_level(self):
         self.client.force_authenticate(self.superuser)
 
-        data = {"level": 0}
+        with self.subTest("planning 1"):
+            data = {"level": 0}
 
-        res = self.client.get(self.get_url(), data)
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "level", "Ensure this value is greater than or equal to 1.")
+            res = self.client.get(self.get_url(), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertHasError(res_data, "level", "Ensure this value is greater than or equal to 1.")
 
-        data = {"level": 1}  # means we start to fetch the data that is at level 1 + root level
+            data = {"level": 1}  # means we start to fetch the data that is at level 1 + root level
+            res = self.client.get(self.get_url(), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            self.assertEqual(len(res_data), 1)
+            root = res_data[0]
+            self.assertEqual(root["id"], self.children_2.pk)
+            self.assertEqual(root["depth"], data["level"] + len(str(self.ou_root.path).split(".")))
+            self.assertEqual(len(root["children"]), 1)
+
+            data = {"level": 2}  # means we start to fetch the data that is at level 2 + root level
+            res = self.client.get(self.get_url(), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            self.assertEqual(len(res_data), 1)
+            root = res_data[0]
+            self.assertEqual(root["id"], self.children_2_1.pk)
+            self.assertEqual(root["depth"], data["level"] + len(str(self.ou_root.path).split(".")))
+            self.assertEqual(len(root["children"]), 2)
+
+        with self.subTest("planning 2"):
+            data = {
+                "level": 1
+            }  # means we start to fetch the data that is at level 1 + children_2 level => children_2_1
+            res = self.client.get(self.get_url(pk=self.planning_2.pk), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            self.assertEqual(len(res_data), 1)
+            root = res_data[0]
+            self.assertEqual(root["id"], self.children_2_1.pk)
+            self.assertEqual(root["depth"], data["level"] + len(str(self.children_2.path).split(".")))
+            self.assertEqual(len(root["children"]), 1)
+
+            data = {
+                "level": 2
+            }  # means we start to fetch the data that is at level 2 + children_2 level => children_2_1_1
+            res = self.client.get(self.get_url(pk=self.planning_2.pk), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            self.assertEqual(len(res_data), 1)
+            children_1 = res_data[0]
+            self.assertEqual(children_1["id"], self.children_2_1_1.pk)
+            self.assertEqual(children_1["depth"], data["level"] + len(str(self.children_2.path).split(".")))
+
+    def test_filters_max_depth(self):
+        self.client.force_authenticate(self.superuser)
+
+        with self.subTest("planning 1"):
+            data = {"max_depth": 0}
+
+            res = self.client.get(self.get_url(), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertHasError(res_data, "max_depth", "Ensure this value is greater than or equal to 1.")
+
+            data = {"max_depth": 1}
+
+            res = self.client.get(self.get_url(), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            root = res_data[0]
+            self.assertEqual(root["id"], self.ou_root.pk)
+            self.assertEqual(root["depth"], 1)
+            self.assertEqual(len(root["children"]), 0)  # we stops there as it's root depth + max depth - 1
+
+            data = {"max_depth": 2}
+
+            res = self.client.get(self.get_url(), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            root = res_data[0]
+            self.assertEqual(root["id"], self.ou_root.pk)
+            self.assertEqual(root["depth"], 1)
+
+            self.assertEqual(len(root["children"]), 1)
+            children = root["children"][0]
+
+            self.assertEqual(children["id"], self.children_2.pk)
+            self.assertEqual(children["depth"], 2)
+            self.assertEqual(len(children["children"]), 0)  # we stops there as it's root depth + max depth - 1
+
+        with self.subTest("planning 2"):
+            data = {"max_depth": 1}
+
+            res = self.client.get(self.get_url(pk=self.planning_2.pk), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            root = res_data[0]
+            self.assertEqual(root["id"], self.children_2.pk)
+            self.assertEqual(root["depth"], 2)
+            self.assertEqual(len(root["children"]), 0)  # we stops there as it's children_2 depth + max depth - 1
+
+            data = {"max_depth": 2}
+
+            res = self.client.get(self.get_url(pk=self.planning_2.pk), data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data)
+
+            root = res_data[0]
+            self.assertEqual(root["id"], self.children_2.pk)
+            self.assertEqual(root["depth"], 2)
+
+            self.assertEqual(len(root["children"]), 1)
+            children = root["children"][0]
+
+            self.assertEqual(children["id"], self.children_2_1.pk)
+            self.assertEqual(children["depth"], 3)
+            self.assertEqual(len(children["children"]), 0)  # we stops there as it's root depth + max depth - 1 = 2 + 1
+
+    def test_filters_level_and_max_depth(self):
+        self.client.force_authenticate(self.superuser)
+
+        # means we start to fetch the data that is at level 2 + root level and that the max_depth is root_level + max_depth - 1 = root_level + 1 => so we naturally should get 0 values as 2 + x >= x + 1
+        data = {
+            "level": 2,
+            "max_depth": 2,
+        }
         res = self.client.get(self.get_url(), data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
 
-        self.assertEqual(len(res_data), 1)
-        root = res_data[0]
-        self.assertEqual(root["id"], self.children_2.pk)
-        self.assertEqual(root["depth"], data["level"] + len(str(self.ou_root.path).split(".")))
-        self.assertEqual(len(root["children"]), 1)
+        self.assertEqual(len(res_data), 0)
 
-        data = {"level": 2}  # means we start to fetch the data that is at level 2 + root level
+        # means we start to fetch the data that is at level 2 + root level and that the max_depth is root_level + max_depth - 1 = root_level + 1, so we should get exactly one value : x + 2 = x + 2
+        data = {"level": 2, "max_depth": 3}
         res = self.client.get(self.get_url(), data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
@@ -224,45 +352,8 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(len(res_data), 1)
         root = res_data[0]
         self.assertEqual(root["id"], self.children_2_1.pk)
-        self.assertEqual(root["depth"], data["level"] + len(str(self.ou_root.path).split(".")))
-        self.assertEqual(len(root["children"]), 2)
-
-    def test_filters_max_depth(self):
-        self.client.force_authenticate(self.superuser)
-
-        data = {"max_depth": 0}
-
-        res = self.client.get(self.get_url(), data)
-        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data, "max_depth", "Ensure this value is greater than or equal to 1.")
-
-        data = {"max_depth": 1}
-
-        res = self.client.get(self.get_url(), data)
-        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidResponse(res_data)
-
-        root = res_data[0]
-        self.assertEqual(root["id"], self.ou_root.pk)
-        self.assertEqual(root["depth"], 1)
-        self.assertEqual(len(root["children"]), 0)  # we stops there as it's root depth + max depth - 1
-
-        data = {"max_depth": 2}
-
-        res = self.client.get(self.get_url(), data)
-        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidResponse(res_data)
-
-        root = res_data[0]
-        self.assertEqual(root["id"], self.ou_root.pk)
-        self.assertEqual(root["depth"], 1)
-
-        self.assertEqual(len(root["children"]), 1)
-        children = root["children"][0]
-
-        self.assertEqual(children["id"], self.children_2.pk)
-        self.assertEqual(children["depth"], 2)
-        self.assertEqual(len(children["children"]), 0)  # we stops there as it's root depth + max depth - 1
+        self.assertEqual(root["depth"], 3)
+        self.assertEqual(len(root["children"]), 0)  # <= should be 2 here, but with max_depth, it's 0
 
     @skip("IA-5599")
     def test_should_raise_404_if_planning_is_deleted_or_does_not_exist(self):
@@ -293,7 +384,7 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         # tree should be
         # root
         # |── children_2
-        # |── children_2_1
+        #   |── children_2_1
         #     |── children_2_1_1
         #     |── children_2_1_2
 
@@ -304,25 +395,25 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             list(root.keys()),
             ["id", "name", "depth", "parent", "org_unit_type", "has_geo_json", "has_location", "children"],
         )
-        self.assertEqual(root.get("id"), self.ou_root.pk)
-        self.assertEqual(root.get("name"), "Root")
-        self.assertEqual(root.get("depth"), 1)
-        self.assertIsNone(root.get("parent"))
-        self.assertIsNone(root.get("org_unit_type"))
-        self.assertFalse(root.get("has_geo_json"))
-        self.assertFalse(root.get("has_location"))
+        self.assertEqual(root["id"], self.ou_root.pk)
+        self.assertEqual(root["name"], "Root")
+        self.assertEqual(root["depth"], 1)
+        self.assertIsNone(root["parent"])
+        self.assertIsNone(root["org_unit_type"])
+        self.assertFalse(root["has_geo_json"])
+        self.assertFalse(root["has_location"])
 
         # checking children_2
-        children = root.get("children")
+        children = root["children"]
         self.assertEqual(len(children), 1)
         children = children[0]
 
-        self.assertEqual(children.get("id"), self.children_2.pk)
-        self.assertEqual(children.get("name"), "Child 2")
-        self.assertEqual(children.get("depth"), 2)
-        self.assertEqual(children.get("parent"), self.ou_root.pk)
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(children["name"], "Child 2")
+        self.assertEqual(children["depth"], 2)
+        self.assertEqual(children["parent"], self.ou_root.pk)
         self.assertEqual(
-            children.get("org_unit_type"),
+            children["org_unit_type"],
             {
                 "id": self.org_unit_type.pk,
                 "name": self.org_unit_type.name,
@@ -330,20 +421,20 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "category": self.org_unit_type.category,
             },
         )
-        self.assertTrue(children.get("has_geo_json"))
-        self.assertTrue(children.get("has_location"))
+        self.assertTrue(children["has_geo_json"])
+        self.assertTrue(children["has_location"])
 
         # checking children_2_1
-        sub_children = children.get("children")
+        sub_children = children["children"]
         self.assertEqual(len(sub_children), 1)
         sub_children = sub_children[0]
 
-        self.assertEqual(sub_children.get("id"), self.children_2_1.pk)
-        self.assertEqual(sub_children.get("name"), "Child 2.1")
-        self.assertEqual(sub_children.get("depth"), 3)
-        self.assertEqual(sub_children.get("parent"), self.children_2.pk)
+        self.assertEqual(sub_children["id"], self.children_2_1.pk)
+        self.assertEqual(sub_children["name"], "Child 2.1")
+        self.assertEqual(sub_children["depth"], 3)
+        self.assertEqual(sub_children["parent"], self.children_2.pk)
         self.assertEqual(
-            sub_children.get("org_unit_type"),
+            sub_children["org_unit_type"],
             {
                 "id": self.org_unit_type_2.pk,
                 "name": self.org_unit_type_2.name,
@@ -351,30 +442,124 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 "category": self.org_unit_type_2.category,
             },
         )
-        self.assertFalse(sub_children.get("has_geo_json"))
-        self.assertFalse(sub_children.get("has_location"))
+        self.assertFalse(sub_children["has_geo_json"])
+        self.assertFalse(sub_children["has_location"])
 
         # checking children_2_1_1 and children_2_1_2
         sub_sub_children = sub_children.get("children")
         self.assertEqual(len(sub_sub_children), 2)
 
         first_sub_sub_children = sub_sub_children[0]
-        self.assertEqual(first_sub_sub_children.get("id"), self.children_2_1_1.pk)
-        self.assertEqual(first_sub_sub_children.get("name"), "Child 2.1.1")
-        self.assertEqual(first_sub_sub_children.get("depth"), 4)
-        self.assertEqual(first_sub_sub_children.get("parent"), self.children_2_1.pk)
-        self.assertIsNone(first_sub_sub_children.get("org_unit_type"))
-        self.assertFalse(first_sub_sub_children.get("has_geo_json"))
-        self.assertFalse(first_sub_sub_children.get("has_location"))
+        self.assertEqual(first_sub_sub_children["id"], self.children_2_1_1.pk)
+        self.assertEqual(first_sub_sub_children["name"], "Child 2.1.1")
+        self.assertEqual(first_sub_sub_children["depth"], 4)
+        self.assertEqual(first_sub_sub_children["parent"], self.children_2_1.pk)
+        self.assertEqual(
+            first_sub_sub_children["org_unit_type"],
+            {
+                "id": self.org_unit_type.pk,
+                "name": self.org_unit_type.name,
+                "short_name": "TCT",
+                "category": self.org_unit_type.category,
+            },
+        )
+        self.assertFalse(first_sub_sub_children["has_geo_json"])
+        self.assertFalse(first_sub_sub_children["has_location"])
 
         second_sub_sub_children = sub_sub_children[1]
-        self.assertEqual(second_sub_sub_children.get("id"), self.children_2_1_2.pk)
-        self.assertEqual(second_sub_sub_children.get("name"), "Child 2.1.2")
-        self.assertEqual(second_sub_sub_children.get("depth"), 4)
-        self.assertEqual(second_sub_sub_children.get("parent"), self.children_2_1.pk)
-        self.assertIsNone(second_sub_sub_children.get("org_unit_type"))
-        self.assertFalse(second_sub_sub_children.get("has_geo_json"))
-        self.assertFalse(second_sub_sub_children.get("has_location"))
+        self.assertEqual(second_sub_sub_children["id"], self.children_2_1_2.pk)
+        self.assertEqual(second_sub_sub_children["name"], "Child 2.1.2")
+        self.assertEqual(second_sub_sub_children["depth"], 4)
+        self.assertEqual(second_sub_sub_children["parent"], self.children_2_1.pk)
+        self.assertEqual(
+            second_sub_sub_children["org_unit_type"],
+            {
+                "id": self.org_unit_type.pk,
+                "name": self.org_unit_type.name,
+                "short_name": "TCT",
+                "category": self.org_unit_type.category,
+            },
+        )
+        self.assertFalse(second_sub_sub_children["has_geo_json"])
+        self.assertFalse(second_sub_sub_children["has_location"])
+
+    def test_tree_planning_2(self):
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url(pk=self.planning_2.pk))
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
+
+        self.assertEqual(len(res_data), 1)
+
+        # tree should be
+        # children_2
+        # |── children_2_1
+        #  |── children_2_1_1
+
+        # getting first child which should be children_2
+        root = res_data[0]
+
+        self.assertCountEqual(
+            list(root.keys()),
+            ["id", "name", "depth", "parent", "org_unit_type", "has_geo_json", "has_location", "children"],
+        )
+        self.assertEqual(root["id"], self.children_2.pk)
+        self.assertEqual(root["name"], "Child 2")
+        self.assertEqual(root["depth"], 2)
+        self.assertEqual(root["parent"], self.ou_root.pk)
+        self.assertEqual(
+            root["org_unit_type"],
+            {
+                "id": self.org_unit_type.pk,
+                "name": self.org_unit_type.name,
+                "short_name": "TCT",
+                "category": self.org_unit_type.category,
+            },
+        )
+        self.assertTrue(root["has_geo_json"])
+        self.assertTrue(root["has_location"])
+
+        # checking children_2_1
+        children = root["children"]
+        self.assertEqual(len(children), 1)
+        children = children[0]
+
+        self.assertEqual(children["id"], self.children_2_1.pk)
+        self.assertEqual(children["name"], "Child 2.1")
+        self.assertEqual(children["depth"], 3)
+        self.assertEqual(children["parent"], self.children_2.pk)
+        self.assertEqual(
+            children["org_unit_type"],
+            {
+                "id": self.org_unit_type_2.pk,
+                "name": self.org_unit_type_2.name,
+                "short_name": "TCT2",
+                "category": self.org_unit_type_2.category,
+            },
+        )
+        self.assertFalse(children["has_geo_json"])
+        self.assertFalse(children["has_location"])
+
+        # checking children_2_1_1
+        sub_children = children["children"]
+        self.assertEqual(len(sub_children), 1)
+        sub_children = sub_children[0]
+
+        self.assertEqual(sub_children["id"], self.children_2_1_1.pk)
+        self.assertEqual(sub_children["name"], "Child 2.1.1")
+        self.assertEqual(sub_children["depth"], 4)
+        self.assertEqual(sub_children["parent"], self.children_2_1.pk)
+        self.assertEqual(
+            sub_children["org_unit_type"],
+            {
+                "id": self.org_unit_type.pk,
+                "name": self.org_unit_type.name,
+                "short_name": "TCT",
+                "category": self.org_unit_type.category,
+            },
+        )
+        self.assertFalse(sub_children["has_geo_json"])
+        self.assertFalse(sub_children["has_location"])
 
     def test_build_org_unit_tree_should_remove_orphan(self):
         """

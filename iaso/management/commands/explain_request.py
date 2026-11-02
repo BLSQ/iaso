@@ -227,7 +227,7 @@ adapt the form ids below
             --url-path="/api/instances/?form_ids=12&csv=true" \
             --username="testemailstable-2-41-5" \
             --threshold-duration=0 --explain=true --print-response=true
-    
+
     xslx binary content
 
         docker compose exec iaso ./manage.py explain_request \
@@ -235,7 +235,7 @@ adapt the form ids below
             --username="testemailstable-2-41-5" --threshold-duration=0 --explain=true
 
     xml output
-    
+
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/forms/12/manifest/" \
             --username="testemailstable-2-41-5" \

@@ -816,8 +816,8 @@ formatting tool. Line length is 120.
 
 The easiest way to use it is to install the pre-commit hook:
 
-1. Install pre-commit: pip install pre-commit
-2. Execute pre-commit install to install git hooks in your .git/ directory.
+1. Install the dev dependencies, which include pre-commit: `uv sync`
+2. Execute `uv run pre-commit install` to install git hooks in your .git/ directory.
 
 Another good way to have it working is to set it up in your code editor.
 Pycharm, for example, has good support for this.
@@ -870,7 +870,7 @@ While editing scss files you have to compile it manually with the command:
 - Outside docker (virtualenv activated): `python manage.py compile_index_scss`
 
 The custom `compile_index_scss` management command compiles `iaso/static/css/index.scss` into
-`iaso/static/css/index.css` using `libsass` (see `requirements.txt`).
+`iaso/static/css/index.css` using `libsass` (see `pyproject.toml`).
 If you don't compile it, changes will not be reflected while deploying as we only use css file in production.
 
 ## Jupyter Notebook

@@ -12,7 +12,7 @@ class Command(BaseCommand):
             import sass
         except ImportError as exc:  # pragma: no cover - runtime dependency issue
             raise CommandError(
-                "The 'sass' (libsass) package is required to compile SCSS. Install requirements.txt first."
+                "The 'sass' (libsass) package is required to compile SCSS. Run `uv sync` first."
             ) from exc
 
         input_path = os.path.join(settings.BASE_DIR, "iaso", "static", "css", "index.scss")

@@ -173,9 +173,9 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
             for index, answers in enumerate(SPECIAL_ANSWERS)
         ]
 
-    def get(self, file_format, params=None):
+    def get(self, file_format, params=None, form=None):
         self.client.force_authenticate(self.user)
-        query = {"form_ids": self.form.id, file_format: "true", "order": "id", **(params or {})}
+        query = {"form_ids": (form or self.form).id, file_format: "true", "order": "id", **(params or {})}
         response = self.client.get("/api/instances/", query)
         self.assertEqual(response.status_code, 200)
         content = b"".join(response.streaming_content)
@@ -273,6 +273,42 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
         self.assertEqual(freeze_panes, "A2")
         self.assertTrue(all(bold_header))
         self.assertEqual(len(widths), len(EXPECTED_HEADER))
+
+    def create_form_with_answers(self, name, questions, answers_list, **form_fields):
+        """a form (with a version holding the questions) and one submission per answers"""
+        form = m.Form.objects.create(name=name, **form_fields)
+        form.projects.add(self.project)
+        descriptor = {"name": "data", "type": "survey", "title": name, "version": "1", "children": questions}
+        m.FormVersion.objects.create(form=form, version_id="1", form_descriptor=descriptor)
+        for answers in answers_list:
+            self.create_form_instance(form=form, project=self.project, json={"_version": "1", **answers})
+        return form
+
+    def test_xlsx_number_types(self):
+        form = self.create_form_with_answers(
+            "Numbers",
+            [{"name": "postal_code", "type": "text"}, {"name": "members", "type": "integer"}],
+            [{"postal_code": "0007", "members": 3}, {"postal_code": "5000", "members": 4}],
+        )
+
+        header, __, *rows = load_xlsx(self.get("xlsx", form=form))[0]
+
+        # a leading zero is kept: the whole column stays texts
+        self.assertEqual([row[header.index("postal_code")] for row in rows], ["0007", "5000"])
+        # only integers: integer cells
+        members = [row[header.index("members")] for row in rows]
+        self.assertEqual(members, [3, 4])
+        self.assertEqual({type(value) for value in members}, {int})
+
+    def test_not_correlatable_form(self):
+        form = self.create_form_with_answers(
+            "Not correlatable", [{"name": "head_name", "type": "text"}], [{"head_name": "Jean"}], correlatable=False
+        )
+
+        header, row = csv_rows(self.get("csv", form=form))
+
+        self.assertEqual(header, EXPECTED_HEADER[: EXPECTED_HEADER.index("correlation id")] + ["head_name"])
+        self.assertEqual(row[-1], "Jean")
 
     def test_no_form(self):
         self.client.force_authenticate(self.user)

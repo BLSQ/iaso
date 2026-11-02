@@ -14,9 +14,10 @@ import { PlanningStepCard } from '../shared/PlanningStepCard';
 type Props = {
     rootTeamId: number;
     projectId?: number;
+    editable: boolean;
 };
 
-const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
+const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId, editable }) => {
     const { formatMessage } = useSafeIntl();
     const teamTree = useTeamTree(rootTeamId);
     const { tree } = teamTree;
@@ -57,14 +58,14 @@ const TeamHierarchy: FC<Props> = ({ rootTeamId, projectId }) => {
                 teamTree={teamTree}
                 search={search}
                 projectId={projectId}
-                editable
+                editable={editable}
             />
         </PlanningStepCard>
     );
 };
 
 export const TeamHierarchySection: FC = () => {
-    const { formik } = usePlanningContext();
+    const { formik, isReadOnly } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
     const { selectedTeam, project } = formik.values;
 
@@ -86,6 +87,7 @@ export const TeamHierarchySection: FC = () => {
             key={selectedTeam}
             rootTeamId={selectedTeam}
             projectId={project}
+            editable={!isReadOnly}
         />
     );
 };

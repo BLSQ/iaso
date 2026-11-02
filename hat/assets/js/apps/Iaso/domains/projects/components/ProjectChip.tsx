@@ -4,7 +4,7 @@ import { ColorChip } from 'bluesquare-components';
 import { Project } from 'Iaso/domains/projects/types/project';
 
 export type ProjectChipProps = {
-    project: Pick<Project, 'name' | 'color'>;
+    project: Pick<Project, 'name'> & Partial<Pick<Project, 'color'>>;
 };
 
 export const ProjectChip: FunctionComponent<ProjectChipProps> = ({

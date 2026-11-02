@@ -283,8 +283,11 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         user = self.request.user
         qs = self.queryset.filter_for_user(user)
 
+        if self.action not in ["list", "dropdown", "destroy", "retrieve", "configs", "missions"]:
+            qs = qs.exclude(deprecated=True)
+
         if self.action == "dropdown":
-            return qs.only("id", "name")
+            return qs.only("id", "name", "deprecated")
 
         if self.action == "configs":
             qs = qs.prefetch_related(
@@ -326,8 +329,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return planning.missions.all()
 
         return (
-            self.queryset.filter_for_user(user)
-            .select_related("project", "org_unit", "team", "selected_sampling_result")
+            qs.select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related(
                 "target_org_unit_types",
                 Prefetch(

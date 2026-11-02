@@ -52,6 +52,7 @@ type PlanningContextValue = {
     relinkMission: (missionId: number) => void;
     createMission: () => void;
     formik: PlanningFormik;
+    isReadOnly: boolean;
     canSave: boolean;
     savePlanning: () => void;
     isSaveWarningOpen: boolean;
@@ -175,7 +176,9 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         });
     }, [newMission, addMissions, redirectToReplace, planning, mode, tab]);
 
+    const isReadOnly = Boolean(planning?.deprecated);
     const canSave =
+        !isReadOnly &&
         isValid &&
         !isSubmitting &&
         (mode === 'copy' || !isEqual(values, initialValues));
@@ -226,6 +229,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             relinkMission,
             createMission,
             formik,
+            isReadOnly,
             canSave,
             savePlanning,
             isSaveWarningOpen,
@@ -246,6 +250,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             relinkMission,
             createMission,
             formik,
+            isReadOnly,
             canSave,
             savePlanning,
             isSaveWarningOpen,

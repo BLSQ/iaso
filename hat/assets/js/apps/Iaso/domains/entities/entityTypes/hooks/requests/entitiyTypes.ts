@@ -60,7 +60,7 @@ export const useGetTypesPaginated = (
     params: Params,
 ): UseQueryResult<PaginatedEntityTypes, Error> => {
     const newParams: NewParams = {
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
     };

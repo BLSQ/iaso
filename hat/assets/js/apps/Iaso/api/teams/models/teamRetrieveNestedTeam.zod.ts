@@ -14,7 +14,6 @@ export const teamRetrieveNestedTeamColorRegExp = new RegExp('#[0-9A-Fa-f]{6}');
 export const TeamRetrieveNestedTeam = zod.strictObject({
     id: zod.int(),
     name: zod.string(),
-    deleted_at: zod.iso.datetime({ offset: true }).nullable(),
     color: zod
         .string()
         .max(teamRetrieveNestedTeamColorMax)

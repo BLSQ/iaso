@@ -8,6 +8,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { getAssignmentsUrl } from '../../utils';
+import { DeprecatedPlanningChip } from '../shared/DeprecatedPlanningChip';
 import { PlanningStatusChip } from '../shared/PlanningStatusChip';
 import { planningPanelStyles } from '../shared/styles';
 import { SaveWarningDialog } from './SaveWarningDialog';
@@ -20,19 +21,29 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningHeaderTitle: FC = () => {
-    const { planning } = usePlanningContext();
+    const { planning, isReadOnly } = usePlanningContext();
     return (
         <>
             {planning?.name}
             <PlanningStatusChip status={planning?.status ?? 'draft'} />
+            {isReadOnly && <DeprecatedPlanningChip />}
         </>
     );
 };
 
 export const PlanningHeaderActions: FC = () => {
-    const { planning, mode, canSave, savePlanning, duplicatePlanning } =
-        usePlanningContext();
+    const {
+        planning,
+        mode,
+        isReadOnly,
+        canSave,
+        savePlanning,
+        duplicatePlanning,
+    } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
+    if (isReadOnly) {
+        return null;
+    }
     return (
         <Stack direction="row" gap={1}>
             <Button

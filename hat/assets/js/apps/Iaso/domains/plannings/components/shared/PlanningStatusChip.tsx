@@ -4,17 +4,40 @@ import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 
-type Status = 'draft' | 'published';
+type Status = 'draft' | 'published' | 'deprecated';
 
 type Props = {
     status: Status;
     sx?: SxProps<Theme>;
 };
 
-const getStatusColor = (theme: Theme, status: Status): string =>
-    status === 'published'
-        ? theme.palette.success.main
-        : theme.palette.grey[600];
+const getStatusColor = (theme: Theme, status: Status): string => {
+    switch (status) {
+        case 'published':
+            return theme.palette.success.main;
+        case 'deprecated':
+            return theme.palette.warning.main;
+        default:
+            return theme.palette.grey[600];
+    }
+};
+
+const getStatusTextColor = (theme: Theme, status: Status): string => {
+    switch (status) {
+        case 'published':
+            return theme.palette.success.dark;
+        case 'deprecated':
+            return theme.palette.warning.dark;
+        default:
+            return theme.palette.grey[700];
+    }
+};
+
+const STATUS_MESSAGES = {
+    draft: MESSAGES.draft,
+    published: MESSAGES.published,
+    deprecated: MESSAGES.deprecated,
+};
 
 const styles = {
     chip: {
@@ -46,19 +69,12 @@ export const PlanningStatusChip: FC<Props> = ({ status, sx }) => {
     return (
         <Chip
             icon={<Box sx={styles.dot} />}
-            label={
-                status === 'published'
-                    ? formatMessage(MESSAGES.published)
-                    : formatMessage(MESSAGES.draft)
-            }
+            label={formatMessage(STATUS_MESSAGES[status])}
             size="small"
             sx={[
                 styles.chip,
                 theme => ({
-                    color:
-                        status === 'published'
-                            ? theme.palette.success.dark
-                            : theme.palette.grey[700],
+                    color: getStatusTextColor(theme, status),
                     backgroundColor: alpha(getStatusColor(theme, status), 0.15),
                     '& .MuiChip-icon': {
                         color: getStatusColor(theme, status),

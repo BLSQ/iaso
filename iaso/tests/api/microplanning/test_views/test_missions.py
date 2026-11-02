@@ -185,30 +185,30 @@ class PlanningMissionAPITestCase(SwaggerTestCaseMixin, APITestCase):
         return reverse("planning-missions", kwargs={"pk": pk})
 
     def test_permissions(self) -> None:
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
         self.client.force_authenticate(self.user_no_perm)
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_other_perm)
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(self.user_read_perm)
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_num_queries(self) -> None:
         self.client.force_authenticate(self.superuser)
         ContentType.objects.clear_cache()
         with self.assertNumQueries(9):
-            res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+            res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, expected_length=6)
 
@@ -219,7 +219,7 @@ class PlanningMissionAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_should_raise_a_404_if_planning_does_not_belong_to_user(self):
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning_other_account.pk}))
+        res = self.client.get(self.get_url(self.planning_other_account.pk))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_should_raise_a_404_if_planning_is_soft_deleted(self):
@@ -231,9 +231,17 @@ class PlanningMissionAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res = self.client.get(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_should_not_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.deprecated = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_response(self) -> None:
         self.client.force_authenticate(self.superuser)
-        res = self.client.get(reverse("planning-missions", kwargs={"pk": self.planning.pk}))
+        res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 6)
         results = res_data["results"]

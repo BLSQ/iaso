@@ -10,6 +10,11 @@ import * as zod from 'zod';
 export const PlanningDropdown = zod.strictObject({
     label: zod.string(),
     value: zod.int(),
+    deprecated: zod
+        .boolean()
+        .describe(
+            'Indicates that this planning is now considered deprecated as it was created before the mission feature was launched.',
+        ),
 });
 
 export type PlanningDropdown = zod.input<typeof PlanningDropdown>;

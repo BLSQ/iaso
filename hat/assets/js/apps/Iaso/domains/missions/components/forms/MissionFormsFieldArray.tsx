@@ -33,20 +33,17 @@ const styles: SxStyles = {
         borderRadius: 1,
     },
     headerCell: {
-        color: 'text.secondary',
-        fontSize: '12px',
-        fontWeight: 700,
-        textTransform: 'uppercase',
+        color: 'text.primary',
+        fontWeight: 500,
         py: 1.5,
     },
     numberHeaderCell: {
-        color: 'text.secondary',
-        fontSize: '12px',
-        fontWeight: 700,
-        textTransform: 'uppercase',
+        color: 'text.primary',
+        fontWeight: 500,
         py: 1.5,
         width: 120,
         maxWidth: 140,
+        whiteSpace: 'nowrap',
     },
     actionsHeaderCell: {
         width: 56,
@@ -170,10 +167,10 @@ export const MissionFormsFieldArray = <
                                         {formatMessage(MESSAGES.form)}
                                     </TableCell>
                                     <TableCell sx={styles.numberHeaderCell}>
-                                        {formatMessage(MESSAGES.min)}
+                                        {formatMessage(MESSAGES.minPerOrgUnit)}
                                     </TableCell>
                                     <TableCell sx={styles.numberHeaderCell}>
-                                        {formatMessage(MESSAGES.max)}
+                                        {formatMessage(MESSAGES.maxPerOrgUnit)}
                                     </TableCell>
                                     <TableCell sx={styles.actionsHeaderCell}>
                                         <Box

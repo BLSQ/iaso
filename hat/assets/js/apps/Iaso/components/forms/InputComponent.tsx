@@ -48,6 +48,10 @@ export type NumberInputOptions = {
     thousandSeparator?: '.' | ',' | ' ';
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
     currency?: string;
+    size?: 'small' | 'medium';
+    showArrows?: boolean;
+    showInfo?: boolean;
+    step?: number;
 };
 
 export type PhoneInputOptions = {
@@ -102,6 +106,10 @@ export type InputComponentProps = {
         decimalScale?: number;
         decimalSeparator?: '.' | ',';
         thousandSeparator?: '.' | ',' | ' ';
+        size?: 'small' | 'medium';
+        showArrows?: boolean;
+        showInfo?: boolean;
+        step?: number;
     };
     phoneInputOptions?: PhoneInputOptions;
     setFieldError?: (keyValue: string, message: string) => void;

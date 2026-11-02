@@ -28,10 +28,10 @@ const styles: SxStyles = {
     },
     formIcon: {
         fontSize: '18px',
-        color: 'primary.main',
+        color: 'text.secondary',
     },
     formName: {
-        fontWeight: 600,
+        fontWeight: 500,
     },
     numberCell: {
         width: 120,
@@ -46,6 +46,12 @@ const styles: SxStyles = {
         verticalAlign: 'middle',
     },
 };
+
+const numberInputOptions = {
+    size: 'small',
+    showArrows: true,
+    showInfo: false,
+} as const;
 
 type Props<TSchema extends MissionCreateBody | MissionUpdateBody> = {
     form: TSchema['forms'][number];
@@ -99,6 +105,7 @@ export const MissionFormItem = <
                     component={NumberInput}
                     required
                     withMarginTop={false}
+                    numberInputOptions={numberInputOptions}
                 />
             </TableCell>
             <TableCell sx={styles.numberCell}>
@@ -107,8 +114,11 @@ export const MissionFormItem = <
                     name={`forms.${index}.max_cardinality`}
                     initialValue={1}
                     min={0}
+                    placeholder="∞"
                     component={NumberInput}
                     withMarginTop={false}
+                    numberInputOptions={numberInputOptions}
+                    size="small"
                 />
             </TableCell>
             <TableCell align="right" sx={styles.actionsCell}>

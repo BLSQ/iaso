@@ -109,6 +109,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.max',
         defaultMessage: 'Max',
     },
+    minPerOrgUnit: {
+        id: 'iaso.missions.label.minPerOrgUnit',
+        defaultMessage: 'Min / org unit',
+    },
+    maxPerOrgUnit: {
+        id: 'iaso.missions.label.maxPerOrgUnit',
+        defaultMessage: 'Max / org unit',
+    },
     detailMissionLabel: {
         id: 'iaso.missions.label.detailMissionLabel',
         defaultMessage: 'Mission details',

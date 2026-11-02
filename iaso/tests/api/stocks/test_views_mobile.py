@@ -571,12 +571,14 @@ class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_list_number_of_queries_does_not_grow_with_submissions_with_form(self):
         """No N+1 on form_name (IA-5559): the forms of the page are prefetched with their submissions."""
-        self.get_list(num_queries=4)
+        data = self.get_list(num_queries=4)
+        self.assertEqual(4, data["count"])
 
         for number in (10, 11, 12):
             submission = m.Instance.objects.create(project=self.project, form=self.stock_count_form)
             self.create_ledger_item(number, self.sku, self.brussels, submission, 1)
 
+        # Same number of queries with 3 more items, each with its own submission and form
         data = self.get_list(num_queries=4)
         self.assertEqual(7, data["count"])
 

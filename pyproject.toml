@@ -311,7 +311,6 @@ dev = [
     "django-test-migrations==1.4.0", # https://github.com/wemake-services/django-test-migrations/releases
     "django-sslserver==0.22", # https://pypi.org/project/django-sslserver/
     "locust==2.20.0", # https://github.com/locustio/locust/tags
-    "mock==4.0.1", # TODO: replace this because mock is part of the Python standard library.
     "pre-commit==4.1.0", # https://github.com/pre-commit/pre-commit/tags
     "redgreenunittest==0.1.1", # https://pypi.org/project/redgreenunittest/
     "responses==0.24.1", # https://github.com/getsentry/responses/tags

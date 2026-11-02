@@ -119,10 +119,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
             description: team?.description,
             project: team?.project?.id ?? defaultValues?.project,
             manager: team?.manager?.id || currentUser.user_id,
-            subTeams:
-                team?.sub_teams
-                    ?.filter(({ deleted_at }) => !deleted_at)
-                    ?.map(({ id }) => id) || [],
+            subTeams: team?.sub_teams?.map(({ id }) => id) || [],
             type: team?.type || undefined,
             users: team?.users?.map(({ id }) => id) || [],
             parent: team?.parent ?? defaultValues?.parent,

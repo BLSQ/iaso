@@ -217,11 +217,11 @@ adapt the form ids below
 
     simple json
         docker compose exec iaso ./manage.py explain_request  \
-            --url-path="/api/forms/12/" \    
-            --username="testemailstable-2-41-5" 
-            --threshold-duration=0 --explain=true --print-response=true    
+            --url-path="/api/forms/12/" \
+            --username="testemailstable-2-41-5"
+            --threshold-duration=0 --explain=true --print-response=true
 
-    streaming csv 
+    streaming csv
 
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/instances/?form_ids=12&csv=true" \
@@ -245,12 +245,12 @@ adapt the form ids below
 
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/orgunits/?parquet=true&order=id" \
-            --username="testemailstable-2-41-5"    
+            --username="testemailstable-2-41-5"
 
 
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/instances/?form_ids=8&parquet=true&order=id" \
-            --username="testemailstable-2-41-5"    
+            --username="testemailstable-2-41-5"
 
 
 """

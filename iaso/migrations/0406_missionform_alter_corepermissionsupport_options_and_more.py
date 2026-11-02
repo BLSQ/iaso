@@ -63,7 +63,7 @@ def migrate_forms_to_missions(apps, schema_editor):
         batch_size=500,
     )
 
-    mission_by_key = dict(zip(unique_missions, mission_objects))
+    mission_by_key = dict(zip(unique_missions, mission_objects, strict=False))
 
     # Create multi-table inheritance records.
     with schema_editor.connection.cursor() as cursor:
@@ -86,7 +86,7 @@ def migrate_forms_to_missions(apps, schema_editor):
                 min_cardinality=1,
                 max_cardinality=1,
             )
-            for data, mission in zip(unique_missions.values(), mission_objects)
+            for data, mission in zip(unique_missions.values(), mission_objects, strict=False)
         ],
         batch_size=500,
     )

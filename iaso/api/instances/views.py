@@ -309,7 +309,12 @@ class InstancesViewSet(viewsets.ViewSet):
                 sub_columns.append(label)
                 columns.append({"title": title, "width": 50})
         else:
-            file_content_template = queryset.first().as_dict()["file_content"]  # type: ignore
+            first_instance = queryset.first()
+            if first_instance is None:
+                raise serializers.ValidationError(
+                    {"error": "The form has no version and no submission matches the filters: no columns to export"}
+                )
+            file_content_template = first_instance.as_dict()["file_content"]
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
                 sub_columns.append(questions_by_name.get(title, {}).get("label", ""))

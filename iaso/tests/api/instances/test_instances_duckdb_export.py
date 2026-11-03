@@ -310,6 +310,36 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
         self.assertEqual(header, EXPECTED_HEADER[: EXPECTED_HEADER.index("correlation id")] + ["head_name"])
         self.assertEqual(row[-1], "Jean")
 
+    def create_form_without_version(self, name):
+        form = m.Form.objects.create(name=name)
+        form.projects.add(self.project)
+        return form
+
+    def test_form_without_version(self):
+        """without a version, the answer columns are the answers of the first submission"""
+        form = self.create_form_without_version("No version")
+        answers = {"head_name": "Jean", "members": "4"}
+        self.create_form_instance(form=form, project=self.project, json=answers)
+
+        header, row = csv_rows(self.get("csv", form=form))
+
+        # the answer columns come last, in the order of the jsonb keys: compared as a dict
+        question_count = len(answers)
+        self.assertEqual(dict(zip(header[-question_count:], row[-question_count:])), answers)
+
+    def test_form_without_version_and_submission(self):
+        """no version and no submission: the answer columns are unknown"""
+        form = self.create_form_without_version("No version")
+        self.client.force_authenticate(self.user)
+        for file_format in ("csv", "xlsx"):
+            with self.subTest(file_format=file_format):
+                response = self.client.get("/api/instances/", {"form_ids": form.id, file_format: "true"})
+                res = self.assertJSONResponse(response, 400)
+                self.assertEqual(
+                    res,
+                    {"error": "The form has no version and no submission matches the filters: no columns to export"},
+                )
+
     def test_no_form(self):
         self.client.force_authenticate(self.user)
         for file_format in ("csv", "xlsx"):

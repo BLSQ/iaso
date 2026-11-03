@@ -4,6 +4,7 @@ import { FormikProps } from 'formik/dist/types';
 import {
     MissionOrgUnitTypeCreateRequest,
     MissionOrgUnitTypeUpdateRequest,
+    MissionTypeDa2Enum,
 } from 'Iaso/api/missions';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
@@ -58,20 +59,14 @@ export const MissionOrgUnitTypeInput = <
     return (
         <>
             <MissionCreatedTypeStep
-                title={formatMessage(MESSAGES.orgUnitsAgentCreates)}
-                description={formatMessage(MESSAGES.orgUnitsAgentCreatesInfo)}
-                typeFieldName="org_unit_type"
-                typeLabel={formatMessage(MESSAGES.orgUnitTypeToCreate)}
+                missionType={MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM}
                 typeOptions={orgUnitTypesOptions}
                 isLoadingTypeOptions={isLoadingOrgUnitTypeOptions}
                 onTypeChange={handleOrgUnitTypeChange}
-                minLabel={formatMessage(MESSAGES.minNewOrgUnits)}
-                maxLabel={formatMessage(MESSAGES.maxNewOrgUnits)}
             />
             <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM}
                 step={2}
-                title={formatMessage(MESSAGES.formsOnCreatedOrgUnit)}
-                description={formatMessage(MESSAGES.formsOnCreatedOrgUnitInfo)}
                 params={params}
                 formik={formik}
                 formSelectProps={{

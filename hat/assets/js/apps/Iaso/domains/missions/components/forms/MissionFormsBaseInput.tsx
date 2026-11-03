@@ -2,10 +2,11 @@ import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldArray } from 'formik';
 import { FormikProps } from 'formik/dist/types';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
-import MESSAGES from '../../messages';
+import { FORMS_SECTION_MESSAGES } from '../missionTypeOptions';
 import { MissionFormsFieldArray } from './MissionFormsFieldArray';
 import { MissionStepHeader } from './MissionStepHeader';
 
@@ -16,11 +17,8 @@ type MissionFormsInput<TSchema> = {
         disabled?: boolean;
         helperText?: string;
     };
-    title?: string;
-    description?: string;
+    missionType: MissionTypeDa2Enum;
     step?: number;
-    minColumnLabel?: string;
-    maxColumnLabel?: string;
 };
 
 export const MissionFormsBaseInput = <
@@ -29,19 +27,17 @@ export const MissionFormsBaseInput = <
     params,
     formik,
     formSelectProps,
-    title,
-    description,
+    missionType,
     step,
-    minColumnLabel,
-    maxColumnLabel,
 }: MissionFormsInput<TSchema>) => {
     const { formatMessage } = useSafeIntl();
+    const { title, description } = FORMS_SECTION_MESSAGES[missionType];
 
     return (
         <>
             <MissionStepHeader
-                title={title ?? formatMessage(MESSAGES.forms)}
-                description={description ?? formatMessage(MESSAGES.formInfo)}
+                title={formatMessage(title)}
+                description={formatMessage(description)}
                 step={step}
             />
             <FieldArray
@@ -52,8 +48,7 @@ export const MissionFormsBaseInput = <
                         formik={formik}
                         formSelectProps={formSelectProps}
                         arrayHelpers={arrayHelpers}
-                        minColumnLabel={minColumnLabel}
-                        maxColumnLabel={maxColumnLabel}
+                        missionType={missionType}
                     />
                 )}
             />

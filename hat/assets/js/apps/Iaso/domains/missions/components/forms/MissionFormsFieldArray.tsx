@@ -5,50 +5,25 @@ import {
     Stack,
     Table,
     TableBody,
-    TableCell,
     TableContainer,
-    TableHead,
-    TableRow,
 } from '@mui/material';
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
-import { visuallyHidden } from '@mui/utils';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { FieldArrayRenderProps } from 'formik';
 import { FormikContextType, FormikProps } from 'formik/dist/types';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     useGetFormsDropdownOptions,
     UseGetFormsDropdownParams,
 } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
-import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
+import { FORMS_SECTION_MESSAGES } from '../missionTypeOptions';
+import { missionStyles } from '../styles';
 import { MissionFormItem } from './MissionFormItem';
-
-const styles: SxStyles = {
-    tableContainer: {
-        border: theme => `1px solid ${theme.palette.lightGray.border}`,
-        borderRadius: 1,
-    },
-    headerCell: {
-        color: 'text.primary',
-        fontWeight: 500,
-        py: 1.5,
-    },
-    numberHeaderCell: {
-        color: 'text.primary',
-        fontWeight: 500,
-        py: 1.5,
-        width: 120,
-        maxWidth: 140,
-        whiteSpace: 'nowrap',
-    },
-    actionsHeaderCell: {
-        width: 56,
-        py: 1.5,
-    },
-};
+import { MissionFormsTableHead } from './MissionFormsTableHead';
 
 type FormArrayErrorsProps<TSchema> = {
     errors: FormikContextType<TSchema>['errors'];
@@ -77,8 +52,7 @@ type Props<TSchema> = {
         helperText?: string;
     };
     arrayHelpers: FieldArrayRenderProps;
-    minColumnLabel?: string;
-    maxColumnLabel?: string;
+    missionType: MissionTypeDa2Enum;
 };
 
 export const MissionFormsFieldArray = <
@@ -88,13 +62,13 @@ export const MissionFormsFieldArray = <
     formik,
     formSelectProps,
     arrayHelpers,
-    minColumnLabel,
-    maxColumnLabel,
+    missionType,
 }: Props<TSchema>) => {
     const { values, errors, setFieldTouched } = formik;
     const { data: formsOptions, isLoading } =
         useGetFormsDropdownOptions(params);
     const { formatMessage } = useSafeIntl();
+    const { minColumn, maxColumn } = FORMS_SECTION_MESSAGES[missionType];
     const [selectKey, setSelectKey] = React.useState(0);
 
     const availableFormOptions = React.useMemo(
@@ -160,35 +134,13 @@ export const MissionFormsFieldArray = <
             {hasForms && (
                 <>
                     <Divider sx={{ my: 2 }} />
-                    <TableContainer sx={styles.tableContainer}>
+                    <TableContainer sx={missionStyles.bordered}>
                         <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell sx={styles.headerCell}>
-                                        {formatMessage(MESSAGES.form)}
-                                    </TableCell>
-                                    <TableCell sx={styles.numberHeaderCell}>
-                                        {minColumnLabel ??
-                                            formatMessage(
-                                                MESSAGES.minPerOrgUnit,
-                                            )}
-                                    </TableCell>
-                                    <TableCell sx={styles.numberHeaderCell}>
-                                        {maxColumnLabel ??
-                                            formatMessage(
-                                                MESSAGES.maxPerOrgUnit,
-                                            )}
-                                    </TableCell>
-                                    <TableCell sx={styles.actionsHeaderCell}>
-                                        <Box
-                                            component="span"
-                                            sx={visuallyHidden}
-                                        >
-                                            {formatMessage(MESSAGES.actions)}
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
+                            <MissionFormsTableHead
+                                minLabel={formatMessage(minColumn)}
+                                maxLabel={formatMessage(maxColumn)}
+                                withActions
+                            />
                             <TableBody>
                                 {React.Children.toArray(
                                     values.forms?.map((form, index) => (

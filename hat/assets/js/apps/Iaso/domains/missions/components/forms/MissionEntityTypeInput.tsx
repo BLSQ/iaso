@@ -4,6 +4,7 @@ import { FormikProps } from 'formik/dist/types';
 import {
     MissionEntityTypeUpdateRequest,
     MissionEntityTypeCreateRequest,
+    MissionTypeDa2Enum,
 } from 'Iaso/api/missions';
 import { useGetEntityTypesDropdown } from 'Iaso/domains/entities/hooks/requests';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
@@ -52,23 +53,15 @@ export const MissionEntityTypeInput = <
     return (
         <>
             <MissionCreatedTypeStep
-                title={formatMessage(MESSAGES.entitiesAgentCreates)}
-                description={formatMessage(MESSAGES.entitiesAgentCreatesInfo)}
-                typeFieldName="entity_type"
-                typeLabel={formatMessage(MESSAGES.entityTypeToCreate)}
+                missionType={MissionTypeDa2Enum.enum.ENTITY_AND_FORM}
                 typeOptions={entityTypesOptions}
                 isLoadingTypeOptions={isLoadingEntityTypeOptions}
                 onTypeChange={handleEntityTypeChange}
-                minLabel={formatMessage(MESSAGES.minEntities)}
-                maxLabel={formatMessage(MESSAGES.maxEntities)}
             />
 
             <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.ENTITY_AND_FORM}
                 step={2}
-                title={formatMessage(MESSAGES.formsOnCreatedEntity)}
-                description={formatMessage(MESSAGES.formsOnCreatedEntityInfo)}
-                minColumnLabel={formatMessage(MESSAGES.minPerEntity)}
-                maxColumnLabel={formatMessage(MESSAGES.maxPerEntity)}
                 params={params}
                 formik={formik}
                 formSelectProps={{

@@ -3,6 +3,7 @@ import { fireEvent, screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { MissionFormsBaseInput } from './MissionFormsBaseInput';
 
@@ -104,6 +105,7 @@ describe('MissionFormsBaseInput', () => {
     it('filters already selected forms from the available options', () => {
         renderWithThemeAndIntlProvider(
             <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
                 formik={createFormik({
                     forms: [
                         {
@@ -133,7 +135,10 @@ describe('MissionFormsBaseInput', () => {
         });
 
         renderWithThemeAndIntlProvider(
-            <MissionFormsBaseInput formik={formik} />,
+            <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+                formik={formik}
+            />,
         );
 
         fireEvent.click(screen.getByTestId('select'));
@@ -158,7 +163,10 @@ describe('MissionFormsBaseInput', () => {
         });
 
         renderWithThemeAndIntlProvider(
-            <MissionFormsBaseInput formik={formik} />,
+            <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+                formik={formik}
+            />,
         );
 
         fireEvent.click(
@@ -182,7 +190,10 @@ describe('MissionFormsBaseInput', () => {
         };
 
         renderWithThemeAndIntlProvider(
-            <MissionFormsBaseInput formik={formik} />,
+            <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+                formik={formik}
+            />,
         );
 
         expect(
@@ -193,6 +204,7 @@ describe('MissionFormsBaseInput', () => {
     it('does not show the array error when there is no error', () => {
         renderWithThemeAndIntlProvider(
             <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
                 formik={createFormik({
                     forms: [],
                 })}

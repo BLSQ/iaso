@@ -24,3 +24,6 @@ export const isMissionOrgUnitTypeRetrieve = (
 ): data is MissionOrgUnitTypeRetrieve => {
     return data?.mission_type === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM;
 };
+
+export const formatMaxCardinality = (value?: number | null): string =>
+    value?.toLocaleString() ?? '∞';

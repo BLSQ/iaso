@@ -9,17 +9,15 @@ import { useApiMicroplanningMissionsRetrieve } from 'Iaso/api/missions';
 import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { GeneralInfoWidgetPaper as GeneralInfoWidgetPaperMissionEntityType } from 'Iaso/domains/missions/components/details/missionEntityType/GeneralInfoWidgetPaper';
-import { GeneralInfoWidgetPaper as GeneralInfoWidgetPaperMissionForm } from 'Iaso/domains/missions/components/details/missionForm/GeneralInfoWidgetPaper';
-import { GeneralInfoWidgetPaper as GeneralInfoWidgetPaperMissionOrgUnitType } from 'Iaso/domains/missions/components/details/missionOrgUnitType/GeneralInfoWidgetPaper';
 import { TopActions } from 'Iaso/domains/missions/components/details/TopActions';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { CreatedTypeSection } from './components/details/CreatedTypeSection';
 import { FormWidgetPaper } from './components/details/FormWidgetPaper';
+import { GeneralInfoSection } from './components/details/GeneralInfoSection';
 import { DetailsWrapper } from './components/DetailsWrapper';
 import MESSAGES from './messages';
 import {
     isMissionEntityTypeRetrieve,
-    isMissionFormRetrieve,
     isMissionOrgUnitTypeRetrieve,
 } from './utils';
 
@@ -65,18 +63,22 @@ export const MissionDetail = () => {
                     <TopActions missionId={missionId} missionName={data.name} />
                 }
             >
-                <Stack spacing={2} sx={{ p: 2 }}>
-                    {isMissionFormRetrieve(data) && (
-                        <GeneralInfoWidgetPaperMissionForm mission={data} />
-                    )}
-                    {isMissionEntityTypeRetrieve(data) && (
-                        <GeneralInfoWidgetPaperMissionEntityType
-                            mission={data}
+                <Stack spacing={3} sx={{ p: 3 }}>
+                    <GeneralInfoSection mission={data} />
+                    {isMissionOrgUnitTypeRetrieve(data) && (
+                        <CreatedTypeSection
+                            missionType={data.mission_type}
+                            typeName={data.org_unit_type.name}
+                            minCardinality={data.min_cardinality}
+                            maxCardinality={data.max_cardinality}
                         />
                     )}
-                    {isMissionOrgUnitTypeRetrieve(data) && (
-                        <GeneralInfoWidgetPaperMissionOrgUnitType
-                            mission={data}
+                    {isMissionEntityTypeRetrieve(data) && (
+                        <CreatedTypeSection
+                            missionType={data.mission_type}
+                            typeName={data.entity_type.name}
+                            minCardinality={data.min_cardinality}
+                            maxCardinality={data.max_cardinality}
                         />
                     )}
                     <FormWidgetPaper mission={data} />

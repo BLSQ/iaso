@@ -69,7 +69,10 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
             )}
             {formik.values?.mission_type ===
                 MissionTypeDa2Enum.enum.FORM_FILLING && (
-                <MissionFormsBaseInput formik={formik} />
+                <MissionFormsBaseInput
+                    missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+                    formik={formik}
+                />
             )}
             {formik.values?.mission_type ===
                 MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (

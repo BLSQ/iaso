@@ -24,3 +24,48 @@ export const MISSION_TYPE_OPTIONS = [
         descriptionMessage: MESSAGES.entityAndFormDescription,
     },
 ] as const;
+
+export const getMissionTypeOption = (missionType: MissionTypeDa2Enum) =>
+    MISSION_TYPE_OPTIONS.find(option => option.value === missionType);
+
+export const FORMS_SECTION_MESSAGES = {
+    [MissionTypeDa2Enum.enum.FORM_FILLING]: {
+        title: MESSAGES.forms,
+        description: MESSAGES.formsOnAssignedOrgUnitInfo,
+        minColumn: MESSAGES.minPerOrgUnit,
+        maxColumn: MESSAGES.maxPerOrgUnit,
+    },
+    [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: {
+        title: MESSAGES.formsOnCreatedOrgUnit,
+        description: MESSAGES.formsOnCreatedOrgUnitInfo,
+        minColumn: MESSAGES.minPerOrgUnit,
+        maxColumn: MESSAGES.maxPerOrgUnit,
+    },
+    [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: {
+        title: MESSAGES.formsOnCreatedEntity,
+        description: MESSAGES.formsOnCreatedEntityInfo,
+        minColumn: MESSAGES.minPerEntity,
+        maxColumn: MESSAGES.maxPerEntity,
+    },
+};
+
+export type CreatedTypeMissionType =
+    | typeof MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM
+    | typeof MissionTypeDa2Enum.enum.ENTITY_AND_FORM;
+
+export const CREATED_TYPE_SECTION_MESSAGES = {
+    [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: {
+        title: MESSAGES.orgUnitsAgentCreates,
+        description: MESSAGES.orgUnitsAgentCreatesInfo,
+        typeLabel: MESSAGES.orgUnitTypeToCreate,
+        minLabel: MESSAGES.minNewOrgUnits,
+        maxLabel: MESSAGES.maxNewOrgUnits,
+    },
+    [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: {
+        title: MESSAGES.entitiesAgentCreates,
+        description: MESSAGES.entitiesAgentCreatesInfo,
+        typeLabel: MESSAGES.entityTypeToCreate,
+        minLabel: MESSAGES.minEntities,
+        maxLabel: MESSAGES.maxEntities,
+    },
+};

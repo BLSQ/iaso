@@ -1,14 +1,6 @@
 import React from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
-import {
-    Alert,
-    Box,
-    IconButton,
-    TableCell,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import { Alert, IconButton, TableCell, TableRow } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { useSafeIntl } from 'bluesquare-components';
 import { ErrorMessage, Field, FieldArrayRenderProps } from 'formik';
@@ -19,20 +11,9 @@ import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
+import { MissionFormName } from './MissionFormName';
 
 const styles: SxStyles = {
-    formCell: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
-    },
-    formIcon: {
-        fontSize: '18px',
-        color: 'text.secondary',
-    },
-    formName: {
-        fontWeight: 500,
-    },
     numberCell: {
         width: 120,
         maxWidth: 140,
@@ -81,12 +62,7 @@ export const MissionFormItem = <
     return (
         <TableRow>
             <TableCell>
-                <Box sx={styles.formCell}>
-                    <DescriptionIcon sx={styles.formIcon} />
-                    <Typography sx={styles.formName} variant="body2">
-                        {formLabel}
-                    </Typography>
-
+                <MissionFormName name={formLabel}>
                     <ErrorMessage name={`forms.[${index}].form`}>
                         {msg => (
                             <Alert severity={'error'} sx={{ mt: 1 }}>
@@ -94,7 +70,7 @@ export const MissionFormItem = <
                             </Alert>
                         )}
                     </ErrorMessage>
-                </Box>
+                </MissionFormName>
             </TableCell>
             <TableCell sx={styles.numberCell}>
                 <Field

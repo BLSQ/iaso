@@ -113,6 +113,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.max',
         defaultMessage: 'Max',
     },
+    cardinality: {
+        id: 'iaso.missions.label.cardinality',
+        defaultMessage: 'Cardinality',
+    },
+    cardinalityRange: {
+        id: 'iaso.missions.label.cardinalityRange',
+        defaultMessage: 'min {min} · max {max}',
+    },
     minPerOrgUnit: {
         id: 'iaso.missions.label.minPerOrgUnit',
         defaultMessage: 'Min / org unit',
@@ -136,10 +144,6 @@ const MESSAGES = defineMessages({
     missionDetailTitle: {
         defaultMessage: 'Mission details',
         id: 'iaso.missions.title.missionDetail',
-    },
-    infinity: {
-        defaultMessage: 'Infinity',
-        id: 'iaso.missions.infinity',
     },
     delete: {
         defaultMessage: 'Delete',
@@ -173,10 +177,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.formsCount',
         defaultMessage: '{count, plural, one {# form} other {# forms}}',
     },
-    formInfo: {
-        id: 'iaso.missions.label.formInfo',
+    formsOnAssignedOrgUnitInfo: {
+        id: 'iaso.missions.label.formsOnAssignedOrgUnitInfo',
         defaultMessage:
-            'Add one or more forms. Per form, set how many submissions each assigned unit must collect — min required, max allowed (leave max empty for no limit / ∞).',
+            'Per form, min is the number of submissions required on each assigned org unit, max the number allowed (empty = no limit).',
     },
     orgUnitsAgentCreates: {
         id: 'iaso.missions.label.orgUnitsAgentCreates',

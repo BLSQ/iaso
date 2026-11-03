@@ -20,7 +20,7 @@ def clean_up_devices(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0411_alter_profile_color_alter_project_color"),
+        ("iaso", "0413_remove_mobile_change_requests_tab_test_schema"),
     ]
 
     operations = [

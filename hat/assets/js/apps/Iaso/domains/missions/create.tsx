@@ -1,7 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { SaveOutlined } from '@mui/icons-material';
 import { Alert, Button, useMediaQuery, useTheme } from '@mui/material';
-import { useSafeIntl, useRedirectTo, LinkButton } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useGoBack,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
@@ -21,20 +25,20 @@ export const MissionCreate: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const redirectTo = useRedirectTo();
-    const { planningId, planningMode } = useParamsObject(
+    const redirectToReplace = useRedirectToReplace();
+    const { accountId, planningId, planningMode } = useParamsObject(
         baseUrls.missionsCreate,
     );
 
     const planningUrl = planningId
-        ? `${baseUrls.planningDetails}/planningId/${planningId}/mode/${planningMode}`
+        ? `${baseUrls.planningDetails}/accountId/${accountId}/planningId/${planningId}/mode/${planningMode}`
         : undefined;
-    const redirectBackUrl: string = planningUrl ?? `${baseUrls.missions}`;
+    const goBack = useGoBack(planningUrl ?? baseUrls.missions);
 
     const { mutateAsync: create } = useApiMicroplanningMissionsCreate({
         mutation: {
             onSuccess: (variables, _data) => {
-                redirectTo(
+                redirectToReplace(
                     planningUrl
                         ? `${planningUrl}/newMissionId/${variables?.id}`
                         : `${baseUrls.missionsDetails}/id/${variables?.id}`,
@@ -65,21 +69,21 @@ export const MissionCreate: FunctionComponent = () => {
         <>
             <TopBar
                 title={formatMessage(MESSAGES.createMission)}
-                goBack={() => redirectTo(redirectBackUrl)}
+                goBack={goBack}
                 displayBackButton
             />
             <DetailsWrapper
                 title={formatMessage(MESSAGES.newMission)}
                 actions={
                     <>
-                        <LinkButton
-                            to={`/${redirectBackUrl}/`}
+                        <Button
+                            onClick={goBack}
                             color="primary"
                             variant="outlined"
                             size={isMobile ? 'small' : 'medium'}
                         >
                             {formatMessage(MESSAGES.cancel)}
-                        </LinkButton>
+                        </Button>
                         <Button
                             variant="contained"
                             type="submit"

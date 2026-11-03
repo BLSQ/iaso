@@ -61,24 +61,31 @@ vi.mock('Iaso/domains/users/utils', async () => {
     };
 });
 
-const { mockRedirectTo } = vi.hoisted(() => {
-    return { mockRedirectTo: vi.fn() };
-});
+const { mockRedirectToReplace, mockGoBack, mockUseGoBack } = vi.hoisted(() => ({
+    mockRedirectToReplace: vi.fn(),
+    mockGoBack: vi.fn(),
+    mockUseGoBack: vi.fn(),
+}));
 
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =
         await importOriginal<typeof import('bluesquare-components')>();
     return {
         ...actual,
-        useRedirectTo: () => mockRedirectTo,
-        useRedirectToReplace: () => vi.fn(),
+        useRedirectToReplace: () => mockRedirectToReplace,
+        useGoBack: (fallBackUrl: string) => {
+            mockUseGoBack(fallBackUrl);
+            return mockGoBack;
+        },
     };
 });
 
-const renderCreate = () => {
+const renderCreate = (extraParams = '') => {
     return renderWithThemeAndIntlProvider(
         <MemoryRouter
-            initialEntries={[`/${baseUrls.missionsCreate}/accountId/1/`]}
+            initialEntries={[
+                `/${baseUrls.missionsCreate}/accountId/1/${extraParams}`,
+            ]}
         >
             <Routes>
                 <Route
@@ -879,7 +886,7 @@ describe('Mission create integration test', () => {
                     },
                 ],
             });
-            expect(mockRedirectTo).toHaveBeenCalledWith(
+            expect(mockRedirectToReplace).toHaveBeenCalledWith(
                 `${baseUrls.missionsDetails}/id/2`,
             );
         });
@@ -970,7 +977,7 @@ describe('Mission create integration test', () => {
                     },
                 ],
             });
-            expect(mockRedirectTo).toHaveBeenCalledWith(
+            expect(mockRedirectToReplace).toHaveBeenCalledWith(
                 `${baseUrls.missionsDetails}/id/2`,
             );
         });
@@ -1061,20 +1068,26 @@ describe('Mission create integration test', () => {
                     },
                 ],
             });
-            expect(mockRedirectTo).toHaveBeenCalledWith(
+            expect(mockRedirectToReplace).toHaveBeenCalledWith(
                 `${baseUrls.missionsDetails}/id/2`,
             );
         });
     });
 
-    it('redirects to list view if cancel button is clicked', async () => {
+    it('goes back in history if cancel button is clicked', async () => {
         act(() => {
             renderCreate();
         });
 
-        expect(
-            screen.getByRole('link', { name: MESSAGES.cancel.defaultMessage }),
-        ).toHaveAttribute('href', `/${baseUrls.missions}/`);
+        await act(async () => {
+            await userEvent.click(
+                screen.getByRole('button', {
+                    name: MESSAGES.cancel.defaultMessage,
+                }),
+            );
+        });
+
+        expect(mockGoBack).toHaveBeenCalled();
     });
 
     it('goes back to mission list when top bar back button is clicked', async () => {
@@ -1086,8 +1099,17 @@ describe('Mission create integration test', () => {
             await userEvent.click(screen.getByTestId('ArrowBackIcon'));
         });
 
-        await waitFor(() => {
-            expect(mockRedirectTo).toHaveBeenCalledWith(baseUrls.missions);
+        expect(mockGoBack).toHaveBeenCalled();
+        expect(mockUseGoBack).toHaveBeenCalledWith(baseUrls.missions);
+    });
+
+    it('falls back to the planning details url including accountId when created from a planning', () => {
+        act(() => {
+            renderCreate('planningId/262/planningMode/edit');
         });
+
+        expect(mockUseGoBack).toHaveBeenCalledWith(
+            `${baseUrls.planningDetails}/accountId/1/planningId/262/mode/edit`,
+        );
     });
 });

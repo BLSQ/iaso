@@ -19,6 +19,8 @@ type Project = {
     updated_at: string;
     needs_authentication: boolean;
 };
+// xml-external is not rendered as a file. background-audio is shown like audio.
+
 // https://xlsform.org/en/#question-types
 export type FieldType =
     | 'integer'
@@ -45,6 +47,7 @@ export type FieldType =
     | 'end'
     | 'image'
     | 'audio'
+    | 'photo'
     | 'background-audio'
     | 'video'
     | 'file'
@@ -53,6 +56,12 @@ export type FieldType =
     | 'acknowledge'
     | 'hidden'
     | 'xml-external'
+    | 'deviceid'
+    | 'subscriberid'
+    | 'simserial'
+    | 'phonenumber'
+    | 'group'
+    | 'repeat'
     | 'boolean';
 
 export type PossibleField = {

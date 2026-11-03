@@ -159,6 +159,8 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         {
             query: {
                 enabled: Boolean(newMissionId),
+                // Otherwise the mission outlives the dropped param and the effect below redirects forever.
+                keepPreviousData: false,
                 select: toMissionListItem,
             },
         },

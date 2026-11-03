@@ -13,9 +13,7 @@ import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/Mi
 import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/MissionOrgUnitTypeInput';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
-import { MissionTypeChip } from './chips/MissionTypeChip';
-import { InfosTitle } from './details/InfosTitle';
-import { MissionsTitle } from './details/MissionsTitle';
+import { MissionTypeDisplay } from './MissionTypeDisplay';
 
 type Base<T> = {
     formik: FormikProps<T>;
@@ -41,7 +39,6 @@ export const EditMissionForm = ({
     return (
         <>
             <Box sx={{ p: 2 }}>
-                <InfosTitle />
                 <Field
                     label={formatMessage(MESSAGES.name)}
                     name="name"
@@ -55,9 +52,7 @@ export const EditMissionForm = ({
                     component={TextInput}
                     sx={{ mx: 0, my: 1 }}
                 />
-
-                <MissionsTitle />
-                <MissionTypeChip missionType={missionType} />
+                <MissionTypeDisplay missionType={missionType} />
 
                 {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
                     <MissionFormsBaseInput formik={formik} />

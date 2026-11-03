@@ -1,16 +1,13 @@
 import React from 'react';
-import AssignmentIndIcon from '@mui/icons-material/AssignmentIndOutlined';
-import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
-import LocationOnIcon from '@mui/icons-material/LocationOnOutlined';
 import { Box, ButtonBase, FormLabel, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FormikProps } from 'formik';
 import { FieldInputProps } from 'formik/dist/types';
 import { get } from 'lodash';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
+import { MISSION_TYPE_OPTIONS } from './missionTypeOptions';
 
 const styles: SxStyles = {
     root: {
@@ -84,27 +81,6 @@ const styles: SxStyles = {
         mt: 1,
     },
 };
-
-const MISSION_TYPE_OPTIONS = [
-    {
-        value: MissionTypeDa2Enum.enum.FORM_FILLING,
-        Icon: DescriptionIcon,
-        labelMessage: MESSAGES.form,
-        descriptionMessage: MESSAGES.formFillingDescription,
-    },
-    {
-        value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
-        Icon: LocationOnIcon,
-        labelMessage: MESSAGES.orgUnitAndFormChip,
-        descriptionMessage: MESSAGES.orgUnitAndFormDescription,
-    },
-    {
-        value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
-        Icon: AssignmentIndIcon,
-        labelMessage: MESSAGES.entityAndFormChip,
-        descriptionMessage: MESSAGES.entityAndFormDescription,
-    },
-] as const;
 
 type MissionTypeOptionValue = (typeof MISSION_TYPE_OPTIONS)[number]['value'];
 

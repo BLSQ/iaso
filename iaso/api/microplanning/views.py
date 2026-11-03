@@ -19,6 +19,7 @@ from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 
 from ...models.microplanning.plannings import PlanningConfigQuerySet, PlanningQuerySet
 from .serializers.org_unit_tree import OrgUnitBuildTreeSerializer, OrgUnitTreeSerializer
+from .serializers.org_unit_tree_geom import OrgUnitBuildTreeWithGeomSerializer, OrgUnitTreeWithGeomSerializer
 from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
 from .serializers.planning_config.list import NestedPlanningConfigListSerializer
 
@@ -59,6 +60,7 @@ from .filters import (
     PlanningOrgUnitChildrenFilter,
     PlanningOrgUnitChildrenFilterBackend,
     PlanningOrgUnitTreeFilterSet,
+    PlanningOrgUnitTreeWithGeomFilterSet,
     PlanningSearchFilterBackend,
     PublishingStatusFilterBackend,
     validate_planning_has_org_unit_scope,
@@ -250,6 +252,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return None
         if self.action == "org_unit_tree":
             return None
+        if self.action == "org_unit_tree_with_geom":
+            return None
         return Paginator
 
     @property
@@ -266,7 +270,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return []
         if self.action == "configs":
             return []
-        if self.action == "org_unit_tree":
+        if self.action in ["org_unit_tree", "org_unit_tree_with_geom"]:
             # only used to document level/max_depth in the schema, the action applies the filterset itself
             return [DjangoFilterBackend]
         return [
@@ -288,6 +292,10 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return NestedPlanningConfigListSerializer
         if self.action == "bulk_configs":
             return NestedPlanningConfigBulkSerializer
+        if self.action == "org_unit_tree":
+            return OrgUnitTreeSerializer
+        if self.action == "org_unit_tree_with_geom":
+            return OrgUnitTreeWithGeomSerializer
         return PlanningReadSerializer
 
     def get_serializer_context(self) -> dict[str, Any]:
@@ -345,7 +353,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             )
             return planning.missions.all()
 
-        if self.action == "org_unit_tree":
+        if self.action in ["org_unit_tree", "org_unit_tree_with_geom"]:
             qs = (
                 qs.prefetch_related(
                     Prefetch(
@@ -435,14 +443,14 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
     @staticmethod
-    def _build_org_unit_tree(org_units: OrgUnitQuerySet) -> list[dict]:
+    def _build_org_unit_tree(org_units: OrgUnitQuerySet, serializer: type[serializers.BaseSerializer]) -> list[dict]:
         # associate each node with its data
         if not org_units:
             return []
 
         min_depth = org_units.aggregate(min_depth=Min("path__depth"))["min_depth"]
 
-        nodes = {org_unit.pk: {**OrgUnitBuildTreeSerializer(org_unit).data, "children": []} for org_unit in org_units}
+        nodes = {org_unit.pk: {**serializer(org_unit).data, "children": []} for org_unit in org_units}
 
         roots = []
 
@@ -479,7 +487,31 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         if not filterset.is_valid():
             raise serializers.ValidationError(filterset.errors)
 
-        data = self._build_org_unit_tree(filterset.qs)
+        data = self._build_org_unit_tree(filterset.qs, OrgUnitBuildTreeSerializer)
+        return Response(data)
+
+    @extend_schema(
+        responses={200: OrgUnitTreeWithGeomSerializer(many=True)},
+    )
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+        url_path="org-unit-tree/with-geom",
+    )
+    def org_unit_tree_with_geom(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+        # not self.get_object(): it would run filter_queryset() and instantiate the filterset without the planning
+        planning = get_object_or_404(self.get_queryset(), pk=pk)
+        filterset = PlanningOrgUnitTreeWithGeomFilterSet(
+            data=request.query_params,
+            queryset=OrgUnit.objects.filter_for_user(request.user),
+            request=request,
+            planning=planning,
+        )
+        if not filterset.is_valid():
+            raise serializers.ValidationError(filterset.errors)
+
+        data = self._build_org_unit_tree(filterset.qs, OrgUnitBuildTreeWithGeomSerializer)
         return Response(data)
 
 

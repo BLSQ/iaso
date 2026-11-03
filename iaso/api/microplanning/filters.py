@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 import django_filters
@@ -131,16 +133,8 @@ class PlanningDropdownFilterSet(django_filters.FilterSet):
     form_ids = NumberInFilter(field_name="missions__missionwithforms__forms__id", distinct=True)
 
 
-class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
-    level = django_filters.NumberFilter(label="Level", min_value=1)
-    max_depth = django_filters.NumberFilter(
-        min_value=1,
-        help_text=_(
-            "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
-        ),
-    )
-
-    def __init__(self, *args: Any, planning: Planning, **kwargs: Any) -> None:
+class BasePlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
+    def __init__(self, planning: Planning, *args: Any, **kwargs: Any) -> None:
         self.planning = planning
         super().__init__(*args, **kwargs)
 
@@ -193,6 +187,49 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
 
         filter_qs |= ~Q(path__depth__in=processed_levels)
 
+        return queryset.filter(filter_qs).annotate(
+            depth=F("path__depth"),
+        )
+
+
+class BasePlanningOrgUnitTreeFilterSetForm(forms.Form):
+    root_level: int = 0
+
+    def clean(self) -> dict[str, Any] | None:
+        cleaned_data = super().clean()
+        if not cleaned_data:
+            return cleaned_data
+
+        # get level
+        level: int = cleaned_data.get("level", 0)
+        max_depth: int | None = cleaned_data.get("max_depth", None)
+
+        root_level = self.root_level
+
+        if level:
+            root_level += level
+
+        if max_depth is None:
+            cleaned_data["max_depth"] = root_level + 1
+        else:
+            if max_depth > root_level + 1:
+                self.add_error("max_depth", _("Max depth cannot exceed the root level you asked for plus one."))
+
+        return cleaned_data
+
+
+class PlanningOrgUnitTreeFilterSet(BasePlanningOrgUnitTreeFilterSet):
+    level = django_filters.NumberFilter(label="Level", min_value=1)
+    max_depth = django_filters.NumberFilter(
+        min_value=1,
+        help_text=_(
+            "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
+        ),
+    )
+
+    def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
+        queryset = super().filter_queryset(queryset)
+
         empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
 
         return (
@@ -200,7 +237,6 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
             .select_related("org_unit_type")
             .annotate(
                 location_as_geom=Cast("location", PointField(dim=3)),
-                depth=F("path__depth"),
                 has_geo_json=Case(
                     When(simplified_geom__isnull=False, then=Value(True)),
                     default=Value(False),
@@ -215,6 +251,32 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
                     output_field=BooleanField(),
                 ),
             )
-            .filter(filter_qs)
+            .order_by("id")
+        )
+
+
+class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
+    level = django_filters.NumberFilter(label="Level", min_value=1)
+    max_depth = django_filters.NumberFilter(
+        min_value=1,
+        help_text=_(
+            "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth. It cannot be greater than the depth of the selected root + 1."
+        ),
+    )
+
+    class Meta:
+        form = BasePlanningOrgUnitTreeFilterSetForm
+
+    def __init__(self, planning: Planning, *args: Any, **kwargs: Any) -> None:
+        super().__init__(planning, *args, **kwargs)
+        self.form.root_level = len(str(planning.org_unit.path).split("."))
+
+    def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
+        queryset = super().filter_queryset(queryset)
+        # why the defer(None) ? because OrgUnitQuerySet filter_for_user_and_app_id has an hidden defer("geom")..
+        return (
+            queryset.defer(None)
+            .only("id", "parent", "name", "path", "org_unit_type", "geom", "simplified_geom", "location")
+            .select_related("org_unit_type")
             .order_by("id")
         )

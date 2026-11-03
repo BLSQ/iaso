@@ -8,6 +8,7 @@ from django.db.models import F
 from django.urls import reverse
 from rest_framework import status
 
+from iaso.api.microplanning.serializers.org_unit_tree import OrgUnitBuildTreeSerializer
 from iaso.api.microplanning.views import PlanningViewSet
 from iaso.models import (
     Account,
@@ -573,7 +574,8 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         """
 
         res = PlanningViewSet._build_org_unit_tree(
-            OrgUnit.objects.annotate(depth=F("path__depth")).filter(pk__in=[self.ou_root.pk, self.children_2_1.pk])
+            OrgUnit.objects.annotate(depth=F("path__depth")).filter(pk__in=[self.ou_root.pk, self.children_2_1.pk]),
+            OrgUnitBuildTreeSerializer,
         )
         self.assertEqual(
             res,

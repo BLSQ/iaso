@@ -67,7 +67,10 @@ class DeviceLogsViewSet(ModelViewSet):
 
     @cached_property
     def project(self):
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        # raise_exception=False for Swagger
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        if app_id is None:
+            return None
         try:
             return Project.objects.get(app_id=app_id)
         except Project.DoesNotExist:

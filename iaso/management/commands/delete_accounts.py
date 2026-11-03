@@ -696,7 +696,7 @@ class Command(BaseCommand):
             # Cycle: Planning.selected_sampling_result = PROTECT(PSR) ↔ PSR.planning = CASCADE(Planning)
             # Break it: null Planning.selected_sampling_result → delete PSR → delete Planning.
             with self._doing(f"Planning/PSR cycle {ds_label}"):
-                planning_qs = Planning.objects.filter(org_unit__version__in=versions_qs)
+                planning_qs = Planning.objects_include_deleted.filter(org_unit__version__in=versions_qs)
                 self._update_qs(
                     planning_qs,
                     label=f"Planning.selected_sampling_result=NULL[{ds_label}]",

@@ -2,11 +2,11 @@ import React, { FC, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Grid, Stack, Typography } from '@mui/material';
 import { makeFullModal, useSafeIntl } from 'bluesquare-components';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { CreateEditTeam } from 'Iaso/domains/teams/components/CreateEditTeam';
-import { useGetTeamsDropdown } from 'Iaso/domains/teams/hooks/requests/useGetTeams';
 import { Team } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
@@ -27,7 +27,12 @@ const styles = {
     },
 } satisfies SxStyles;
 
-const CreateTeamButton: FC<{ onClick: () => void }> = ({ onClick }) => {
+type CreateTeamButtonProps = {
+    onClick: () => void;
+    disabled?: boolean;
+};
+
+const CreateTeamButton: FC<CreateTeamButtonProps> = ({ onClick, disabled }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <Stack
@@ -39,7 +44,12 @@ const CreateTeamButton: FC<{ onClick: () => void }> = ({ onClick }) => {
             <Typography variant="body2" color="text.secondary">
                 {formatMessage(MESSAGES.or)}
             </Typography>
-            <Button size="small" startIcon={<AddIcon />} onClick={onClick}>
+            <Button
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={onClick}
+                disabled={disabled}
+            >
                 {formatMessage(MESSAGES.createNewRootTeam)}
             </Button>
         </Stack>
@@ -49,7 +59,7 @@ const CreateTeamButton: FC<{ onClick: () => void }> = ({ onClick }) => {
 const CreateRootTeamModal = makeFullModal(CreateEditTeam, CreateTeamButton);
 
 export const TargetGeographySection: FC = () => {
-    const { formik } = usePlanningContext();
+    const { formik, isReadOnly } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
     const { values } = formik;
     const { onChange, getErrors } = usePlanningFieldHandlers(formik);
@@ -58,10 +68,13 @@ export const TargetGeographySection: FC = () => {
         values.selectedOrgUnit,
     );
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown(
-            { project: values.project },
-            undefined,
-            Boolean(values.project),
+        useApiTeamsDropdownList(
+            { projects: values?.project ? [values.project] : [] },
+            {
+                query: {
+                    enabled: Boolean(values.project),
+                },
+            },
         );
 
     const onConfirmOrgUnit = useCallback(
@@ -96,6 +109,7 @@ export const TargetGeographySection: FC = () => {
                         }
                         errors={getErrors('selectedOrgUnit')}
                         required
+                        disabled={isReadOnly}
                     />
                     {values.selectedOrgUnit && selectedOrgUnit?.parent_name && (
                         <Typography
@@ -118,14 +132,25 @@ export const TargetGeographySection: FC = () => {
                         required
                         options={teamsDropdown ?? []}
                         loading={isFetchingTeams}
-                        disabled={!values.project}
+                        disabled={isReadOnly || !values.project}
+                        helperText={
+                            values.project
+                                ? undefined
+                                : formatMessage(
+                                      MESSAGES.selectProjectToPickRootTeam,
+                                  )
+                        }
                         withMarginTop={false}
                     />
-                    <CreateRootTeamModal
-                        dialogType="create"
-                        defaultValues={{ project: values.project }}
-                        onSuccess={onTeamCreated}
-                    />
+                    {!isReadOnly && (
+                        <CreateRootTeamModal
+                            dialogType="create"
+                            defaultValues={{ project: values.project }}
+                            lockedFields={['project', 'parent']}
+                            onSuccess={onTeamCreated}
+                            iconProps={{ disabled: !values.project }}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </PlanningStepCard>

@@ -6,6 +6,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { MainWrapper } from './MainWrapper';
 
 const HEADER_HEIGHT = '80px';
+export const GREY_PAGE_BODY_PADDING_Y = 4;
 
 const styles = {
     root: {
@@ -34,12 +35,16 @@ const styles = {
         boxSizing: 'border-box',
         height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${HEADER_HEIGHT})`,
         overflow: 'auto',
-        py: 4,
+        py: GREY_PAGE_BODY_PADDING_Y,
     },
     body: {
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
+    },
+    // Keeps the content within the screen height: it must scroll its own parts.
+    fillHeightBody: {
+        minHeight: 0,
     },
 } satisfies SxStyles;
 
@@ -60,6 +65,7 @@ type Props = {
     title: ReactNode;
     actions?: ReactNode;
     maxWidth?: Breakpoint;
+    fillHeight?: boolean;
     children: ReactNode;
 };
 
@@ -67,15 +73,20 @@ export const GreyPageWrapper: FC<Props> = ({
     title,
     actions,
     maxWidth,
+    fillHeight = false,
     children,
 }) => {
     const { header, body } = useMemo(() => {
         const contentWidthStyle = getContentWidthStyle(maxWidth);
         return {
             header: { ...styles.header, ...contentWidthStyle },
-            body: { ...styles.body, ...contentWidthStyle },
+            body: {
+                ...styles.body,
+                ...contentWidthStyle,
+                ...(fillHeight ? styles.fillHeightBody : {}),
+            },
         };
-    }, [maxWidth]);
+    }, [maxWidth, fillHeight]);
     return (
         <MainWrapper sx={styles.root}>
             <Box sx={styles.headerContainer}>

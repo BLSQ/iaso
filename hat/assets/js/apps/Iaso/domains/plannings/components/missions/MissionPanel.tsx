@@ -43,6 +43,7 @@ export const MissionPanel: FC = () => {
         createMission,
         formik,
         planning,
+        isReadOnly,
     } = usePlanningContext();
     const linkedMissionIds = formik.values.missions ?? [];
     const { formatMessage } = useSafeIntl();
@@ -79,16 +80,18 @@ export const MissionPanel: FC = () => {
                         )}
                     </Typography>
                 </Stack>
-                <Stack direction="row" gap={1} my={1}>
-                    <AddMissionsDialog />
-                    <IconButton
-                        color="primary"
-                        onClick={createMission}
-                        disabled={!planning}
-                    >
-                        <AddIcon />
-                    </IconButton>
-                </Stack>
+                {!isReadOnly && (
+                    <Stack direction="row" gap={1} my={1}>
+                        <AddMissionsDialog />
+                        <IconButton
+                            color="primary"
+                            onClick={createMission}
+                            disabled={!planning}
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    </Stack>
+                )}
             </Stack>
             {hasNoMission && <NoMissionPlaceholder />}
             <Stack direction="column" gap={1} sx={styles.list}>

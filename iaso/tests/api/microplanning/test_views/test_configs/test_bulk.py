@@ -58,6 +58,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # Create test project
         cls.project = Project.objects.create(name="Test Project", app_id="test.app", account=cls.account)
+        cls.project2 = Project.objects.create(name="Test Project2", app_id="test.app2", account=cls.account)
         cls.project_other_account = Project.objects.create(
             name="Test Project other account", app_id="test.app.other_account", account=cls.other_account
         )
@@ -67,7 +68,8 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         # Create test org unit type
         cls.org_unit_type = OrgUnitType.objects.create(name="Test Country Type")
-        cls.org_unit_type.projects.set([cls.project])
+        # setting up two projects to be sure that the queryset in serializer PK field is returning distinct values
+        cls.org_unit_type.projects.set([cls.project, cls.project2])
 
         cls.org_unit_type_2 = OrgUnitType.objects.create(name="Test Country Type 2")
         cls.org_unit_type_2.projects.set([cls.project])
@@ -159,6 +161,22 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
     def test_should_raise_a_404_if_planning_does_not_belong_to_user(self):
         self.client.force_authenticate(self.superuser)
         res = self.client.put(self.get_url(self.planning_other_account.pk))
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_should_raise_a_404_if_planning_is_soft_deleted(self):
+        self.planning.delete()
+        self.assertSoftDeleted(self.planning)
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.put(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_should_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.deprecated = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.put(self.get_url())
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_num_queries(self):

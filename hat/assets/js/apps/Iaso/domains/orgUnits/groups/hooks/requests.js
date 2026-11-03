@@ -12,7 +12,7 @@ import MESSAGES from '../messages';
 
 export const useGetGroups = params => {
     const newParams = {
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
     };

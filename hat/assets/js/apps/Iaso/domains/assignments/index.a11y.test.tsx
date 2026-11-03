@@ -42,10 +42,8 @@ const rootTeam = {
     name: 'Root team',
     manager: 1,
     sub_teams: [],
-    sub_teams_details: [],
     project: 1,
     users: [],
-    users_details: [],
     created_at: '2024-01-01',
     color: '#111111',
 };

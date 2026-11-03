@@ -7,6 +7,19 @@ export const teamsOperations = {
             },
         },
     },
+    apiTeamsTypesDropdownList: {
+        query: {
+            meta: {
+                localeAware: true,
+            },
+            options: {
+                retry: false,
+                staleTime: Infinity,
+                cacheTime: Infinity,
+                keepPreviousData: true,
+            },
+        },
+    },
 };
 
 export const mutationInvalidates = [

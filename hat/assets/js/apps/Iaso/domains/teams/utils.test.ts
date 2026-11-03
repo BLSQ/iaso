@@ -25,7 +25,9 @@ const makeTeam = (
 ): TeamTreeNode => ({
     id,
     name: `Team ${id}`,
-    type: users.length ? TeamType.TEAM_OF_USERS : TeamType.TEAM_OF_TEAMS,
+    type: users.length
+        ? TeamType.enum.TEAM_OF_USERS
+        : TeamType.enum.TEAM_OF_TEAMS,
     color: '',
     parent: null,
     depth: 0,

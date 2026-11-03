@@ -13,7 +13,7 @@ import {
     useRedirectTo,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { isEqual, union, unionBy, without } from 'lodash';
+import { isEmpty, isEqual, union, unionBy, without } from 'lodash';
 import {
     MissionPolymorphicList,
     MissionPolymorphicRetrieve,
@@ -26,6 +26,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
+import { useMissingFieldsSnackBar } from '../hooks/useMissingFieldsSnackBar';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
 import { shouldWarnBeforeSave } from '../utils';
@@ -52,6 +53,7 @@ type PlanningContextValue = {
     relinkMission: (missionId: number) => void;
     createMission: () => void;
     formik: PlanningFormik;
+    isReadOnly: boolean;
     canSave: boolean;
     savePlanning: () => void;
     isSaveWarningOpen: boolean;
@@ -95,9 +97,9 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     const {
         values,
         initialValues,
-        isValid,
         isSubmitting,
         handleSubmit,
+        validateForm,
         setFieldValue,
     } = formik;
 
@@ -175,22 +177,38 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         });
     }, [newMission, addMissions, redirectToReplace, planning, mode, tab]);
 
+    const isReadOnly = Boolean(planning?.deprecated);
     const canSave =
-        isValid &&
+        !isReadOnly &&
         !isSubmitting &&
         (mode === 'copy' || !isEqual(values, initialValues));
 
     const isLoadingPlanning = isSubmitting || isFetchingPlanning;
 
     const [isSaveWarningOpen, setIsSaveWarningOpen] = useState(false);
+    const { openMissingFieldsSnackBar, closeMissingFieldsSnackBar } =
+        useMissingFieldsSnackBar();
     const shouldWarn = shouldWarnBeforeSave(formik, mode);
-    const savePlanning = useCallback(() => {
+    const savePlanning = useCallback(async () => {
+        const errors = await validateForm();
+        if (!isEmpty(errors)) {
+            openMissingFieldsSnackBar(errors);
+            handleSubmit();
+            return;
+        }
+        closeMissingFieldsSnackBar();
         if (shouldWarn) {
             setIsSaveWarningOpen(true);
         } else {
             handleSubmit();
         }
-    }, [shouldWarn, handleSubmit]);
+    }, [
+        validateForm,
+        openMissingFieldsSnackBar,
+        closeMissingFieldsSnackBar,
+        shouldWarn,
+        handleSubmit,
+    ]);
     const confirmSave = useCallback(() => {
         setIsSaveWarningOpen(false);
         handleSubmit();
@@ -226,6 +244,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             relinkMission,
             createMission,
             formik,
+            isReadOnly,
             canSave,
             savePlanning,
             isSaveWarningOpen,
@@ -246,6 +265,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             relinkMission,
             createMission,
             formik,
+            isReadOnly,
             canSave,
             savePlanning,
             isSaveWarningOpen,

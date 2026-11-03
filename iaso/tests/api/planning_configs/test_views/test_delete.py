@@ -152,3 +152,11 @@ class PlanningConfigDeleteAPITestCase(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         # check in db
         self.assertFalse(PlanningConfig.objects.filter(pk=planning_config_pk).exists())
+
+    def test_delete_planning_config_where_planning_is_soft_deleted_should_raise_a_404(self):
+        self.planning.delete()
+        self.assertSoftDeleted(self.planning)
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.delete(reverse("planning_configs-detail", kwargs={"pk": self.planning_config.id}))
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)

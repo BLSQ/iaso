@@ -10,5 +10,5 @@ export type Project = {
     needs_authentication?: boolean;
     old_app_id?: string | null | undefined;
     created_at?: number;
-    color?: string;
+    color: string | null | undefined;
 };

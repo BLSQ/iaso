@@ -32,6 +32,7 @@ from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 from hat.api_import.models import APIImport
 from iaso import models as m
 from iaso.permissions.base import PERMISSION_CLASSES, IasoPermission
+from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class IasoTestCaseMixin:
@@ -149,7 +150,9 @@ class IasoTestCaseMixin:
         return [user, anon, user_no_perms]
 
     @staticmethod
-    def create_account_datasource_version_project(source_name, account_name, project_name, app_id=None):
+    def create_account_datasource_version_project(
+        source_name, account_name, project_name, app_id=None
+    ) -> tuple[m.Account, m.DataSource, m.SourceVersion, m.Project]:
         """Create a project and all related data: account, data source, source version"""
         data_source = m.DataSource.objects.create(name=source_name)
         source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
@@ -158,7 +161,7 @@ class IasoTestCaseMixin:
         project = m.Project.objects.create(name=project_name, app_id=app_id, account=account)
         data_source.projects.set([project])
 
-        return [account, data_source, source_version, project]
+        return account, data_source, source_version, project
 
     @staticmethod
     def create_org_unit_type(name, projects, category=None):
@@ -329,7 +332,13 @@ class APIAssertionsMixin:
             return response.json()
 
 
-class APITestCase(BaseAPITestCase, IasoTestCaseMixin, APIAssertionsMixin):
+class IasoModelTestMixin(BaseTestCase):
+    def assertSoftDeleted(self, obj: SoftDeletableModel) -> None:
+        obj.refresh_from_db()
+        self.assertIsNotNone(obj.deleted_at)
+
+
+class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, BaseAPITestCase):
     client: APIClient
 
     def setUp(self):

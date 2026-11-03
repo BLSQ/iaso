@@ -41,7 +41,6 @@ class MobilePlanningViewSet(CustomPaginationListModelMixin, GenericViewSet):
             .exclude(published_at__isnull=True)
             .exclude(started_at__isnull=True)
             .exclude(ended_at__isnull=True)
-            .filter(deleted_at__isnull=True)
             .prefetch_related(
                 Prefetch(
                     lookup="assignment_set",
@@ -90,7 +89,6 @@ class MobilePlanningV2ViewSet(CustomPaginationListModelMixin, GenericViewSet):
             .exclude(published_at__isnull=True)
             .exclude(started_at__isnull=True)
             .exclude(ended_at__isnull=True)
-            .filter(deleted_at__isnull=True)
             .prefetch_related(
                 Prefetch(
                     lookup="assignment_set",

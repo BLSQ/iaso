@@ -52,14 +52,12 @@ const rootTeam = {
     id: 1,
     name: 'Main Team',
     manager: 1,
-    sub_teams: [11, 10],
-    sub_teams_details: [
+    sub_teams: [
         { id: 11, name: 'Zulu Team', color: '#111111' },
         { id: 10, name: 'Alpha Team', color: '#222222' },
     ],
     project: 2,
-    users: [3, 2],
-    users_details: [
+    users: [
         {
             id: 3,
             username: 'zed',
@@ -162,13 +160,13 @@ describe('TeamTable', () => {
 
         subTeamRow.setSelectedRow();
         expect(defaultProps.setSelectedTeam).toHaveBeenCalledWith(
-            rootTeam.sub_teams_details[0],
+            rootTeam.sub_teams[0],
         );
         expect(defaultProps.setSelectedUser).toHaveBeenCalledWith(undefined);
 
         subTeamRow.onColorChange('#ff00ff');
         expect(mockUpdateTeam).toHaveBeenCalledWith({
-            id: rootTeam.sub_teams_details[0].id,
+            id: rootTeam.sub_teams[0].id,
             color: '#ff00ff',
         });
     });

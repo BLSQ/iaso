@@ -7,12 +7,12 @@ import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import MESSAGES from './messages';
 
 export const TEAM_TYPE_DISPLAY = {
-    [TeamType.TEAM_OF_TEAMS]: {
+    [TeamType.enum.TEAM_OF_TEAMS]: {
         label: MESSAGES.teamOfTeams,
         countLabel: MESSAGES.teamsCount,
         getCount: (team: TeamTreeNode) => team.children.length,
     },
-    [TeamType.TEAM_OF_USERS]: {
+    [TeamType.enum.TEAM_OF_USERS]: {
         label: MESSAGES.teamOfUsers,
         countLabel: MESSAGES.usersCount,
         getCount: (team: TeamTreeNode) => team.users.length,
@@ -24,7 +24,7 @@ type Props = SvgIconProps & {
 };
 
 export const TeamTypeIcon: FC<Props> = ({ type, ...iconProps }) =>
-    type === TeamType.TEAM_OF_USERS ? (
+    type === TeamType.enum.TEAM_OF_USERS ? (
         <GroupsIcon {...iconProps} />
     ) : (
         <AccountTreeIcon {...iconProps} />

@@ -1,13 +1,14 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
 import ListIcon from '@mui/icons-material/List';
 import MapIcon from '@mui/icons-material/Map';
-import { Box, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
 import { AssignmentsMap } from './AssignmentsMap';
+import { OrgUnitsTable } from './OrgUnitsTable';
 
 const styles = {
     panel: {
@@ -19,16 +20,9 @@ const styles = {
         overflow: 'hidden',
     },
     header: {
-        pr: 2,
+        px: 2,
         borderBottom: 1,
         borderColor: 'divider',
-    },
-    listPlaceholder: {
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 4,
     },
 } satisfies SxStyles;
 
@@ -60,13 +54,7 @@ export const AssignmentsMainPanel: FC = () => {
                 </Tabs>
             </Box>
             {view === 'map' && <AssignmentsMap />}
-            {view === 'list' && (
-                <Box sx={styles.listPlaceholder}>
-                    <Typography color="text.secondary">
-                        {formatMessage(MESSAGES.orgUnitsListPlaceholder)}
-                    </Typography>
-                </Box>
-            )}
+            {view === 'list' && <OrgUnitsTable />}
         </Paper>
     );
 };

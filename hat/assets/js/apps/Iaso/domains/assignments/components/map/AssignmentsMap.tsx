@@ -8,6 +8,7 @@ import React, {
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { MapContainer, GeoJSON, Pane } from 'react-leaflet';
+import { TeamRetrieve } from 'Iaso/api/teams';
 import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
 import tiles from 'Iaso/constants/mapTiles';
 import {
@@ -16,7 +17,7 @@ import {
 } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';
 import { MapToolTip } from 'Iaso/domains/registry/components/map/MapTooltip';
-import { SubTeam, Team, User } from 'Iaso/domains/teams/types/team';
+import { SubTeam, User } from 'Iaso/domains/teams/types/team';
 import { Bounds, getOrgUnitsBounds } from 'Iaso/utils/map/mapUtils';
 import { Planning } from '../../../plannings/types';
 import {
@@ -102,7 +103,7 @@ export const MAP_PANE_Z_INDEX = {
 
 type Props = {
     planningId: string;
-    rootTeam?: Team;
+    rootTeam?: TeamRetrieve;
     isLoadingRootTeam: boolean;
     assignments?: AssignmentsResult;
     isLoadingAssignments: boolean;

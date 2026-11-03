@@ -4,9 +4,10 @@
 # dependencies = ["requests"]
 # ///
 """
-Emulate the mobile app's entity sync against a running Iaso server.
+Emulate the mobile app's entity and stock sync against a running Iaso server.
 
-Reproduces the exact request pattern of GetOrgUnits.kt and FetchEntities.kt in iaso-mobile-app
+Reproduces the exact request pattern of GetOrgUnits.kt, FetchEntities.kt and FetchStockLedgerItems.kt
+in iaso-mobile-app
 (not a guess -- traced from the actual client code). The pyramid comes first, like in the app:
   - GET /api/mobile/orgunits/?app_id=...&limit=25000&page=N&shapes=true|false, starting at page 1,
     following `has_next` (`roots` only on page 1). `shapes` is true when the app has the
@@ -26,6 +27,12 @@ Then the entities:
   - the client treats ANY non-2xx response (404 included) as fatal: it aborts the
     whole sync stage, no automatic retry. This script surfaces that loudly instead
     of silently working around it, so a 404 here means a real device would break.
+Then the stock ledger items, when the app has the MOBILE_STOCK feature flag:
+  - GET /api/mobile/stockledgeritems/?app_id=...&page=N&limit=1000[&last_sync=...], starting at
+    page 1, following `has_next`, no cursor
+  - `last_sync` is the STOCK_LEDGER_ITEM last sync date (yyyy-MM-ddTHH:mm:ssZ, GMT), but the app
+    never saves it (no saveSync(STOCK_LEDGER_ITEM)), so it's always omitted: every sync is a full
+    one. Pass --stock-since to emulate what an incremental sync would cost
 
 By default the next pages pass the `next_cursor` of the previous page as `cursor`
 (keyset pagination): only page 1 is counted, `count`/`pages` come back null afterwards and
@@ -39,7 +46,9 @@ Usage:
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --since 2026-08-24
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-deleted
     uv run setuper/emulate_mobile_sync.py --app-id myaccount --no-cursor
-    uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-entities   # pyramid only
+    uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-entities   # pyramid and stock only
+    uv run setuper/emulate_mobile_sync.py --app-id myaccount --skip-pyramid --skip-entities   # stock only
+    uv run setuper/emulate_mobile_sync.py --app-id myaccount --stock-since 2026-10-01T00:00:00Z
 
 Credentials/server default to setuper/credentials.py (the same file setuper.py uses)
 when present; override with --server/--username/--password.
@@ -74,6 +83,8 @@ def authenticate(server, username, password):
 
 # GetOrgUnits.kt DEFAULT_LIMIT: the app always asks for 25k org units per page.
 ORG_UNITS_LIMIT = 25_000
+# FetchStockLedgerItems.kt DEFAULT_LIMIT
+STOCK_LEDGER_ITEMS_LIMIT = 1000
 
 
 def get_feature_flags(server, headers, app_id):
@@ -180,6 +191,17 @@ def main():
         help="Request org unit shapes; defaults to what the app does, from the project's feature flags",
     )
     parser.add_argument(
+        "--stock",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Fetch the stock ledger items; defaults to what the app does, from the MOBILE_STOCK feature flag",
+    )
+    parser.add_argument(
+        "--stock-since",
+        default=None,
+        help="last_sync (yyyy-MM-ddTHH:mm:ssZ) for the stock ledger items; omitted by default, like the app",
+    )
+    parser.add_argument(
         "--cursor",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -195,14 +217,14 @@ def main():
     headers = authenticate(args.server, args.username, args.password)
 
     timings = {}  # stage -> (rows, pages, seconds)
+    feature_flags = None
+    if args.shapes is None or args.stock is None:
+        feature_flags = get_feature_flags(args.server, headers, args.app_id)
 
     if not args.skip_pyramid:
         shapes = args.shapes
         if shapes is None:
-            shapes = bool(
-                get_feature_flags(args.server, headers, args.app_id)
-                & {"SHOW_DETAIL_MAP_ON_MOBILE", "MOBILE_ORG_UNIT_REGISTRY"}
-            )
+            shapes = bool(feature_flags & {"SHOW_DETAIL_MAP_ON_MOBILE", "MOBILE_ORG_UNIT_REGISTRY"})
         print(f"\n=== Pyramid sync emulation: app_id={args.app_id} (limit={ORG_UNITS_LIMIT}, shapes={shapes}) ===")
         timings["org units"] = sync_paginated(
             args.server,
@@ -244,6 +266,25 @@ def main():
                 max_pages=args.max_pages,
                 use_cursor=args.cursor,
             )
+
+    stock = args.stock if args.stock is not None else "MOBILE_STOCK" in feature_flags
+    if stock:
+        sync_kind = f"last_sync={args.stock_since}" if args.stock_since else "last_sync omitted, like the app"
+        print(
+            f"\n=== Stock ledger items sync emulation: app_id={args.app_id} "
+            f"(limit={STOCK_LEDGER_ITEMS_LIMIT}, {sync_kind}) ==="
+        )
+        stock_params = {"app_id": args.app_id, "limit": STOCK_LEDGER_ITEMS_LIMIT}
+        if args.stock_since:
+            stock_params["last_sync"] = args.stock_since
+        timings["stock"] = sync_paginated(
+            args.server,
+            headers,
+            "/api/mobile/stockledgeritems/",
+            stock_params,
+            "stock ledger items",
+            max_pages=args.max_pages,
+        )
 
     print("=== Summary ===")
     for stage, (rows, pages, seconds) in timings.items():

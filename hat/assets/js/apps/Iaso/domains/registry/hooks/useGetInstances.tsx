@@ -40,7 +40,7 @@ export const useGetInstanceApi = (
     const apiParams: ApiParams = {
         orgUnitTypeId,
         form_ids: params.formIds,
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         order: params.order || getSort(defaultSorted),
         page: params.page || '1',
         showDeleted: false,

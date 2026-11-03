@@ -3,11 +3,13 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SaveOutlinedIcon from '@mui/icons-material/SaveOutlined';
 import { Button, Stack } from '@mui/material';
-import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocationForwardRef } from 'Iaso/components/nav/LinkWithLocationForwardRef';
 import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { getAssignmentsUrl } from '../../utils';
+import { DeprecatedPlanningChip } from '../shared/DeprecatedPlanningChip';
 import { PlanningStatusChip } from '../shared/PlanningStatusChip';
 import { planningPanelStyles } from '../shared/styles';
 import { SaveWarningDialog } from './SaveWarningDialog';
@@ -20,25 +22,36 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningHeaderTitle: FC = () => {
-    const { planning } = usePlanningContext();
+    const { planning, isReadOnly, formik } = usePlanningContext();
+    const { formatMessage } = useSafeIntl();
     return (
         <>
-            {planning?.name}
+            {formik.values.name?.trim() || formatMessage(MESSAGES.newPlanning)}
             <PlanningStatusChip status={planning?.status ?? 'draft'} />
+            {isReadOnly && <DeprecatedPlanningChip />}
         </>
     );
 };
 
 export const PlanningHeaderActions: FC = () => {
-    const { planning, mode, canSave, savePlanning, duplicatePlanning } =
-        usePlanningContext();
+    const {
+        planning,
+        mode,
+        isReadOnly,
+        canSave,
+        savePlanning,
+        duplicatePlanning,
+    } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
+    if (isReadOnly) {
+        return null;
+    }
     return (
         <Stack direction="row" gap={1}>
             <Button
                 variant="outlined"
                 size="small"
-                component={LinkWithLocation}
+                component={LinkWithLocationForwardRef}
                 to={planning ? getAssignmentsUrl(planning.id) : ''}
                 disabled={!planning}
             >

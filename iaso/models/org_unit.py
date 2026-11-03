@@ -8,7 +8,8 @@ from functools import reduce
 
 import django_cte
 
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
@@ -32,6 +33,9 @@ from .project import Project
 
 if typing.TYPE_CHECKING:
     from iaso.models import Account
+
+
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -81,8 +85,14 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         return self.filter(category="COUNTRY")
 
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None, distinct: bool = False
     ):
+        """
+        Filter the org unit types by user and app_id.
+
+        This might return duplicates if distinct is set to False (default). Set it to True to get distinct values.
+        """
+
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -105,7 +115,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
             except Project.DoesNotExist:
                 return self.none()
 
-        return queryset
+        return queryset.distinct() if distinct else queryset
 
     def filter_for_project(self, project: Project, queryset=None):
         if queryset is None:
@@ -186,6 +196,8 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
+        query = self
+
         if isinstance(org_unit, OrgUnit):
             query = models.Q(path__descendants=str(org_unit.path))
         elif isinstance(org_unit, models.QuerySet):
@@ -215,7 +227,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         )
         return queryset.filter(version_id__in=version_ids)
 
-    def filter_for_user(self, user):
+    def filter_for_user(self, user: User) -> "OrgUnitQuerySet":
         return self.filter_for_user_and_app_id(user, None)
 
     def filter_for_user_and_app_id(

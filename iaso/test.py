@@ -150,7 +150,9 @@ class IasoTestCaseMixin:
         return [user, anon, user_no_perms]
 
     @staticmethod
-    def create_account_datasource_version_project(source_name, account_name, project_name, app_id=None):
+    def create_account_datasource_version_project(
+        source_name, account_name, project_name, app_id=None
+    ) -> tuple[m.Account, m.DataSource, m.SourceVersion, m.Project]:
         """Create a project and all related data: account, data source, source version"""
         data_source = m.DataSource.objects.create(name=source_name)
         source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
@@ -159,7 +161,7 @@ class IasoTestCaseMixin:
         project = m.Project.objects.create(name=project_name, app_id=app_id, account=account)
         data_source.projects.set([project])
 
-        return [account, data_source, source_version, project]
+        return account, data_source, source_version, project
 
     @staticmethod
     def create_org_unit_type(name, projects, category=None):

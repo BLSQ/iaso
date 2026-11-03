@@ -332,7 +332,8 @@ class EntityViewSet(ModelViewSet):
         return Response({"count": queryset.count()})
 
     def destroy(self, request, pk=None):
-        entity = Entity.objects_include_deleted.get(pk=pk)
+        queryset = Entity.objects_include_deleted.filter_for_user(request.user).distinct()
+        entity = get_object_or_404(queryset, pk=pk)
 
         entity = entity.soft_delete_with_instances_and_pending_duplicates(
             audit_source=ENTITY_API,

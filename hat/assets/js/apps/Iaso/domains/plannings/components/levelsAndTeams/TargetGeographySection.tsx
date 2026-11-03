@@ -27,7 +27,12 @@ const styles = {
     },
 } satisfies SxStyles;
 
-const CreateTeamButton: FC<{ onClick: () => void }> = ({ onClick }) => {
+type CreateTeamButtonProps = {
+    onClick: () => void;
+    disabled?: boolean;
+};
+
+const CreateTeamButton: FC<CreateTeamButtonProps> = ({ onClick, disabled }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <Stack
@@ -39,7 +44,12 @@ const CreateTeamButton: FC<{ onClick: () => void }> = ({ onClick }) => {
             <Typography variant="body2" color="text.secondary">
                 {formatMessage(MESSAGES.or)}
             </Typography>
-            <Button size="small" startIcon={<AddIcon />} onClick={onClick}>
+            <Button
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={onClick}
+                disabled={disabled}
+            >
                 {formatMessage(MESSAGES.createNewRootTeam)}
             </Button>
         </Stack>
@@ -123,13 +133,22 @@ export const TargetGeographySection: FC = () => {
                         options={teamsDropdown ?? []}
                         loading={isFetchingTeams}
                         disabled={isReadOnly || !values.project}
+                        helperText={
+                            values.project
+                                ? undefined
+                                : formatMessage(
+                                      MESSAGES.selectProjectToPickRootTeam,
+                                  )
+                        }
                         withMarginTop={false}
                     />
                     {!isReadOnly && (
                         <CreateRootTeamModal
                             dialogType="create"
                             defaultValues={{ project: values.project }}
+                            lockedFields={['project', 'parent']}
                             onSuccess={onTeamCreated}
+                            iconProps={{ disabled: !values.project }}
                         />
                     )}
                 </Grid>

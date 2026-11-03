@@ -90,6 +90,7 @@ export const MissionItem: FC<Props> = ({ mission, status }) => {
                     <IconButton
                         size="small"
                         component={LinkWithLocation}
+                        target="_blank"
                         to={`/${baseUrls.missionsDetails}/id/${mission.id}`}
                     >
                         <VisibilityOutlinedIcon

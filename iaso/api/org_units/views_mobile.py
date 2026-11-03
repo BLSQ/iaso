@@ -76,7 +76,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except Project.DoesNotExist:
             return None
 
-    def get_queryset(self):
+    def get_queryset(self, filter_valid_org_units=True):
         user = self.request.user
         project = self.project
         if project is None:
@@ -91,16 +91,19 @@ class MobileOrgUnitViewSet(ModelViewSet):
             org_units = OrgUnit.objects.filter_for_user_and_project(self.request.user, project)
         else:
             org_units = OrgUnit.objects.filter_for_user_and_project(None, project)
+
         queryset = (
-            org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
-            .order_by("path")
-            .annotate(
+            org_units.annotate(
                 parent_validation_status=F("parent__validation_status"),
                 parent_org_unit_type_id=F("parent__org_unit_type_id"),
                 org_unit_type_name_annotated=F("org_unit_type__name"),
             )
+            .order_by("path")
             .prefetch_related("groups")
         )
+        if filter_valid_org_units:
+            queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
+
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
             queryset = queryset.annotate(
@@ -130,17 +133,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         ids = request.query_params.get(IDS, None)
         if ids is not None:
             ids = ids.split(",")
-            queryset = (
-                OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
-                .order_by("path")
-                .annotate(
-                    parent_validation_status=F("parent__validation_status"),
-                    parent_org_unit_type_id=F("parent__org_unit_type_id"),
-                    org_unit_type_name_annotated=F("org_unit_type__name"),
-                )
-                .prefetch_related("groups")
-                .filter(id__in=ids)
-            )
+            queryset = self.get_queryset(filter_valid_org_units=False).filter(id__in=ids)
             if len(queryset) != len(ids):
                 return HttpResponseNotFound("One or more IDs were not found.")
             serializer = self.get_serializer(queryset, many=True)

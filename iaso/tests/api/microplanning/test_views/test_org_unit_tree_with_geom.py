@@ -458,9 +458,15 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
                 "category": self.org_unit_type.category,
             },
         )
-        self.assertIsNotNone(children["geom"])
-        self.assertIsNotNone(children["location"])
-        self.assertIsNotNone(children["simplified_geom"])
+        self.assertEqual(
+            children["geom"],
+            {"coordinates": [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]], "type": "MultiPolygon"},
+        )
+        self.assertEqual(children["location"], {"coordinates": [4.0, 50.0, 100.0], "type": "Point"})
+        self.assertEqual(
+            children["simplified_geom"],
+            {"coordinates": [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]], "type": "MultiPolygon"},
+        )
 
         # checking at level 2 to see if the filters are well applied
         # tree should be
@@ -563,9 +569,15 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
                 "category": self.org_unit_type.category,
             },
         )
-        self.assertIsNotNone(root["simplified_geom"])
-        self.assertIsNotNone(root["geom"])
-        self.assertIsNotNone(root["location"])
+        self.assertEqual(
+            root["geom"],
+            {"coordinates": [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]], "type": "MultiPolygon"},
+        )
+        self.assertEqual(root["location"], {"coordinates": [4.0, 50.0, 100.0], "type": "Point"})
+        self.assertEqual(
+            root["simplified_geom"],
+            {"coordinates": [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]], "type": "MultiPolygon"},
+        )
 
         # checking children_2_1
         children = root["children"]
@@ -585,9 +597,9 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
                 "category": self.org_unit_type_2.category,
             },
         )
-        self.assertIsNone(root["simplified_geom"])
-        self.assertIsNone(root["geom"])
-        self.assertIsNone(root["location"])
+        self.assertIsNone(children["simplified_geom"])
+        self.assertIsNone(children["geom"])
+        self.assertIsNone(children["location"])
 
         # checking at level 2 to see if the filters are well applied
         # tree should be
@@ -595,7 +607,7 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
 
         data = {"level": 2}
 
-        res = self.client.get(self.get_url(pk=self.planning_2.pk))
+        res = self.client.get(self.get_url(pk=self.planning_2.pk), data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
 

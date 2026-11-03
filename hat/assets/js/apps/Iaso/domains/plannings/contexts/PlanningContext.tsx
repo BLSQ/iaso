@@ -165,17 +165,26 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     );
 
     // Drop the param once applied so a reload doesn't add the mission again.
-    const { tab } = useParamsObject(baseUrls.planningDetails);
+    const { accountId, tab } = useParamsObject(baseUrls.planningDetails);
     const redirectToReplace = useRedirectToReplace();
     useEffect(() => {
         if (!newMission) return;
         addMissions([newMission]);
         redirectToReplace(baseUrls.planningDetails, {
+            accountId,
             planningId: planning && `${planning.id}`,
             mode,
             tab,
         });
-    }, [newMission, addMissions, redirectToReplace, planning, mode, tab]);
+    }, [
+        newMission,
+        addMissions,
+        redirectToReplace,
+        accountId,
+        planning,
+        mode,
+        tab,
+    ]);
 
     const isReadOnly = Boolean(planning?.deprecated);
     const canSave =

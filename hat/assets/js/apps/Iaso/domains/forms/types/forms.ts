@@ -19,6 +19,16 @@ type Project = {
     updated_at: string;
     needs_authentication: boolean;
 };
+
+type FormOrgUnitType = {
+    id: number;
+    depth: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    sub_unit_types: FormOrgUnitType[];
+};
+
 // https://xlsform.org/en/#question-types
 export type FieldType =
     | 'integer'
@@ -80,7 +90,7 @@ export type Form = {
     form_id: string;
     device_field: string;
     location_field: string;
-    org_unit_types: string;
+    org_unit_types: FormOrgUnitType[];
     org_unit_type_ids: number[];
     org_unit_groups: { id: number; name: string }[];
     org_unit_group_ids: number[];

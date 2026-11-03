@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { CalendarMonth, HourglassEmpty, Settings } from '@mui/icons-material';
-import { Box, Button, Chip, Paper, Typography } from '@mui/material';
+import { Box, Button, Chip, Grid, Paper, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
@@ -25,13 +25,6 @@ const styles: SxStyles = {
         py: 1.5,
         bgcolor: 'background.paper',
     },
-    line: {
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        columnGap: 2,
-        rowGap: 0.5,
-    },
     deadline: {
         display: 'flex',
         alignItems: 'center',
@@ -40,14 +33,6 @@ const styles: SxStyles = {
             color: 'text.secondary',
             fontSize: 20,
         },
-    },
-    footer: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 2,
-        mt: 1,
     },
 };
 
@@ -59,62 +44,63 @@ export const DeadlineBanner: FunctionComponent<Props> = ({
     form,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // `org_unit_types` is a list of org unit types, despite its typing
-    const orgUnitTypes = (form?.org_unit_types as unknown as { name: string }[])
+    const orgUnitTypesString = form?.org_unit_types
         ?.map(orgUnitType => orgUnitType.name)
         .join(', ');
     return (
         <Paper sx={styles.root}>
-            <Box sx={styles.line}>
-                <Box sx={styles.deadline}>
-                    <CalendarMonth />
-                    <Typography variant="body2">
-                        <FormattedMessage
-                            {...MESSAGES.deadline}
-                            values={{
-                                period: periodLabel,
-                                deadline: formatDate(period.deadline),
-                                b: chunks => <b>{chunks}</b>,
-                            }}
-                        />
-                    </Typography>
-                </Box>
-                <Typography variant="body2" color="text.secondary">
-                    {formatMessage(MESSAGES.deadlineDetails, {
-                        days: `${period.grace_period_days}`,
-                        periodEnd: formatDate(period.end),
-                    })}
-                </Typography>
-                {orgUnitTypes && (
+            <Grid container>
+                <Grid item xs={8}>
+                    <Box sx={styles.deadline}>
+                        <CalendarMonth />
+                        <Typography variant="body2">
+                            <FormattedMessage
+                                {...MESSAGES.deadline}
+                                values={{
+                                    period: periodLabel,
+                                    deadline: formatDate(period.deadline),
+                                    b: chunks => <b>{chunks}</b>,
+                                }}
+                            />
+                        </Typography>
+                    </Box>
                     <Typography variant="body2" color="text.secondary">
-                        {formatMessage(MESSAGES.configuredFor, {
-                            orgUnitTypes,
+                        {formatMessage(MESSAGES.deadlineDetails, {
+                            days: `${period.grace_period_days}`,
+                            periodEnd: formatDate(period.end),
                         })}
                     </Typography>
-                )}
-            </Box>
-            <Box sx={styles.footer}>
-                {period.is_provisional && (
-                    <Chip
-                        size="small"
-                        icon={<HourglassEmpty />}
-                        label={formatMessage(MESSAGES.periodProvisional)}
-                    />
-                )}
-                {form?.id && (
-                    <DisplayIfUserHasPerm permissions={[FORMS]}>
-                        <Button
+                    {orgUnitTypesString && (
+                        <Typography variant="body2" color="text.secondary">
+                            {formatMessage(MESSAGES.configuredFor, {
+                                orgUnitTypesString,
+                            })}
+                        </Typography>
+                    )}
+                </Grid>
+                <Grid item xs={4} sx={{ textAlign: 'right' }}>
+                    {period.is_provisional && (
+                        <Chip
                             size="small"
-                            color="primary"
-                            startIcon={<Settings />}
-                            component={RouterLink}
-                            to={`/${baseUrls.formDetail}/formId/${form.id}`}
-                        >
-                            {formatMessage(MESSAGES.formSettings)}
-                        </Button>
-                    </DisplayIfUserHasPerm>
-                )}
-            </Box>
+                            icon={<HourglassEmpty />}
+                            label={formatMessage(MESSAGES.periodProvisional)}
+                        />
+                    )}
+                    {form?.id && (
+                        <DisplayIfUserHasPerm permissions={[FORMS]}>
+                            <Button
+                                size="small"
+                                color="primary"
+                                startIcon={<Settings />}
+                                component={RouterLink}
+                                to={`/${baseUrls.formDetail}/formId/${form.id}`}
+                            >
+                                {formatMessage(MESSAGES.formSettings)}
+                            </Button>
+                        </DisplayIfUserHasPerm>
+                    )}
+                </Grid>
+            </Grid>
         </Paper>
     );
 };

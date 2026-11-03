@@ -4,12 +4,11 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
 from django.core.cache import cache
 from django.db.models import F
-from django.db.models.expressions import Func, RawSQL, Value
+from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
-from django_ltree.fields import PathField
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -93,16 +92,13 @@ class MobileOrgUnitViewSet(ModelViewSet):
         else:
             org_units = OrgUnit.objects.filter_for_user_and_project(None, project)
 
-        # compute subpath to get the path of the parent org unit (get rid of curernt org unit ID at the end of the path)
-        parent_path = Func(F("path"), Value(0), Value(-1), function="subpath", output_field=PathField())
         queryset = (
             org_units.annotate(
                 parent_validation_status=F("parent__validation_status"),
                 parent_org_unit_type_id=F("parent__org_unit_type_id"),
                 org_unit_type_name_annotated=F("org_unit_type__name"),
-                parent_path=parent_path,
             )
-            .order_by("parent_path", "id")
+            .order_by("path")
             .prefetch_related("groups")
         )
         if filter_valid_org_units:

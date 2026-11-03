@@ -4,11 +4,12 @@ from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
 from django.core.cache import cache
 from django.db.models import F
-from django.db.models.expressions import RawSQL
+from django.db.models.expressions import Func, RawSQL, Value
 from django.db.models.functions import Cast
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.utils.functional import cached_property
+from django_ltree.fields import PathField
 from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -76,7 +77,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except Project.DoesNotExist:
             return None
 
-    def get_queryset(self):
+    def get_queryset(self, filter_valid_org_units=True):
         user = self.request.user
         project = self.project
         if project is None:
@@ -91,16 +92,22 @@ class MobileOrgUnitViewSet(ModelViewSet):
             org_units = OrgUnit.objects.filter_for_user_and_project(self.request.user, project)
         else:
             org_units = OrgUnit.objects.filter_for_user_and_project(None, project)
+
+        # compute subpath to get the path of the parent org unit (get rid of curernt org unit ID at the end of the path)
+        parent_path = Func(F("path"), Value(0), Value(-1), function="subpath", output_field=PathField())
         queryset = (
-            org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
-            .order_by("path")
-            .annotate(
+            org_units.annotate(
                 parent_validation_status=F("parent__validation_status"),
                 parent_org_unit_type_id=F("parent__org_unit_type_id"),
                 org_unit_type_name_annotated=F("org_unit_type__name"),
+                parent_path=parent_path,
             )
+            .order_by("parent_path", "id")
             .prefetch_related("groups")
         )
+        if filter_valid_org_units:
+            queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
+
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
             queryset = queryset.annotate(
@@ -130,17 +137,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         ids = request.query_params.get(IDS, None)
         if ids is not None:
             ids = ids.split(",")
-            queryset = (
-                OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
-                .order_by("path")
-                .annotate(
-                    parent_validation_status=F("parent__validation_status"),
-                    parent_org_unit_type_id=F("parent__org_unit_type_id"),
-                    org_unit_type_name_annotated=F("org_unit_type__name"),
-                )
-                .prefetch_related("groups")
-                .filter(id__in=ids)
-            )
+            queryset = self.get_queryset(filter_valid_org_units=False).filter(id__in=ids)
             if len(queryset) != len(ids):
                 return HttpResponseNotFound("One or more IDs were not found.")
             serializer = self.get_serializer(queryset, many=True)

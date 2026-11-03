@@ -214,6 +214,20 @@ class PlanningDropdownTestCase(SwaggerTestCaseMixin, APITestCase):
             [{"value": self.planning_other_account.id, "label": self.planning_other_account.name, "deprecated": False}],
         )
 
+    def test_should_not_see_soft_deleted_plannings(self):
+        self.client.force_authenticate(self.user_other_account)
+        res = self.client.get(self.url)
+
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidData(res_data, 1)
+
+        self.planning_other_account.delete()
+        self.assertSoftDeleted(self.planning_other_account)
+
+        res = self.client.get(self.url)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidData(res_data, 0)
+
     def test_response(self):
         self.client.force_authenticate(user=self.superuser)
         res = self.client.get(self.url, data={"ordering": "-name"})

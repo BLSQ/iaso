@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any
-from unittest import skip
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db.models import F
@@ -355,11 +354,9 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(root["depth"], 3)
         self.assertEqual(len(root["children"]), 0)  # <= should be 2 here, but with max_depth, it's 0
 
-    @skip("IA-5599")
     def test_should_raise_404_if_planning_is_deleted_or_does_not_exist(self):
         self.planning.delete()
-        self.planning.refresh_from_db()
-        self.assertIsNone(self.planning.deleted_at)
+        self.assertSoftDeleted(self.planning)
 
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url())

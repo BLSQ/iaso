@@ -149,7 +149,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             health_facility_type_id = org_unit_type
 
     campaign = iaso_client.post(
-        "/api/microplanning/plannings/",
+        "/api/plannings/plannings/",
         {
             "name": "Campagne Carte Sanitaire",
             "forms": [planning_form["id"]],
@@ -177,7 +177,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         )
 
         iaso_client.post(
-            "/api/microplanning/assignments/",
+            "/api/plannings/assignments/",
             json={
                 "planning": campaign["id"],
                 "org_unit": health_facitity["id"],
@@ -188,7 +188,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     print(campaign)
 
     campaign_of_teams_of_teams = iaso_client.post(
-        "/api/microplanning/plannings/",
+        "/api/plannings/plannings/",
         json={
             "name": "Campaign Polio",
             "forms": [planning_form["id"]],
@@ -214,7 +214,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         print(f"Assigning {facility['name']} to {sub_team['name']}...")
         try:
             iaso_client.post(
-                "/api/microplanning/assignments/",
+                "/api/plannings/assignments/",
                 json={
                     "planning": campaign_of_teams_of_teams["id"],
                     "org_unit": facility["id"],

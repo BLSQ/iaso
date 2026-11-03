@@ -486,6 +486,8 @@ class MobileOrgUnitAPITestCase(APITestCase):
                     positions[org_unit["id"]],
                     f"Org unit {org_unit['id']} is listed before its parent {parent_id}",
                 )
+            elif parent_id:
+                self.fail(f"Org unit {org_unit['id']} has parent_id {parent_id} which is not in the list of org units")
 
     def test_org_unit_have_correct_parent_id_without_limit_with_shape(self):
         self.client.force_authenticate(self.user)

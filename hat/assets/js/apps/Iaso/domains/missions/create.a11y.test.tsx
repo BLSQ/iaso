@@ -62,16 +62,11 @@ vi.mock('Iaso/domains/users/utils', async () => {
     };
 });
 
-const { mockRedirectTo } = vi.hoisted(() => {
-    return { mockRedirectTo: vi.fn() };
-});
-
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =
         await importOriginal<typeof import('bluesquare-components')>();
     return {
         ...actual,
-        useRedirectTo: () => mockRedirectTo,
         useRedirectToReplace: () => vi.fn(),
     };
 });

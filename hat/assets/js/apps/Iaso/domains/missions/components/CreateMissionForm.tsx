@@ -49,12 +49,12 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                 required
                 sx={{ mx: 0, my: 1 }}
             />
-            {/* <Field
+            <Field
                 label={formatMessage(MESSAGES.description)}
                 name="description"
                 component={TextInput}
                 sx={{ mx: 0, my: 1 }}
-            /> */}
+            />
             <Field
                 label={formatMessage(MESSAGES.missionType)}
                 name={'mission_type'}

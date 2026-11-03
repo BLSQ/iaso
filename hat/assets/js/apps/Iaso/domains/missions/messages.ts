@@ -246,6 +246,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.maxPerEntity',
         defaultMessage: 'Max / entity',
     },
+    formFillingDescription: {
+        id: 'iaso.missions.label.formFillingDescription',
+        defaultMessage:
+            'Submit forms on the existing org units assigned to the agent.',
+    },
+    orgUnitAndFormDescription: {
+        id: 'iaso.missions.label.orgUnitAndFormDescription',
+        defaultMessage:
+            'Create new org units in the assigned area, then submit forms on each of them.',
+    },
+    entityAndFormDescription: {
+        id: 'iaso.missions.label.entityAndFormDescription',
+        defaultMessage:
+            'Register new entities (e.g. beneficiaries) in the assigned area, then submit forms on each of them.',
+    },
 });
 
 export default MESSAGES;

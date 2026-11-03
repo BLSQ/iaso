@@ -90,22 +90,19 @@ const MISSION_TYPE_OPTIONS = [
         value: MissionTypeDa2Enum.enum.FORM_FILLING,
         Icon: DescriptionIcon,
         labelMessage: MESSAGES.form,
-        descriptionMessage:
-            'Submit forms on the existing org units assigned to the agent.',
+        descriptionMessage: MESSAGES.formFillingDescription,
     },
     {
         value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
         Icon: LocationOnIcon,
         labelMessage: MESSAGES.orgUnitAndFormChip,
-        descriptionMessage:
-            'Submit forms on the existing org units assigned to the agent.',
+        descriptionMessage: MESSAGES.orgUnitAndFormDescription,
     },
     {
         value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
         Icon: AssignmentIndIcon,
         labelMessage: MESSAGES.entityAndFormChip,
-        descriptionMessage:
-            'Register new entities (e.g. beneficiaries) in the assigned area, then submit forms on each of them.',
+        descriptionMessage: MESSAGES.entityAndFormDescription,
     },
 ] as const;
 
@@ -186,7 +183,7 @@ export const MissionTypeCardsInput = <TFieldValue, TValues>({
                                     {optionLabel}
                                 </Typography>
                                 <Typography variant="caption" textAlign="left">
-                                    {descriptionMessage}
+                                    {formatMessage(descriptionMessage)}
                                 </Typography>
                             </ButtonBase>
                         );

@@ -161,6 +161,7 @@ export const HierarchyDialogs: FC<HierarchyDialogsProps> = ({
                         project: projectId,
                         parent: dialog.parent.id,
                     }}
+                    lockedFields={['project', 'parent']}
                     closeDialog={closeDialog}
                     onSuccess={onTeamCreated}
                 />

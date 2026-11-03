@@ -6,6 +6,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { MainWrapper } from './MainWrapper';
 
 const HEADER_HEIGHT = '80px';
+export const GREY_PAGE_BODY_PADDING_Y = 4;
 
 const styles = {
     root: {
@@ -34,7 +35,7 @@ const styles = {
         boxSizing: 'border-box',
         height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px - ${HEADER_HEIGHT})`,
         overflow: 'auto',
-        py: 4,
+        py: GREY_PAGE_BODY_PADDING_Y,
     },
     body: {
         display: 'flex',

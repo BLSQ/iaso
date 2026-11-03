@@ -42,6 +42,8 @@ import { useTeamValidation } from '../validation';
 
 type ModalMode = 'create' | 'edit';
 
+type LockableField = 'project' | 'parent';
+
 type Props = {
     id?: number;
     dialogType: ModalMode;
@@ -49,6 +51,7 @@ type Props = {
     closeDialog: () => void;
     defaultValues?: Pick<Partial<Team>, 'project' | 'parent'>;
     onSuccess?: (team: Team) => void;
+    lockedFields?: LockableField[];
 };
 
 const formatTitle = (
@@ -72,6 +75,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     closeDialog,
     defaultValues,
     onSuccess,
+    lockedFields = [],
 }) => {
     const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
@@ -233,6 +237,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     required
                     options={projectsDropdown}
                     loading={isFetchingProjects}
+                    disabled={lockedFields.includes('project')}
                 />
                 <InputComponent
                     keyValue="description"
@@ -298,6 +303,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                     options={availableParents}
                     loading={isFetchingTeams}
                     multi={false}
+                    disabled={lockedFields.includes('parent')}
                 />
             </ConfirmCancelModal>
         </FormikProvider>

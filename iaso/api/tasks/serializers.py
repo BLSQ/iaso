@@ -27,15 +27,24 @@ class TaskSerializer(serializers.ModelSerializer):
             "name",
             "should_be_killed",
             "progress_message",
+            "external",
+            "heartbeat_at",
         ]
 
-        read_only_fields = ["launcher_name"]
+        read_only_fields = ["launcher_name", "external"]
 
     created_by = UserSerializer(read_only=True)
     launcher = UserSerializer(read_only=True)
     ended_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     started_at = TimestampField(read_only=True)
+    heartbeat_at = serializers.SerializerMethodField(
+        help_text="Last time the worker running the task reported it was alive. Null if no worker holds the task."
+    )
+
+    def get_heartbeat_at(self, task):
+        lease = getattr(task, "lease", None)
+        return lease.heartbeat_at.timestamp() if lease else None
 
     def update(self, task, validated_data):
         if validated_data["should_be_killed"] is not None:

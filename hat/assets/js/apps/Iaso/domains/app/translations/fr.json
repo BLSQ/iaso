@@ -791,6 +791,7 @@
     "iaso.label.execute": "Exécuter",
     "iaso.label.exitFullscreen": "Quitter le plein écran",
     "iaso.label.export": "Export",
+    "iaso.label.exportFormat": "Exporter {format}",
     "iaso.label.exportRequests": "Demandes d'export",
     "iaso.label.exportSelection": "Exporter {count} soumissions",
     "iaso.label.featureDisabled": "Fonctionnalité temporairement désactivée",

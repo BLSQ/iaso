@@ -43,11 +43,12 @@ const FORM_EXTRA_FIELDS = [
     'org_unit_types',
     'org_unit_type_ids',
     'org_unit_group_ids',
+    'project_ids',
 ];
 
 const styles: SxStyles = {
     root: {
-        backgroundColor: theme => theme.palette.background.blueGrey,
+        backgroundColor: theme => theme.palette.primary.background,
         p: 4,
     },
     filters: {
@@ -57,15 +58,31 @@ const styles: SxStyles = {
         mt: 2,
         p: 2,
     },
+    totalsHeader: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 1,
+    },
+    totalsIcon: {
+        color: 'text.secondary',
+        fontSize: 18,
+        // Optically align the icon with the first line of text.
+        mt: '1px',
+        flexShrink: 0,
+    },
+    totalsContent: {
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        minWidth: 0,
+    },
     totalsTitle: {
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
         gap: 1,
         mb: 1,
         color: 'text.secondary',
-        '& svg': {
-            fontSize: 18,
-        },
     },
     tableHeader: {
         display: 'flex',
@@ -187,23 +204,29 @@ export const Promptness: FunctionComponent = () => {
                                     form={selectedForm}
                                 />
                                 <Paper sx={styles.totals}>
-                                    <Box sx={styles.totalsTitle}>
-                                        <AccountTree />
-                                        <Typography variant="body2">
-                                            {formatMessage(MESSAGES.totalsFor)}
-                                        </Typography>
-                                        <OrgUnitPath
-                                            orgUnit={currentOrgUnit}
-                                            rootId={params.parentId}
-                                        />
-                                        <Typography variant="body2">
-                                            {`· ${periodLabel}`}
-                                        </Typography>
+                                    <Box sx={styles.totalsHeader}>
+                                        <AccountTree sx={styles.totalsIcon} />
+                                        <Box sx={styles.totalsContent}>
+                                            <Box sx={styles.totalsTitle}>
+                                                <Typography variant="body2">
+                                                    {formatMessage(
+                                                        MESSAGES.totalsFor,
+                                                    )}
+                                                </Typography>
+                                                <OrgUnitPath
+                                                    orgUnit={currentOrgUnit}
+                                                    rootId={params.parentId}
+                                                />
+                                                <Typography variant="body2">
+                                                    {`· ${periodLabel}`}
+                                                </Typography>
+                                            </Box>
+                                            <TotalsCards
+                                                totals={summary.totals}
+                                                orgUnitName={currentOrgUnitName}
+                                            />
+                                        </Box>
                                     </Box>
-                                    <TotalsCards
-                                        totals={summary.totals}
-                                        orgUnitName={currentOrgUnitName}
-                                    />
                                 </Paper>
                             </>
                         )}

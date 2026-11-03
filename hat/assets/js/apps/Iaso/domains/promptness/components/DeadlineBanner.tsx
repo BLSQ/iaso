@@ -27,12 +27,28 @@ const styles: SxStyles = {
     },
     deadline: {
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 1,
         '& svg': {
             color: 'text.secondary',
             fontSize: 20,
+            // Optically align the icon with the first line of text.
+            mt: '1px',
+            flexShrink: 0,
         },
+    },
+    deadlineText: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.5,
+        minWidth: 0,
+    },
+    actions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 1,
     },
 };
 
@@ -53,32 +69,37 @@ export const DeadlineBanner: FunctionComponent<Props> = ({
                 <Grid item xs={8}>
                     <Box sx={styles.deadline}>
                         <CalendarMonth />
-                        <Typography variant="body2">
-                            <FormattedMessage
-                                {...MESSAGES.deadline}
-                                values={{
-                                    period: periodLabel,
-                                    deadline: formatDate(period.deadline),
-                                    b: chunks => <b>{chunks}</b>,
-                                }}
-                            />
-                        </Typography>
+                        <Box sx={styles.deadlineText}>
+                            <Typography variant="body2">
+                                <FormattedMessage
+                                    {...MESSAGES.deadline}
+                                    values={{
+                                        period: periodLabel,
+                                        deadline: formatDate(period.deadline),
+                                        b: chunks => <b>{chunks}</b>,
+                                    }}
+                                />
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {formatMessage(MESSAGES.deadlineDetails, {
+                                    days: `${period.grace_period_days}`,
+                                    periodEnd: formatDate(period.end),
+                                })}
+                            </Typography>
+                            {orgUnitTypesString && (
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                >
+                                    {formatMessage(MESSAGES.configuredFor, {
+                                        orgUnitTypes: orgUnitTypesString,
+                                    })}
+                                </Typography>
+                            )}
+                        </Box>
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
-                        {formatMessage(MESSAGES.deadlineDetails, {
-                            days: `${period.grace_period_days}`,
-                            periodEnd: formatDate(period.end),
-                        })}
-                    </Typography>
-                    {orgUnitTypesString && (
-                        <Typography variant="body2" color="text.secondary">
-                            {formatMessage(MESSAGES.configuredFor, {
-                                orgUnitTypesString,
-                            })}
-                        </Typography>
-                    )}
                 </Grid>
-                <Grid item xs={4} sx={{ textAlign: 'right' }}>
+                <Grid item xs={4} sx={styles.actions}>
                     {period.is_provisional && (
                         <Chip
                             size="small"

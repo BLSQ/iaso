@@ -51,7 +51,7 @@ export const TotalsCards: FunctionComponent<Props> = ({
     const formatCount = useFormatCount();
     if (!totals.is_applicable) {
         return (
-            <Typography color="text.secondary">
+            <Typography color="text.secondary" variant="body2">
                 {formatMessage(MESSAGES.notApplicable)}
             </Typography>
         );

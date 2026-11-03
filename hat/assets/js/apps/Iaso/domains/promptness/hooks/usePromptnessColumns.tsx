@@ -71,7 +71,7 @@ export const usePromptnessColumns = (
                 Cell: ({ row: { original } }: CellProps) => (
                     <Box display="flex" alignItems="center" gap={1}>
                         {/* Keep the names aligned when there is no drill down */}
-                        <Box width={36} flexShrink={0}>
+                        <Box width={36} flexShrink={0} sx={{ mr: 1 }}>
                             {original.has_children && (
                                 <IconButtonComponent
                                     url={genUrl({

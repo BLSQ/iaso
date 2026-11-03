@@ -1,12 +1,33 @@
+import { createElement, ReactNode } from 'react';
+import { Theme, ThemeProvider } from '@mui/material';
+import { renderHook } from '@testing-library/react';
 import { textPlaceholder } from 'bluesquare-components';
 import { describe, expect, it } from 'vitest';
-import { PROMPTNESS_STATUSES } from './constants';
+import {
+    PROMPTNESS_STATUSES,
+    STATUS_LATE,
+    STATUS_MISSING,
+    STATUS_ON_TIME,
+} from './constants';
+import { PromptnessStatus } from './types';
 import {
     formatPercent,
     getDefaultOrder,
-    getNotApplicableTypeIds,
     getSelectedStatuses,
+    getStatusColor,
+    useGetStatusColor,
 } from './utils';
+
+// Distinct sentinel values, so a status mapped to the wrong
+// palette entry (e.g. error instead of warning) fails the test
+const theme = {
+    palette: {
+        success: { main: 'success-main' },
+        warning: { main: 'warning-main' },
+        error: { main: 'error-main' },
+        grey: { 600: 'grey-600' },
+    },
+} as unknown as Theme;
 
 describe('getSelectedStatuses', () => {
     it('returns all the statuses when there is no status filter', () => {
@@ -73,57 +94,43 @@ describe('formatPercent', () => {
     });
 });
 
-describe('getNotApplicableTypeIds', () => {
-    const orgUnitTypes = [
-        { id: 1, depth: 0 },
-        { id: 2, depth: 1 },
-        { id: 3, depth: 2 },
-        { id: 4, depth: 3 },
-        { id: 5, depth: 4 },
-    ];
-
-    it('returns the types at or below the shallowest target type', () => {
-        expect(getNotApplicableTypeIds(orgUnitTypes, [4])).toEqual([5]);
-        expect(getNotApplicableTypeIds(orgUnitTypes, [3])).toEqual([4, 5]);
+describe('getStatusColor', () => {
+    it('returns the success color for on time submissions', () => {
+        expect(getStatusColor(theme, STATUS_ON_TIME)).toBe('success-main');
     });
 
-    it('never returns the target types', () => {
-        expect(getNotApplicableTypeIds(orgUnitTypes, [3, 5])).toEqual([4]);
+    it('returns the warning color for late submissions', () => {
+        expect(getStatusColor(theme, STATUS_LATE)).toBe('warning-main');
     });
 
-    it('uses the shallowest target type when there are several', () => {
-        expect(getNotApplicableTypeIds(orgUnitTypes, [5, 2])).toEqual([3, 4]);
+    it('returns the error color for missing submissions', () => {
+        expect(getStatusColor(theme, STATUS_MISSING)).toBe('error-main');
     });
 
-    it('returns nothing when the form has no target type', () => {
-        expect(getNotApplicableTypeIds(orgUnitTypes)).toEqual([]);
-        expect(getNotApplicableTypeIds(orgUnitTypes, [])).toEqual([]);
+    it('falls back to grey for unknown statuses', () => {
+        const unknownStatus = 'UNKNOWN' as unknown as PromptnessStatus;
+        expect(getStatusColor(theme, unknownStatus)).toBe('grey-600');
+    });
+});
+
+describe('useGetStatusColor', () => {
+    const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(ThemeProvider, { theme }, children);
+
+    it('returns a function mapping statuses to the theme colors', () => {
+        const { result } = renderHook(() => useGetStatusColor(), {
+            wrapper,
+        });
+        expect(result.current(STATUS_ON_TIME)).toBe('success-main');
+        expect(result.current(STATUS_LATE)).toBe('warning-main');
+        expect(result.current(STATUS_MISSING)).toBe('error-main');
     });
 
-    it('returns nothing when the form targets org unit groups', () => {
-        expect(getNotApplicableTypeIds(orgUnitTypes, [3], [10])).toEqual([]);
-    });
-
-    it('returns nothing when the target types have no depth', () => {
-        const typesWithoutDepth = [
-            { id: 1, depth: null },
-            { id: 2 },
-            { id: 3, depth: 2 },
-        ];
-        expect(getNotApplicableTypeIds(typesWithoutDepth, [1, 2])).toEqual([]);
-    });
-
-    it('ignores the target types that are not in the list', () => {
-        expect(getNotApplicableTypeIds(orgUnitTypes, [99])).toEqual([]);
-        expect(getNotApplicableTypeIds(orgUnitTypes, [99, 4])).toEqual([5]);
-    });
-
-    it('never returns the types without depth', () => {
-        const types = [...orgUnitTypes, { id: 6, depth: null }, { id: 7 }];
-        expect(getNotApplicableTypeIds(types, [4])).toEqual([5]);
-    });
-
-    it('returns nothing when there are no org unit types', () => {
-        expect(getNotApplicableTypeIds([], [4])).toEqual([]);
+    it('falls back to grey for unknown statuses', () => {
+        const { result } = renderHook(() => useGetStatusColor(), {
+            wrapper,
+        });
+        const unknownStatus = 'UNKNOWN' as unknown as PromptnessStatus;
+        expect(result.current(unknownStatus)).toBe('grey-600');
     });
 });

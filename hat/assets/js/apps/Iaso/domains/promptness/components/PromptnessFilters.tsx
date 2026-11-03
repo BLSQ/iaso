@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Button, Chip, Grid, Typography } from '@mui/material';
-import { CsvSvg, useSafeIntl } from 'bluesquare-components';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { ColorChip, CsvSvg, useSafeIntl } from 'bluesquare-components';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
@@ -18,14 +18,12 @@ import {
     CSV_EXPORT_ENABLED,
     ORG_UNIT_FIELDS,
     PROMPTNESS_STATUSES,
-    STATUS_CHIP_COLORS,
     STATUS_MESSAGES,
 } from '../constants';
 import { getPromptnessCsvUrl } from '../hooks/api/usePromptnessStats';
 import MESSAGES from '../messages';
 import { PromptnessRouterParams, PromptnessStatus } from '../types';
-import { getNotApplicableTypeIds } from '../utils';
-import { OrgUnitTypeOption } from './OrgUnitTypeOption';
+import { useGetStatusColor } from '../utils';
 
 type Props = {
     params: PromptnessRouterParams;
@@ -68,10 +66,19 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         setFilters,
         setFiltersUpdated,
     } = useFilterState({ baseUrl, params, saveSearchInHistory: false });
-
+    const getStatusColor = useGetStatusColor();
+    const selectedForm = useMemo(
+        () =>
+            forms?.find(form => `${form.value}` === `${filters.formId ?? ''}`)
+                ?.original,
+        [forms, filters.formId],
+    );
     const { data: initialParent } = useGetOrgUnit(orgUnitId, ORG_UNIT_FIELDS);
     const { data: orgUnitTypes, isFetching: isFetchingTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+        useGetOrgUnitTypesDropdownOptions({
+            projectIds: selectedForm?.project_ids,
+            enabled: Boolean(selectedForm),
+        });
 
     const onChangeStatus = useCallback(
         (keyValue: string, value?: string) => {
@@ -83,12 +90,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const selectedForm = useMemo(
-        () =>
-            forms?.find(form => `${form.value}` === `${filters.formId ?? ''}`)
-                ?.original,
-        [forms, filters.formId],
-    );
     const periodType = selectedForm?.period_type ?? PERIOD_TYPE_PLACEHOLDER;
     const periodTypeLabel = selectedForm?.period_type
         ? formatMessage(
@@ -103,35 +104,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         }
         return [];
     };
-
-    const notApplicableTypeIds = useMemo(
-        () =>
-            getNotApplicableTypeIds(
-                (orgUnitTypes ?? []).map(type => type.original),
-                selectedForm?.org_unit_type_ids,
-                selectedForm?.org_unit_group_ids,
-            ),
-        [orgUnitTypes, selectedForm],
-    );
-
-    const renderOrgUnitTypeOption = useCallback(
-        (
-            props: Record<string, any>,
-            option: Record<string, any>,
-            state?: { selected: boolean },
-        ) => (
-            <OrgUnitTypeOption
-                key={option.value}
-                optionProps={props}
-                label={option.label}
-                selected={Boolean(state?.selected)}
-                notApplicable={notApplicableTypeIds.includes(
-                    Number(option.value),
-                )}
-            />
-        ),
-        [notApplicableTypeIds],
-    );
 
     const statusOptions = useMemo(
         () =>
@@ -149,15 +121,14 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
             getTagProps: (args: { index: number }) => Record<string, unknown>,
         ) =>
             tags.map((tag, index) => (
-                <Chip
+                <ColorChip
                     {...getTagProps({ index })}
                     key={tag.value}
                     label={tag.label}
-                    color={STATUS_CHIP_COLORS[tag.value]}
-                    size="medium"
+                    color={getStatusColor(tag.value)}
                 />
             )),
-        [],
+        [getStatusColor],
     );
 
     const handleChangeForm = useCallback(
@@ -197,7 +168,7 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} lg={2}>
+                <Grid item xs={12} sm={6} lg={4}>
                     <InputComponent
                         type="select"
                         keyValue="formId"
@@ -209,6 +180,19 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                         errors={getFormErrors()}
                         placeholder={formatMessage(MESSAGES.selectForm)}
                         required
+                    />
+                    <InputComponent
+                        type="select"
+                        keyValue="status"
+                        onChange={onChangeStatus}
+                        value={filters.status ?? PROMPTNESS_STATUSES.join(',')}
+                        label={MESSAGES.status}
+                        options={statusOptions}
+                        helperText={formatMessage(MESSAGES.statusInfo)}
+                        renderTags={renderStatusTags}
+                        clearable={false}
+                        required
+                        multi
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} lg={4}>
@@ -249,15 +233,13 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                         )}
                     </Box>
                 </Grid>
-                <Grid item xs={12} sm={6} lg={2}>
+                <Grid item xs={12} sm={6} lg={4}>
                     <OrgUnitTreeviewModal
                         titleMessage={MESSAGES.parent}
                         onConfirm={handleChangeParent}
                         initialSelection={initialParent}
                         required
                     />
-                </Grid>
-                <Grid item xs={12} sm={6} lg={2}>
                     <InputComponent
                         type="select"
                         keyValue="orgUnitTypeIds"
@@ -277,22 +259,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                                 ? MESSAGES.orgUnitTypesSelectedInfo
                                 : MESSAGES.orgUnitTypesInfo,
                         )}
-                        renderOption={renderOrgUnitTypeOption}
-                        multi
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} lg={2}>
-                    <InputComponent
-                        type="select"
-                        keyValue="status"
-                        onChange={onChangeStatus}
-                        value={filters.status ?? PROMPTNESS_STATUSES.join(',')}
-                        label={MESSAGES.status}
-                        options={statusOptions}
-                        helperText={formatMessage(MESSAGES.statusInfo)}
-                        renderTags={renderStatusTags}
-                        clearable={false}
-                        required
                         multi
                     />
                 </Grid>

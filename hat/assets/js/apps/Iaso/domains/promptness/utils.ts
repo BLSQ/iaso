@@ -1,5 +1,14 @@
+import { useCallback } from 'react';
+import { Theme, useTheme } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
-import { DEFAULT_ORDERS, PROMPTNESS_STATUSES } from './constants';
+import {
+    DEFAULT_ORDERS,
+    PROMPTNESS_STATUSES,
+    STATUS_LATE,
+    STATUS_MISSING,
+    STATUS_ON_TIME,
+} from './constants';
+import { PromptnessStatus } from './types';
 
 export const getSelectedStatuses = (status?: string): string[] =>
     status ? status.split(',') : PROMPTNESS_STATUSES;
@@ -21,29 +30,26 @@ export const formatPercent = (value?: number | null): string =>
         ? textPlaceholder
         : `${Math.round(value)}%`;
 
-type OrgUnitTypeWithDepth = { id: number; depth?: number | null };
+export const getStatusColor = (
+    theme: Theme,
+    status: PromptnessStatus,
+): string => {
+    switch (status) {
+        case STATUS_ON_TIME:
+            return theme.palette.success.main;
+        case STATUS_LATE:
+            return theme.palette.warning.main;
+        case STATUS_MISSING:
+            return theme.palette.error.main;
+        default:
+            return theme.palette.grey[600];
+    }
+};
 
-// Org unit types under which nothing can be expected for the form: not a target type,
-// and at or below the level of the shallowest target type (so no target below them).
-// Forms targeting org unit groups can have targets of any type: nothing is excluded.
-export const getNotApplicableTypeIds = (
-    orgUnitTypes: OrgUnitTypeWithDepth[],
-    targetTypeIds: number[] = [],
-    targetGroupIds: number[] = [],
-): number[] => {
-    if (targetGroupIds.length > 0) return [];
-    const targetDepths = orgUnitTypes
-        .filter(type => targetTypeIds.includes(type.id))
-        .map(type => type.depth)
-        .filter((depth): depth is number => typeof depth === 'number');
-    if (targetDepths.length === 0) return [];
-    const minTargetDepth = Math.min(...targetDepths);
-    return orgUnitTypes
-        .filter(
-            type =>
-                !targetTypeIds.includes(type.id) &&
-                typeof type.depth === 'number' &&
-                type.depth >= minTargetDepth,
-        )
-        .map(type => type.id);
+export const useGetStatusColor = () => {
+    const theme = useTheme();
+    return useCallback(
+        (status: PromptnessStatus): string => getStatusColor(theme, status),
+        [theme],
+    );
 };

@@ -467,7 +467,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
     def index_by_id(self, org_units: list[dict]) -> dict[int, dict]:
         return {org_unit["id"]: org_unit for org_unit in org_units}
 
-    def assert_parents_listed_before_children(self, org_units: list[dict]):
+    def assert_parents_listed_before_children(self, org_units: list[dict], allow_missing_parent: bool = False):
         """
         The API orders org units by `path`, an ltree whose labels (org unit IDs) are compared as *text*
         (e.g. "100" < "99"). The relative order of siblings therefore depends on the IDs given by the DB sequence,
@@ -486,7 +486,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                     positions[org_unit["id"]],
                     f"Org unit {org_unit['id']} is listed before its parent {parent_id}",
                 )
-            elif parent_id:
+            elif parent_id and not allow_missing_parent:
                 self.fail(f"Org unit {org_unit['id']} has parent_id {parent_id} which is not in the list of org units")
 
     def test_org_unit_have_correct_parent_id_without_limit_with_shape(self):
@@ -692,7 +692,10 @@ class MobileOrgUnitAPITestCase(APITestCase):
         )
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        self.assert_parents_listed_before_children(response_data["orgUnits"])
+        self.assert_parents_listed_before_children(
+            response_data["orgUnits"],
+            allow_missing_parent=True,  # we don't ask for Goku's parent (Bardock) so we allow missing parent in this case
+        )
         org_units = self.index_by_id(response_data["orgUnits"])
         self.assertCountEqual(org_units.keys(), [self.goku.id, self.gohan.id, self.goten.id])
         self.assertEqual(org_units[self.goku.id]["validation_status"], OrgUnit.VALIDATION_REJECTED)

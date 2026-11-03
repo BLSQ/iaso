@@ -284,3 +284,11 @@ class PlanningConfigUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             reverse("planning_configs-detail", kwargs={"pk": self.planning_config_other_account.pk}), data={}
         )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_planning_config_where_planning_is_soft_deleted_should_raise_a_404(self):
+        self.planning.delete()
+        self.assertSoftDeleted(self.planning)
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.patch(reverse("planning_configs-detail", kwargs={"pk": self.planning_config.id}), data={})
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)

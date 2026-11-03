@@ -1749,3 +1749,35 @@ class WebEntityAPITestCase(EntityAPITestCase):
             inst.refresh_from_db()
             self.assertTrue(inst.deleted)
         self.assertEqual(m.EntityDuplicate.objects.count(), 1)  # only pending removed
+
+    def test_delete_entity_of_other_account_returns_404(self):
+        """
+        DELETE /api/entities/pk/ on an entity of another account must not
+        touch the entity nor its instances.
+        """
+        self.client.force_authenticate(self.yop_solo)
+
+        ent_ref_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        ent = Entity.objects.create(
+            entity_type=self.entity_type,
+            attributes=ent_ref_instance,
+            account=self.account,
+        )
+        ent_ref_instance.entity = ent
+        ent_ref_instance.save()
+        inst = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, entity=ent)
+
+        response = self.client.delete(f"/api/entities/{ent.id}/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        ent.refresh_from_db()
+        self.assertIsNone(ent.deleted_at)
+        for instance in [ent_ref_instance, inst]:
+            instance.refresh_from_db()
+            self.assertFalse(instance.deleted)
+
+    def test_delete_unknown_entity_returns_404(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.delete("/api/entities/999999999/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

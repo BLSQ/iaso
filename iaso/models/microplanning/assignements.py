@@ -8,7 +8,9 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 class AssignmentQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        return self.filter(planning__project__account=user.iaso_profile.account)
+        return self.filter(
+            Q(planning__deleted_at__isnull=True) & Q(planning__project__account=user.iaso_profile.account)
+        )
 
 
 class Assignment(SoftDeletableModel):

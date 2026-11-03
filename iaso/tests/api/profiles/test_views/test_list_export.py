@@ -1,6 +1,8 @@
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
 
+from iaso import models as m
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_USERS_ADMIN_PERMISSION,
@@ -186,5 +188,70 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                     5: self.sub_unit_type.pk,
                     6: None,
                 },
+            },
+        )
+
+    def test_profile_list_export_multi_valued_columns_are_ordered_by_id(self):
+        """
+        Each multi-valued column lists its items by id, whatever the order they were added in
+        (and, for teams, whatever their name), and skips soft-deleted teams.
+        """
+        belgium_type = m.OrgUnitType.objects.create(name="Belgium type")
+        france_type = m.OrgUnitType.objects.create(name="France type")
+        belgium = m.OrgUnit.objects.create(name="Belgium", org_unit_type=belgium_type, source_ref="BE")
+        france = m.OrgUnit.objects.create(name="France", org_unit_type=france_type, source_ref="FR")
+        project_belgium = m.Project.objects.create(name="Project Belgium", app_id="belgium", account=self.account)
+        project_france = m.Project.objects.create(name="Project France", app_id="france", account=self.account)
+        role_belgium = m.UserRole.objects.create(
+            group=Group.objects.create(name=f"{self.account.pk}_Role Belgium"), account=self.account
+        )
+        role_france = m.UserRole.objects.create(
+            group=Group.objects.create(name=f"{self.account.pk}_Role France"), account=self.account
+        )
+        # Created first but named last: the export follows ids, not the `Team` default ordering by name.
+        team_z = m.Team.objects.create(project=self.project, name="Z team", manager=self.jim)
+        team_a = m.Team.objects.create(project=self.project, name="A team", manager=self.jim)
+        deleted_team = m.Team.objects.create(project=self.project, name="Deleted team", manager=self.jim)
+
+        user = self.create_user_with_profile(username="belgian", account=self.account)
+        profile = user.iaso_profile
+        # Added one at a time, highest id first, so that the M2M rows aren't in id order.
+        for org_unit in [france, belgium]:
+            profile.org_units.add(org_unit)
+        for org_unit_type in [france_type, belgium_type]:
+            profile.editable_org_unit_types.add(org_unit_type)
+        for role in [role_france, role_belgium]:
+            profile.user_roles.add(role)
+        for project in [project_france, project_belgium]:
+            profile.projects.add(project)
+        for team in [deleted_team, team_a, team_z]:
+            team.users.add(user)
+        deleted_team.delete()
+
+        self.client.force_authenticate(self.jim)
+        response = self.client.get(reverse("profiles-export-csv"))
+        csv_rows = self.assertCsvFileResponse(response, expected_name="users.csv", streaming=True, return_as_lists=True)
+
+        header = csv_rows[0]
+        row = next(row for row in csv_rows if row[header.index("username")] == "belgian")
+        self.assertDictEqual(
+            {
+                column: row[header.index(column)]
+                for column in [
+                    "orgunit",
+                    "orgunit__source_ref",
+                    "user_roles",
+                    "projects",
+                    "teams",
+                    "editable_org_unit_types",
+                ]
+            },
+            {
+                "orgunit": f"{belgium.pk},{france.pk}",
+                "orgunit__source_ref": "BE,FR",
+                "user_roles": "Role Belgium,Role France",
+                "projects": "Project Belgium,Project France",
+                "teams": "Z team,A team",
+                "editable_org_unit_types": f"{belgium_type.pk},{france_type.pk}",
             },
         )

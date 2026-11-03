@@ -9,6 +9,7 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_MANAGED_PERMISSION,
 )
 from iaso.tests.api.profiles.test_views.common import BaseProfileAPITestCase
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 class ProfileListExportAPITestCase(BaseProfileAPITestCase):
@@ -255,3 +256,38 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                 "editable_org_unit_types": f"{belgium_type.pk},{france_type.pk}",
             },
         )
+
+    def assertExportQueryCount(self, export_url: str, expected_profile_queries: int):
+        """
+        The export queries each relation once for all the profiles (7 in the fixture), not once per profile:
+        - iaso_profile: the profiles, joined with their user (+ a COUNT for the CSV, streamed page by page);
+        - auth_permission: the requester's user and group permissions (permission check), then the prefetched
+          permissions of the exported users;
+        - iaso_orgunit, iaso_orgunittype, iaso_userrole (joined with its group), iaso_project, iaso_team:
+          one prefetch each.
+        """
+        self.client.force_authenticate(self.jim)
+        with QueryProfiler(trace_tables=["iaso_profile", "auth_user", "iaso_account"]) as profiler:
+            response = self.client.get(export_url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            if response.streaming:
+                b"".join(response.streaming_content)
+
+        with profiler.report_on_failure(title="Profiles export query report"):
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_profile": expected_profile_queries,
+                    "auth_permission": 3,
+                    "iaso_orgunit": 1,
+                    "iaso_orgunittype": 1,
+                    "iaso_userrole": 1,
+                    "iaso_project": 1,
+                    "iaso_team": 1,
+                }
+            )
+
+    def test_profile_list_export_as_csv_query_count(self):
+        self.assertExportQueryCount(reverse("profiles-export-csv"), expected_profile_queries=2)
+
+    def test_profile_list_export_as_xlsx_query_count(self):
+        self.assertExportQueryCount(reverse("profiles-export-xlsx"), expected_profile_queries=1)

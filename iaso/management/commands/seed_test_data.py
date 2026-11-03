@@ -41,6 +41,7 @@ from iaso.models import (
     Instance,
     Mapping,
     MappingVersion,
+    MissionForm,
     OrgUnitType,
     Profile,
     Project,
@@ -865,8 +866,12 @@ class Command(BaseCommand):
         print("country ", country.name)
 
         p = Planning.objects.create(project=project, name="planning-cvs", team=team_main, org_unit=country)
-        form_cvs = Form.objects.filter(name__startswith="Community Verification Satisfaction")
-        p.forms.set(form_cvs)
+        form_cvs = project.forms.filter(name__startswith="Community Verification Satisfaction")
+        mission_cvs, _created = MissionForm.objects.get_or_create(
+            name="mission-cvs", account=project.account, defaults={"created_by": user}
+        )
+        mission_cvs.forms.set(form_cvs)
+        p.missions.set([mission_cvs])
 
         child_index = 0
         for region in country.children():

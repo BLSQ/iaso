@@ -1,0 +1,49 @@
+<?xml version='1.0' ?>
+<data id="{{ form_id }}" version="{{ version_id }}">
+  <q_background_audio>{{ answers.q_background_audio }}</q_background_audio>
+  <g_scalars>
+    <q_integer>{{ answers.q_integer }}</q_integer>
+    <q_decimal>{{ answers.q_decimal }}</q_decimal>
+    <q_range>{{ answers.q_range }}</q_range>
+    <q_text>{{ answers.q_text }}</q_text>
+    <q_barcode>{{ answers.q_barcode }}</q_barcode>
+    <q_date>{{ answers.q_date }}</q_date>
+    <q_time>{{ answers.q_time }}</q_time>
+    <q_datetime>{{ answers.q_datetime }}</q_datetime>
+    <q_geopoint>{{ answers.q_geopoint }}</q_geopoint>
+    <q_geotrace>{{ answers.q_geotrace }}</q_geotrace>
+    <q_geoshape>{{ answers.q_geoshape }}</q_geoshape>
+    <q_start>{{ answers.q_start }}</q_start>
+    <q_end>{{ answers.q_end }}</q_end>
+    <q_acknowledge>{{ answers.q_acknowledge }}</q_acknowledge>
+  </g_scalars>
+  <g_selects>
+    <q_select_one_underscore>{{ answers.q_select_one_underscore }}</q_select_one_underscore>
+    <q_select_one_space>{{ answers.q_select_one_space }}</q_select_one_space>
+    <q_select_multiple_underscore>{{ answers.q_select_multiple_underscore }}</q_select_multiple_underscore>
+    <q_select_all_that_apply>{{ answers.q_select_all_that_apply }}</q_select_all_that_apply>
+    <q_rank>{{ answers.q_rank }}</q_rank>
+  </g_selects>
+  <g_media>
+    <q_image>{{ answers.q_image }}</q_image>
+    <q_photo>{{ answers.q_photo }}</q_photo>
+    <q_audio>{{ answers.q_audio }}</q_audio>
+    <q_video>{{ answers.q_video }}</q_video>
+    <q_file>{{ answers.q_file }}</q_file>
+  </g_media>
+  <g_special>
+    <q_calculate>{{ answers.q_calculate }}</q_calculate>
+    <deviceid>{{ answers.deviceid }}</deviceid>
+    <subscriberid>{{ answers.subscriberid }}</subscriberid>
+    <simserial>{{ answers.simserial }}</simserial>
+    <phonenumber>{{ answers.phonenumber }}</phonenumber>
+  </g_special>
+  <household_count>{{ answers.household_count }}</household_count>
+  {% for member in answers.household %}
+  <household>
+    <member_name>{{ member.member_name }}</member_name>
+    <member_age>{{ member.member_age }}</member_age>
+  </household>
+  {% endfor %}
+  <meta><instanceID>{{ instance_id }}</instanceID></meta>
+</data>

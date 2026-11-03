@@ -69,8 +69,16 @@ class TaskSerializerSerializerTestCase(TestCase):
                 "name": "org_unit_bulk_update",
                 "should_be_killed": False,
                 "progress_message": None,
+                "external": False,
+                "heartbeat_at": None,
             },
         )
+
+    def test_serialize_heartbeat_of_running_task(self):
+        m.TaskLease.objects.create(task=self.task, heartbeat_at=CREATED_AT)
+        self.task.refresh_from_db()
+        serializer = TaskSerializer(self.task)
+        self.assertEqual(serializer.data["heartbeat_at"], CREATED_AT.timestamp())
 
 
 @time_machine.travel(CREATED_AT, tick=True)

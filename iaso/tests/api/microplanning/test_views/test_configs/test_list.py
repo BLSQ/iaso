@@ -127,9 +127,7 @@ class NestedPlanningConfigListAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
     def test_should_raise_a_404_if_planning_is_soft_deleted(self):
         self.planning.delete()
-        self.planning.refresh_from_db()
-
-        self.assertIsNotNone(self.planning.deleted_at)
+        self.assertSoftDeleted(self.planning)
 
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url())

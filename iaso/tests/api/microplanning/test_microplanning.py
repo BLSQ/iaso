@@ -7,6 +7,7 @@ from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.db import IntegrityError
 from django.utils.timezone import now
 from rest_framework import status
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 from hat.audit.models import Modification
 from iaso.api.microplanning.serializers import (
@@ -15,6 +16,7 @@ from iaso.api.microplanning.serializers import (
     PlanningOrgUnitTableAssignmentUserSerializer,
     PlanningWriteSerializer,
 )
+from iaso.api.microplanning.views import AssignmentViewSet, PlanningSamplingResultViewSet
 from iaso.models import (
     Account,
     DataSource,
@@ -1613,6 +1615,40 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(r["id"], root.id)
         self.assertTrue(r["has_geo_json"])
 
+    def test_planning_sampling_viewset_queryset_does_not_include_soft_deleted_plannings(self):
+        group = Group.objects.create(name="Sampling group", source_version=self.org_unit.version)
+        group.org_units.add(self.org_unit)
+        task = Task.objects.create(
+            name="sampling",
+            account=self.account,
+            created_by=self.user,
+        )
+        sampling = PlanningSamplingResult.objects.create(
+            planning=self.planning,
+            task=task,
+            pipeline_id="pipeline-1",
+            pipeline_version="v1",
+            group=group,
+            parameters={"foo": "bar"},
+            created_by=self.user,
+        )
+
+        rf = APIRequestFactory()
+        request = rf.get("/api/microplanning/samplings/", format="json")
+        force_authenticate(request, user=self.user)
+
+        view = PlanningSamplingResultViewSet()
+        view.action_map = {"get": "list"}
+        view.request = view.initialize_request(request)
+
+        self.assertEqual(view.get_queryset().count(), 1)
+        self.assertIn(sampling, view.get_queryset())
+
+        sampling.planning.delete()
+        self.assertSoftDeleted(sampling.planning)
+
+        self.assertEqual(view.get_queryset().count(), 0)
+
 
 class AssignmentAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
@@ -1708,7 +1744,7 @@ class AssignmentAPITestCase(APITestCase):
             ended_at="2025-01-10",
         )
         cls.planning.target_org_unit_types.set([org_unit_type])
-        Assignment.objects.create(
+        cls.assignment = Assignment.objects.create(
             planning=cls.planning,
             user=cls.user,
             org_unit=cls.child1,
@@ -2265,6 +2301,23 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
         self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
+    def test_assignment_view_set_queryset_does_not_include_soft_deleted_plannings(self):
+        rf = APIRequestFactory()
+        request = rf.get("/api/microplanning/assignments/", format="json")
+        force_authenticate(request, user=self.user)
+
+        view = AssignmentViewSet()
+        view.action_map = {"get": "list"}
+        view.request = view.initialize_request(request)
+
+        self.assertEqual(view.get_queryset().count(), 1)
+        self.assertIn(self.assignment, view.get_queryset())
+
+        self.assignment.planning.delete()
+        self.assertSoftDeleted(self.assignment.planning)
+
+        self.assertEqual(view.get_queryset().count(), 0)
 
 
 class MicroplanningSwaggerTestCase(SwaggerTestCaseMixin, APITestCase):

@@ -112,7 +112,7 @@ class V2MobilePlanningListAPITestCase(APITestCase):
             org_unit=cls.child1,
         )
 
-        p = Planning.objects.create(
+        cls.planning_2 = p = Planning.objects.create(
             project=project1,
             name="planning2",
             team=team1,
@@ -149,7 +149,7 @@ class V2MobilePlanningListAPITestCase(APITestCase):
         p5.assignment_set.create(org_unit=cls.child3, user=user)
         p5.assignment_set.create(org_unit=cls.child4, user=user)
 
-        p6 = Planning.objects.create(
+        cls.planning_6 = p6 = Planning.objects.create(
             project=project1,
             name="planning6",
             team=team1,
@@ -222,9 +222,17 @@ class V2MobilePlanningListAPITestCase(APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
 
         self.assertValidData(res_data, 3)
+        self.assertEqual(
+            [x["id"] for x in res_data["plannings"]], [self.planning_6.id, self.planning_2.id, self.planning.id]
+        )
 
-        Planning.objects.all().delete()
-        self.assertTrue(all([x.deleted_at is not None for x in Planning.objects.values_list("deleted_at", flat=True)]))
+        self.planning_6.delete()
+        self.planning_2.delete()
+        self.planning.delete()
+
+        self.assertSoftDeleted(self.planning_6)
+        self.assertSoftDeleted(self.planning_2)
+        self.assertSoftDeleted(self.planning)
 
         res = self.client.get(reverse("v2_mobileplanning-list"))
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)

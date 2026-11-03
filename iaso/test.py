@@ -32,6 +32,7 @@ from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 from hat.api_import.models import APIImport
 from iaso import models as m
 from iaso.permissions.base import PERMISSION_CLASSES, IasoPermission
+from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class IasoTestCaseMixin:
@@ -329,7 +330,13 @@ class APIAssertionsMixin:
             return response.json()
 
 
-class APITestCase(BaseAPITestCase, IasoTestCaseMixin, APIAssertionsMixin):
+class IasoModelTestMixin(BaseTestCase):
+    def assertSoftDeleted(self, obj: SoftDeletableModel) -> None:
+        obj.refresh_from_db()
+        self.assertIsNotNone(obj.deleted_at)
+
+
+class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, BaseAPITestCase):
     client: APIClient
 
     def setUp(self):

@@ -54,8 +54,12 @@ describe('TaskBaseInfo', () => {
         const task = makeTask({
             result: 'SUCCESS',
             data: {
-                file: 'export.zip',
-                expires_at: new Date(2026, 9, 17, 14, 0).toISOString(),
+                files: [
+                    {
+                        file: 'export.zip',
+                        expires_at: new Date(2026, 9, 17, 14, 0).toISOString(),
+                    },
+                ],
             },
         });
 
@@ -77,8 +81,12 @@ describe('TaskBaseInfo', () => {
         const task = makeTask({
             result: 'SUCCESS',
             data: {
-                file: 'export.zip',
-                expires_at: new Date(2026, 9, 12, 9, 0).toISOString(),
+                files: [
+                    {
+                        file: 'export.zip',
+                        expires_at: new Date(2026, 9, 12, 9, 0).toISOString(),
+                    },
+                ],
             },
         });
 
@@ -108,7 +116,11 @@ describe('TaskBaseInfo', () => {
         const task = makeTask({
             result: 'SUCCESS',
             data: {
-                expires_at: new Date(2026, 9, 17, 14, 0).toISOString(),
+                files: [
+                    {
+                        expires_at: new Date(2026, 9, 17, 14, 0).toISOString(),
+                    },
+                ],
             } as TaskResult['data'],
         });
 

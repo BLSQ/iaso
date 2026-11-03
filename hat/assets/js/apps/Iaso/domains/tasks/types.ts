@@ -36,10 +36,14 @@ export type TaskResultFile = {
     expires_at?: string; // DateTime
 };
 
-// A file is reported either as "file:<name>", or as { file, expires_at } when it expires.
+export type TaskResultFiles = {
+    files: TaskResultFile[];
+};
+
+// Files are reported either as "file:<name>", or as { files: [{ file, expires_at }] } when they expire.
 export type TaskResult = {
     result: string;
-    data?: Nullable<string | TaskResultFile>;
+    data?: Nullable<string | TaskResultFiles>;
 };
 
 export type TaskLog = {

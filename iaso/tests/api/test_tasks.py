@@ -551,23 +551,29 @@ class IasoTasksTestCase(APITestCase):
         task.report_success_with_file(message="Exported", file_name="export-files/export.zip", expires_at=expires_at)
         return task
 
-    def test_result_file(self):
+    def test_result_files(self):
         task = m.Task(account=self.account, name="Export")
-        for result, expected_file in [
-            (None, None),
-            ({"result": SUCCESS, "data": None}, None),
-            ({"result": SUCCESS, "data": "Some message"}, None),
-            ({"result": SUCCESS, "data": "file:export-files/export.zip"}, "export-files/export.zip"),
-            ({"result": SUCCESS, "data": {"file": "export-files/export.zip"}}, "export-files/export.zip"),
-            ({"result": SUCCESS, "data": {"rows": 12}}, None),
+        for result, expected_files in [
+            (None, []),
+            ({"result": SUCCESS, "data": None}, []),
+            ({"result": SUCCESS, "data": "Some message"}, []),
+            ({"result": SUCCESS, "data": {"rows": 12}}, []),
+            ({"result": SUCCESS, "data": {"file": "export.zip"}}, []),
+            ({"result": SUCCESS, "data": {"files": "export.zip"}}, []),
+            ({"result": SUCCESS, "data": {"files": []}}, []),
+            ({"result": SUCCESS, "data": "file:export-files/export.zip"}, ["export-files/export.zip"]),
+            ({"result": SUCCESS, "data": {"files": [{"file": "a.zip"}, {"file": "b.csv"}]}}, ["a.zip", "b.csv"]),
+            # Malformed entries are ignored
+            (
+                {"result": SUCCESS, "data": {"files": ["a.zip", {"file": ""}, {"name": "b.csv"}, {"file": "c.csv"}]}},
+                ["c.csv"],
+            ),
         ]:
             with self.subTest(result=result):
                 task.result = result
-                self.assertEqual(task.result_file, expected_file)
-                self.assertIsNone(task.result_file_expires_at)
-                self.assertFalse(task.result_file_expired)
+                self.assertEqual(task.result_files, [m.TaskResultFile(file=file) for file in expected_files])
 
-    def test_result_file_expires_at(self):
+    def test_result_files_expires_at(self):
         expires_at = CREATED_AT + datetime.timedelta(days=7)
         task = m.Task(account=self.account, name="Export")
         for raw_expires_at, expected in [
@@ -575,24 +581,29 @@ class IasoTasksTestCase(APITestCase):
             ("2023-12-27T15:00:00Z", expires_at),
             ("2023-12-27T16:00:00+01:00", expires_at),
             ("2023-12-27T15:00:00", expires_at),  # without an offset, the default timezone (UTC) is used
+            (None, None),
             ("next week", None),
             ("2023-13-45T15:00:00Z", None),
+            (1703689200, None),
         ]:
             with self.subTest(expires_at=raw_expires_at):
-                task.result = {"result": SUCCESS, "data": {"file": "export.zip", "expires_at": raw_expires_at}}
-                self.assertEqual(task.result_file_expires_at, expected)
+                task.result = {
+                    "result": SUCCESS,
+                    "data": {"files": [{"file": "export.zip", "expires_at": raw_expires_at}]},
+                }
+                self.assertEqual(task.result_files, [m.TaskResultFile(file="export.zip", expires_at=expected)])
 
     def test_result_file_expired(self):
-        task = m.Task(account=self.account, name="Export")
-        task.result = {"result": SUCCESS, "data": {"file": "export.zip", "expires_at": "2023-12-27T15:00:00Z"}}
         expires_at = CREATED_AT + datetime.timedelta(days=7)
+        self.assertFalse(m.TaskResultFile(file="export.zip").expired)
+        result_file = m.TaskResultFile(file="export.zip", expires_at=expires_at)
         for now, expected_expired in [
             (expires_at - datetime.timedelta(seconds=1), False),
             (expires_at, True),
             (expires_at + datetime.timedelta(days=1), True),
         ]:
             with self.subTest(now=now), time_machine.travel(now, tick=False):
-                self.assertEqual(task.result_file_expired, expected_expired)
+                self.assertEqual(result_file.expired, expected_expired)
 
     def test_report_success_with_file(self):
         task = self.create_task_with_file()
@@ -601,8 +612,7 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(task.progress_message, "Exported")
         # Files that do not expire keep the original format, which other consumers rely on.
         self.assertEqual(task.result, {"result": SUCCESS, "data": "file:export-files/export.zip"})
-        self.assertEqual(task.result_file, "export-files/export.zip")
-        self.assertIsNone(task.result_file_expires_at)
+        self.assertEqual(task.result_files, [m.TaskResultFile(file="export-files/export.zip")])
 
     def test_report_success_with_file_and_expiry(self):
         expires_at = CREATED_AT + datetime.timedelta(days=7)
@@ -612,11 +622,10 @@ class IasoTasksTestCase(APITestCase):
             task.result,
             {
                 "result": SUCCESS,
-                "data": {"file": "export-files/export.zip", "expires_at": "2023-12-27T15:00:00+00:00"},
+                "data": {"files": [{"file": "export-files/export.zip", "expires_at": "2023-12-27T15:00:00+00:00"}]},
             },
         )
-        self.assertEqual(task.result_file, "export-files/export.zip")
-        self.assertEqual(task.result_file_expires_at, expires_at)
+        self.assertEqual(task.result_files, [m.TaskResultFile(file="export-files/export.zip", expires_at=expires_at)])
 
     def test_report_success_with_file_and_naive_expiry(self):
         task = m.Task.objects.create(account=self.account, created_by=self.johnny, name="Export", status=RUNNING)
@@ -626,8 +635,8 @@ class IasoTasksTestCase(APITestCase):
         )
 
         # A naive date is assumed to be in the default timezone (UTC).
-        self.assertEqual(task.result["data"]["expires_at"], "2023-12-27T15:00:00+00:00")
-        self.assertEqual(task.result_file_expires_at, CREATED_AT + datetime.timedelta(days=7))
+        self.assertEqual(task.result["data"]["files"][0]["expires_at"], "2023-12-27T15:00:00+00:00")
+        self.assertEqual(task.result_files[0].expires_at, CREATED_AT + datetime.timedelta(days=7))
 
     @patch("iaso.api.tasks.views.generate_presigned_url_from_s3", return_value="https://s3/export.zip?signed")
     def test_presigned_url_without_expiry(self, mock_presign):

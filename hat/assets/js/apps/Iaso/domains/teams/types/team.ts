@@ -23,11 +23,9 @@ export type Team = {
     description?: string;
     manager: number;
     sub_teams: Array<number>;
-    sub_teams_details: Array<SubTeam>;
     project: number;
     type?: TeamType;
     users: Array<number>;
-    users_details: Array<User>;
     created_at: string;
     deleted_at?: string;
     parent?: number;

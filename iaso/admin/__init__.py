@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from .assignments import AssignmentAdmin  # noqa: F401
 from .base import IasoJSONEditorWidget  # noqa: F401
+from .devices import DeviceAdmin, DeviceLogAdmin  # noqa
 from .metric_admin import MetricTypeAdmin, MetricValueAdmin  # noqa
 from .missions import MissionWithFormsAdmin  # noqa
 from .openhexa_admin import OpenHEXAInstanceAdmin, OpenHEXAWorkspaceAdmin  # noqa

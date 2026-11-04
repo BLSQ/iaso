@@ -39,7 +39,9 @@ from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
 from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
 from .api.derived_instances import DerivedInstancesViewSet
-from .api.devices.views import DeviceLogsViewSet, DevicesPositionViewSet, DevicesViewSet
+from .api.devices.mobile.views import DeviceLogsViewSet
+from .api.devices.position.views import DevicesPositionViewSet
+from .api.devices.views import DevicesViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.enketo import (
     EnketoSubmissionAPIView,

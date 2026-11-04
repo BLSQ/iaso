@@ -278,6 +278,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                 {
                     "iaso_profile": expected_profile_queries,
                     "auth_permission": 3,
+                    "auth_group": 1,
                     "iaso_orgunit": 1,
                     "iaso_orgunittype": 1,
                     "iaso_userrole": 1,

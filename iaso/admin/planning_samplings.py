@@ -1,11 +1,9 @@
 from django.contrib import admin
 
-from iaso.admin.base import admin_attr_decorator
 from iaso.models.microplanning import PlanningSamplingResult
 
 
 @admin.register(PlanningSamplingResult)
-@admin_attr_decorator
 class PlanningSamplingResultAdmin(admin.ModelAdmin):
     raw_id_fields = ("planning", "group", "task", "created_by")
     readonly_fields = ("created_at", "parameters")

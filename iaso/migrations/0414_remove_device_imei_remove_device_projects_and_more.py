@@ -9,12 +9,10 @@ from django.db.models.expressions import F, Subquery
 
 
 def clean_up_devices(apps, schema_editor):
-    migrations.RunSQL("SET CONSTRAINTS ALL IMMEDIATE;")
     Device = apps.get_model("iaso", "Device")
     Device.objects.filter(imei__isnull=True).delete()
     subquery = Device.objects.filter(id=OuterRef("pk")).values("projects__account")[:1]
     Device.objects.annotate(first_account=Subquery(subquery)).update(account=F("first_account"))
-    migrations.RunSQL("SET CONSTRAINTS ALL DEFERRED;")
 
 
 class Migration(migrations.Migration):
@@ -31,7 +29,9 @@ class Migration(migrations.Migration):
                 null=True, on_delete=django.db.models.deletion.CASCADE, related_name="devices", to="iaso.account"
             ),
         ),
+        migrations.RunSQL("SET CONSTRAINTS ALL IMMEDIATE", reverse_sql="SET CONSTRAINTS ALL DEFERRED"),
         migrations.RunPython(clean_up_devices, migrations.RunPython.noop),
+        migrations.RunSQL("SET CONSTRAINTS ALL DEFERRED", reverse_sql="SET CONSTRAINTS ALL IMMEDIATE"),
         migrations.AlterField(
             model_name="device",
             name="imei",
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("data", models.JSONField(blank=True, null=True)),
                 ("app_id", models.CharField(max_length=250)),
-                ("app_version", models.CharField(max_length=10)),
+                ("app_version", models.CharField(max_length=25)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "device",
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
                 (
                     "user",
                     models.OneToOneField(
-                        null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                        null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
                     ),
                 ),
             ],

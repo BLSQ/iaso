@@ -1,14 +1,13 @@
-from typing import Optional
+from typing import Any, Optional
 
 import django_filters
 
-from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
 from django_filters import CharFilter
 
 from hat.settings import API_DATE_INPUT_FORMATS
 from iaso.api.utils.filters import NumberInFilter
-from iaso.models import Device, Team
+from iaso.models import Team
+from iaso.models.device import DeviceQuerySet
 
 
 class DeviceFilter(django_filters.FilterSet):
@@ -22,13 +21,18 @@ class DeviceFilter(django_filters.FilterSet):
     )
     app_version = CharFilter(field_name="logs__app_version", lookup_expr="icontains")
     app_id = CharFilter(field_name="logs__app_id", lookup_expr="icontains")
-    team = django_filters.NumberFilter(field_name="logs__team", method="team_search")
+    team = django_filters.ModelChoiceFilter(queryset=Team.objects.none(), method="team_search")
     project_ids = NumberInFilter(field_name="projects__id", lookup_expr="in")
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        user = getattr(kwargs.get("request"), "user", None)
+        if user:
+            self.form.fields["team"].queryset = Team.objects.filter_for_user(user=user).prefetch_related("users")
+
     @staticmethod
-    def team_search(queryset: QuerySet[Device], _: str, value: Optional[int]) -> QuerySet[Device]:
-        if value is None:
+    def team_search(queryset: DeviceQuerySet, _: str, value: Optional[Team]) -> DeviceQuerySet:
+        if not value:
             return queryset
 
-        team = get_object_or_404(Team, id=value)
-        return queryset.with_current_owner().filter(current_owner_id__in=[user.id for user in team.users.all()])
+        return queryset.with_current_owner().filter(current_owner_id__in=[user.id for user in value.users.all()])

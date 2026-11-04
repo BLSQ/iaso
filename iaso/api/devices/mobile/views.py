@@ -25,7 +25,7 @@ class DeviceLogsViewSet(GenericViewSet, CreateModelMixin):
     POST /api/mobile/devices/sync/
     """
 
-    permission_classes = [ProjectAuthenticationEnforcedPermission, AuthenticationEnforcedPermission]
+    permission_classes = [AuthenticationEnforcedPermission, ProjectAuthenticationEnforcedPermission]
     serializer_class = DeviceLogCreateSerializer
     queryset = DeviceLog.objects.none()
     http_method_names = ["post"]

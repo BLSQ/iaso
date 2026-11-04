@@ -1,4 +1,4 @@
-import { PaginatedPlanningConfigList } from 'Iaso/api/plannings';
+import { PaginatedNestedPlanningConfigListList } from 'Iaso/api/plannings';
 
 export type LevelGroup = {
     id: number;
@@ -40,5 +40,5 @@ export type LevelTypeError =
     | 'notDirectlyBelowLevelAbove';
 
 export type SavedPlanningConfig = NonNullable<
-    PaginatedPlanningConfigList['results']
+    PaginatedNestedPlanningConfigListList['results']
 >[number];

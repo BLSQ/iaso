@@ -65,21 +65,9 @@ export const MissionDetail = () => {
             >
                 <Stack spacing={3} sx={{ p: 3 }}>
                     <GeneralInfoSection mission={data} />
-                    {isMissionOrgUnitTypeRetrieve(data) && (
-                        <CreatedTypeSection
-                            missionType={data.mission_type}
-                            typeName={data.org_unit_type.name}
-                            minCardinality={data.min_cardinality}
-                            maxCardinality={data.max_cardinality}
-                        />
-                    )}
-                    {isMissionEntityTypeRetrieve(data) && (
-                        <CreatedTypeSection
-                            missionType={data.mission_type}
-                            typeName={data.entity_type.name}
-                            minCardinality={data.min_cardinality}
-                            maxCardinality={data.max_cardinality}
-                        />
+                    {(isMissionOrgUnitTypeRetrieve(data) ||
+                        isMissionEntityTypeRetrieve(data)) && (
+                        <CreatedTypeSection mission={data} />
                     )}
                     <FormWidgetPaper mission={data} />
                 </Stack>

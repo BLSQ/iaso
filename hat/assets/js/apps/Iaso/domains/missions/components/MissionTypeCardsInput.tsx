@@ -8,18 +8,11 @@ import { get } from 'lodash';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 import { MISSION_TYPE_OPTIONS } from './missionTypeOptions';
+import { missionStyles } from './styles';
 
 const styles: SxStyles = {
-    root: {
-        my: 1,
-    },
-    label: {
-        display: 'block',
-        mb: 1.5,
-        fontWeight: 600,
-        color: 'text.primary',
-        fontSize: '0.875rem',
-    },
+    root: missionStyles.fieldRoot,
+    label: missionStyles.fieldLabel,
     required: {
         color: 'error.main',
         ml: 0.25,

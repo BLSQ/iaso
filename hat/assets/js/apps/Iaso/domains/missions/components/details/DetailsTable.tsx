@@ -3,12 +3,22 @@ import {
     SxProps,
     Table,
     TableBody,
+    TableCell,
     TableContainer,
-    Theme,
+    TableRow,
 } from '@mui/material';
-import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
+import { textPlaceholder } from 'bluesquare-components';
 import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/utils';
+import { SxStyles } from 'Iaso/types/general';
 import { missionStyles } from '../styles';
+
+const styles: SxStyles = {
+    labelCell: {
+        width: LEFT_CELL_WIDTH,
+        backgroundColor: 'grey.50',
+        color: 'text.secondary',
+    },
+};
 
 type Props = {
     rows: { label: string; value: ReactNode }[];
@@ -16,22 +26,13 @@ type Props = {
 
 export const DetailsTable: FC<Props> = ({ rows }) => (
     <TableContainer sx={missionStyles.bordered}>
-        <Table
-            sx={
-                [
-                    missionStyles.borderedTable,
-                    missionStyles.detailsTable,
-                ] as SxProps<Theme>
-            }
-        >
+        <Table sx={missionStyles.borderedTable as SxProps}>
             <TableBody>
-                {rows.map(field => (
-                    <Row
-                        key={field.label}
-                        leftCellWidth={LEFT_CELL_WIDTH}
-                        showDivider={false}
-                        field={field}
-                    />
+                {rows.map(({ label, value }) => (
+                    <TableRow key={label}>
+                        <TableCell sx={styles.labelCell}>{label}</TableCell>
+                        <TableCell>{value || textPlaceholder}</TableCell>
+                    </TableRow>
                 ))}
             </TableBody>
         </Table>

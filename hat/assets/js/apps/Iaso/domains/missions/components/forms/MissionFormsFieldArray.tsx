@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-    Alert,
-    Box,
-    Stack,
-    Table,
-    TableBody,
-    TableContainer,
-} from '@mui/material';
+import { Alert, Box, Table, TableBody, TableContainer } from '@mui/material';
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
 import { Select, useSafeIntl } from 'bluesquare-components';
@@ -19,9 +12,15 @@ import {
 } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { FORMS_SECTION_MESSAGES } from '../missionTypeOptions';
 import { missionStyles } from '../styles';
+
+const styles: SxStyles = {
+    errors: { mt: 2 },
+    divider: { my: 2 },
+};
 import { MissionFormItem } from './MissionFormItem';
 import { MissionFormsTableHead } from './MissionFormsTableHead';
 
@@ -71,18 +70,13 @@ export const MissionFormsFieldArray = <
     const { minColumn, maxColumn } = FORMS_SECTION_MESSAGES[missionType];
     const [selectKey, setSelectKey] = React.useState(0);
 
-    const availableFormOptions = React.useMemo(
-        () =>
-            formsOptions?.filter(
-                e => !values.forms.map(f => f.form).includes(e.value),
-            ) ?? [],
-        [formsOptions, values.forms],
-    );
+    const availableFormOptions = React.useMemo(() => {
+        const selectedFormIds = new Set(values.forms.map(f => f.form));
+        return formsOptions?.filter(e => !selectedFormIds.has(e.value)) ?? [];
+    }, [formsOptions, values.forms]);
 
     const findFormOptionFromValue = React.useCallback(
-        (value: number) => {
-            return formsOptions?.filter(e => e.value === value)?.[0];
-        },
+        (value: number) => formsOptions?.find(e => e.value === value),
         [formsOptions],
     );
 
@@ -108,32 +102,28 @@ export const MissionFormsFieldArray = <
 
     return (
         <Box>
-            <Stack direction={'row'}>
-                <Box sx={{ width: '100%' }}>
-                    <Select
-                        key={selectKey}
-                        loading={isLoading}
-                        options={availableFormOptions}
-                        label={formatMessage(MESSAGES.addFormLabel)}
-                        placeholder={formatMessage(MESSAGES.addForm)}
-                        clearable
-                        value={null}
-                        keyValue={'add_form'}
-                        onChange={handleAddForm}
-                        {...formSelectProps}
-                    />
-                </Box>
-            </Stack>
+            <Select
+                key={selectKey}
+                loading={isLoading}
+                options={availableFormOptions}
+                label={formatMessage(MESSAGES.addFormLabel)}
+                placeholder={formatMessage(MESSAGES.addForm)}
+                clearable
+                value={null}
+                keyValue={'add_form'}
+                onChange={handleAddForm}
+                {...formSelectProps}
+            />
 
             <FormArrayErrors
                 errors={errors}
-                sx={{ mt: 2 }}
+                sx={styles.errors}
                 touched={!!arrayHelpers.form.touched.forms}
             />
 
             {hasForms && (
                 <>
-                    <Divider sx={{ my: 2 }} />
+                    <Divider sx={styles.divider} />
                     <TableContainer sx={missionStyles.bordered}>
                         <Table size="small">
                             <MissionFormsTableHead

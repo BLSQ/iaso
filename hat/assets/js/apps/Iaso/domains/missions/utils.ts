@@ -25,5 +25,12 @@ export const isMissionOrgUnitTypeRetrieve = (
     return data?.mission_type === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM;
 };
 
+export const INFINITY_SYMBOL = '∞';
+
+export const CARDINALITY_INPUT_OPTIONS = {
+    showArrows: true,
+    showInfo: false,
+} as const;
+
 export const formatMaxCardinality = (value?: number | null): string =>
-    value?.toLocaleString() ?? '∞';
+    value?.toLocaleString() ?? INFINITY_SYMBOL;

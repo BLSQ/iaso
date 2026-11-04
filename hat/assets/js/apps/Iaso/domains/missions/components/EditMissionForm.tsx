@@ -37,44 +37,42 @@ export const EditMissionForm = ({
     const { formatMessage } = useSafeIntl();
 
     return (
-        <>
-            <Box sx={{ p: 2 }}>
-                <Field
-                    label={formatMessage(MESSAGES.name)}
-                    name="name"
-                    component={TextInput}
-                    required
-                    sx={{ mx: 0, my: 1 }}
-                />
-                <Field
-                    label={formatMessage(MESSAGES.description)}
-                    name="description"
-                    component={TextInput}
-                    sx={{ mx: 0, my: 1 }}
-                />
-                <MissionTypeDisplay missionType={missionType} />
+        <Box sx={{ p: 2 }}>
+            <Field
+                label={formatMessage(MESSAGES.name)}
+                name="name"
+                component={TextInput}
+                required
+                sx={{ mx: 0, my: 1 }}
+            />
+            <Field
+                label={formatMessage(MESSAGES.description)}
+                name="description"
+                component={TextInput}
+                sx={{ mx: 0, my: 1 }}
+            />
+            <MissionTypeDisplay missionType={missionType} />
 
-                {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
-                    <MissionFormsBaseInput
-                        missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
-                        formik={formik}
-                    />
-                )}
-                {missionType === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (
-                    <MissionOrgUnitTypeInput
-                        formik={
-                            formik as FormikProps<MissionOrgUnitTypeUpdateRequest>
-                        }
-                    />
-                )}
-                {missionType === MissionTypeDa2Enum.enum.ENTITY_AND_FORM && (
-                    <MissionEntityTypeInput
-                        formik={
-                            formik as FormikProps<MissionEntityTypeUpdateRequest>
-                        }
-                    />
-                )}
-            </Box>
-        </>
+            {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
+                <MissionFormsBaseInput
+                    missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+                    formik={formik}
+                />
+            )}
+            {missionType === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (
+                <MissionOrgUnitTypeInput
+                    formik={
+                        formik as FormikProps<MissionOrgUnitTypeUpdateRequest>
+                    }
+                />
+            )}
+            {missionType === MissionTypeDa2Enum.enum.ENTITY_AND_FORM && (
+                <MissionEntityTypeInput
+                    formik={
+                        formik as FormikProps<MissionEntityTypeUpdateRequest>
+                    }
+                />
+            )}
+        </Box>
     );
 };

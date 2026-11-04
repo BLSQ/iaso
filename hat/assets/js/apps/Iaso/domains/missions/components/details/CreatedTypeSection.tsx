@@ -1,36 +1,35 @@
 import React, { FC } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import {
+    MissionEntityTypeRetrieve,
+    MissionOrgUnitTypeRetrieve,
+} from 'Iaso/api/missions';
 import MESSAGES from '../../messages';
 import { formatMaxCardinality } from '../../utils';
 import {
+    CREATED_TYPE_CONFIG,
     CreatedTypeMissionType,
     getMissionTypeOption,
 } from '../missionTypeOptions';
 import { DetailsSectionTitle } from './DetailsSectionTitle';
 import { DetailsTable } from './DetailsTable';
 
-const TYPE_MESSAGES = {
-    [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: MESSAGES.orgUnitType,
-    [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: MESSAGES.entityType,
-};
-
 type Props = {
-    missionType: CreatedTypeMissionType;
-    typeName: string;
-    minCardinality: number;
-    maxCardinality?: number | null;
+    mission: MissionOrgUnitTypeRetrieve | MissionEntityTypeRetrieve;
 };
 
-export const CreatedTypeSection: FC<Props> = ({
-    missionType,
-    typeName,
-    minCardinality,
-    maxCardinality,
-}) => {
+export const CreatedTypeSection: FC<Props> = ({ mission }) => {
+    const { min_cardinality, max_cardinality } = mission;
+    const missionType = mission.mission_type as CreatedTypeMissionType;
+    const typeName =
+        'org_unit_type' in mission
+            ? mission.org_unit_type.name
+            : mission.entity_type.name;
     const { formatMessage } = useSafeIntl();
-    const typeLabel = formatMessage(TYPE_MESSAGES[missionType]);
+    const typeLabel = formatMessage(
+        CREATED_TYPE_CONFIG[missionType].typeMessage,
+    );
     const Icon = getMissionTypeOption(missionType)?.Icon;
     return (
         <Box>
@@ -41,8 +40,8 @@ export const CreatedTypeSection: FC<Props> = ({
                     {
                         label: formatMessage(MESSAGES.cardinality),
                         value: formatMessage(MESSAGES.cardinalityRange, {
-                            min: minCardinality.toLocaleString(),
-                            max: formatMaxCardinality(maxCardinality),
+                            min: min_cardinality.toLocaleString(),
+                            max: formatMaxCardinality(max_cardinality),
                         }),
                     },
                 ]}

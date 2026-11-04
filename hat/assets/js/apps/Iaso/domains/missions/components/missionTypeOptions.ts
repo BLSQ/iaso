@@ -53,8 +53,14 @@ export type CreatedTypeMissionType =
     | typeof MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM
     | typeof MissionTypeDa2Enum.enum.ENTITY_AND_FORM;
 
-export const CREATED_TYPE_SECTION_MESSAGES = {
+export const CREATED_TYPE_CONFIG = {
     [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: {
+        fieldName: 'org_unit_type',
+        getFormsParams: (typeId: number) => ({
+            params: { orgUnitTypeIds: typeId },
+        }),
+        typeMessage: MESSAGES.orgUnitType,
+        pleaseSelectMessage: MESSAGES.pleaseSelectOrgUnitType,
         title: MESSAGES.orgUnitsAgentCreates,
         description: MESSAGES.orgUnitsAgentCreatesInfo,
         typeLabel: MESSAGES.orgUnitTypeToCreate,
@@ -62,10 +68,16 @@ export const CREATED_TYPE_SECTION_MESSAGES = {
         maxLabel: MESSAGES.maxNewOrgUnits,
     },
     [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: {
+        fieldName: 'entity_type',
+        getFormsParams: (typeId: number) => ({
+            params: { entity_type_ids: typeId },
+        }),
+        typeMessage: MESSAGES.entityType,
+        pleaseSelectMessage: MESSAGES.pleaseSelectEntityType,
         title: MESSAGES.entitiesAgentCreates,
         description: MESSAGES.entitiesAgentCreatesInfo,
         typeLabel: MESSAGES.entityTypeToCreate,
         minLabel: MESSAGES.minEntities,
         maxLabel: MESSAGES.maxEntities,
     },
-};
+} as const;

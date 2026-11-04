@@ -97,19 +97,9 @@ export type InputComponentProps = {
     max?: number;
     blockForbiddenChars?: boolean;
     onErrorChange?: (hasError: boolean) => void;
-    numberInputOptions?: {
+    numberInputOptions?: NumberInputOptions & {
         prefix?: string;
         suffix?: string;
-        currency?: string;
-        min?: number;
-        max?: number;
-        decimalScale?: number;
-        decimalSeparator?: '.' | ',';
-        thousandSeparator?: '.' | ',' | ' ';
-        size?: 'small' | 'medium';
-        showArrows?: boolean;
-        showInfo?: boolean;
-        step?: number;
     };
     phoneInputOptions?: PhoneInputOptions;
     setFieldError?: (keyValue: string, message: string) => void;

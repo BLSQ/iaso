@@ -11,6 +11,7 @@ import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
+import { CARDINALITY_INPUT_OPTIONS, INFINITY_SYMBOL } from '../../utils';
 import { MissionFormName } from './MissionFormName';
 
 const styles: SxStyles = {
@@ -29,9 +30,8 @@ const styles: SxStyles = {
 };
 
 const numberInputOptions = {
+    ...CARDINALITY_INPUT_OPTIONS,
     size: 'small',
-    showArrows: true,
-    showInfo: false,
 } as const;
 
 type Props<TSchema extends MissionCreateBody | MissionUpdateBody> = {
@@ -90,11 +90,10 @@ export const MissionFormItem = <
                     name={`forms.${index}.max_cardinality`}
                     initialValue={1}
                     min={0}
-                    placeholder="∞"
+                    placeholder={INFINITY_SYMBOL}
                     component={NumberInput}
                     withMarginTop={false}
                     numberInputOptions={numberInputOptions}
-                    size="small"
                 />
             </TableCell>
             <TableCell align="right" sx={styles.actionsCell}>

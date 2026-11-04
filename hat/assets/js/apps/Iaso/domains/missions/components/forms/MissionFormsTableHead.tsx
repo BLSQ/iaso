@@ -5,16 +5,16 @@ import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 
+const headerCell = {
+    color: 'text.primary',
+    fontWeight: 500,
+    py: 1.5,
+};
+
 const styles: SxStyles = {
-    headerCell: {
-        color: 'text.primary',
-        fontWeight: 500,
-        py: 1.5,
-    },
+    headerCell,
     numberHeaderCell: {
-        color: 'text.primary',
-        fontWeight: 500,
-        py: 1.5,
+        ...headerCell,
         width: 120,
         maxWidth: 140,
         whiteSpace: 'nowrap',

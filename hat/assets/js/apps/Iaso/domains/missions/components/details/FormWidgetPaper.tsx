@@ -49,7 +49,7 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
                 Icon={DescriptionIcon}
                 title={formatMessage(MESSAGES.forms)}
             />
-            {mission?.forms?.length ? (
+            {mission.forms?.length ? (
                 <TableContainer sx={styles.tableContainer}>
                     <Table stickyHeader sx={tableSx}>
                         <MissionFormsTableHead

@@ -2,12 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { DropdownOptions, useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { SxStyles } from 'Iaso/types/general';
+import { CARDINALITY_INPUT_OPTIONS, INFINITY_SYMBOL } from '../../utils';
 import {
-    CREATED_TYPE_SECTION_MESSAGES,
+    CREATED_TYPE_CONFIG,
     CreatedTypeMissionType,
 } from '../missionTypeOptions';
 import { missionStyles } from '../styles';
@@ -21,15 +21,9 @@ const styles: SxStyles = {
     },
 };
 
-const numberInputOptions = { showArrows: true, showInfo: false } as const;
-
-const TYPE_FIELD_NAMES = {
-    [MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM]: 'org_unit_type',
-    [MissionTypeDa2Enum.enum.ENTITY_AND_FORM]: 'entity_type',
-};
-
 type Props = {
     missionType: CreatedTypeMissionType;
+    step: number;
     typeOptions?: DropdownOptions<number>[];
     isLoadingTypeOptions: boolean;
     onTypeChange: (keyValue: string, value: number) => void;
@@ -37,22 +31,23 @@ type Props = {
 
 export const MissionCreatedTypeStep: FunctionComponent<Props> = ({
     missionType,
+    step,
     typeOptions,
     isLoadingTypeOptions,
     onTypeChange,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { title, description, typeLabel, minLabel, maxLabel } =
-        CREATED_TYPE_SECTION_MESSAGES[missionType];
+    const { fieldName, title, description, typeLabel, minLabel, maxLabel } =
+        CREATED_TYPE_CONFIG[missionType];
     return (
         <Box sx={styles.step}>
             <MissionStepHeader
-                step={1}
+                step={step}
                 title={formatMessage(title)}
                 description={formatMessage(description)}
             />
             <Field
-                name={TYPE_FIELD_NAMES[missionType]}
+                name={fieldName}
                 label={formatMessage(typeLabel)}
                 required
                 clearable
@@ -65,24 +60,23 @@ export const MissionCreatedTypeStep: FunctionComponent<Props> = ({
                 <Grid item xs={12} sm={6}>
                     <Field
                         label={formatMessage(minLabel)}
-                        name={`min_cardinality`}
+                        name="min_cardinality"
                         initialValue={1}
                         min={1}
                         component={NumberInput}
-                        numberInputOptions={numberInputOptions}
+                        numberInputOptions={CARDINALITY_INPUT_OPTIONS}
                         required
                     />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <Field
                         label={formatMessage(maxLabel)}
-                        name={`max_cardinality`}
+                        name="max_cardinality"
                         initialValue={1}
-                        type={'number'}
                         min={0}
-                        placeholder="∞"
+                        placeholder={INFINITY_SYMBOL}
                         component={NumberInput}
-                        numberInputOptions={numberInputOptions}
+                        numberInputOptions={CARDINALITY_INPUT_OPTIONS}
                     />
                 </Grid>
             </Grid>

@@ -5,6 +5,16 @@ export const missionStyles: SxStyles = {
         border: theme => `1px solid ${theme.palette.lightGray.border}`,
         borderRadius: 1,
     },
+    fieldRoot: {
+        my: 1,
+    },
+    fieldLabel: {
+        display: 'block',
+        mb: 1.5,
+        fontWeight: 600,
+        color: 'text.primary',
+        fontSize: '0.875rem',
+    },
     borderedTable: {
         '& tbody tr:last-of-type td': {
             borderBottom: 0,
@@ -13,13 +23,6 @@ export const missionStyles: SxStyles = {
     greyHeaderTable: {
         '& thead th': {
             backgroundColor: 'grey.50',
-        },
-    },
-    detailsTable: {
-        '& tbody td:first-of-type': {
-            backgroundColor: 'grey.50',
-            color: 'text.secondary',
-            fontWeight: 400,
         },
     },
 };

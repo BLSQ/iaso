@@ -38,7 +38,7 @@ BEGIN
 END
 $do$;
 GRANT USAGE ON SCHEMA PUBLIC TO "readonlyrole";
-GRANT SELECT ON TABLE 
+GRANT SELECT ON TABLE
  audit_modification,
  auth_group,
  auth_group_permissions,

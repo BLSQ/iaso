@@ -68,7 +68,7 @@ export const MapHint: FC = () => {
     let hint = MESSAGES.mapExploreHintTeams;
     if (!getTeamMembers(selectedTeam).length) {
         hint = MESSAGES.mapHintNoMember;
-    } else if (selectedTeam.type === TeamType.TEAM_OF_USERS) {
+    } else if (selectedTeam.type === TeamType.enum.TEAM_OF_USERS) {
         hint = MESSAGES.mapExploreHintUsers;
     }
     return (

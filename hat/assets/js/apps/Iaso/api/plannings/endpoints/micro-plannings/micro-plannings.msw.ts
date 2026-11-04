@@ -12,17 +12,17 @@ import type { RequestHandlerOptions } from 'msw';
 
 import {
     AssignmentTypeEnum,
+    CategoryEe0Enum,
     MissionTypeDa2Enum,
-    StatusE52Enum,
 } from '../../models';
 import type {
+    OrgUnitTree,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
     PaginatedNestedPlanningConfigBulkList,
     PaginatedNestedPlanningConfigListList,
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
-    PaginatedPlanningSamplingResultReadList,
     PlanningDropdown,
     PlanningLevelGeometry,
     PlanningLevelTreeNode,
@@ -32,8 +32,6 @@ import type {
     PlanningOrgUnit,
     PlanningOrgUnitTable,
     PlanningRead,
-    PlanningSamplingResultRead,
-    PlanningSamplingResultWrite,
     PlanningWrite,
 } from '../../models';
 
@@ -261,7 +259,7 @@ export const getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveRespon
                     ...{
                         id: faker.number.int(),
                         name: faker.string.alpha({
-                            length: { min: 10, max: 20 },
+                            length: { min: 10, max: 255 },
                         }),
                     },
                 },
@@ -321,7 +319,7 @@ export const getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveRespon
                     ...{
                         id: faker.number.int(),
                         name: faker.string.alpha({
-                            length: { min: 10, max: 20 },
+                            length: { min: 10, max: 255 },
                         }),
                     },
                 },
@@ -916,6 +914,37 @@ export const getApiMicroplanningPlanningsMissionsListResponseMock = (
     ...overrideResponse,
 });
 
+export const getApiMicroplanningPlanningsOrgUnitTreeListResponseMock =
+    (): OrgUnitTree[] =>
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
+            id: faker.number.int(),
+            name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+            parent: faker.helpers.arrayElement([faker.number.int(), null]),
+            depth: faker.number.int(),
+            org_unit_type: faker.helpers.arrayElement([
+                {
+                    id: faker.number.int(),
+                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    short_name: faker.string.alpha({
+                        length: { min: 10, max: 20 },
+                    }),
+                    category: faker.helpers.arrayElement([
+                        faker.helpers.arrayElement(
+                            Object.values(CategoryEe0Enum),
+                        ),
+                        null,
+                    ]),
+                },
+                null,
+            ]),
+            has_geo_json: faker.datatype.boolean(),
+            has_location: faker.datatype.boolean(),
+            children: [],
+        }));
+
 export const getApiMicroplanningPlanningsDropdownListResponseMock =
     (): PlanningDropdown[] =>
         Array.from(
@@ -926,318 +955,6 @@ export const getApiMicroplanningPlanningsDropdownListResponseMock =
             value: faker.number.int(),
             deprecated: faker.datatype.boolean(),
         }));
-
-export const getApiMicroplanningSamplingsListResponseMock = (
-    overrideResponse: Partial<
-        Extract<PaginatedPlanningSamplingResultReadList, object>
-    > = {},
-): PaginatedPlanningSamplingResultReadList =>
-    faker.helpers.arrayElement([
-        {
-            count: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            has_next: faker.helpers.arrayElement([
-                faker.datatype.boolean(),
-                undefined,
-            ]),
-            has_previous: faker.helpers.arrayElement([
-                faker.datatype.boolean(),
-                undefined,
-            ]),
-            limit: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            page: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            pages: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            results: faker.helpers.arrayElement([
-                Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                ).map(() => ({
-                    id: faker.number.int(),
-                    planning: faker.number.int(),
-                    task_id: faker.helpers.arrayElement([
-                        faker.number.int(),
-                        null,
-                    ]),
-                    task_details: {
-                        ...{
-                            id: faker.number.int(),
-                            name: faker.string.alpha({
-                                length: { min: 10, max: 20 },
-                            }),
-                            status: faker.helpers.arrayElement([
-                                faker.helpers.arrayElement(
-                                    Object.values(StatusE52Enum),
-                                ),
-                                undefined,
-                            ]),
-                        },
-                    },
-                    pipeline_id: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 36 } }),
-                        undefined,
-                    ]),
-                    pipeline_version: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 100 } }),
-                        undefined,
-                    ]),
-                    group_id: faker.helpers.arrayElement([
-                        faker.number.int(),
-                        null,
-                    ]),
-                    pipeline_name: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 100 } }),
-                        undefined,
-                    ]),
-                    group_details: {
-                        ...{
-                            id: faker.number.int(),
-                            name: faker.string.alpha({
-                                length: { min: 10, max: 20 },
-                            }),
-                            org_unit_count: faker.number.int(),
-                        },
-                    },
-                    parameters: {},
-                    created_at: faker.number.float({ fractionDigits: 2 }),
-                    created_by: faker.helpers.arrayElement([
-                        faker.number.int(),
-                        null,
-                    ]),
-                    created_by_details: {
-                        ...{
-                            id: faker.number.int(),
-                            username: faker.helpers.fromRegExp('[\\w.@+-]+'),
-                        },
-                    },
-                })),
-                undefined,
-            ]),
-            ...overrideResponse,
-        },
-        {
-            count: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            has_next: faker.helpers.arrayElement([
-                faker.datatype.boolean(),
-                undefined,
-            ]),
-            has_previous: faker.helpers.arrayElement([
-                faker.datatype.boolean(),
-                undefined,
-            ]),
-            limit: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            page: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            pages: faker.helpers.arrayElement([faker.number.int(), undefined]),
-            results: faker.helpers.arrayElement([
-                Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                ).map(() => ({
-                    id: faker.number.int(),
-                    planning: faker.number.int(),
-                    task_id: faker.helpers.arrayElement([
-                        faker.number.int(),
-                        null,
-                    ]),
-                    task_details: {
-                        ...{
-                            id: faker.number.int(),
-                            name: faker.string.alpha({
-                                length: { min: 10, max: 20 },
-                            }),
-                            status: faker.helpers.arrayElement([
-                                faker.helpers.arrayElement(
-                                    Object.values(StatusE52Enum),
-                                ),
-                                undefined,
-                            ]),
-                        },
-                    },
-                    pipeline_id: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 36 } }),
-                        undefined,
-                    ]),
-                    pipeline_version: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 100 } }),
-                        undefined,
-                    ]),
-                    group_id: faker.helpers.arrayElement([
-                        faker.number.int(),
-                        null,
-                    ]),
-                    pipeline_name: faker.helpers.arrayElement([
-                        faker.string.alpha({ length: { min: 10, max: 100 } }),
-                        undefined,
-                    ]),
-                    group_details: {
-                        ...{
-                            id: faker.number.int(),
-                            name: faker.string.alpha({
-                                length: { min: 10, max: 20 },
-                            }),
-                            org_unit_count: faker.number.int(),
-                        },
-                    },
-                    parameters: {},
-                    created_at: faker.number.float({ fractionDigits: 2 }),
-                    created_by: faker.helpers.arrayElement([
-                        faker.number.int(),
-                        null,
-                    ]),
-                    created_by_details: {
-                        ...{
-                            id: faker.number.int(),
-                            username: faker.helpers.fromRegExp('[\\w.@+-]+'),
-                        },
-                    },
-                })),
-                undefined,
-            ]),
-            ...overrideResponse,
-        },
-    ]);
-
-export const getApiMicroplanningSamplingsCreateResponseMock = (
-    overrideResponse: Partial<
-        Extract<PlanningSamplingResultWrite, object>
-    > = {},
-): PlanningSamplingResultWrite =>
-    faker.helpers.arrayElement([
-        {
-            task_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            pipeline_id: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 36 } }),
-                undefined,
-            ]),
-            pipeline_version: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            pipeline_name: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            group_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            parameters: {},
-            ...overrideResponse,
-        },
-        {
-            task_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            pipeline_id: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 36 } }),
-                undefined,
-            ]),
-            pipeline_version: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            pipeline_name: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            group_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            parameters: {},
-            ...overrideResponse,
-        },
-    ]);
-
-export const getApiMicroplanningSamplingsRetrieveResponseMock = (
-    overrideResponse: Partial<Extract<PlanningSamplingResultRead, object>> = {},
-): PlanningSamplingResultRead =>
-    faker.helpers.arrayElement([
-        {
-            id: faker.number.int(),
-            planning: faker.number.int(),
-            task_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            task_details: {
-                ...{
-                    id: faker.number.int(),
-                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    status: faker.helpers.arrayElement([
-                        faker.helpers.arrayElement(
-                            Object.values(StatusE52Enum),
-                        ),
-                        undefined,
-                    ]),
-                },
-            },
-            pipeline_id: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 36 } }),
-                undefined,
-            ]),
-            pipeline_version: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            group_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            pipeline_name: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            group_details: {
-                ...{
-                    id: faker.number.int(),
-                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    org_unit_count: faker.number.int(),
-                },
-            },
-            parameters: {},
-            created_at: faker.number.float({ fractionDigits: 2 }),
-            created_by: faker.helpers.arrayElement([faker.number.int(), null]),
-            created_by_details: {
-                ...{
-                    id: faker.number.int(),
-                    username: faker.helpers.fromRegExp('[\\w.@+-]+'),
-                },
-            },
-            ...overrideResponse,
-        },
-        {
-            id: faker.number.int(),
-            planning: faker.number.int(),
-            task_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            task_details: {
-                ...{
-                    id: faker.number.int(),
-                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    status: faker.helpers.arrayElement([
-                        faker.helpers.arrayElement(
-                            Object.values(StatusE52Enum),
-                        ),
-                        undefined,
-                    ]),
-                },
-            },
-            pipeline_id: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 36 } }),
-                undefined,
-            ]),
-            pipeline_version: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            group_id: faker.helpers.arrayElement([faker.number.int(), null]),
-            pipeline_name: faker.helpers.arrayElement([
-                faker.string.alpha({ length: { min: 10, max: 100 } }),
-                undefined,
-            ]),
-            group_details: {
-                ...{
-                    id: faker.number.int(),
-                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    org_unit_count: faker.number.int(),
-                },
-            },
-            parameters: {},
-            created_at: faker.number.float({ fractionDigits: 2 }),
-            created_by: faker.helpers.arrayElement([faker.number.int(), null]),
-            created_by_details: {
-                ...{
-                    id: faker.number.int(),
-                    username: faker.helpers.fromRegExp('[\\w.@+-]+'),
-                },
-            },
-            ...overrideResponse,
-        },
-    ]);
 
 export const getApiMobilePlanningsListResponseMock = (
     overrideResponse: Partial<
@@ -1909,6 +1626,37 @@ export const getApiMicroplanningPlanningsMissionsListMockHandler = (
     );
 };
 
+export const getApiMicroplanningPlanningsOrgUnitTreeListMockHandler = (
+    overrideResponse?:
+        | OrgUnitTree[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0],
+          ) => Promise<OrgUnitTree[]> | OrgUnitTree[]),
+    options?: RequestHandlerOptions,
+) => {
+    return http.get(
+        '*/api/microplanning/plannings/:id/org-unit-tree/',
+        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningPlanningsOrgUnitTreeListResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
 export const getApiMicroplanningPlanningsDropdownListMockHandler = (
     overrideResponse?:
         | PlanningDropdown[]
@@ -1933,105 +1681,6 @@ export const getApiMicroplanningPlanningsDropdownListMockHandler = (
                         ? await overrideResponse(info)
                         : overrideResponse
                     : getApiMicroplanningPlanningsDropdownListResponseMock(),
-                { status: 200 },
-            );
-        },
-        options,
-    );
-};
-
-export const getApiMicroplanningSamplingsListMockHandler = (
-    overrideResponse?:
-        | PaginatedPlanningSamplingResultReadList
-        | ((
-              info: Parameters<Parameters<typeof http.get>[1]>[0],
-          ) =>
-              | Promise<PaginatedPlanningSamplingResultReadList>
-              | PaginatedPlanningSamplingResultReadList),
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/microplanning/samplings/',
-        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : getApiMicroplanningSamplingsListResponseMock(),
-                { status: 200 },
-            );
-        },
-        options,
-    );
-};
-
-export const getApiMicroplanningSamplingsCreateMockHandler = (
-    overrideResponse?:
-        | PlanningSamplingResultWrite
-        | ((
-              info: Parameters<Parameters<typeof http.post>[1]>[0],
-          ) =>
-              | Promise<PlanningSamplingResultWrite>
-              | PlanningSamplingResultWrite),
-    options?: RequestHandlerOptions,
-) => {
-    return http.post(
-        '*/api/microplanning/samplings/',
-        async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : getApiMicroplanningSamplingsCreateResponseMock(),
-                { status: 201 },
-            );
-        },
-        options,
-    );
-};
-
-export const getApiMicroplanningSamplingsRetrieveMockHandler = (
-    overrideResponse?:
-        | PlanningSamplingResultRead
-        | ((
-              info: Parameters<Parameters<typeof http.get>[1]>[0],
-          ) =>
-              | Promise<PlanningSamplingResultRead>
-              | PlanningSamplingResultRead),
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/microplanning/samplings/:id/',
-        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : getApiMicroplanningSamplingsRetrieveResponseMock(),
                 { status: 200 },
             );
         },
@@ -2119,10 +1768,8 @@ export const getMicroPlanningsMock = () => [
     getApiMicroplanningPlanningsConfigsListMockHandler(),
     getApiMicroplanningPlanningsConfigsBulkUpdateMockHandler(),
     getApiMicroplanningPlanningsMissionsListMockHandler(),
+    getApiMicroplanningPlanningsOrgUnitTreeListMockHandler(),
     getApiMicroplanningPlanningsDropdownListMockHandler(),
-    getApiMicroplanningSamplingsListMockHandler(),
-    getApiMicroplanningSamplingsCreateMockHandler(),
-    getApiMicroplanningSamplingsRetrieveMockHandler(),
     getApiMobilePlanningsListMockHandler(),
     getApiV2MobilePlanningsListMockHandler(),
 ];

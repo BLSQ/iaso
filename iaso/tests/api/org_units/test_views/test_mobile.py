@@ -237,7 +237,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, status.HTTP_200_OK)
-        org_units_by_id = {org_unit["id"]: org_unit for org_unit in response.json()["orgUnits"]}
+        org_units_by_id = self.index_by_id(response.json()["orgUnits"])
         self.assertEqual(org_units_by_id[self.bardock.id]["code"], "BARDOCK-01")
         self.assertEqual(org_units_by_id[self.raditz.id]["code"], "")
 
@@ -270,25 +270,34 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 13. INSERT "django_cache_table"
             # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
-        self.assertNotIn("count", response.json())
-        self.assertNotIn("next", response.json())
-        self.assertNotIn("previous", response.json())
-        self.assertEqual(len(response.json()["orgUnits"]), 4)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
-        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
-        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
-        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
-        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Gohan")
-        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], None)
-        self.assertEqual(0, len(response.json()["orgUnits"][2]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Goten")
-        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
-        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
+        self.assertNotIn("count", response_data)
+        self.assertNotIn("next", response_data)
+        self.assertNotIn("previous", response_data)
+        self.assert_parents_listed_before_children(response_data["orgUnits"])
+        org_units = self.index_by_id(response_data["orgUnits"])
+        self.assertCountEqual(org_units.keys(), [self.bardock.id, self.raditz.id, self.gohan.id, self.goten.id])
+
+        bardock = org_units[self.bardock.id]
+        self.assertEqual(bardock["name"], "Bardock")
+        self.assertEqual(bardock["parent_id"], None)
+        self.assertEqual(bardock["groups"], [self.group_2.id])
+
+        raditz = org_units[self.raditz.id]
+        self.assertEqual(raditz["name"], "Raditz")
+        self.assertEqual(raditz["parent_id"], self.bardock.id)
+        self.assertEqual(raditz["groups"], [])
+
+        gohan = org_units[self.gohan.id]
+        self.assertEqual(gohan["name"], "Son Gohan")
+        self.assertEqual(gohan["parent_id"], None)  # parent (Goku) is not valid
+        self.assertEqual(gohan["groups"], [])
+
+        goten = org_units[self.goten.id]
+        self.assertEqual(goten["name"], "Son Goten")
+        self.assertEqual(goten["parent_id"], None)  # parent (Goku) is not valid
+        self.assertEqual(goten["groups"], [])
 
     def test_org_unit_have_correct_parent_id_when_everything_is_fine_without_limit(self):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
@@ -311,28 +320,41 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 13. INSERT "django_cache_table"
             # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
-        self.assertNotIn("count", response.json())
-        self.assertNotIn("next", response.json())
-        self.assertNotIn("previous", response.json())
-        self.assertEqual(len(response.json()["orgUnits"]), 5)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
-        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
-        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
-        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
-        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Goku")
-        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], self.bardock.id)
-        self.assertEqual(1, len(response.json()["orgUnits"][2]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Gohan")
-        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], self.goku.id)
-        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][4]["name"], "Son Goten")
-        self.assertEqual(response.json()["orgUnits"][4]["parent_id"], self.goku.id)
-        self.assertEqual(0, len(response.json()["orgUnits"][4]["groups"]))
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
+        self.assertNotIn("count", response_data)
+        self.assertNotIn("next", response_data)
+        self.assertNotIn("previous", response_data)
+        self.assert_parents_listed_before_children(response_data["orgUnits"])
+        org_units = self.index_by_id(response_data["orgUnits"])
+        self.assertCountEqual(
+            org_units.keys(), [self.bardock.id, self.raditz.id, self.goku.id, self.gohan.id, self.goten.id]
+        )
+
+        bardock = org_units[self.bardock.id]
+        self.assertEqual(bardock["name"], "Bardock")
+        self.assertEqual(bardock["parent_id"], None)
+        self.assertEqual(bardock["groups"], [self.group_2.id])
+
+        raditz = org_units[self.raditz.id]
+        self.assertEqual(raditz["name"], "Raditz")
+        self.assertEqual(raditz["parent_id"], self.bardock.id)
+        self.assertEqual(raditz["groups"], [])
+
+        goku = org_units[self.goku.id]
+        self.assertEqual(goku["name"], "Son Goku")
+        self.assertEqual(goku["parent_id"], self.bardock.id)
+        self.assertEqual(goku["groups"], [self.group_2.id])
+
+        gohan = org_units[self.gohan.id]
+        self.assertEqual(gohan["name"], "Son Gohan")
+        self.assertEqual(gohan["parent_id"], self.goku.id)
+        self.assertEqual(gohan["groups"], [])
+
+        goten = org_units[self.goten.id]
+        self.assertEqual(goten["name"], "Son Goten")
+        self.assertEqual(goten["parent_id"], self.goku.id)
+        self.assertEqual(goten["groups"], [])
 
     def test_org_unit_have_correct_parent_id_when_parent_wrong_type_without_limit(self):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
@@ -356,55 +378,83 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 13. INSERT "django_cache_table"
             # 14. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
-        self.assertNotIn("count", response.json())
-        self.assertNotIn("next", response.json())
-        self.assertNotIn("previous", response.json())
-        self.assertEqual(len(response.json()["orgUnits"]), 4)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
-        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
-        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
-        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
-        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Gohan")
-        self.assertEqual(response.json()["orgUnits"][2]["parent_id"], None)
-        self.assertEqual(0, len(response.json()["orgUnits"][2]["groups"]))
-        self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Goten")
-        self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
-        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
+        self.assertNotIn("count", response_data)
+        self.assertNotIn("next", response_data)
+        self.assertNotIn("previous", response_data)
+        self.assert_parents_listed_before_children(response_data["orgUnits"])
+        org_units = self.index_by_id(response_data["orgUnits"])
+        self.assertCountEqual(org_units.keys(), [self.bardock.id, self.raditz.id, self.gohan.id, self.goten.id])
+
+        bardock = org_units[self.bardock.id]
+        self.assertEqual(bardock["name"], "Bardock")
+        self.assertEqual(bardock["parent_id"], None)
+        self.assertEqual(bardock["groups"], [self.group_2.id])
+
+        raditz = org_units[self.raditz.id]
+        self.assertEqual(raditz["name"], "Raditz")
+        self.assertEqual(raditz["parent_id"], self.bardock.id)
+        self.assertEqual(raditz["groups"], [])
+
+        gohan = org_units[self.gohan.id]
+        self.assertEqual(gohan["name"], "Son Gohan")
+        self.assertEqual(gohan["parent_id"], None)  # parent (Goku) has the wrong org unit type
+        self.assertEqual(gohan["groups"], [])
+
+        goten = org_units[self.goten.id]
+        self.assertEqual(goten["name"], "Son Goten")
+        self.assertEqual(goten["parent_id"], None)  # parent (Goku) has the wrong org unit type
+        self.assertEqual(goten["groups"], [])
 
     def test_org_unit_have_correct_parent_id_with_limit(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 1})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assert_page(response.json(), count=4, limit=1, page=1, pages=4, has_next=True, has_previous=False)
-        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
-        self.assertEqual(len(response.json()["orgUnits"]), 1)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(response_data, count=4, limit=1, page=1, pages=4, has_next=True, has_previous=False)
+        self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
+        self.assertEqual(len(response_data["orgUnits"]), 1)
 
-        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 2})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assert_page(response.json(), count=4, limit=1, page=2, pages=4, has_next=True, has_previous=True)
-        self.assertNotIn("roots", response.json())
-        self.assertEqual(len(response.json()["orgUnits"]), 1)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Raditz")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], self.bardock.id)
+        # Bardock is the only root: its path is a prefix of all the other paths, so it's always first
+        bardock = response_data["orgUnits"][0]
+        self.assertEqual(bardock["id"], self.bardock.id)
+        self.assertEqual(bardock["name"], "Bardock")
+        self.assertEqual(bardock["parent_id"], None)
 
+        # The order of the next org units depends on their IDs (see `assert_parents_listed_before_children`),
+        # so fetch all the pages and check the result as a whole.
+        all_org_units = list(response_data["orgUnits"])
+        for page in range(2, 5):
+            response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: page})
+            response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+            self.assert_page(response_data, count=4, limit=1, page=page, pages=4, has_next=page < 4, has_previous=True)
+            self.assertNotIn("roots", response_data)
+            self.assertEqual(len(response_data["orgUnits"]), 1)
+            all_org_units += response_data["orgUnits"]
+
+        # no duplicates and no missing org units across pages
+        self.assertCountEqual(
+            [org_unit["id"] for org_unit in all_org_units],
+            [self.bardock.id, self.raditz.id, self.gohan.id, self.goten.id],
+        )
+        self.assert_parents_listed_before_children(all_org_units)
+        org_units = self.index_by_id(all_org_units)
+        self.assertEqual(org_units[self.raditz.id]["parent_id"], self.bardock.id)
+        self.assertEqual(org_units[self.gohan.id]["parent_id"], None)  # parent (Goku) is not valid
+        self.assertEqual(org_units[self.goten.id]["parent_id"], None)  # parent (Goku) is not valid
+        for org_unit in all_org_units:
+            self.assertNotIn("geojson", org_unit)
+
+        # A different page size must return a consistent slice of the same ordering
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 2, PAGE: 2})
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assert_page(response.json(), count=4, limit=2, page=2, pages=2, has_next=False, has_previous=True)
-        self.assertNotIn("roots", response.json())
-        self.assertEqual(len(response.json()["orgUnits"]), 2)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Son Gohan")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
-        self.assertEqual(response.json()["orgUnits"][1]["name"], "Son Goten")
-        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], None)
-        self.assertNotIn("geojson", response.json()["orgUnits"][1])
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assert_page(response_data, count=4, limit=2, page=2, pages=2, has_next=False, has_previous=True)
+        self.assertNotIn("roots", response_data)
+        self.assertEqual(
+            [org_unit["id"] for org_unit in response_data["orgUnits"]],
+            [org_unit["id"] for org_unit in all_org_units[2:4]],
+        )
 
     def assert_page(self, json, count: int, limit: int, page: int, pages: int, has_next: bool, has_previous: bool):
         self.assertEqual(json["count"], count)
@@ -414,25 +464,58 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(json["has_next"], has_next)
         self.assertEqual(json["has_previous"], has_previous)
 
+    def index_by_id(self, org_units: list[dict]) -> dict[int, dict]:
+        return {org_unit["id"]: org_unit for org_unit in org_units}
+
+    def assert_parents_listed_before_children(self, org_units: list[dict], allow_missing_parent: bool = False):
+        """
+        The API orders org units by `path`, an ltree whose labels (org unit IDs) are compared as *text*
+        (e.g. "100" < "99"). The relative order of siblings therefore depends on the IDs given by the DB sequence,
+        which vary between test runs: tests must not rely on positions.
+        The only guarantee is that a parent is always listed before its children.
+
+        Org units whose `parent_id` is not in the list (e.g. `None` because the parent is invalid or has the wrong
+        type) are ignored.
+        """
+        positions = {org_unit["id"]: index for index, org_unit in enumerate(org_units)}
+        for org_unit in org_units:
+            parent_id = org_unit["parent_id"]
+            if parent_id in positions:
+                self.assertLess(
+                    positions[parent_id],
+                    positions[org_unit["id"]],
+                    f"Org unit {org_unit['id']} is listed before its parent {parent_id}",
+                )
+            elif parent_id and not allow_missing_parent:
+                self.fail(
+                    f"Org unit {org_unit['name']} ({org_unit['id']}) has parent_id {parent_id} which is not in the list of org units"
+                )
+
     def test_org_unit_have_correct_parent_id_without_limit_with_shape(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "shapes": "true"}, format="json")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
-        self.assertNotIn("count", response.json())
-        self.assertNotIn("next", response.json())
-        self.assertNotIn("previous", response.json())
-        self.assertEqual(len(response.json()["orgUnits"]), 4)
-        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
-        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
+        self.assertNotIn("count", response_data)
+        self.assertNotIn("next", response_data)
+        self.assertNotIn("previous", response_data)
+        self.assert_parents_listed_before_children(response_data["orgUnits"])
+        org_units = self.index_by_id(response_data["orgUnits"])
+        self.assertCountEqual(org_units.keys(), [self.bardock.id, self.raditz.id, self.gohan.id, self.goten.id])
+
+        bardock = org_units[self.bardock.id]
+        self.assertEqual(bardock["name"], "Bardock")
+        self.assertEqual(bardock["parent_id"], None)
         self.assertEqual(
-            response.json()["orgUnits"][0]["geo_json"],
+            bardock["geo_json"],
             {"type": "MultiPolygon", "coordinates": [[[[1, 2], [3, 4], [5, 6], [1, 2]]]]},
         )
-        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
-        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
-        self.assertEqual(response.json()["orgUnits"][1]["geo_json"], None)
+
+        raditz = org_units[self.raditz.id]
+        self.assertEqual(raditz["name"], "Raditz")
+        self.assertEqual(raditz["parent_id"], self.bardock.id)
+        self.assertEqual(raditz["geo_json"], None)
 
     def test_LIMIT_OU_DOWNLOAD_TO_ROOTS(self):
         self.user.iaso_profile.org_units.set([self.goku])
@@ -517,15 +600,15 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         # Fetch OrgUnit by ID.
         response1 = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
-        self.assertJSONResponse(response1, status.HTTP_200_OK)
+        response1_data = self.assertJSONResponse(response1, status.HTTP_200_OK)
 
         # Fetch OrgUnit by UUID.
         response2 = self.client.get(f"{BASE_URL}{self.raditz.uuid}/reference_instances/", data=params)
-        self.assertJSONResponse(response2, status.HTTP_200_OK)
+        response2_data = self.assertJSONResponse(response2, status.HTTP_200_OK)
 
-        self.assertEqual(response1.data, response2.data)
+        self.assertEqual(response1_data, response2_data)
         self.assertEqual(
-            response1.data,
+            response1_data,
             {
                 "count": 2,
                 "instances": [
@@ -579,9 +662,9 @@ class MobileOrgUnitAPITestCase(APITestCase):
         instance2.save()
 
         response = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(
-            response.data,
+            response_data,
             {
                 "count": 1,
                 "instances": [
@@ -609,14 +692,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(
             BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},{self.gohan.id},{self.goten.id}"}
         )
-        org_units = self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(len(org_units["orgUnits"]), 3)
-        self.assertEqual(org_units["orgUnits"][0]["id"], self.goku.id)
-        self.assertEqual(org_units["orgUnits"][0]["validation_status"], OrgUnit.VALIDATION_REJECTED)
-        self.assertEqual(org_units["orgUnits"][1]["id"], self.gohan.id)
-        self.assertEqual(org_units["orgUnits"][1]["validation_status"], OrgUnit.VALIDATION_VALID)
-        self.assertEqual(org_units["orgUnits"][2]["id"], self.goten.id)
-        self.assertEqual(org_units["orgUnits"][2]["validation_status"], OrgUnit.VALIDATION_VALID)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assert_parents_listed_before_children(
+            response_data["orgUnits"],
+            allow_missing_parent=True,  # we don't ask for Goku's parent (Bardock) so we allow missing parent in this case
+        )
+        org_units = self.index_by_id(response_data["orgUnits"])
+        self.assertCountEqual(org_units.keys(), [self.goku.id, self.gohan.id, self.goten.id])
+        self.assertEqual(org_units[self.goku.id]["validation_status"], OrgUnit.VALIDATION_REJECTED)
+        self.assertEqual(org_units[self.gohan.id]["validation_status"], OrgUnit.VALIDATION_VALID)
+        self.assertEqual(org_units[self.goten.id]["validation_status"], OrgUnit.VALIDATION_VALID)
 
     def test_post_to_retrieve_list_with_wrong_id(self):
         self.client.force_authenticate(self.user)
@@ -637,7 +723,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(OrgUnit.objects.count(), count_before)
         self.assertFalse(OrgUnit.objects.filter(name="My OrgUnit").exists())
 
@@ -656,7 +742,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(OrgUnit.objects.count(), count_before + 1)
         self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
 
@@ -674,7 +760,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(OrgUnit.objects.count(), count_before + 1)
         self.assertTrue(OrgUnit.objects.filter(name="My OrgUnit").exists())
 
@@ -697,7 +783,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         ]
         # No app id - An APIImport record with has_problem set to True should be created
         response = self.client.post("/api/mobile/orgunits/", data=unit_body, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertAPIImport(
             "orgUnit",
             request_body=unit_body,
@@ -708,7 +794,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
         response = self.client.post("/api/mobile/orgunits/?app_id=1234", data=unit_body, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertAPIImport(
             "orgUnit",
             request_body=unit_body,

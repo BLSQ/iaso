@@ -2,7 +2,7 @@ from typing import Any, Protocol
 from urllib.parse import urlencode
 
 from django import forms as django_forms
-from django.contrib import admin, messages
+from django.contrib import messages
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
@@ -111,7 +111,6 @@ from ..models import (
 )
 from ..models.data_store import JsonDataStore
 from ..models.form_ai import TemporaryForm
-from ..models.microplanning import Assignment, PlanningSamplingResult
 from ..models.team import Team
 from ..models.validation_workflow import ValidationNode
 from ..utils.gis import convert_2d_point_to_3d
@@ -852,39 +851,6 @@ class TeamAdmin(admin.ModelAdmin):
     list_filter = ("project", "type")
     date_hierarchy = "created_at"
     readonly_fields = ("path",)
-
-
-@admin.register(Assignment)
-@admin_attr_decorator
-class AssignmentAdmin(admin.ModelAdmin):
-    raw_id_fields = ("org_unit",)
-    autocomplete_fields = ("planning", "team", "user", "created_by")
-    search_fields = ("planning__name", "user__username")
-    list_select_related = ("planning", "user")
-    list_display = (
-        "id",
-        "planning",
-    )
-    date_hierarchy = "created_at"
-
-
-@admin.register(PlanningSamplingResult)
-@admin_attr_decorator
-class PlanningSamplingResultAdmin(admin.ModelAdmin):
-    raw_id_fields = ("planning", "group", "task", "created_by")
-    readonly_fields = ("created_at", "parameters")
-    list_display = (
-        "id",
-        "planning",
-        "pipeline_id",
-        "pipeline_version",
-        "group",
-        "task",
-        "created_at",
-    )
-    list_filter = ("planning",)
-    search_fields = ("pipeline_id", "pipeline_version")
-    date_hierarchy = "created_at"
 
 
 @admin.register(InstanceLock)

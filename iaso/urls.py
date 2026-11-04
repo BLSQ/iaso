@@ -79,13 +79,11 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning.views import (
-    AssignmentViewSet,
-    PlanningOrgunitsViewSet,
-    PlanningSamplingResultViewSet,
-    PlanningViewSet,
-)
-from .api.microplanning.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
+from .api.microplanning.assignments.views import AssignmentViewSet
+from .api.microplanning.org_units.views import PlanningOrgUnitsViewSet
+from .api.microplanning.planning_samplings.views import PlanningSamplingResultViewSet
+from .api.microplanning.plannings.views import PlanningViewSet
+from .api.microplanning.plannings.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
 from .api.missions.views import MissionViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -240,7 +238,7 @@ router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/missions", MissionViewSet, basename="missions")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
     r"orgunits",
-    PlanningOrgunitsViewSet,
+    PlanningOrgUnitsViewSet,
     basename="planning-orgunits",
     parents_query_lookups=["pk"],
 )

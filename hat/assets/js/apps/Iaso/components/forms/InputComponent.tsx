@@ -52,6 +52,7 @@ export type NumberInputOptions = {
     showArrows?: boolean;
     showInfo?: boolean;
     step?: number;
+    hideError?: boolean;
 };
 
 export type PhoneInputOptions = {

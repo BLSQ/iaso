@@ -31,8 +31,15 @@ vi.mock('bluesquare-components', async () => {
     };
 });
 
-const createFormik = (): FormikProps<any> =>
+const createFormik = ({
+    errors = {},
+    touched = {},
+}: Partial<
+    Pick<FormikProps<any>, 'errors' | 'touched'>
+> = {}): FormikProps<any> =>
     ({
+        errors,
+        touched,
         setFieldTouched: vi.fn(),
     }) as unknown as FormikProps<any>;
 
@@ -86,6 +93,62 @@ describe('MissionFormItem', () => {
         expect(
             screen.getByRole('textbox', { name: /max cardinality/i }),
         ).toBeInTheDocument();
+    });
+
+    it('shows touched cardinality errors once in a row below the form', () => {
+        const error = 'Minimum cardinality must be inferior';
+        const formik = createFormik({
+            errors: {
+                forms: [{ min_cardinality: error, max_cardinality: error }],
+            },
+            touched: {
+                forms: [{ min_cardinality: true, max_cardinality: true }],
+            },
+        });
+
+        renderMissionFormItem(formik, 0, {
+            form: 1,
+            min_cardinality: 2,
+            max_cardinality: null,
+        });
+
+        expect(screen.getAllByText(error)).toHaveLength(1);
+        expect(screen.getAllByRole('row')).toHaveLength(2);
+    });
+
+    it('hides cardinality errors of untouched fields', () => {
+        const formik = createFormik({
+            errors: { forms: [{ min_cardinality: 'Error' }] },
+        });
+
+        renderMissionFormItem(formik, 0, {
+            form: 1,
+            min_cardinality: 2,
+            max_cardinality: null,
+        });
+
+        expect(screen.queryByText('Error')).not.toBeInTheDocument();
+        expect(screen.getAllByRole('row')).toHaveLength(1);
+    });
+
+    it('shows touched form and cardinality errors together in the row below', () => {
+        const formik = createFormik({
+            errors: {
+                forms: [{ form: 'Form error', max_cardinality: 'Max error' }],
+            },
+            touched: { forms: [{ form: true, max_cardinality: true }] },
+        });
+
+        renderMissionFormItem(formik, 0, {
+            form: 1,
+            min_cardinality: 2,
+            max_cardinality: null,
+        });
+
+        expect(screen.getAllByRole('row')).toHaveLength(2);
+        expect(screen.getAllByRole('row')[1]).toHaveTextContent(
+            'Form errorMax error',
+        );
     });
 
     it('removes the form and marks forms as touched', () => {

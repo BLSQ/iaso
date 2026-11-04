@@ -1,4 +1,4 @@
-import React, { FC, ReactNode } from 'react';
+import React, { FC } from 'react';
 import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
 import { Box, Typography } from '@mui/material';
 import { SxStyles } from 'Iaso/types/general';
@@ -20,15 +20,13 @@ const styles: SxStyles = {
 
 type Props = {
     name: string;
-    children?: ReactNode;
 };
 
-export const MissionFormName: FC<Props> = ({ name, children }) => (
+export const MissionFormName: FC<Props> = ({ name }) => (
     <Box sx={styles.root}>
         <DescriptionIcon sx={styles.icon} />
         <Typography sx={styles.name} variant="body2">
             {name}
         </Typography>
-        {children}
     </Box>
 );

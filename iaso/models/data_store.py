@@ -4,7 +4,7 @@ from iaso.models import Account, OrgUnit
 
 
 """
-Store data in JSON format. 
+Store data in JSON format.
 
 The typical use case is when we need to store data that is computed outside of iaso, then retrieve it and serve it to the front-end.
 

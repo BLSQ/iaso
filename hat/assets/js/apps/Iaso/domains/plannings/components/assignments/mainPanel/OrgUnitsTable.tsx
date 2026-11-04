@@ -72,7 +72,7 @@ export const OrgUnitsTable: FC = () => {
                     assignments ?? [],
                 ),
                 teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
-                showPoints: selectedTeam.type === TeamType.TEAM_OF_USERS,
+                showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
             }),
         [levelTree, selectedLevel, selectedTeam.type, tree, assignments],
     );

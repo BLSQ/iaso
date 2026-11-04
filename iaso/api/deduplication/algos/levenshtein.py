@@ -166,7 +166,7 @@ def _build_query(params, start_id, end_id):
             entity2.id AS entity_id2,
             (
                 SELECT AVG(field_score) * 100  -- AVG() automatically ignores NULL values.
-                FROM (VALUES {fields_comparison}) AS t(field_score) 
+                FROM (VALUES {fields_comparison}) AS t(field_score)
                 WHERE field_score IS NOT NULL
             ) AS raw_score
         FROM entity1_batch AS entity1
@@ -217,7 +217,7 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
             cursor.execute(
                 """
                 SELECT MIN(id), MAX(id), COUNT(*)
-                FROM iaso_entity 
+                FROM iaso_entity
                 WHERE entity_type_id = %s AND deleted_at IS NULL
             """,
                 [params.get("entity_type_id")],

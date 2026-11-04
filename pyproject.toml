@@ -2,7 +2,7 @@
 name = "Iaso"
 readme = "README.md"
 requires-python = ">=3.9,<3.10"
-version = "2026.10.20.dev0"
+version = "2026.11.18.dev0"
 dependencies = [
     "anthropic==0.52.0", # https://github.com/anthropics/anthropic-sdk-python/tags
     "azure-storage-blob==12.19.0",
@@ -170,6 +170,7 @@ select = [
     "SIM", # flake8-simplify
     "T10", # flake8-print
     "UP",  # pyupgrade
+    "W",   # pycodestyle warnings
     # Disabled rules.
     # "C90", # mccabe complexity
     # "G",   # flake8-logging-format

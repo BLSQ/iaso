@@ -44,6 +44,7 @@ export const getFieldKind = (descriptor: Descriptor): FieldKind => {
             return 'photo';
         case 'file':
         case 'audio':
+        case 'background-audio':
         case 'video':
             return 'file';
         case 'geopoint':

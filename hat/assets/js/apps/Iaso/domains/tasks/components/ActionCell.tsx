@@ -1,14 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import { NotificationImportDetailModal } from 'Iaso/domains/tasks/components/NotificationImportDetailModal';
 import { TaskModal } from 'Iaso/domains/tasks/components/TaskModal';
 import { useKillTask, useRelaunchTask } from 'Iaso/domains/tasks/hooks/api';
 import MESSAGES from 'Iaso/domains/tasks/messages';
 import { Task } from 'Iaso/domains/tasks/types';
-import { userHasPermission } from 'Iaso/domains/users/utils';
-import { POLIO_NOTIFICATIONS } from 'Iaso/utils/permissions';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { useCustomComponentsByKey } from 'Iaso/plugins/hooks/customComponents';
 
 export type Props = {
     task: Task<any>;
@@ -16,10 +13,7 @@ export type Props = {
 
 export const TaskActionCell: FunctionComponent<Props> = ({ task }) => {
     const { formatMessage } = useSafeIntl();
-    const hasPolioNotificationsPerm = userHasPermission(
-        POLIO_NOTIFICATIONS,
-        useCurrentUser(),
-    );
+    const taskRowActions = useCustomComponentsByKey('tasks.rowAction');
     const { mutateAsync: killTaskAction } = useKillTask();
     const { mutateAsync: relaunchTaskAction } = useRelaunchTask();
     return (
@@ -51,11 +45,13 @@ export const TaskActionCell: FunctionComponent<Props> = ({ task }) => {
             {task.should_be_killed &&
                 task.status === 'RUNNING' &&
                 formatMessage(MESSAGES.killSignalSent)}
-            {hasPolioNotificationsPerm &&
-                ['SUCCESS', 'ERRORED'].includes(task.status) &&
-                task.name === 'create_polio_notifications_async' && (
-                    <NotificationImportDetailModal task={task} iconProps={{}} />
-                )}
+            {taskRowActions.map(TaskRowAction => {
+                const key =
+                    typeof TaskRowAction === 'function'
+                        ? TaskRowAction.displayName || TaskRowAction.name
+                        : String(TaskRowAction);
+                return <TaskRowAction key={key} task={task} />;
+            })}
             <TaskModal task={task} iconProps={{}} />
         </section>
     );

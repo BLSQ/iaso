@@ -1,0 +1,297 @@
+import { describe, expect, it } from 'vitest';
+import { TeamType } from 'Iaso/domains/teams/constants';
+import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
+import {
+    LevelOrgUnitCounts,
+    LevelOrgUnitType,
+    PlanningLevel,
+    SavedPlanningConfig,
+} from './types';
+import {
+    configsToLevels,
+    getLevelIssues,
+    getLevelMembers,
+    getPlanningConfigChanges,
+    getLevelTypeOptions,
+    validateLevelTypes,
+} from './utils';
+
+const makeUser = (id: number): User => ({
+    id,
+    username: `user${id}`,
+    first_name: '',
+    last_name: '',
+    color: '',
+    iaso_profile_id: id,
+});
+
+const makeNode = (
+    id: number,
+    children: TeamTreeNode[] = [],
+    users: User[] = [],
+): TeamTreeNode => ({
+    id,
+    name: `Team ${id}`,
+    type: users.length ? TeamType.TEAM_OF_USERS : TeamType.TEAM_OF_TEAMS,
+    color: '',
+    parent: null,
+    depth: 0,
+    users,
+    children,
+});
+
+// Below a province: zones, then areas and hospitals, then centres.
+const TYPES: LevelOrgUnitType[] = [
+    { id: 2, name: 'Zone', depth: 1 },
+    { id: 3, name: 'Area', depth: 2 },
+    { id: 5, name: 'Hospital', depth: 2 },
+    { id: 4, name: 'Centre', depth: 3 },
+];
+
+const level = (
+    orgUnitTypeIds: number[],
+    groupIds: number[] = [],
+): PlanningLevel => ({
+    orgUnitTypeIds,
+    groups: groupIds.map(id => ({ id, name: '' })),
+});
+const optionNames = (levels: PlanningLevel[], index: number) =>
+    getLevelTypeOptions(levels, index, TYPES).map(type => type.name);
+
+describe('getLevelMembers', () => {
+    it('counts teams per depth and puts users one level below their team', () => {
+        const root = makeNode(1, [
+            makeNode(2, [makeNode(4, [], [makeUser(10), makeUser(11)])]),
+            makeNode(3, [makeNode(5, [], [makeUser(11), makeUser(12)])]),
+        ]);
+        expect(getLevelMembers(root)).toEqual([
+            { teamsCount: 2, usersCount: 0 },
+            { teamsCount: 2, usersCount: 0 },
+            { teamsCount: 0, usersCount: 3 },
+        ]);
+    });
+
+    it('returns no level for a root team without members', () => {
+        expect(getLevelMembers(makeNode(1))).toEqual([]);
+    });
+});
+
+describe('getLevelTypeOptions', () => {
+    it('offers the types directly below the root org unit on the first level', () => {
+        expect(optionNames([level([])], 0)).toEqual(['Zone']);
+    });
+
+    it('offers the types directly below the level above', () => {
+        expect(optionNames([level([2]), level([])], 1)).toEqual([
+            'Area',
+            'Hospital',
+        ]);
+    });
+
+    it('offers nothing when the level above has no type', () => {
+        expect(optionNames([level([]), level([])], 1)).toEqual([]);
+    });
+
+    it('keeps selected types listed even when no longer directly below', () => {
+        expect(optionNames([level([2]), level([4])], 1)).toEqual([
+            'Area',
+            'Hospital',
+            'Centre',
+        ]);
+    });
+});
+
+describe('validateLevelTypes', () => {
+    it('accepts strictly deeper levels, with several types at the same depth', () => {
+        expect(
+            validateLevelTypes(
+                [level([2]), level([3, 5]), level([4])],
+                3,
+                TYPES,
+            ),
+        ).toEqual([undefined, undefined, undefined]);
+    });
+
+    it('requires a type on every level, including levels not yet in the form', () => {
+        expect(validateLevelTypes([level([2])], 2, TYPES)).toEqual([
+            undefined,
+            'requiredField',
+        ]);
+    });
+
+    it('rejects types of different depths on the same level', () => {
+        expect(validateLevelTypes([level([2, 3])], 1, TYPES)).toEqual([
+            'mixedOrgUnitTypeDepths',
+        ]);
+    });
+
+    it('rejects a first level that is not directly below the root org unit', () => {
+        expect(validateLevelTypes([level([3])], 1, TYPES)).toEqual([
+            'notDirectlyBelowLevelAbove',
+        ]);
+    });
+
+    it('rejects a level that skips a depth below the level above', () => {
+        expect(validateLevelTypes([level([2]), level([4])], 2, TYPES)).toEqual([
+            undefined,
+            'notDirectlyBelowLevelAbove',
+        ]);
+    });
+});
+
+const makeConfig = (
+    id: number,
+    levelNumber: number,
+    typeIds: number[],
+    groupIds: number[] = [],
+): SavedPlanningConfig => ({
+    id,
+    level: levelNumber,
+    org_unit_types: typeIds.map(typeId => ({ id: typeId, name: '' })),
+    org_unit_groups: groupIds.map(groupId => ({ id: groupId, name: '' })),
+});
+
+describe('configsToLevels', () => {
+    it('maps configs to levels by level number, filling gaps with empty levels', () => {
+        expect(
+            configsToLevels([
+                makeConfig(10, 1, [2], [7]),
+                makeConfig(11, 3, [4]),
+            ]),
+        ).toEqual([level([2], [7]), level([]), level([4])]);
+    });
+
+    it('treats null types and groups as empty', () => {
+        expect(
+            configsToLevels([
+                {
+                    id: 1,
+                    level: 1,
+                    org_unit_types: null,
+                    org_unit_groups: null,
+                },
+            ]),
+        ).toEqual([level([])]);
+    });
+});
+
+describe('getPlanningConfigChanges', () => {
+    it('creates every level when nothing is saved yet', () => {
+        expect(
+            getPlanningConfigChanges(5, [level([2], [7]), level([3])], []),
+        ).toEqual({
+            toCreate: [
+                {
+                    planning: 5,
+                    level: 1,
+                    org_unit_types: [2],
+                    org_unit_groups: [7],
+                },
+                {
+                    planning: 5,
+                    level: 2,
+                    org_unit_types: [3],
+                    org_unit_groups: [],
+                },
+            ],
+            toUpdate: [],
+            toDeleteIds: [],
+        });
+    });
+
+    it('updates only changed levels, ignoring the order of ids', () => {
+        const saved = [makeConfig(10, 1, [2, 5]), makeConfig(11, 2, [3])];
+        expect(
+            getPlanningConfigChanges(5, [level([5, 2]), level([4])], saved),
+        ).toEqual({
+            toCreate: [],
+            toUpdate: [
+                {
+                    id: 11,
+                    level: 2,
+                    org_unit_types: [4],
+                    org_unit_groups: [],
+                },
+            ],
+            toDeleteIds: [],
+        });
+    });
+
+    it('deletes saved configs deeper than the form levels', () => {
+        const saved = [makeConfig(10, 1, [2]), makeConfig(11, 2, [3])];
+        expect(getPlanningConfigChanges(5, [level([2])], saved)).toEqual({
+            toCreate: [],
+            toUpdate: [],
+            toDeleteIds: [11],
+        });
+    });
+});
+
+const makeCounts = (
+    total: number,
+    countByTypeId: [number, number][],
+): LevelOrgUnitCounts => ({
+    total,
+    typesTotal: countByTypeId.reduce((acc, [, count]) => acc + count, 0),
+    countByGroupId: new Map(),
+    countByTypeId: new Map(countByTypeId),
+});
+
+describe('getLevelIssues', () => {
+    const [zone, area] = TYPES;
+
+    it('returns no issue when every type has org units and no group filters them out', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone],
+                counts: makeCounts(4, [[zone.id, 4]]),
+                hasGroups: false,
+                levelAboveCount: 1,
+            }),
+        ).toEqual([]);
+    });
+
+    it('flags each selected type without org units under the target geography', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone, area],
+                counts: makeCounts(3, [
+                    [zone.id, 3],
+                    [area.id, 0],
+                ]),
+                hasGroups: false,
+            }),
+        ).toEqual([{ type: 'noOrgUnitOfType', typeName: 'Area' }]);
+    });
+
+    it('reports no issue when groups only exclude some of the level org units', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone],
+                counts: makeCounts(3, [[zone.id, 10]]),
+                hasGroups: true,
+            }),
+        ).toEqual([]);
+    });
+
+    it('reports groups that contain none of the level org units', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [zone],
+                counts: makeCounts(0, [[zone.id, 10]]),
+                hasGroups: true,
+            }),
+        ).toEqual([{ type: 'noOrgUnitInGroups' }]);
+    });
+
+    it('warns when the level above has no org unit to assign from', () => {
+        expect(
+            getLevelIssues({
+                selectedTypes: [area],
+                counts: makeCounts(5, [[area.id, 5]]),
+                hasGroups: false,
+                levelAboveCount: 0,
+            }),
+        ).toEqual([{ type: 'emptyLevelAbove' }]);
+    });
+});

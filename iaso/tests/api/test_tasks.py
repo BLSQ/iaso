@@ -43,22 +43,6 @@ class TaskSerializerSerializerTestCase(TestCase):
             params={},
         )
 
-        cls.task_polio = m.Task.objects.create(
-            progress_value=1,
-            end_value=1,
-            account=cls.user.iaso_profile.account,
-            created_by=cls.user,
-            status="Success",
-            name="create_polio_notifications_async",
-            result="3768 polio notifications created.",
-            params={
-                "args": [],
-                "kwargs": {"pk": 10},
-                "method": "create_polio_notifications_async",
-                "module": "plugins.polio.models",
-            },
-        )
-
     def test_serialize_instance_of_task(self):
         serializer = TaskSerializer(self.task)
         self.assertDictEqual(
@@ -83,35 +67,6 @@ class TaskSerializerSerializerTestCase(TestCase):
                 "name": "org_unit_bulk_update",
                 "should_be_killed": False,
                 "progress_message": None,
-                "polio_notification_import_id": None,
-            },
-        )
-
-    def test_serialize_instance_of_polio_notification_task(self):
-        serializer = TaskSerializer(self.task_polio)
-        self.assertDictEqual(
-            serializer.data,
-            {
-                "id": self.task_polio.pk,
-                "created_at": CREATED_AT.timestamp(),
-                "started_at": None,
-                "ended_at": None,
-                "progress_value": 1,
-                "end_value": 1,
-                "created_by": {
-                    "first_name": "",
-                    "full_name": "",
-                    "id": self.user.pk,
-                    "last_name": "",
-                    "username": self.user.username,
-                },
-                "launcher": None,
-                "result": "3768 polio notifications created.",
-                "status": "Success",
-                "name": "create_polio_notifications_async",
-                "should_be_killed": False,
-                "progress_message": None,
-                "polio_notification_import_id": 10,
             },
         )
 

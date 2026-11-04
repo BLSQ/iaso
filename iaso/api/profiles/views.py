@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, Union
 
 import django.core.exceptions as django_exceptions
 
@@ -53,7 +53,7 @@ from iaso.api.profiles.serializers import (
 from iaso.api.profiles.serializers.dropdown import ProfileDropdownSerializer
 from iaso.api.profiles.serializers.update import BaseProfileUpdateSerializer, ProfileUpdatePasswordSerializer
 from iaso.mail.branding import core_email_branding_context
-from iaso.models import OrgUnit, Profile, TenantUser, UserRole
+from iaso.models import OrgUnit, OrgUnitType, Profile, Project, Team, TenantUser, UserRole
 from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
 from iaso.utils import is_mobile_request
 
@@ -128,6 +128,18 @@ class ProfilesViewSet(ModelViewSet):
             # ProfileDropdownSerializer only reads obj.user_id and obj.user.username/first_name/last_name,
             # so skip the editable_org_unit_types annotation (extra joins + GROUP BY) it never uses.
             return qs.select_related("user")
+
+        if self.action in ["export_csv", "export_xlsx"]:
+            # `list_export.get_row` only reads these relations: prefetch them instead of
+            # querying them per profile, and skip the unused editable_org_unit_types annotation.
+            return qs.select_related("user").prefetch_related(
+                Prefetch("org_units", queryset=OrgUnit.objects.order_by("id").only("id", "source_ref")),
+                Prefetch("editable_org_unit_types", queryset=OrgUnitType.objects.order_by("id").only("id")),
+                "user__user_permissions",
+                Prefetch("user_roles", queryset=UserRole.objects.select_related("group").order_by("id")),
+                Prefetch("projects", queryset=Project.objects.order_by("id").only("id", "name")),
+                Prefetch("user__teams", queryset=Team.objects.order_by("id").only("id", "name")),
+            )
 
         qs = qs.with_editable_org_unit_types()
 
@@ -397,9 +409,8 @@ class ProfilesViewSet(ModelViewSet):
     ) -> Union[HttpResponse, StreamingHttpResponse]:
         columns = [{"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST]
 
-        def get_row(profile: Profile, **_) -> List[Any]:
-            org_units = profile.org_units.order_by("id").only("id", "source_ref")
-            editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
+        def get_row(profile: Profile, **_) -> list[Any]:
+            org_units = profile.org_units.all()
 
             return [
                 profile.id,
@@ -414,14 +425,11 @@ class ProfilesViewSet(ModelViewSet):
                 profile.dhis2_id,
                 profile.organization,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
-                ",".join(
-                    item.group.name.removeprefix(f"{profile.account.pk}_")
-                    for item in profile.user_roles.all().order_by("id")
-                ),
-                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
-                ",".join(item.name for item in profile.user.teams.all().order_by("id")),
+                ",".join(item.group.name.removeprefix(f"{profile.account_id}_") for item in profile.user_roles.all()),
+                ",".join(str(item.name) for item in profile.projects.all()),
+                ",".join(item.name for item in profile.user.teams.all()),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
-                ",".join(str(pk) for pk in editable_org_unit_types_pks),
+                ",".join(str(item.pk) for item in profile.editable_org_unit_types.all()),
             ]
 
         filename = "users"
@@ -442,7 +450,7 @@ class ProfilesViewSet(ModelViewSet):
         else:
             raise ValueError(f"Unknown file format requested: {file_format}")
 
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
     def perform_destroy(self, instance):

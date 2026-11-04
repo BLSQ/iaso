@@ -5,7 +5,7 @@ import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { InstanceValidation } from 'Iaso/domains/instances/components/ValidationWorkflow/InstanceValidation';
 import { useGetSubmissionValidationStatus } from 'Iaso/domains/instances/components/ValidationWorkflow/useGetSubmissionValidationStatus';
 import MESSAGES from 'Iaso/domains/instances/messages';
-import PERMISSIONS_MESSAGES from 'Iaso/domains/users/permissionsMessages';
+import { usePermissionsMessages } from 'Iaso/domains/users/permissionsMessages';
 import {
     userHasAccessToModule,
     userHasAllPermissions,
@@ -48,6 +48,7 @@ export const InstanceValidationContent = ({
 }: InstanceValidationWidgetPaperProps) => {
     const { formatMessage } = useSafeIntl();
     const availability = useValidationAvailability();
+    const permissionsMessages = usePermissionsMessages();
     const { data: validationWorkflow, isLoading: isLoadingValidationStatus } =
         useGetSubmissionValidationStatus(currentInstanceId);
 
@@ -64,7 +65,7 @@ export const InstanceValidationContent = ({
             <Alert severity="warning">
                 {formatMessage(MESSAGES.missingPermissions, {
                     permissions: [
-                        formatMessage(PERMISSIONS_MESSAGES[SUBMISSIONS]),
+                        formatMessage(permissionsMessages[SUBMISSIONS]),
                     ].join(', '),
                 })}
             </Alert>

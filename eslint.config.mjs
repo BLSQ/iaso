@@ -16,7 +16,8 @@ import globals from 'globals';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Frontend sources: main app + polio plugin JS bundle.
+// IASO scripts lint hat/assets/js only. Plugin CI passes plugins/<name>/js
+// explicitly; this pattern keeps those files on the same rules.
 const lintedJsPaths = [
     'hat/assets/js/**/*.{js,jsx,ts,tsx}',
     'plugins/**/js/**/*.{js,jsx,ts,tsx}',

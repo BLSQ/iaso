@@ -1,13 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
+import { baseUrls } from 'Iaso/constants/urls';
+import { TeamTypeDropdown } from 'Iaso/domains/teams/components/TeamTypeDropdown';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../components/forms/InputComponent';
-import { baseUrls } from '../../../constants/urls';
-import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import MESSAGES from '../messages';
 import { TeamUrlParams } from '../types/team';
 
@@ -17,7 +16,6 @@ type Props = {
 
 const baseUrl = baseUrls.teams;
 export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
-    const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
@@ -47,23 +45,11 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                 </Box>
             </Grid>
             <Grid item xs={12} md={3} lg={3}>
-                <InputComponent
-                    type="select"
-                    keyValue="types"
-                    onChange={handleChange}
+                <TeamTypeDropdown
+                    keyValue={'types'}
+                    handleChange={handleChange}
                     value={filters.types}
-                    label={MESSAGES.type}
                     multi
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.teamsOfTeams),
-                            value: TEAM_OF_TEAMS,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.teamsOfUsers),
-                            value: TEAM_OF_USERS,
-                        },
-                    ]}
                 />
                 <InputComponent
                     keyValue="projects"

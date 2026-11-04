@@ -45,4 +45,4 @@ class ConfigurationImpact:
 
 # What each domain's module implements: the configuration reading the removed or modified questions of the form of
 # the previous version
-ImpactFunction = typing.Callable[["FormVersion", typing.Set[str], typing.Set[str]], typing.List[ConfigurationImpact]]
+ImpactFunction = typing.Callable[["FormVersion", set[str], set[str]], list[ConfigurationImpact]]

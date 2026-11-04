@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 
 from copy import copy, deepcopy
 from logging import getLogger
-from typing import Dict, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 
 from django.contrib.auth.models import User
@@ -163,7 +163,7 @@ class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
     ignored = serializers.BooleanField(required=False, default=False)
 
 
-def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: Dict):
+def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: dict):
     new_uuid = uuid4()
     att1: Optional[Instance] = e1.attributes
     att2: Optional[Instance] = e2.attributes
@@ -261,7 +261,7 @@ def _xmlfile_to_element(file):
     return ET.fromstring(fixed_content)
 
 
-def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user: User):
+def merge_entities(e1: Entity, e2: Entity, merge_def: dict, current_user: User):
     new_entity_uuid = uuid4()
     new_attributes = merge_attributes(e1, e2, new_entity_uuid, merge_def)
 

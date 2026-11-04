@@ -281,7 +281,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def export_to_csv(self, request):
-        filename = "%s--%s" % ("review-change-proposals", datetime.now().strftime("%Y-%m-%d"))
+        filename = "{}--{}".format("review-change-proposals", datetime.now().strftime("%Y-%m-%d"))
 
         # Optimize queryset with prefetch_related and select_related
         org_unit_changes_requests = (

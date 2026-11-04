@@ -17,14 +17,18 @@ import get from 'lodash/get';
 import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';
 import { FeatureFlag } from '../types/featureFlag';
 import { Project } from '../types/project';
 import { ProjectFeatureFlags } from './ProjectFeatureFlags';
 import { ProjectInfos, ProjectForm } from './ProjectInfos';
+import { ProjectMobileReport } from './ProjectMobileReport';
 
-type Tab = 'infos' | 'feature_flags';
+type Tab = 'infos' | 'feature_flags' | 'mobile_report';
 
 type Props = {
     initialData?: Project;
@@ -87,6 +91,12 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
 
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const currentUser = useCurrentUser();
+    // Mobile reports are uploaded to an existing project, by users allowed to manage reports.
+    const canManageMobileReport =
+        dialogType !== 'create' &&
+        Boolean(initialData?.id) &&
+        userHasPermission(Permission.REPORTS, currentUser);
     const initialProject = useCallback(
         app => {
             const pr = app || initialData || {};
@@ -276,6 +286,15 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                         value="feature_flags"
                         label={formatMessage(MESSAGES.featureFlags)}
                     />
+                    {canManageMobileReport && (
+                        <Tab
+                            classes={{
+                                root: classes.tab,
+                            }}
+                            value="mobile_report"
+                            label={formatMessage(MESSAGES.mobileReport)}
+                        />
+                    )}
                 </Tabs>
                 {tab === 'infos' && (
                     <ProjectInfos
@@ -293,6 +312,14 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                             translatedFeatureFlag(featureFlag),
                         )}
                         isFetchingFeatureFlag={isFetchingFeatureFlags}
+                    />
+                )}
+                {tab === 'mobile_report' && canManageMobileReport && (
+                    <ProjectMobileReport
+                        projectId={initialData?.id}
+                        hasReportsFeatureFlag={(
+                            project.feature_flags.value ?? []
+                        ).some(featureFlag => featureFlag.code === 'REPORTS')}
                     />
                 )}
             </div>

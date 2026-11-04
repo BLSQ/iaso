@@ -62,12 +62,19 @@ class HelpOrDocTest(SimpleTestCase):
         self.assertIn("iaso_whoami", content)
         self.assertIn("data source", content)
         self.assertIn("project", content)
+        self.assertIn("api_token=iaso_token", content)
+        self.assertIn("client.raw", content)
+        self.assertIn("client.login(api_token=iaso_token)", content)
+        self.assertNotIn("set_api_token", content)
+        self.assertNotIn("base_url=iaso_url, api_token", content)
 
     def test_mcp_auth_instructions_forbid_openhexa_connections(self):
         from iaso.mcp.help import mcp_auth_instructions
 
         text = mcp_auth_instructions()
         self.assertIn("NEVER use an OpenHEXA workspace connection", text)
+        self.assertIn("api_token=iaso_token", text)
+        self.assertIn("client.raw", text)
         self.assertIn("logged-in IASO user", text)
         self.assertIn("project", text)
         self.assertIn("data source", text)
@@ -112,6 +119,16 @@ class HelpOrDocTest(SimpleTestCase):
         self.assertEqual(params["iaso_login"], "cgerardtest")
         self.assertNotIn("iaso_password", params)
         self.assertNotIn("iaso_token", params)
+        self.assertIn("api_token=iaso_token", params["secrets"])
+        self.assertEqual(
+            params["iaso_client"]["construct"],
+            "IasoClient(base_url=iaso_url)",
+        )
+        self.assertEqual(
+            params["iaso_client"]["authenticate"],
+            "client.login(api_token=iaso_token)",
+        )
+        self.assertIn("client.raw", params["iaso_client"]["raw_get"])
         self.assertEqual(
             params["pipeline_config_public"],
             {

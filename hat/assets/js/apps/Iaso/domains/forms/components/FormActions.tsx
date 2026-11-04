@@ -131,6 +131,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                                 periodType:
                                                     settings.row.original
                                                         .period_type,
+                                                orgUnitTypeIds: [],
                                             }}
                                             onCreateOrReAssign={currentForm =>
                                                 createInstance(currentForm)

@@ -73,10 +73,10 @@ from iaso.models import (
     CommentIaso,
     Form,
     MatchingAlgorithm,
+    MissionFormThroughForm,
     OpenHEXAInstance,
     OrgUnitType,
     RecordType,
-    Report,
     ReportVersion,
     Task,
 )
@@ -125,6 +125,7 @@ _MAX_PROTECT_UNBLOCK_ATTEMPTS = 10
 class DiscoveredModel:
     """A model discovered via BFS from Account, and how to filter/delete it."""
 
+    name: str  # Name of the model
     account_lookup: str  # Django ORM lookup back to Account, e.g. 'project__account'
     on_delete_value: str  # on_delete of the edge that discovered this model, e.g. 'CASCADE'
     is_partial_coverage: bool  # True if any edge on the path is SET_NULL — filter may miss rows with a NULL FK
@@ -183,7 +184,7 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
     ),
     OutOfGraphCleanupNote(
         label="iaso.ReportVersion",
-        reason="only Report points to it (PROTECT); no reverse-FK path back to Account for BFS to follow",
+        reason="Report points to it (PROTECT) and its own FK to Report is SET_NULL: rows captured upfront, deleted after Reports",
     ),
     OutOfGraphCleanupNote(label="audit.Modification", reason="content-type based, no FK to Account"),
     OutOfGraphCleanupNote(
@@ -200,6 +201,9 @@ _OUT_OF_GRAPH_CLEANUP_NOTES = [
     OutOfGraphCleanupNote(
         label="users_profile",
         reason="legacy table, no longer defined in the codebase — may still exist in older deployed databases",
+    ),
+    OutOfGraphCleanupNote(
+        label="iaso.MissionFormThroughForm", reason="no direct FK to Account, need to go through MissionWithForms"
     ),
 ]
 
@@ -258,6 +262,7 @@ def build_fk_graph(root_model):
             field_name = related_object.field.name
 
             discovered_model = DiscoveredModel(
+                name=related_object.name,
                 account_lookup=field_name if current_lookup is None else f"{field_name}__{current_lookup}",
                 on_delete_value=_on_delete_name(related_object.on_delete),
                 # if we got here through a nullable FK at some point, any model discovered downstream is marked too
@@ -691,7 +696,7 @@ class Command(BaseCommand):
             # Cycle: Planning.selected_sampling_result = PROTECT(PSR) ↔ PSR.planning = CASCADE(Planning)
             # Break it: null Planning.selected_sampling_result → delete PSR → delete Planning.
             with self._doing(f"Planning/PSR cycle {ds_label}"):
-                planning_qs = Planning.objects.filter(org_unit__version__in=versions_qs)
+                planning_qs = Planning.objects_include_deleted.filter(org_unit__version__in=versions_qs)
                 self._update_qs(
                     planning_qs,
                     label=f"Planning.selected_sampling_result=NULL[{ds_label}]",
@@ -941,7 +946,11 @@ class Command(BaseCommand):
         )
         record_type_ids = list(RecordType.objects.filter(projects__account=account).values_list("pk", flat=True))
         report_version_ids = list(
-            Report.objects.filter(project__account=account).values_list("published_version_id", flat=True).distinct()
+            ReportVersion.objects_include_deleted.filter(
+                Q(report__project__account=account) | Q(published_in_reports__project__account=account)
+            )
+            .values_list("pk", flat=True)
+            .distinct()
         )
         device_ids = list(Device.objects.filter(projects__account=account).values_list("pk", flat=True))
         # ExportStatus has no FK to Account either — only reachable via its Instance, which
@@ -964,6 +973,7 @@ class Command(BaseCommand):
             DataSource,  # M2M gap, handled via _delete_datasource_tree
             Form,  # M2M gap
             OrgUnitType,  # M2M gap
+            MissionFormThroughForm,  # M2M
         }
 
         # ---- Step 1: Out-of-graph — DataSource tree (M2M gap) ----
@@ -985,6 +995,13 @@ class Command(BaseCommand):
                 label="CommentIaso",
             )
 
+        # ---- Step 1c: Out-of-graph - MissionFormThroughForm -----
+
+        with self._doing(f"account={account.id} MissionFormThroughFrom"):
+            self._delete_qs(
+                MissionFormThroughForm.objects.filter(mission_form__mission_ptr__account=account.id),
+                label="MissionFormThroughForm",
+            )
         # ---- Step 2: Break PROTECT cycles that topo sort can't handle ----
 
         # PlanningSamplingResult.planning = CASCADE(Planning) and
@@ -1040,7 +1057,7 @@ class Command(BaseCommand):
             record_types = RecordType.objects.filter(pk__in=record_type_ids)
             self._delete_qs(record_types, label="RecordType")
 
-        # --- Step 4e: Out-of-graph - ReportVersion (Report.published_version = PROTECT, no reverse FK) ----
+        # --- Step 4e: Out-of-graph - ReportVersion (Report.published_version = PROTECT, ReportVersion.report = SET_NULL) ----
         # Uses report_version_ids captured at the top — Report rows are already gone by now.
         with self._doing(f"account={account.id} ReportVersion"):
             report_versions = ReportVersion.objects.filter(pk__in=report_version_ids)

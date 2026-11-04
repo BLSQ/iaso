@@ -8,13 +8,13 @@ import {
     useSafeIntl,
     InputWithInfos,
 } from 'bluesquare-components';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { stringToBoolean } from 'Iaso/utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown';
 import MESSAGES from '../messages';
@@ -65,7 +65,7 @@ const Filters = ({
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsDropdown({});
+        useApiTeamsDropdownList();
 
     const orgUnitTypeDropdown = useMemo(() => {
         if (!orgUnitTypes?.length) return orgUnitTypes;

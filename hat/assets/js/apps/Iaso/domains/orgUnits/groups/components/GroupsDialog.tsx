@@ -4,9 +4,7 @@ import { IntlMessage } from 'bluesquare-components';
 import get from 'lodash/get';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
-import { userHasPermission } from '../../../users/utils';
+import { useCustomComponentsByKey } from '../../../../plugins/hooks/customComponents';
 import MESSAGES from '../messages';
 
 const initialGroup = currentGroup => {
@@ -94,7 +92,7 @@ const GroupDialog: FunctionComponent<Props> = ({
     const onClosed = () => {
         setGroup(initialGroup(initialData));
     };
-    const currentUser = useCurrentUser();
+    const groupFields = useCustomComponentsByKey('groups.dialogField');
     return (
         <ConfirmCancelDialogComponent
             allowConfirm={allowConfirm}
@@ -126,19 +124,19 @@ const GroupDialog: FunctionComponent<Props> = ({
                         type="text"
                         label={MESSAGES.sourceRef}
                     />
-                    {userHasPermission(
-                        [Permission.POLIO, Permission.POLIO_CONFIG],
-                        currentUser,
-                    ) && (
-                        <InputComponent
-                            keyValue="block_of_countries"
-                            value={group.block_of_countries.value}
-                            onChange={(key, value) => setFieldValue(key, value)}
-                            type="checkbox"
-                            errors={group.block_of_countries.errors}
-                            label={MESSAGES.blockOfCountries}
-                        />
-                    )}
+                    {groupFields.map(GroupField => {
+                        const key =
+                            typeof GroupField === 'function'
+                                ? GroupField.displayName || GroupField.name
+                                : String(GroupField);
+                        return (
+                            <GroupField
+                                key={key}
+                                values={group}
+                                onChange={setFieldValue}
+                            />
+                        );
+                    })}
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

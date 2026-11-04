@@ -1,5 +1,3 @@
-import typing
-
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
@@ -13,7 +11,7 @@ from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, Wor
 from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 
 
-def export_workflow_real(workflow: Workflow) -> typing.Dict:
+def export_workflow_real(workflow: Workflow) -> dict:
     """Exports the given workflow as a dict
     This version assumes that an entity type with the same name and the same reference form exists.
     It also assumes that the forms in the follow-ups and changes exist.
@@ -61,7 +59,7 @@ def export_workflow_real(workflow: Workflow) -> typing.Dict:
     return workflow_data
 
 
-def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workflow:
+def import_workflow_real(workflow_data: dict, account: Account) -> Workflow:
     """Imports a workflow from a dict and returns a Workflow object
     This version assumes that an entity type with the same name and the same reference form exists.
     It also assumes that the forms in the follow-ups and changes exist.

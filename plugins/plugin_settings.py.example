@@ -21,3 +21,13 @@ CONSTANTS = {
 TEMPLATES_DIRS = []
 STATICFILES_DIRS = []
 WEBPACK_LOADER = {}
+
+# Optional hooks. Core calls these when the plugin is in PLUGINS.
+#
+# def org_unit_extra_permissions(user):
+#     """Return booleans. Any True lets the user read an org unit."""
+#     return [user.has_perm("myplugin.my_permission")]
+#
+# def has_log_access(user, obj):
+#     """Return True or False if obj belongs to this plugin, otherwise None."""
+#     return None

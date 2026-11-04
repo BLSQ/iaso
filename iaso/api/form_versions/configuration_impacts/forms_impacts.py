@@ -12,9 +12,9 @@ if typing.TYPE_CHECKING:
 
 def forms_impacts(
     previous_form_version: "FormVersion",
-    removed_question_names: typing.Set[str],
-    modified_question_names: typing.Set[str],
-) -> typing.List[ConfigurationImpact]:
+    removed_question_names: set[str],
+    modified_question_names: set[str],
+) -> list[ConfigurationImpact]:
     """The form's own configuration:
     - `location_field`, `device_field`, `correlation_field`: its GPS, device (`deviceid` when not set) or correlation
       question (target: the form), the last one making the processing of new submissions fail;

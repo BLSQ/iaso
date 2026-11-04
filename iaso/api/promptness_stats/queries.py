@@ -11,7 +11,7 @@ The computation is done in 3 steps:
    the parent org unit.
 """
 
-from typing import Dict, List, NamedTuple, Optional
+from typing import NamedTuple, Optional
 
 from django.db.models import (
     BooleanField,
@@ -196,7 +196,7 @@ def annotate_counts(org_units: QuerySet[OrgUnit], targets_ctes: TargetsCTEs) -> 
     )
 
 
-def get_rows(parent_org_unit: OrgUnit, org_unit_types: Optional[List[OrgUnitType]]) -> QuerySet[OrgUnit]:
+def get_rows(parent_org_unit: OrgUnit, org_unit_types: Optional[list[OrgUnitType]]) -> QuerySet[OrgUnit]:
     """Rows of the response, without their counts.
 
     Rows are the `VALID` direct children of `parent_org_unit`, or, when `org_unit_types` is given, its `VALID`
@@ -231,7 +231,7 @@ def annotate_rows(
 class RowsAncestors(NamedTuple):
     """Ancestors of the rows, see `get_rows_ancestors()`"""
 
-    names: Dict[int, str]  # id -> name
+    names: dict[int, str]  # id -> name
     levels_count: int  # level of the deepest ancestor: the root is at level 1
 
 

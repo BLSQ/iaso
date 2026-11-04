@@ -1,15 +1,21 @@
-from django.urls import path, re_path
+import importlib.util
+
+from django.conf import settings
+from django.urls import include, path, re_path
 
 from . import views
 
 
 app_name = "dashboard"
 urlpatterns = [
-    re_path(r"^polio/embeddedCalendar/.*$", views.embeddable_iaso, name="embedded_calendar"),
-    re_path(r"^polio/embeddedVaccineRepository/.*$", views.embeddable_iaso, name="embedded_vaccine_repository"),
-    re_path(r"^polio/embeddedVaccineStock/.*$", views.embeddable_iaso, name="embedded_vaccine_stock"),
-    re_path(r"^polio/embeddedLqasCountry/.*$", views.embeddable_iaso, name="embedded_lqas_country"),
-    re_path(r"^polio/embeddedLqasMap/.*$", views.embeddable_iaso, name="embedded_lqas_map"),
     path("home/", views.home_iaso, name="home_iaso"),
-    re_path(r"^.*$", views.iaso, name="iaso"),
 ]
+
+# Plugin modules named dashboard_urls are mounted here, before the catch-all,
+# so a plugin can keep a public /dashboard/<plugin>/... page.
+for plugin_name in settings.PLUGINS:
+    dashboard_urls_module = "plugins." + plugin_name + ".dashboard_urls"
+    if importlib.util.find_spec(dashboard_urls_module):
+        urlpatterns.append(path("", include(dashboard_urls_module)))
+
+urlpatterns.append(re_path(r"^.*$", views.iaso, name="iaso"))

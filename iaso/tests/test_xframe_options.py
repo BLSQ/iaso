@@ -44,15 +44,6 @@ class XFrameOptionsTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get("X-Frame-Options"), "DENY")
 
-    def test_embeddable_dashboard_is_exempt(self):
-        with mock.patch(
-            "hat.dashboard.views._base_iaso",
-            return_value=HttpResponse("ok"),
-        ):
-            response = self.client.get("/dashboard/polio/embeddedCalendar/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsNone(response.get("X-Frame-Options"))
-
     def test_pages_view_is_exempt(self):
         response = self.client.get(f"/pages/{self.public_page.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

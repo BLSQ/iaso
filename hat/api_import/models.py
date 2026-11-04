@@ -55,12 +55,7 @@ class APIImport(models.Model):
     app_version = models.CharField(max_length=25, blank=True, null=False)
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (
-            self.id,
-            self.user,
-            self.import_type,
-            self.created_at,
-        )
+        return f"{self.id} - {self.user} - {self.import_type} - {self.created_at}"
 
     def as_dict(self):
         res = {

@@ -167,7 +167,7 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
                         expanded={{}}
                         getObjectId={obj => obj.id}
                         data={data?.results ?? []}
-                        pages={1}
+                        pages={data?.pages ?? 1}
                         defaultSorted={[{ id: 'sku', desc: false }]}
                         columns={columns}
                         count={data?.count ?? 0}

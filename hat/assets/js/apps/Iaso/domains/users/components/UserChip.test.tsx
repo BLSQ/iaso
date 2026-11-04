@@ -20,7 +20,7 @@ describe('UserChip', () => {
         expect(screen.getByText(/ada \(Ada Lovelace\)/i)).toBeVisible();
     });
 
-    it('uses white label text on a dark background color', () => {
+    it('applies outlined ColorChip styles for a dark user color', () => {
         renderWithTheme(
             <UserChip
                 user={{
@@ -30,13 +30,18 @@ describe('UserChip', () => {
             />,
         );
 
-        const chip = screen.getByText('u1').closest('.MuiChip-root');
+        const label = screen.getByText('u1');
+        const chip = label.closest('.MuiChip-root');
         expect(chip).toBeTruthy();
-        expect(chip).toHaveStyle({ color: 'rgb(255, 255, 255)' });
-        expect(chip).toHaveStyle({ backgroundColor: 'rgb(17, 17, 17)' });
+        expect(chip).toHaveStyle({
+            backgroundColor: 'rgba(17, 17, 17, 0.2)',
+            borderColor: '#111111',
+        });
+        // Ink lives on the inner label, not the Chip root
+        expect(label).toHaveStyle({ color: 'rgb(10, 10, 10)' });
     });
 
-    it('uses dark label text on a light background color', () => {
+    it('applies outlined ColorChip styles for a light user color', () => {
         renderWithTheme(
             <UserChip
                 user={{
@@ -46,8 +51,13 @@ describe('UserChip', () => {
             />,
         );
 
-        const chip = screen.getByText('u2').closest('.MuiChip-root');
+        const label = screen.getByText('u2');
+        const chip = label.closest('.MuiChip-root');
         expect(chip).toBeTruthy();
-        expect(chip).toHaveStyle({ color: 'rgb(0, 0, 0)' });
+        expect(chip).toHaveStyle({
+            backgroundColor: 'rgba(245, 245, 245, 0.2)',
+            borderColor: '#f5f5f5',
+        });
+        expect(label).toHaveStyle({ color: 'rgb(147, 147, 147)' });
     });
 });

@@ -23,11 +23,9 @@ export type Team = {
     description?: string;
     manager: number;
     sub_teams: Array<number>;
-    sub_teams_details: Array<SubTeam>;
     project: number;
     type?: TeamType;
     users: Array<number>;
-    users_details: Array<User>;
     created_at: string;
     deleted_at?: string;
     parent?: number;
@@ -35,12 +33,11 @@ export type Team = {
     members_count?: number;
 };
 
-export type TeamDropdown = {
-    id: number;
-    name: string;
-    color: string;
-    type?: TeamType;
-    project: number;
+export type TeamTreeNode = Pick<Team, 'id' | 'name' | 'type' | 'color'> & {
+    parent: number | null;
+    depth: number;
+    users: User[];
+    children: TeamTreeNode[];
 };
 
 export type TeamFilterParams = {
@@ -50,13 +47,4 @@ export type TeamFilterParams = {
     fields?: string;
 };
 
-export type TeamDropdownFilterParams = TeamFilterParams;
-
 export type TeamUrlParams = UrlParams & TeamFilterParams;
-
-export type DropdownTeamsOptions = {
-    label: string;
-    value: string;
-    original: TeamDropdown;
-    color: string;
-};

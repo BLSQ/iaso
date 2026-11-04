@@ -3,7 +3,7 @@ import sqlite3
 
 from copy import deepcopy
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import fiona  # type: ignore
 
@@ -106,7 +106,7 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
     return group
 
 
-def apply_date_field(field_name: str, props: Dict[str, str], orgunit: OrgUnit, task):
+def apply_date_field(field_name: str, props: dict[str, str], orgunit: OrgUnit, task):
     # if the field is not the geopackage don't touch the orgunit
     if field_name not in props.keys():
         return
@@ -131,7 +131,7 @@ def create_or_update_orgunit(
     data: OrgUnitData,
     source_version: SourceVersion,
     validation_status: str,
-    ref_group: Dict[str, Group],
+    ref_group: dict[str, Group],
     task=None,
 ) -> OrgUnit:
     props = data["properties"]
@@ -211,7 +211,7 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
     return ref
 
 
-def validate_required_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> str:
+def validate_required_property(props: dict[str, str], property_name: str, orgunit_name: str = "") -> str:
     """Check if a required property exists and is not empty
     Args:
         props: Dictionary of properties
@@ -242,7 +242,7 @@ def validate_required_property(props: Dict[str, str], property_name: str, orguni
     return value.strip()
 
 
-def validate_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> Optional[str]:
+def validate_property(props: dict[str, str], property_name: str, orgunit_name: str = "") -> Optional[str]:
     """Check if a property exists and validate it's not empty if present
     Args:
         props: Dictionary of properties
@@ -319,7 +319,7 @@ def import_gpkg_file2(
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)
     if task:
         task.report_progress_and_stop_if_killed(progress_value=0, end_value=100, progress_message="Reading groups...")
-    ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.objects.filter(source_version=version)}
+    ref_group: dict[str, Group] = {get_ref(group): group for group in Group.objects.filter(source_version=version)}
     with sqlite3.connect(filename) as conn:
         cur = conn.cursor()
         rows = cur.execute("SELECT ref, name FROM groups")
@@ -339,7 +339,7 @@ def import_gpkg_file2(
     if task:
         task.report_progress_and_stop_if_killed(progress_message="Retrieving existing OUs' references...")
     existing_orgunits = version.orgunit_set.all()  # Maybe add a only?
-    ref_ou: Dict[str, OrgUnit] = {}
+    ref_ou: dict[str, OrgUnit] = {}
     for ou in existing_orgunits:
         ref = get_ref(ou)
         ref_ou[ref] = ou
@@ -349,8 +349,8 @@ def import_gpkg_file2(
         )
 
     # The child may be created before the parent, so we keep a list to update after creating them all
-    to_update_with_parent: List[Tuple[str, str]] = []
-    modifications_to_log: List[Tuple[Optional[OrgUnit], OrgUnit]] = []
+    to_update_with_parent: list[tuple[str, str]] = []
+    modifications_to_log: list[tuple[Optional[OrgUnit], OrgUnit]] = []
     total_org_unit = 0
 
     # Layer are OrgUnit's Type

@@ -8,7 +8,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.sessions.models import Session
 from django.contrib.sites.models import Site
 from django.core import management
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 from django.utils import timezone
 from django_sql_dashboard.models import Dashboard as SqlDashboard
 
@@ -19,10 +19,11 @@ from iaso.management.commands.delete_accounts import MODE_DELETE_ACCOUNTS, MODE_
 from iaso.models.data_store import JsonDataStore
 from iaso.models.json_config import Config
 from iaso.models.microplanning import Assignment, PlanningSamplingResult
-from iaso.test import IasoTestCaseMixin
+from iaso.models.microplanning.plannings import PlanningConfig
+from iaso.test import FastFlushTransactionTestCase
 
 
-class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
+class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
     """
     Builds two fully-populated accounts (one to keep, one to delete) covering the
     auto-discovered FK graph, the out-of-graph M2M gaps (DataSource/SourceVersion/OrgUnit,
@@ -86,6 +87,8 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         sampling_result = PlanningSamplingResult.objects.create(planning=planning, parameters={"k": "v"})
         planning.selected_sampling_result = sampling_result
         planning.save()
+
+        planning_config = PlanningConfig.objects.create(planning=planning, level=1)
         assignment = Assignment.objects.create(planning=planning, org_unit=org_unit_child, user=user, team=team)
 
         task = m.Task.objects.create(account=account, name=f"task_{suffix}", status=m.QUEUED)
@@ -177,6 +180,30 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             metric_type=metric_type, org_unit=org_unit_child, year=2024, value=1.0
         )
 
+        mission_form = m.MissionForm.objects.create(name=f"mission_form_{suffix}", account=account)
+        mission_org_unit_type = m.MissionOrgUnitType.objects.create(
+            name=f"mission_out_{suffix}",
+            account=account,
+            org_unit_type=org_unit_type,
+            min_cardinality=1,
+            max_cardinality=3,
+        )
+        mission_entity_type = m.MissionEntityType.objects.create(
+            name=f"mission_et_{suffix}", account=account, entity_type=entity_type, min_cardinality=1, max_cardinality=3
+        )
+
+        mission_form_through_forms = m.MissionFormThroughForm.objects.bulk_create(
+            [
+                m.MissionFormThroughForm(mission_form=mission_form, form=form, min_cardinality=1, max_cardinality=3),
+                m.MissionFormThroughForm(
+                    mission_form=mission_org_unit_type, form=form, min_cardinality=1, max_cardinality=3
+                ),
+                m.MissionFormThroughForm(
+                    mission_form=mission_entity_type, form=form, min_cardinality=1, max_cardinality=3
+                ),
+            ]
+        )
+
         org_unit_reference_instance = m.OrgUnitReferenceInstance.objects.create(
             org_unit=org_unit_child, form=form, instance=instances[0]
         )
@@ -195,6 +222,11 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             file="report.pdf", name=f"report_version_{suffix}", created_by=user
         )
         report = m.Report.objects.create(name=f"report_{suffix}", published_version=report_version, project=project)
+        report_version.report = report
+        report_version.save()
+        older_report_version = m.ReportVersion.objects.create(
+            report=report, file="older_report.zip", name=f"older_report_version_{suffix}", created_by=user
+        )
 
         stock_keeping_unit = m.StockKeepingUnit.objects.create(
             name=f"sku_{suffix}", short_name=f"sku_{suffix}", account=account
@@ -294,6 +326,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "team_parent": team_parent,
             "team_grandparent": team_grandparent,
             "planning": planning,
+            "planning_config": planning_config,
             "sampling_result": sampling_result,
             "assignment": assignment,
             "task": task,
@@ -337,6 +370,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "payment": payment,
             "potential_payment": potential_payment,
             "report_version": report_version,
+            "older_report_version": older_report_version,
             "report": report,
             "stock_keeping_unit": stock_keeping_unit,
             "stock_keeping_unit_children": stock_keeping_unit_children,
@@ -367,6 +401,10 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
             "export_request": export_request,
             "export_status": export_status,
             "export_log": export_log,
+            "mission_entity_type": mission_entity_type,
+            "mission_form": mission_form,
+            "mission_org_unit_type": mission_org_unit_type,
+            "mission_form_through_forms": mission_form_through_forms,
         }
 
     def _create_unscoped_data(self):
@@ -492,6 +530,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.Payment.objects.filter(pk=other_models["payment"].pk).exists())
         self.assertFalse(m.PaymentLot.objects.filter(pk=other_models["payment_lot"].pk).exists())
         self.assertFalse(m.Planning.objects.filter(pk=other_models["planning"].pk).exists())
+        self.assertFalse(m.PlanningConfig.objects.filter(pk=other_models["planning_config"].pk).exists())
         self.assertFalse(PlanningSamplingResult.objects.filter(pk=other_models["sampling_result"].pk).exists())
         self.assertFalse(m.PotentialPayment.objects.filter(pk=other_models["potential_payment"].pk).exists())
         self.assertFalse(m.Profile.objects.filter(pk=other_models["profile"].pk).exists())
@@ -501,6 +540,9 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.RecordType.objects.filter(pk=other_models["record_type"].pk).exists())
         self.assertFalse(m.Report.objects.filter(pk=other_models["report"].pk).exists())
         self.assertFalse(m.ReportVersion.objects.filter(pk=other_models["report_version"].pk).exists())
+        self.assertFalse(
+            m.ReportVersion.objects_include_deleted.filter(pk=other_models["older_report_version"].pk).exists()
+        )
         self.assertFalse(m.SourceVersion.objects.filter(pk=source_version.pk).exists())
         self.assertFalse(m.StockItem.objects.filter(pk=other_models["stock_item"].pk).exists())
         self.assertFalse(m.StockItemRule.objects.filter(pk=other_models["stock_item_rule"].pk).exists())
@@ -537,6 +579,15 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(m.WorkflowChange.objects.filter(pk=other_models["workflow_change"].pk).exists())
         self.assertFalse(m.WorkflowFollowup.objects.filter(pk=other_models["workflow_followup"].pk).exists())
         self.assertFalse(m.WorkflowVersion.objects.filter(pk=other_models["workflow_version"].pk).exists())
+
+        self.assertFalse(m.MissionEntityType.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertFalse(m.MissionForm.objects.filter(pk=other_models["mission_form"].pk).exists())
+        self.assertFalse(
+            m.MissionFormThroughForm.objects.filter(
+                pk__in=[x.pk for x in other_models["mission_form_through_forms"]]
+            ).exists()
+        )
+        self.assertFalse(m.MissionOrgUnitType.objects.filter(pk=other_models["mission_org_unit_type"].pk).exists())
 
         # Everything below depends on whether `_post_deletion_clean_up` ran, which is
         # exclusive to --account-to-keep mode.
@@ -652,6 +703,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.Payment.objects.filter(pk=other_models["payment"].pk).exists())
         self.assertTrue(m.PaymentLot.objects.filter(pk=other_models["payment_lot"].pk).exists())
         self.assertTrue(m.Planning.objects.filter(pk=other_models["planning"].pk).exists())
+        self.assertTrue(m.PlanningConfig.objects.filter(pk=other_models["planning_config"].pk).exists())
         self.assertTrue(PlanningSamplingResult.objects.filter(pk=other_models["sampling_result"].pk).exists())
         self.assertTrue(m.PotentialPayment.objects.filter(pk=other_models["potential_payment"].pk).exists())
         self.assertTrue(m.Profile.objects.filter(pk=other_models["profile"].pk).exists())
@@ -661,6 +713,7 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.RecordType.objects.filter(pk=other_models["record_type"].pk).exists())
         self.assertTrue(m.Report.objects.filter(pk=other_models["report"].pk).exists())
         self.assertTrue(m.ReportVersion.objects.filter(pk=other_models["report_version"].pk).exists())
+        self.assertTrue(m.ReportVersion.objects.filter(pk=other_models["older_report_version"].pk).exists())
         self.assertTrue(m.SourceVersion.objects.filter(pk=source_version.pk).exists())
         self.assertTrue(m.StockItem.objects.filter(pk=other_models["stock_item"].pk).exists())
         self.assertTrue(m.StockItemRule.objects.filter(pk=other_models["stock_item_rule"].pk).exists())
@@ -698,6 +751,16 @@ class DeleteAccountsCommandTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(m.WorkflowChange.objects.filter(pk=other_models["workflow_change"].pk).exists())
         self.assertTrue(m.WorkflowFollowup.objects.filter(pk=other_models["workflow_followup"].pk).exists())
         self.assertTrue(m.WorkflowVersion.objects.filter(pk=other_models["workflow_version"].pk).exists())
+
+        self.assertTrue(m.Mission.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertTrue(m.MissionEntityType.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertTrue(m.MissionForm.objects.filter(pk=other_models["mission_form"].pk).exists())
+        self.assertTrue(
+            m.MissionFormThroughForm.objects.filter(
+                pk__in=[x.pk for x in other_models["mission_form_through_forms"]]
+            ).exists()
+        )
+        self.assertTrue(m.MissionOrgUnitType.objects.filter(pk=other_models["mission_org_unit_type"].pk).exists())
 
         # some models have no FK to Account at all — `_post_deletion_clean_up`
         # wipes them in full whenever it runs, regardless of which account "owns" them in this
@@ -1054,6 +1117,12 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.MatchingAlgorithm",
             "iaso.MetricType",
             "iaso.MetricValue",
+            "iaso.MissionEntityType",
+            "iaso.MissionWithForms",
+            "iaso.MissionOrgUnitType",
+            "iaso.MissionFormThroughForm",
+            "iaso.MissionForm",
+            "iaso.Mission",
             "iaso.OpenHEXAInstance",
             "iaso.OpenHEXAWorkspace",
             "iaso.OrgUnit",
@@ -1066,6 +1135,7 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.PaymentLot",
             "iaso.Planning",
             "iaso.PlanningSamplingResult",
+            "iaso.PlanningConfig",
             "iaso.PotentialPayment",
             "iaso.Profile",
             "iaso.Project",

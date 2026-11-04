@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    fitToBounds: {
+        defaultMessage: 'Center the map',
+        id: 'map.label.fitToBounds',
+    },
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',

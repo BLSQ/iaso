@@ -22,7 +22,6 @@ TODO: Remove old trad?
 import json
 import os
 import sys
-import typing
 
 from collections import OrderedDict, defaultdict
 
@@ -52,7 +51,6 @@ paths = [
         "source_files": "./hat/assets/js/apps/Iaso/",
         "translations_dir": "hat/assets/js/apps/Iaso/domains/app/translations/",
     },
-    {"source_files": "./plugins/polio/js/", "translations_dir": "plugins/polio/js/src/constants/translations/"},
 ]
 if __name__ == "__main__":
     if os.getcwd().endswith("scripts"):  # we are in the script directory, go up a level
@@ -64,7 +62,7 @@ if __name__ == "__main__":
 
     # keep trace of what we set in previous traduction file. so we can detect properly
     # if a plugin reuse a translation from the main file
-    previous_trad: typing.DefaultDict[str, typing.Dict[str, str]]
+    previous_trad: defaultdict[str, dict[str, str]]
     previous_trad = defaultdict(dict)
     for path in paths:
         trad_dir = path["translations_dir"]

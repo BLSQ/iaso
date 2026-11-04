@@ -4,8 +4,8 @@ import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';
-import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
+import { usePermissionsGroupsMessages } from '../../users/permissionsGroupsMessages';
+import { usePermissionsMessages } from '../../users/permissionsMessages';
 import { useUserPermissionColumns } from '../config';
 import MESSAGES from '../messages';
 import { Permission } from '../types/userRoles';
@@ -49,6 +49,7 @@ export const PermissionsAttribution: React.FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const permissionsGroupsMessages = usePermissionsGroupsMessages();
     const { data, isLoading } = useSnackQuery<{ permissions: string[] }>(
         ['grouped_permissions'],
         () => getRequest('/api/permissions/grouped_permissions/'),
@@ -77,12 +78,12 @@ export const PermissionsAttribution: React.FunctionComponent<Props> = ({
     );
 
     const groupPermissionLabel = useCallback(
-        groupName => {
-            return PERMISSIONS_GROUPS_MESSAGES[groupName]
-                ? formatMessage(PERMISSIONS_GROUPS_MESSAGES[groupName])
+        (groupName: string) => {
+            return permissionsGroupsMessages[groupName]
+                ? formatMessage(permissionsGroupsMessages[groupName])
                 : groupName;
         },
-        [formatMessage],
+        [formatMessage, permissionsGroupsMessages],
     );
 
     const permissions_groups = useMemo(
@@ -90,13 +91,15 @@ export const PermissionsAttribution: React.FunctionComponent<Props> = ({
         [data?.permissions],
     );
 
+    const permissionsMessages = usePermissionsMessages();
+
     const getPermissionLabel = useCallback(
-        permissionCodeName => {
-            return PERMISSIONS_MESSAGES[permissionCodeName]
-                ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
+        (permissionCodeName: string) => {
+            return permissionsMessages[permissionCodeName]
+                ? formatMessage(permissionsMessages[permissionCodeName])
                 : permissionCodeName;
         },
-        [formatMessage],
+        [formatMessage, permissionsMessages],
     );
 
     const permissions: Row[] = useMemo(() => {

@@ -31,7 +31,7 @@ class Payment(models.Model):
     )
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (
+        return "{} - {} - {} - {}".format(
             self.id,
             self.status,
             self.user,
@@ -95,4 +95,4 @@ class PaymentLot(models.Model):
         return self.Statuses.NEW
 
     def __str__(self):
-        return "%s - %s" % (self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+        return "{} - {}".format(self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))

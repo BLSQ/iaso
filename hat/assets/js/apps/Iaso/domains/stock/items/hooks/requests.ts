@@ -31,7 +31,7 @@ type GetAPiParams = {
 export const getStockItemsApiParams = (params: Params): GetAPiParams => {
     const apiParams: ApiParams = {
         order: params.order || 'sku_id',
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         page: params.page || '1',
         sku_id: params.sku,
         org_unit_id: params.orgUnit,
@@ -78,7 +78,7 @@ export const useGetStockItemLogsApiParams = (
 ): GetAPiParams => {
     const apiParams: ApiParams = {
         order: params.order || '-created_at',
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         page: params.page || '1',
         sku_id: stockItem?.sku?.id,
         org_unit_id: stockItem?.org_unit?.id,

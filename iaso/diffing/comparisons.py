@@ -20,7 +20,7 @@ class Dictable:
         return self.__dict__
 
     def __str__(self):
-        return "%s %s" % (self.__class__.__name__, self.as_dict())
+        return f"{self.__class__.__name__} {self.as_dict()}"
 
 
 class FieldType(Dictable):

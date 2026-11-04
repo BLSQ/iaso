@@ -1,5 +1,3 @@
-from typing import Dict, Tuple
-
 import django_filters
 
 from django.db import models, transaction
@@ -309,7 +307,7 @@ class PaymentLotsViewSet(ModelViewSet):
 
     def _get_dynamic_form_columns(
         self, payments: models.QuerySet[Payment]
-    ) -> Tuple[Dict[int, str], Dict[int, Dict[int, int]]]:
+    ) -> tuple[dict[int, str], dict[int, dict[int, int]]]:
         """
         The export should allow to count the number of forms,
         because some changes are paid while others are not.

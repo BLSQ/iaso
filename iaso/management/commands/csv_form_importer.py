@@ -178,7 +178,7 @@ class Command(BaseCommand):
                                     except Exception:  # FIXME: too broad exception
                                         pass
                                 uuid = str(uuid4())
-                                data["instanceID"] = "uuid:%s" % uuid
+                                data["instanceID"] = f"uuid:{uuid}"
 
                             try:
                                 # print(json.dumps(data, indent=2))
@@ -191,7 +191,7 @@ class Command(BaseCommand):
                                 instance.org_unit = ou
                                 instance.form = form
                                 instance.project = project
-                                f_name = ("%s-%s" % (ou.name, uuid))[:96] + ".xml"
+                                f_name = (f"{ou.name}-{uuid}")[:96] + ".xml"
                                 # print(f_name)
                                 instance.file = f_name
                                 instance.file_name = f_name

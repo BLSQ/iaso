@@ -232,8 +232,7 @@ class Converter:
             def eachline(nodes):
                 """Yield each line in each node"""
                 for node in nodes:
-                    for line in node.split("\n"):
-                        yield line
+                    yield from node.split("\n")
 
             def ret(nodes, wrapped):
                 """

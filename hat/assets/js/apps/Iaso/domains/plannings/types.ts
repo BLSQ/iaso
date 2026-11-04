@@ -41,7 +41,7 @@ export type Planning = {
     name: string;
     team_details?: PlanningTeamDetails;
     org_unit_details?: PlanningOrgUnitDetails;
-    forms: number[];
+    missions: number[];
     project_details?: PlanningProjectDetails;
     description?: string;
     published_at?: string;
@@ -51,6 +51,8 @@ export type Planning = {
     target_org_unit_type_details?: PlanningTargetOrgUnitTypeDetails[] | null;
     selected_sampling_result?: SamplingResult;
     assignments_count: number;
+    status?: 'draft' | 'published';
+    deprecated?: boolean;
 };
 export type PageMode = 'create' | 'edit' | 'copy';
 
@@ -139,3 +141,12 @@ export type PaginatedPlanningOrgUnit = {
 export interface PaginatedPlanningOrgUnits extends PaginationType {
     results: Array<PaginatedPlanningOrgUnit>;
 }
+
+export type AssignmentsMode = 'explore' | 'assign';
+export type AssignmentsView = 'map' | 'list';
+export type AssignmentsParams = {
+    planningId: string;
+    teamId?: string;
+    mode?: AssignmentsMode;
+    view?: AssignmentsView;
+};

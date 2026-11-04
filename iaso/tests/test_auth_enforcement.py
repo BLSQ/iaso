@@ -67,12 +67,6 @@ PUBLIC_ENDPOINTS = {
     *any_methods("/reset-password-confirmation/"),
     *any_methods("/reset-password-confirmation/dsfsdfsdf==/456fdg-sdf546sdf-dsf54/"),
     *any_methods("/reset-password-complete/"),
-    # polio embbed
-    *any_methods("/dashboard/polio/embeddedCalendar/.*"),
-    *any_methods("/dashboard/polio/embeddedVaccineRepository/.*"),
-    *any_methods("/dashboard/polio/embeddedVaccineStock/.*"),
-    *any_methods("/dashboard/polio/embeddedLqasCountry/.*"),
-    *any_methods("/dashboard/polio/embeddedLqasMap/.*"),
     # documentation
     ("/api/colors/", "GET"),
     # okish

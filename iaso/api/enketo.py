@@ -117,7 +117,7 @@ def enketo_create_url(request):
 
     try:
         if not return_url:
-            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
+            return_url = request.build_absolute_uri(f"/dashboard/forms/submission/instanceId/{instance.id}")
 
         edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
@@ -172,7 +172,7 @@ def enketo_public_create_url(request):
                 return JsonResponse({"error": _("Unauthorized")}, status=401)
         else:
             account = project.account
-            user = User.objects.create(username="external-%s" % external_user_id)
+            user = User.objects.create(username=f"external-{external_user_id}")
             user.save()
             profile = Profile.objects.create(external_user_id=external_user_id, user=user, account=account)
     else:
@@ -222,7 +222,7 @@ def enketo_public_create_url(request):
 
     try:
         if not return_url:
-            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
+            return_url = request.build_absolute_uri(f"/dashboard/forms/submission/instanceId/{instance.id}")
 
         edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
@@ -334,7 +334,7 @@ def enketo_form_list(request):
     assert i is not None
 
     latest_form_version = i.form.latest_version
-    downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
+    downloadurl = public_url_for_enketo(request, f"/api/enketo/formDownload/?uuid={i.uuid}")
     # Only add a manifest if we actually have attachment so it doesn't make more unecessary request
     if i.form.attachments.exists():
         # pass the app_id so it can be accessed anonymously from Enketo

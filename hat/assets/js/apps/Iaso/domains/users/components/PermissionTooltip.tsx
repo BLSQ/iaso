@@ -2,7 +2,7 @@ import React from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Tooltip, Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { usePermissionsMessages } from '../permissionsMessages';
 
 type Props = {
     codename: string;
@@ -11,7 +11,8 @@ type Props = {
 const PermissionTooltip: React.FunctionComponent<Props> = ({ codename }) => {
     let title;
     const { formatMessage } = useSafeIntl();
-    const toolTipMessageObject = PERMISSIONS_MESSAGES[codename];
+    const permissionsMessages = usePermissionsMessages();
+    const toolTipMessageObject = permissionsMessages[codename];
     if (toolTipMessageObject) {
         title = formatMessage(toolTipMessageObject);
     }

@@ -1,7 +1,7 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import List, Optional
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -35,8 +35,8 @@ def push_single_instance_gps_to_org_unit(user: Optional[User], instance: Instanc
 @task_decorator(task_name="instance_bulk_gps_push")
 def instance_bulk_gps_push(
     select_all: bool,
-    selected_ids: List[int],
-    unselected_ids: List[int],
+    selected_ids: list[int],
+    unselected_ids: list[int],
     filters: dict,
     task: Task,
 ):
@@ -70,17 +70,18 @@ def instance_bulk_gps_push(
     # Checking if any gps push can be performed with what was requested
     success, errors, _ = check_instance_bulk_gps_push(queryset)
     if not success:
-        raise Exception("Cannot proceed with the gps push due to errors: %s" % errors)
+        msg = f"Cannot proceed with the gps push due to errors: {errors}"
+        raise Exception(msg)
 
     total = queryset.count()
 
     with transaction.atomic():
         for index, instance in enumerate(queryset.iterator()):
-            res_string = "%.2f sec, processed %i instances" % (time() - start, index)
+            res_string = f"{time() - start:.2f} sec, processed {index} instances"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             push_single_instance_gps_to_org_unit(
                 user,
                 instance,
             )
 
-        task.report_success(message="%d modified" % total)
+        task.report_success(message=f"{total} modified")

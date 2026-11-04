@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Union
 
 from django.conf import settings
 from django.contrib import auth
@@ -85,13 +85,13 @@ from .api.microplanning.views import (
     PlanningSamplingResultViewSet,
     PlanningViewSet,
 )
-from .api.microplanning.views_mobile import MobilePlanningViewSet
+from .api.microplanning.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
+from .api.missions.views import MissionViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.groups import MobileGroupsViewSet
-from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules.views import ModulesViewSet
@@ -105,11 +105,13 @@ from .api.org_unit_tree.views import OrgUnitTreeViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_unit_validation_status import ValidationStatusViewSet
-from .api.org_units import OrgUnitViewSet
+from .api.org_units.views import OrgUnitViewSet
+from .api.org_units.views_mobile import MobileOrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions.permissions import PermissionsViewSet
+from .api.planning_configs.views import PlanningConfigViewSet
 from .api.profiles.views import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.promptness_stats.views import PromptnessStatsViewSet
@@ -150,7 +152,7 @@ from .dhis2.authentication import dhis2_callback  # type: ignore
 
 
 URL = Union[URLPattern, URLResolver]
-URLList = List[URL]
+URLList = list[URL]
 
 router = ExtendedDefaultRouter()
 router.register(
@@ -235,15 +237,18 @@ router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entitydup
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
+router.register(r"microplanning/missions", MissionViewSet, basename="missions")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
     r"orgunits",
     PlanningOrgunitsViewSet,
     basename="planning-orgunits",
     parents_query_lookups=["pk"],
 )
+router.register(r"microplanning/planning-configs", PlanningConfigViewSet, basename="planning_configs")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"microplanning/samplings", PlanningSamplingResultViewSet, basename="planning-sampling-results")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"v2/mobile/plannings", MobilePlanningV2ViewSet, basename="v2_mobileplanning")
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")

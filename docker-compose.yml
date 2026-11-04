@@ -39,8 +39,6 @@ services:
             - db
         env_file:
             -   .env
-        environment:
-            MCP_ENABLED: "true"
         logging: &iaso_logging
             driver: 'json-file'
             options:
@@ -83,7 +81,7 @@ services:
         command: start_webpack
 
     mcp-ui:
-        image: node:22.18.0-bullseye-slim
+        image: node:22.23.4-bookworm-slim
         working_dir: /opt/app/iaso/mcp/frontend
         ports:
             - "5173:5173"

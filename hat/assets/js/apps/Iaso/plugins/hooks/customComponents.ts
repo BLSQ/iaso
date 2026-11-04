@@ -22,6 +22,20 @@ export const useGetCustomComponents = () => {
     );
 };
 
+// Every plugin that registers this key is rendered. Used when several plugins
+// can add a control to the same host slot.
+export const useCustomComponentsByKey = (key: string): ElementType[] => {
+    const components = useGetCustomComponents();
+
+    return useMemo(
+        () =>
+            components
+                .filter(component => component.key === key)
+                .map(component => component.component),
+        [components, key],
+    );
+};
+
 // We will use the last custom component found with the key
 export const useFindCustomComponent = (
     key: string,

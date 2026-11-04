@@ -8,7 +8,7 @@ class AccountSwitchSerializer(serializers.Serializer):
 
     def __init__(self, *args, **kwargs):
         account_id_qs = kwargs.pop("account_id_qs", None)
-        super(AccountSwitchSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if getattr(self.context.get("request", None), "user", None):
             self.fields["account_id"].queryset = (
                 account_id_qs if account_id_qs else Account.objects.filter_for_user(self.context["request"].user)

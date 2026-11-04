@@ -7,7 +7,7 @@ import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from logging import getLogger
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 import boto3
 import dateparser
@@ -134,7 +134,7 @@ class _TaskServiceBase:
         if task.status == RUNNING:
             logger.warning(f"Task {task} still in status RUNNING after execution")
 
-    def _start(self, task, method, kwargs) -> Tuple[bool, Optional["Blocked"]]:
+    def _start(self, task, method, kwargs) -> tuple[bool, Optional["Blocked"]]:
         """Mark the task RUNNING and give it a lease, unless a throttle limit is reached: then return why.
 
         Returns (started, blocked). Throttle checks are serialized per task name with an advisory lock, so that two
@@ -276,7 +276,7 @@ def throttle_key(task_name, concurrency_name, key=None) -> str:
     return f"{task_name}:{concurrency_name}" if key is None else f"{task_name}:{concurrency_name}:{key}"
 
 
-def throttle_slots(task, task_name, throttle, kwargs) -> List[Tuple[Concurrency, Any, str]]:
+def throttle_slots(task, task_name, throttle, kwargs) -> list[tuple[Concurrency, Any, str]]:
     """The (limit, key, throttle key) a run of the task occupies.
 
     A limit with a key doesn't apply to the tasks for which the key is None (e.g. the `user` of a task without launcher).

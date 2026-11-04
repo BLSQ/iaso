@@ -1,5 +1,4 @@
 from time import time
-from typing import List
 
 from django.db import transaction
 from django.utils import timezone
@@ -65,7 +64,7 @@ def end_task_and_delete_payment_lot(payment_lot, potential_payments, task, messa
 def create_payment_lot(
     comment: str,
     name: str,
-    potential_payment_ids: List[int],
+    potential_payment_ids: list[int],
     task: Task,
 ):
     """Background Task to create Payment Lot and convert Potential Payments into Payments
@@ -110,7 +109,7 @@ def create_payment_lot(
             for index, potential_payment in enumerate(potential_payments_for_lot.iterator()):
                 potential_payment.payment_lot = payment_lot
                 potential_payment.save()
-                res_string = "%.2f sec, processed %i payments" % (time() - start, index)
+                res_string = f"{time() - start:.2f} sec, processed {index} payments"
                 the_task.report_progress_and_stop_if_killed(
                     progress_message=res_string, end_value=total, progress_value=index
                 )
@@ -132,4 +131,4 @@ def create_payment_lot(
             payment_lot.task = None
             payment_lot.save()
             audit_logger.log_modification(instance=payment_lot, old_data_dump=None, request_user=user)
-            the_task.report_success(message="%d modified" % total)
+            the_task.report_success(message=f"{total} modified")

@@ -17,7 +17,6 @@ from iaso.utils.virus_scan.clamav import (
     scan_stored_file_for_virus,
     scan_uploaded_file_for_virus,
 )
-from plugins.polio.models import NotificationImport
 
 
 @override_settings(
@@ -96,20 +95,14 @@ class ClamAVTestCase(TestCase):
 
         account = m.Account.objects.create(name="clamav-test-account")
         user = self.create_user_with_profile(username="clamav-test-user", account=account)
+        form = m.Form.objects.create(name="form", form_id="form")
+        instance = self.create_form_instance(form=form, created_by=user, project=None)
 
         with open(self.SAFE_FILE_PATH, "rb") as file:
-            notification_import = NotificationImport.objects.create(
-                account=account,
-                created_by=user,
-                file=SimpleUploadedFile(
-                    "safe.jpg",
-                    file.read(),
-                    content_type="image/jpeg",
-                ),
-                errors=[],
-            )
+            instance.file = SimpleUploadedFile("safe.jpg", file.read(), content_type="image/jpg")
+            instance.save()
 
-        result, timestamp_scan = scan_stored_file_for_virus(notification_import.file)
+        result, timestamp_scan = scan_stored_file_for_virus(instance.file)
 
         self.assertEqual(result, VirusScanStatus.CLEAN)
         self.assertEqual(timestamp_scan, self.DT)

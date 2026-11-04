@@ -304,3 +304,9 @@ class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
         model = OrgUnitType
         fields = ["id", "name", "short_name", "depth", "sub_unit_types"]
         read_only_fields = ["id", "name", "short_name", "depth", "sub_unit_types"]
+
+
+class OrgUnitTypeDescendantSerializer(serializers.Serializer):
+    id = serializers.IntegerField(source="org_unit_type_id")
+    name = serializers.CharField(source="org_unit_type__name")
+    depth = serializers.IntegerField(help_text="Fewest levels between the parent org unit and an org unit of this type")

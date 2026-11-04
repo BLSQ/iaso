@@ -21,7 +21,7 @@ import PermissionCheckBoxes from './components/PermissionCheckBoxes';
 import PermissionTooltip from './components/PermissionTooltip';
 import { UserRolePermissions } from './components/UserRolePermissions';
 import MESSAGES from './messages';
-import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages';
+import { usePermissionsGroupsMessages } from './permissionsGroupsMessages';
 import { userHasOneOfPermissions } from './utils';
 
 type UseUsersTableColumnsProps = {
@@ -180,6 +180,7 @@ export const useUsersTableColumns = ({
 
 export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
     const { formatMessage } = useSafeIntl();
+    const permissionsGroupsMessages = usePermissionsGroupsMessages();
     return useMemo(() => {
         const columns = [
             {
@@ -208,7 +209,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                         return (
                             <strong>
                                 {formatMessage(
-                                    PERMISSIONS_GROUPS_MESSAGES[
+                                    permissionsGroupsMessages[
                                         settings.row.original.permission
                                     ],
                                 )}
@@ -262,6 +263,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
     }, [
         currentUser.user_roles_permissions.value,
         formatMessage,
+        permissionsGroupsMessages,
         setPermissions,
     ]);
 };

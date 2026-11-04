@@ -14,6 +14,14 @@ repos:
     - id: eslint
       name: eslint
       language: node
-      files: ^(hat/assets/js|plugins/polio/js)/
+      files: ^hat/assets/js/
       types_or: [ javascript, jsx, ts, tsx ]
       entry: npm run fix-lint-pre-commit
+
+    - id: tsc
+      name: tsc
+      language: node
+      pass_filenames: false
+      files: ^hat/assets/js/apps/Iaso/domains/(teams|app|forms|accounts|algorithmRuns|missions|validationWorkflowsConfiguration|validationWorkflowsInstance)/
+      types_or: [ ts, tsx ]
+      entry: node ./ts-incremental.mjs

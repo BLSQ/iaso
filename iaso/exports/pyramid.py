@@ -1,7 +1,7 @@
 import re
 import unicodedata
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from django.conf import settings
 from django.contrib.postgres.aggregates import JSONBAgg

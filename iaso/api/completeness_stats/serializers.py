@@ -1,10 +1,10 @@
-from typing import List, Mapping, Optional, TypedDict, Union
+from collections.abc import Mapping
+from typing import Annotated, Optional, TypedDict, Union
 
 from django.contrib.auth.models import User
 from django.db.models import QuerySet
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from typing_extensions import Annotated
 
 from iaso.api.common.serializer_fields import CommaSeparatedPrimaryKeysField
 from iaso.models import Form, Group, OrgUnit, OrgUnitType, Project
@@ -40,16 +40,16 @@ OrgUnitWithFormStat = Annotated[OrgUnit, FormStatAnnotation]
 
 
 class Params(TypedDict):
-    org_unit_types: Optional[List[OrgUnitType]]
+    org_unit_types: Optional[list[OrgUnitType]]
     parent_org_unit: Optional[OrgUnit]
     forms: QuerySet[Form]
     planning: Optional[Planning]
     period: Optional[str]  # might migrate to Period in the future
-    order: List[str]
+    order: list[str]
     org_unit_group: Optional[Group]
     without_submissions: bool
-    org_unit_validation_status: List[str]
-    teams: Optional[List[Team]]
+    org_unit_validation_status: list[str]
+    teams: Optional[list[Team]]
 
 
 # noinspection PyMethodMayBeStatic
@@ -67,8 +67,8 @@ class ParamSerializer(serializers.Serializer):
             user = request.user
             # we could filter but since it's an additional it probably just a waste
             self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
-                user, None
-            ).distinct()
+                user, None, distinct=True
+            )
             self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
@@ -165,7 +165,7 @@ class ParamSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid period")
         return period_value
 
-    def validate_form_id(self, forms: Union[List[Form], QuerySet[Form]]):
+    def validate_form_id(self, forms: Union[list[Form], QuerySet[Form]]):
         # reconvert this to a queryset, if this is a List.
         # resolve problem with duplicate Form if form is in multiple project
         # This method seems faster than using a distinct()

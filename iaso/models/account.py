@@ -102,7 +102,7 @@ class Account(CreatedAndUpdatedModel):
         }
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"{self.name} "
 
     @property
     def iaso_modules(self) -> list[IasoModule]:

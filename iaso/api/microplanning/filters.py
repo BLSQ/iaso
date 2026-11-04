@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 import django_filters
@@ -139,12 +141,27 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
             "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
         ),
     )
+    include_new_ou = django_filters.BooleanFilter()
+    include_rejected_ou = django_filters.BooleanFilter()
 
     def __init__(self, *args: Any, planning: Planning, **kwargs: Any) -> None:
         self.planning = planning
         super().__init__(*args, **kwargs)
 
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
+        include_rejected_ou = self.form.cleaned_data.get("include_rejected_ou", None)
+        include_new_ou = self.form.cleaned_data.get("include_new_ou", None)
+
+        if not include_rejected_ou and not include_new_ou:
+            queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
+        else:
+            allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
+            if include_rejected_ou:
+                allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
+            if include_new_ou:
+                allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
+            queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
+
         planning = self.planning
 
         root = planning.org_unit

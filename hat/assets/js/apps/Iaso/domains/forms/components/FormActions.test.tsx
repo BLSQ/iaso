@@ -1,11 +1,124 @@
 import React from 'react';
-import { screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { baseUrls } from 'Iaso/constants/urls';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { NO_PERIOD } from '../../periods/constants';
-import { shouldShowRestoreAction, FormActions } from './FormActions';
+import { FormActions, shouldShowRestoreAction } from './FormActions';
+
+const permissionMocks = vi.hoisted(() => ({
+    userHasPermission: vi.fn(() => true),
+    userHasOneOfPermissions: vi.fn(() => true),
+}));
+
+vi.mock('../../users/utils', async importOriginal => {
+    const actual = await importOriginal<any>();
+    return {
+        ...actual,
+        userHasPermission: permissionMocks.userHasPermission,
+        userHasOneOfPermissions: permissionMocks.userHasOneOfPermissions,
+    };
+});
+
+const restoreFormMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock('../hooks/useRestoreForm', () => ({
+    useRestoreForm: () => ({ mutateAsync: restoreFormMock }),
+}));
+
+// The installed bluesquare-components does not expose ActionsCell yet:
+// stub it with a flat renderer so these tests assert FormActions' own logic
+// (which actions exist, their urls and callbacks), not the menu mechanics.
+vi.mock('bluesquare-components', async () => {
+    const actual = await vi.importActual<any>('bluesquare-components');
+    const labelText = (label: any): string =>
+        typeof label === 'string' ? label : (label?.defaultMessage ?? '');
+    const renderAction = (action: any): React.ReactNode => {
+        if (!action || action.hidden) return null;
+        if (action.type === 'divider') return <hr key={action.key} />;
+        if (action.type === 'header')
+            return <div key={action.key}>{labelText(action.label)}</div>;
+        const custom =
+            action.renderMenuItem ?? action.renderInline ?? action.render;
+        if (custom) {
+            return (
+                <React.Fragment key={action.key}>
+                    {custom({
+                        action,
+                        closeMenu: () => undefined,
+                        inMenu: true,
+                    })}
+                </React.Fragment>
+            );
+        }
+        if (action.children) {
+            return (
+                <React.Fragment key={action.key}>
+                    <span>{labelText(action.label)}</span>
+                    {action.children.map(renderAction)}
+                </React.Fragment>
+            );
+        }
+        if (action.url) {
+            return (
+                <a
+                    key={action.key}
+                    data-testid={`action-${action.key}`}
+                    href={action.url}
+                >
+                    {labelText(action.label)}
+                </a>
+            );
+        }
+        return (
+            <button
+                key={action.key}
+                type="button"
+                data-testid={`action-${action.key}`}
+                onClick={action.onClick}
+            >
+                {labelText(action.label)}
+            </button>
+        );
+    };
+    return {
+        ...actual,
+        ActionsCell: ({ actions }: { actions: any[] }) => (
+            <div>{actions.map(renderAction)}</div>
+        ),
+    };
+});
+
+vi.mock('../../instances/components/CreateReAssignDialogComponent', () => ({
+    CreateReAssignDialogComponent: ({ isOpen }: { isOpen: boolean }) =>
+        isOpen ? (
+            <div data-testid="create-submission-dialog">Create submission</div>
+        ) : null,
+}));
+
+vi.mock('../../../components/dialogs/DeleteDialogComponent', () => ({
+    default: ({
+        onConfirm,
+        Trigger,
+        defaultOpen,
+    }: {
+        onConfirm: () => void;
+        Trigger?: React.ComponentType<any>;
+        defaultOpen?: boolean;
+    }) => (
+        <>
+            {Trigger ? <Trigger onClick={() => undefined} /> : null}
+            {defaultOpen && (
+                <button
+                    type="button"
+                    data-testid="delete-confirm"
+                    onClick={() => onConfirm()}
+                >
+                    Confirm delete
+                </button>
+            )}
+        </>
+    ),
+}));
 
 describe('shouldShowRestoreAction', () => {
     it('shows restore for all rows in onlyDeleted mode', () => {
@@ -17,7 +130,6 @@ describe('shouldShowRestoreAction', () => {
             }),
         ).toBe(true);
     });
-
     it('shows restore for deleted rows in showDeleted mode', () => {
         expect(
             shouldShowRestoreAction({
@@ -27,7 +139,6 @@ describe('shouldShowRestoreAction', () => {
             }),
         ).toBe(true);
     });
-
     it('keeps normal actions for non-deleted rows in showDeleted mode', () => {
         expect(
             shouldShowRestoreAction({
@@ -37,7 +148,6 @@ describe('shouldShowRestoreAction', () => {
             }),
         ).toBe(false);
     });
-
     it('keeps normal actions when no deleted filter is active', () => {
         expect(
             shouldShowRestoreAction({
@@ -48,44 +158,6 @@ describe('shouldShowRestoreAction', () => {
         ).toBe(false);
     });
 });
-vi.mock('../../../components/DisplayIfUserHasPerm', () => ({
-    DisplayIfUserHasPerm: ({ children }: { children: React.ReactNode }) =>
-        children,
-}));
-
-vi.mock('./CreateSubmissionModal/CreateSubmissionModal', () => ({
-    CreateSubmissionModal: () => (
-        <button data-testid="create-submission">
-            Add a submission for this form
-        </button>
-    ),
-}));
-
-vi.mock('bluesquare-components', async () => {
-    const actual = await vi.importActual<any>('bluesquare-components');
-    return {
-        ...actual,
-        IconButton: (props: any) => (
-            <button
-                data-testid={`icon-${props.icon}`}
-                data-url={props.url}
-                onClick={props.onClick}
-            />
-        ),
-    };
-});
-
-vi.mock('../../../components/dialogs/DeleteDialogComponent', () => ({
-    default: ({
-        onConfirm,
-    }: {
-        onConfirm: (closeDialog: () => void) => void;
-    }) => (
-        <button data-testid="icon-delete" onClick={() => onConfirm(vi.fn())}>
-            Delete
-        </button>
-    ),
-}));
 
 const deleteFormMock = vi.fn(() => Promise.resolve());
 const defaultProps = {
@@ -115,20 +187,21 @@ const defaultProps = {
 describe('FormActions', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        permissionMocks.userHasPermission.mockReturnValue(true);
+        permissionMocks.userHasOneOfPermissions.mockReturnValue(true);
     });
 
-    it('shows create submission button', () => {
+    it('opens the create submission dialog from the menu', () => {
         renderWithThemeAndIntlProvider(<FormActions {...defaultProps} />);
-        expect(screen.getByTestId('create-submission')).toBeInTheDocument();
+        fireEvent.click(screen.getByText('Create submission'));
+        expect(
+            screen.getByTestId('create-submission-dialog'),
+        ).toBeInTheDocument();
     });
 
     it('shows view submissions button', () => {
         const { container } = renderWithThemeAndIntlProvider(
-            <FormActions
-                {...defaultProps}
-                onlyDeleted={false}
-                showDeleted={false}
-            />,
+            <FormActions {...defaultProps} />,
         );
         expect(container.innerHTML).toContain(
             '/forms/submissions/list/formIds/1/tab/list/isSearchActive/true',
@@ -136,17 +209,29 @@ describe('FormActions', () => {
     });
 
     it('shows edit button', () => {
-        renderWithThemeAndIntlProvider(
-            <FormActions {...defaultProps} deleteForm={vi.fn()} />,
-        );
-        const editIcon = screen.getByTestId('icon-edit');
-        expect(editIcon).toBeInTheDocument();
-        expect(editIcon).toHaveAttribute('data-url', '/forms/detail/formId/1');
+        renderWithThemeAndIntlProvider(<FormActions {...defaultProps} />);
+        const edit = screen.getByTestId('action-edit');
+        expect(edit).toBeInTheDocument();
+        expect(edit).toHaveAttribute('href', '/forms/detail/formId/1');
     });
 
-    it('shows delete form button', async () => {
+    it('hides permission-gated actions when the user lacks permissions', () => {
+        permissionMocks.userHasPermission.mockReturnValue(false);
+        permissionMocks.userHasOneOfPermissions.mockReturnValue(false);
         renderWithThemeAndIntlProvider(<FormActions {...defaultProps} />);
-        fireEvent.click(screen.getByTestId('icon-delete'));
+        expect(screen.queryByTestId('action-edit')).toBeNull();
+        expect(screen.queryByTestId('action-viewInstances')).toBeNull();
+        expect(screen.queryByText('Create submission')).toBeNull();
+    });
+
+    it('opens the delete dialog from the menu and deletes on confirm', () => {
+        renderWithThemeAndIntlProvider(<FormActions {...defaultProps} />);
+        // The dialog is hoisted outside the menu: it must appear (and stay)
+        // after the menu action is clicked, and only confirm deletes.
+        fireEvent.click(screen.getByText('Delete'));
+        expect(screen.getByTestId('delete-confirm')).toBeInTheDocument();
+        expect(deleteFormMock).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByTestId('delete-confirm'));
         expect(deleteFormMock).toHaveBeenCalledWith({ id: 1 });
     });
 
@@ -154,7 +239,7 @@ describe('FormActions', () => {
         const { container } = renderWithThemeAndIntlProvider(
             <FormActions {...defaultProps} hasDhis2Module />,
         );
-        expect(screen.getByTestId('icon-dhis')).toBeInTheDocument();
+        expect(screen.getByTestId('action-dhis2Mapping')).toBeInTheDocument();
         expect(container.innerHTML).toContain('/forms/mappings/formId/1');
     });
 
@@ -165,14 +250,24 @@ describe('FormActions', () => {
         expect(container.innerHTML).not.toContain('/forms/mappings/formId/1');
     });
 
-    it('shows Download XLS/XML button', () => {
-        renderWithThemeAndIntlProvider(
-            <MemoryRouter>
-                <FormActions {...defaultProps} />
-            </MemoryRouter>,
+    it('shows download XLS/XML actions', () => {
+        renderWithThemeAndIntlProvider(<FormActions {...defaultProps} />);
+        expect(screen.getByTestId('action-xls')).toHaveAttribute(
+            'href',
+            '/test.xls',
         );
-        fireEvent.click(screen.getAllByRole('button').pop()!);
-        expect(screen.getByText('XLS')).toBeInTheDocument();
-        expect(screen.getByText('XML')).toBeInTheDocument();
+        expect(screen.getByTestId('action-xml')).toHaveAttribute(
+            'href',
+            '/test.xml',
+        );
+    });
+
+    it('shows only the restore action for deleted forms', () => {
+        renderWithThemeAndIntlProvider(
+            <FormActions {...defaultProps} onlyDeleted />,
+        );
+        fireEvent.click(screen.getByTestId('action-restore'));
+        expect(restoreFormMock).toHaveBeenCalledWith(1);
+        expect(screen.queryByTestId('action-edit')).toBeNull();
     });
 });

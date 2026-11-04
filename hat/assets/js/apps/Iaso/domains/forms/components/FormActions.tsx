@@ -1,17 +1,22 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Download } from '@mui/icons-material';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import Code from '@mui/icons-material/Code';
+import Delete from '@mui/icons-material/Delete';
+import Download from '@mui/icons-material/Download';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import { Tooltip } from '@mui/material';
-import { Menu, MenuItem } from '@mui/material';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
-import { Link } from 'react-router-dom';
+import Hub from '@mui/icons-material/Hub';
+import Publish from '@mui/icons-material/Publish';
+import RestoreFromTrash from '@mui/icons-material/RestoreFromTrash';
+import Settings from '@mui/icons-material/Settings';
+import TableChart from '@mui/icons-material/TableChart';
+import { ActionsCell, TableAction } from 'bluesquare-components';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { createInstance } from '../../instances/actions';
+import { CreateReAssignDialogComponent } from '../../instances/components/CreateReAssignDialogComponent';
+import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 import { useRestoreForm } from '../hooks/useRestoreForm';
 import MESSAGES from '../messages';
-import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
 
 type ShouldShowRestoreActionArgs = {
     onlyDeleted: boolean;
@@ -45,197 +50,183 @@ export const FormActions: FunctionComponent<Props> = ({
     hasDhis2Module,
     deleteForm,
 }) => {
-    // XLS and XML download states and functions
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const user = useCurrentUser();
+    const { mutateAsync: restoreForm } = useRestoreForm();
+    // Dialogs are hoisted outside ActionsCell: menu children are unmounted
+    // when the menu closes, which would kill any dialog state held inside.
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [deleteDialogKey, setDeleteDialogKey] = useState(0);
+
+    const form = settings.row.original;
+    const hasNoVersion = form.latest_form_version === null;
+    const shouldShowRestore = shouldShowRestoreAction({
+        onlyDeleted,
+        showDeleted,
+        deletedAt: form.deleted_at,
+    });
+
     // Url to instances
-    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}`;
+    let urlToInstances = `/${baseUrls.instances}/formIds/${form.id}`;
     if (orgUnitId) {
         urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
     }
     urlToInstances = `${urlToInstances}/tab/list`;
-    // Restore and delete form's hooks
-    const { mutateAsync: restoreForm } = useRestoreForm();
-    const hasNoVersion = settings.row.original.latest_form_version === null;
-    const { formatMessage } = useSafeIntl();
-    const shouldShowRestore = shouldShowRestoreAction({
-        onlyDeleted,
-        showDeleted,
-        deletedAt: settings.row.original.deleted_at,
-    });
 
+    // Permissions (same checks as the former DisplayIfUserHasPerm wrappers)
+    const canViewInstances = userHasOneOfPermissions(
+        [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
+        user,
+    );
+    const canCreateSubmission = userHasPermission(
+        Permission.SUBMISSIONS_UPDATE,
+        user,
+    );
+    const canEditForm = userHasPermission(Permission.FORMS, user);
+    // If orgUnitId is not undefined, the table is used in the org units details
+    // page, which means we shouldn't show form-level actions (create, edit, …)
+    const inOrgUnitDetails = Boolean(orgUnitId);
+
+    const latestVersion = form.latest_form_version;
+
+    const actions: TableAction[] = useMemo(
+        () => [
+            {
+                key: 'edit',
+                placement: 'inline',
+                label: MESSAGES.edit,
+                icon: <Settings />,
+                url: `/${baseUrls.formDetail}/formId/${form.id}`,
+                hidden: inOrgUnitDetails || !canEditForm,
+            },
+            {
+                key: 'viewInstances',
+                placement: 'inline',
+                label: MESSAGES.viewInstances,
+                icon: <FormatListBulleted />,
+                url: `${urlToInstances}/isSearchActive/true`,
+                hidden: !canViewInstances,
+            },
+            {
+                key: 'createSubmission',
+                placement: 'menu',
+                label: MESSAGES.instanceCreationDialogTitle,
+                icon: <Publish />,
+                hidden: inOrgUnitDetails || !canCreateSubmission,
+                disabled: hasNoVersion,
+                description: hasNoVersion ? MESSAGES.noFormVersion : undefined,
+                onClick: () => setIsCreateDialogOpen(true),
+            },
+            {
+                key: 'dhis2Mapping',
+                placement: 'menu',
+                label: MESSAGES.dhis2Mappings,
+                icon: <Hub />,
+
+                url: `/${baseUrls.mappings}/formId/${form.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
+                color: form.has_mappings ? 'primary.main' : undefined,
+                hidden: inOrgUnitDetails || !hasDhis2Module || !canEditForm,
+            },
+            {
+                key: 'download',
+                placement: 'menu',
+                label: MESSAGES.downloadXLSandXML,
+                icon: <Download />,
+                hidden: latestVersion === null,
+                children: [
+                    {
+                        key: 'xls',
+                        label: 'Excel (XLS)',
+                        icon: <TableChart />,
+                        url: latestVersion?.xls_file,
+                        download: true,
+                        reloadDocument: true,
+                        hidden: !latestVersion?.xls_file,
+                    },
+                    {
+                        key: 'xml',
+                        label: 'XML',
+                        icon: <Code />,
+                        url: latestVersion?.file,
+                        download: true,
+                        reloadDocument: true,
+                    },
+                ],
+            },
+            { type: 'divider' },
+            {
+                key: 'delete',
+                placement: 'menu',
+                label: MESSAGES.delete,
+                icon: <Delete />,
+                danger: true,
+                hidden: inOrgUnitDetails || !canEditForm,
+                onClick: () => setDeleteDialogKey(key => key + 1),
+            },
+        ],
+        [
+            baseUrls,
+            canCreateSubmission,
+            canEditForm,
+            canViewInstances,
+            form,
+            hasDhis2Module,
+            hasNoVersion,
+            inOrgUnitDetails,
+            latestVersion,
+            urlToInstances,
+        ],
+    );
+
+    if (shouldShowRestore) {
+        return (
+            <ActionsCell
+                maxInline={1}
+                actions={[
+                    {
+                        key: 'restore',
+                        label: MESSAGES.restoreFormTooltip,
+                        icon: <RestoreFromTrash />,
+                        onClick: () => restoreForm(form.id),
+                    },
+                ]}
+            />
+        );
+    }
+
+    // At most 2 icons inline (edit, view instances), the rest in the burger menu
     return (
-        <section>
-            {shouldShowRestore && (
-                <IconButton
-                    onClick={() => restoreForm(settings.row.original.id)}
-                    icon="restore-from-trash"
-                    tooltipMessage={MESSAGES.restoreFormTooltip}
+        <>
+            <ActionsCell actions={actions} maxInline={2} />
+            {isCreateDialogOpen && (
+                <CreateReAssignDialogComponent
+                    titleMessage={MESSAGES.instanceCreationDialogTitle}
+                    confirmMessage={MESSAGES.ok}
+                    cancelMessage={MESSAGES.cancel}
+                    formType={{
+                        id: form.id,
+                        periodType: form.period_type,
+                        orgUnitTypeIds: [],
+                    }}
+                    onCreateOrReAssign={currentForm =>
+                        createInstance(currentForm)
+                    }
+                    orgUnitTypes={form.org_unit_type_ids}
+                    isOpen={isCreateDialogOpen}
+                    closeDialog={() => setIsCreateDialogOpen(false)}
                 />
             )}
-            {!shouldShowRestore && (
-                <>
-                    <DisplayIfUserHasPerm
-                        permissions={[
-                            Permission.SUBMISSIONS,
-                            Permission.SUBMISSIONS_UPDATE,
-                        ]}
-                    >
-                        <IconButton
-                            url={`${urlToInstances}/isSearchActive/true`}
-                            tooltipMessage={MESSAGES.viewInstances}
-                            overrideIcon={FormatListBulleted}
-                        />
-                    </DisplayIfUserHasPerm>
-                    {/* If orgUnitId is not undefined, it means the btable is used in the org units details page,
-                                    which, in turn, means we shouldn't show the button to create a submission */}
-                    {!orgUnitId && (
-                        <>
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.SUBMISSIONS_UPDATE]}
-                            >
-                                <Tooltip
-                                    title={
-                                        hasNoVersion
-                                            ? formatMessage(
-                                                  MESSAGES.noFormVersion,
-                                              )
-                                            : ''
-                                    }
-                                    arrow
-                                >
-                                    <span
-                                        style={
-                                            hasNoVersion
-                                                ? {
-                                                      display: 'inline-block',
-                                                      cursor: 'not-allowed',
-                                                  }
-                                                : {}
-                                        }
-                                    >
-                                        <CreateSubmissionModal
-                                            titleMessage={
-                                                MESSAGES.instanceCreationDialogTitle
-                                            }
-                                            confirmMessage={MESSAGES.ok}
-                                            cancelMessage={MESSAGES.cancel}
-                                            formType={{
-                                                id: settings.row.original.id,
-                                                periodType:
-                                                    settings.row.original
-                                                        .period_type,
-                                                orgUnitTypeIds: [],
-                                            }}
-                                            onCreateOrReAssign={currentForm =>
-                                                createInstance(currentForm)
-                                            }
-                                            orgUnitTypes={
-                                                settings.row.original
-                                                    .org_unit_type_ids
-                                            }
-                                            iconProps={{
-                                                disabled: hasNoVersion,
-                                            }}
-                                        />
-                                    </span>
-                                </Tooltip>
-                            </DisplayIfUserHasPerm>
-
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.FORMS]}
-                            >
-                                <IconButton
-                                    url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                />
-                            </DisplayIfUserHasPerm>
-                            {hasDhis2Module && (
-                                <DisplayIfUserHasPerm
-                                    permissions={[Permission.FORMS]}
-                                >
-                                    <IconButton
-                                        // eslint-disable-next-line max-len
-                                        url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                                        icon="dhis"
-                                        tooltipMessage={MESSAGES.dhis2Mappings}
-                                        color={
-                                            settings.row.original.has_mappings
-                                                ? 'primary'
-                                                : undefined
-                                        }
-                                    />
-                                </DisplayIfUserHasPerm>
-                            )}
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.FORMS]}
-                            >
-                                <DeleteDialog
-                                    titleMessage={MESSAGES.deleteFormTitle}
-                                    onConfirm={() => {
-                                        deleteForm({
-                                            id: settings.row.original.id,
-                                        });
-                                    }}
-                                />
-                            </DisplayIfUserHasPerm>
-                        </>
-                    )}
-                </>
+            {deleteDialogKey > 0 && (
+                <DeleteDialog
+                    // Remount with defaultOpen on every menu click
+                    key={deleteDialogKey}
+                    defaultOpen
+                    titleMessage={MESSAGES.deleteFormTitle}
+                    onConfirm={() => {
+                        deleteForm({ id: form.id });
+                    }}
+                    Trigger={() => <></>}
+                />
             )}
-            {settings.row.original.latest_form_version !== null && (
-                <>
-                    <IconButton
-                        onClick={handleClick as () => void}
-                        overrideIcon={Download}
-                        tooltipMessage={MESSAGES.downloadXLSandXML}
-                    />
-
-                    <Menu
-                        id="basic-menu"
-                        open={open}
-                        onClose={handleClose}
-                        anchorEl={anchorEl}
-                        MenuListProps={{
-                            'aria-labelledby': 'basic-button',
-                        }}
-                    >
-                        {settings.row.original.latest_form_version.xls_file && (
-                            <MenuItem onClick={handleClose}>
-                                <Link
-                                    download
-                                    reloadDocument
-                                    to={
-                                        settings.row.original
-                                            .latest_form_version?.xls_file
-                                    }
-                                >
-                                    XLS
-                                </Link>
-                            </MenuItem>
-                        )}
-                        <MenuItem onClick={handleClose}>
-                            <Link
-                                download
-                                reloadDocument
-                                to={
-                                    settings.row.original.latest_form_version
-                                        ?.file
-                                }
-                            >
-                                XML
-                            </Link>
-                        </MenuItem>
-                    </Menu>
-                </>
-            )}
-        </section>
+        </>
     );
 };

@@ -1461,26 +1461,9 @@ class Migration(migrations.Migration):
 <li>Add the file in git</li>
 </ol>
 <p>See https://docs.djangoproject.com/en/4.0/topics/migrations/#data-migrations</p>
-<h2 id="typing-and-annotations">Typing and annotations<a class="headerlink" href="#typing-and-annotations" title="Permanent link">#</a></h2>
-<p>If you use an annotate and mypy complains when using the field. You can add the field on the model using Annotated. for example:</p>
-<pre><code class="language-python">from typing_extensions import Annotated, TypedDict
-
-class LastBudgetAnnotation(TypedDict):
-    budget_last_updated_at: datetime
-
-
-class MonSerializeur()
-    def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
-        if campaign.budget_last_updated_at:
-            return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
-
-
-</code></pre>
-<p>Do not use the <code>WithAnnotations</code> from django-stubs. it doesn't work with our setup. I think it's a problem of python 3.8</p>
 <h1 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">#</a></h1>
 <ul>
 <li>DRF: Django Rest Framework, the magic framework we use to generate the API</li>
-<li>mypy: Tool used to check the </li>
 <li>ci: continuous integration, it the fact that we launch the test on github on each commit</li>
 <li>There is a Glossary of common Model in the Iaso root Readme. also check it</li>
 </ul>

@@ -1263,14 +1263,14 @@
 <h3 id="mkdocs-setup">mkDocs setup<a class="headerlink" href="#mkdocs-setup" title="Permanent link">#</a></h3>
 <p>The mkDocs build is configured in mkdocs.yml, at the root of the project
 The docs (markdown files) themselves as well as all other files related to mkdocs are located in the <code>/docs</code> folder</p>
-<p>The dependencies are in <code>/docs/requirements.txt</code>. The file has been generated using <code>pip-compile</code> and <code>/docs/requirements.in</code>, except for the plugin <code>mkdocs-static-i18n</code> which had its version upgarded manually.</p>
+<p>The dependencies are in the <code>docs</code> dependency group of <code>pyproject.toml</code>, and locked in <code>uv.lock</code> together with the rest of the project.
+Run the site locally with <code>uv run --only-group docs mkdocs serve</code> (see <a href="../how_to/run_docs_locally.html">How to run this site locally</a>).</p>
 <p>The markdown files follow the format <code>&lt;name&gt;.&lt;locale&gt;.md</code> to enable the localization plugin to display the right files</p>
 <p>The menu is defined in mkdocs.yml:
 - default menu is under <code>nav``
 - french menu is under</code>plugins&gt;i18n&gt;languages&gt;fr&gt; nav`</p>
-<p>We had to duplicate the whole menu because we have a nested menu. On the flip side this can allow us to have an entirely different menu structure for each language if we wish to do so.</p>
 <h2 id="github-pages-setup">Github pages setup<a class="headerlink" href="#github-pages-setup" title="Permanent link">#</a></h2>
-<p>There is a <code>deploy_doc</code> Github action that will build and deploy the documentation when pushing on <code>main</code>. 
+<p>There is a <code>deploy_doc</code> Github action that will build and deploy the documentation when pushing on <code>develop</code>. 
 The action itself will deploy the branch <code>gh-pages</code>. This in turn will trigger Github's own action to deploy the Github page.</p>
 <p>IMPORTANT:
 - There is a <code>CNAME</code> file in the <code>/docs</code> folder. Removing or altering it will break the redirection of <code>docs.openisao.com</code> to the Github page

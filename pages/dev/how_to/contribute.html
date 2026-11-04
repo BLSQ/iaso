@@ -1375,11 +1375,11 @@
 
 <h1 id="contribute">Contribute<a class="headerlink" href="#contribute" title="Permanent link">#</a></h1>
 <h3 id="code-formatting">Code formatting<a class="headerlink" href="#code-formatting" title="Permanent link">#</a></h3>
-<p>We have adopted Black <a href="https://github.com/psf/black"></a> as our code
+<p>We have adopted ruff <a href="https://github.com/astral-sh/ruff"></a> as our code
 formatting tool. Line length is 120.</p>
-<p>The easiest way to use is is to install the pre-commit hook:
-1. Install pre-commit: pip install pre-commit
-2. Execute pre-commit install to install git hooks in your .git/ directory.</p>
+<p>The easiest way to use it is to install the pre-commit hook:
+1. Install the dev dependencies, which include pre-commit: <code>uv sync</code>
+2. Execute <code>uv run pre-commit install</code> to install git hooks in your .git/ directory.</p>
 <p>Another good way to have it working is to set it up in your code editor.
 Pycharm, for example, has good support for this.</p>
 <p>The pre-commit is not mandatory but Continuous Integration will check

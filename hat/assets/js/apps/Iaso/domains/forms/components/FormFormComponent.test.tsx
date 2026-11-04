@@ -1,9 +1,9 @@
 import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import * as useGetGroupsModule from '../../orgUnits/hooks/requests/useGetGroups';
+import { NO_PERIOD, PERIOD_TYPE_MONTH } from '../../periods/constants';
 import { userHasAccessToModule } from '../../users/utils';
 import FormForm from './FormFormComponent';
 
@@ -55,6 +55,7 @@ vi.mock('../../../components/forms/InputComponent', () => ({
         options,
         disabled,
         loading,
+        errors,
     }: Record<string, any>) => (
         <div data-testid={`input-${keyValue}`}>
             <input
@@ -65,6 +66,9 @@ vi.mock('../../../components/forms/InputComponent', () => ({
             />
             <span data-testid={`options-count-${keyValue}`}>
                 {options ? options.length : 0}
+            </span>
+            <span data-testid={`errors-${keyValue}`}>
+                {errors ? errors.join(',') : ''}
             </span>
         </div>
     ),
@@ -98,6 +102,7 @@ const makeForm = (overrides: Record<string, any> = {}) => ({
     single_per_period: makeField(false),
     periods_before_allowed: makeField(0),
     periods_after_allowed: makeField(0),
+    promptness_grace_period_days: makeField(null),
     device_field: makeField('deviceid'),
     location_field: makeField(''),
     possible_fields: makeField([]),
@@ -107,6 +112,11 @@ const makeForm = (overrides: Record<string, any> = {}) => ({
     validation_workflow: makeField(null),
     ...overrides,
 });
+
+// fireEvent (instead of userEvent) keeps the click wrapped in act():
+// user-event ships its own @testing-library/dom copy, not configured by RTL
+const showAdvancedSettings = () =>
+    fireEvent.click(screen.getByText('Show advanced settings'));
 
 describe('FormFormComponent - org unit groups', () => {
     beforeEach(() => {
@@ -200,26 +210,127 @@ describe('FormFormComponent - org unit groups', () => {
 });
 
 describe('FormFormComponent - show advanced settings', () => {
-    it('shows the advanced settings and the tick box "deduced from another form" when user belongs to an account without Dhis2 module', async () => {
-        const user = userEvent.setup();
+    it('shows the advanced settings and the tick box "deduced from another form" when user belongs to an account without Dhis2 module', () => {
         vi.mocked(userHasAccessToModule).mockReturnValue(true);
         renderWithThemeAndIntlProvider(
             <FormForm currentForm={makeForm()} setFieldValue={vi.fn()} />,
         );
-        await user.click(screen.getByText('Show advanced settings'));
+        showAdvancedSettings();
         expect(screen.getByText('Hide advanced settings')).toBeInTheDocument();
         expect(screen.getByTestId('input-field-derived')).toHaveValue('false');
     });
 
-    it('hides the checkbox when user belongs to an account without Dhis2 module', async () => {
-        const user = userEvent.setup();
+    it('hides the checkbox when user belongs to an account without Dhis2 module', () => {
         vi.mocked(userHasAccessToModule).mockReturnValue(false);
         renderWithThemeAndIntlProvider(
             <FormForm currentForm={makeForm()} setFieldValue={vi.fn()} />,
         );
-        await user.click(screen.getByText('Show advanced settings'));
+        showAdvancedSettings();
         expect(
             screen.queryByTestId('input-field-derived'),
         ).not.toBeInTheDocument();
+    });
+});
+
+describe('FormFormComponent - promptness grace period days', () => {
+    const renderForm = (
+        overrides: Record<string, any> = {},
+        setFieldValue = vi.fn(),
+    ) =>
+        renderWithThemeAndIntlProvider(
+            <FormForm
+                currentForm={makeForm({
+                    period_type: makeField(PERIOD_TYPE_MONTH),
+                    ...overrides,
+                })}
+                setFieldValue={setFieldValue}
+            />,
+        );
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseGetGroupDropdown.mockReturnValue({
+            data: [],
+            isFetching: false,
+        });
+    });
+
+    it('is displayed under the period type, without the advanced settings', () => {
+        renderForm();
+        expect(
+            screen.getByTestId('input-promptness_grace_period_days'),
+        ).toBeInTheDocument();
+    });
+
+    it('is hidden when the form has no period type', () => {
+        renderForm({ period_type: makeField(null) });
+        expect(
+            screen.queryByTestId('input-promptness_grace_period_days'),
+        ).not.toBeInTheDocument();
+    });
+
+    it('displays the current value', () => {
+        renderForm({ promptness_grace_period_days: makeField(5) });
+        expect(
+            screen.getByTestId('input-field-promptness_grace_period_days'),
+        ).toHaveValue('5');
+    });
+
+    it('calls setFieldValue with the new value on change', () => {
+        const setFieldValue = vi.fn();
+        renderForm({}, setFieldValue);
+        fireEvent.change(
+            screen.getByTestId('input-field-promptness_grace_period_days'),
+            { target: { value: '3' } },
+        );
+        expect(setFieldValue).toHaveBeenCalledWith(
+            'promptness_grace_period_days',
+            '3',
+        );
+    });
+
+    it('sets the value to null when the input is cleared', () => {
+        const setFieldValue = vi.fn();
+        renderForm(
+            { promptness_grace_period_days: makeField(5) },
+            setFieldValue,
+        );
+        fireEvent.change(
+            screen.getByTestId('input-field-promptness_grace_period_days'),
+            { target: { value: '' } },
+        );
+        expect(setFieldValue).toHaveBeenCalledWith(
+            'promptness_grace_period_days',
+            null,
+        );
+    });
+
+    it('resets the value to null when the period type is removed', () => {
+        const setFieldValue = vi.fn();
+        renderForm(
+            { promptness_grace_period_days: makeField(5) },
+            setFieldValue,
+        );
+        fireEvent.change(screen.getByTestId('input-field-period_type'), {
+            target: { value: NO_PERIOD },
+        });
+        expect(setFieldValue).toHaveBeenCalledWith(
+            'promptness_grace_period_days',
+            null,
+        );
+        expect(setFieldValue).toHaveBeenCalledWith('period_type', null);
+    });
+
+    it('displays the errors returned by the backend', () => {
+        const backendError = 'Ensure this value is greater than or equal to 0.';
+        renderForm({
+            promptness_grace_period_days: {
+                value: -1,
+                errors: [backendError],
+            },
+        });
+        expect(
+            screen.getByTestId('errors-promptness_grace_period_days'),
+        ).toHaveTextContent(backendError);
     });
 });

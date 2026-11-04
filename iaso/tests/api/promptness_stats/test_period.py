@@ -27,6 +27,14 @@ class PromptnessPeriodTestCase(PromptnessStatsTestCase):
         self.assertEqual(period.end, datetime.date(2026, 12, 31))
         self.assertEqual(period.deadline, datetime.date(2027, 1, 10))
 
+    def test_day_period(self):
+        period = PromptnessPeriod.build("20261020", 2, today=datetime.date(2026, 10, 20))
+        self.assertEqual(period.start, datetime.date(2026, 10, 20))
+        self.assertEqual(period.end, datetime.date(2026, 10, 20))
+        self.assertEqual(period.deadline, datetime.date(2026, 10, 22))
+        self.assertTrue(period.is_current)
+        self.assertTrue(period.is_provisional)
+
     def test_quarter_period(self):
         period = PromptnessPeriod.build("2026Q1", 15, today=datetime.date(2026, 9, 28))
         self.assertEqual(period.start, datetime.date(2026, 1, 1))

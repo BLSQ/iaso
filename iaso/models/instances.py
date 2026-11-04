@@ -1086,7 +1086,7 @@ class InstanceFileExtensionManager(models.Manager):
             .get_queryset()
             .annotate(
                 annotated_file_extension=Func(
-                    F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')"
+                    F("file"), function="LOWER", template=r"SUBSTRING(%(expressions)s, '\.([^\.]+)$')"
                 )
             )
         )

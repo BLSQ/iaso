@@ -182,7 +182,7 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset.select_related("instance", "instance__org_unit", "instance__form")
             .annotate(
                 jpg_name=Concat(
-                    RegexpReplace(Replace(F("name"), Value('"'), Value("")), Value("\.[^.]+$"), Value("")),
+                    RegexpReplace(Replace(F("name"), Value('"'), Value("")), Value(r"\.[^.]+$"), Value("")),
                     Value(".jpg"),
                     output_field=TextField(),
                 )

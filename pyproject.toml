@@ -169,6 +169,7 @@ select = [
     "SIM", # flake8-simplify
     "T10", # flake8-print
     "UP",  # pyupgrade
+    "W",   # pycodestyle warnings
     # Disabled rules.
     # "C90", # mccabe complexity
     # "G",   # flake8-logging-format

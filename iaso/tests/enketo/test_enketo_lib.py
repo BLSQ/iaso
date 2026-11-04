@@ -68,8 +68,8 @@ class EnketoLibTests(TestCase):
           <respondent>test bracket</respondent>
           <photo>Untitled-19_51_21 (Copy)-8_53_32.jpeg</photo>
           <pdf_attachment>export(11)-8_36_42.xlsx</pdf_attachment>
-          
-        
+
+
         <invoices>
             <excel>survey-media(6)-9_21_0.xlsx</excel>
             <photo_meeting>Untitled-19_51_21 (Copy)-9_21_6.jpeg</photo_meeting>

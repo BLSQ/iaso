@@ -54,7 +54,7 @@ const INITIAL_VIEW_STATE = {
 export const AssignmentsMap: FC = () => {
     const { planning, tree, levelTree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
-    const showPoints = selectedTeam.type === TeamType.TEAM_OF_USERS;
+    const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
     const area = useLevelGeometry(selectedLevel);
     const members = useLevelGeometry(selectedLevel + 1);
     const { openTeam } = useAssignmentsParams();

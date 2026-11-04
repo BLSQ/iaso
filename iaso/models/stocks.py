@@ -60,7 +60,7 @@ class StockKeepingUnit(SoftDeletableModel):
     display_unit = models.CharField(max_length=25, blank=True)
     """
     The display_precision should be a power of 10 by which the value will be divided.
-    E.g.: 
+    E.g.:
     - if you want to display kilograms, the value should be in grams but the display_precision is going to be 1000
     """
     display_precision = models.IntegerField(null=False, blank=False, default=1, validators=[validate_precision])

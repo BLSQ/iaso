@@ -1,8 +1,12 @@
 # How to run this site locally
 
 - Clone the [repository](https://github.com/BLSQ/iaso)
-- Start a [virtual environment](https://docs.python.org/3/library/venv.html)
-- cd to `/docs/`
-- Run `pip install -r requirements.txt`
-- cd to the root folder of iaso
-- Run `mkdocs serve`
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- From the root folder of iaso, start the local server:
+
+```bash
+uv run --only-group docs mkdocs serve
+```
+
+This installs the `docs` dependency group from `pyproject.toml` if needed, then runs mkdocs.
+The rest of Iaso's dependencies aren't needed: `mkdocstrings` reads the Python code without importing it.

@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-from iaso.admin.base import admin_attr_decorator
 from iaso.models import Planning, PlanningConfig
 
 
@@ -11,7 +10,6 @@ class PlanningConfigInline(admin.TabularInline):
 
 
 @admin.register(Planning)
-@admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
     autocomplete_fields = ("project", "team", "created_by", "org_unit", "target_org_unit_types")

@@ -4,9 +4,9 @@
 # You can run the database and webpack with django-compose and it will connect to the by default
 # By running:  django-compose up db webpack
 
-# You will need to create a venv locally by running: venv . && pip install -r requirements.txt && pip install -r requirements-dev.txt
+# You will need to create the local venv first by running: uv sync
 
-#source bin/activate
+#source .venv/bin/activate
 export ENCRYPTED_TEXT_FIELD_KEY="bNqPWD4KdouaH-yxfl7PPdJLbbNt31mnJDwg9IHoGDM="
 export SECRET_KEY="secret"
 export RDS_PORT="5433"

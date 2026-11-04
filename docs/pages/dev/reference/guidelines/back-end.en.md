@@ -301,32 +301,8 @@ class Migration(migrations.Migration):
 
 See https://docs.djangoproject.com/en/4.0/topics/migrations/#data-migrations
 
-Typing and annotations
-------
-If you use an annotate and mypy complains when using the field. You can add the field on the model using Annotated. for example:
-
-
-
-```python
-from typing_extensions import Annotated, TypedDict
-
-class LastBudgetAnnotation(TypedDict):
-    budget_last_updated_at: datetime
-
-
-class MonSerializeur()
-    def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
-        if campaign.budget_last_updated_at:
-            return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
-
-
-```
-
-Do not use the `WithAnnotations` from django-stubs. it doesn't work with our setup. I think it's a problem of python 3.8
-
 # Glossary
 * DRF: Django Rest Framework, the magic framework we use to generate the API
-* mypy: Tool used to check the 
 * ci: continuous integration, it the fact that we launch the test on github on each commit
 * There is a Glossary of common Model in the Iaso root Readme. also check it
 

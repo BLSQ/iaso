@@ -8,7 +8,6 @@ from django.db.models.lookups import Exact
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path
 
-from iaso.admin.base import admin_attr_decorator
 from iaso.models import Account, Profile, TenantUser
 
 
@@ -61,7 +60,6 @@ class IsMultiAccountMainUserFilter(admin.SimpleListFilter):
         return queryset
 
 
-@admin_attr_decorator
 class UserAdmin(AuthUserAdmin):
     list_display = ("id",) + AuthUserAdmin.list_display + ("is_account_user", "is_account_main_user", "accounts")
     list_filter = (IsMultiAccountUserFilter, IsMultiAccountMainUserFilter) + AuthUserAdmin.list_filter

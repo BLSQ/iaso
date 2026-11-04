@@ -12,7 +12,7 @@ from rest_framework import filters
 
 from iaso.api.common import NumberInFilter
 from iaso.models.microplanning import Planning
-from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.models.org_unit import OrgUnit, OrgUnitQuerySet
 
 
 User = get_user_model()
@@ -39,6 +39,8 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
             "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
         ),
     )
+    include_new_ou = django_filters.BooleanFilter()
+    include_rejected_ou = django_filters.BooleanFilter()
 
     def __init__(self, *args: Any, planning: Planning, **kwargs: Any) -> None:
         self.planning = planning
@@ -46,6 +48,19 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
 
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
         planning = self.planning
+
+        include_rejected_ou = self.form.cleaned_data.get("include_rejected_ou", None)
+        include_new_ou = self.form.cleaned_data.get("include_new_ou", None)
+
+        if not include_rejected_ou and not include_new_ou:
+            queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
+        else:
+            allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
+            if include_rejected_ou:
+                allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
+            if include_new_ou:
+                allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
+            queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
 
         root = planning.org_unit
         root_level = len(str(root.path).split("."))

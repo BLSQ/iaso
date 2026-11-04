@@ -6,8 +6,7 @@
 ## Context and Problem Statement
 
 IASO has no way to tell a user that something happened that concerns them. The immediate need comes from the
-validation workflows: when a submission is accepted or rejected, or when a node of the workflow is waiting for a
-user's decision, the people involved currently have to go and look for it themselves.
+validation workflows: when a submission is accepted or rejected the people involved currently have to go and look for it themselves.
 
 Other needs are already visible and must not be blocked by the first implementation:
 
@@ -86,8 +85,6 @@ Creating a notification and delivering it are two separate steps. Delivery goes 
 * in-app inbox (always, it is the stored notification itself);
 * FCM push (mobile);
 * email.
-
-Later, and only when needed: SMS, WhatsApp, Telegram, Slack, ...
 
 Each delivery attempt is recorded with its channel and status (pending, sent, failed, ...) so that we know what was
 actually sent. Channels can be tried in an order of priority, and a user preference page may later let users choose
@@ -213,15 +210,11 @@ Other libraries are worth a look before deciding. Comments welcome.
 * A small dedicated service (Django or FastAPI) maintained by us, possibly using `django-push-notifications`
 * An existing open source push gateway (e.g. Gorush) with an authentication layer in front of it
 
-In both cases: how are relay keys issued to instances, and do we start with the relay right away or first send
-from our SaaS instances directly and add the relay before the first locally hosted instance needs push?
+In both cases: how are relay keys issued to instance?
 
 ### Other questions
 
-* **Web delivery**: is polling the unread count enough for the web interface, or do we want browser push
-  (FCM Web Push) as well?
+* **Web delivery**: is polling the unread count enough? (Martin would say yes)
 * **Translations**: is the default message rendered in the recipient's language when the notification is created,
   or rendered at read time from the type and data?
-* **Retention**: how long do we keep read notifications and delivery logs?
-* **Email**: which validation events deserve an email, and do we send one email per event or a digest?
-* **Preferences**: do users need to opt out of some types or channels in the first iteration, or can this wait?
+

@@ -1273,7 +1273,8 @@ class ETL:
         buffer_days = next_visit_days if next_visit_days > 0 else 14
         deadline = next_visit_date + timedelta(days=buffer_days)
 
-        if date.today() <= deadline:
+        today = datetime.now(timezone.utc).date()
+        if today <= deadline:
             return None
 
         # Check if there is any anthropometric form AFTER this assistance form.

@@ -1,6 +1,6 @@
 import os.path
 
-from datetime import date
+from datetime import datetime, timezone
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -19,7 +19,7 @@ IMPORT_TYPE = (
 
 
 def api_import_upload_to(api_import: "APIImport", filename: str):
-    today = date.today()
+    today = datetime.now(tz=timezone.utc).date()
     year_month = today.strftime("%Y_%m")
     account_name = get_account_name_based_on_user(api_import.user)
 

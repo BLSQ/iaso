@@ -217,7 +217,7 @@ ignore = [
 #    "DTZ005",  # call-datetime-now-without-tzinfo
 #    "DTZ006",  # call-datetime-fromtimestamp
 #    "DTZ007",  # call-datetime-strptime-without-zone
-    "DTZ011",  # call-date-today
+#    "DTZ011",  # call-date-today
     # Error (E).
     "E402",    # module-import-not-at-top-of-file
     "E501",    # line-too-long

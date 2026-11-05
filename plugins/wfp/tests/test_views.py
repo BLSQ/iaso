@@ -9,6 +9,7 @@ from django.urls import reverse
 from iaso import models as m
 from iaso.test import TestCase
 from plugins.wfp.models import Beneficiary, Journey, Step, Visit
+from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 
 
 class BeneficiariesViewTestCase(TestCase):
@@ -21,7 +22,9 @@ class BeneficiariesViewTestCase(TestCase):
         cls.other_entity_type = m.EntityType.objects.create(
             name="Other child", reference_form=cls.form, account=cls.other_account
         )
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[WFP_BENEFICIARY_EXPORT_PERMISSION]
+        )
 
         cls.reference = m.Instance.objects.create(form=cls.form, json={"first_name": "Amina", "household": {"size": 5}})
         cls.entity = m.Entity.objects.create(entity_type=cls.entity_type, account=cls.account, attributes=cls.reference)
@@ -54,6 +57,12 @@ class BeneficiariesViewTestCase(TestCase):
     def test_requires_login(self):
         response = self.client.get(reverse("wfp_beneficiaries"))
         self.assertEqual(response.status_code, 302)
+
+    def test_screen_and_exports_require_the_export_permission(self):
+        user = self.create_user_with_profile(username="no_permission", account=self.account)
+        self.client.force_login(user)
+        for url_name in ["wfp_beneficiaries", "wfp_beneficiaries_coda_export", "wfp_beneficiaries_raw_export"]:
+            self.assertEqual(self.client.get(reverse(url_name)).status_code, 403)
 
     def test_list_is_limited_to_the_user_account(self):
         self.client.force_login(self.user)
@@ -125,7 +134,9 @@ class ExportTestData(TestCase):
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="WFP")
         cls.other_account = m.Account.objects.create(name="Other")
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[WFP_BENEFICIARY_EXPORT_PERMISSION]
+        )
         cls.reference_form = m.Form.objects.create(name="Reference", form_id="reference")
         cls.visit_form = m.Form.objects.create(name="Visit", form_id="visit")
         # the medical form has a PII configuration: only `passing_urine` is not personal data
@@ -274,3 +285,172 @@ class RawExportTestCase(ExportTestData):
         sheets = self._export({"programme": "OTP"})
         self.assertEqual(sheets["beneficiaries"], [])
         self.assertEqual(sheets["forms"], [])
+
+
+class OrgUnitScopeTestData(ExportTestData):
+    """Bentiu PHCC is in the group of a partner, Rubkona PHCC is not.
+
+    The beneficiary of `ExportTestData` gets a second visit in Rubkona, and another beneficiary only visits Rubkona.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        data_source = m.DataSource.objects.create(name="South Sudan")
+        version = m.SourceVersion.objects.create(data_source=data_source, number=1)
+        data_source.projects.set([m.Project.objects.create(name="CODA", app_id="coda", account=cls.account)])
+        m.OrgUnit.objects.update(version=version)
+        cls.other_facility = m.OrgUnit.objects.create(name="Rubkona PHCC", parent=cls.facility.parent, version=version)
+        cls.group = m.Group.objects.create(name="Friendship", source_version=version)
+        cls.group.org_units.set([cls.facility])
+
+        day = datetime(2026, 5, 15, 10, tzinfo=timezone.utc)
+        journey = Journey.objects.get(beneficiary__entity=cls.entity)
+        cls.rubkona_instance = m.Instance.objects.create(
+            form=cls.visit_form,
+            entity=cls.entity,
+            org_unit=cls.other_facility,
+            source_created_at=day,
+            json={"muac": "12.4"},
+        )
+        Visit.objects.create(
+            journey=journey,
+            date=day,
+            number=2,
+            org_unit=cls.other_facility,
+            muac_size="12.4",
+            instance_id=cls.rubkona_instance.id,
+        )
+
+        cls.rubkona_entity = m.Entity.objects.create(entity_type=cls.entity.entity_type, account=cls.account)
+        rubkona_beneficiary = Beneficiary.objects.create(
+            entity=cls.rubkona_entity, account=cls.account, birth_date=date(2025, 2, 1)
+        )
+        rubkona_journey = Journey.objects.create(beneficiary=rubkona_beneficiary, nutrition_programme="TSFP")
+        Visit.objects.create(journey=rubkona_journey, date=day, number=1, org_unit=cls.other_facility)
+
+        cls.partner = cls.create_user_with_profile(
+            username="partner",
+            account=cls.account,
+            org_units=[cls.facility],
+            permissions=[WFP_BENEFICIARY_EXPORT_PERMISSION],
+        )
+
+
+class OrgUnitScopeTestCase(OrgUnitScopeTestData):
+    def _workbook(self, url_name, user, params=None):
+        self.client.force_login(user)
+        response = self.client.get(reverse(url_name), params or {})
+        self.assertEqual(response.status_code, 200)
+        return openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
+
+    def _coda_facilities(self, user, params=None):
+        rows = list(self._workbook("wfp_beneficiaries_coda_export", user, params).active.iter_rows(values_only=True))
+        column = rows[1].index("health center name")
+        return sorted(row[column] for row in rows[2:])
+
+    def _raw_sheets(self, user, params=None):
+        sheets = {}
+        for sheet in self._workbook("wfp_beneficiaries_raw_export", user, params).worksheets:
+            rows = list(sheet.iter_rows(values_only=True))
+            sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]] if rows else []
+        return sheets
+
+    def test_screen_lists_the_groups_of_the_account(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("wfp_beneficiaries"))
+        self.assertEqual(list(response.context["org_unit_groups"]), [self.group])
+        self.assertContains(response, "Friendship (South Sudan - 1)")
+
+    def test_screen_keeps_beneficiaries_with_a_visit_in_the_group(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("wfp_beneficiaries"))
+        self.assertEqual(len(response.context["page"]), 2)
+
+        response = self.client.get(reverse("wfp_beneficiaries"), {"org_unit_group": self.group.id})
+        [beneficiary] = response.context["page"]
+        self.assertEqual(beneficiary.entity_id, self.entity.id)
+        self.assertEqual(beneficiary.journeys_count, 1)
+        self.assertEqual(beneficiary.visits_count, 1)
+        self.assertEqual([v.org_unit for v in beneficiary.journeys[0].visit_set.all()], [self.facility])
+
+    def test_group_of_another_account_matches_nothing(self):
+        data_source = m.DataSource.objects.create(name="Other")
+        version = m.SourceVersion.objects.create(data_source=data_source, number=1)
+        other_group = m.Group.objects.create(name="Other partner", source_version=version)
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("wfp_beneficiaries"), {"org_unit_group": other_group.id})
+        self.assertEqual(list(response.context["page"]), [])
+
+    def test_coda_export_keeps_the_visits_in_the_group(self):
+        self.assertEqual(self._coda_facilities(self.user), ["Bentiu PHCC", "Rubkona PHCC", "Rubkona PHCC"])
+        self.assertEqual(self._coda_facilities(self.user, {"org_unit_group": self.group.id}), ["Bentiu PHCC"])
+
+    def test_raw_export_keeps_the_visits_and_submissions_in_the_group(self):
+        sheets = self._raw_sheets(self.user, {"org_unit_group": self.group.id})
+        self.assertEqual([row["entity_id"] for row in sheets["beneficiaries"]], [self.entity.id])
+        self.assertEqual(len(sheets["journeys"]), 1)
+        self.assertEqual([row["org_unit_name"] for row in sheets["visits"]], ["Bentiu PHCC"])
+        self.assertEqual(len(sheets["steps"]), 1)
+        self.assertEqual([row["org_unit_name"] for row in sheets["visit"]], ["Bentiu PHCC"])
+
+    def test_raw_export_orders_the_visits_by_number(self):
+        # a visit numbered after the others but dated before them
+        journey = Journey.objects.get(beneficiary__entity=self.entity)
+        Visit.objects.create(
+            journey=journey, date=datetime(2026, 4, 1, 10, tzinfo=timezone.utc), number=3, org_unit=self.facility
+        )
+        sheets = self._raw_sheets(self.user)
+        numbers = [row["number"] for row in sheets["visits"] if row["entity_id"] == self.entity.id]
+        self.assertEqual(numbers, [1, 2, 3])
+
+    def test_restricted_user_only_sees_their_facilities(self):
+        self.client.force_login(self.partner)
+        response = self.client.get(reverse("wfp_beneficiaries"))
+        [beneficiary] = response.context["page"]
+        self.assertEqual(beneficiary.visits_count, 1)
+        self.assertEqual(self._coda_facilities(self.partner), ["Bentiu PHCC"])
+        sheets = self._raw_sheets(self.partner)
+        self.assertEqual([row["org_unit_name"] for row in sheets["visits"]], ["Bentiu PHCC"])
+        self.assertNotIn(self.rubkona_instance.id, [row["instance_id"] for row in sheets["visit"]])
+
+    def test_restricted_user_cannot_open_other_beneficiaries_or_submissions(self):
+        self.client.force_login(self.partner)
+        response = self.client.get(reverse("wfp_beneficiary_data", args=[self.rubkona_entity.id]))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse("wfp_beneficiary_data", args=[self.entity.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(self.rubkona_instance, response.context["submissions"])
+        response = self.client.get(reverse("wfp_submission_fields", args=[self.rubkona_instance.id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_exports_have_the_groups_of_the_org_units(self):
+        other_group = m.Group.objects.create(name="Bentiu county", source_version=self.group.source_version)
+        other_group.org_units.set([self.facility])
+        expected = {
+            "Bentiu PHCC": (
+                f"{other_group.id}, {self.group.id}",
+                "Bentiu county (South Sudan), Friendship (South Sudan)",
+            ),
+            "Rubkona PHCC": (None, None),
+        }
+
+        rows = list(self._workbook("wfp_beneficiaries_coda_export", self.user).active.iter_rows(values_only=True))
+        headers = rows[1]
+        self.assertEqual(
+            headers[headers.index("health center name") + 1 : headers.index("health center name") + 3],
+            ("health center group name", "health center group id"),
+        )
+        for row in rows[2:]:
+            row = dict(zip(headers, row))
+            group_id, group_name = expected[row["health center name"]]
+            self.assertEqual((row["health center group id"], row["health center group name"]), (group_id, group_name))
+
+        sheets = self._raw_sheets(self.user)
+        for sheet in ("visits", "visit"):
+            self.assertEqual(
+                list(sheets[sheet][0])[list(sheets[sheet][0]).index("org_unit_id") :][:4],
+                ["org_unit_id", "org_unit_name", "org_unit_group_id", "org_unit_group_name"],
+            )
+            for row in sheets[sheet]:
+                self.assertEqual((row["org_unit_group_id"], row["org_unit_group_name"]), expected[row["org_unit_name"]])

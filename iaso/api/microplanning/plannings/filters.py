@@ -5,14 +5,16 @@ import django_filters
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import PointField
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import BooleanField, Case, F, Q, Value, When
+from django.db.models import BooleanField, Case, Exists, ExpressionWrapper, F, IntegerField, OuterRef, Q, Value, When
 from django.db.models.functions import Cast
 from django.utils.translation import gettext_lazy as _
+from django_cte import With
 from rest_framework import filters
 
 from iaso.api.common import NumberInFilter
+from iaso.models import PlanningConfig
 from iaso.models.microplanning import Planning
-from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.models.org_unit import OrgUnit, OrgUnitQuerySet
 
 
 User = get_user_model()
@@ -44,6 +46,29 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
         self.planning = planning
         super().__init__(*args, **kwargs)
 
+    @staticmethod
+    def _get_config_filter(config: PlanningConfig) -> Q:
+        """
+        Return the conditions an OrgUnit must satisfy for this configuration.
+
+        If a configuration has no type/group restrictions, every OrgUnit at
+        that level is eligible.
+        """
+        condition = Q()
+
+        type_ids = [obj.pk for obj in config.org_unit_types.all()]
+        group_ids = [obj.pk for obj in config.org_unit_groups.all()]
+
+        if type_ids:
+            condition &= Q(org_unit_type_id__in=type_ids)
+
+        if group_ids:
+            matching_groups = OrgUnit.groups.through.objects.filter(orgunit_id=OuterRef("pk"), group_id__in=group_ids)
+
+            condition &= Q(Exists(matching_groups))
+
+        return condition
+
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
         planning = self.planning
 
@@ -56,42 +81,69 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
         if max_depth is not None:
             max_depth += root_level - 1
 
-        if level is not None:
-            nodes_level = root_level + level
+        scoped_ids = queryset.order_by().values("pk")
 
-            root = (
-                queryset.hierarchy(root)
-                .filter(path__depth=nodes_level)
-                .only("id", "parent", "name", "path")
-                .distinct("id")
+        configs = planning.configs.all()
+        processed_levels = {root_level + config.level - 1 for config in configs}
+
+        def make_tree(cte):
+            roots = (
+                OrgUnit.objects.filter(pk=root.pk, pk__in=scoped_ids)
+                .order_by()
+                .values(
+                    "id",
+                    depth=Value(root_level, output_field=IntegerField()),
+                )
             )
 
-        queryset = queryset.hierarchy(root)
+            # A child is considered only if its parent is already in the CTE.
+            children = (
+                cte.join(OrgUnit, parent_id=cte.col.id)
+                .filter(pk__in=scoped_ids)
+                .annotate(
+                    parent_depth=ExpressionWrapper(
+                        cte.col.depth,
+                        output_field=IntegerField(),
+                    )
+                )
+            )
 
-        if max_depth is not None:
-            queryset = queryset.filter(path__depth__lte=max_depth)
+            # Stop recursion once the maximum requested depth is reached.
+            if max_depth is not None:
+                children = children.filter(parent_depth__lt=max_depth)
 
-        filter_qs = Q()
-        processed_levels = []
+            # Nodes whose parent depth has no configuration are unrestricted.
+            child_filter = ~Q(parent_depth__in=processed_levels)
 
-        for config in planning.configs.all():
-            config_level = config.level + root_level
-            processed_levels.append(config_level)
+            # Configuration restrictions
+            for config in configs:
+                parent_depth = root_level + config.level - 1
 
-            sub_filter = Q(path__depth=config_level)
+                child_filter |= Q(parent_depth=parent_depth) & self._get_config_filter(config)
 
-            org_unit_types = list(config.org_unit_types.all())
-            org_unit_groups = list(config.org_unit_groups.all())
+            children = (
+                children.filter(child_filter)
+                .values(
+                    "id",
+                    depth=F("parent_depth")
+                    + Value(
+                        1,
+                        output_field=IntegerField(),
+                    ),
+                )
+                .order_by()
+            )
 
-            if org_unit_types:
-                sub_filter &= Q(org_unit_type__in=[x.pk for x in org_unit_types])
+            return roots.union(children, all=True)
 
-            if org_unit_groups:
-                sub_filter &= Q(groups__in=[x.pk for x in org_unit_groups])
+        tree = With.recursive(make_tree)
 
-            filter_qs |= sub_filter
+        # Join the eligible tree back to the original queryset so that its
+        # existing filters and annotations are retained.
+        queryset = tree.join(queryset, pk=tree.col.id).with_cte(tree)
 
-        filter_qs |= ~Q(path__depth__in=processed_levels)
+        if level is not None:
+            queryset = queryset.filter(path__depth__gte=root_level + level)
 
         empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
 
@@ -102,7 +154,10 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
                 location_as_geom=Cast("location", PointField(dim=3)),
                 depth=F("path__depth"),
                 has_geo_json=Case(
-                    When(simplified_geom__isnull=False, then=Value(True)),
+                    When(
+                        simplified_geom__isnull=False,
+                        then=Value(True),
+                    ),
                     default=Value(False),
                     output_field=BooleanField(),
                 ),
@@ -115,6 +170,5 @@ class PlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
                     output_field=BooleanField(),
                 ),
             )
-            .filter(filter_qs)
             .order_by("id")
         )

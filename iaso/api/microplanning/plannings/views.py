@@ -17,6 +17,7 @@ from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from iaso.models.microplanning.planning_configs import PlanningConfigQuerySet
 from iaso.models.microplanning.plannings import PlanningQuerySet
 
+# from .serializers.levels_org_unit_count import LevelOrgUnitCountSerializer
 from ..common.filters import PublishingStatusFilterBackend
 from .serializers.audit import AuditPlanningSerializer
 from .serializers.misc import PlanningReadSerializer, PlanningWriteSerializer
@@ -95,6 +96,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         if self.action == "dropdown":
             return None
         if self.action == "org_unit_tree":
+            return None
+        if self.action == "levels_org_unit_count":
             return None
         return Paginator
 
@@ -208,6 +211,12 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
             return qs
 
+        if self.action == "levels_org_unit_count":
+            planning = get_object_or_404(
+                qs,
+                pk=self.kwargs["pk"],
+            )
+            return planning.levels.all()
         return (
             qs.select_related("project", "org_unit", "team", "selected_sampling_result")
             .prefetch_related(
@@ -327,3 +336,56 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
         data = self._build_org_unit_tree(filterset.qs)
         return Response(data)
+
+    # @extend_schema(
+    #     responses={200: LevelOrgUnitCountSerializer(many=True)},
+    # )
+    # @action(
+    #     detail=True,
+    #     methods=["post"],
+    #     permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+    #     url_path="levels/org-unit-count",
+    # )
+    # def levels_org_unit_count(self, request: Request, pk: int | None = None, *args: Any, **kwargs: Any) -> Response:
+    #
+    #     # todo : Once HTTP QUERY is accepted and implemented within drf, make the switch
+    #
+    #     serializer = self.get_serializer(data=request.data, many=True)
+    #     serializer.is_valid(raise_exception=True)
+    #
+    #     queryset = self.get_queryset()
+    #
+    #     # filter according to data
+    #     planning = self.get_object()
+    #     root = planning.org_unit
+    #     root_level = len(str(root.path).split("."))
+    #
+    #     queryset = queryset.hierarchy(root)
+    #
+    #     filter_qs = Q()
+    #     processed_levels = []
+    #
+    #     for config in serializer.cleaned_data:
+    #         config_level = config["level"] + root_level
+    #         processed_levels.append(config_level)
+    #
+    #         sub_filter = Q(path__depth=config_level)
+    #
+    #         org_unit_types = config.get("org_unit_types", [])
+    #         org_unit_groups = config.get("org_unit_groups", [])
+    #
+    #         if org_unit_types:
+    #             sub_filter &= Q(org_unit_type__in=[x.pk for x in org_unit_types])
+    #
+    #         if org_unit_groups:
+    #             sub_filter &= Q(groups__in=[x.pk for x in org_unit_groups])
+    #
+    #         filter_qs |= sub_filter
+    #
+    #     filter_qs |= ~Q(path__depth__in=processed_levels)
+    #
+    #     queryset = queryset.filter(filter_qs).annotate(depth=F("path__depth"))
+    #
+    #     # build tree
+    #     data = []
+    #     return Response(data)

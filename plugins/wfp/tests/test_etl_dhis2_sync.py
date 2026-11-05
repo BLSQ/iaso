@@ -1,6 +1,6 @@
 import json
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import responses
 
@@ -18,7 +18,7 @@ class Dhis2ETLSyncTestCase(TestCase):
     def test_dhis2_sync_results(self):
         account, account_created = Account.objects.get_or_create(name="Test account")
         org_unit, created = OrgUnit.objects.get_or_create(
-            name="TEST CHC-CHP", source_ref="OU_DHIS2_ID", created_at=datetime.utcnow()
+            name="TEST CHC-CHP", source_ref="OU_DHIS2_ID", created_at=datetime.now(tz=timezone.utc)
         )
 
         data_values_sets = load_fixture("data-values-set.json")

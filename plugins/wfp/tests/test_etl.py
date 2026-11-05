@@ -40,7 +40,7 @@ class ETLTestCase(TestCase):
     def test_create_journey(self):
         random_birth = random.randint(1, 1825)
         gender = random.choice(["Male", "Female"])
-        birth_date = datetime.utcnow() - timedelta(days=random_birth)
+        birth_date = datetime.now(tz=timezone.utc) - timedelta(days=random_birth)
         beneficiary = Beneficiary(birth_date=birth_date, gender=gender, entity=self.entities[6])
         beneficiary.save()
         journey = Journey(
@@ -71,7 +71,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(journey.instance_id, 1)
 
         for visit_number in range(visit_count):
-            orgUnit = OrgUnit(id=9854, name="TEST OU Children under5", created_at=datetime.utcnow())
+            orgUnit = OrgUnit(id=9854, name="TEST OU Children under5", created_at=datetime.now(tz=timezone.utc))
             orgUnit.save()
             visit = Visit(number=visit_number, org_unit=orgUnit, instance_id=421, journey=journey)
             visit.save()
@@ -186,7 +186,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(journeys[3].beneficiary.entity.id, self.entities[3].id)
         self.assertEqual(Journey.objects.count(), 4)
 
-        orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=datetime.utcnow())
+        orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=datetime.now(tz=timezone.utc))
         orgUnit.save()
 
         journey_1_visits = [
@@ -378,7 +378,10 @@ class ETLTestCase(TestCase):
 
     def test_aggregate_monthly_data(self):
         orgUnit = OrgUnit(
-            id=9810, name="TEST Gabat Static CHC-CHP", source_ref="OU_DHIS2_ID", created_at=datetime.utcnow()
+            id=9810,
+            name="TEST Gabat Static CHC-CHP",
+            source_ref="OU_DHIS2_ID",
+            created_at=datetime.now(tz=timezone.utc),
         )
         orgUnit.save()
 

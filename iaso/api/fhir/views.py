@@ -7,8 +7,9 @@ that maps Iaso OrgUnit objects to FHIR Location resources.
 Reference: https://build.fhir.org/location.html
 """
 
-import datetime
 import logging
+
+from datetime import datetime, timezone
 
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -97,7 +98,7 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
         capability = {
             "resourceType": "CapabilityStatement",
             "status": "active",
-            "date": datetime.datetime.today().strftime("%Y-%m-%d"),
+            "date": datetime.now(tz=timezone.utc).strftime("%Y-%m-%d"),
             "publisher": "Iaso",
             "kind": "instance",
             "software": {"name": "Iaso FHIR Location API", "version": "1.0.0"},

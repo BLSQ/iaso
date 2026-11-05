@@ -127,7 +127,6 @@ export const useDownloadOption = (): ((
 type Props = {
     options: DownloadOption[];
     disabled?: boolean;
-    /** Toggle rendering: the labelled button (default) or a small round icon. */
     buttonType?: 'button' | 'icon';
 };
 

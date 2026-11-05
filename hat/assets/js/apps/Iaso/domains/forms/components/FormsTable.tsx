@@ -26,7 +26,7 @@ type Props = {
     displayColumnsSelectDrawer?: boolean;
 };
 
-const dwnldBaseUrl = '/api/forms';
+const downloadBaseUrl = '/api/forms';
 const styles = {
     root: {
         marginTop: 2,
@@ -96,8 +96,8 @@ export const FormsTable: FunctionComponent<Props> = ({
             }),
         ).toString();
     }, [params]);
-    const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
-    const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
+    const csvUrl = `${downloadBaseUrl}/?${downloadQueryString}&csv=true`;
+    const xlsxUrl = `${downloadBaseUrl}/?${downloadQueryString}&xlsx=true`;
     const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
     return (
         <Paper sx={styles.root}>

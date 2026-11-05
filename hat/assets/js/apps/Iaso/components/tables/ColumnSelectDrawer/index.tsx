@@ -58,7 +58,6 @@ type Props = {
     disabledMessage?: string;
     handleApplyOptions?: () => void;
     isDisabled?: boolean;
-    /** Toggle rendering: the labelled button (default) or a small round icon. */
     buttonType?: 'button' | 'icon';
 };
 

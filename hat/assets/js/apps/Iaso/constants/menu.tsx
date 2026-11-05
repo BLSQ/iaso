@@ -552,9 +552,29 @@ export const useMenuItems = (): MenuItems => {
     }
 
     const items: MenuItems = useMemo(() => {
+        // A plugin menu item with the key of a basic item (e.g. "entities") adds its sub menu to the basic item
+        const isMergedInBasicItem = (pluginItem: MenuItem) =>
+            Boolean(pluginItem.subMenu) &&
+            basicItems.some(item => item.key === pluginItem.key);
         const menuItemsTemp = [
-            ...(basicItems as MenuItems),
-            ...(pluginsMenu as MenuItems),
+            ...(basicItems as MenuItems).map(item => {
+                const pluginSubMenu = (pluginsMenu as MenuItems)
+                    .filter(
+                        pluginItem =>
+                            isMergedInBasicItem(pluginItem) &&
+                            pluginItem.key === item.key,
+                    )
+                    .flatMap(pluginItem => pluginItem.subMenu ?? []);
+                return pluginSubMenu.length > 0
+                    ? {
+                          ...item,
+                          subMenu: [...(item.subMenu ?? []), ...pluginSubMenu],
+                      }
+                    : item;
+            }),
+            ...(pluginsMenu as MenuItems).filter(
+                pluginItem => !isMergedInBasicItem(pluginItem),
+            ),
         ];
         if (admin) {
             menuItemsTemp.push(admin as MenuItem);

@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 import time_machine
@@ -584,7 +583,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         )
         instance_file1 = InstanceFile.objects.create(instance=instance2, file="test1.jpg")
         # Instance 3. Form is soft-deleted
-        form3 = Form.objects.create(name="Form 3", deleted_at=datetime.datetime.now(datetime.timezone.utc))
+        form3 = Form.objects.create(name="Form 3", deleted_at=timezone.now())
         form_version3 = FormVersion.objects.create(form=form3, version_id=9)
         instance3 = Instance.objects.create(
             form=form3, org_unit=self.raditz, json={"key": "foobar"}, form_version=form_version3

@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
+from django.utils import timezone
 from rest_framework import status
 
 from hat.api_import.models import APIImport
@@ -68,7 +69,7 @@ class TestNotificationsViewSet(test.APITestCase):
 
     def test_get_notifications_staff_problem_not_older_than_30_days(self):
         apiimport = APIImport.objects.create(app_id="P1", has_problem=True, json_body={})
-        apiimport.created_at = datetime.now(timezone.utc) - timedelta(days=28)
+        apiimport.created_at = timezone.now() - timedelta(days=28)
         apiimport.save()
         self.client.force_authenticate(user=self.staff)
         response = self.client.get(self.BASE_URL)
@@ -81,7 +82,7 @@ class TestNotificationsViewSet(test.APITestCase):
 
     def test_get_notifications_staff_problem_older_than_30_days(self):
         apiimport = APIImport.objects.create(app_id="P1", has_problem=True, json_body={})
-        apiimport.created_at = datetime.now(timezone.utc) - timedelta(days=31)
+        apiimport.created_at = timezone.now() - timedelta(days=31)
         apiimport.save()
         self.client.force_authenticate(user=self.staff)
         response = self.client.get(self.BASE_URL)

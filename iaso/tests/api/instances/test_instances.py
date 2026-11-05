@@ -3004,7 +3004,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_check_bulk_push_gps_select_all_ok(self):
         # pushing gps data means that we need a mapping of 1 instance to 1 orgunit
         for instance in [self.instance_2, self.instance_3, self.instance_4]:
-            instance.deleted_at = datetime.datetime.now(datetime.timezone.utc)
+            instance.deleted_at = timezone.now()
             instance.deleted = True
             instance.save()
             instance.refresh_from_db()
@@ -3037,7 +3037,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # Let's delete some instances, the result will be the same
         for instance in [self.instance_6, self.instance_8]:
-            instance.deleted_at = datetime.datetime.now(datetime.timezone.utc)
+            instance.deleted_at = timezone.now()
             instance.deleted = True
             instance.save()
 
@@ -3090,7 +3090,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         # Let's delete some instances to avoid getting "error_same_org_unit"
         for instance in [self.instance_4, self.instance_5, self.instance_6]:
-            instance.deleted_at = datetime.datetime.now(datetime.timezone.utc)
+            instance.deleted_at = timezone.now()
             instance.deleted = True
             instance.save()
 
@@ -3113,7 +3113,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_check_bulk_push_gps_select_all_warning_overwrite(self):
         # pushing gps data means that we need a mapping of 1 instance to 1 orgunit
         for instance in [self.instance_2, self.instance_3, self.instance_4]:
-            instance.deleted_at = datetime.datetime.now(datetime.timezone.utc)
+            instance.deleted_at = timezone.now()
             instance.deleted = True
             instance.save()
             instance.refresh_from_db()
@@ -3147,7 +3147,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_check_bulk_push_gps_select_all_warning_both(self):
         # pushing gps data means that we need a mapping of 1 instance to 1 orgunit
         for instance in [self.instance_2, self.instance_3, self.instance_4]:
-            instance.deleted_at = datetime.datetime.now(datetime.timezone.utc)
+            instance.deleted_at = timezone.now()
             instance.deleted = True
             instance.save()
             instance.refresh_from_db()

@@ -18,7 +18,7 @@ Usage:
 import logging
 import traceback
 
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone as dt_timezone
 from functools import reduce
 from operator import or_
 
@@ -30,6 +30,7 @@ from django.db import transaction
 from django.db.models import Case, CharField, Count, DateField, F, FloatField, Func, IntegerField, Q, Sum, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Concat, Extract, ExtractMonth, ExtractYear, Substr
+from django.utils import timezone
 
 from iaso.models import Entity, EntityType, TaskLog
 from iaso.models.base import Instance
@@ -403,10 +404,10 @@ def extract_form_visit_date(submission):
     """
     raw = (submission.get("json") or {}).get("visit_date")
     try:
-        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
     except (ValueError, TypeError):
         return extract_visit_date(submission)
-    return datetime.combine(visit_day, time(12, 0), tzinfo=timezone.utc)
+    return datetime.combine(visit_day, time(12, 0), tzinfo=dt_timezone.utc)
 
 
 def extract_muac(data):
@@ -444,7 +445,7 @@ def calculate_birth_date(data):
     actual = data.get("actual_birthday__date__")
     if actual not in (None, ""):
         try:
-            return datetime.strptime(actual[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+            return datetime.strptime(actual[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
         except (ValueError, TypeError):
             pass
 
@@ -457,7 +458,7 @@ def calculate_birth_date(data):
 
     try:
         beneficiary_age = int(age)
-        registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+        registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
         if age_entry == "years":
             return registered_at - relativedelta(years=beneficiary_age)
         if age_entry == "months":
@@ -1264,7 +1265,7 @@ class ETL:
 
         try:
             next_visit_date = (
-                datetime.strptime(next_visit_date_str[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+                datetime.strptime(next_visit_date_str[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
             )
         except (ValueError, TypeError):
             return None
@@ -1273,7 +1274,7 @@ class ETL:
         buffer_days = next_visit_days if next_visit_days > 0 else 14
         deadline = next_visit_date + timedelta(days=buffer_days)
 
-        today = datetime.now(timezone.utc).date()
+        today = timezone.now().date()
         if today <= deadline:
             return None
 

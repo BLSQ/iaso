@@ -1,11 +1,12 @@
 import uuid
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone as dt_timezone
 
 import rest_framework.status
 
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT_PERMISSION
@@ -325,7 +326,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
 
         cls.ledger_item_2 = m.StockLedgerItem.objects.create(
@@ -336,7 +337,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
 
         cls.ledger_item_3 = m.StockLedgerItem.objects.create(
@@ -347,7 +348,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=40,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
 
         cls.ledger_item_4 = m.StockLedgerItem.objects.create(
@@ -358,7 +359,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
 
     def test_not_authenticated_without_rights_list(self):
@@ -466,8 +467,8 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
 
 
 class StockLedgerItemMobileListAPITestCase(SwaggerTestCaseMixin, APITestCase):
-    CREATED_AT = datetime(2026, 1, 15, 10, 0, tzinfo=timezone.utc)
-    LAST_SYNC = datetime(2026, 2, 1, tzinfo=timezone.utc)
+    CREATED_AT = datetime(2026, 1, 15, 10, 0, tzinfo=dt_timezone.utc)
+    LAST_SYNC = datetime(2026, 2, 1, tzinfo=dt_timezone.utc)
 
     @classmethod
     def setUpTestData(cls):

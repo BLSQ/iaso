@@ -1,7 +1,6 @@
-from datetime import datetime, timezone
-
 import django_filters
 
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
@@ -163,7 +162,7 @@ class StockItemViewSet(viewsets.ModelViewSet):
             value=serializer.validated_data["value"],
             impact=StockImpacts.RESET,
             created_by=self.request.user,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
         serializer.save()
 
@@ -180,7 +179,7 @@ class StockItemViewSet(viewsets.ModelViewSet):
             value=stock_item.value,
             impact=StockImpacts.RESET,
             created_by=self.request.user,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
         return response
 
@@ -234,7 +233,7 @@ class StockLedgerItemViewSet(viewsets.ModelViewSet):
         """
         POST to create a `StockLedgerItem`.
         """
-        serializer.validated_data["created_at"] = datetime.now(timezone.utc)
+        serializer.validated_data["created_at"] = timezone.now()
         serializer.validated_data["created_by"] = self.request.user
         serializer.save()
 

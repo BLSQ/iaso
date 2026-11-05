@@ -1,6 +1,6 @@
 import logging
 
-from datetime import datetime, timezone
+from django.utils import timezone
 
 from beanstalk_worker import task_decorator
 from iaso.api.deduplication.algos.levenshtein import ABOVE_SCORE_DISPLAY, LEVENSHTEIN_MAX_DISTANCE, LevenshteinAlgorithm
@@ -22,7 +22,7 @@ def get_deduplication_aglo_default_parameters(algo_name=None):
 @task_decorator(task_name="run_deduplication_algo")
 def run_deduplication_algo(algo_name=None, algo_params=None, task=None):
     """Background Task to run deduplication algo."""
-    started_at = datetime.now(timezone.utc)
+    started_at = timezone.now()
 
     if algo_name == PossibleAlgorithms.LEVENSHTEIN.value:
         algo = LevenshteinAlgorithm()
@@ -47,6 +47,6 @@ def run_deduplication_algo(algo_name=None, algo_params=None, task=None):
 
     algo.run(algo_params, task)
 
-    finished_at = datetime.now(timezone.utc)
+    finished_at = timezone.now()
     the_duration = (finished_at - started_at).total_seconds()
     task.report_success_with_result(f"Finished in {the_duration} seconds")

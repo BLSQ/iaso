@@ -2,10 +2,11 @@
 
 import logging
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.db import connection
+from django.utils import timezone
 
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ class OrgUnitUniqueUUIDIndex:
         has_dup = bool(cursor.fetchone()[0])
 
         if has_dup:
-            tomorrow = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y-%m-%d")
+            tomorrow = (timezone.now() + timedelta(days=1)).strftime("%Y-%m-%d")
             sql = (
                 "CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS iaso_orgunit_uuid_version_idx_unicity_newer "
                 "ON iaso_orgunit (uuid, version_id) "
@@ -115,7 +116,7 @@ class InstanceUniqueUUIDIndex:
         has_dup = bool(cursor.fetchone()[0])
 
         if has_dup:
-            tomorrow = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y-%m-%d")
+            tomorrow = (timezone.now() + timedelta(days=1)).strftime("%Y-%m-%d")
             sql = (
                 "CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS iaso_instance_uuidx_unicity_newer "
                 "ON iaso_instance (uuid) "
@@ -165,7 +166,7 @@ class EntityUniqueUUIDIndex:
         has_dup = bool(cursor.fetchone()[0])
 
         if has_dup:
-            tomorrow = (datetime.now(timezone.utc) + timedelta(days=1)).strftime("%Y-%m-%d")
+            tomorrow = (timezone.now() + timedelta(days=1)).strftime("%Y-%m-%d")
             sql = (
                 "CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS iaso_entity_uuidx_unicity_newer "
                 "ON iaso_entity (uuid) "

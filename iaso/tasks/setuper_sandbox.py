@@ -2,11 +2,10 @@ import logging
 import secrets
 import subprocess
 
-from datetime import datetime, timezone
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
+from django.utils import timezone
 
 from beanstalk_worker import task_decorator
 from iaso.models import Account, DataSource, Profile, Project, Task
@@ -31,7 +30,7 @@ def log_and_progress_task(task: Task, message: str, progress: int):
 
 
 def reset_account(account: Account, task: Task):
-    current_timestamp = int(datetime.now(timezone.utc).timestamp())
+    current_timestamp = int(timezone.now().timestamp())
     old_name = account.name
     new_name = f"{old_name}{current_timestamp}"
 

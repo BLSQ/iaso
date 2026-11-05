@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
@@ -90,7 +89,7 @@ class ExternalTaskSerializer(TaskSerializer):
                 or validated_data["status"] == ERRORED
                 or validated_data["status"] == KILLED
             ):
-                task.ended_at = datetime.now(timezone.utc)
+                task.ended_at = timezone.now()
         if has_progress_message:
             task.progress_message = validated_data["progress_message"]
         if has_progress_value:
@@ -145,7 +144,7 @@ class ExternalTaskPostSerializer(serializers.Serializer):
             name=name,
             status=RUNNING,
             external=True,
-            started_at=datetime.now(timezone.utc),
+            started_at=timezone.now(),
             should_be_killed=False,
         )
         task.save()

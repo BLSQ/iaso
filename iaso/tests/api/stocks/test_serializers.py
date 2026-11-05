@@ -1,11 +1,10 @@
 import collections
 import uuid
 
-from datetime import datetime, timezone
-
 import time_machine
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 
@@ -352,7 +351,7 @@ class StockLedgerItemSerializerTestCase(TestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=user,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
 
     def test_serialize_instance(self):
@@ -446,7 +445,7 @@ class StockLedgerItemSerializerTestCase(TestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             question="question_name",
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
             created_by=self.user,
         )
         self.assertRaises(
@@ -458,7 +457,7 @@ class StockLedgerItemSerializerTestCase(TestCase):
                 value=20,
                 impact=m.StockImpacts.ADD,
                 question="question_name",
-                created_at=datetime.now(timezone.utc),
+                created_at=timezone.now(),
                 created_by=self.user,
             ),
         )

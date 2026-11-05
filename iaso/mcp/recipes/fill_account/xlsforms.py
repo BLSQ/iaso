@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 from typing import Any
 
+from django.utils import timezone
 from openpyxl import Workbook
 
 
@@ -28,7 +28,7 @@ _SUBSTRING_FIELD_TYPES = (
 
 
 def xlsform_version_today() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%d") + "01"
+    return timezone.now().strftime("%Y%m%d") + "01"
 
 
 def infer_field_type(name: str, values: list[str]) -> str:

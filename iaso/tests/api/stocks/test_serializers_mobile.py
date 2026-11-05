@@ -1,8 +1,8 @@
 import collections
 
-from datetime import datetime, timezone
-
 import time_machine
+
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.api.stocks.serializers_mobile import (
@@ -278,7 +278,7 @@ class StockLedgerItemMobileSerializerTestCase(TestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=user,
-            created_at=datetime.now(timezone.utc),
+            created_at=timezone.now(),
         )
 
     def test_serialize_instance(self):

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import re
 
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from django.utils import timezone
 
 from iaso.mcp.paths import mcp_media_root
 
@@ -23,7 +24,7 @@ def default_report_path(result: dict[str, Any]) -> Path:
         or "account"
     )
     mode = "dry-run" if result.get("dry_run") else "applied"
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    stamp = timezone.now().strftime("%Y%m%d-%H%M%S")
     dest_dir = mcp_media_root() / "reports"
     dest_dir.mkdir(parents=True, exist_ok=True)
     return dest_dir / f"{stamp}_{account}_{mode}.md"
@@ -68,7 +69,7 @@ def _action_table(actions: list[dict[str, Any]], columns: list[tuple[str, str]])
 def render_fill_report(result: dict[str, Any]) -> str:
     dry_run = bool(result.get("dry_run"))
     mode = "dry-run (nothing written)" if dry_run else "applied"
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = timezone.now().strftime("%Y-%m-%d %H:%M UTC")
     stats = result.get("org_unit_results") or {}
     type_ops = result.get("type_actions") or []
     form_ops = result.get("form_actions") or []

@@ -1,10 +1,9 @@
 import json
 
-from datetime import datetime, timezone
-
 import responses
 
 from django.test import TestCase
+from django.utils import timezone
 
 from plugins.wfp.models import *
 
@@ -18,7 +17,7 @@ class Dhis2ETLSyncTestCase(TestCase):
     def test_dhis2_sync_results(self):
         account, account_created = Account.objects.get_or_create(name="Test account")
         org_unit, created = OrgUnit.objects.get_or_create(
-            name="TEST CHC-CHP", source_ref="OU_DHIS2_ID", created_at=datetime.now(tz=timezone.utc)
+            name="TEST CHC-CHP", source_ref="OU_DHIS2_ID", created_at=timezone.now()
         )
 
         data_values_sets = load_fixture("data-values-set.json")

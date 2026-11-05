@@ -1,9 +1,10 @@
 import json
 import random
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone as dt_timezone
 
 from django.test import TestCase
+from django.utils import timezone
 
 from iaso import models as m
 from plugins.wfp.common import ETL, extract_bangladesh_exit_type, extract_exit_type, extract_form_visit_date
@@ -40,7 +41,7 @@ class ETLTestCase(TestCase):
     def test_create_journey(self):
         random_birth = random.randint(1, 1825)
         gender = random.choice(["Male", "Female"])
-        birth_date = datetime.now(tz=timezone.utc) - timedelta(days=random_birth)
+        birth_date = timezone.now() - timedelta(days=random_birth)
         beneficiary = Beneficiary(birth_date=birth_date, gender=gender, entity=self.entities[6])
         beneficiary.save()
         journey = Journey(
@@ -71,7 +72,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(journey.instance_id, 1)
 
         for visit_number in range(visit_count):
-            orgUnit = OrgUnit(id=9854, name="TEST OU Children under5", created_at=datetime.now(tz=timezone.utc))
+            orgUnit = OrgUnit(id=9854, name="TEST OU Children under5", created_at=timezone.now())
             orgUnit.save()
             visit = Visit(number=visit_number, org_unit=orgUnit, instance_id=421, journey=journey)
             visit.save()
@@ -137,10 +138,10 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="TSFP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 1, tzinfo=timezone.utc),
-                    end_date=datetime(2025, 9, 12, tzinfo=timezone.utc),
+                    start_date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc),
+                    end_date=datetime(2025, 9, 12, tzinfo=dt_timezone.utc),
                     duration=(
-                        datetime(2025, 9, 12, tzinfo=timezone.utc) - datetime(2025, 8, 1, tzinfo=timezone.utc)
+                        datetime(2025, 9, 12, tzinfo=dt_timezone.utc) - datetime(2025, 8, 1, tzinfo=dt_timezone.utc)
                     ).days,
                     instance_id=1,
                 ),
@@ -151,10 +152,10 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="OTP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 5, tzinfo=timezone.utc),
-                    end_date=datetime(2025, 8, 19, tzinfo=timezone.utc),
+                    start_date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc),
+                    end_date=datetime(2025, 8, 19, tzinfo=dt_timezone.utc),
                     duration=(
-                        datetime(2025, 8, 19, tzinfo=timezone.utc) - datetime(2025, 8, 5, tzinfo=timezone.utc)
+                        datetime(2025, 8, 19, tzinfo=dt_timezone.utc) - datetime(2025, 8, 5, tzinfo=dt_timezone.utc)
                     ).days,
                     instance_id=100,
                 ),
@@ -165,10 +166,10 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="TSFP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 1, tzinfo=timezone.utc),
-                    end_date=datetime(2025, 8, 29, tzinfo=timezone.utc),
+                    start_date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc),
+                    end_date=datetime(2025, 8, 29, tzinfo=dt_timezone.utc),
                     duration=(
-                        datetime(2025, 8, 29, tzinfo=timezone.utc) - datetime(2025, 8, 1, tzinfo=timezone.utc)
+                        datetime(2025, 8, 29, tzinfo=dt_timezone.utc) - datetime(2025, 8, 1, tzinfo=dt_timezone.utc)
                     ).days,
                     instance_id=72,
                 ),
@@ -179,10 +180,10 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="OTP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 5, tzinfo=timezone.utc),
-                    end_date=datetime(2025, 8, 19, tzinfo=timezone.utc),
+                    start_date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc),
+                    end_date=datetime(2025, 8, 19, tzinfo=dt_timezone.utc),
                     duration=(
-                        datetime(2025, 8, 19, tzinfo=timezone.utc) - datetime(2025, 8, 5, tzinfo=timezone.utc)
+                        datetime(2025, 8, 19, tzinfo=dt_timezone.utc) - datetime(2025, 8, 5, tzinfo=dt_timezone.utc)
                     ).days,
                     instance_id=1012,
                 ),
@@ -194,12 +195,12 @@ class ETLTestCase(TestCase):
         self.assertEqual(journeys[3].beneficiary.entity.id, self.entities[3].id)
         self.assertEqual(Journey.objects.count(), 4)
 
-        orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=datetime.now(tz=timezone.utc))
+        orgUnit = OrgUnit(id=9854, name="TEST Malakia PHCC", created_at=timezone.now())
         orgUnit.save()
 
         journey_1_visits = [
             Visit(
-                date=datetime(2025, 8, 1, tzinfo=timezone.utc),
+                date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=1,
@@ -208,7 +209,7 @@ class ETLTestCase(TestCase):
                 whz_color="Red",
             ),
             Visit(
-                date=datetime(2025, 8, 1, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=2,
@@ -217,7 +218,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 15, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 15, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=3,
@@ -226,7 +227,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 29, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 29, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=3,
                 org_unit=orgUnit,
                 instance_id=4,
@@ -257,7 +258,7 @@ class ETLTestCase(TestCase):
 
         journey_2_visits = [
             Visit(
-                date=datetime(2025, 8, 5, tzinfo=timezone.utc),
+                date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=101,
@@ -266,7 +267,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 5, tzinfo=timezone.utc) + timedelta(days=7),
+                date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc) + timedelta(days=7),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=102,
@@ -275,7 +276,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 12, tzinfo=timezone.utc) + timedelta(days=7),
+                date=datetime(2025, 8, 12, tzinfo=dt_timezone.utc) + timedelta(days=7),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=103,
@@ -300,7 +301,7 @@ class ETLTestCase(TestCase):
 
         journey_3_visits = [
             Visit(
-                date=datetime(2025, 8, 1, tzinfo=timezone.utc),
+                date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=72,
@@ -309,7 +310,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 1, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=73,
@@ -318,7 +319,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 15, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 15, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=74,
@@ -343,7 +344,7 @@ class ETLTestCase(TestCase):
 
         journey_4_visits = [
             Visit(
-                date=datetime(2025, 8, 5, tzinfo=timezone.utc),
+                date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=1012,
@@ -352,7 +353,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 5, tzinfo=timezone.utc) + timedelta(days=7),
+                date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc) + timedelta(days=7),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=1013,
@@ -361,7 +362,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 12, tzinfo=timezone.utc) + timedelta(days=7),
+                date=datetime(2025, 8, 12, tzinfo=dt_timezone.utc) + timedelta(days=7),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=1014,
@@ -389,7 +390,7 @@ class ETLTestCase(TestCase):
             id=9810,
             name="TEST Gabat Static CHC-CHP",
             source_ref="OU_DHIS2_ID",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=timezone.now(),
         )
         orgUnit.save()
 
@@ -422,10 +423,10 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="TSFP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 1, tzinfo=timezone.utc),
-                    end_date=datetime(2025, 9, 12, tzinfo=timezone.utc),
+                    start_date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc),
+                    end_date=datetime(2025, 9, 12, tzinfo=dt_timezone.utc),
                     duration=(
-                        datetime(2025, 9, 12, tzinfo=timezone.utc) - datetime(2025, 8, 1, tzinfo=timezone.utc)
+                        datetime(2025, 9, 12, tzinfo=dt_timezone.utc) - datetime(2025, 8, 1, tzinfo=dt_timezone.utc)
                     ).days,
                     instance_id=42,
                 ),
@@ -436,10 +437,10 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="OTP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 5, tzinfo=timezone.utc),
-                    end_date=datetime(2025, 8, 19, tzinfo=timezone.utc),
+                    start_date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc),
+                    end_date=datetime(2025, 8, 19, tzinfo=dt_timezone.utc),
                     duration=(
-                        datetime(2025, 8, 19, tzinfo=timezone.utc) - datetime(2025, 8, 5, tzinfo=timezone.utc)
+                        datetime(2025, 8, 19, tzinfo=dt_timezone.utc) - datetime(2025, 8, 5, tzinfo=dt_timezone.utc)
                     ).days,
                     instance_id=140,
                 ),
@@ -448,7 +449,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(len(journeys), 2)
         visits = [
             Visit(
-                date=datetime(2025, 8, 1, tzinfo=timezone.utc),
+                date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=42,
@@ -457,7 +458,7 @@ class ETLTestCase(TestCase):
                 whz_color="Red",
             ),
             Visit(
-                date=datetime(2025, 8, 1, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 1, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=43,
@@ -466,7 +467,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 15, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 15, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=44,
@@ -475,7 +476,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 29, tzinfo=timezone.utc) + timedelta(days=14),
+                date=datetime(2025, 8, 29, tzinfo=dt_timezone.utc) + timedelta(days=14),
                 number=3,
                 org_unit=orgUnit,
                 instance_id=45,
@@ -484,7 +485,7 @@ class ETLTestCase(TestCase):
                 whz_color="Green",
             ),
             Visit(
-                date=datetime(2025, 8, 5, tzinfo=timezone.utc),
+                date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=140,
@@ -493,7 +494,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 5, tzinfo=timezone.utc) + timedelta(days=7),
+                date=datetime(2025, 8, 5, tzinfo=dt_timezone.utc) + timedelta(days=7),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=141,
@@ -502,7 +503,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 12, tzinfo=timezone.utc) + timedelta(days=7),
+                date=datetime(2025, 8, 12, tzinfo=dt_timezone.utc) + timedelta(days=7),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=142,
@@ -649,19 +650,19 @@ class BangladeshVisitDateTestCase(TestCase):
     def test_form_visit_date_is_used(self):
         submission = {
             "json": {"visit_date": "2026-08-20"},
-            "source_created_at": datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc),
+            "source_created_at": datetime(2026, 8, 25, 21, 30, tzinfo=dt_timezone.utc),
         }
-        self.assertEqual(extract_form_visit_date(submission), datetime(2026, 8, 20, 12, 0, tzinfo=timezone.utc))
+        self.assertEqual(extract_form_visit_date(submission), datetime(2026, 8, 20, 12, 0, tzinfo=dt_timezone.utc))
 
     def test_falls_back_to_the_submission_date(self):
-        created = datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc)
+        created = datetime(2026, 8, 25, 21, 30, tzinfo=dt_timezone.utc)
         self.assertEqual(extract_form_visit_date({"json": {}, "source_created_at": created}), created)
         self.assertEqual(
             extract_form_visit_date({"json": {"visit_date": "not a date"}, "source_created_at": created}), created
         )
 
     def test_other_countries_keep_the_submission_date(self):
-        created = datetime(2026, 8, 25, 21, 30, tzinfo=timezone.utc)
+        created = datetime(2026, 8, 25, 21, 30, tzinfo=dt_timezone.utc)
         submission = {"json": {"visit_date": "2026-08-20"}, "source_created_at": created}
         self.assertEqual(ETL("south_sudan_under5")._extract_visit_date(submission), created)
 
@@ -677,7 +678,7 @@ class BangladeshJourneysTestCase(TestCase):
 
     @staticmethod
     def _submissions(*forms):
-        created = datetime(2026, 6, 1, 8, 0, tzinfo=timezone.utc)
+        created = datetime(2026, 6, 1, 8, 0, tzinfo=dt_timezone.utc)
         submissions = []
         for index, (form_id, data) in enumerate(forms):
             submissions.append(

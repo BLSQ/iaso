@@ -9,9 +9,8 @@ Reference: https://build.fhir.org/location.html
 
 import logging
 
-from datetime import datetime, timezone
-
 from django.http import Http404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, status, viewsets
@@ -98,7 +97,7 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
         capability = {
             "resourceType": "CapabilityStatement",
             "status": "active",
-            "date": datetime.now(tz=timezone.utc).strftime("%Y-%m-%d"),
+            "date": timezone.now().strftime("%Y-%m-%d"),
             "publisher": "Iaso",
             "kind": "instance",
             "software": {"name": "Iaso FHIR Location API", "version": "1.0.0"},

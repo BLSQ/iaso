@@ -8,7 +8,7 @@ DATE_FORMAT = "%d-%m-%Y"
 
 
 def timestamp_to_datetime(timestamp):
-    date = datetime.fromtimestamp(timestamp)
+    date = datetime.fromtimestamp(timestamp, tz=timezone.get_default_timezone())
     return date.strftime("%Y-%m-%d %H:%M:%S")
 
 

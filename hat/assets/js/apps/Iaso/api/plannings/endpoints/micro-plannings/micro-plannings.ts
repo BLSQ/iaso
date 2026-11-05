@@ -28,6 +28,7 @@ import type {
     ApiMicroplanningPlanningsListParams,
     ApiMicroplanningPlanningsMissionsListParams,
     ApiMicroplanningPlanningsOrgUnitTreeListParams,
+    ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
     ApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveParams,
     ApiMicroplanningPlanningsOrgunitsChildrenRetrieveParams,
     ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
@@ -37,6 +38,7 @@ import type {
     ApiV2MobilePlanningsListParams,
     NestedPlanningConfigBulkRequest,
     OrgUnitTree,
+    OrgUnitTreeWithGeom,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
     PaginatedNestedPlanningConfigBulkList,
@@ -2336,6 +2338,177 @@ export const invalidateApiMicroplanningPlanningsOrgUnitTreeList = async (
 
     return queryClient;
 };
+
+export const getApiMicroplanningPlanningsOrgUnitTreeWithGeomListUrl = (
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+) => {
+    const normalizedParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== undefined) {
+            normalizedParams.append(
+                key,
+                value === null ? 'null' : String(value),
+            );
+        }
+    });
+
+    const stringifiedParams = normalizedParams.toString();
+
+    return stringifiedParams.length > 0
+        ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/org-unit-tree/with-geom/?${stringifiedParams}`
+        : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/org-unit-tree/with-geom/`;
+};
+
+export const apiMicroplanningPlanningsOrgUnitTreeWithGeomList = async (
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+    options?: Parameters<typeof customFetchInstance>[1],
+): Promise<OrgUnitTreeWithGeom[]> => {
+    return customFetchInstance<OrgUnitTreeWithGeom[]>(
+        getApiMicroplanningPlanningsOrgUnitTreeWithGeomListUrl(id, params),
+        {
+            credentials: 'same-origin',
+            ...options,
+            method: 'GET',
+        },
+    );
+};
+
+export const getApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryKey = (
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+) => {
+    return [
+        'apiMicroplanningPlanningsOrgUnitTreeWithGeomList',
+        ...(id ? [id] : []),
+        ...(params ? [params] : []),
+    ] as const;
+};
+
+export const useApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryOptions = <
+    TData = Awaited<
+        ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+    >,
+    TError = unknown,
+>(
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<
+                ReturnType<
+                    typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList
+                >
+            >,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+        queryOptions?.queryKey ??
+        getApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryKey(id, params);
+
+    const queryFn: QueryFunction<
+        Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+        >
+    > = ({ signal }) =>
+        apiMicroplanningPlanningsOrgUnitTreeWithGeomList(id, params, {
+            signal,
+            ...requestOptions,
+        });
+
+    const customOptions = getCustomQueryOptions({
+        queryKey,
+        queryFn,
+        enabled: id !== null && id !== undefined,
+        ...queryOptions,
+    });
+
+    return customOptions as UseQueryOptions<
+        Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+        >,
+        TError,
+        TData
+    > & { queryKey: QueryKey };
+};
+
+export type ApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryResult =
+    NonNullable<
+        Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+        >
+    >;
+export type ApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryError =
+    unknown;
+
+export function useApiMicroplanningPlanningsOrgUnitTreeWithGeomList<
+    TData = Awaited<
+        ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+    >,
+    TError = unknown,
+>(
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<
+                ReturnType<
+                    typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList
+                >
+            >,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    const queryOptions =
+        useApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryOptions(
+            id,
+            params,
+            options,
+        );
+
+    const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+        queryKey: QueryKey;
+    };
+
+    return withQueryKey(query, queryOptions.queryKey);
+}
+
+/**
+ * @summary Invalidates the {@link useApiMicroplanningPlanningsOrgUnitTreeWithGeomList} query
+ */
+export const invalidateApiMicroplanningPlanningsOrgUnitTreeWithGeomList =
+    async (
+        queryClient: QueryClient,
+        id: number,
+        params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+        options?: InvalidateOptions,
+    ): Promise<QueryClient> => {
+        await queryClient.invalidateQueries(
+            {
+                queryKey: getCustomQueryOptions({
+                    queryKey:
+                        getApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryKey(
+                            id,
+                            params,
+                        ),
+                }).queryKey,
+            },
+            options,
+        );
+
+        return queryClient;
+    };
 
 export const getApiMicroplanningPlanningsDropdownListUrl = (
     params?: ApiMicroplanningPlanningsDropdownListParams,

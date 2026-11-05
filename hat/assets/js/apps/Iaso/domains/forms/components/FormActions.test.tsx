@@ -25,9 +25,6 @@ vi.mock('../hooks/useRestoreForm', () => ({
     useRestoreForm: () => ({ mutateAsync: restoreFormMock }),
 }));
 
-// The installed bluesquare-components does not expose ActionsCell yet:
-// stub it with a flat renderer so these tests assert FormActions' own logic
-// (which actions exist, their urls and callbacks), not the menu mechanics.
 vi.mock('bluesquare-components', async () => {
     const actual = await vi.importActual<any>('bluesquare-components');
     const labelText = (label: any): string =>
@@ -35,35 +32,15 @@ vi.mock('bluesquare-components', async () => {
     const renderAction = (action: any): React.ReactNode => {
         if (!action || action.hidden) return null;
         if (action.type === 'divider') return <hr key={action.key} />;
-        if (action.type === 'header')
+        if (action.type === 'section') {
             return <div key={action.key}>{labelText(action.label)}</div>;
-        const custom =
-            action.renderMenuItem ?? action.renderInline ?? action.render;
-        if (custom) {
-            return (
-                <React.Fragment key={action.key}>
-                    {custom({
-                        action,
-                        closeMenu: () => undefined,
-                        inMenu: true,
-                    })}
-                </React.Fragment>
-            );
         }
-        if (action.children) {
-            return (
-                <React.Fragment key={action.key}>
-                    <span>{labelText(action.label)}</span>
-                    {action.children.map(renderAction)}
-                </React.Fragment>
-            );
-        }
-        if (action.url) {
+        if (action.href) {
             return (
                 <a
                     key={action.key}
                     data-testid={`action-${action.key}`}
-                    href={action.url}
+                    href={action.href}
                 >
                     {labelText(action.label)}
                 </a>

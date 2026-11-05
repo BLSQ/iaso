@@ -1,7 +1,6 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Code from '@mui/icons-material/Code';
 import Delete from '@mui/icons-material/Delete';
-import Download from '@mui/icons-material/Download';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import Hub from '@mui/icons-material/Hub';
 import Publish from '@mui/icons-material/Publish';
@@ -52,27 +51,25 @@ export const FormActions: FunctionComponent<Props> = ({
 }) => {
     const user = useCurrentUser();
     const { mutateAsync: restoreForm } = useRestoreForm();
-    // Dialogs are hoisted outside ActionsCell: menu children are unmounted
-    // when the menu closes, which would kill any dialog state held inside.
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [deleteDialogKey, setDeleteDialogKey] = useState(0);
 
     const form = settings.row.original;
     const hasNoVersion = form.latest_form_version === null;
+    const latestVersion = form.latest_form_version;
     const shouldShowRestore = shouldShowRestoreAction({
         onlyDeleted,
         showDeleted,
         deletedAt: form.deleted_at,
     });
+    const inOrgUnitDetails = Boolean(orgUnitId);
 
-    // Url to instances
     let urlToInstances = `/${baseUrls.instances}/formIds/${form.id}`;
     if (orgUnitId) {
         urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
     }
     urlToInstances = `${urlToInstances}/tab/list`;
 
-    // Permissions (same checks as the former DisplayIfUserHasPerm wrappers)
     const canViewInstances = userHasOneOfPermissions(
         [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         user,
@@ -82,100 +79,6 @@ export const FormActions: FunctionComponent<Props> = ({
         user,
     );
     const canEditForm = userHasPermission(Permission.FORMS, user);
-    // If orgUnitId is not undefined, the table is used in the org units details
-    // page, which means we shouldn't show form-level actions (create, edit, …)
-    const inOrgUnitDetails = Boolean(orgUnitId);
-
-    const latestVersion = form.latest_form_version;
-
-    const actions: TableAction[] = useMemo(
-        () => [
-            {
-                key: 'edit',
-                placement: 'inline',
-                label: MESSAGES.edit,
-                icon: <Settings />,
-                url: `/${baseUrls.formDetail}/formId/${form.id}`,
-                hidden: inOrgUnitDetails || !canEditForm,
-            },
-            {
-                key: 'viewInstances',
-                placement: 'inline',
-                label: MESSAGES.viewInstances,
-                icon: <FormatListBulleted />,
-                url: `${urlToInstances}/isSearchActive/true`,
-                hidden: !canViewInstances,
-            },
-            {
-                key: 'createSubmission',
-                placement: 'menu',
-                label: MESSAGES.instanceCreationDialogTitle,
-                icon: <Publish />,
-                hidden: inOrgUnitDetails || !canCreateSubmission,
-                disabled: hasNoVersion,
-                description: hasNoVersion ? MESSAGES.noFormVersion : undefined,
-                onClick: () => setIsCreateDialogOpen(true),
-            },
-            {
-                key: 'dhis2Mapping',
-                placement: 'menu',
-                label: MESSAGES.dhis2Mappings,
-                icon: <Hub />,
-
-                url: `/${baseUrls.mappings}/formId/${form.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
-                color: form.has_mappings ? 'primary.main' : undefined,
-                hidden: inOrgUnitDetails || !hasDhis2Module || !canEditForm,
-            },
-            {
-                key: 'download',
-                placement: 'menu',
-                label: MESSAGES.downloadXLSandXML,
-                icon: <Download />,
-                hidden: latestVersion === null,
-                children: [
-                    {
-                        key: 'xls',
-                        label: 'Excel (XLS)',
-                        icon: <TableChart />,
-                        url: latestVersion?.xls_file,
-                        download: true,
-                        reloadDocument: true,
-                        hidden: !latestVersion?.xls_file,
-                    },
-                    {
-                        key: 'xml',
-                        label: 'XML',
-                        icon: <Code />,
-                        url: latestVersion?.file,
-                        download: true,
-                        reloadDocument: true,
-                    },
-                ],
-            },
-            { type: 'divider' },
-            {
-                key: 'delete',
-                placement: 'menu',
-                label: MESSAGES.delete,
-                icon: <Delete />,
-                danger: true,
-                hidden: inOrgUnitDetails || !canEditForm,
-                onClick: () => setDeleteDialogKey(key => key + 1),
-            },
-        ],
-        [
-            baseUrls,
-            canCreateSubmission,
-            canEditForm,
-            canViewInstances,
-            form,
-            hasDhis2Module,
-            hasNoVersion,
-            inOrgUnitDetails,
-            latestVersion,
-            urlToInstances,
-        ],
-    );
 
     if (shouldShowRestore) {
         return (
@@ -193,7 +96,75 @@ export const FormActions: FunctionComponent<Props> = ({
         );
     }
 
-    // At most 2 icons inline (edit, view instances), the rest in the burger menu
+    const actions: TableAction[] = [
+        {
+            key: 'edit',
+            label: MESSAGES.edit,
+            icon: <Settings />,
+            href: `/${baseUrls.formDetail}/formId/${form.id}`,
+            hidden: inOrgUnitDetails || !canEditForm,
+        },
+        {
+            key: 'viewInstances',
+            label: MESSAGES.viewInstances,
+            icon: <FormatListBulleted />,
+            href: `${urlToInstances}/isSearchActive/true`,
+            hidden: !canViewInstances,
+        },
+        {
+            key: 'createSubmission',
+            label: MESSAGES.instanceCreationDialogTitle,
+            icon: <Publish />,
+            menu: true,
+            hidden: inOrgUnitDetails || !canCreateSubmission,
+            disabled: hasNoVersion,
+            tooltip: hasNoVersion ? MESSAGES.noFormVersion : undefined,
+            onClick: () => setIsCreateDialogOpen(true),
+        },
+        {
+            key: 'dhis2Mapping',
+            label: MESSAGES.dhis2Mappings,
+            icon: <Hub />,
+            menu: true,
+            href: `/${baseUrls.mappings}/formId/${form.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
+            color: form.has_mappings ? 'primary.main' : undefined,
+            hidden: inOrgUnitDetails || !hasDhis2Module || !canEditForm,
+        },
+        {
+            type: 'section',
+            label: MESSAGES.downloadXLSandXML,
+            hidden: latestVersion === null,
+        },
+        {
+            key: 'xls',
+            label: 'Excel (XLS)',
+            icon: <TableChart />,
+            href: latestVersion?.xls_file,
+            download: true,
+            menu: true,
+            hidden: !latestVersion?.xls_file,
+        },
+        {
+            key: 'xml',
+            label: 'XML',
+            icon: <Code />,
+            href: latestVersion?.file,
+            download: true,
+            menu: true,
+            hidden: latestVersion === null,
+        },
+        { type: 'divider' },
+        {
+            key: 'delete',
+            label: MESSAGES.delete,
+            icon: <Delete />,
+            menu: true,
+            color: 'error.main',
+            hidden: inOrgUnitDetails || !canEditForm,
+            onClick: () => setDeleteDialogKey(key => key + 1),
+        },
+    ];
+
     return (
         <>
             <ActionsCell actions={actions} maxInline={2} />
@@ -217,7 +188,6 @@ export const FormActions: FunctionComponent<Props> = ({
             )}
             {deleteDialogKey > 0 && (
                 <DeleteDialog
-                    // Remount with defaultOpen on every menu click
                     key={deleteDialogKey}
                     defaultOpen
                     titleMessage={MESSAGES.deleteFormTitle}

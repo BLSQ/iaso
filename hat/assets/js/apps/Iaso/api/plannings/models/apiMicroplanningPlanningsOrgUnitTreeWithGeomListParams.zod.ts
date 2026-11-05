@@ -9,11 +9,8 @@ import * as zod from 'zod';
 
 export const ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams =
     zod.strictObject({
-        ended_at__gte: zod.iso.date().optional(),
-        ended_at__lte: zod.iso.date().optional(),
-        name__icontains: zod.string().optional(),
-        started_at__gte: zod.iso.date().optional(),
-        started_at__lte: zod.iso.date().optional(),
+        level: zod.number().optional(),
+        max_depth: zod.number().optional(),
     });
 
 export type ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams = zod.input<

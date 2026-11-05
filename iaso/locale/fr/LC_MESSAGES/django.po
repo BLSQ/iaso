@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-30 13:09+0000\n"
+"POT-Creation-Date: 2026-11-03 09:55+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -232,6 +232,27 @@ msgstr "ID du parent de l'unité organisationnelle"
 #: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
 msgid "Org unit type IDs (comma-separated)"
 msgstr "IDs des types d'unité organisationnelle (séparés par des virgules)"
+
+#: iaso/api/microplanning/filters.py
+msgid "Max depth cannot exceed the root level you asked for plus one."
+msgstr "La profondeur maximale ne peut pas dépasser le niveau racine demandé, augmenté de un."
+
+#: iaso/api/microplanning/filters.py iaso/api/teams/filters.py
+msgid ""
+"The maximum depth of the tree to return, counting from the root of the "
+"entire hierarchy. Selecting a subtree does not reset the depth."
+msgstr ""
+"La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de "
+"la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne "
+"réinitialise pas la profondeur."
+
+#: iaso/api/microplanning/filters.py
+msgid ""
+"The maximum depth of the tree to return, counting from the root of the "
+"entire hierarchy. Selecting a subtree does not reset the depth. It cannot be "
+"greater than the depth of the selected root + 1."
+msgstr "La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de la racine de la hiérarchie complète. "
+"La sélection d'un sous-arbre ne réinitialise pas la profondeur. Celle-ci ne peut pas être supérieure à la profondeur de la racine sélectionnée + 1."
 
 #: iaso/api/microplanning/serializers/planning_config/bulk.py
 #: iaso/api/planning_configs/serializers/bulk_update.py
@@ -618,15 +639,6 @@ msgstr "ID de Formulaire"
 msgid "Form Version ID"
 msgstr "ID de Version de Formulaire"
 
-#: iaso/api/teams/filters.py
-msgid ""
-"The maximum depth of the tree to return, counting from the root of the "
-"entire hierarchy. Selecting a subtree does not reset the depth."
-msgstr ""
-"La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de "
-"la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne "
-"réinitialise pas la profondeur."
-
 #: iaso/api/teams/serializer_fields.py
 #, python-brace-format
 msgid "Invalid team type, expected {expected_type}."
@@ -974,7 +986,9 @@ msgstr "Quelconque"
 msgid ""
 "Indicates that this planning is now considered deprecated as it was created "
 "before the mission feature was launched."
-msgstr "Indique que cette planification est désormais considérée comme obsolète, car elle a été créée avant le lancement de la fonctionnalité « mission »."
+msgstr ""
+"Indique que cette planification est désormais considérée comme obsolète, car "
+"elle a été créée avant le lancement de la fonctionnalité « mission »."
 
 #: iaso/models/microplanning/plannings.py
 #, python-brace-format

@@ -252,6 +252,7 @@ if ENABLE_CORS:
 INSTALLED_APPS += [
     "rest_framework",
     "rest_framework_api_key",
+    "rest_framework_gis",
     "webpack_loader",
     "django_ltree",
     "hat",

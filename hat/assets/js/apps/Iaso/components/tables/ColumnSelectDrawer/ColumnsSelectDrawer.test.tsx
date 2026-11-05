@@ -56,6 +56,18 @@ describe('ColumnsSelectDrawer', () => {
             expect(toggleBtn).not.toBeDisabled();
         });
 
+        it('should render a round icon toggle when buttonType is icon', () => {
+            renderWithThemeAndIntlProvider(
+                <ColumnsSelectDrawer {...baseProps} buttonType="icon" />,
+            );
+
+            const toggleBtn = screen.getByRole('button', {
+                name: /select visible columns/i,
+            });
+            expect(toggleBtn).toBeInTheDocument();
+            expect(toggleBtn).toHaveTextContent('');
+        });
+
         it('should open the drawer when the toggle button is clicked', async () => {
             const user = userEvent.setup();
             renderWithThemeAndIntlProvider(

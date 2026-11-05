@@ -42,6 +42,8 @@ class GeometryComparisonSerializer(BaseComparisonSerializer):
 
 class DiffOrgUnitSerializer(serializers.ModelSerializer):
     groups = serializers.SerializerMethodField()
+    geom = serializers.CharField()  # to keep legacy behavior before introduction of djangorestframework-gis
+    location = serializers.CharField()  # to keep legacy behavior before introduction of djangorestframework-gis
 
     class Meta:
         model = OrgUnit

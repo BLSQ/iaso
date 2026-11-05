@@ -69,7 +69,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -108,7 +108,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -153,7 +153,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -191,7 +191,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -290,7 +290,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -408,7 +408,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]

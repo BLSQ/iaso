@@ -41,6 +41,7 @@ from iaso.models import (
     Instance,
     Mapping,
     MappingVersion,
+    MissionForm,
     OrgUnitType,
     Profile,
     Project,
@@ -217,7 +218,7 @@ class Command(BaseCommand):
             credentials,
             user=user,
             mapping_type="AGGREGATE",
-            mapping_file="./testdata/seed-data-command-form-mapping.json",
+            mapping_file="iaso/fixtures/seed_data/quantity_form_mapping.json",
         )
 
         # quality
@@ -241,8 +242,8 @@ class Command(BaseCommand):
             credentials,
             user=user,
             mapping_type="AGGREGATE",
-            mapping_file="./testdata/seed-data-command-quality-form-mapping.json",
-            xls_file="testdata/seed-data-command-form-i18n.xlsx",
+            mapping_file="iaso/fixtures/seed_data/quality_form_mapping.json",
+            xls_file="iaso/fixtures/seed_data/quality_form.xlsx",
         )
         project.save()
 
@@ -265,8 +266,8 @@ class Command(BaseCommand):
             credentials,
             user=user,
             mapping_type="EVENT",
-            mapping_file="./testdata/seed-data-command-cvs_survey-mapping.json",
-            xls_file="./testdata/seed-data-command-cvs_survey.xlsx",
+            mapping_file="iaso/fixtures/seed_data/cvs_form_mapping.json",
+            xls_file="iaso/fixtures/seed_data/cvs_form.xlsx",
         )
         project.forms.add(cvs_form)
 
@@ -287,8 +288,8 @@ class Command(BaseCommand):
             credentials,
             user=user,
             mapping_type="DERIVED",
-            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
-            xls_file="./testdata/seed-data-command-form-cvs-stats.xlsx",
+            mapping_file="iaso/fixtures/seed_data/cvs_stats_form_mapping.json",
+            xls_file="iaso/fixtures/seed_data/cvs_stats_form.xlsx",
         )
 
         project.forms.add(cvs_stat_form)
@@ -310,8 +311,8 @@ class Command(BaseCommand):
             credentials,
             user=user,
             mapping_type="EVENT_TRACKER",
-            mapping_file="./testdata/seed-data-command-event-tracker-form-mapping.json",
-            xls_file="./testdata/seed-data-command-event-tracker-form.xlsx",
+            mapping_file="iaso/fixtures/seed_data/event_tracker_form_mapping.json",
+            xls_file="iaso/fixtures/seed_data/event_tracker_form.xlsx",
         )
 
         project.forms.add(event_tracker_form)
@@ -335,8 +336,8 @@ class Command(BaseCommand):
             entity_form,
             datasource,
             credentials,
-            xls_file="./testdata/seed-data-command-entity-form.xlsx",
-            xls_xml_file="./testdata/seed-data-command-entity-form.xml",
+            xls_file="iaso/fixtures/seed_data/entity_form.xlsx",
+            xls_xml_file="iaso/fixtures/seed_data/entity_form.xml",
         )
 
         entity_type, created = EntityType.objects.get_or_create(
@@ -565,8 +566,8 @@ class Command(BaseCommand):
         user=None,
         mapping_type="AGGREGATE",
         mapping_file=None,
-        xls_file="testdata/seed-data-command-form.xlsx",
-        xls_xml_file="./testdata/seed-data-command-form.xml",
+        xls_file="iaso/fixtures/seed_data/quantity_form.xlsx",
+        xls_xml_file="iaso/fixtures/seed_data/quantity_form.xml",
     ):
         form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
         form_version.created_by = user
@@ -605,7 +606,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def seed_entities(self, source_version, form, form_version, account, project, entity_type, user):
         print("********* seeding entities")
-        reader = csv.DictReader(open("./testdata/seed-data-command-names.csv"))
+        reader = csv.DictReader(open("iaso/fixtures/seed_data/entity_names.csv"))
         names = [line for line in reader]
 
         for org_unit in source_version.orgunit_set.all()[0:1000]:
@@ -756,7 +757,7 @@ class Command(BaseCommand):
                         instance.json["imei"] = "testimeivalue" + str(randint(1, 100))
 
                         xml_string = (
-                            open("./testdata/seed-data-command-instance.xml")
+                            open("iaso/fixtures/seed_data/instance_template.xml")
                             .read()
                             .replace("REPLACEUUID", instance.json["instanceID"])
                         )
@@ -865,8 +866,12 @@ class Command(BaseCommand):
         print("country ", country.name)
 
         p = Planning.objects.create(project=project, name="planning-cvs", team=team_main, org_unit=country)
-        form_cvs = Form.objects.filter(name__startswith="Community Verification Satisfaction")
-        p.forms.set(form_cvs)
+        form_cvs = project.forms.filter(name__startswith="Community Verification Satisfaction")
+        mission_cvs, _created = MissionForm.objects.get_or_create(
+            name="mission-cvs", account=project.account, defaults={"created_by": user}
+        )
+        mission_cvs.forms.set(form_cvs)
+        p.missions.set([mission_cvs])
 
         child_index = 0
         for region in country.children():

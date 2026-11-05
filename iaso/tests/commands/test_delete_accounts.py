@@ -19,7 +19,7 @@ from iaso.management.commands.delete_accounts import MODE_DELETE_ACCOUNTS, MODE_
 from iaso.models.data_store import JsonDataStore
 from iaso.models.json_config import Config
 from iaso.models.microplanning import Assignment, PlanningSamplingResult
-from iaso.models.microplanning.plannings import PlanningConfig
+from iaso.models.microplanning.planning_configs import PlanningConfig
 from iaso.test import FastFlushTransactionTestCase
 
 

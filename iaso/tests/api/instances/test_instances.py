@@ -284,7 +284,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "1",
             }
         ]
@@ -330,7 +330,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "planningId": planning.id,
                 "name": "1",
             }
@@ -381,7 +381,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "1",
             }
         ]
@@ -423,7 +423,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -450,7 +450,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 12.345,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
                 "name": "test_accuracy_rounded",
             }
         ]
@@ -478,7 +478,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 126264.07,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
                 "name": "test_accuracy_rounded",
             }
         ]
@@ -506,7 +506,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 126264.345,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
                 "name": "test_accuracy_rounded",
             }
         ]
@@ -534,7 +534,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 48.622852,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy_rounded\/test.xml",
                 "name": "test_accuracy_rounded",
             }
         ]
@@ -561,7 +561,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": "not_a_number",
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_invalid_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_invalid_accuracy\/test.xml",
                 "name": "test_invalid_accuracy",
             }
         ]
@@ -600,7 +600,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "Mobile app name",
             }
         ]
@@ -640,7 +640,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "Mobile app name i1",
             },
             {
@@ -653,7 +653,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "Mobile app name i2",
             },
         ]
@@ -685,7 +685,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "Mobile app name",
             }
         ]
@@ -744,7 +744,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": instance_name,
             },
         ]
@@ -2180,7 +2180,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "updated_at": 1565258153704,
                 "orgUnitId": self.jedi_council_corruscant.id,
                 "formId": self.form_1.id,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "entityUuid": entity_uuid,
                 "entityTypeId": entity_type.id,
                 "name": "Mobile app name i2",
@@ -2225,7 +2225,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "updated_at": 1565258153704,
                 "orgUnitId": self.jedi_council_corruscant.id,
                 "formId": self.form_1.id,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "entityUuid": entity_uuid,
                 "entityTypeId": entity_type.id,
                 "name": "Mobile app name i2",
@@ -2264,7 +2264,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "updated_at": 1565258153704,
                 "orgUnitId": self.jedi_council_corruscant.id,
                 "formId": self.form_1.id,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "entityUuid": entity_uuid,
                 "entityTypeId": entity_type.id,
                 "name": "Mobile app name i2",
@@ -2371,7 +2371,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 "updated_at": 1565258153704,
                 "orgUnitId": self.jedi_council_corruscant.id,
                 "formId": self.form_1.id,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "entityUuid": entity_uuid,
                 "entityTypeId": entity_type.id,
                 "name": "Mobile app name i2",

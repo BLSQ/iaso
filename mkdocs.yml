@@ -30,7 +30,7 @@ theme:
     - navigation.top # "back to top" button
     - toc.integrate # page headings nest under the active page in the LEFT sidebar, no separate right-hand rail
 hooks:
-  - docs_redirect_hook.py # writes redirects for pages moved by the 2026 pages/ flatten
+  - docs/docs_redirect_hook.py # writes redirects for pages moved by the 2026 pages/ flatten
 plugins:
   - i18n:
       languages:

@@ -21,7 +21,7 @@ import xlsxwriter
 
 from django.db.models import Prefetch
 
-from iaso.models import Instance, OrgUnit
+from iaso.models import Group, Instance, OrgUnit
 from iaso.utils.pii import filter_submission_json
 
 from .common import _extract_rations
@@ -35,6 +35,28 @@ NON_FOOD_ASSISTANCE = {"Mosquito Net", "Soap", "ORS", "Vitamin", "albendazole", 
 
 def _normalize(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(name).lower())
+
+
+def org_unit_groups(org_unit_ids, user) -> typing.Dict[int, typing.List[Group]]:
+    """Groups of the account of `user` containing each of `org_unit_ids` (ids or a values queryset), by name."""
+    groups: typing.Dict[int, typing.List[Group]] = {}
+    for membership in (
+        Group.org_units.through.objects.filter(
+            orgunit_id__in=org_unit_ids, group__in=Group.objects.filter_for_user(user)
+        )
+        .select_related("group")
+        .order_by("group__name", "group_id")
+    ):
+        groups.setdefault(membership.orgunit_id, []).append(membership.group)
+    return groups
+
+
+def group_names(groups: typing.List[Group]) -> typing.Optional[str]:
+    return ", ".join(f"{group.name} ({group.source_version.data_source.name})" for group in groups) or None
+
+
+def group_ids(groups: typing.List[Group]) -> typing.Optional[str]:
+    return ", ".join(str(group.id) for group in groups) or None
 
 
 @dataclass
@@ -52,6 +74,7 @@ class VisitContext:
     assistance_instance: typing.Optional[Instance]
     org_units: typing.Dict[int, OrgUnit]
     reference_org_unit: typing.Optional[OrgUnit]
+    groups: typing.Dict[int, typing.List[Group]]  # groups of the org units of the visits
     _normalized: typing.Optional[typing.List[dict]] = field(default=None)
 
     def answer(self, *candidates: str):
@@ -143,6 +166,16 @@ COLUMNS: typing.List[typing.Tuple[str, str, typing.Callable[[VisitContext], typi
     ),
     (
         "Health Center details",
+        "health center group name",
+        lambda ctx: group_names(ctx.groups.get(ctx.visit.org_unit_id, [])),
+    ),
+    (
+        "Health Center details",
+        "health center group id",
+        lambda ctx: group_ids(ctx.groups.get(ctx.visit.org_unit_id, [])),
+    ),
+    (
+        "Health Center details",
         "CP name",
         lambda ctx: ctx.answer("cp_name", "partner", "partner_name", "cooperating_partner"),
     ),
@@ -160,9 +193,9 @@ COLUMNS: typing.List[typing.Tuple[str, str, typing.Callable[[VisitContext], typi
     (
         "Cycle details",
         "days elapsed since beginning of Cycle",
-        lambda ctx: (_date(ctx.visit.date) - ctx.journey.start_date).days
-        if ctx.visit.date and ctx.journey.start_date
-        else None,
+        lambda ctx: (
+            (_date(ctx.visit.date) - ctx.journey.start_date).days if ctx.visit.date and ctx.journey.start_date else None
+        ),
     ),
     (
         "Cycle details",
@@ -191,9 +224,9 @@ COLUMNS: typing.List[typing.Tuple[str, str, typing.Callable[[VisitContext], typi
     (
         "Anthropometric step for Women",
         "is Pregnant?",
-        lambda ctx: _yes_no(ctx.journey.physiology_status == "pregnant")
-        if ctx.journey.programme_type == "PLW"
-        else None,
+        lambda ctx: (
+            _yes_no(ctx.journey.physiology_status == "pregnant") if ctx.journey.programme_type == "PLW" else None
+        ),
     ),
     (
         "Anthropometric step for Women",
@@ -203,8 +236,10 @@ COLUMNS: typing.List[typing.Tuple[str, str, typing.Callable[[VisitContext], typi
     (
         "Anthropometric step for Women",
         "is Child Wasted?",
-        lambda ctx: ctx.answer("is_child_wasted", "child_wasted")
-        or (_yes_no(True) if ctx.journey.admission_criteria == "child_wasted" else None),
+        lambda ctx: (
+            ctx.answer("is_child_wasted", "child_wasted")
+            or (_yes_no(True) if ctx.journey.admission_criteria == "child_wasted" else None)
+        ),
     ),
     ("Anthropometric step", "parents Alive?", lambda ctx: ctx.answer("parents_alive", "are_parents_alive")),
     (
@@ -286,12 +321,24 @@ def _visit_groups(instances: typing.List[Instance], anchor_ids: typing.Set[int])
     return groups
 
 
-def iter_rows(beneficiaries, user) -> typing.Iterator[list]:
-    """Rows of the export, for a queryset of `Beneficiary` (processed by batches to keep memory low)."""
+def iter_rows(beneficiaries, user, org_units=None) -> typing.Iterator[list]:
+    """Rows of the export, for a queryset of `Beneficiary` (processed by batches to keep memory low).
+
+    With `org_units` (a queryset of `OrgUnit`), only the visits made in them are exported. Cycle numbers and the
+    "previous visit" columns are still computed on all the visits, so they don't change with the filter.
+    """
     ids = list(beneficiaries.order_by("id").values_list("id", flat=True))
     for start in range(0, len(ids), BATCH_SIZE):
+        batch_ids = ids[start : start + BATCH_SIZE]
+        exported_visit_ids = None
+        if org_units is not None:
+            exported_visit_ids = set(
+                Visit.objects.filter(
+                    journey__beneficiary_id__in=batch_ids, org_unit_id__in=org_units.values("id")
+                ).values_list("id", flat=True)
+            )
         batch = list(
-            Beneficiary.objects.filter(id__in=ids[start : start + BATCH_SIZE])
+            Beneficiary.objects.filter(id__in=batch_ids)
             .select_related("entity__attributes__org_unit", "entity__attributes__form")
             .prefetch_related(
                 Prefetch("journey_set", queryset=Journey.objects.order_by("start_date", "id")),
@@ -313,15 +360,20 @@ def iter_rows(beneficiaries, user) -> typing.Iterator[list]:
             instances_by_entity.setdefault(instance.entity_id, []).append(instance)
 
         org_unit_ids = set()
+        visit_org_unit_ids = set()
         for beneficiary in batch:
             reference = beneficiary.entity.attributes
             if reference and reference.org_unit and reference.org_unit.path:
                 org_unit_ids.update(int(i) for i in reference.org_unit.path)
             for journey in beneficiary.journey_set.all():
                 for visit in journey.visit_set.all():
+                    if visit.org_unit_id:
+                        visit_org_unit_ids.add(visit.org_unit_id)
                     if visit.org_unit and visit.org_unit.path:
                         org_unit_ids.update(int(i) for i in visit.org_unit.path)
-        org_units = OrgUnit.objects.filter(id__in=org_unit_ids).only("id", "name").in_bulk()
+        # Not `org_units`: that is the filter of the export, used again by the next batches
+        org_units_by_id = OrgUnit.objects.filter(id__in=org_unit_ids).only("id", "name").in_bulk()
+        groups_by_org_unit = org_unit_groups(visit_org_unit_ids, user)
 
         for beneficiary in batch:
             instances = instances_by_entity.get(beneficiary.entity_id, [])
@@ -332,6 +384,8 @@ def iter_rows(beneficiaries, user) -> typing.Iterator[list]:
             for cycle_number, journey in enumerate(journeys, start=1):
                 visits = list(journey.visit_set.all())
                 for index, visit in enumerate(visits):
+                    if exported_visit_ids is not None and visit.id not in exported_visit_ids:
+                        continue
                     group = groups.get(visit.instance_id, [])
                     assistance = next(
                         (i for i in group if any(step.instance_id == i.id for step in visit.step_set.all())), None
@@ -348,8 +402,9 @@ def iter_rows(beneficiaries, user) -> typing.Iterator[list]:
                         + ([filter_submission_json(reference.json or {}, reference.form, user)] if reference else []),
                         anchor=group[0] if group else None,
                         assistance_instance=assistance,
-                        org_units=org_units,
+                        org_units=org_units_by_id,
                         reference_org_unit=reference.org_unit if reference else None,
+                        groups=groups_by_org_unit,
                     )
                     yield [value(ctx) for _, _, value in COLUMNS]
 
@@ -362,7 +417,7 @@ def _cell(value):
     return value
 
 
-def build_xlsx(beneficiaries, user, path: str) -> None:
+def build_xlsx(beneficiaries, user, path: str, org_units=None) -> None:
     """Write the export as an Excel file at `path`: a first header row with the steps, a second with the fields.
 
     Rows are streamed to disk (constant memory mode), so large accounts don't need to fit in memory.
@@ -382,7 +437,7 @@ def build_xlsx(beneficiaries, user, path: str) -> None:
     for column, (_, field_name, _) in enumerate(COLUMNS):
         sheet.write(1, column, field_name, field_format)
 
-    for row_index, row in enumerate(iter_rows(beneficiaries, user), start=2):
+    for row_index, row in enumerate(iter_rows(beneficiaries, user, org_units), start=2):
         for column, value in enumerate(row):
             value = _cell(value)
             if isinstance(value, datetime.datetime):

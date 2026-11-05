@@ -606,7 +606,7 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
 
         original_build_org_unit_tree = PlanningViewSet._build_org_unit_tree
 
-        def assert_queryset_has_no_orphans(queryset):
+        def assert_queryset_has_no_orphans(queryset: OrgUnitQuerySet, serializer):
             org_units = list(queryset)
             org_unit_ids = {org_unit.pk for org_unit in org_units}
 
@@ -617,7 +617,7 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertNotIn(self.children_2.pk, org_unit_ids)
             self.assertNotIn(self.children_2_1.pk, org_unit_ids)
 
-            return original_build_org_unit_tree(queryset)
+            return original_build_org_unit_tree(queryset, serializer)
 
         # patching _build_org_unit_tree to do our test assert as it's the method that gets the queryset
         with patch.object(

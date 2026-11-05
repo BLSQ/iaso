@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import typing
+
 from typing import Any
 
 import django_filters
@@ -8,16 +10,16 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import PointField
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import BooleanField, Case, Exists, ExpressionWrapper, F, IntegerField, OuterRef, Q, Value, When
+from django.db.models import BooleanField, Case, Q, Value, When
 from django.db.models.functions import Cast
 from django.utils.translation import gettext_lazy as _
-from django_cte import With
 from rest_framework import filters
 
 from iaso.api.common import NumberInFilter
-from iaso.models import PlanningConfig
+from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.models.microplanning import Planning
-from iaso.models.org_unit import OrgUnit, OrgUnitQuerySet
+from iaso.models.microplanning.planning_configs import PlanningConfigQuerySet
+from iaso.models.org_unit import OrgUnitQuerySet
 
 
 User = get_user_model()
@@ -36,116 +38,26 @@ class PlanningDropdownFilterSet(django_filters.FilterSet):
     form_ids = NumberInFilter(field_name="missions__missionwithforms__forms__id", distinct=True)
 
 
-class BasePlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
+class BasePlanningOrgUnitTreeFilterSet(PlanningOrgUnitTreeQuerySetBuilder, django_filters.FilterSet):
     def __init__(self, planning: Planning, *args: Any, **kwargs: Any) -> None:
         self.planning = planning
         super().__init__(*args, **kwargs)
 
-    @staticmethod
-    def _get_config_filter(config: PlanningConfig) -> Q:
-        """
-        Return the conditions an OrgUnit must satisfy for this configuration.
-
-        If a configuration has no type/group restrictions, every OrgUnit at
-        that level is eligible.
-        """
-        condition = Q()
-
-        type_ids = [obj.pk for obj in config.org_unit_types.all()]
-        group_ids = [obj.pk for obj in config.org_unit_groups.all()]
-
-        if type_ids:
-            condition &= Q(org_unit_type_id__in=type_ids)
-
-        if group_ids:
-            matching_groups = OrgUnit.groups.through.objects.filter(orgunit_id=OuterRef("pk"), group_id__in=group_ids)
-
-            condition &= Q(Exists(matching_groups))
-
-        return condition
-
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
-        planning = self.planning
-
-        root = planning.org_unit
+        root = self.planning.org_unit
         root_level = len(str(root.path).split("."))
-
+        configs = typing.cast(PlanningConfigQuerySet, self.planning.configs.all())
+        processed_levels = {root_level + config.level - 1 for config in configs}
         level = self.form.cleaned_data.get("level")
         max_depth = self.form.cleaned_data.get("max_depth")
 
-        if max_depth is not None:
-            max_depth += root_level - 1
-
-        scoped_ids = queryset.order_by().values("pk")
-
-        configs = planning.configs.all()
-        processed_levels = {root_level + config.level - 1 for config in configs}
-
-        def make_tree(cte):
-            roots = (
-                OrgUnit.objects.filter(pk=root.pk, pk__in=scoped_ids)
-                .order_by()
-                .values(
-                    "id",
-                    depth=Value(root_level, output_field=IntegerField()),
-                )
-            )
-
-            # A child is considered only if its parent is already in the CTE.
-            children = (
-                cte.join(OrgUnit, parent_id=cte.col.id)
-                .filter(pk__in=scoped_ids)
-                .annotate(
-                    parent_depth=ExpressionWrapper(
-                        cte.col.depth,
-                        output_field=IntegerField(),
-                    )
-                )
-            )
-
-            # Stop recursion once the maximum requested depth is reached.
-            if max_depth is not None:
-                children = children.filter(parent_depth__lt=max_depth)
-
-            # Nodes whose parent depth has no configuration are unrestricted.
-            child_filter = ~Q(parent_depth__in=processed_levels)
-
-            # Configuration restrictions
-            for config in configs:
-                parent_depth = root_level + config.level - 1
-
-                child_filter |= Q(parent_depth=parent_depth) & self._get_config_filter(config)
-
-            children = (
-                children.filter(child_filter)
-                .values(
-                    "id",
-                    depth=F("parent_depth")
-                    + Value(
-                        1,
-                        output_field=IntegerField(),
-                    ),
-                )
-                .order_by()
-            )
-
-            return roots.union(children, all=True)
-
-        tree = With.recursive(make_tree)
-
-        # Join the eligible tree back to the original queryset so that its
-        # existing filters and annotations are retained.
-        queryset = tree.join(queryset, pk=tree.col.id).with_cte(tree)
-
-        if level is not None:
-            queryset = queryset.filter(path__depth__gte=root_level + level)
-
-        return (
-            queryset.filter(filter_qs)
-            .annotate(
-                depth=F("path__depth"),
-            )
-            .distinct()
+        return self.build_queryset(
+            queryset=queryset,
+            root=root,
+            processed_levels=processed_levels,
+            configs=configs,
+            max_depth=max_depth,
+            level=level,
         )
 
 
@@ -240,3 +152,7 @@ class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
             .select_related("org_unit_type")
             .order_by("id")
         )
+
+
+class PlanningOrgUnitLevelOrgUnitCount(BasePlanningOrgUnitTreeFilterSet):
+    pass

@@ -81,6 +81,16 @@ describe('DownloadMenuButton', () => {
         ).toHaveTextContent('Parquet (with simplified geometry)');
     });
 
+    it('renders a round icon toggle when buttonType is icon', () => {
+        renderWithThemeAndIntlProvider(
+            <DownloadMenuButton options={options} buttonType="icon" />,
+        );
+
+        const toggleBtn = screen.getByRole('button', { name: 'Export' });
+        expect(toggleBtn).toBeInTheDocument();
+        expect(toggleBtn).toHaveTextContent('');
+    });
+
     it('is disabled when disabled=true', () => {
         renderWithThemeAndIntlProvider(
             <DownloadMenuButton options={options} disabled />,

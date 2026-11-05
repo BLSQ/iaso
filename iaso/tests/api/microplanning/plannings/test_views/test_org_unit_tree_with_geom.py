@@ -333,7 +333,7 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
             self.assertEqual(len(children["children"]), 0)  # we stops there as it's root depth + max depth - 1 = 2 + 1
 
             data = {"max_depth": 4}  # should raise an error, as it's > root_level (2) + 1
-            res = self.client.get(self.get_url(), data)
+            res = self.client.get(self.get_url(self.planning_2.pk), data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(res_data, "max_depth", "Max depth cannot exceed the root level you asked for plus one.")
 

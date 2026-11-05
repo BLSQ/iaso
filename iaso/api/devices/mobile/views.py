@@ -25,7 +25,6 @@ class DeviceLogsViewSet(GenericViewSet, CreateModelMixin):
     POST /api/mobile/devices/sync/
     """
 
-    permission_classes = [AuthenticationEnforcedPermission, ProjectAuthenticationEnforcedPermission]
     serializer_class = DeviceLogCreateSerializer
     queryset = DeviceLog.objects.none()
     http_method_names = ["post"]
@@ -50,4 +49,4 @@ class DeviceLogsViewSet(GenericViewSet, CreateModelMixin):
         return context
 
     def get_permissions(self):
-        return [ProjectAuthenticationEnforcedPermission(self.project)]
+        return [AuthenticationEnforcedPermission(), ProjectAuthenticationEnforcedPermission(self.project)]

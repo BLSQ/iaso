@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from typing import Any
+from unittest.mock import patch
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.urls import reverse
 from rest_framework import status
 
+from iaso.api.microplanning.plannings.views import PlanningViewSet
 from iaso.models import (
     Account,
     Group,
@@ -16,6 +18,7 @@ from iaso.models import (
     Project,
     Team,
 )
+from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -632,3 +635,28 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
         self.assertIsNone(sub_children["geom"])
         self.assertIsNone(sub_children["location"])
         self.assertIsNone(sub_children["simplified_geom"])
+
+    def test_get_queryset_returns_distinct_values(self):
+        """
+        To double-check that the filter upon the m2m groups from OU returns distinct values
+        """
+
+        self.children_2.groups.set([self.org_unit_group, self.org_unit_group_2])
+
+        self.planning_config_level_1.org_unit_groups.set([self.org_unit_group, self.org_unit_group_2])
+
+        self.client.force_authenticate(self.superuser)
+        original_build_org_unit_tree = PlanningViewSet._build_org_unit_tree
+
+        def assertHasNoDuplicates(queryset: OrgUnitQuerySet, serializer):
+            self.assertEqual(queryset.count(), queryset.distinct().count())
+            return original_build_org_unit_tree(queryset, serializer)
+
+        with patch.object(
+            PlanningViewSet,
+            "_build_org_unit_tree",
+            side_effect=assertHasNoDuplicates,
+        ):
+            res = self.client.get(self.get_url())
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)

@@ -88,8 +88,12 @@ class BasePlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
 
         filter_qs |= ~Q(path__depth__in=processed_levels)
 
-        return queryset.filter(filter_qs).annotate(
-            depth=F("path__depth"),
+        return (
+            queryset.filter(filter_qs)
+            .annotate(
+                depth=F("path__depth"),
+            )
+            .distinct()
         )
 
 

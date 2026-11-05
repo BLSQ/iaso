@@ -741,6 +741,17 @@
                 </select>
             </div>
             <div class="field">
+                <label for="f-org-unit-group">Org unit group</label>
+                <select id="f-org-unit-group" name="org_unit_group"
+                    title="Only the visits made in the org units of this group (e.g. the facilities of a partner)">
+                    <option value="">All</option>
+                    {% for group in org_unit_groups %}
+                    <option value="{{ group.id }}" {% if selected_org_unit_group == group.id|stringformat:"s" %}selected{% endif %}>
+                        {{ group.name }}{% if group.source_version %} ({{ group.source_version.data_source.name }} - {{ group.source_version.number }}){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
                 <label for="f-search">Entity id or UUID</label>
                 <input id="f-search" type="text" name="q" value="{{ search }}" autocomplete="off">
             </div>

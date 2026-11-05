@@ -117,16 +117,14 @@ class TaskSourceViewSet(ModelViewSet):
         """Generate a temporary URL to download the file produced by a task."""
         task = self.get_object()
 
-        s3_object_name = task.result_file
-        if s3_object_name:
-            if task.result_file_expired:
-                serializer = TaskPresignedUrlSerializer(
-                    {"presigned_url": None, "expires_at": task.result_file_expires_at}
-                )
+        result_file = task.result_file
+        if result_file:
+            if result_file.expired:
+                serializer = TaskPresignedUrlSerializer({"presigned_url": None, "expires_at": result_file.expires_at})
                 return Response(serializer.data, status=status.HTTP_410_GONE)
 
             try:
-                presigned_url = generate_presigned_url_from_s3(s3_object_name)
+                presigned_url = generate_presigned_url_from_s3(result_file.file)
             except Exception:
                 logger.exception("Failed to generate presigned URL for task %s", task.pk)
                 return Response(
@@ -135,7 +133,7 @@ class TaskSourceViewSet(ModelViewSet):
                 )
 
             serializer = TaskPresignedUrlSerializer(
-                {"presigned_url": presigned_url, "expires_at": task.result_file_expires_at}
+                {"presigned_url": presigned_url, "expires_at": result_file.expires_at}
             )
             return Response(serializer.data)
         raise serializers.ValidationError(

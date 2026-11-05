@@ -19,7 +19,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 
-import { Task, TaskResult, TaskResultFile } from '../types';
+import { Task, TaskResult } from '../types';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -57,33 +57,21 @@ const Row: FunctionComponent<RowProps> = ({ label, value, isPreformatted }) => {
     );
 };
 
-// Tasks currently produce at most one file, which is the one the presigned URL endpoint serves.
-const getResultFile = (
-    data: TaskResult['data'],
-): TaskResultFile | undefined => {
-    if (typeof data === 'string') {
-        return data.startsWith('file:')
-            ? { file: data.replace('file:', '') }
-            : undefined;
-    }
-    // External tasks write their result through the API, so ignore malformed entries like the backend does.
-    const files = Array.isArray(data?.files) ? data.files : [];
-    return files.find(
-        resultFile => typeof resultFile?.file === 'string' && resultFile.file,
-    );
-};
-
 type Props = {
     task: Task<TaskResult>;
     size?: OverridableStringUnion<'small' | 'medium', TablePropsSizeOverrides>;
 };
 export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
     const { formatMessage } = useSafeIntl();
-    const resultFile = getResultFile(task.result?.data);
-    const taskHasDownloadableFile = Boolean(resultFile);
-    const fileExpiresAt = resultFile?.expires_at
-        ? moment(resultFile.expires_at)
-        : undefined;
+    const resultData = task.result?.data;
+    const resultFile = typeof resultData === 'object' ? resultData : undefined;
+    const taskHasDownloadableFile =
+        (typeof resultData === 'string' && resultData.startsWith('file:')) ||
+        Boolean(resultFile?.file);
+    const fileExpiresAt =
+        taskHasDownloadableFile && resultFile?.expires_at
+            ? moment(resultFile.expires_at)
+            : undefined;
     const fileHasExpired = Boolean(fileExpiresAt?.isSameOrBefore(moment()));
     const { data } = useQuery(
         ['taskDetails', task.id],

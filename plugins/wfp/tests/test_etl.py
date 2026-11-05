@@ -726,6 +726,7 @@ class BangladeshJourneysTestCase(TestCase):
             [visit.date.date().isoformat() for visit in visits],
             ["2026-06-15", "2026-06-27", "2026-07-13", "2026-07-26"],
         )
+        self.assertEqual([visit.number for visit in visits], [1, 2, 3, 4])
 
     def test_tsfp_child_cured_then_referred_to_bsfp(self):
         registration = {"gender": "F", "actual_birthday__date__": "2025-10-15T00:00:00.000+06:00"}
@@ -758,6 +759,8 @@ class BangladeshJourneysTestCase(TestCase):
         journeys, visits = self._process("bangladesh_under5", "U5", submissions)
 
         self.assertEqual([journey.nutrition_programme for journey in journeys], ["TSFP", "BSFP"])
+        # Numbering restarts at 1 in each journey.
+        self.assertEqual([visit.number for visit in visits], [1, 2, 3, 1])
         self.assertEqual(journeys[0].exit_type, "transfer_to_bsfp")
         self.assertEqual(journeys[0].end_date, "2026-07-13")
         self.assertIsNone(journeys[1].exit_type)

@@ -1276,6 +1276,20 @@ wheels = [
 ]
 
 [[package]]
+name = "djangorestframework-gis"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "django-filter" },
+    { name = "djangorestframework" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/55/13de413fd360849cd3d7a6b7cb08bc0f2c0155ef3fc369f0a63362ba94e8/djangorestframework_gis-1.3.0.tar.gz", hash = "sha256:f9ab54cf2f737f798fccd1f3b0501377f1053699ca421154cc3fb3edc4856366", size = 50598, upload-time = "2026-09-01T22:22:45.54Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/4a/104ba77f091b31c556b4d3b9fb96b8c4019571a429be0baa3f03f3349370/djangorestframework_gis-1.3.0-py2.py3-none-any.whl", hash = "sha256:6e39a16f17c62cb4f4e2a6e5c0821fe257a6bf458c48933e07dbc442262ee500", size = 21916, upload-time = "2026-09-01T22:22:43.915Z" },
+]
+
+[[package]]
 name = "djangorestframework-simplejwt"
 version = "5.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1905,6 +1919,7 @@ dependencies = [
     { name = "djangorestframework" },
     { name = "djangorestframework-api-key" },
     { name = "djangorestframework-csv" },
+    { name = "djangorestframework-gis" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-excel" },
     { name = "drf-extensions" },
@@ -2042,6 +2057,7 @@ requires-dist = [
     { name = "djangorestframework", specifier = "==3.14.0" },
     { name = "djangorestframework-api-key", specifier = "==3.1.0" },
     { name = "djangorestframework-csv", specifier = "==3.0.2" },
+    { name = "djangorestframework-gis", specifier = ">=1.3.0" },
     { name = "djangorestframework-simplejwt", specifier = "==5.3.1" },
     { name = "drf-excel", specifier = "==2.5.3" },
     { name = "drf-extensions", specifier = "==0.8.0" },

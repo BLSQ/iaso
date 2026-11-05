@@ -18,6 +18,7 @@ import {
     SEMESTERS,
     MONTHS,
     PERIOD_TYPE_WEEK,
+    PERIOD_TYPE_YEAR,
 } from './constants';
 import MESSAGES from './messages';
 
@@ -30,6 +31,35 @@ export const getDefaultPeriodString = () => {
 };
 
 export const getDefaultPeriod = () => new Period(getDefaultPeriodString());
+
+export const getCurrentPeriodString = (
+    periodType: string,
+    date = moment(),
+): string | undefined => {
+    const year = date.year();
+    const month = date.month() + 1;
+    const novYear = month >= 11 ? year + 1 : year;
+    switch (periodType) {
+        case PERIOD_TYPE_DAY:
+            return date.format('YYYYMMDD');
+        case PERIOD_TYPE_WEEK:
+            return `${date.isoWeekYear()}W${date.isoWeek()}`;
+        case PERIOD_TYPE_MONTH:
+            return date.format('YYYYMM');
+        case PERIOD_TYPE_QUARTER:
+            return `${year}Q${date.quarter()}`;
+        case PERIOD_TYPE_QUARTER_NOV:
+            return `${novYear}NovQ${Math.floor(((month + 1) % 12) / 3) + 1}`;
+        case PERIOD_TYPE_SIX_MONTH:
+            return `${year}S${month <= 6 ? 1 : 2}`;
+        case PERIOD_TYPE_YEAR:
+            return `${year}`;
+        case PERIOD_TYPE_FINANCIAL_NOV:
+            return `${novYear}Nov`;
+        default:
+            return undefined;
+    }
+};
 
 export const isValidPeriod = (
     pString: any,
@@ -270,4 +300,17 @@ export const usePrettyPeriod = () => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     return period => getPrettyPeriod(period, formatMessage, currentUser);
+};
+
+export const useFormatPeriod = (): ((period?: string) => string) => {
+    const { formatMessage } = useSafeIntl();
+    const formatPrettyPeriod = usePrettyPeriod();
+    return (period?: string) => {
+        if (!period) return '';
+        const periodObject = new Period(period);
+        if (periodObject.periodType === PERIOD_TYPE_MONTH) {
+            return `${formatMessage(MONTHS[periodObject.month as keyof typeof MONTHS])} ${periodObject.year}`;
+        }
+        return formatPrettyPeriod(period);
+    };
 };

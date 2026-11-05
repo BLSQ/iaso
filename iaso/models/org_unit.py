@@ -246,7 +246,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         if user and user.is_anonymous and project is None:
             return self.none()
 
-        queryset: OrgUnitQuerySet = self.defer("geom")
+        queryset: OrgUnitQuerySet = self.defer("geom")  # TODO : remove this, it has nothing to do there !
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account

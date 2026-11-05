@@ -403,7 +403,7 @@ def extract_form_visit_date(submission):
     """
     raw = (submission.get("json") or {}).get("visit_date")
     try:
-        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").date()
+        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
     except (ValueError, TypeError):
         return extract_visit_date(submission)
     return datetime.combine(visit_day, time(12, 0), tzinfo=timezone.utc)
@@ -444,7 +444,7 @@ def calculate_birth_date(data):
     actual = data.get("actual_birthday__date__")
     if actual not in (None, ""):
         try:
-            return datetime.strptime(actual[:10], "%Y-%m-%d").date()
+            return datetime.strptime(actual[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
         except (ValueError, TypeError):
             pass
 
@@ -457,7 +457,7 @@ def calculate_birth_date(data):
 
     try:
         beneficiary_age = int(age)
-        registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").date()
+        registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
         if age_entry == "years":
             return registered_at - relativedelta(years=beneficiary_age)
         if age_entry == "months":
@@ -1263,7 +1263,9 @@ class ETL:
             return None
 
         try:
-            next_visit_date = datetime.strptime(next_visit_date_str[:10], "%Y-%m-%d").date()
+            next_visit_date = (
+                datetime.strptime(next_visit_date_str[:10], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+            )
         except (ValueError, TypeError):
             return None
 

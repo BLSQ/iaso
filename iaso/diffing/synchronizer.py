@@ -122,7 +122,7 @@ class DataSourceVersionsSynchronizer:
 
     @staticmethod
     def parse_date_str(date_str: str) -> datetime.date:
-        return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=datetime.timezone.utc).date()
 
     @staticmethod
     def has_group_changes(comparisons: list[dict]) -> bool:

@@ -137,9 +137,11 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="TSFP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 1),
-                    end_date=datetime(2025, 9, 12),
-                    duration=(datetime(2025, 9, 12) - datetime(2025, 8, 1)).days,
+                    start_date=datetime(2025, 8, 1, tzinfo=timezone.utc),
+                    end_date=datetime(2025, 9, 12, tzinfo=timezone.utc),
+                    duration=(
+                        datetime(2025, 9, 12, tzinfo=timezone.utc) - datetime(2025, 8, 1, tzinfo=timezone.utc)
+                    ).days,
                     instance_id=1,
                 ),
                 Journey(
@@ -149,9 +151,11 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="OTP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 5),
-                    end_date=datetime(2025, 8, 19),
-                    duration=(datetime(2025, 8, 19) - datetime(2025, 8, 5)).days,
+                    start_date=datetime(2025, 8, 5, tzinfo=timezone.utc),
+                    end_date=datetime(2025, 8, 19, tzinfo=timezone.utc),
+                    duration=(
+                        datetime(2025, 8, 19, tzinfo=timezone.utc) - datetime(2025, 8, 5, tzinfo=timezone.utc)
+                    ).days,
                     instance_id=100,
                 ),
                 Journey(
@@ -161,9 +165,11 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="TSFP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 1),
-                    end_date=datetime(2025, 8, 29),
-                    duration=(datetime(2025, 8, 29) - datetime(2025, 8, 1)).days,
+                    start_date=datetime(2025, 8, 1, tzinfo=timezone.utc),
+                    end_date=datetime(2025, 8, 29, tzinfo=timezone.utc),
+                    duration=(
+                        datetime(2025, 8, 29, tzinfo=timezone.utc) - datetime(2025, 8, 1, tzinfo=timezone.utc)
+                    ).days,
                     instance_id=72,
                 ),
                 Journey(
@@ -173,9 +179,11 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="OTP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 5),
-                    end_date=datetime(2025, 8, 19),
-                    duration=(datetime(2025, 8, 19) - datetime(2025, 8, 5)).days,
+                    start_date=datetime(2025, 8, 5, tzinfo=timezone.utc),
+                    end_date=datetime(2025, 8, 19, tzinfo=timezone.utc),
+                    duration=(
+                        datetime(2025, 8, 19, tzinfo=timezone.utc) - datetime(2025, 8, 5, tzinfo=timezone.utc)
+                    ).days,
                     instance_id=1012,
                 ),
             ]
@@ -191,7 +199,7 @@ class ETLTestCase(TestCase):
 
         journey_1_visits = [
             Visit(
-                date=datetime(2025, 8, 1),
+                date=datetime(2025, 8, 1, tzinfo=timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=1,
@@ -200,7 +208,7 @@ class ETLTestCase(TestCase):
                 whz_color="Red",
             ),
             Visit(
-                date=datetime(2025, 8, 1) + timedelta(days=14),
+                date=datetime(2025, 8, 1, tzinfo=timezone.utc) + timedelta(days=14),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=2,
@@ -209,7 +217,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 15) + timedelta(days=14),
+                date=datetime(2025, 8, 15, tzinfo=timezone.utc) + timedelta(days=14),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=3,
@@ -218,7 +226,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 29) + timedelta(days=14),
+                date=datetime(2025, 8, 29, tzinfo=timezone.utc) + timedelta(days=14),
                 number=3,
                 org_unit=orgUnit,
                 instance_id=4,
@@ -249,7 +257,7 @@ class ETLTestCase(TestCase):
 
         journey_2_visits = [
             Visit(
-                date=datetime(2025, 8, 5),
+                date=datetime(2025, 8, 5, tzinfo=timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=101,
@@ -258,7 +266,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 5) + timedelta(days=7),
+                date=datetime(2025, 8, 5, tzinfo=timezone.utc) + timedelta(days=7),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=102,
@@ -267,7 +275,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 12) + timedelta(days=7),
+                date=datetime(2025, 8, 12, tzinfo=timezone.utc) + timedelta(days=7),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=103,
@@ -292,7 +300,7 @@ class ETLTestCase(TestCase):
 
         journey_3_visits = [
             Visit(
-                date=datetime(2025, 8, 1),
+                date=datetime(2025, 8, 1, tzinfo=timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=72,
@@ -301,7 +309,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 1) + timedelta(days=14),
+                date=datetime(2025, 8, 1, tzinfo=timezone.utc) + timedelta(days=14),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=73,
@@ -310,7 +318,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 15) + timedelta(days=14),
+                date=datetime(2025, 8, 15, tzinfo=timezone.utc) + timedelta(days=14),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=74,
@@ -335,7 +343,7 @@ class ETLTestCase(TestCase):
 
         journey_4_visits = [
             Visit(
-                date=datetime(2025, 8, 5),
+                date=datetime(2025, 8, 5, tzinfo=timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=1012,
@@ -344,7 +352,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 5) + timedelta(days=7),
+                date=datetime(2025, 8, 5, tzinfo=timezone.utc) + timedelta(days=7),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=1013,
@@ -353,7 +361,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 12) + timedelta(days=7),
+                date=datetime(2025, 8, 12, tzinfo=timezone.utc) + timedelta(days=7),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=1014,
@@ -414,9 +422,11 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="TSFP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 1),
-                    end_date=datetime(2025, 9, 12),
-                    duration=(datetime(2025, 9, 12) - datetime(2025, 8, 1)).days,
+                    start_date=datetime(2025, 8, 1, tzinfo=timezone.utc),
+                    end_date=datetime(2025, 9, 12, tzinfo=timezone.utc),
+                    duration=(
+                        datetime(2025, 9, 12, tzinfo=timezone.utc) - datetime(2025, 8, 1, tzinfo=timezone.utc)
+                    ).days,
                     instance_id=42,
                 ),
                 Journey(
@@ -426,9 +436,11 @@ class ETLTestCase(TestCase):
                     admission_type="new_case",
                     nutrition_programme="OTP",
                     exit_type="cured",
-                    start_date=datetime(2025, 8, 5),
-                    end_date=datetime(2025, 8, 19),
-                    duration=(datetime(2025, 8, 19) - datetime(2025, 8, 5)).days,
+                    start_date=datetime(2025, 8, 5, tzinfo=timezone.utc),
+                    end_date=datetime(2025, 8, 19, tzinfo=timezone.utc),
+                    duration=(
+                        datetime(2025, 8, 19, tzinfo=timezone.utc) - datetime(2025, 8, 5, tzinfo=timezone.utc)
+                    ).days,
                     instance_id=140,
                 ),
             ]
@@ -436,7 +448,7 @@ class ETLTestCase(TestCase):
         self.assertEqual(len(journeys), 2)
         visits = [
             Visit(
-                date=datetime(2025, 8, 1),
+                date=datetime(2025, 8, 1, tzinfo=timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=42,
@@ -445,7 +457,7 @@ class ETLTestCase(TestCase):
                 whz_color="Red",
             ),
             Visit(
-                date=datetime(2025, 8, 1) + timedelta(days=14),
+                date=datetime(2025, 8, 1, tzinfo=timezone.utc) + timedelta(days=14),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=43,
@@ -454,7 +466,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 15) + timedelta(days=14),
+                date=datetime(2025, 8, 15, tzinfo=timezone.utc) + timedelta(days=14),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=44,
@@ -463,7 +475,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 29) + timedelta(days=14),
+                date=datetime(2025, 8, 29, tzinfo=timezone.utc) + timedelta(days=14),
                 number=3,
                 org_unit=orgUnit,
                 instance_id=45,
@@ -472,7 +484,7 @@ class ETLTestCase(TestCase):
                 whz_color="Green",
             ),
             Visit(
-                date=datetime(2025, 8, 5),
+                date=datetime(2025, 8, 5, tzinfo=timezone.utc),
                 number=0,
                 org_unit=orgUnit,
                 instance_id=140,
@@ -481,7 +493,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 5) + timedelta(days=7),
+                date=datetime(2025, 8, 5, tzinfo=timezone.utc) + timedelta(days=7),
                 number=1,
                 org_unit=orgUnit,
                 instance_id=141,
@@ -490,7 +502,7 @@ class ETLTestCase(TestCase):
                 whz_color="Yellow",
             ),
             Visit(
-                date=datetime(2025, 8, 12) + timedelta(days=7),
+                date=datetime(2025, 8, 12, tzinfo=timezone.utc) + timedelta(days=7),
                 number=2,
                 org_unit=orgUnit,
                 instance_id=142,

@@ -210,7 +210,7 @@ ignore = [
     "DJ008",   # django-model-without-dunder-str
     "DJ012",   # django-unordered-body-content-in-model
     # flake8-datetimez (DTZ).
-    "DTZ001",  # call-datetime-without-tzinfo
+#    "DTZ001",  # call-datetime-without-tzinfo
 #    "DTZ002",  # call-datetime-today
 #    "DTZ003",  # call-datetime-utcnow
 #    "DTZ004",  # call-datetime-utcfromtimestamp

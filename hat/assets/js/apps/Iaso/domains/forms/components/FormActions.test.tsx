@@ -9,6 +9,7 @@ import { FormActions, shouldShowRestoreAction } from './FormActions';
 const permissionMocks = vi.hoisted(() => ({
     userHasPermission: vi.fn(() => true),
     userHasOneOfPermissions: vi.fn(() => true),
+    userHasAccessToModule: vi.fn(() => false),
 }));
 
 vi.mock('../../users/utils', async importOriginal => {
@@ -17,6 +18,7 @@ vi.mock('../../users/utils', async importOriginal => {
         ...actual,
         userHasPermission: permissionMocks.userHasPermission,
         userHasOneOfPermissions: permissionMocks.userHasOneOfPermissions,
+        userHasAccessToModule: permissionMocks.userHasAccessToModule,
     };
 });
 
@@ -34,6 +36,19 @@ vi.mock('bluesquare-components', async () => {
         if (action.type === 'divider') return <hr key={action.key} />;
         if (action.type === 'section') {
             return <div key={action.key}>{labelText(action.label)}</div>;
+        }
+        if (action.children) {
+            return (
+                <React.Fragment key={action.key}>
+                    <button
+                        type="button"
+                        data-testid={`action-${action.key}`}
+                    >
+                        {labelText(action.label)}
+                    </button>
+                    {action.children.map(renderAction)}
+                </React.Fragment>
+            );
         }
         if (action.href) {
             return (
@@ -166,6 +181,7 @@ describe('FormActions', () => {
         vi.clearAllMocks();
         permissionMocks.userHasPermission.mockReturnValue(true);
         permissionMocks.userHasOneOfPermissions.mockReturnValue(true);
+        permissionMocks.userHasAccessToModule.mockReturnValue(false);
     });
 
     it('opens the create submission dialog from the menu', () => {
@@ -225,6 +241,25 @@ describe('FormActions', () => {
             <FormActions {...defaultProps} hasDhis2Module={false} />,
         );
         expect(container.innerHTML).not.toContain('/forms/mappings/formId/1');
+    });
+
+    it('shows Form AI when the module is enabled', () => {
+        permissionMocks.userHasAccessToModule.mockImplementation(
+            (module: string) => module === 'FORM_AI',
+        );
+        const { container } = renderWithThemeAndIntlProvider(
+            <FormActions {...defaultProps} />,
+        );
+        expect(screen.getByTestId('action-formAI')).toBeInTheDocument();
+        expect(container.innerHTML).toContain('/forms/ai/formId/1');
+    });
+
+    it('hides Form AI when the module is disabled', () => {
+        const { container } = renderWithThemeAndIntlProvider(
+            <FormActions {...defaultProps} />,
+        );
+        expect(screen.queryByTestId('action-formAI')).toBeNull();
+        expect(container.innerHTML).not.toContain('/forms/ai/formId/1');
     });
 
     it('shows download XLS/XML actions', () => {

@@ -1,9 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
+import AutoFixHigh from '@mui/icons-material/AutoFixHigh';
 import Code from '@mui/icons-material/Code';
 import Delete from '@mui/icons-material/Delete';
+import Download from '@mui/icons-material/Download';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import Hub from '@mui/icons-material/Hub';
-import Publish from '@mui/icons-material/Publish';
+import NoteAdd from '@mui/icons-material/NoteAdd';
 import RestoreFromTrash from '@mui/icons-material/RestoreFromTrash';
 import Settings from '@mui/icons-material/Settings';
 import TableChart from '@mui/icons-material/TableChart';
@@ -13,7 +15,11 @@ import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { createInstance } from '../../instances/actions';
 import { CreateReAssignDialogComponent } from '../../instances/components/CreateReAssignDialogComponent';
-import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import {
+    userHasAccessToModule,
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../users/utils';
 import { useRestoreForm } from '../hooks/useRestoreForm';
 import MESSAGES from '../messages';
 
@@ -79,6 +85,8 @@ export const FormActions: FunctionComponent<Props> = ({
         user,
     );
     const canEditForm = userHasPermission(Permission.FORMS, user);
+    const hasFormAIModule = userHasAccessToModule('FORM_AI', user);
+    const showFormAI = !inOrgUnitDetails && hasFormAIModule && canEditForm;
 
     if (shouldShowRestore) {
         return (
@@ -112,9 +120,18 @@ export const FormActions: FunctionComponent<Props> = ({
             hidden: !canViewInstances,
         },
         {
+            key: 'formAI',
+            label: MESSAGES.openInFormAI,
+            icon: <AutoFixHigh />,
+            href: `/${baseUrls.formAI}/formId/${form.id}`,
+            menu: true,
+            hidden: !showFormAI,
+        },
+        { type: 'divider', hidden: !showFormAI },
+        {
             key: 'createSubmission',
             label: MESSAGES.instanceCreationDialogTitle,
-            icon: <Publish />,
+            icon: <NoteAdd />,
             menu: true,
             hidden: inOrgUnitDetails || !canCreateSubmission,
             disabled: hasNoVersion,
@@ -131,27 +148,28 @@ export const FormActions: FunctionComponent<Props> = ({
             hidden: inOrgUnitDetails || !hasDhis2Module || !canEditForm,
         },
         {
-            type: 'section',
-            label: MESSAGES.downloadXLSandXML,
-            hidden: latestVersion === null,
-        },
-        {
-            key: 'xls',
-            label: 'Excel (XLS)',
-            icon: <TableChart />,
-            href: latestVersion?.xls_file,
-            download: true,
-            menu: true,
-            hidden: !latestVersion?.xls_file,
-        },
-        {
-            key: 'xml',
-            label: 'XML',
-            icon: <Code />,
-            href: latestVersion?.file,
-            download: true,
+            key: 'download',
+            label: MESSAGES.download,
+            icon: <Download />,
             menu: true,
             hidden: latestVersion === null,
+            children: [
+                {
+                    key: 'xls',
+                    label: 'Excel (XLS)',
+                    icon: <TableChart />,
+                    href: latestVersion?.xls_file,
+                    download: true,
+                    hidden: !latestVersion?.xls_file,
+                },
+                {
+                    key: 'xml',
+                    label: 'XML',
+                    icon: <Code />,
+                    href: latestVersion?.file,
+                    download: true,
+                },
+            ],
         },
         { type: 'divider' },
         {

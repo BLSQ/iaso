@@ -9,7 +9,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import { Pagination, useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
@@ -17,6 +17,7 @@ import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
 import { useAssignments } from './useAssignments';
+import { useLevelOrgUnits } from './useLevelOrgUnits';
 import {
     getAssigneeByOrgUnitId,
     getLevelOrgUnitRows,
@@ -25,6 +26,7 @@ import {
 
 const styles = {
     container: {
+        position: 'relative',
         flex: 1,
         minHeight: 0,
         display: 'flex',
@@ -58,15 +60,15 @@ const DEFAULT_ROWS_PER_PAGE = 20;
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { planning, tree, levelTree, selectedTeam, selectedLevel } =
+    const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
+    const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
     const { openTeam } = useAssignmentsParams();
     const { data: assignments } = useAssignments(`${planning.id}`);
     const rows = useMemo(
         () =>
             getLevelOrgUnitRows({
-                levelTree,
-                level: selectedLevel + 1,
+                parents: parents ?? [],
                 assigneeByOrgUnitId: getAssigneeByOrgUnitId(
                     tree,
                     assignments ?? [],
@@ -74,7 +76,7 @@ export const OrgUnitsTable: FC = () => {
                 teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
                 showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
             }),
-        [levelTree, selectedLevel, selectedTeam.type, tree, assignments],
+        [parents, selectedTeam.type, tree, assignments],
     );
 
     const [page, setPage] = useState(0);
@@ -101,6 +103,7 @@ export const OrgUnitsTable: FC = () => {
 
     return (
         <Box sx={styles.container}>
+            {isFetching && <LoadingSpinner absolute fixed={false} />}
             <TableContainer sx={styles.tableContainer}>
                 <Table stickyHeader sx={styles.table}>
                     <TableHead>
@@ -142,7 +145,7 @@ export const OrgUnitsTable: FC = () => {
                                 onOpenTeam={openTeam}
                             />
                         ))}
-                        {rows.length === 0 && (
+                        {rows.length === 0 && !isFetching && (
                             <TableRow>
                                 <TableCell colSpan={4}>
                                     <Typography

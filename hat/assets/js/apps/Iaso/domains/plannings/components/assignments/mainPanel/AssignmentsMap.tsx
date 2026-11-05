@@ -52,11 +52,11 @@ const INITIAL_VIEW_STATE = {
 
 // The selected team's level is outlined, its members' level is filled with their assignee's color.
 export const AssignmentsMap: FC = () => {
-    const { planning, tree, levelTree, selectedTeam, selectedLevel } =
+    const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
     const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
-    const area = useLevelGeometry(selectedLevel);
-    const members = useLevelGeometry(selectedLevel + 1);
+    const { area, members, membersPresence, isFetching } =
+        useLevelGeometry(selectedLevel);
     const { openTeam } = useAssignmentsParams();
     const { data: assignments } = useAssignments(`${planning.id}`);
     const colorByOrgUnitId = useMemo(
@@ -67,20 +67,15 @@ export const AssignmentsMap: FC = () => {
         () => getTeamIdByOrgUnitId(assignments ?? []),
         [assignments],
     );
-    const areaBounds = useMemo(
-        () => area.geoJson && getGeoJsonBounds(area.geoJson),
-        [area.geoJson],
-    );
+    const areaBounds = useMemo(() => area && getGeoJsonBounds(area), [area]);
 
     // Created once the first area is known, then kept and refitted when selecting other teams.
     const isMapCreated = useRef(false);
-    if (area.geoJson) isMapCreated.current = true;
+    if (area) isMapCreated.current = true;
 
     return (
         <Box sx={styles.container}>
-            {(area.isFetching || members.isFetching) && (
-                <LoadingSpinner absolute fixed={false} />
-            )}
+            {isFetching && <LoadingSpinner absolute fixed={false} />}
             {isMapCreated.current && (
                 <Box sx={styles.map}>
                     <BaseMap
@@ -93,14 +88,12 @@ export const AssignmentsMap: FC = () => {
                         />
                         {/* Always mounted, in this order, so the area border stays above the org units. */}
                         <AssignableOrgUnitsLayer
-                            geoJson={
-                                members.geoJson ?? EMPTY_FEATURE_COLLECTION
-                            }
+                            geoJson={members ?? EMPTY_FEATURE_COLLECTION}
                             colorByOrgUnitId={colorByOrgUnitId}
                             showPoints={showPoints}
                         />
                         <ScopeAreaLayer
-                            geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}
+                            geoJson={area ?? EMPTY_FEATURE_COLLECTION}
                         />
                         <OrgUnitHover
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
@@ -114,8 +107,7 @@ export const AssignmentsMap: FC = () => {
                     <MapHint />
                     <MapLegend
                         offMapCount={countOrgUnitsOffMap(
-                            levelTree,
-                            selectedLevel + 1,
+                            membersPresence,
                             showPoints,
                         )}
                     />

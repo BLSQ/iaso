@@ -21,6 +21,7 @@ from django.db import connection
 from iaso.models import Form, Instance
 from iaso.utils.pii import filter_submission_json, get_allowed_fields, is_field_allowed
 
+from .coda_export import group_ids, group_names, org_unit_groups
 from .models import Journey, Step, Visit
 
 
@@ -64,6 +65,13 @@ README = [
         "beneficiary: use them to join the sheets of one export, and entity_uuid / instance uuid across exports.",
         "Questions containing personal data are left out unless you have the permission to see them.",
     ),
+    (
+        "",
+        "When filtered on an org unit group (or for users restricted to some org units), only the visits and the "
+        "submissions made in these org units are exported, with the journeys having at least one of these visits: "
+        "some instance_id of the ETL sheets may then point to submissions made elsewhere, which are not exported.",
+        "",
+    ),
 ]
 
 BENEFICIARY_COLUMNS = [
@@ -106,6 +114,8 @@ VISIT_COLUMNS = [
     "date",
     "org_unit_id",
     "org_unit_name",
+    "org_unit_group_id",
+    "org_unit_group_name",
     "muac_size",
     "whz_color",
     "oedema",
@@ -131,6 +141,8 @@ SUBMISSION_COLUMNS = [
     "form_version",
     "org_unit_id",
     "org_unit_name",
+    "org_unit_group_id",
+    "org_unit_group_name",
     "period",
     "device_created_at",
     "server_created_at",
@@ -195,8 +207,12 @@ def _question_columns(form: Form, instance_ids_sql, params, allowed) -> typing.L
     return [name for name in ordered if name != "_version" and is_field_allowed(name, allowed)]
 
 
-def build_raw_xlsx(beneficiaries, user, path: str) -> None:
-    """Write the raw data export of a `Beneficiary` queryset at `path`."""
+def build_raw_xlsx(beneficiaries, user, path: str, org_units=None) -> None:
+    """Write the raw data export of a `Beneficiary` queryset at `path`.
+
+    With `org_units` (a queryset of `OrgUnit`), only the visits (with their steps) and the submissions made in them
+    are exported, with the journeys having at least one of these visits.
+    """
     workbook = xlsxwriter.Workbook(path, {"constant_memory": True, "strings_to_urls": False})
     formats = {
         "header": workbook.add_format({"bold": True, "bg_color": "#006699", "font_color": "#FFFFFF", "border": 1}),
@@ -214,6 +230,17 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
 
     beneficiaries = beneficiaries.order_by("id")
     beneficiary_ids = beneficiaries.values("id")
+    visits = Visit.objects.filter(journey__beneficiary_id__in=beneficiary_ids)
+    journeys = Journey.objects.filter(beneficiary_id__in=beneficiary_ids)
+    instances = Instance.objects.filter(
+        entity_id__in=beneficiaries.values("entity_id"), deleted=False, form__isnull=False
+    )
+    if org_units is not None:
+        visits = visits.filter(org_unit_id__in=org_units.values("id"))
+        journeys = journeys.filter(id__in=visits.values("journey_id"))
+        instances = instances.filter(org_unit_id__in=org_units.values("id"))
+    groups = org_unit_groups(visits.values("org_unit_id"), user)
+    groups.update(org_unit_groups(instances.values("org_unit_id"), user))
 
     writer = _Writer(workbook, "beneficiaries", BENEFICIARY_COLUMNS, formats)
     for b in beneficiaries.select_related("entity__entity_type").iterator(chunk_size=2000):
@@ -231,10 +258,7 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
 
     writer = _Writer(workbook, "journeys", JOURNEY_COLUMNS, formats)
     for j in (
-        Journey.objects.filter(beneficiary_id__in=beneficiary_ids)
-        .select_related("beneficiary")
-        .order_by("beneficiary_id", "start_date", "id")
-        .iterator(chunk_size=2000)
+        journeys.select_related("beneficiary").order_by("beneficiary_id", "start_date", "id").iterator(chunk_size=2000)
     ):
         writer.write(
             [
@@ -262,9 +286,9 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
 
     writer = _Writer(workbook, "visits", VISIT_COLUMNS, formats)
     for v in (
-        Visit.objects.filter(journey__beneficiary_id__in=beneficiary_ids)
-        .select_related("journey__beneficiary", "org_unit")
-        .order_by("journey__beneficiary_id", "date", "id")
+        visits.select_related("journey__beneficiary", "org_unit")
+        # by journey, in the order of the journeys sheet, then by visit number
+        .order_by("journey__beneficiary_id", "journey__start_date", "journey_id", "number", "id")
         .iterator(chunk_size=2000)
     ):
         writer.write(
@@ -278,6 +302,8 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
                 v.date,
                 v.org_unit_id,
                 v.org_unit.name if v.org_unit else None,
+                group_ids(groups.get(v.org_unit_id, [])),
+                group_names(groups.get(v.org_unit_id, [])),
                 v.muac_size,
                 v.whz_color,
                 v.oedema,
@@ -287,9 +313,17 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
 
     writer = _Writer(workbook, "steps", STEP_COLUMNS, formats)
     for s in (
-        Step.objects.filter(visit__journey__beneficiary_id__in=beneficiary_ids)
+        Step.objects.filter(visit__in=visits)
         .select_related("visit__journey__beneficiary")
-        .order_by("visit__journey__beneficiary_id", "visit_id", "id")
+        # in the order of the visits sheet
+        .order_by(
+            "visit__journey__beneficiary_id",
+            "visit__journey__start_date",
+            "visit__journey_id",
+            "visit__number",
+            "visit_id",
+            "id",
+        )
         .iterator(chunk_size=2000)
     ):
         writer.write(
@@ -307,9 +341,6 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
 
     # Submissions of the entities of these beneficiaries, one sheet per form
     beneficiary_by_entity = dict(beneficiaries.values_list("entity_id", "id"))
-    instances = Instance.objects.filter(
-        entity_id__in=beneficiaries.values("entity_id"), deleted=False, form__isnull=False
-    )
     instance_ids_sql, params = instances.values("id").query.sql_with_params()
     forms = Form.objects_include_deleted.filter(id__in=instances.values("form_id")).order_by("name", "id")
 
@@ -339,6 +370,8 @@ def build_raw_xlsx(beneficiaries, user, path: str) -> None:
                     (instance.json or {}).get("_version"),
                     instance.org_unit_id,
                     instance.org_unit.name if instance.org_unit else None,
+                    group_ids(groups.get(instance.org_unit_id, [])),
+                    group_names(groups.get(instance.org_unit_id, [])),
                     instance.period,
                     instance.source_created_at,
                     instance.created_at,

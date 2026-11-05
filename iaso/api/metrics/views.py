@@ -1,6 +1,6 @@
 import csv
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.db import transaction
 from django.db.models import Q
@@ -179,7 +179,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         writer.writerow(headers)
         writer.writerows(rows)
 
-        filename = f"metric_values_export_{datetime.now().strftime('%Y-%m-%d')}.csv"
+        filename = f"metric_values_export_{datetime.now(timezone.utc).strftime('%Y-%m-%d')}.csv"
 
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response

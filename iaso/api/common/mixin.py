@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.db.models import ProtectedError
 from django.http import HttpResponse
@@ -30,7 +30,7 @@ class CSVExportMixin:
         if hasattr(serializer_class.Meta, "labels"):
             renderer.labels = serializer_class.Meta.labels
 
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         filename = self.export_filename.format(date=date)
         response = HttpResponse(
             content_type="text/csv",

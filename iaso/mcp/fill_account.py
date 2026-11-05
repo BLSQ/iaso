@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -133,7 +133,7 @@ def resolve_uploaded_workbook(
         name = Path(xlsx_path).name if xlsx_path and str(xlsx_path).strip() else "uploaded.xlsx"
         if not name.lower().endswith(".xlsx"):
             name = f"{name}.xlsx"
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
         dest = _uploads_dir() / f"{stamp}_{name}"
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(data)

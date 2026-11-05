@@ -406,7 +406,7 @@ class StockLedgerItemAPITestCase(APITestCase):
         sku_2.org_unit_types.set([org_unit_type_1, org_unit_type_2])
 
         cls.instance = instance = m.Instance.objects.create(
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
 
         form = m.Form.objects.create(name="form1")

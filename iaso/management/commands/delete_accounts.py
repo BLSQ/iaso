@@ -395,7 +395,7 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     def _log(self, message):
         if self.verbosity > 0:
-            self.stdout.write(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {message}")
+            self.stdout.write(f"[{datetime.datetime.now(datetime.timezone.utc).strftime('%H:%M:%S')}] {message}")
 
     def _delete_with_sql(self, sql, params=None, label="SQL"):
         """Deletes data by executing a SQL query - useful for deleting models where there's no clear FK path to the Account model (e.g. users_profile)."""

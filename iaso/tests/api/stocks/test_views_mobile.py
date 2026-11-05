@@ -325,7 +325,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
 
         cls.ledger_item_2 = m.StockLedgerItem.objects.create(
@@ -336,7 +336,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
 
         cls.ledger_item_3 = m.StockLedgerItem.objects.create(
@@ -347,7 +347,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=40,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
 
         cls.ledger_item_4 = m.StockLedgerItem.objects.create(
@@ -358,7 +358,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
 
     def test_not_authenticated_without_rights_list(self):

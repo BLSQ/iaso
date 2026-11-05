@@ -1,6 +1,6 @@
 import time
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 
@@ -82,7 +82,7 @@ def launch_external_task(dataset_config):
         name=dataset_config["task_name"],
         status=RUNNING,
         external=True,
-        started_at=datetime.now(),
+        started_at=datetime.now(timezone.utc),
         should_be_killed=False,
     )
     status = ExternalTaskModelViewSet.launch_task(slug=dataset_config["config"], task_id=task.pk)

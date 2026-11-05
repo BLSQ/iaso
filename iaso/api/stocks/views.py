@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import django_filters
 
@@ -163,7 +163,7 @@ class StockItemViewSet(viewsets.ModelViewSet):
             value=serializer.validated_data["value"],
             impact=StockImpacts.RESET,
             created_by=self.request.user,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
         serializer.save()
 
@@ -180,7 +180,7 @@ class StockItemViewSet(viewsets.ModelViewSet):
             value=stock_item.value,
             impact=StockImpacts.RESET,
             created_by=self.request.user,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
         return response
 
@@ -234,7 +234,7 @@ class StockLedgerItemViewSet(viewsets.ModelViewSet):
         """
         POST to create a `StockLedgerItem`.
         """
-        serializer.validated_data["created_at"] = datetime.now()
+        serializer.validated_data["created_at"] = datetime.now(timezone.utc)
         serializer.validated_data["created_by"] = self.request.user
         serializer.save()
 

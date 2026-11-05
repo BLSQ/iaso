@@ -2,7 +2,7 @@ import logging
 import secrets
 import subprocess
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -31,7 +31,7 @@ def log_and_progress_task(task: Task, message: str, progress: int):
 
 
 def reset_account(account: Account, task: Task):
-    current_timestamp = int(datetime.now().timestamp())
+    current_timestamp = int(datetime.now(timezone.utc).timestamp())
     old_name = account.name
     new_name = f"{old_name}{current_timestamp}"
 

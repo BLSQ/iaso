@@ -1,6 +1,6 @@
 import collections
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import time_machine
 
@@ -278,7 +278,7 @@ class StockLedgerItemMobileSerializerTestCase(TestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=user,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
         )
 
     def test_serialize_instance(self):

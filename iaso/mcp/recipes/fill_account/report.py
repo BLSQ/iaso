@@ -23,7 +23,7 @@ def default_report_path(result: dict[str, Any]) -> Path:
         or "account"
     )
     mode = "dry-run" if result.get("dry_run") else "applied"
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     dest_dir = mcp_media_root() / "reports"
     dest_dir.mkdir(parents=True, exist_ok=True)
     return dest_dir / f"{stamp}_{account}_{mode}.md"

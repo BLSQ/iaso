@@ -846,7 +846,9 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.get("Content-Disposition"),
-            "attachment; filename=review-change-proposals--" + datetime.datetime.now().strftime("%Y-%m-%d") + ".csv",
+            "attachment; filename=review-change-proposals--"
+            + datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+            + ".csv",
         )
 
         response_csv = response.getvalue().decode("utf-8")

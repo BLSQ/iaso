@@ -115,7 +115,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     @property
     def filter_backends(
         self,
-    ) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol] | type[PostFilterBackend]]:
+    ) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol]]:
         if self.action == "dropdown":
             return [filters.OrderingFilter, DjangoFilterBackend]
         if self.action == "missions":
@@ -162,14 +162,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         user = typing.cast(User, self.request.user)
         qs = self.queryset.filter_for_user(user)
 
-        if self.action not in [
-            "list",
-            "dropdown",
-            "destroy",
-            "retrieve",
-            "configs",
-            "missions",
-        ]:  # todo : be more generic here
+        if self.action not in ["destroy", "levels_org_unit_count"] and self.request.method != "GET":
             qs = qs.exclude(deprecated=True)
 
         if self.action == "dropdown":

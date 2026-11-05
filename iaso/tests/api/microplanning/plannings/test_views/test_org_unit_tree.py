@@ -373,6 +373,14 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res = self.client.get(self.get_url(self.planning_other_account.pk))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_should_not_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.deprecated = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
     def test_tree(self):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url())

@@ -1,9 +1,10 @@
-from drf_spectacular.utils import extend_schema_field
+from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from rest_framework import serializers
 
 from iaso.models import Group, OrgUnitType
 
 
+@extend_schema_serializer(component_name="LevelOrgUnitCount")
 class LevelOrgUnitCountRequestSerializer(serializers.Serializer):
     level = serializers.IntegerField(required=True, min_value=1, write_only=True)
     org_unit_types = serializers.PrimaryKeyRelatedField(

@@ -198,9 +198,9 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
             # 2. PREFETCH CONFIGS
             # 3. PREFETCH CONFIGS ORG UNIT TYPES
             # 4. PREFETCH CONFIGS ORG UNIT GROUPS
-            # 6. SELECT INITIAL QS FOR OU WITH HIERARCHY
-            # 7. RETURN QS
-            # 8. MIN AGGREGATE IN BUILD TREE
+            # 5. SELECT INITIAL QS FOR OU WITH HIERARCHY
+            # 6. RETURN QS (recursive)
+            # 7. MIN AGGREGATE IN BUILD TREE
             res = self.client.get(self.get_url(), data={"level": 1})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
@@ -414,6 +414,14 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url(self.planning_other_account.pk))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_should_not_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.deprecated = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_tree(self):
         self.client.force_authenticate(self.superuser)

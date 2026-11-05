@@ -19,7 +19,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 
-import { Task, TaskResult } from '../types';
+import { Task, TaskResult, TaskResultFile } from '../types';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -57,21 +57,29 @@ const Row: FunctionComponent<RowProps> = ({ label, value, isPreformatted }) => {
     );
 };
 
+const getResultFile = (
+    data: TaskResult['data'],
+): TaskResultFile | undefined => {
+    if (typeof data === 'string') {
+        return data.startsWith('file:')
+            ? { file: data.replace('file:', '') }
+            : undefined;
+    }
+    // External tasks write their result through the API, so ignore malformed data like the backend does.
+    return typeof data?.file === 'string' && data.file ? data : undefined;
+};
+
 type Props = {
     task: Task<TaskResult>;
     size?: OverridableStringUnion<'small' | 'medium', TablePropsSizeOverrides>;
 };
 export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
     const { formatMessage } = useSafeIntl();
-    const resultData = task.result?.data;
-    const resultFile = typeof resultData === 'object' ? resultData : undefined;
-    const taskHasDownloadableFile =
-        (typeof resultData === 'string' && resultData.startsWith('file:')) ||
-        Boolean(resultFile?.file);
-    const fileExpiresAt =
-        taskHasDownloadableFile && resultFile?.expires_at
-            ? moment(resultFile.expires_at)
-            : undefined;
+    const resultFile = getResultFile(task.result?.data);
+    const taskHasDownloadableFile = Boolean(resultFile);
+    const fileExpiresAt = resultFile?.expires_at
+        ? moment(resultFile.expires_at)
+        : undefined;
     const fileHasExpired = Boolean(fileExpiresAt?.isSameOrBefore(moment()));
     const { data } = useQuery(
         ['taskDetails', task.id],

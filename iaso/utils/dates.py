@@ -1,20 +1,18 @@
 import datetime
 
-from typing import Optional
-
 import pytz
 
 from rest_framework.exceptions import ValidationError
 
 
-def get_beginning_of_day(date_str: str, parameter_name: str) -> Optional[datetime.datetime]:
+def get_beginning_of_day(date_str: str, parameter_name: str) -> datetime.datetime | None:
     if date_str:
         date = _parse_date(date_str, parameter_name)
         return datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=pytz.UTC)
     return None
 
 
-def get_end_of_day(date_str: str, parameter_name: str) -> Optional[datetime.datetime]:
+def get_end_of_day(date_str: str, parameter_name: str) -> datetime.datetime | None:
     if date_str:
         date = _parse_date(date_str, parameter_name)
         return datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=pytz.UTC)

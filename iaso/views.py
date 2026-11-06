@@ -335,7 +335,7 @@ class ModelDataView(View):
                 field_type = self.get_field_type(field)
                 node["fields"].append({"name": field.name, "type": field_type})
 
-                if isinstance(field, (models.ForeignKey, models.OneToOneField, models.ManyToManyField)):
+                if isinstance(field, models.ForeignKey | models.OneToOneField | models.ManyToManyField):
                     related_model = field.related_model
                     if related_model in all_models:
                         links.append(

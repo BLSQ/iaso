@@ -31,7 +31,7 @@ def obj_compare(obj1, obj2, excluded_keys=["_state", "_django_version"], related
     for related in related_objects:
         related_obj1 = getattr(obj1, related)
         related_obj2 = getattr(obj2, related)
-        for obj1_related, obj2_related in zip(related_obj1, related_obj2):
+        for obj1_related, obj2_related in zip(related_obj1, related_obj2, strict=False):
             related_old, related_new = obj_compare(obj1_related, obj2_related, excluded_keys)
             if related_old or related_new:
                 old.update({related: related_old})

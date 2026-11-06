@@ -1,6 +1,6 @@
 import json
 
-from typing import Any, Optional
+from typing import Any
 
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404
@@ -30,7 +30,7 @@ def parse_instance_filters(req: QueryDict) -> dict[str, Any]:
         # TODO: the following line feels weird, is it really doing what we want?
         periods = req.get(query.PERIOD_IDS, req.get(query.PERIODS, req.get(query.PERIOD, None)))  # type: ignore
     # the front end sends "true" or "false" so we need to check against the string values for the filter to work
-    show_deleted: Optional[str] = req.get(query.SHOW_DELETED, "false")
+    show_deleted: str | None = req.get(query.SHOW_DELETED, "false")
     if show_deleted == "false":
         show_deleted = None
 
@@ -97,7 +97,7 @@ def parse_instance_filters(req: QueryDict) -> dict[str, Any]:
 
 
 # TODO: if we end up with multiple function that deal with instance filters, we should probably move this to a class
-def get_form_from_instance_filters(instance_filters: dict[str, Any]) -> Optional[Form]:
+def get_form_from_instance_filters(instance_filters: dict[str, Any]) -> Form | None:
     """
     Inspect the form_id and form_ids fields of the filters and return a Form object
 

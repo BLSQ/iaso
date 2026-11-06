@@ -83,7 +83,7 @@ class PromptnessStatsTestCase(APITestCase):
 
     PERIOD = "202601"
     # Date at which the tests run by default: long after the deadline, so figures are final
-    TODAY = datetime.datetime(2026, 9, 28, 12, 0, tzinfo=datetime.timezone.utc)
+    TODAY = datetime.datetime(2026, 9, 28, 12, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):

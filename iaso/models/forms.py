@@ -1,6 +1,5 @@
 import os
 import pathlib
-import typing
 
 from uuid import uuid4
 
@@ -76,7 +75,7 @@ class FormQuerySet(models.QuerySet):
 
         return False
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: typing.Optional[str] = None):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser, app_id: str | None = None):
         if user.is_anonymous and app_id is None:
             return self.none()
 
@@ -271,7 +270,7 @@ class Form(SoftDeletableModel):
 
 
 class FormVersionQuerySet(models.QuerySet):
-    def latest_version(self, form: Form) -> "typing.Optional[FormVersion]":
+    def latest_version(self, form: Form) -> "FormVersion | None":
         try:
             return self.filter(form=form).latest("created_at")
         except FormVersion.DoesNotExist:
@@ -303,7 +302,7 @@ def _reformat_questions(questions):
 
 # TODO: check if we really need a manager and a queryset for this model - some simplification would be good
 class FormVersionManager(models.Manager):
-    def find_for_form(self, form_id, version_id, cache: typing.Optional[dict] = None) -> "typing.Optional[FormVersion]":
+    def find_for_form(self, form_id, version_id, cache: dict | None = None) -> "FormVersion | None":
         """
         FormVersion of `form_id` with `version_id`, or None. Pass the same `cache` dict for a whole
         batch (e.g. a bulk upload, where many instances share a few (form, version) pairs) to look

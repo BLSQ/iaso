@@ -1,5 +1,4 @@
 import os
-import typing
 import uuid
 import zipfile
 
@@ -67,7 +66,7 @@ class ReportVersionSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     created_by = serializers.CharField(source="created_by.username", read_only=True, default=None, allow_null=True)
 
-    def get_url(self, obj: ReportVersion) -> typing.Optional[str]:
+    def get_url(self, obj: ReportVersion) -> str | None:
         return obj.file.url if obj.file else None
 
 
@@ -93,7 +92,7 @@ class ReportSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     status = serializers.CharField(read_only=True, source="published_version.status")
 
-    def get_url(self, obj: Report) -> typing.Optional[str]:
+    def get_url(self, obj: Report) -> str | None:
         return obj.published_version.file.url if obj.published_version.file else None
 
 

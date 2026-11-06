@@ -307,7 +307,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.source_created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.UTC), last_instance.source_created_at)
         self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
@@ -353,9 +353,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(
-            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.source_created_at
-        )
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.UTC), last_instance.source_created_at)
         self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(last_instance.project, self.project)
@@ -403,7 +401,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.source_created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.UTC), last_instance.source_created_at)
         self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
@@ -1815,7 +1813,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertListEqual(
             r["schema"]["fields"],
             [
-                {"freq": "M", "name": "index", "type": "datetime"},
+                {"freq": "ME", "name": "index", "type": "datetime"},
                 {"name": "Hydroponics study", "type": "integer"},
                 {"name": "Form five", "type": "integer"},
                 {"name": "Hydroponic public survey", "type": "integer"},
@@ -1838,7 +1836,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertListEqual(
             r["schema"]["fields"],
             [
-                {"name": "index", "type": "datetime", "freq": "M"},
+                {"name": "index", "type": "datetime", "freq": "ME"},
                 {"name": "Form five", "type": "integer"},
                 {"name": "name", "type": "string"},
             ],
@@ -3555,15 +3553,15 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
         self.yoda.iaso_profile.projects.add(self.project)
 
-        # 15, not 21: org_unit__org_unit_type and project are now select_related (previously
-        # only org_unit__version__data_source was), which folds what used to be one extra
-        # per-instance lazy-load query each into the single main query.
-        #
-        # (Was 21, not 14, before that: with_lock_info() is now applied only to the page's ids
-        # (fetched via a separate, cheap id-only query) instead of to the whole queryset before
-        # pagination, to avoid forcing PostgreSQL to evaluate (join, group, sort) the entire
-        # matching instance set before truncating it to a page, which is extremely expensive on
-        # large accounts.)
+        # 1-2 SELECT permissions
+        # 3 SELECT EXISTS profile org units (geo locked)
+        # 4 SELECT profile projects (project locked)
+        # 5 COUNT
+        # 6 SELECT instances with prefetches (form, org_unit, project, device)
+        # 7 SELECT EXISTS profile org units (geo locked) - like 3, but used for lock annotations
+        # 8 SELECT EXISTS reference instances
+        # 9 SELECT details from reference instances
+        # 10-15 UPDATES
         expected_queries = 15
 
         with self.assertNumQueries(expected_queries):

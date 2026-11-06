@@ -1,8 +1,6 @@
 import base64
 import json
 
-from typing import Optional
-
 from rest_framework import serializers
 from rest_framework.settings import api_settings
 
@@ -59,7 +57,7 @@ WORKFLOW_IDS = "workflow_ids"
 VALIDATION_STATUS = "validation_status"
 
 
-def parse_strict_boolean_param(value: Optional[str], field_name: str = "query_param") -> bool:
+def parse_strict_boolean_param(value: str | None, field_name: str = "query_param") -> bool:
     """Parse a boolean-like query parameter, accepting the same values as DRF's BooleanField."""
     if value is None:
         return False
@@ -82,7 +80,7 @@ def encode_cursor(model: str, after_id: int) -> str:
     return base64.urlsafe_b64encode(payload).decode().rstrip("=")
 
 
-def get_cursor_id(request, model: str) -> Optional[int]:
+def get_cursor_id(request, model: str) -> int | None:
     """The id a `cursor` (from `encode_cursor` for the same `model`) pages after. Only valid with the
     default id ordering: `id > cursor` under another `order` would skip rows.
 

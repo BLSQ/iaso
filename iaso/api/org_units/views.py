@@ -4,9 +4,8 @@ import os
 import tempfile
 
 from copy import deepcopy
-from datetime import datetime
+from datetime import date, datetime
 from time import gmtime, strftime
-from typing import Union
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -41,8 +40,8 @@ from iaso.permissions.core_permissions import (
 )
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
+from iaso.utils.models.common import get_creator_name, get_org_unit_parents_ref
 
-from ...utils.models.common import get_creator_name, get_org_unit_parents_ref
 from .permissions import HasCreateOrgUnitPermission, HasOrgUnitPermission
 from .utils import import_org_units
 
@@ -800,11 +799,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return Response(errors, status=400)
 
-    def get_date(self, date: str) -> Union[datetime.date, None]:
+    def get_date(self, date_str: str) -> date | None:
         date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
-                return datetime.strptime(date, date_input_format).date()
+                return datetime.strptime(date_str, date_input_format).date()
             except (ValueError, TypeError):
                 pass
         return None

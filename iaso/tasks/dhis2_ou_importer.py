@@ -3,7 +3,7 @@ import logging
 import time
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from dhis2 import Api
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
@@ -48,15 +48,15 @@ class DhisGeom(TypedDict):
 class DhisOrgunit(TypedDict):
     id: str  # "Rp268JB6Ne4"
     name: str  # "Adonkia CHP"
-    parent: Optional[str]  # "qtr8GGlm4gg"
-    coordinates: Optional[str]  # in old version
-    geometry: Optional[DhisGeom]
+    parent: str | None  # "qtr8GGlm4gg"
+    coordinates: str | None  # in old version
+    geometry: DhisGeom | None
     organisationUnitGroups: list[DhisGroup]
     path: str  # e.g. "/ImspTQPwCqd/at6UHUQatSo/qtr8GGlm4gg/Rp268JB6Ne4"
     level: int  # e.g 4
     openingDate: str
     closedDate: str
-    code: Optional[str]
+    code: str | None
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -261,9 +261,7 @@ def load_groupsets(api: Api, version, group_dict):
             group_set.groups.add(group)
 
 
-def get_api_config(
-    url: Optional[str], login: Optional[str], password: Optional[str], source: DataSource
-) -> dict[str, Any]:
+def get_api_config(url: str | None, login: str | None, password: str | None, source: DataSource) -> dict[str, Any]:
     if url and login and password:
         connection_config = {
             "dhis2_url": url,
@@ -286,13 +284,13 @@ def get_api_config(
 @task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
     source_id: int,
-    source_version_number: Optional[int],
+    source_version_number: int | None,
     force: bool,  # FIXME: force parameter is not used?
     validate: bool,
     continue_on_error: bool,
-    url: Optional[str],
-    login: Optional[str],
-    password: Optional[str],
+    url: str | None,
+    login: str | None,
+    password: str | None,
     update_mode: bool = False,
     task: Task = None,
     description="",

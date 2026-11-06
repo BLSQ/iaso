@@ -3,7 +3,6 @@ import sqlite3
 
 from copy import deepcopy
 from datetime import datetime
-from typing import Optional, Union
 
 import fiona  # type: ignore
 
@@ -45,8 +44,8 @@ class PropertyDict(TypedDict):
     parent_ref: str
     ref: str
     group_refs: str
-    opening_date: Optional[str]
-    closed_date: Optional[str]
+    opening_date: str | None
+    closed_date: str | None
 
 
 class GeomDict(TypedDict):
@@ -59,7 +58,7 @@ class OrgUnitData(TypedDict):
 
     geometry: GeomDict
     properties: PropertyDict
-    type: Optional[OrgUnitType]
+    type: OrgUnitType | None
 
 
 OLD_INTERNAL_REF = "iaso#"
@@ -73,7 +72,7 @@ def convert_to_geography(geom_type: str, coordinates: list):
     Shapely normally can do this natively but is not compatible with geography col
     and geodjango don't support geo yay"""
     geom_type = geom_type.lower()
-    geom: Union[Point, MultiPolygon]
+    geom: Point | MultiPolygon
     if geom_type == "point":
         if any(math.isnan(coordinate) for coordinate in coordinates):
             # the lib return Nan for empty point, we don't want to store it in that case
@@ -127,7 +126,7 @@ def apply_date_field(field_name: str, props: dict[str, str], orgunit: OrgUnit, t
 
 
 def create_or_update_orgunit(
-    orgunit: Optional[OrgUnit],
+    orgunit: OrgUnit | None,
     data: OrgUnitData,
     source_version: SourceVersion,
     validation_status: str,
@@ -198,7 +197,7 @@ def create_or_update_orgunit(
     return orgunit
 
 
-def get_ref(inst: Union[OrgUnit, Group]) -> str:
+def get_ref(inst: OrgUnit | Group) -> str:
     """We make an artificial ref in case there is none so the gpkg can still refer existing record in iaso, even if
     they don't have a ref
     Before, we used the format "iaso#ID", but having a # creates some issues, so this will return "iaso:ID" instead
@@ -242,7 +241,7 @@ def validate_required_property(props: dict[str, str], property_name: str, orguni
     return value.strip()
 
 
-def validate_property(props: dict[str, str], property_name: str, orgunit_name: str = "") -> Optional[str]:
+def validate_property(props: dict[str, str], property_name: str, orgunit_name: str = "") -> str | None:
     """Check if a property exists and validate it's not empty if present
     Args:
         props: Dictionary of properties
@@ -274,11 +273,11 @@ def import_gpkg_file(filename, source_name, version_number, validation_status, d
 def import_gpkg_file2(
     filename,
     source: DataSource,
-    version_number: Optional[int],
+    version_number: int | None,
     validation_status,
-    user: Optional[User],
+    user: User | None,
     description,
-    task: Optional[Task],
+    task: Task | None,
 ):
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
@@ -350,7 +349,7 @@ def import_gpkg_file2(
 
     # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: list[tuple[str, str]] = []
-    modifications_to_log: list[tuple[Optional[OrgUnit], OrgUnit]] = []
+    modifications_to_log: list[tuple[OrgUnit | None, OrgUnit]] = []
     total_org_unit = 0
 
     # Layer are OrgUnit's Type

@@ -22,6 +22,6 @@ jobs:
       iaso_branch: ${{ github.event.inputs.iaso_branch }}
 
   setuper:
-    uses: BLSQ/iaso-ci/.github/workflows/setuper.yml@main
+    uses: BLSQ/iaso-ci/.github/workflows/setuper.yml@IA-5602_run-ci-nightly
     with:
       iaso_branch: ${{ github.event.inputs.iaso_branch }}

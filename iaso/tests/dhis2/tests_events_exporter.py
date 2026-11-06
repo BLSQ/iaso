@@ -7,7 +7,7 @@ import responses
 logger = logging.getLogger(__name__)
 import os
 
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest import mock
 
 from django.contrib.gis.geos import Point
@@ -105,7 +105,9 @@ class DataValueExporterTests(TestCase):
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
-        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
+            tzinfo=timezone.utc
+        )
         instance.org_unit = self.org_unit
         if form == self.form:
             instance.period = "201801"
@@ -122,7 +124,9 @@ class DataValueExporterTests(TestCase):
         instance.save()
         # force to past creation date
         # looks the the first save don't take it
-        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
+            tzinfo=timezone.utc
+        )
         instance.save()
         return instance
 
@@ -367,7 +371,9 @@ class DataValueExporterTests(TestCase):
         # persist an instance
         instance = self.build_instance(self.form)
         # put a source_created_at different then the period
-        instance.source_created_at = datetime.strptime("2024-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2024-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
+            tzinfo=timezone.utc
+        )
         instance.save()
         export_request = ExportRequestBuilder().build_export_request(
             filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},

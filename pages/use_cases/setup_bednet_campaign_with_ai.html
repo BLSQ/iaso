@@ -1501,8 +1501,8 @@ especially if most of the campaign decisions are already made.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Mobile apps</strong> (up to six)</td>
-<td>enumeration agents, distribution agents, special group teams, team leaders, store keepers, supervisors</td>
+<td><strong>Mobile projects</strong> (up to six)</td>
+<td>enumeration agents, distribution agents, special group teams, team leaders, stock managers, supervisors</td>
 <td>register households with a QR ticket, distribute nets once per household, register workers and their attendance, track stock movements, fill in supervision checklists</td>
 </tr>
 <tr>
@@ -1517,7 +1517,7 @@ especially if most of the campaign decisions are already made.</p>
 </tr>
 <tr>
 <td><strong>Stock tracking</strong></td>
-<td>store keepers</td>
+<td>stock managers</td>
 <td>balance of nets in each store, computed from receipts, issues, returns, transfers and losses</td>
 </tr>
 <tr>
@@ -1527,17 +1527,17 @@ especially if most of the campaign decisions are already made.</p>
 </tr>
 <tr>
 <td><strong>Mobile reports</strong></td>
-<td>team leaders, store keepers</td>
+<td>team leaders, stock managers</td>
 <td>progress, map of households, team attendance and stock, available offline on the phone</td>
 </tr>
 <tr>
 <td><strong>QR codes</strong></td>
 <td>trainers</td>
-<td>to install and configure the app on each phone in seconds</td>
+<td>to install the IASO app and configure it for each project in seconds</td>
 </tr>
 </tbody>
 </table>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/projects.jpg" data-desc-position="bottom"><img alt="The campaign apps in IASO" class="doc-shot" src="setup_bednet_campaign_with_ai_attachments/projects.jpg"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/projects.jpg" data-desc-position="bottom"><img alt="The campaign projects in IASO" class="doc-shot" src="setup_bednet_campaign_with_ai_attachments/projects.jpg"></a></p>
 <h2 id="before-you-start">Before you start<a class="headerlink" href="#before-you-start" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -1556,24 +1556,20 @@ especially if most of the campaign decisions are already made.</p>
 <td>One that can run Python code and reach your IASO server: Claude or ChatGPT in the browser or in their app, or Claude Code (desktop app or terminal) with Python 3 on your computer.</td>
 </tr>
 <tr>
-<td>An <strong>internet connection</strong></td>
-<td>For your AI assistant and IASO.</td>
-</tr>
-<tr>
 <td>Your <strong>files and campaign decisions</strong></td>
 <td>Only if you want to test with your real campaign data. Your geographic data (from DHIS2, an Excel file or a GeoPackage file: the assistant imports it for you, or you can <a href="../users/reference/user_guide.html#import-a-pyramid-into-a-data-source">import it yourself</a>) and the campaign decisions: districts covered, net allocation rule, roles and daily rates of workers, list of stores, list of agents (see the assistant's questions in <a href="#step-5-answer-the-assistants-questions">step 5</a>). Otherwise, the assistant can propose demo data so you can test the setup first.</td>
 </tr>
 <tr>
 <td>An <strong>Android phone</strong></td>
-<td>With the <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">IASO app from Google Play</a>, to test the mobile apps.</td>
+<td>With the <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">IASO app from Google Play</a>, to test the mobile projects.</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition tip">
 <p class="admonition-title">Using another AI assistant?</p>
 <p>This guide has been tested with Claude and ChatGPT. If you run into difficulties with
-another AI assistant, we're happy to collect your feedback: contact
-<a href="mailto:products@bluesquarehub.com">products@bluesquarehub.com</a>.</p>
+another AI assistant, we're happy to collect your feedback:
+<a href="mailto:products@bluesquarehub.com">contact us at products@bluesquarehub.com</a>.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Your IASO address</p>
@@ -1589,8 +1585,7 @@ management, embedded links, DHIS2 mapping).</p>
    <a href="https://www.openiaso.com/pricing/">openiaso.com/pricing</a>.</li>
 <li>Choose the <strong>user for the setup</strong>: the assistant works in IASO as this user. You can use
    the main user of your newly created account: it already has all the permissions the kit
-   needs (listed in <code>SKILL.md</code>, section 1). Ideally, create a dedicated user and deactivate
-   it once the setup is done.</li>
+   needs (listed in <code>SKILL.md</code>, section 1). Ideally, create a dedicated user for the setup.</li>
 </ol>
 <hr>
 <h2 id="part-2-configure-the-campaign-with-the-campaign-kit">Part 2: Configure the campaign with the campaign kit<a class="headerlink" href="#part-2-configure-the-campaign-with-the-campaign-kit" title="Permanent link">#</a></h2>
@@ -1622,8 +1617,8 @@ computer:</p>
 <div class="admonition warning">
 <p class="admonition-title">Keep your access key private</p>
 <p>The access key works like your password. Never paste it into the conversation and never
-share the zip once it contains the key. When the setup is finished, delete the key from
-<code>iaso_config.txt</code>.</p>
+share the zip once it contains the key. Keep the kit with its key in a safe place: you
+need it to come back to the assistant and make changes later (see step 7).</p>
 </div>
 <h3 id="step-4-give-the-kit-to-your-ai-assistant">Step 4: Give the kit to your AI assistant<a class="headerlink" href="#step-4-give-the-kit-to-your-ai-assistant" title="Permanent link">#</a></h3>
 <ol>
@@ -1638,7 +1633,7 @@ step by step to guide me through building the tools of my campaign. Use only the
 scripts, no IASO connector. Start by checking access and making a backup of my account.
 My geographic data comes from: [my DHIS2, already set up on the data source / the attached
 Excel file / the attached GeoPackage / a demo pyramid / it is already in IASO]. Then ask
-me the campaign questions one topic at a time. Show me the QR codes as soon as the apps
+me the campaign questions one topic at a time. Show me the QR codes as soon as the projects
 exist. Ask for my confirmation before each step that changes IASO. Don't stop before the
 final checklist, and tell me at the end what you created and what I must test on a phone.</p>
 </blockquote>
@@ -1673,8 +1668,8 @@ already made, the quicker the configuration:</p>
 <td>your DHIS2 settings in IASO, or your Excel or GeoPackage file</td>
 </tr>
 <tr>
-<td>Apps</td>
-<td>which apps you need (enumeration, distribution, special groups, workers, stock, supervision)</td>
+<td>Projects</td>
+<td>which mobile projects you need (enumeration, distribution, special groups, workers, stock, supervision)</td>
 <td>—</td>
 </tr>
 <tr>
@@ -1694,7 +1689,7 @@ already made, the quicker the configuration:</p>
 </tr>
 <tr>
 <td>Users</td>
-<td>who uses which app, in which area</td>
+<td>who uses which project, in which area</td>
 <td>the list of agents</td>
 </tr>
 </tbody>
@@ -1703,36 +1698,34 @@ already made, the quicker the configuration:</p>
 demo data (demo pyramid, example districts, stores and agents) that you replace later with
 your own.</p>
 <p>Then the assistant builds the campaign step by step, asking for your go-ahead each time:
-geographic data, apps, forms, registries, stock, users, dashboards and mobile reports.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/qr-codes.jpg" data-desc-position="bottom"><img alt="The QR codes page, to print for the training" class="doc-shot" src="setup_bednet_campaign_with_ai_attachments/qr-codes.jpg"></a></p>
+geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.</p>
 <h3 id="step-6-test-on-a-phone">Step 6: Test on a phone<a class="headerlink" href="#step-6-test-on-a-phone" title="Permanent link">#</a></h3>
 <ol>
 <li><strong>Install the IASO app</strong> on an Android phone from
    <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">Google Play</a>
    (or scan the Play Store QR code the assistant gives you).</li>
 <li><strong>Choose the user to test with</strong>: a test user created by the assistant, or your own
-   user. Either way, this user must have the apps you want to test: in IASO, go to
-   <strong>Admin &gt; Users</strong>, edit the user and, in <strong>Projects</strong>, select the apps to test. To try the
-   different apps and switch from one to another, select all of them.</li>
+   user. Either way, this user must have the projects you want to test: in IASO, go to
+   <strong>Admin &gt; Users</strong>, edit the user and, in <strong>Projects</strong>, select the projects to test. To try
+   the different projects and switch from one to another, select all of them.</li>
 <li><strong>Find the QR codes</strong> in IASO: open the menu and go to <strong>Admin &gt; Projects</strong>. Each mobile
-   app of the campaign is listed there, with its QR code ready to scan.</li>
+   project of the campaign is listed there, with its QR code ready to scan.</li>
 <li><strong>Open the IASO app</strong> on the phone, choose to scan a QR code and scan the QR code of the
-   app to test. Accept the permission requests that show up (camera, location…).</li>
+   project to test. Accept the permission requests that show up (camera, location…).</li>
 <li><strong>Log in</strong> with the user chosen in point 2.</li>
 <li>Follow the test checklist the assistant gives you: register a household, find it again,
    distribute nets, register a worker, record a stock movement.</li>
 <li>Open the mobile reports, with network and then in airplane mode.</li>
 </ol>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/phone-home.jpg" data-desc-position="bottom"><img alt="An app home screen on the phone" src="setup_bednet_campaign_with_ai_attachments/phone-home.jpg" width="220"></a>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/phone-home.jpg" data-desc-position="bottom"><img alt="A project home screen on the phone" src="setup_bednet_campaign_with_ai_attachments/phone-home.jpg" width="220"></a>
 <a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/phone-report.jpg" data-desc-position="bottom"><img alt="The progress report in the app" src="setup_bednet_campaign_with_ai_attachments/phone-report.jpg" width="220"></a></p>
 <p>Before training the field teams, ask the assistant to delete the test data and the test
 users.</p>
 <h3 id="step-7-after-the-setup">Step 7: After the setup<a class="headerlink" href="#step-7-after-the-setup" title="Permanent link">#</a></h3>
 <ul>
-<li>Delete the access key from <code>iaso_config.txt</code>, and delete the zip that contained it.</li>
-<li>If you created a dedicated user for the setup, deactivate it.</li>
 <li>To change something during the campaign (a question in a form, a new district, a report),
-  come back to the assistant with the kit. Forms already used on phones must be changed with
+  simply ask the assistant: come back to it with the kit, which still contains your access
+  key. Forms already used on phones must be changed with
   care: the kit tells the assistant how.</li>
 <li>Follow the campaign in the web dashboards (<strong>Pages</strong> menu in IASO) and in the mobile reports.</li>
 </ul>

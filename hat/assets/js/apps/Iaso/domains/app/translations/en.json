@@ -441,6 +441,7 @@
     "iaso.forms.noResultsFound": "No results found",
     "iaso.forms.notValidated": "Not validated",
     "iaso.forms.onlyDeleted": "Show only deleted",
+    "iaso.forms.openInFormAI": "Open in Form AI",
     "iaso.forms.org_unit_type": "Organisation unit type",
     "iaso.forms.org_unit_type_id": "Org unit type",
     "iaso.forms.orgUnitGroupsInfo": "You need to select at least one project to see the list of available org unit groups",

@@ -34,6 +34,7 @@ from iaso.permissions.core_permissions import (
     CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
 )
 from iaso.utils.emoji import fix_emoji
+from iaso.utils.pii import filter_submission_json, get_allowed_fields, is_field_allowed
 
 
 logger = getLogger(__name__)
@@ -64,6 +65,15 @@ class EntityDuplicatedNestedEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
         fields = ["id", "created_at", "updated_at", "org_unit", "json"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        if instance.attributes:
+            data["json"] = filter_submission_json(
+                data.get("json"), instance.attributes.form, request.user if request else None
+            )
+        return data
 
 
 class EntityDuplicateNestedAnalyzisSerializer(serializers.ModelSerializer):
@@ -580,7 +590,8 @@ class EntityDuplicateViewSet(ModelViewSet):
 
         fields_data = []
 
-        possible_fields = et.reference_form.possible_fields
+        allowed_fields = get_allowed_fields(et.reference_form, request.user)
+        possible_fields = [f for f in et.reference_form.possible_fields if is_field_allowed(f["name"], allowed_fields)]
 
         e1_json = duplicate.entity1.attributes.json
         e2_json = duplicate.entity2.attributes.json

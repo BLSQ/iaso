@@ -16,6 +16,15 @@ const PERMISSIONS_MESSAGES: PermissionsMessages = defineMessages({
         id: 'iaso.permissions.iaso_pipeline_management_tooltip',
         defaultMessage: 'Allows to manage openhexa pipelines',
     },
+    iaso_submissions_pii: {
+        id: 'iaso.permissions.iaso_submissions_pii',
+        defaultMessage: 'View personal data (PII) in submissions',
+    },
+    iaso_submissions_pii_tooltip: {
+        id: 'iaso.permissions.iaso_submissions_pii_tooltip',
+        defaultMessage:
+            'Allows to see all the questions of the submissions, including the ones that are not whitelisted as non-personal data in their form',
+    },
     iaso_account_management: {
         id: 'iaso.permissions.iaso_account_management',
         defaultMessage: 'Account management',

@@ -61,6 +61,8 @@ class FormsSerializerTestCase(TestCase):
             "deleted_at": None,
             "derived": False,
             "label_keys": None,
+            "non_pii_fields": None,
+            "summary_fields": None,
             "reference_form_of_org_unit_types": [
                 {
                     "id": self.org_unit_type.id,

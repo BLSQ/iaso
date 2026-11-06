@@ -1,17 +1,30 @@
 import io
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.management import call_command
-from django.http import HttpResponse
+from django.core.paginator import Paginator
+from django.db.models import F
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.template import loader
 from django.utils import timezone
 
-from iaso.models import Entity, EntityType
+from iaso.models import Entity, EntityType, Group, Instance
+from iaso.utils.pii import filter_submission_json
 
 from .common import ETL
-from .models import Beneficiary, Journey, Visit
+from .exports import KIND_CODA, KIND_RAW, export_response
+from .filters import (
+    attach_journeys,
+    facility_scope,
+    filtered_beneficiaries,
+    filters_from_params,
+    restricted_org_units,
+    with_counts,
+)
+from .models import NUTRITION_PROGRAMMES, Beneficiary, Journey, Visit
+from .permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 
 
 @login_required
@@ -19,10 +32,170 @@ def debug(request, id):
     entity = get_object_or_404(Entity.objects.filter_for_user(request.user), id=id)
 
     beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
-    beneficiary_info = entity.attributes.json
+    beneficiary_info = filter_submission_json(entity.attributes.json, entity.attributes.form, request.user)
 
     template = loader.get_template("debug.html")
     context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}
+    return HttpResponse(template.render(context, request))
+
+
+def _user_account(user):
+    profile = getattr(user, "iaso_profile", None)
+    return profile.account if profile else None
+
+
+def _flatten_json(data, prefix=""):
+    """Turn a submission JSON into a flat list of (path, value) rows for display."""
+    rows = []
+    if isinstance(data, dict):
+        for key, value in data.items():
+            rows.extend(
+                _flatten_json(value, f"{prefix}{key}/" if isinstance(value, (dict, list)) else f"{prefix}{key}")
+            )
+    elif isinstance(data, list):
+        for index, value in enumerate(data):
+            rows.extend(
+                _flatten_json(value, f"{prefix}{index}/" if isinstance(value, (dict, list)) else f"{prefix}{index}")
+            )
+    else:
+        rows.append((prefix, data))
+    return rows
+
+
+def _facility_scope(request):
+    return facility_scope(request.user, filters_from_params(request.GET))
+
+
+def _filtered_beneficiaries(request, account, org_units=None):
+    return filtered_beneficiaries(account, filters_from_params(request.GET), org_units)
+
+
+export_permission_required = permission_required(WFP_BENEFICIARY_EXPORT_PERMISSION.full_name(), raise_exception=True)
+
+
+@login_required
+@export_permission_required
+def beneficiaries(request):
+    """List the beneficiaries computed by the ETL for the account of the current user, with their visits."""
+    account = _user_account(request.user)
+    if account is None:
+        return HttpResponseForbidden("User has no account")
+
+    org_units = _facility_scope(request)
+    queryset = _filtered_beneficiaries(request, account, org_units)
+    entity_type_id = request.GET.get("entity_type", "")
+    programme = request.GET.get("programme", "")
+    org_unit_group_id = request.GET.get("org_unit_group", "")
+    search = request.GET.get("q", "").strip()
+
+    queryset = with_counts(queryset, org_units).order_by(F("last_visit_date").desc(nulls_last=True), "-id")
+
+    page = Paginator(queryset, 50).get_page(request.GET.get("page"))
+    attach_journeys(page.object_list, org_units)
+
+    query_without_page = request.GET.copy()
+    query_without_page.pop("page", None)
+
+    template = loader.get_template("beneficiaries.html")
+    context = {
+        "account": account,
+        "page": page,
+        "entity_types": EntityType.objects.filter(account=account).order_by("name"),
+        "programmes": NUTRITION_PROGRAMMES,
+        "org_unit_groups": Group.objects.filter_for_user(request.user)
+        .select_related("source_version__data_source")
+        .order_by("name", "id"),
+        "selected_entity_type": entity_type_id,
+        "selected_programme": programme,
+        "selected_org_unit_group": org_unit_group_id,
+        "search": search,
+        "query_without_page": query_without_page.urlencode(),
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+@export_permission_required
+def beneficiaries_coda_export(request):
+    """The beneficiaries of the screen (same filters) exported in the "CODA 2.0 Full data fields" format.
+
+    With an org unit group, only the visits made in its org units are exported.
+    """
+    if _user_account(request.user) is None:
+        return HttpResponseForbidden("User has no account")
+    return export_response(request.user, KIND_CODA, filters_from_params(request.GET))
+
+
+@login_required
+@export_permission_required
+def beneficiaries_raw_export(request):
+    """The ETL tables and the submissions of the beneficiaries of the screen (same filters), one sheet per form.
+
+    With an org unit group, only the visits and the submissions made in its org units are exported.
+    """
+    if _user_account(request.user) is None:
+        return HttpResponseForbidden("User has no account")
+    return export_response(request.user, KIND_RAW, filters_from_params(request.GET))
+
+
+@login_required
+def beneficiary_data(request, entity_id):
+    """HTML fragment with all the data of a beneficiary, shown in a popup of the beneficiaries screen.
+
+    Submissions are found through their entity_id, so this also shows submissions not used by the ETL.
+    """
+    account = _user_account(request.user)
+    if account is None:
+        return HttpResponseForbidden("User has no account")
+
+    entities = Entity.objects.filter(account=account).select_related("entity_type", "attributes")
+    submissions = Instance.objects.filter(entity_id=entity_id)
+    restricted = restricted_org_units(request.user)
+    if restricted is not None:
+        # users restricted to some facilities only see their beneficiaries and the submissions made there
+        entities = entities.filter(
+            id__in=Visit.objects.filter(org_unit_id__in=restricted.values("id")).values(
+                "journey__beneficiary__entity_id"
+            )
+        )
+        submissions = submissions.filter(org_unit_id__in=restricted.values("id"))
+    entity = get_object_or_404(entities, id=entity_id)
+    beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
+    submissions = submissions.select_related("form", "org_unit").order_by("source_created_at", "created_at")
+    for submission in submissions:
+        submission.rows = _flatten_json(filter_submission_json(submission.json or {}, submission.form, request.user))
+
+    template = loader.get_template("beneficiary_data.html")
+    context = {
+        "entity": entity,
+        "beneficiary": beneficiary,
+        "attributes": (
+            _flatten_json(filter_submission_json(entity.attributes.json or {}, entity.attributes.form, request.user))
+            if entity.attributes
+            else []
+        ),
+        "submissions": submissions,
+    }
+    return HttpResponse(template.render(context, request))
+
+
+@login_required
+def submission_fields(request, instance_id):
+    """HTML fragment with all the fields of a submission, shown when hovering a submission in the beneficiaries screen."""
+    account = _user_account(request.user)
+    if account is None:
+        return HttpResponseForbidden("User has no account")
+
+    submissions = Instance.objects.filter(entity__account=account).select_related("form", "org_unit")
+    restricted = restricted_org_units(request.user)
+    if restricted is not None:
+        submissions = submissions.filter(org_unit_id__in=restricted.values("id"))
+    submission = get_object_or_404(submissions, id=instance_id)
+    template = loader.get_template("submission_fields.html")
+    context = {
+        "submission": submission,
+        "rows": _flatten_json(filter_submission_json(submission.json or {}, submission.form, request.user)),
+    }
     return HttpResponse(template.render(context, request))
 
 

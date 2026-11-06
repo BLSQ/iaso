@@ -1648,7 +1648,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         # One of the 2 entities was updated, we get notified with a Sentry
         self.assertEqual(ent1.instances.count() + ent2.instances.count(), 3)
         err_msg = f"Multiple non-deleted entities for UUID {ent1.uuid}, entity_type_id {self.default_entity_type.id}"
-        mock_logger.exception.assert_called_once_with(err_msg)
+        mock_logger.error.assert_called_once_with(err_msg)
 
     def test_duplicate_instance_uuids_fail_the_import(self):
         # Two existing instances with the same uuid as one in the zip: the import fails

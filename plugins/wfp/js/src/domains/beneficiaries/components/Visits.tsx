@@ -1,0 +1,178 @@
+import React, { FunctionComponent } from 'react';
+import {
+    Box,
+    Chip,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useSafeIntl } from 'bluesquare-components';
+import { SubmissionLink } from './Fragments';
+import MESSAGES from './../messages';
+import { Journey, Visit } from './../types';
+import { formatDate, muacColor, whzColor } from './../utils';
+
+export const Visits: FunctionComponent<{
+    journey: Journey;
+    visits: Visit[];
+}> = ({ journey, visits }) => {
+    const { formatMessage } = useSafeIntl();
+    const theme = useTheme();
+    const headers = [
+        '#',
+        formatMessage(MESSAGES.date),
+        formatMessage(MESSAGES.orgUnit),
+        formatMessage(MESSAGES.muac),
+        formatMessage(MESSAGES.whz),
+        formatMessage(MESSAGES.oedema),
+        formatMessage(MESSAGES.entryPoint),
+        formatMessage(MESSAGES.assistance),
+        formatMessage(MESSAGES.submission),
+    ];
+    return (
+        <Box sx={{ overflowX: 'auto' }}>
+            <Table
+                size="small"
+                sx={{
+                    '& th': {
+                        height: 40,
+                        fontSize: 12,
+                        color: 'text.secondary',
+                        background: 'rgba(0, 0, 0, 0.02)',
+                        whiteSpace: 'nowrap',
+                    },
+                    '& td': { py: 0.75, px: 2 },
+                    '& tbody tr:last-child td': { borderBottom: 'none' },
+                    '& tbody tr:hover': { background: 'rgba(0, 0, 0, 0.03)' },
+                }}
+            >
+                <TableHead>
+                    <TableRow>
+                        {headers.map(header => (
+                            <TableCell key={header}>{header}</TableCell>
+                        ))}
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {visits.length === 0 && (
+                        <TableRow>
+                            <TableCell
+                                colSpan={9}
+                                sx={{ color: 'text.secondary' }}
+                            >
+                                {formatMessage(MESSAGES.noVisits)}
+                            </TableCell>
+                        </TableRow>
+                    )}
+                    {visits.map(visit => (
+                        <TableRow key={visit.id}>
+                            <TableCell>
+                                <Box
+                                    component="span"
+                                    sx={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: '50%',
+                                        background: alpha(
+                                            theme.palette.primary.main,
+                                            0.08,
+                                        ),
+                                        color: 'primary.main',
+                                        fontWeight: 500,
+                                        fontSize: 12,
+                                    }}
+                                >
+                                    {visit.number}
+                                </Box>
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                {formatDate(visit.date)}
+                            </TableCell>
+                            <TableCell>{visit.org_unit_name ?? ''}</TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                {visit.muac_size && (
+                                    <>
+                                        <Box
+                                            component="span"
+                                            sx={{
+                                                display: 'inline-block',
+                                                width: 10,
+                                                height: 10,
+                                                borderRadius: '50%',
+                                                mr: 0.75,
+                                                verticalAlign: 'middle',
+                                                background: muacColor(
+                                                    theme,
+                                                    Number(visit.muac_size),
+                                                    journey.programme_type,
+                                                ),
+                                            }}
+                                        />
+                                        {visit.muac_size}
+                                    </>
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                {visit.whz_color && (
+                                    <Chip
+                                        size="small"
+                                        color={whzColor(visit.whz_color)}
+                                        label={visit.whz_color}
+                                    />
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                {visit.oedema ? (
+                                    <Chip
+                                        size="small"
+                                        color="error"
+                                        label={formatMessage(MESSAGES.yes)}
+                                    />
+                                ) : (
+                                    <Box
+                                        component="span"
+                                        color="text.secondary"
+                                    >
+                                        {formatMessage(MESSAGES.no)}
+                                    </Box>
+                                )}
+                            </TableCell>
+                            <TableCell>{visit.entry_point ?? ''}</TableCell>
+                            <TableCell>
+                                {visit.steps.length === 0 ? (
+                                    <Box
+                                        component="span"
+                                        color="text.secondary"
+                                    >
+                                        {formatMessage(MESSAGES.none)}
+                                    </Box>
+                                ) : (
+                                    visit.steps.map(step => (
+                                        <Chip
+                                            size="small"
+                                            key={step.id}
+                                            label={`${step.assistance_type}: ${step.quantity_given}${step.ration_size ? ` (${step.ration_size})` : ''}`}
+                                        />
+                                    ))
+                                )}
+                            </TableCell>
+                            <TableCell>
+                                {visit.instance_id && (
+                                    <SubmissionLink
+                                        instanceId={visit.instance_id}
+                                    />
+                                )}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </Box>
+    );
+};

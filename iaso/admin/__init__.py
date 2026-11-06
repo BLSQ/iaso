@@ -12,6 +12,7 @@ from .planning_samplings import PlanningSamplingResultAdmin  # noqa: F401
 from .plannings import PlanningAdmin  # noqa
 from .storage_password import StoragePasswordAdmin  # noqa
 from .user_admin import UserAdmin
+from .workspace_admin import WorkspaceAdmin  # noqa: F401
 
 
 # unregister old user admin

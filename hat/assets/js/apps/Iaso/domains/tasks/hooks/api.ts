@@ -34,7 +34,7 @@ export const useKillTask = (): UseMutationResult =>
         (task: Task<any>) => patchRequest(`/api/tasks/${task.id}/`, task),
         MESSAGES.patchTaskSuccess,
         MESSAGES.patchTaskError,
-        ['tasks'],
+        ['tasks', 'tasksLogs'],
     );
 
 export const useRelaunchTask = (): UseMutationResult =>
@@ -43,7 +43,7 @@ export const useRelaunchTask = (): UseMutationResult =>
             patchRequest(`/api/tasks/${task.id}/relaunch/`, task),
         MESSAGES.patchTaskSuccess,
         MESSAGES.patchTaskError,
-        ['tasks'],
+        ['tasks', 'tasksLogs'],
     );
 
 export const useGetLogs = (

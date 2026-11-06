@@ -230,6 +230,7 @@ export type FormsParams = {
     onlyDeleted?: string;
     planning?: string;
     projectsIds?: string;
+    orgUnitTypeIds?: string;
     fields?: string;
     orgUnitId: string;
 };

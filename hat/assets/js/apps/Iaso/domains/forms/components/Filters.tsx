@@ -1,79 +1,63 @@
 import React, { useCallback, useMemo } from 'react';
 
 import Add from '@mui/icons-material/Add';
-import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
+    FiltersPanel,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
+import type {
+    FilterFieldDescriptor,
+    FilterFieldRenderContext,
+    FilterValues,
+} from 'bluesquare-components';
+
+import { useApiMicroplanningPlanningsDropdownList } from 'Iaso/api/plannings';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
-import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/shared/PlanningsDropdown';
-import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
-import { useFilterState } from 'Iaso/hooks/useFilterState';
-import { PLANNING_READ, PLANNING_WRITE } from 'Iaso/utils/permissions';
+import { userHasPermission } from 'Iaso/domains/users/utils';
+import { PLANNING_READ } from 'Iaso/utils/permissions';
 import * as Permission from 'Iaso/utils/permissions';
-import { cleanupParams } from 'Iaso/utils/requests';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import {
-    DownloadMenuButton,
-    useDownloadOption,
-} from '../../../components/DownloadMenuButton';
-import InputComponent from '../../../components/forms/InputComponent';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
-import {
-    DEFAULT_VISIBLE_COLUMNS,
-    FormResponse,
-    tableDefaults,
-} from '../hooks/useGetForms';
 import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
-const dwnldBaseUrl = '/api/forms';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 type Props = {
     params: FormsParams;
-    forms?: FormResponse;
-    isLoadingForms: boolean;
 };
 
-const Filters = ({ params, forms, isLoadingForms }: Props) => {
+const Filters = ({ params }: Props) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
-    const downloadOption = useDownloadOption();
-    const { filters, handleSearch, handleChange } = useFilterState({
-        baseUrl,
-        params,
-        withPagination: false,
-        searchAlwaysEnabled: true,
-    });
     const currentUser = useCurrentUser();
-    const hasPlanningPermission = userHasOneOfPermissions(
-        [PLANNING_READ, PLANNING_WRITE],
-        currentUser,
-    );
-    const handleOnlyDeleted = useCallback(
-        (key: string, value: boolean) => {
-            const valueForParam = value ? '1' : undefined;
-            handleChange(key, valueForParam);
+    const hasPlanningPermission = userHasPermission(PLANNING_READ, currentUser);
+    // Same query as PlanningsDropdown (deduped by react-query): used here
+    // only to label the active-filter chip.
+    const { data: plannings } = useApiMicroplanningPlanningsDropdownList(
+        undefined,
+        {
+            query: {
+                enabled: hasPlanningPermission,
+            },
         },
-        [handleChange],
     );
+
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-
-    const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     const handleAddForm = useCallback(() => {
         redirectTo(baseUrls.formDetail, {
@@ -81,136 +65,118 @@ const Filters = ({ params, forms, isLoadingForms }: Props) => {
         });
     }, [redirectTo]);
 
-    const downloadQueryString = useMemo(() => {
-        // the export isn't paginated: only the filters, the order and the
-        // visible columns are sent
-        const {
-            pageSize: _pageSize,
-            page: _page,
-            accountId: _accountId,
-            isSearchActive: _isSearchActive,
-            showDeleted,
-            onlyDeleted,
-            ...filterParams
-        } = params as FormsParams & Record<string, string | undefined>;
-        return new URLSearchParams(
-            cleanupParams({
-                ...filterParams,
-                order: params.order ?? tableDefaults.order,
-                show_deleted: showDeleted,
-                only_deleted: onlyDeleted,
-                fields: params.fields ?? DEFAULT_VISIBLE_COLUMNS.join(','),
-            }),
-        ).toString();
-    }, [params]);
-    const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
-    const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
+    // Adapter between url params (strings, `onlyDeleted: '1'`) and the
+    // generic filter values (`onlyDeleted: boolean`).
+    const values: FilterValues = useMemo(
+        () => ({
+            search: params.search,
+            projectsIds: params.projectsIds,
+            orgUnitTypeIds: params.orgUnitTypeIds,
+            planning: params.planning,
+            onlyDeleted: params.onlyDeleted === '1',
+        }),
+        [params],
+    );
 
-    return (
-        <Grid container>
-            <Grid container item xs={12} spacing={2}>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="projectsIds"
-                        onChange={handleChange}
-                        value={filters.projectsIds}
-                        type="select"
-                        options={allProjects}
-                        label={MESSAGES.projects}
-                        loading={isFetchingProjects}
-                        onEnterPressed={handleSearch}
-                        clearable
-                        multi
-                    />
-                </Grid>
+    const handleApply = useCallback(
+        (next: FilterValues) => {
+            redirectTo(baseUrl, {
+                ...params,
+                search: next.search || undefined,
+                projectsIds: next.projectsIds || undefined,
+                orgUnitTypeIds: next.orgUnitTypeIds || undefined,
+                planning: next.planning || undefined,
+                onlyDeleted: next.onlyDeleted ? '1' : undefined,
+            });
+        },
+        [params, redirectTo],
+    );
 
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        onChange={handleChange}
-                        keyValue="orgUnitTypeIds"
-                        multi
-                        label={MESSAGES.orgUnitsTypes}
-                        value={filters.orgUnitTypeIds}
-                        loading={isFetchingOuTypes}
-                        options={orgUnitTypes ?? []}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
+    const fields: FilterFieldDescriptor[] = useMemo(
+        () => [
+            {
+                key: 'search',
+                label: MESSAGES.search,
+                type: 'search',
+            },
+            {
+                key: 'projectsIds',
+                label: MESSAGES.projects,
+                type: 'select',
+                multi: true,
+                clearable: true,
+                options: allProjects ?? [],
+                loading: isFetchingProjects,
+            },
+            {
+                key: 'orgUnitTypeIds',
+                label: MESSAGES.orgUnitsTypes,
+                type: 'select',
+                multi: true,
+                options: orgUnitTypes ?? [],
+                loading: isFetchingOuTypes,
+            },
+            {
+                key: 'planning',
+                label: MESSAGES.planning,
+                type: 'custom',
+                multi: true,
+                visible: hasPlanningPermission,
+                options: plannings ?? [],
+                renderCustom: ({
+                    value,
+                    onChange,
+                }: FilterFieldRenderContext) => (
                     <PlanningsDropdown
-                        handleChange={handleChange}
-                        value={filters.planning}
+                        handleChange={(_key, newValue) => onChange(newValue)}
+                        value={value}
                         keyValue="planning"
                         multi
+                        // the drawer already spaces fields: avoid
+                        // InputComponent's own margin-top doubling it
+                        withMarginTop={false}
                     />
-                    {!hasPlanningPermission && (
-                        <InputComponent
-                            keyValue="onlyDeleted"
-                            onChange={handleOnlyDeleted}
-                            value={filters.onlyDeleted === '1'}
-                            type="checkbox"
-                            label={MESSAGES.onlyDeleted}
-                        />
-                    )}
-                </Grid>
-            </Grid>
-            <Grid container item xs={12} spacing={2}>
-                <Grid item xs={12} md={3}>
-                    {hasPlanningPermission && (
-                        <InputComponent
-                            keyValue="onlyDeleted"
-                            onChange={handleOnlyDeleted}
-                            value={filters.onlyDeleted === '1'}
-                            type="checkbox"
-                            label={MESSAGES.onlyDeleted}
-                        />
-                    )}
-                </Grid>
-                <Grid item xs={12} md={9}>
-                    <Box
-                        mt={isLargeLayout ? 3 : 0}
-                        display="flex"
-                        justifyContent="flex-end"
-                    >
-                        <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
-                            <Button
-                                variant="outlined"
-                                className={classes.button}
-                                color="primary"
-                                onClick={handleAddForm}
-                                data-test="add-form-button"
-                                sx={{
-                                    mr: 2,
-                                }}
-                            >
-                                <Add className={classes.buttonIcon} />
-                                {formatMessage(MESSAGES.addForm)}
-                            </Button>
-                        </DisplayIfUserHasPerm>
-                        <SearchButton onSearch={handleSearch} />
-                    </Box>
-                    <Box mt={2} display="flex" justifyContent="flex-end">
-                        <DownloadMenuButton
-                            options={[
-                                downloadOption('csv', csvUrl),
-                                downloadOption('xlsx', xlsxUrl),
-                            ]}
-                            disabled={isLoadingForms || !forms?.forms?.length}
-                        />
-                    </Box>
-                </Grid>
-            </Grid>
-        </Grid>
+                ),
+            },
+            {
+                key: 'onlyDeleted',
+                label: MESSAGES.onlyDeleted,
+                type: 'checkbox',
+                emptyValue: false,
+            },
+        ],
+        [
+            allProjects,
+            isFetchingProjects,
+            orgUnitTypes,
+            isFetchingOuTypes,
+            hasPlanningPermission,
+            plannings,
+        ],
+    );
+
+    return (
+        <Box display="flex" alignItems="center" gap={2}>
+            <Box flexGrow={1} minWidth={0}>
+                <FiltersPanel
+                    fields={fields}
+                    values={values}
+                    onApply={handleApply}
+                />
+            </Box>
+            <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
+                <Button
+                    variant="contained"
+                    className={classes.button}
+                    color="primary"
+                    onClick={handleAddForm}
+                    data-test="add-form-button"
+                >
+                    <Add className={classes.buttonIcon} />
+                    {formatMessage(MESSAGES.addForm)}
+                </Button>
+            </DisplayIfUserHasPerm>
+        </Box>
     );
 };
 

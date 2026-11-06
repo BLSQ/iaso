@@ -9,6 +9,7 @@ from iaso.models import Account, Project
 from iaso.models.team import Team, TeamType
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
@@ -443,7 +444,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "root_team",
                     "color": "#0000FF",
                     "type": "TEAM_OF_TEAMS",
-                    "project": {"id": self.project1.pk, "name": "project1", "color": "#192041"},
+                    "project": {"id": self.project1.pk, "name": "project1", "color": DEFAULT_COLOR},
                     "members_count": 1,
                 },
                 {
@@ -451,7 +452,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "team1",
                     "color": "#0000FF",
                     "type": "TEAM_OF_TEAMS",
-                    "project": {"id": self.project1.pk, "name": "project1", "color": "#192041"},
+                    "project": {"id": self.project1.pk, "name": "project1", "color": DEFAULT_COLOR},
                     "members_count": 2,
                 },
                 {
@@ -459,7 +460,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "team2",
                     "color": "#EF5350",
                     "type": "TEAM_OF_TEAMS",
-                    "project": {"id": self.project2.pk, "name": "project2", "color": "#192041"},
+                    "project": {"id": self.project2.pk, "name": "project2", "color": DEFAULT_COLOR},
                     "members_count": 2,
                 },
                 {
@@ -467,7 +468,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_1",
                     "color": "#EF5350",
                     "type": "TEAM_OF_TEAMS",
-                    "project": {"id": self.project1.pk, "name": "project1", "color": "#192041"},
+                    "project": {"id": self.project1.pk, "name": "project1", "color": DEFAULT_COLOR},
                     "members_count": 2,
                 },
                 {
@@ -475,7 +476,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_2",
                     "color": "#EF5350",
                     "type": "TEAM_OF_TEAMS",
-                    "project": {"id": self.project1.pk, "name": "project1", "color": "#192041"},
+                    "project": {"id": self.project1.pk, "name": "project1", "color": DEFAULT_COLOR},
                     "members_count": 1,
                 },
                 {
@@ -483,7 +484,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_3",
                     "color": "#EF5350",
                     "type": None,
-                    "project": {"id": self.project1.pk, "name": "project1", "color": "#192041"},
+                    "project": {"id": self.project1.pk, "name": "project1", "color": DEFAULT_COLOR},
                     "members_count": 0,
                 },
                 {
@@ -491,7 +492,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_4",
                     "color": "#EF5350",
                     "type": None,
-                    "project": {"id": self.project2.pk, "name": "project2", "color": "#192041"},
+                    "project": {"id": self.project2.pk, "name": "project2", "color": DEFAULT_COLOR},
                     "members_count": 0,
                 },
                 {
@@ -499,7 +500,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_1_2",
                     "color": "#EF5350",
                     "type": None,
-                    "project": {"id": self.project2.pk, "name": "project2", "color": "#192041"},
+                    "project": {"id": self.project2.pk, "name": "project2", "color": DEFAULT_COLOR},
                     "members_count": 0,
                 },
                 {
@@ -507,7 +508,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_1_3",
                     "color": "#EF5350",
                     "type": None,
-                    "project": {"id": self.project2.pk, "name": "project2", "color": "#192041"},
+                    "project": {"id": self.project2.pk, "name": "project2", "color": DEFAULT_COLOR},
                     "members_count": 0,
                 },
                 {
@@ -515,7 +516,7 @@ class TeamListViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                     "name": "sub_team_2_1",
                     "color": "#EF5350",
                     "type": "TEAM_OF_USERS",
-                    "project": {"id": self.project1.pk, "name": "project1", "color": "#192041"},
+                    "project": {"id": self.project1.pk, "name": "project1", "color": DEFAULT_COLOR},
                     "members_count": 2,
                 },
             ],

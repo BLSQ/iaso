@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, LinearProgress, Typography, Theme } from '@mui/material';
+import { Box, LinearProgress, Typography } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 
 type Props = {
     value: number;

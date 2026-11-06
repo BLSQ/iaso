@@ -1,4 +1,5 @@
-import { SxProps, Theme } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { GenericObject, Optional } from './utils';
 
 export type PostArg = {

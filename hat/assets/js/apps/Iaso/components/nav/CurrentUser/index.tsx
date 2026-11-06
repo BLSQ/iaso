@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import { Box, Popover, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../domains/app/components/messages';
 import { getDefaultSourceVersion } from '../../../domains/dataSources/utils';

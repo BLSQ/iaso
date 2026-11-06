@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ChevronRight } from '@mui/icons-material';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import { Box, Typography } from '@mui/material';
 import {
     Column,

@@ -4,7 +4,8 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { NavigateBefore, NavigateNext } from '@mui/icons-material';
+import NavigateBefore from '@mui/icons-material/NavigateBefore';
+import NavigateNext from '@mui/icons-material/NavigateNext';
 import {
     Box,
     Button,

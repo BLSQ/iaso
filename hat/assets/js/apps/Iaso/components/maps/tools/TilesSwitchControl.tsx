@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import Layers from '@mui/icons-material/Layers';
 import { Box, SxProps, Typography } from '@mui/material';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 

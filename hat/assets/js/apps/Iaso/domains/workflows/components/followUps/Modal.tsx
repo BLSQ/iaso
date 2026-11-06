@@ -1,5 +1,11 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import { Grid, Box, useTheme, Tab, Tabs } from '@mui/material';
+
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import {
     useSafeIntl,
     ConfirmCancelModal,
@@ -9,10 +15,10 @@ import {
     AddButton,
     JsonLogicEditor,
 } from 'bluesquare-components';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 import { Popper } from '../../../forms/fields/components/Popper';
 import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';

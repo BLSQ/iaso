@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import { ArrowUpwardOutlined } from '@mui/icons-material';
 import { Box, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     IconButton,

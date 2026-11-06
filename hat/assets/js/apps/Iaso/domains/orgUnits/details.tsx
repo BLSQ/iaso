@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     commonStyles,

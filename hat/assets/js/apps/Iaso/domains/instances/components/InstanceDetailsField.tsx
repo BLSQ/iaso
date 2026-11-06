@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { textPlaceholder, commonStyles } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({

@@ -1,6 +1,8 @@
 import React from 'react';
-import { SaveOutlined } from '@mui/icons-material';
-import { Alert, Button, useMediaQuery, useTheme } from '@mui/material';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
+import { Alert, Button, useTheme } from '@mui/material';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
+
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';

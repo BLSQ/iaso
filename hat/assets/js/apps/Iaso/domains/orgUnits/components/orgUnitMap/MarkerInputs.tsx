@@ -2,7 +2,7 @@ import React, { FunctionComponent, useCallback } from 'react';
 import AddLocation from '@mui/icons-material/AddLocation';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import InputComponent from '../../../../components/forms/InputComponent';

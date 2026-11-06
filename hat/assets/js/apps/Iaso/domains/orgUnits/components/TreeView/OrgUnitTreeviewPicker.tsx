@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback } from 'react';
 import { Box, InputLabel, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import { OrgUnit } from '../../types/orgUnit';

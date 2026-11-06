@@ -1,6 +1,6 @@
 import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
 import { Paper, Switch, Tooltip, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 

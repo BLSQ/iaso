@@ -5,8 +5,10 @@ import React, {
     useMemo,
     useEffect,
 } from 'react';
-import { Box, Grid, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     useSafeIntl,
     commonStyles,
@@ -20,12 +22,12 @@ import {
 import { isEqual } from 'lodash';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { getLocaleDateFormat } from 'Iaso/utils/dates';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';

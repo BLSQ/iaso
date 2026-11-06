@@ -1,6 +1,6 @@
 import React, { memo, ReactElement } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { ErrorBoundary } from 'bluesquare-components';
 import { InstanceImagePreview } from '../../components/InstanceImagePreview';
 import { FileContent } from '../../types/instance';

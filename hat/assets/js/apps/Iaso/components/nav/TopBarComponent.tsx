@@ -6,14 +6,14 @@ import {
     Grid,
     IconButton,
     SxProps,
-    Theme,
     useMediaQuery,
     useTheme,
 } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
+import type { Theme } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { CurrentUserInfos } from 'Iaso/components/nav/CurrentUser';
 import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
 import { HomePageButton } from 'Iaso/components/nav/HomePageButton';
@@ -61,7 +61,7 @@ type Props = {
     sx?: SxProps;
 };
 
-const TopBar: FunctionComponent<Props> = ({
+export const TopBar: FunctionComponent<Props> = ({
     title = '',
     titleAdornment,
     children,

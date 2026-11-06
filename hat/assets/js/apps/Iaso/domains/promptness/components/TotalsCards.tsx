@@ -1,10 +1,8 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import {
-    CheckCircleOutline,
-    InboxOutlined,
-    RemoveCircleOutline,
-    Schedule,
-} from '@mui/icons-material';
+import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
+import InboxOutlined from '@mui/icons-material/InboxOutlined';
+import RemoveCircleOutline from '@mui/icons-material/RemoveCircleOutline';
+import Schedule from '@mui/icons-material/Schedule';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormatCount } from 'Iaso/hooks/useFormatCount';

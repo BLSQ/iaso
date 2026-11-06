@@ -6,7 +6,7 @@ import {
     TableRow,
     TableHead,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { textPlaceholder } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import MESSAGES from '../messages';

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CheckCircleOutline } from '@mui/icons-material';
+import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Typography } from '@mui/material';

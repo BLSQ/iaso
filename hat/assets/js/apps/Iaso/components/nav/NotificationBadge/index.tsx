@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useRef, useState } from 'react';
-import { NotificationImportant } from '@mui/icons-material';
+import NotificationImportant from '@mui/icons-material/NotificationImportant';
 import {
     ClickAwayListener,
     Grow,
@@ -9,7 +9,7 @@ import {
     Paper,
     Popper,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useRedirectToReplace } from 'bluesquare-components';
 import moment from 'moment';
 import { useGetNotifications } from 'Iaso/components/nav/NotificationBadge/hooks/requests';

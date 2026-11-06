@@ -3,7 +3,7 @@ import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import HelpOutline from '@mui/icons-material/HelpOutline';
 import NotAuthorized from '@mui/icons-material/NotInterested';
 import { Paper, Container, Box, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { FormattedMessage } from 'react-intl';
 import TopBar from '../nav/TopBarComponent';

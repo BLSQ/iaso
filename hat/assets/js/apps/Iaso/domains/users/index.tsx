@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Add from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Settings';
-import { Box, Button, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import {
     commonStyles,

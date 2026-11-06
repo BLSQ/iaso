@@ -1,16 +1,14 @@
 import React from 'react';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import {
-    Button,
-    ButtonGroup,
-    ClickAwayListener,
-    Grow,
-    MenuItem,
-    MenuItemProps,
-    MenuList,
-    Popper,
-} from '@mui/material';
-import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button/Button';
+import ButtonGroup from '@mui/material/ButtonGroup/ButtonGroup';
+import ClickAwayListener from '@mui/material/ClickAwayListener/ClickAwayListener';
+import Grow from '@mui/material/Grow/Grow';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
+import type { MenuItemProps } from '@mui/material/MenuItem/MenuItem';
+import MenuList from '@mui/material/MenuList/MenuList';
+import Paper from '@mui/material/Paper/Paper';
+import Popper from '@mui/material/Popper/Popper';
 
 export type Options = {
     text: string;

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import { Tooltip } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import { YesNoCell } from '../../components/Cells/YesNoCell';

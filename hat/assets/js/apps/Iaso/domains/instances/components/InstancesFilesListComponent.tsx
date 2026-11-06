@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
 import { Box, Button, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';

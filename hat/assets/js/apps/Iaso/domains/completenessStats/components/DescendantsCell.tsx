@@ -1,5 +1,6 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Box, Theme, Tooltip } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { Legend, useGetLegend } from 'Iaso/components/LegendBuilder/Legend';

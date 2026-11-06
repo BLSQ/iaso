@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Button, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';

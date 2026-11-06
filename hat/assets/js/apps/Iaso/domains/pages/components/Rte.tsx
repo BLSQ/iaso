@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { FormControl, FormLabel } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import isEqual from 'lodash/isEqual';
 import { useQuill } from 'react-quilljs';
 

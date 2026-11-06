@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, useGoBack, commonStyles } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';

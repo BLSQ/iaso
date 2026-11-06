@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { CalendarMonth, HourglassEmpty, Settings } from '@mui/icons-material';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
+import Settings from '@mui/icons-material/Settings';
 import { Box, Button, Chip, Grid, Paper, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';

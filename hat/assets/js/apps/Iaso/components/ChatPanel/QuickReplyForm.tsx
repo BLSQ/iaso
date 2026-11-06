@@ -11,8 +11,8 @@ import {
     Radio,
     RadioGroup,
     SxProps,
-    Theme,
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { ChatQuickReplyQuestion } from './ChatPanel';

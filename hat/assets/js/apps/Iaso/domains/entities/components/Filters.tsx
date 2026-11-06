@@ -7,7 +7,7 @@ import React, {
 
 import SearchIcon from '@mui/icons-material/Search';
 import { Box, Button, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import {
     commonStyles,

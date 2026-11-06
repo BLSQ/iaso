@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { LoadingSpinner } from 'bluesquare-components';
 import { MapContainer, GeoJSON, Pane } from 'react-leaflet';
 import { TeamRetrieve } from 'Iaso/api/teams';

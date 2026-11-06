@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { baseUrls } from '../../../../constants/urls';
 import { ProductivityOption } from './ProductivityOption';
 

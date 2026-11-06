@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
+
 import { LinkButton, useRedirectTo } from 'bluesquare-components';
 import { useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions';

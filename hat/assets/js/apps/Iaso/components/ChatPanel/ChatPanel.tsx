@@ -23,9 +23,9 @@ import {
     Paper,
     SxProps,
     TextField,
-    Theme,
     Typography,
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';

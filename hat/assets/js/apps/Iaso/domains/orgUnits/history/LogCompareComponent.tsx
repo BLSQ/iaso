@@ -12,7 +12,7 @@ import {
     Grid,
     Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';

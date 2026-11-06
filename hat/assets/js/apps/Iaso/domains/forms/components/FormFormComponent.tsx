@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { FormatListBulleted, History, QueryStats } from '@mui/icons-material';
-import { Box, Grid, Theme, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Grid, Typography } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     ExternalLink,
     InputWithInfos,

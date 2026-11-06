@@ -6,7 +6,7 @@ import {
     DialogContent,
     DialogActions,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 

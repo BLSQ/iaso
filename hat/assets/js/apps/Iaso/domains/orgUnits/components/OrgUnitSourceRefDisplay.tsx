@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { textPlaceholder, LinkWithLocation } from 'bluesquare-components';
 import { OrgUnit } from '../types/orgUnit';
 

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import { Credentials } from '../../orgUnits/types/dataSources';
 import MESSAGES from '../messages';

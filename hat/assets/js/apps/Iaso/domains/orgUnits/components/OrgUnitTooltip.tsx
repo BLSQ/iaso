@@ -1,6 +1,6 @@
 import React, { createElement, FunctionComponent, ReactNode } from 'react';
-import { Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { OrgUnit } from '../types/orgUnit';
 import OrgUnitsSmallInfos from './OrgUnitsSmallInfos';
 

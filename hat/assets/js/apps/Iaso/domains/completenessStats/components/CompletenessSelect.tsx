@@ -1,6 +1,6 @@
 import React, { ChangeEvent, FunctionComponent, useCallback } from 'react';
 import { FormControlLabel, Paper, Radio, RadioGroup } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import MESSAGES from '../messages';

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Breadcrumbs, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { LinkToRegistry } from '../../../registry/components/LinkToRegistry';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';

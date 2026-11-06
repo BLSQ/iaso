@@ -16,7 +16,7 @@ import {
     Box,
     PaperProps,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles(theme => ({
     root: {

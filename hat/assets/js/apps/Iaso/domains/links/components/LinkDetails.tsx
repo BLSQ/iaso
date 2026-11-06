@@ -3,7 +3,7 @@ import CheckBox from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
 import { Button, Container, Divider, Grid } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     useSafeIntl,

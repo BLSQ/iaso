@@ -1,8 +1,8 @@
 import React, { createRef, FunctionComponent, useCallback } from 'react';
 
 import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import {
     commonStyles,

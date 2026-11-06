@@ -2,8 +2,8 @@ import React, { FunctionComponent } from 'react';
 
 import BlockIcon from '@mui/icons-material/Block';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 
 import { baseUrls } from 'Iaso/constants/urls';

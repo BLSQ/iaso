@@ -8,7 +8,7 @@ import {
     Box,
 } from '@mui/material';
 import { TablePropsSizeOverrides } from '@mui/material/Table/Table';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { OverridableStringUnion } from '@mui/types/esm';
 import { useSafeIntl } from 'bluesquare-components';
 

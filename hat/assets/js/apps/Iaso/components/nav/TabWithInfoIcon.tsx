@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import { Tab, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import classnames from 'classnames';
 
 export const useStyles = makeStyles(theme => ({

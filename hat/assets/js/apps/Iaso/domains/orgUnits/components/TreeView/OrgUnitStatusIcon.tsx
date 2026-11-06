@@ -3,7 +3,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import FlareIcon from '@mui/icons-material/Flare';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import { Box, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { OrgUnit } from '../../types/orgUnit';

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo, ReactElement } from 'react';
 import { Table, TableBody, TableRow, TableCell, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldType } from '../../forms/types/forms';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';

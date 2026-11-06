@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsList } from 'Iaso/api/missions';
+import { TopBar } from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useApiParams } from 'Iaso/hooks/useApiParams';
@@ -11,7 +12,6 @@ import {
     ParamsWithAccountId,
     useParamsObject,
 } from 'Iaso/routing/hooks/useParamsObject';
-import TopBar from '../../components/nav/TopBarComponent';
 import { MissionFilters } from './components/MissionFilters';
 import { useMissionColumns } from './config';
 import MESSAGES from './messages';

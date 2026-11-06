@@ -6,17 +6,15 @@ import React, {
     useCallback,
 } from 'react';
 
-import {
-    Fullscreen,
-    FullscreenExit,
-    Rotate90DegreesCwOutlined,
-    Rotate90DegreesCcwOutlined,
-    ZoomIn,
-    ZoomOut,
-} from '@mui/icons-material';
 import ArrowLeft from '@mui/icons-material/ArrowCircleLeftRounded';
 import ArrowRight from '@mui/icons-material/ArrowCircleRightRounded';
 import Close from '@mui/icons-material/Close';
+import Fullscreen from '@mui/icons-material/Fullscreen';
+import FullscreenExit from '@mui/icons-material/FullscreenExit';
+import Rotate90DegreesCcwOutlined from '@mui/icons-material/Rotate90DegreesCcwOutlined';
+import Rotate90DegreesCwOutlined from '@mui/icons-material/Rotate90DegreesCwOutlined';
+import ZoomIn from '@mui/icons-material/ZoomIn';
+import ZoomOut from '@mui/icons-material/ZoomOut';
 
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';

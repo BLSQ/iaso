@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button/Button';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import Descriptor from '../descriptor';

@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { Alert, Box, SxProps, Theme } from '@mui/material';
+import { Alert, Box, SxProps } from '@mui/material';
 import { pink } from '@mui/material/colors';
+import type { Theme } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import L from 'leaflet';

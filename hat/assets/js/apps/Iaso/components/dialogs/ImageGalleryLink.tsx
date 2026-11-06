@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Theme } from '@mui/material';
+import { Box } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 
 const styles = {

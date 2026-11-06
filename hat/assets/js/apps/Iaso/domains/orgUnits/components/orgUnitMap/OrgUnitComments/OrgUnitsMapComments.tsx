@@ -1,7 +1,7 @@
 import React, { useCallback, useState, FunctionComponent } from 'react';
 import { Pagination } from '@mui/lab';
 import { Box, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     AddComment,
     CommentWithThread,

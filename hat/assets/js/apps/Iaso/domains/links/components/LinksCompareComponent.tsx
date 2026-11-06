@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
 import { Table, TableBody, Paper, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import isEqual from 'lodash/isEqual';
 import { baseUrls } from '../../../constants/urls';

@@ -5,8 +5,8 @@ import React, {
     useState,
 } from 'react';
 import { PersonRemove } from '@mui/icons-material';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     ConfirmCancelModal,

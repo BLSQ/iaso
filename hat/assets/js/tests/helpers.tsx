@@ -1,7 +1,7 @@
 import React from 'react';
 import { faker } from '@faker-js/faker';
-import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import { ThemeProvider } from '@mui/material/styles';
 import { render, RenderOptions } from '@testing-library/react';
 import { screen, waitFor, act } from '@testing-library/react';

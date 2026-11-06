@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import { Masonry } from '@mui/lab';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import moment from 'moment';
 import { getFileName } from 'Iaso/utils/filesUtils';
 import { ShortFile } from '../../domains/instances/types/instance';

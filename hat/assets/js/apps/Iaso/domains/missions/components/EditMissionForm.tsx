@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
 import {

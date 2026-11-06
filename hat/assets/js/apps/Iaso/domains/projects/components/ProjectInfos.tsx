@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import { ProjectFeatureFlag } from 'Iaso/domains/projects/types/featureFlag';

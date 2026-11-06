@@ -3,7 +3,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Box, Button, Paper, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';

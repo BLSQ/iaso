@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '@mui/material';
+import useTheme from '@mui/material/styles/useTheme';
 import { ColorChip, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
 

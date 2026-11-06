@@ -6,7 +6,7 @@ import React, {
     useState,
 } from 'react';
 import { Alert, Box, Divider, Grid, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';

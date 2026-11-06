@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Grid, useTheme } from '@mui/material';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
+
 import { useQueryClient } from 'react-query';
 import { RefreshButton } from 'Iaso/components/Buttons/RefreshButton';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';

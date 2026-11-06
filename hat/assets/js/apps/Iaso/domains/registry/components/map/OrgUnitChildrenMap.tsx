@@ -6,9 +6,9 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { red } from '@mui/material/colors';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     commonStyles,

@@ -1,4 +1,5 @@
-import { alpha, Theme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import Color from 'color';
 import { ThemeConfig } from 'Iaso/domains/app/contexts/ThemeConfigContext';
 import { SxStyles } from 'Iaso/types/general';

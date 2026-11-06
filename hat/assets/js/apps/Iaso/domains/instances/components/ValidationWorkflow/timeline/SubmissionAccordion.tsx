@@ -9,7 +9,7 @@ import {
     Typography,
 } from '@mui/material';
 import LinearProgress from '@mui/material/LinearProgress';
-import { Box } from '@mui/system';
+import Box from '@mui/system/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { SubmissionList } from 'Iaso/domains/instances/components/ValidationWorkflow/timeline/SubmissionList';

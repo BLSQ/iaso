@@ -10,7 +10,7 @@ import {
     List,
     Box,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     theme as muiTheme,

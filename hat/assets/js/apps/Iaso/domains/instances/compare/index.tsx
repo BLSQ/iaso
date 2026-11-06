@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Grid, Theme, GridSize } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Grid, GridSize } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';

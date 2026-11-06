@@ -1,11 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 
 import { SearchButton } from 'Iaso/components/SearchButton';
-import InputComponent from '../../../components/forms/InputComponent';
 
-import { baseUrls } from '../../../constants/urls';
-import { useFilterState } from '../../../hooks/useFilterState';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
+import InputComponent from '../../../components/forms/InputComponent';
 
 import { useGetStatus } from '../hooks/useGetStatus';
 

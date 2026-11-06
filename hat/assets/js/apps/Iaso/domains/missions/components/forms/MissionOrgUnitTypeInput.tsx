@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
 import { FormikProps } from 'formik/dist/types';

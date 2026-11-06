@@ -6,7 +6,7 @@ import React, {
     SetStateAction,
 } from 'react';
 import { Box, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import L from 'leaflet';
 import { MapContainer, Pane, ScaleControl } from 'react-leaflet';

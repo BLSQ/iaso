@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';

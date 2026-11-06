@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Done } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
+import Done from '@mui/icons-material/Done';
 import { Table, TableBody } from '@mui/material';
 import { TablePropsSizeOverrides } from '@mui/material/Table/Table';
 import { OverridableStringUnion } from '@mui/types/esm';

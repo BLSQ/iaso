@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';

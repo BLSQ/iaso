@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 
 import Add from '@mui/icons-material/Add';
-import { Box, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     FiltersPanel,

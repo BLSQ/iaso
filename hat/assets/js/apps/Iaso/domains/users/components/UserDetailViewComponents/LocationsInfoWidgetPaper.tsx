@@ -1,5 +1,7 @@
 import React from 'react';
-import { Alert, List, ListItem } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { LinkToOrgUnit } from 'Iaso/domains/orgUnits/components/LinkToOrgUnit';

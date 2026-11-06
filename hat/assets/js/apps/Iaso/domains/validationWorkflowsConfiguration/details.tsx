@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
-import { Box, Button, Grid, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     ColumnWithAccessor,
     commonStyles,

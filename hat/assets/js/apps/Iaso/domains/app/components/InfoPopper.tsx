@@ -13,8 +13,8 @@ import {
     Paper,
     PopperPlacementType,
 } from '@mui/material';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles((theme: Theme) => ({
     popper: {

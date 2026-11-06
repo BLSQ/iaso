@@ -1,5 +1,6 @@
 import React from 'react';
-import { Alert, Box } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { ProjectChip } from 'Iaso/domains/projects/components/ProjectChip';

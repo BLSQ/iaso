@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HelpOutline } from '@mui/icons-material';
+import HelpOutline from '@mui/icons-material/HelpOutline';
 import { Box, IconButton, List, ListItem, Paper, Popper } from '@mui/material';
 import { red } from '@mui/material/colors';
 

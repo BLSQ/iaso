@@ -1,15 +1,15 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import WarningIcon from '@mui/icons-material/Warning';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    Box,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
 import MESSAGES from '../messages';

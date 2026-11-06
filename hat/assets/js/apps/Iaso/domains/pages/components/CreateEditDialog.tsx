@@ -9,7 +9,7 @@ import {
     Grid,
 } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { get, merge } from 'lodash';

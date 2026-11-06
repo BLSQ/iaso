@@ -16,9 +16,9 @@ import {
     Paper,
     SxProps,
     TextField,
-    Theme,
     Typography,
 } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';

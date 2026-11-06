@@ -1,5 +1,5 @@
 import React, { FC, useCallback } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { useLocation, useNavigate } from 'react-router-dom';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { MENU_HEIGHT_WITHOUT_TABS } from 'Iaso/constants/uiConstants';

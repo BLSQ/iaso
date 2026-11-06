@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid, IconButton } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEmpty } from 'lodash';
 

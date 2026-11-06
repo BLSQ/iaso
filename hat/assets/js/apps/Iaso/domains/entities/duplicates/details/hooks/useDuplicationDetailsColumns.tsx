@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';
 import { findDescriptorInChildren } from '../../../../../utils';

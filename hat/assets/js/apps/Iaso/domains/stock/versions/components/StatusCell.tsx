@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { useTheme } from '@mui/material';
-
+import useTheme from '@mui/material/styles/useTheme';
 import { useGetStatus } from 'Iaso/domains/stock/hooks/useGetStatus';
 import { Status } from '../../types/stocks';
 

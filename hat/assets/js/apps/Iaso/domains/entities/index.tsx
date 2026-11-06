@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LoadingSpinner,

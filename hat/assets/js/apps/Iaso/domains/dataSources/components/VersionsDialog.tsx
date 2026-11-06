@@ -7,7 +7,7 @@ import React, {
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     DHIS2Svg,

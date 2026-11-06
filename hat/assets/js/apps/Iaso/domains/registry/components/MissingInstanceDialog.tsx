@@ -6,7 +6,7 @@ import {
     DialogContent,
     DialogTitle,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     IconButton,
     Table,

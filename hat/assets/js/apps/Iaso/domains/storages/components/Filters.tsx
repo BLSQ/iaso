@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Grid, useTheme } from '@mui/material';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 
 import { SearchButton } from 'Iaso/components/SearchButton';
 import InputComponent from '../../../components/forms/InputComponent';

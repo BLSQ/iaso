@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import HomeIcon from '@mui/icons-material/Home';
 import { IconButton as MuiIconButton, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { baseUrls } from '../../constants/urls';

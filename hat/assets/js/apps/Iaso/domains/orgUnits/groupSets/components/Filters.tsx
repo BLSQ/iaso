@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Grid, useTheme } from '@mui/material';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../../components/forms/InputComponent';

@@ -9,7 +9,7 @@ import {
     TableRow,
     Tooltip,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { textPlaceholder } from 'bluesquare-components';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';

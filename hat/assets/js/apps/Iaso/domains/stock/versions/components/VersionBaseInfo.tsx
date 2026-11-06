@@ -7,7 +7,7 @@ import {
     Divider,
     Box,
 } from '@mui/material';
-import { Theme } from '@mui/system';
+import { Theme } from '@mui/system/createTheme/createTheme';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { textPlaceholder } from 'Iaso/constants/uiConstants';

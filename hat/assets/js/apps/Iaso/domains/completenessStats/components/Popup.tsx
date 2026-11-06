@@ -8,7 +8,7 @@ import {
     Table,
     TableBody,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     mapPopupStyles,
     useRedirectTo,

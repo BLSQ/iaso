@@ -7,7 +7,7 @@ import React, {
     useState,
 } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     InputWithInfos,
     IntlFormatMessage,

@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { AccountTree, ListAlt, OpenInNew } from '@mui/icons-material';
+import AccountTree from '@mui/icons-material/AccountTree';
+import ListAlt from '@mui/icons-material/ListAlt';
+import OpenInNew from '@mui/icons-material/OpenInNew';
 import { Box, Button, Divider, Paper, Typography } from '@mui/material';
 import {
     LoadingSpinner,

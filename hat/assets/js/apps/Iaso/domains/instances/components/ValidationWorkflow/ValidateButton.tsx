@@ -4,7 +4,7 @@ import {
     ButtonProps,
     ButtonPropsVariantOverrides,
 } from '@mui/material/Button/Button';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { OverridableStringUnion } from '@mui/types';
 import { commonStyles } from 'bluesquare-components';
 

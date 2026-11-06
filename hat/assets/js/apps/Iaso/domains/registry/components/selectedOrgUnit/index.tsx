@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 
 import { useGetInstance } from 'Iaso/domains/instances/hooks/requests/useGetInstance';

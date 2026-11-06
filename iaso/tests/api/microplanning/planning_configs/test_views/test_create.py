@@ -140,7 +140,7 @@ class PlanningConfigCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             "org_unit_groups": [self.org_unit_group.id, self.org_unit_group_2.id],
         }
         self.assertValidBody(data)
-        with self.assertNumQueries(23):
+        with self.assertNumQueries(11):
             res = self.client.post(reverse("planning_configs-list"), data=data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)

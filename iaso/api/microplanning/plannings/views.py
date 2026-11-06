@@ -207,7 +207,12 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             )
             return planning.missions.all()
 
-        if self.action in ["org_unit_tree", "org_unit_tree_with_geom", "levels_org_unit_count"]:
+        if self.action == "levels_org_unit_count":
+            qs = qs.select_related("org_unit").only("id", "org_unit", "org_unit__id", "org_unit__path")
+
+            return qs
+
+        if self.action in ["org_unit_tree", "org_unit_tree_with_geom"]:
             qs = (
                 qs.prefetch_related(
                     Prefetch(
@@ -381,12 +386,28 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
     def levels_org_unit_count(self, request: Request, pk: int | None = None, *args: Any, **kwargs: Any) -> Response:
         # TODO : once DRF supports QUERY HTTP method, switch to it.
 
-        planning = get_object_or_404(self.get_queryset(), pk=pk)
+        qs = self.get_queryset()
+
+        if not request.data:
+            # optimization as if we have a body, we don't need to prefetch those - less queries, database happy
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "configs",
+                    queryset=PlanningConfig.objects.prefetch_related(
+                        "org_unit_types",
+                        "org_unit_groups",
+                    ),
+                )
+            )
+
+        planning = get_object_or_404(qs, pk=pk)
 
         request_serializer = LevelOrgUnitCountRequestSerializer(
             data=request.data, many=True, context=self.get_serializer_context()
         )
         request_serializer.is_valid(raise_exception=True)
+
+        request_data = request_serializer.validated_data
 
         # if the data passed is empty , we use the actual configs from the planning
         # otherwise we pass the data from serializer
@@ -395,7 +416,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         root = planning.org_unit
         root_level = len(str(root.path).split("."))
 
-        if not request_serializer.validated_data:
+        if not request_data:
             configs = planning.configs.all()
             processed_levels = {root_level + config.level - 1 for config in configs}
         else:
@@ -413,6 +434,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                     configs=configs,
                     max_depth=(max(processed_levels) + root_level) if processed_levels else 0,
                 )
+                .only("pk", "depth")
                 .values("depth")
                 .annotate(count=Count("pk"))
                 .order_by("depth")

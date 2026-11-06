@@ -205,21 +205,123 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
 
-        body = []
-        self.assertValidBody(body)
-        with self.assertNumQueries(6):
-            res = self.client.post(self.get_url(), data=body)
-        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidResponse(res_data, 1)
+        with self.subTest("without body"):
+            body = []
+            self.assertValidBody(body)
+            with self.assertNumQueries(6):
+                # 1. SELECT PLANNING
+                # 2. PREFETCH PLANNING CONFIG
+                # 3. PREFETCH PLANNING CONFIG OUT
+                # 4. PREFETCH PLANNING CONFIG GROUPS
+                # 5. OU FILTER FOR USER
+                # 6. RECURSIVE
+                res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data, 3)
+
+        with self.subTest("with body"):
+            body = [
+                {
+                    "level": 2,
+                    "org_unit_types": [self.org_unit_type_2.pk],
+                    "org_unit_groups": [self.org_unit_group_2.pk],
+                },
+                {
+                    "level": 3,
+                    "org_unit_types": [self.org_unit_type_2.pk],
+                    "org_unit_groups": [self.org_unit_group_2.pk],
+                },
+            ]
+            self.assertValidBody(body)
+            with self.assertNumQueries(7):
+                # 1. SELECT PLANNING
+                # 2: OUT SERIALIZER QUERYSET VALIDATION
+                # 3: GROUP SERIALIZER QUERYSET VALIDATION
+                # 4: OUT SERIALIZER QUERYSET VALIDATION - SECOND ITEM
+                # 5: GROUP SERIALIZER QUERYSET VALIDATION - SECOND ITEM
+                # 6: OU FILTER FOR USER
+                # 7: RECURSIVE
+                res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data, 3)
 
     def test_validation_org_unit_types(self):
-        pass
+        self.client.force_authenticate(self.superuser)
+        with self.subTest("org unit type other account"):
+            body = [{"level": 1}, {"level": 2, "org_unit_types": [self.org_unit_type_other_account.pk]}]
+            self.assertValidBody(body)
+            res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                res_data,
+                [
+                    {},
+                    {"org_unit_type": [f'Invalid pk "{self.org_unit_type_other_account.pk}" - object does not exist']},
+                ],
+            )
+
+        with self.subTest("org unit type that does not exist"):
+            pk = OrgUnitType.objects.order_by("-pk").first().pk + 1
+            body = [{"level": 1}, {"level": 2, "org_unit_types": [OrgUnitType.objects.order_by("-pk").first().pk + 1]}]
+            self.assertValidBody(body)
+            res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                res_data,
+                [{}, {"org_unit_types": [f'Invalid pk "{pk}" - object does not exist']}],
+            )
 
     def test_validation_levels(self):
-        pass
+        self.client.force_authenticate(self.superuser)
+
+        with self.subTest("level is required"):
+            body = [{}]
+            # self.assertValidBody(body) swagger will fail obviously :)
+            res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(res_data, [{"level": ["This field is required."]}])
+
+        with self.subTest("level must be > 0"):
+            body = [{"level": 0}]
+            # self.assertValidBody(body) swagger will fail obviously :)
+            res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(res_data, [{"level": ["Ensure this value is greater than or equal to 1."]}])
+
+            body = [{"level": 1}]
+            self.assertValidBody(body)
+            res = self.client.post(self.get_url(), data=body)
+            self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_validation_org_unit_groups(self):
-        pass
+        self.client.force_authenticate(self.superuser)
+        with self.subTest("org unit group other account"):
+            body = [{"level": 1}, {"level": 2, "org_unit_groups": [self.org_unit_group_other_account.pk]}]
+            self.assertValidBody(body)
+            res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                res_data,
+                [
+                    {},
+                    {
+                        "org_unit_groups": [
+                            f'Invalid pk "{self.org_unit_group_other_account.pk}" - object does not exist'
+                        ]
+                    },
+                ],
+            )
+
+        with self.subTest("org unit type that does not exist"):
+            pk = OrgUnitType.objects.order_by("-pk").first().pk + 1
+            body = [{"level": 1}, {"level": 2, "org_unit_groups": [Group.objects.order_by("-pk").first().pk + 1]}]
+            self.assertValidBody(body)
+            res = self.client.post(self.get_url(), data=body)
+            res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                res_data,
+                [{}, {"org_unit_groups": [f'Invalid pk "{pk}" - object does not exist']}],
+            )
 
     def test_happy_path_with_body(self):
         self.client.force_authenticate(self.superuser)
@@ -284,7 +386,7 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 3)
         self.assertCountEqual(
-            res_data["data"],
+            res_data,
             [
                 {"level": 0, "depth": 1, "count": 1},
                 {"level": 1, "depth": 2, "count": 1},

@@ -266,7 +266,7 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
 
         with self.subTest("org unit type that does not exist"):
             pk = OrgUnitType.objects.order_by("-pk").first().pk + 1
-            body = [{"level": 1}, {"level": 2, "org_unit_types": [OrgUnitType.objects.order_by("-pk").first().pk + 1]}]
+            body = [{"level": 1}, {"level": 2, "org_unit_types": [pk]}]
             self.assertValidBody(body)
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
@@ -317,8 +317,8 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             )
 
         with self.subTest("org unit type that does not exist"):
-            pk = OrgUnitType.objects.order_by("-pk").first().pk + 1
-            body = [{"level": 1}, {"level": 2, "org_unit_groups": [Group.objects.order_by("-pk").first().pk + 1]}]
+            pk = Group.objects.order_by("-pk").first().pk + 1
+            body = [{"level": 1}, {"level": 2, "org_unit_groups": [pk]}]
             self.assertValidBody(body)
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)

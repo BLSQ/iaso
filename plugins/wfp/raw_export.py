@@ -48,8 +48,10 @@ README = [
     ),
     (
         "one sheet per form",
-        ("The submissions of the entities of these beneficiaries, one column per question. Sheet named after the "
-        "form id (see the 'forms' sheet for the full names)."),
+        (
+            "The submissions of the entities of these beneficiaries, one column per question. Sheet named after the "
+            "form id (see the 'forms' sheet for the full names)."
+        ),
         "instance_id (submission id, matches instance_id of the ETL sheets), entity_id, entity_uuid, beneficiary_id",
     ),
     (
@@ -60,15 +62,19 @@ README = [
     ("", "", ""),
     (
         "Notes",
-        ("The ETL ids (beneficiary_id, journey_id, visit_id, step_id) change each time the ETL recomputes a "
-        "beneficiary: use them to join the sheets of one export, and entity_uuid / instance uuid across exports."),
+        (
+            "The ETL ids (beneficiary_id, journey_id, visit_id, step_id) change each time the ETL recomputes a "
+            "beneficiary: use them to join the sheets of one export, and entity_uuid / instance uuid across exports."
+        ),
         "Questions containing personal data are left out unless you have the permission to see them.",
     ),
     (
         "",
-        ("When filtered on an org unit group (or for users restricted to some org units), only the visits and the "
-        "submissions made in these org units are exported, with the journeys having at least one of these visits: "
-        "some instance_id of the ETL sheets may then point to submissions made elsewhere, which are not exported."),
+        (
+            "When filtered on an org unit group (or for users restricted to some org units), only the visits and the "
+            "submissions made in these org units are exported, with the journeys having at least one of these visits: "
+            "some instance_id of the ETL sheets may then point to submissions made elsewhere, which are not exported."
+        ),
         "",
     ),
 ]

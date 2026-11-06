@@ -4,7 +4,6 @@ They take the user and a dict of filters rather than a request, so that a backgr
 selection the user made on the screen.
 """
 
-
 from django.db.models import Count, Max, Prefetch, Q
 
 from iaso.models import Group, OrgUnit

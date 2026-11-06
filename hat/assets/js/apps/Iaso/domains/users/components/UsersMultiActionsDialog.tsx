@@ -7,16 +7,16 @@ import React, {
 } from 'react';
 
 import ReportIcon from '@mui/icons-material/Report';
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Typography,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import Typography from '@mui/material/Typography/Typography';
+
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     formatThousand,

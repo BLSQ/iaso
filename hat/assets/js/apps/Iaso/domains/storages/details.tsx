@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Divider, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';

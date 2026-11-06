@@ -5,7 +5,11 @@ import React, {
     SetStateAction,
     useCallback,
 } from 'react';
-import { Box, useTheme, Button, Paper, ButtonGroup } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import ButtonGroup from '@mui/material/ButtonGroup/ButtonGroup';
+import Paper from '@mui/material/Paper/Paper';
+import useTheme from '@mui/material/styles/useTheme';
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
 
 import {

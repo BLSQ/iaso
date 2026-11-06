@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Grid, Box, Card, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Card from '@mui/material/Card/Card';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import {
     useSafeIntl,
     LoadingSpinner,

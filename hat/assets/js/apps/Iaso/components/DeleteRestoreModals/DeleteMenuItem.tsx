@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { MenuItem, SxProps } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 

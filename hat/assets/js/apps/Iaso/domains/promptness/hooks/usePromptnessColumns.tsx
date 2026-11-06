@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { ChevronRight } from '@mui/icons-material';
-import { Box, Typography } from '@mui/material';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import {
     Column,
     IconButton as IconButtonComponent,

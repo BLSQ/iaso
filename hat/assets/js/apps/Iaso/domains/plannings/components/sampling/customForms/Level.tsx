@@ -1,8 +1,10 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Grid, Collapse, Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Collapse from '@mui/material/Collapse/Collapse';
 import { grey } from '@mui/material/colors';
+import Grid from '@mui/material/Grid/Grid';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import {

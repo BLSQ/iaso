@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, TableCell, TableRow } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { some, sortBy, uniqBy } from 'lodash';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { NewOrgUnitField } from '../hooks/useNewFields';

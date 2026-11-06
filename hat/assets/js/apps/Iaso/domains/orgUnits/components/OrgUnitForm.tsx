@@ -5,8 +5,9 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles } from 'bluesquare-components';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';

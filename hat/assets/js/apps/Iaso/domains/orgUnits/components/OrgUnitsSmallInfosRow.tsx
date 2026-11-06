@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles(theme => ({
     label: {

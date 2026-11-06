@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import { Box, Button } from '@mui/material';
-import { Theme } from '@mui/system';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import type { Theme } from '@mui/system/createTheme/createTheme';
 import { useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from 'Iaso/components/forms/InputComponent';

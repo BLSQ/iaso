@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import PersonIcon from '@mui/icons-material/Person';
-import { Tooltip } from '@mui/material';
-import { Box } from '@mui/system';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Box from '@mui/system/Box/Box';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';

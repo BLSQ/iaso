@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import classNames from 'classnames';
 import { useHasNoAccount } from '../../../utils/usersUtils';
 import { useAppLocales } from '../../app/constants';

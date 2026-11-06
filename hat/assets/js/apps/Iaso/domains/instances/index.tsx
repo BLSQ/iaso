@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Box, Grid, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     commonStyles,

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
 import {
     IntlFormatMessage,
     IntlMessage,

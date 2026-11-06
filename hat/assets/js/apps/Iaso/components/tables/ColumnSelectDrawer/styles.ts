@@ -1,4 +1,4 @@
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 export const useStyles = makeStyles(theme => ({
     root: {

@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import Alert from '@mui/lab/Alert';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';

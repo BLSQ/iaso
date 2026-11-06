@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { SvgIconComponent } from '@mui/icons-material';
-import { makeStyles } from '@mui/styles';
+import SvgIcon from '@mui/material/SvgIcon';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     IconButtonBuiltInIcon,
     IconButton,
@@ -28,7 +28,7 @@ type Props = {
     color?: string;
     target?: '_blank' | '_self' | '_parent' | '_top';
     icon?: IconVariant;
-    overrideIcon?: SvgIconComponent;
+    overrideIcon?: typeof SvgIcon;
 };
 
 const useStyles = makeStyles(() => ({

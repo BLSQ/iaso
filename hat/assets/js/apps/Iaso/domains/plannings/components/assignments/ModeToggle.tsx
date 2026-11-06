@@ -1,7 +1,9 @@
 import React, { FC, MouseEvent, useCallback } from 'react';
 import EditLocationAltIcon from '@mui/icons-material/EditLocationAlt';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
-import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../hooks/useAssignmentsParams';

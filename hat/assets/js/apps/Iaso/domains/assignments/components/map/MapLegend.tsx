@@ -4,15 +4,13 @@ import React, {
     SetStateAction,
     useCallback,
 } from 'react';
-import {
-    Paper,
-    Typography,
-    Box,
-    FormControlLabel,
-    Checkbox,
-    FormGroup,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup/FormGroup';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { useSafeIntl } from 'bluesquare-components';
 import {

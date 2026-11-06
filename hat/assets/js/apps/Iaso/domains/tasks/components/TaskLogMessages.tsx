@@ -1,15 +1,13 @@
 import React, { FunctionComponent, useRef, useEffect } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow,
-    Typography,
-    Paper,
-    Box,
-    CircularProgress,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import Paper from '@mui/material/Paper/Paper';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { TaskLog } from 'Iaso/domains/tasks/types';

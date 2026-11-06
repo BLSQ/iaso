@@ -1,7 +1,9 @@
 import React, { FunctionComponent, KeyboardEvent } from 'react';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import { Box, Chip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import MESSAGES from '../../messages';

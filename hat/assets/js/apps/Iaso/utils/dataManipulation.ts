@@ -10,7 +10,7 @@ export const stringToBoolean = (str: string): boolean | undefined => {
     return undefined;
 };
 
-export const toNumber = (value: unknown): number => {  
-    const parsed = Number(value);  
-    return Number.isFinite(parsed) ? parsed : 0;  
-}; 
+export const toNumber = (value: unknown): number => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+};

@@ -1,6 +1,6 @@
 import React, { Dispatch, ReactElement, SetStateAction } from 'react';
 import MapIcon from '@mui/icons-material/Map';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';

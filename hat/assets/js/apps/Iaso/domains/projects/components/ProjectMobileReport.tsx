@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Alert, Box, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useApiReportsList, useApiReportsVersionsList } from 'Iaso/api/reports';
 import MESSAGES from '../messages';

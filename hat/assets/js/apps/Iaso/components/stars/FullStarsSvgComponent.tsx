@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import StarFull from '@mui/icons-material/Star';
 import StarOutlined from '@mui/icons-material/StarBorderOutlined';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles({
     star: {

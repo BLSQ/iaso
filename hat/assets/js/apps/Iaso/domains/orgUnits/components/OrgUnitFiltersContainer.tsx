@@ -5,8 +5,10 @@ import React, {
     useState,
 } from 'react';
 import Add from '@mui/icons-material/Add';
-import { AppBar, Box, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import AppBar from '@mui/material/AppBar/AppBar';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     DynamicTabs,
     IntlFormatMessage,

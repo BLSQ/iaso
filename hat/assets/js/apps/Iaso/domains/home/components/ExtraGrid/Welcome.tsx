@@ -4,7 +4,7 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import classNames from 'classnames';
 import PageError from '../../../../components/errors/PageError';
 import { InputContext } from '../../../app/contexts/InputContext';

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { TextField } from '@mui/material';
+import TextField from '@mui/material/TextField/TextField';
 import { get } from 'lodash';
 
 type Props = {

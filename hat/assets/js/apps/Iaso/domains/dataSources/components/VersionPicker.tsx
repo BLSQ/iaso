@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useEffect } from 'react';
-import { Box, FormHelperText, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import FormHelperText from '@mui/material/FormHelperText/FormHelperText';
+import Grid from '@mui/material/Grid/Grid';
 import { useSafeIntl } from 'bluesquare-components';
 import { useFieldsToExport } from 'Iaso/domains/dataSources/utils';
 import InputComponent from '../../../components/forms/InputComponent';

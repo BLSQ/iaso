@@ -1,5 +1,6 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
-import { Tab, Tabs } from '@mui/material';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import { useSafeIntl } from 'bluesquare-components';
 import {
     GREY_PAGE_BODY_PADDING_Y,

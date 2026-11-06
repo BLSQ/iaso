@@ -7,19 +7,19 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { AccountFeatureFlagDropdown } from 'Iaso/api/accountFeatureFlags';
 import {
     getAccountFeatureFlagsMock,
     getApiAccountFeatureFlagsDropdownListMockHandler,
 } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags.msw';
-import { getApiAccountsAiApiKeyRetrieveQueryKey } from 'Iaso/api/accounts';
+import { AccountFeatureFlagDropdown } from 'Iaso/api/accountFeatureFlags/models/accountFeatureFlagDropdown.zod';
+import { getApiAccountsAiApiKeyRetrieveQueryKey } from 'Iaso/api/accounts/endpoints/account/account';
 import {
     getApiAccountsRetrieveMockHandler,
     getApiAccountsRetrieveResponseMock,
     getApiAccountsUpdateMockHandler,
 } from 'Iaso/api/accounts/endpoints/account/account.msw';
-import { ModuleDropdown } from 'Iaso/api/modules';
 import { getApiModulesDropdownListMockHandler } from 'Iaso/api/modules/endpoints/modules/modules.msw';
+import { ModuleDropdown } from 'Iaso/api/modules/models/moduleDropdown.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { AccountsEdit } from 'Iaso/domains/accounts/edit';
 import {

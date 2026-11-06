@@ -7,12 +7,12 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { ApiModulesListParams } from 'Iaso/api/modules';
 import {
     getApiModulesListMockHandler,
     getApiModulesListResponseMock,
     getModulesMock,
 } from 'Iaso/api/modules/endpoints/modules/modules.msw';
+import { ApiModulesListParams } from 'Iaso/api/modules/models/apiModulesListParams.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { Modules } from 'Iaso/domains/modules';
 import MESSAGES from 'Iaso/domains/modules/messages';

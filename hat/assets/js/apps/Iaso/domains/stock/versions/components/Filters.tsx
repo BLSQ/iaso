@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     useRedirectToReplace,

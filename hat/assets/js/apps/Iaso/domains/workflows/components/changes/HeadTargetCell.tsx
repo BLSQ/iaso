@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { useSafeIntl } from 'bluesquare-components';
+import { DropdownOptions } from 'Iaso/types/utils';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { DropdownOptions } from '../../../../types/utils';
 import MESSAGES from '../../messages';
 import { ReferenceForm } from '../../types';
 

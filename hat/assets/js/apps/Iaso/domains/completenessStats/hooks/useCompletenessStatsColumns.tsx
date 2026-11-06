@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { ArrowUpward, AccountTree } from '@mui/icons-material';
+import AccountTree from '@mui/icons-material/AccountTree';
+import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,

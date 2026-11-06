@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Stack } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
 import { SxStyles } from 'Iaso/types/general';
 import { OrgUnitLevelsSection } from '../orgUnitLevels/OrgUnitLevelsSection';
 import { TeamHierarchySection } from '../teamHierarchy/TeamHierarchySection';

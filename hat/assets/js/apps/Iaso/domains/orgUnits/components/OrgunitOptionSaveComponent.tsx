@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Button, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import MESSAGES from '../messages';

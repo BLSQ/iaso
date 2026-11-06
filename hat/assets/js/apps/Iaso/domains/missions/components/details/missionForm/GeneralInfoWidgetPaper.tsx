@@ -1,7 +1,8 @@
 import React from 'react';
-import { Table, TableBody } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { MissionFormRetrieve } from 'Iaso/api/missions';
+import { MissionFormRetrieve } from 'Iaso/api/missions/models/missionFormRetrieve.zod';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
 import { FormsChip } from 'Iaso/domains/missions/components/chips/FormsChip';
 import MESSAGES from 'Iaso/domains/missions/messages';

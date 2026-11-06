@@ -1,12 +1,10 @@
 import React, { useState, useCallback, FunctionComponent } from 'react';
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    Box,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
 import { useSafeIntl } from 'bluesquare-components';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar, succesfullSnackBar } from 'Iaso/constants/snackBars';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useApiValidationWorkflowsDropdownList } from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsDropdownList } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import InputComponent, {
     InputComponentProps,
 } from 'Iaso/components/forms/InputComponent';

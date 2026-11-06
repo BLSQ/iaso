@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Stack } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../contexts/AssignmentsContext';

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Theme } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { last } from 'lodash';
 import configs from 'IasoModules/plugins/configs';
 

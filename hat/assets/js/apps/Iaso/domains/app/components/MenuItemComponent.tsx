@@ -1,16 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import {
-    ListItemIcon,
-    ListItem,
-    ListItemText,
-    Typography,
-    Collapse,
-    List,
-    Box,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Collapse from '@mui/material/Collapse/Collapse';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import Typography from '@mui/material/Typography/Typography';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     theme as muiTheme,

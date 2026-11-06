@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Box, useTheme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import useTheme from '@mui/material/styles/useTheme';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { ColumnsSelectDrawer } from 'Iaso/components/tables/ColumnSelectDrawer';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../components/nav/TopBarComponent';
-import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer/index';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
 import MESSAGES from '../messages';
 import { UserHistoryLogDetails } from './UserHistoryLogDetails';

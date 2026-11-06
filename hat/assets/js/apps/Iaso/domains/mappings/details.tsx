@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { History } from '@mui/icons-material';
-import { Grid, Box, Typography, useTheme } from '@mui/material';
+import History from '@mui/icons-material/History';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+import Typography from '@mui/material/Typography/Typography';
 
 import {
     commonStyles,

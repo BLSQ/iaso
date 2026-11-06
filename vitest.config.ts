@@ -30,8 +30,10 @@ export default defineConfig({
             // to avoid clashing with django debug
             DEBUG: process.env?.VITEST_DEBUG ?? '',
         },
+        reporters: process.env?.GITHUB_ACTIONS === 'true' ? ['github-actions'] : ['default'],
         setupFiles: ['./hat/assets/js/tests/setup.ts', 'dotenv/config'],
         coverage: {
+            enabled: !!process.env?.VITEST_COVERAGE,
             provider: 'v8',
             include: ['apps/**'],
             reporter: ['text', 'json', 'html'],
@@ -103,6 +105,16 @@ export default defineConfig({
             'IasoModules/plugins/keys': pluginKeysPath,
             'IasoModules/translations/configs': combinedTranslationsPath,
             'IasoModules/language/configs': languageConfigsPath,
+        },
+    },
+    server: {
+        watch: {
+            ignored: [
+                '**/.venv/**',
+                '**/venv/**',
+                '**/__pycache__/**',
+                '**/site-packages/**',
+            ],
         },
     },
 });

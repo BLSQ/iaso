@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LoadingSpinner,

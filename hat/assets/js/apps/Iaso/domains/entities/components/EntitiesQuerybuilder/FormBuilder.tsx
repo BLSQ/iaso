@@ -1,6 +1,9 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Grid, IconButton, Paper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
 import {
     JsonLogicTree,
     JsonLogicResult,

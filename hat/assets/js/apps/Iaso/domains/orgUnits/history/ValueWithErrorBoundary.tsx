@@ -1,6 +1,7 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
-import { withStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
+import withStyles from '@mui/styles/withStyles';
 import { injectIntl } from 'bluesquare-components';
 import { LogValue } from './LogValue';
 import { MESSAGES } from './messages';

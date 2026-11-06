@@ -1,14 +1,13 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-import {
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    Divider,
-    Box,
-    Button,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     textPlaceholder,
     useRedirectToReplace,

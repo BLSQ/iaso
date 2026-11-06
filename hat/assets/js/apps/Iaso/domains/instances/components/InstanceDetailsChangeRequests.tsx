@@ -1,15 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Tooltip,
-    useTheme,
-} from '@mui/material';
+import useTheme from '@mui/material/styles/useTheme';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { colorCodes } from '../../orgUnits/reviewChanges/Components/ReviewOrgUnitChangesInfos';

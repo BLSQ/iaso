@@ -1,19 +1,17 @@
 import React, { useContext, FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
-import {
-    Box,
-    Grid,
-    IconButton,
-    SxProps,
-    Theme,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import IconButton from '@mui/material/IconButton/IconButton';
+import type { Theme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { CurrentUserInfos } from 'Iaso/components/nav/CurrentUser';
 import { DjangoAdminPanelButton } from 'Iaso/components/nav/DjangoAdminPanelButton';
 import { HomePageButton } from 'Iaso/components/nav/HomePageButton';

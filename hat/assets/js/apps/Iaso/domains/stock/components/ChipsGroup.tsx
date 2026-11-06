@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Chip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 
 export const ChipsGroup = (objects: any[]) => {

@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     IconButton,
     useSafeIntl,

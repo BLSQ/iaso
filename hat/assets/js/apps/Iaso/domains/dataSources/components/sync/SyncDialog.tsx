@@ -6,17 +6,15 @@ import React, {
     FunctionComponent,
 } from 'react';
 import SyncIcon from '@mui/icons-material/Sync';
-import {
-    Alert,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Divider,
-    Grid,
-    Typography,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useFormState } from '../../../../hooks/form';
 import { useSnackMutation } from '../../../../libs/apiHooks';

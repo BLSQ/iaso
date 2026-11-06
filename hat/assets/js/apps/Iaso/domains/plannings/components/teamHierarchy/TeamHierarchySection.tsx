@@ -1,5 +1,5 @@
 import React, { FC, useMemo, useState } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import TEAM_TREE_MESSAGES from 'Iaso/domains/teams/components/teamTree/messages';

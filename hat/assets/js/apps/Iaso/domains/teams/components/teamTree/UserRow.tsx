@@ -3,7 +3,7 @@ import { useDraggable } from '@dnd-kit/core';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { getDisplayName } from 'Iaso/utils/usersUtils';

@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useState } from 'react';
 import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button/Button';
 import { useSafeIntl } from 'bluesquare-components';
 import { Team, TeamTreeNode } from '../../types/team';
 import { canHaveSubTeams, getToggledType } from '../../utils';

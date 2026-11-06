@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import Checkbox from '@mui/material/Checkbox';
 import { useSafeIntl, Expander } from 'bluesquare-components';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';

@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import Warning from '@mui/icons-material/Warning';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { commonStyles } from 'bluesquare-components';
 

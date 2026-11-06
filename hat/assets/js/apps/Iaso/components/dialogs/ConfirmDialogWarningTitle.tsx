@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import ReportIcon from '@mui/icons-material/Report';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 
 type Props = {
     title: string;

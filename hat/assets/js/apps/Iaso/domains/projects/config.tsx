@@ -1,5 +1,6 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Box, Switch } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Switch from '@mui/material/Switch/Switch';
 import {
     Column,
     Setting,

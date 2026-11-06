@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Divider, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Typography from '@mui/material/Typography/Typography';
 import { ConfirmCancelModal } from 'bluesquare-components';
-import { noOp } from '../../../../utils';
+import { noOp } from 'Iaso/utils';
 import { MESSAGES } from './messages';
 
 type Props = {

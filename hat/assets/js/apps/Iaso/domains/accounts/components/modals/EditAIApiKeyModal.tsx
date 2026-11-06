@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Alert, Box } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
 import {
     ConfirmCancelModal,
     makeFullModal,
@@ -7,10 +8,8 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import {
-    AccountUpdateAIApiKeyRequest,
-    useApiAccountsAiApiKeyUpdate,
-} from 'Iaso/api/accounts';
+import { useApiAccountsAiApiKeyUpdate } from 'Iaso/api/accounts/endpoints/account/account';
+import { AccountUpdateAIApiKeyRequest } from 'Iaso/api/accounts/models/accountUpdateAIApiKeyRequest.zod';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import PasswordInput from 'Iaso/components/forms/PasswordInput';
 import MESSAGES from 'Iaso/domains/accounts/messages';

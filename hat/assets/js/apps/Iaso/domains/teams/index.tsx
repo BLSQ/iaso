@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useApiTeamsList } from 'Iaso/api/teams';
 import { ColumnsSelectDrawer } from 'Iaso/components/tables/ColumnSelectDrawer';

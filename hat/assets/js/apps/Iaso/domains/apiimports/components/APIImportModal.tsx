@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { Box, Grid, IconButton } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import IconButton from '@mui/material/IconButton/IconButton';
 import { AlertModal, makeFullModal, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { APIImportBaseInfo } from 'Iaso/domains/apiimports/components/APIImportBaseInfo';

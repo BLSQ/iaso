@@ -10,6 +10,7 @@ import * as zod from 'zod';
 export const ApiReportsVersionsListParams = zod.strictObject({
     format: zod.enum(['csv', 'json']).optional(),
     order: zod.string().optional(),
+    project: zod.int().optional(),
 });
 
 export type ApiReportsVersionsListParams = zod.input<

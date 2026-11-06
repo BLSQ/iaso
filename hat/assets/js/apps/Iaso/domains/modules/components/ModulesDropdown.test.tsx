@@ -9,7 +9,7 @@ vi.mock('Iaso/domains/users/utils', () => ({
     userHasOneOfPermissions: vi.fn(),
 }));
 
-vi.mock('Iaso/api/modules', () => ({
+vi.mock('Iaso/api/modules/endpoints/modules/modules', () => ({
     getApiModulesDropdownListQueryKey: vi.fn(),
     useApiModulesDropdownList: vi.fn(),
 }));

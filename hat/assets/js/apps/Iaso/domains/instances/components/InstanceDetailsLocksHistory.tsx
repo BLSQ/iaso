@@ -1,15 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
-import {
-    Grid,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
 import {
     IconButton as IconButtonComponent,
     LoadingSpinner,

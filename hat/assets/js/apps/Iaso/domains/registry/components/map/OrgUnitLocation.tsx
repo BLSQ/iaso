@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { red } from '@mui/material/colors';
-import { useTheme } from '@mui/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import L from 'leaflet';
 import { GeoJSON, Pane } from 'react-leaflet';
 import CircleMarkerComponent from '../../../../components/maps/markers/CircleMarkerComponent';

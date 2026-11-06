@@ -1,7 +1,7 @@
 import { FunctionComponent, useMemo } from 'react';
 import React from 'react';
 import { Pane } from 'react-leaflet';
-import { TeamRetrieve } from 'Iaso/api/teams';
+import { TeamRetrieve } from 'Iaso/api/teams/models/teamRetrieve.zod';
 import { useGetAssignmentColor } from 'Iaso/domains/app/hooks/useGetAssignmentColor';
 import { FilterOrgUnitsResult } from 'Iaso/domains/assignments/utils';
 import { OrgUnitTypeHierarchyDropdownValue } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';

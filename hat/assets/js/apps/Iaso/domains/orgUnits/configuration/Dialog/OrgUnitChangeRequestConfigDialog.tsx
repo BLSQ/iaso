@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect } from 'react';
-import { Typography } from '@mui/material';
 import { AutocompleteRenderGetTagProps } from '@mui/material/Autocomplete';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     LoadingSpinner,

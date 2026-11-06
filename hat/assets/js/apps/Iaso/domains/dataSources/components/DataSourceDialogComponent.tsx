@@ -1,14 +1,12 @@
 import React, { useState, useCallback, FunctionComponent } from 'react';
-import {
-    Alert,
-    AlertTitle,
-    Box,
-    Button,
-    Grid,
-    List,
-    ListItem,
-    Typography,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import AlertTitle from '@mui/material/AlertTitle/AlertTitle';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';
 import { FormattedMessage } from 'react-intl';

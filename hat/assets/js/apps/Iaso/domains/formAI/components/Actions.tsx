@@ -7,7 +7,10 @@ import React, {
 import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import { Autocomplete, Box, Button, TextField } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete/Autocomplete';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import TextField from '@mui/material/TextField/TextField';
 import { useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import { FormOption } from 'Iaso/domains/formAI';

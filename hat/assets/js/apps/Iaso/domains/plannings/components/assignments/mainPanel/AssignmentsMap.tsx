@@ -1,5 +1,5 @@
 import React, { FC, useMemo, useRef } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FeatureCollection } from 'geojson';
 import { BaseMap } from 'Iaso/components/maps/maplibre/BaseMap';

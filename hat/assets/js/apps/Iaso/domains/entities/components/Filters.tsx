@@ -6,8 +6,10 @@ import React, {
 } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import {
     commonStyles,
@@ -15,7 +17,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { useApiTeamsDropdownList, useApiTeamsRetrieve } from 'Iaso/api/teams';
+import {
+    useApiTeamsDropdownList,
+    useApiTeamsRetrieve,
+} from 'Iaso/api/teams/endpoints/teams/teams';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction';

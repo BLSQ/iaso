@@ -256,7 +256,11 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
                 res_data,
                 [
                     {},
-                    {"org_unit_type": [f'Invalid pk "{self.org_unit_type_other_account.pk}" - object does not exist']},
+                    {
+                        "org_unit_types": [
+                            f'Invalid pk "{self.org_unit_type_other_account.pk}" - object does not exist.'
+                        ]
+                    },
                 ],
             )
 
@@ -268,7 +272,7 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
                 res_data,
-                [{}, {"org_unit_types": [f'Invalid pk "{pk}" - object does not exist']}],
+                [{}, {"org_unit_types": [f'Invalid pk "{pk}" - object does not exist.']}],
             )
 
     def test_validation_levels(self):
@@ -306,7 +310,7 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
                     {},
                     {
                         "org_unit_groups": [
-                            f'Invalid pk "{self.org_unit_group_other_account.pk}" - object does not exist'
+                            f'Invalid pk "{self.org_unit_group_other_account.pk}" - object does not exist.'
                         ]
                     },
                 ],
@@ -320,7 +324,7 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
                 res_data,
-                [{}, {"org_unit_groups": [f'Invalid pk "{pk}" - object does not exist']}],
+                [{}, {"org_unit_groups": [f'Invalid pk "{pk}" - object does not exist.']}],
             )
 
     def test_happy_path_with_body(self):

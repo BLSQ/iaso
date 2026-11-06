@@ -5,13 +5,10 @@ import {
     MissionEntityTypeRetrieve,
     MissionOrgUnitTypeRetrieve,
 } from 'Iaso/api/missions';
+import { CREATED_TYPE_CONFIG } from '../../constants';
 import MESSAGES from '../../messages';
-import { formatMaxCardinality } from '../../utils';
-import {
-    CREATED_TYPE_CONFIG,
-    CreatedTypeMissionType,
-    getMissionTypeOption,
-} from '../missionTypeOptions';
+import { CreatedTypeMissionType } from '../../types';
+import { formatMaxCardinality, getMissionTypeOption } from '../../utils';
 import { DetailsSectionTitle } from './DetailsSectionTitle';
 import { DetailsTable } from './DetailsTable';
 
@@ -27,9 +24,11 @@ export const CreatedTypeSection: FC<Props> = ({ mission }) => {
             ? mission.org_unit_type.name
             : mission.entity_type.name;
     const { formatMessage } = useSafeIntl();
-    const typeLabel = formatMessage(
-        CREATED_TYPE_CONFIG[missionType].typeMessage,
-    );
+    const typeMessage = CREATED_TYPE_CONFIG[missionType]?.typeMessage;
+    if (!typeMessage) {
+        return null;
+    }
+    const typeLabel = formatMessage(typeMessage);
     const Icon = getMissionTypeOption(missionType)?.Icon;
     return (
         <Box>

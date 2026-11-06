@@ -71,7 +71,6 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
                 MissionTypeDa2Enum.enum.FORM_FILLING && (
                 <MissionFormsBaseInput
                     missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
-                    formik={formik}
                 />
             )}
             {formik.values?.mission_type ===

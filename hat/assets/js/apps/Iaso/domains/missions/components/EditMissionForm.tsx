@@ -56,7 +56,6 @@ export const EditMissionForm = ({
             {missionType === MissionTypeDa2Enum.enum.FORM_FILLING && (
                 <MissionFormsBaseInput
                     missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
-                    formik={formik}
                 />
             )}
             {missionType === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (

@@ -5,11 +5,12 @@ import { Field } from 'formik';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { SxStyles } from 'Iaso/types/general';
-import { CARDINALITY_INPUT_OPTIONS, INFINITY_SYMBOL } from '../../utils';
 import {
+    CARDINALITY_INPUT_OPTIONS,
     CREATED_TYPE_CONFIG,
-    CreatedTypeMissionType,
-} from '../missionTypeOptions';
+    INFINITY_SYMBOL,
+} from '../../constants';
+import { CreatedTypeMissionType } from '../../types';
 import { missionStyles } from '../styles';
 import { MissionStepHeader } from './MissionStepHeader';
 

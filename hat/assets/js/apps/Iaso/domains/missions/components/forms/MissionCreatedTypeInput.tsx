@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { DropdownOptions, useSafeIntl } from 'bluesquare-components';
-import { FormikProps } from 'formik/dist/types';
+import { getIn, FormikProps } from 'formik';
 import {
     MissionEntityTypeCreateRequest,
     MissionEntityTypeUpdateRequest,
@@ -8,10 +8,8 @@ import {
     MissionOrgUnitTypeUpdateRequest,
 } from 'Iaso/api/missions';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
-import {
-    CREATED_TYPE_CONFIG,
-    CreatedTypeMissionType,
-} from '../missionTypeOptions';
+import { CREATED_TYPE_CONFIG } from '../../constants';
+import { CreatedTypeMissionType } from '../../types';
 import { MissionCreatedTypeStep } from './MissionCreatedTypeStep';
 
 type Props<TSchema> = {
@@ -37,9 +35,7 @@ export const MissionCreatedTypeInput = <
     const { setFieldValue, setFieldTouched } = formik;
     const { fieldName, getFormsParams, pleaseSelectMessage } =
         CREATED_TYPE_CONFIG[missionType];
-    const typeId = (formik.values as Record<string, unknown>)[fieldName] as
-        | number
-        | undefined;
+    const typeId: number | undefined = getIn(formik.values, fieldName);
     const formInputDisabled = !typeId;
 
     const handleTypeChange = useCallback(() => {
@@ -60,7 +56,6 @@ export const MissionCreatedTypeInput = <
                 missionType={missionType}
                 step={2}
                 params={typeId ? getFormsParams(typeId) : {}}
-                formik={formik}
                 formSelectProps={{
                     disabled: formInputDisabled,
                     helperText: formInputDisabled

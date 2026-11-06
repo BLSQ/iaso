@@ -3,7 +3,7 @@ import { Box, SxProps, Theme } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { SxStyles } from 'Iaso/types/general';
-import { getMissionTypeOption } from './missionTypeOptions';
+import { getMissionTypeOption } from '../utils';
 
 const styles: SxStyles = {
     badge: {

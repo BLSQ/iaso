@@ -8,7 +8,7 @@ import {
     TableRow,
 } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
-import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/utils';
+import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { missionStyles } from '../styles';
 

@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { FC } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { FormHelperText, IconButton, TableCell, TableRow } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { useSafeIntl } from 'bluesquare-components';
-import { Field, FieldArrayRenderProps } from 'formik';
-import { FormikProps } from 'formik/dist/types';
+import { Field, FieldArrayRenderProps, useFormikContext } from 'formik';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { FormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import { useTranslatedErrors } from 'Iaso/libs/validation';
 import { SxStyles } from 'Iaso/types/general';
+import { CARDINALITY_INPUT_OPTIONS, INFINITY_SYMBOL } from '../../constants';
 import MESSAGES from '../../messages';
-import { CARDINALITY_INPUT_OPTIONS, INFINITY_SYMBOL } from '../../utils';
 import { MissionFormName } from './MissionFormName';
 
 const COLUMNS_COUNT = 4;
@@ -47,25 +46,24 @@ const numberInputOptions = {
 
 const ROW_FIELDS = ['form', 'min_cardinality', 'max_cardinality'] as const;
 
-type Props<TSchema extends MissionCreateBody | MissionUpdateBody> = {
-    form: TSchema['forms'][number];
+type MissionBody = MissionCreateBody | MissionUpdateBody;
+
+type Props = {
+    form: MissionBody['forms'][number];
     findFormOptionFromValue: (
         formId: number,
     ) => FormsDropdownOptions[number] | undefined;
     index: number;
     arrayHelpers: FieldArrayRenderProps;
-    formik: FormikProps<TSchema>;
 };
 
-export const MissionFormItem = <
-    TSchema extends MissionCreateBody | MissionUpdateBody,
->({
+export const MissionFormItem: FC<Props> = ({
     form,
     findFormOptionFromValue,
     index,
     arrayHelpers,
-    formik,
-}: Props<TSchema>) => {
+}) => {
+    const formik = useFormikContext<MissionBody>();
     const { formatMessage } = useSafeIntl();
     const formLabel =
         findFormOptionFromValue(form.form)?.label ?? String(form.form);

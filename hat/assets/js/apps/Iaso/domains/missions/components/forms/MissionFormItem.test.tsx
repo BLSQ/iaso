@@ -7,12 +7,14 @@ import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers'
 import { MissionFormItem } from './MissionFormItem';
 
 const remove = vi.fn();
+let mockFormik: FormikProps<any>;
 
 vi.mock('formik', async () => {
     const actual = await vi.importActual<typeof import('formik')>('formik');
 
     return {
         ...actual,
+        useFormikContext: () => mockFormik,
         Field: (props: any) => (
             <input aria-label={props.label} data-testid={props.name} />
         ),
@@ -47,8 +49,9 @@ const renderMissionFormItem = (
     formik: FormikProps<any>,
     index: number,
     form: { form: number; min_cardinality: number; max_cardinality?: null },
-) =>
-    renderWithThemeAndIntlProvider(
+) => {
+    mockFormik = formik;
+    return renderWithThemeAndIntlProvider(
         <Formik initialValues={{ forms: [form] }} onSubmit={() => undefined}>
             <table>
                 <tbody>
@@ -65,12 +68,12 @@ const renderMissionFormItem = (
                                 remove,
                             } as any
                         }
-                        formik={formik}
                     />
                 </tbody>
             </table>
         </Formik>,
     );
+};
 
 describe('MissionFormItem', () => {
     beforeEach(() => {

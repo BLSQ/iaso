@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { Alert, Box, Table, TableBody, TableContainer } from '@mui/material';
 import { AlertProps } from '@mui/material/Alert/Alert';
 import Divider from '@mui/material/Divider';
 import { Select, useSafeIntl } from 'bluesquare-components';
-import { FieldArrayRenderProps } from 'formik';
-import { FormikContextType, FormikProps } from 'formik/dist/types';
+import { FieldArrayRenderProps, useFormikContext } from 'formik';
+import { FormikContextType } from 'formik/dist/types';
 import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     useGetFormsDropdownOptions,
@@ -13,8 +13,8 @@ import {
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import { MissionUpdateBody } from 'Iaso/domains/missions/types';
 import { SxStyles } from 'Iaso/types/general';
+import { FORMS_SECTION_MESSAGES } from '../../constants';
 import MESSAGES from '../../messages';
-import { FORMS_SECTION_MESSAGES } from '../missionTypeOptions';
 import { missionStyles } from '../styles';
 
 const styles: SxStyles = {
@@ -43,9 +43,8 @@ const FormArrayErrors = <
     ) : null;
 };
 
-type Props<TSchema> = {
+type Props = {
     params?: UseGetFormsDropdownParams;
-    formik: FormikProps<TSchema>;
     formSelectProps?: {
         disabled?: boolean;
         helperText?: string;
@@ -54,15 +53,13 @@ type Props<TSchema> = {
     missionType: MissionTypeDa2Enum;
 };
 
-export const MissionFormsFieldArray = <
-    TSchema extends MissionCreateBody | MissionUpdateBody,
->({
+export const MissionFormsFieldArray: FC<Props> = ({
     params,
-    formik,
     formSelectProps,
     arrayHelpers,
     missionType,
-}: Props<TSchema>) => {
+}) => {
+    const formik = useFormikContext<MissionCreateBody | MissionUpdateBody>();
     const { values, errors, setFieldTouched } = formik;
     const { data: formsOptions, isLoading } =
         useGetFormsDropdownOptions(params);
@@ -141,7 +138,6 @@ export const MissionFormsFieldArray = <
                                             }
                                             index={index}
                                             arrayHelpers={arrayHelpers}
-                                            formik={formik}
                                         />
                                     )),
                                 )}

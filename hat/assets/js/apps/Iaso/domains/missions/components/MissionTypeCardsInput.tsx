@@ -6,8 +6,8 @@ import { FormikProps } from 'formik';
 import { FieldInputProps } from 'formik/dist/types';
 import { get } from 'lodash';
 import { SxStyles } from 'Iaso/types/general';
+import { MISSION_TYPE_OPTIONS } from '../constants';
 import MESSAGES from '../messages';
-import { MISSION_TYPE_OPTIONS } from './missionTypeOptions';
 import { missionStyles } from './styles';
 
 const styles: SxStyles = {

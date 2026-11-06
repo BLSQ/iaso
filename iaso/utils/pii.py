@@ -25,14 +25,14 @@ def user_can_view_pii(user: typing.Optional[typing.Union[User, AnonymousUser]]) 
     return bool(user and user.is_authenticated and user.has_perm(CORE_SUBMISSIONS_PII_PERMISSION.full_name()))
 
 
-def get_allowed_fields(form, user) -> typing.Optional[typing.FrozenSet[str]]:
+def get_allowed_fields(form, user) -> typing.Optional[frozenset[str]]:
     """Return the allowed question names when the form must be filtered for this user, None otherwise."""
     if form is None or form.non_pii_fields is None or user_can_view_pii(user):
         return None
     return frozenset(name.lower() for name in form.non_pii_fields) | {key.lower() for key in TECHNICAL_KEYS}
 
 
-def filter_pii(data: typing.Any, allowed: typing.FrozenSet[str]) -> typing.Any:
+def filter_pii(data: typing.Any, allowed: frozenset[str]) -> typing.Any:
     """Keep only the whitelisted questions of a (flat) submission JSON.
 
     Groups (dicts) and repeat groups (lists of dicts) are kept with their whitelisted children only, and dropped
@@ -72,7 +72,7 @@ def _slugify_value(value: str) -> str:
     return re.sub(r"\s+", "_", re.sub(r"[(),]", "", without_accents))
 
 
-def filter_submission_files(files: typing.List[typing.Optional[str]], filtered_json: typing.Optional[dict]):
+def filter_submission_files(files: list[typing.Optional[str]], filtered_json: typing.Optional[dict]):
     """Keep only the attachments referenced by a question that remained after filtering (e.g. a whitelisted photo).
 
     Attachments are matched like in the frontend: the stored file name contains the (slugified) answer.
@@ -101,7 +101,7 @@ def filter_submission_files(files: typing.List[typing.Optional[str]], filtered_j
     return kept
 
 
-def is_field_allowed(name: str, allowed: typing.Optional[typing.FrozenSet[str]]) -> bool:
+def is_field_allowed(name: str, allowed: typing.Optional[frozenset[str]]) -> bool:
     """Whether a question can be shown, `allowed` being the result of `get_allowed_fields`."""
     return allowed is None or str(name).lower() in allowed
 
@@ -159,7 +159,7 @@ def filter_serialized_instance_values(values, form, user):
 # ---------------------------------------------------------------------------
 
 
-def jsonlogic_vars(logic) -> typing.Set[str]:
+def jsonlogic_vars(logic) -> set[str]:
     """Names of the questions used in a JsonLogic expression (`{"var": "name"}`)."""
     names = set()
     if isinstance(logic, dict):

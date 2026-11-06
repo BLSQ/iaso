@@ -37,9 +37,9 @@ def _normalize(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(name).lower())
 
 
-def org_unit_groups(org_unit_ids, user) -> typing.Dict[int, typing.List[Group]]:
+def org_unit_groups(org_unit_ids, user) -> dict[int, list[Group]]:
     """Groups of the account of `user` containing each of `org_unit_ids` (ids or a values queryset), by name."""
-    groups: typing.Dict[int, typing.List[Group]] = {}
+    groups: dict[int, list[Group]] = {}
     for membership in (
         Group.org_units.through.objects.filter(
             orgunit_id__in=org_unit_ids, group__in=Group.objects.filter_for_user(user)
@@ -51,11 +51,11 @@ def org_unit_groups(org_unit_ids, user) -> typing.Dict[int, typing.List[Group]]:
     return groups
 
 
-def group_names(groups: typing.List[Group]) -> typing.Optional[str]:
+def group_names(groups: list[Group]) -> typing.Optional[str]:
     return ", ".join(f"{group.name} ({group.source_version.data_source.name})" for group in groups) or None
 
 
-def group_ids(groups: typing.List[Group]) -> typing.Optional[str]:
+def group_ids(groups: list[Group]) -> typing.Optional[str]:
     return ", ".join(str(group.id) for group in groups) or None
 
 
@@ -69,13 +69,13 @@ class VisitContext:
     cycle_number: int
     previous_visit: typing.Optional[Visit]
     is_last_visit: bool
-    answers: typing.List[dict]  # filtered answers of the visit's submissions, anchor first
+    answers: list[dict]  # filtered answers of the visit's submissions, anchor first
     anchor: typing.Optional[Instance]
     assistance_instance: typing.Optional[Instance]
-    org_units: typing.Dict[int, OrgUnit]
+    org_units: dict[int, OrgUnit]
     reference_org_unit: typing.Optional[OrgUnit]
-    groups: typing.Dict[int, typing.List[Group]]  # groups of the org units of the visits
-    _normalized: typing.Optional[typing.List[dict]] = field(default=None)
+    groups: dict[int, list[Group]]  # groups of the org units of the visits
+    _normalized: typing.Optional[list[dict]] = field(default=None)
 
     def answer(self, *candidates: str):
         """First non-empty answer to one of the candidate questions, across the submissions of the visit."""
@@ -143,7 +143,7 @@ def _answer(*candidates):
 
 
 # (step, field, value) in the order of the "CODA 2.0 Full data fields" specification
-COLUMNS: typing.List[typing.Tuple[str, str, typing.Callable[[VisitContext], typing.Any]]] = [
+COLUMNS: list[tuple[str, str, typing.Callable[[VisitContext], typing.Any]]] = [
     ("Beneficiary details", "beneficiary unique Identification", lambda ctx: str(ctx.beneficiary.entity.uuid)),
     ("Beneficiary details", "birth date", lambda ctx: ctx.beneficiary.birth_date),
     ("Beneficiary details", "gender", lambda ctx: ctx.beneficiary.gender),
@@ -309,9 +309,9 @@ COLUMNS: typing.List[typing.Tuple[str, str, typing.Callable[[VisitContext], typi
 ]
 
 
-def _visit_groups(instances: typing.List[Instance], anchor_ids: typing.Set[int]) -> typing.Dict[int, list]:
+def _visit_groups(instances: list[Instance], anchor_ids: set[int]) -> dict[int, list]:
     """Group the submissions of an entity by visit, like the ETL: an anchor and the submissions until the next one."""
-    groups: typing.Dict[int, list] = {}
+    groups: dict[int, list] = {}
     current = None
     for instance in instances:
         if instance.id in anchor_ids:
@@ -351,7 +351,7 @@ def iter_rows(beneficiaries, user, org_units=None) -> typing.Iterator[list]:
             )
             .order_by("id")
         )
-        instances_by_entity: typing.Dict[int, list] = {}
+        instances_by_entity: dict[int, list] = {}
         for instance in (
             Instance.objects.filter(entity_id__in=[b.entity_id for b in batch], deleted=False)
             .select_related("form")

@@ -12,7 +12,6 @@ pointing to the submission they come from. Answers are filtered according to the
 import datetime
 import json
 import re
-import typing
 
 import xlsxwriter
 
@@ -49,8 +48,8 @@ README = [
     ),
     (
         "one sheet per form",
-        "The submissions of the entities of these beneficiaries, one column per question. Sheet named after the "
-        "form id (see the 'forms' sheet for the full names).",
+        ("The submissions of the entities of these beneficiaries, one column per question. Sheet named after the "
+        "form id (see the 'forms' sheet for the full names)."),
         "instance_id (submission id, matches instance_id of the ETL sheets), entity_id, entity_uuid, beneficiary_id",
     ),
     (
@@ -61,15 +60,15 @@ README = [
     ("", "", ""),
     (
         "Notes",
-        "The ETL ids (beneficiary_id, journey_id, visit_id, step_id) change each time the ETL recomputes a "
-        "beneficiary: use them to join the sheets of one export, and entity_uuid / instance uuid across exports.",
+        ("The ETL ids (beneficiary_id, journey_id, visit_id, step_id) change each time the ETL recomputes a "
+        "beneficiary: use them to join the sheets of one export, and entity_uuid / instance uuid across exports."),
         "Questions containing personal data are left out unless you have the permission to see them.",
     ),
     (
         "",
-        "When filtered on an org unit group (or for users restricted to some org units), only the visits and the "
+        ("When filtered on an org unit group (or for users restricted to some org units), only the visits and the "
         "submissions made in these org units are exported, with the journeys having at least one of these visits: "
-        "some instance_id of the ETL sheets may then point to submissions made elsewhere, which are not exported.",
+        "some instance_id of the ETL sheets may then point to submissions made elsewhere, which are not exported."),
         "",
     ),
 ]
@@ -183,7 +182,7 @@ class _Writer:
         self.row += 1
 
 
-def _sheet_name(form: Form, used: typing.Set[str]) -> str:
+def _sheet_name(form: Form, used: set[str]) -> str:
     """Excel sheet names: at most 31 characters, unique, without []:*?/\\."""
     base = re.sub(r"[\[\]:*?/\\]", "_", form.form_id or form.name or f"form_{form.id}")[:24]
     name = base
@@ -193,7 +192,7 @@ def _sheet_name(form: Form, used: typing.Set[str]) -> str:
     return name
 
 
-def _question_columns(form: Form, instance_ids_sql, params, allowed) -> typing.List[str]:
+def _question_columns(form: Form, instance_ids_sql, params, allowed) -> list[str]:
     """The questions answered in the submissions, in the order of the form, then the other answers found."""
     with connection.cursor() as cursor:
         cursor.execute(
@@ -344,7 +343,7 @@ def build_raw_xlsx(beneficiaries, user, path: str, org_units=None) -> None:
     instance_ids_sql, params = instances.values("id").query.sql_with_params()
     forms = Form.objects_include_deleted.filter(id__in=instances.values("form_id")).order_by("name", "id")
 
-    used_names: typing.Set[str] = set()
+    used_names: set[str] = set()
     form_sheets = []
     for form in forms:
         allowed = get_allowed_fields(form, user)

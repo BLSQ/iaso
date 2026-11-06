@@ -4,7 +4,6 @@ They take the user and a dict of filters rather than a request, so that a backgr
 selection the user made on the screen.
 """
 
-import typing
 
 from django.db.models import Count, Max, Prefetch, Q
 
@@ -16,7 +15,7 @@ from .models import Beneficiary, Journey, Visit
 FILTER_KEYS = ("entity_type", "programme", "org_unit_group", "q")
 
 
-def filters_from_params(params) -> typing.Dict[str, str]:
+def filters_from_params(params) -> dict[str, str]:
     """The filters of the beneficiaries screen found in `params` (a QueryDict or a dict), as stripped strings."""
     return {key: str(params.get(key) or "").strip() for key in FILTER_KEYS if params.get(key)}
 

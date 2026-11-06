@@ -1157,7 +1157,7 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
 
-def parse_instance_filters_for_user(data, user) -> Dict[str, Any]:
+def parse_instance_filters_for_user(data, user) -> dict[str, Any]:
     """`parse_instance_filters`, refusing JsonLogic filters on questions whose answers are hidden from the user."""
     filters = parse_instance_filters(data)
     if filters.get("json_content"):
@@ -1222,7 +1222,7 @@ def find_entity(
     # If there are multiple non-deleted entities, we send a Sentry,
     # but don't break the upload.
     if len([e for e in existing_entities if e.deleted_at is None]) > 1:
-        logger.exception(f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}")
+        logger.error(f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}")
 
     return sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 

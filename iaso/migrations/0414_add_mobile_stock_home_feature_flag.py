@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 CODE = "MOBILE_STOCK_HOME"
 
 

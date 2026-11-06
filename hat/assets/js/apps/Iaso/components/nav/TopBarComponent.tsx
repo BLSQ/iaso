@@ -59,7 +59,7 @@ type Props = {
     sx?: SxProps;
 };
 
-export const TopBar: FunctionComponent<Props> = ({
+const TopBar: FunctionComponent<Props> = ({
     title = '',
     titleAdornment,
     children,

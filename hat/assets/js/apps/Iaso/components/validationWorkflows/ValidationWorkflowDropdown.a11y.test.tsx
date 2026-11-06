@@ -20,9 +20,12 @@ const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
     return { mockUseGetWorkflowOptions: vi.fn() };
 });
 
-vi.mock('Iaso/api/validationWorkflows', () => ({
-    useApiValidationWorkflowsDropdownList: mockUseGetWorkflowOptions,
-}));
+vi.mock(
+    'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows',
+    () => ({
+        useApiValidationWorkflowsDropdownList: mockUseGetWorkflowOptions,
+    }),
+);
 
 const { mockUserHasAccessToModule } = vi.hoisted(() => {
     return { mockUserHasAccessToModule: vi.fn() };

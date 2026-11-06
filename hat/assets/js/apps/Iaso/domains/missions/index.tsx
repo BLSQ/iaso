@@ -4,7 +4,7 @@ import type { Theme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsList } from 'Iaso/api/missions/endpoints/missions/missions';
-import { TopBar } from 'Iaso/components/nav/TopBarComponent';
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useApiParams } from 'Iaso/hooks/useApiParams';

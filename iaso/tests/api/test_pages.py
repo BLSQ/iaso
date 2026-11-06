@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.utils.timezone import now
 from rest_framework import status
 
@@ -257,6 +257,88 @@ class PagesAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIn("user_roles", response.json())
+
+    def page_payload(self, **kwargs):
+        payload = {
+            "type": "RAW",
+            "needs_authentication": True,
+            "name": "Page",
+            "slug": "page",
+            "content": "<script>fetch('/api/profiles/')</script>",
+            "users": [],
+            "user_roles": [],
+        }
+        payload.update(kwargs)
+        return payload
+
+    def test_create_page_with_users_from_another_account(self):
+        """POST /pages/ - a page cannot be shared with a user of another account"""
+        self.client.force_login(self.first_user)
+
+        response = self.client.post("/api/pages/", data=self.page_payload(users=[self.third_user.pk]), format="json")
+
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("users", response.json())
+        self.assertFalse(Page.objects.filter(slug="page").exists())
+
+    def test_update_page_with_users_or_roles_from_another_account(self):
+        """PATCH /pages/<id>/ - the account checks also apply when updating a page"""
+        page = self.create_page(name="Page", slug="page", needs_authentication=True, users=[self.first_user])
+        self.client.force_login(self.first_user)
+
+        response = self.client.patch(f"/api/pages/{page.pk}/", data={"users": [self.third_user.pk]}, format="json")
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("users", response.json())
+
+        response = self.client.patch(
+            f"/api/pages/{page.pk}/", data={"user_roles": [self.other_account_role.pk]}, format="json"
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("user_roles", response.json())
+
+        self.assertEqual(list(page.users.all()), [self.first_user])
+        self.assertEqual(page.user_roles.count(), 0)
+
+    def test_page_cannot_be_moved_to_another_account(self):
+        """account is read-only: it stays the account of the page's author"""
+        page = self.create_page(name="Page", slug="page", needs_authentication=True)
+        second_account = self.third_user.iaso_profile.account
+        self.client.force_login(self.first_user)
+
+        response = self.client.patch(f"/api/pages/{page.pk}/", data={"account": second_account.pk}, format="json")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        page.refresh_from_db()
+        self.assertEqual(page.account, self.first_user.iaso_profile.account)
+
+        response = self.client.post(
+            "/api/pages/", data=self.page_payload(slug="other", account=second_account.pk), format="json"
+        )
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertEqual(Page.objects.get(slug="other").account, self.first_user.iaso_profile.account)
+
+    def test_logged_in_user_cannot_open_a_public_page_of_another_account(self):
+        """A public page is served to anonymous visitors and to its own account, not in another account's session"""
+        page = self.create_page(name="Public", slug="public_page", needs_authentication=False)
+
+        response = self.client.get(f"/pages/{page.slug}/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.client.force_login(self.user_no_iaso_pages_permission)
+        response = self.client.get(f"/pages/{page.slug}/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.client.force_login(self.third_user)
+        response = self.client.get(f"/pages/{page.slug}/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertNotIn(page.content, response.content.decode())
+
+    def test_logged_in_user_without_profile_cannot_open_a_public_page(self):
+        page = self.create_page(name="Public", slug="public_page", needs_authentication=False)
+        superuser = User.objects.create_superuser(username="root", password="root")
+        self.client.force_login(superuser)
+
+        response = self.client.get(f"/pages/{page.slug}/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import AutoFixHigh from '@mui/icons-material/AutoFixHigh';
 import Code from '@mui/icons-material/Code';
 import Delete from '@mui/icons-material/Delete';
@@ -88,100 +88,115 @@ export const FormActions: FunctionComponent<Props> = ({
     const hasFormAIModule = userHasAccessToModule('FORM_AI', user);
     const showFormAI = !inOrgUnitDetails && hasFormAIModule && canEditForm;
 
-    if (shouldShowRestore) {
-        return (
-            <ActionsCell
-                maxInline={1}
-                actions={[
+    const actions: TableAction[] = useMemo(
+        () => [
+            {
+                key: 'restore',
+                label: MESSAGES.restoreFormTooltip,
+                icon: <RestoreFromTrash />,
+                hidden: !shouldShowRestore,
+                onClick: () => restoreForm(form.id),
+            },
+            {
+                key: 'edit',
+                label: MESSAGES.edit,
+                icon: <Settings />,
+                href: `/${baseUrls.formDetail}/formId/${form.id}`,
+                hidden: shouldShowRestore || inOrgUnitDetails || !canEditForm,
+            },
+            {
+                key: 'viewInstances',
+                label: MESSAGES.viewInstances,
+                icon: <FormatListBulleted />,
+                href: `${urlToInstances}/isSearchActive/true`,
+                hidden: shouldShowRestore || !canViewInstances,
+            },
+            {
+                key: 'formAI',
+                label: MESSAGES.openInFormAI,
+                icon: <AutoFixHigh />,
+                href: `/${baseUrls.formAI}/formId/${form.id}`,
+                menu: true,
+                hidden: shouldShowRestore || !showFormAI,
+            },
+            { type: 'divider', hidden: shouldShowRestore || !showFormAI },
+            {
+                key: 'createSubmission',
+                label: MESSAGES.instanceCreationDialogTitle,
+                icon: <NoteAdd />,
+                menu: true,
+                hidden:
+                    shouldShowRestore ||
+                    inOrgUnitDetails ||
+                    !canCreateSubmission,
+                disabled: hasNoVersion,
+                tooltip: hasNoVersion ? MESSAGES.noFormVersion : undefined,
+                onClick: () => setIsCreateDialogOpen(true),
+            },
+            {
+                key: 'dhis2Mapping',
+                label: MESSAGES.dhis2Mappings,
+                icon: <Hub />,
+                menu: true,
+                href: `/${baseUrls.mappings}/formId/${form.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
+                color: form.has_mappings ? 'primary.main' : undefined,
+                hidden:
+                    shouldShowRestore ||
+                    inOrgUnitDetails ||
+                    !hasDhis2Module ||
+                    !canEditForm,
+            },
+            {
+                key: 'download',
+                label: MESSAGES.download,
+                icon: <Download />,
+                menu: true,
+                hidden: shouldShowRestore || latestVersion === null,
+                children: [
                     {
-                        key: 'restore',
-                        label: MESSAGES.restoreFormTooltip,
-                        icon: <RestoreFromTrash />,
-                        onClick: () => restoreForm(form.id),
+                        key: 'xls',
+                        label: 'Excel (XLS)',
+                        icon: <TableChart />,
+                        href: latestVersion?.xls_file,
+                        download: true,
+                        hidden: !latestVersion?.xls_file,
                     },
-                ]}
-            />
-        );
-    }
-
-    const actions: TableAction[] = [
-        {
-            key: 'edit',
-            label: MESSAGES.edit,
-            icon: <Settings />,
-            href: `/${baseUrls.formDetail}/formId/${form.id}`,
-            hidden: inOrgUnitDetails || !canEditForm,
-        },
-        {
-            key: 'viewInstances',
-            label: MESSAGES.viewInstances,
-            icon: <FormatListBulleted />,
-            href: `${urlToInstances}/isSearchActive/true`,
-            hidden: !canViewInstances,
-        },
-        {
-            key: 'formAI',
-            label: MESSAGES.openInFormAI,
-            icon: <AutoFixHigh />,
-            href: `/${baseUrls.formAI}/formId/${form.id}`,
-            menu: true,
-            hidden: !showFormAI,
-        },
-        { type: 'divider', hidden: !showFormAI },
-        {
-            key: 'createSubmission',
-            label: MESSAGES.instanceCreationDialogTitle,
-            icon: <NoteAdd />,
-            menu: true,
-            hidden: inOrgUnitDetails || !canCreateSubmission,
-            disabled: hasNoVersion,
-            tooltip: hasNoVersion ? MESSAGES.noFormVersion : undefined,
-            onClick: () => setIsCreateDialogOpen(true),
-        },
-        {
-            key: 'dhis2Mapping',
-            label: MESSAGES.dhis2Mappings,
-            icon: <Hub />,
-            menu: true,
-            href: `/${baseUrls.mappings}/formId/${form.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
-            color: form.has_mappings ? 'primary.main' : undefined,
-            hidden: inOrgUnitDetails || !hasDhis2Module || !canEditForm,
-        },
-        {
-            key: 'download',
-            label: MESSAGES.download,
-            icon: <Download />,
-            menu: true,
-            hidden: latestVersion === null,
-            children: [
-                {
-                    key: 'xls',
-                    label: 'Excel (XLS)',
-                    icon: <TableChart />,
-                    href: latestVersion?.xls_file,
-                    download: true,
-                    hidden: !latestVersion?.xls_file,
-                },
-                {
-                    key: 'xml',
-                    label: 'XML',
-                    icon: <Code />,
-                    href: latestVersion?.file,
-                    download: true,
-                },
-            ],
-        },
-        { type: 'divider' },
-        {
-            key: 'delete',
-            label: MESSAGES.delete,
-            icon: <Delete />,
-            menu: true,
-            color: 'error.main',
-            hidden: inOrgUnitDetails || !canEditForm,
-            onClick: () => setDeleteDialogKey(key => key + 1),
-        },
-    ];
+                    {
+                        key: 'xml',
+                        label: 'XML',
+                        icon: <Code />,
+                        href: latestVersion?.file,
+                        download: true,
+                    },
+                ],
+            },
+            { type: 'divider', hidden: shouldShowRestore },
+            {
+                key: 'delete',
+                label: MESSAGES.delete,
+                icon: <Delete />,
+                menu: true,
+                color: 'error.main',
+                hidden: shouldShowRestore || inOrgUnitDetails || !canEditForm,
+                onClick: () => setDeleteDialogKey(key => key + 1),
+            },
+        ],
+        [
+            baseUrls,
+            canCreateSubmission,
+            canEditForm,
+            canViewInstances,
+            form,
+            hasDhis2Module,
+            hasNoVersion,
+            inOrgUnitDetails,
+            latestVersion,
+            restoreForm,
+            shouldShowRestore,
+            showFormAI,
+            urlToInstances,
+        ],
+    );
 
     return (
         <>

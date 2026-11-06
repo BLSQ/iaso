@@ -412,7 +412,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         # if the data passed is empty , we use the actual configs from the planning
         # otherwise we pass the data from serializer
 
-        queryset = OrgUnit.objects.filter_for_user(request.user)
+        queryset = OrgUnit.objects.filter_for_user(request.user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+
         root = planning.org_unit
         root_level = len(str(root.path).split("."))
 

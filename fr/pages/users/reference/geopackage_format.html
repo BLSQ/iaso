@@ -1,0 +1,1709 @@
+<!DOCTYPE html><html lang="fr" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="iaso_mobile.html">
+      
+      
+        <link rel="next" href="../how_to/setup_dhis2_login_in_iaso.html">
+      
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.2.6">
+    
+    
+      
+        <title>Format GeoPackage pour les données géographiques - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.0e669242.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  <link href="../../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#format-geopackage-pour-les-donnees-geographiques" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Format GeoPackage pour les données géographiques
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden="">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Sélectionner la langue">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../../pages/users/reference/geopackage_format.html" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="geopackage_format.html" hreflang="fr" class="md-select__link">
+              Français
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../../es/pages/users/reference/geopackage_format.html" hreflang="es" class="md-select__link">
+              Español
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required="">
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix="">
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="iaso_concepts.html" class="md-tabs__link">
+          
+  
+  Guide d'utilisateur
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../use_cases/setup_bednet_campaign_with_ai.html" class="md-tabs__link">
+          
+  
+  Configuration par cas d'usage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../dev/reference/data_model_glossary.html" class="md-tabs__link">
+          
+  
+  Développeurs
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../more_about_iaso.html" class="md-tabs__link">
+          
+  
+  En savoir plus sur IASO
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix="">
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Accueil
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked="">
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guide d'utilisateur
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Guide d'utilisateur
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="iaso_concepts.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="iaso_modules.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user_guide.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Plateforme Web
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="iaso_mobile.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mobile
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Format GeoPackage pour les données géographiques
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="geopackage_format.html" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Format GeoPackage pour les données géographiques
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#structure-du-fichier" class="md-nav__link">
+    Structure du fichier
+  </a>
+  
+    <nav class="md-nav" aria-label="Structure du fichier">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nom-des-couches" class="md-nav__link">
+    Nom des couches
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#colonnes-de-chaque-couche" class="md-nav__link">
+    Colonnes de chaque couche
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#la-table-groups" class="md-nav__link">
+    La table groups
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#erreurs-frequentes" class="md-nav__link">
+    Erreurs fréquentes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preparer-le-fichier-avec-un-assistant-ia" class="md-nav__link">
+    Préparer le fichier avec un assistant IA
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#importer-le-fichier-dans-iaso" class="md-nav__link">
+    Importer le fichier dans IASO
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6">
+        
+          <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Configuration avancée
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6">
+            <span class="md-nav__icon md-icon"></span>
+            Configuration avancée
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6_1">
+        
+          <label class="md-nav__link" for="__nav_2_6_1" id="__nav_2_6_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    IASO et DHIS2
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            IASO et DHIS2
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to/setup_dhis2_login_in_iaso.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup dhis2 login in iaso
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to/deduce_form_from_another_form.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Déduire un formulaire à partir d'un autre formulaire (statistiques agrégées)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to/import_export_dhis2_mappings.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Importer et exporter des mappings DHIS2
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FAQ/faq.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    FAQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Configuration par cas d'usage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Configuration par cas d'usage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use_cases/setup_bednet_campaign_with_ai.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configurer une campagne de distribution de moustiquaires avec l'IA
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Développeurs
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Développeurs
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1">
+        
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Références
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Références
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/data_model_glossary.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data model glossary
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/SQL_Dashboard_feature.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SQL Dashboard feature
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/docker.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/background_tasks.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Background tasks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/env_variables.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Variables d'environnement
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/fhir_api.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API FHIR - Unités d'organisation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_1_7">
+        
+          <label class="md-nav__link" for="__nav_4_1_7" id="__nav_4_1_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Modèles
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_1_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            Modèles
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/reference/API/entity.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API reference: Entity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_2">
+        
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Guides
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/how_to/contribute.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contribute
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/how_to/setup_dev_env.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup dev env
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/how_to/use_iaso_apis.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Use iaso apis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev/how_to/build_odk_preview.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the ODK Web Forms preview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    En savoir plus sur IASO
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            En savoir plus sur IASO
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix="">
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../more_about_iaso.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Aperçu
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Demander une démo
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Digital Public Goods Registry
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Bluesquare
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/users/reference/geopackage_format.fr.md" title="Editer cette page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+    </a>
+  
+  
+
+
+<h1 id="format-geopackage-pour-les-donnees-geographiques">Format GeoPackage pour les données géographiques<a class="headerlink" href="#format-geopackage-pour-les-donnees-geographiques" title="Permanent link">#</a></h1>
+<p><em>Comment préparer un fichier GeoPackage pour importer vos unités d'organisation (pays, régions, districts, formations sanitaires, villages…) dans IASO.</em></p>
+<p>Un <strong>GeoPackage</strong> (<code>.gpkg</code>) est un format standard de fichier cartographique, que des outils
+comme QGIS savent ouvrir et créer. IASO peut importer depuis un GeoPackage des unités
+d'organisation, leurs types et leurs groupes, à condition que le fichier respecte la
+structure décrite sur cette page.</p>
+<p>Vous pouvez l'utiliser pour :</p>
+<ul>
+<li>créer votre pyramide dans un nouveau compte ;</li>
+<li>ajouter ou mettre à jour des unités d'organisation dans une pyramide existante (le fichier
+  peut ne contenir que les unités à créer ou à modifier) ;</li>
+<li>déplacer une pyramide d'un compte IASO à un autre (l'exporter en GeoPackage, puis
+  l'importer).</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Confiez la mise en forme à un assistant IA</p>
+<p>Préparer ce fichier est un travail technique. Vous pouvez donner vos fichiers
+(shapefiles, GeoJSON, listes Excel…) à un assistant IA avec l'adresse de cette page et lui
+demander de produire le GeoPackage. Voir <a href="#preparer-le-fichier-avec-un-assistant-ia">le message ci-dessous</a>.</p>
+</div>
+<h2 id="structure-du-fichier">Structure du fichier<a class="headerlink" href="#structure-du-fichier" title="Permanent link">#</a></h2>
+<p>Le fichier contient :</p>
+<ul>
+<li><strong>une couche par type d'unité d'organisation</strong> (une pour les régions, une pour les
+  districts, une pour les formations sanitaires…) ;</li>
+<li><strong>une table <code>groups</code></strong>, qui peut être vide.</li>
+</ul>
+<h3 id="nom-des-couches">Nom des couches<a class="headerlink" href="#nom-des-couches" title="Permanent link">#</a></h3>
+<p>Chaque couche s'appelle <code>level-{profondeur}-{nom du type}</code> :</p>
+<ul>
+<li><code>profondeur</code> est le numéro du niveau, en commençant à 1 en haut de la pyramide ;</li>
+<li><code>nom du type</code> est le nom du type d'unité d'organisation.</li>
+</ul>
+<p>Par exemple :</p>
+<table>
+<thead>
+<tr>
+<th>Couche</th>
+<th>Contient</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>level-1-Pays</code></td>
+<td>le pays</td>
+</tr>
+<tr>
+<td><code>level-2-Région</code></td>
+<td>les régions</td>
+</tr>
+<tr>
+<td><code>level-3-District</code></td>
+<td>les districts</td>
+</tr>
+<tr>
+<td><code>level-4-Formation sanitaire</code></td>
+<td>les formations sanitaires</td>
+</tr>
+</tbody>
+</table>
+<p>Si aucun type d'unité d'organisation ne porte ce nom, IASO le crée. Les noms de types
+tiennent compte des majuscules : pour ajouter des unités à un type existant, utilisez
+exactement la même orthographe, les mêmes majuscules et les mêmes accents. Les types d'unités
+d'organisation sont partagés par tous les projets d'un compte.</p>
+<h3 id="colonnes-de-chaque-couche">Colonnes de chaque couche<a class="headerlink" href="#colonnes-de-chaque-couche" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Obligatoire</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ref</code></td>
+<td>oui</td>
+<td>Un identifiant unique de l'unité, par exemple son id DHIS2 ou son code. IASO l'utilise pour relier les unités à leur parent et pour mettre l'unité à jour lors du prochain import.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>oui</td>
+<td>Le nom de l'unité.</td>
+</tr>
+<tr>
+<td><code>parent_ref</code></td>
+<td>non</td>
+<td>La <code>ref</code> de l'unité parente, au niveau supérieur. Pour rattacher une unité à une unité déjà présente dans IASO, écrivez <code>iaso:</code> suivi de son id IASO, par exemple <code>iaso:1234</code>. N'incluez pas cette colonne pour le niveau le plus haut.</td>
+</tr>
+<tr>
+<td><code>group_refs</code></td>
+<td>non</td>
+<td>Les groupes de l'unité : des <code>ref</code> de la table <code>groups</code>, séparées par des virgules, par exemple <code>urbain,public</code>.</td>
+</tr>
+<tr>
+<td><code>opening_date</code></td>
+<td>non</td>
+<td>Date d'ouverture de l'unité, au format <code>AAAA-MM-JJ</code>.</td>
+</tr>
+<tr>
+<td><code>closed_date</code></td>
+<td>non</td>
+<td>Date de fermeture de l'unité, au format <code>AAAA-MM-JJ</code>.</td>
+</tr>
+<tr>
+<td>géométrie</td>
+<td>non</td>
+<td>Les limites (polygone) ou la position (point) de l'unité. Une unité peut ne pas avoir de géométrie.</td>
+</tr>
+</tbody>
+</table>
+<p><code>ref</code> et <code>name</code> ne peuvent jamais être vides. Si vous incluez <code>parent_ref</code>, elle ne peut pas
+être vide non plus : chaque unité de la couche doit avoir un parent.</p>
+<p>Exemple de la couche <code>level-3-District</code> :</p>
+<table>
+<thead>
+<tr>
+<th>ref</th>
+<th>name</th>
+<th>parent_ref</th>
+<th>géométrie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DIS_A</code></td>
+<td>District A</td>
+<td><code>REG_NORD</code></td>
+<td>(polygone)</td>
+</tr>
+<tr>
+<td><code>DIS_B</code></td>
+<td>District B</td>
+<td><code>REG_NORD</code></td>
+<td>(polygone)</td>
+</tr>
+<tr>
+<td><code>DIS_C</code></td>
+<td>District C</td>
+<td><code>REG_SUD</code></td>
+<td>(polygone)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="la-table-groups">La table <code>groups</code><a class="headerlink" href="#la-table-groups" title="Permanent link">#</a></h3>
+<p>Les groupes permettent de classer les unités (par exemple <em>urbain</em> / <em>rural</em>, ou
+<em>public</em> / <em>privé</em>). La table <code>groups</code> n'a pas de géométrie et a deux colonnes obligatoires :</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ref</code></td>
+<td>Un identifiant unique du groupe, utilisé dans la colonne <code>group_refs</code> des couches. Il ne peut pas contenir de virgule.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>Le nom du groupe.</td>
+</tr>
+</tbody>
+</table>
+<p>La table doit être présente même si vous n'utilisez pas de groupes.</p>
+<p>À propos de la colonne <code>group_refs</code> : si une couche n'a pas cette colonne, les groupes de ses
+unités ne sont pas modifiés. Si la colonne existe mais est vide pour une unité, cette unité
+est retirée de tous ses groupes.</p>
+<h2 id="erreurs-frequentes">Erreurs fréquentes<a class="headerlink" href="#erreurs-frequentes" title="Permanent link">#</a></h2>
+<p>L'import échoue si le fichier contient :</p>
+<ul>
+<li>une <code>ref</code> ou un <code>name</code> vide ;</li>
+<li>deux unités avec la même <code>ref</code> ;</li>
+<li>une <code>parent_ref</code> qui ne correspond à aucune unité du fichier ni d'IASO ;</li>
+<li>un groupe dans <code>group_refs</code> absent de la table <code>groups</code> et d'IASO ;</li>
+<li>une virgule dans la <code>ref</code> d'un groupe ;</li>
+<li>une date qui n'est pas écrite <code>AAAA-MM-JJ</code>.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Partez d'un export</p>
+<p>Le plus simple pour obtenir un fichier correct est de partir d'un fichier existant :
+dans IASO, une version de source de données peut être téléchargée avec <strong>Download
+GeoPackage</strong>. L'export utilise le même format, avec quelques colonnes en plus (<code>id</code>,
+<code>uuid</code>, <code>parent</code>, <code>group_names</code>) qui sont ignorées si vous réimportez le fichier.</p>
+</div>
+<h2 id="preparer-le-fichier-avec-un-assistant-ia">Préparer le fichier avec un assistant IA<a class="headerlink" href="#preparer-le-fichier-avec-un-assistant-ia" title="Permanent link">#</a></h2>
+<p>Donnez vos fichiers à un assistant IA (Claude, ChatGPT…) et envoyez ce message, adapté à vos
+niveaux :</p>
+<blockquote>
+<p>Convertis les fichiers joints en un GeoPackage conforme au format d'import IASO décrit sur
+https://docs.openiaso.com/fr/pages/users/reference/geopackage_format.html. Les niveaux sont :
+[pays, région, district, formation sanitaire…]. Vérifie que chaque unité a une <code>ref</code> unique
+et une <code>parent_ref</code> qui existe au niveau supérieur, ajoute une table <code>groups</code> vide, et
+donne-moi le fichier <code>.gpkg</code> à télécharger.</p>
+</blockquote>
+<h2 id="importer-le-fichier-dans-iaso">Importer le fichier dans IASO<a class="headerlink" href="#importer-le-fichier-dans-iaso" title="Permanent link">#</a></h2>
+<ol>
+<li>Allez dans <strong>Admin &gt; Sources de données &gt; Liste des sources de données</strong>.</li>
+<li>Cliquez sur <strong>Versions</strong> sur votre source, puis sur <strong>Nouvelle version sur base d'un
+   Geopackage</strong>.</li>
+<li>Choisissez votre fichier.</li>
+<li><strong>Cochez « Passer le statut des org units à "Valide" ».</strong> Sinon, toutes les unités sont
+   importées avec le statut <em>Nouveau</em> et doivent être validées une par une avant de pouvoir
+   être utilisées.</li>
+<li>Lancez l'import. Il se fait en arrière-plan et peut prendre une dizaine de minutes :
+   suivez-le dans <strong>Admin &gt; Tâches</strong>.</li>
+<li>Une fois la tâche terminée, faites de la nouvelle version la version par défaut :
+   modifiez la source de données, choisissez le numéro de la nouvelle version dans
+   <strong>Version par défaut</strong>, puis cliquez sur <strong>Sauver</strong>.</li>
+</ol>
+<p>Pour corriger ou compléter une pyramide, importez le fichier dans la <strong>même version</strong> plutôt
+que dans une nouvelle : les unités ayant la même <code>ref</code> sont mises à jour au lieu d'être
+dupliquées.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden="">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"></path></svg>
+            Retour en haut de la page
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "toc.integrate"], "search": "../../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      
+        <script src="../../../../extrajs/external_links.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

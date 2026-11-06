@@ -489,6 +489,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/guidelines/git.html"/>
     </url>
     <url>
+        <loc>Nonepages/use_cases/setup_bednet_campaign_with_ai.html</loc>
+        <lastmod>2026-11-06</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/use_cases/setup_bednet_campaign_with_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/use_cases/setup_bednet_campaign_with_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/use_cases/setup_bednet_campaign_with_ai.html"/>
+    </url>
+    <url>
         <loc>Nonepages/users/FAQ/faq.html</loc>
         <lastmod>2026-11-06</lastmod>
         <changefreq>daily</changefreq>
@@ -529,14 +537,6 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation.html"/>
     </url>
     <url>
-        <loc>Nonepages/users/how_to/get_started_with_iaso.html</loc>
-        <lastmod>2026-11-06</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/get_started_with_iaso.html"/>
-        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/get_started_with_iaso.html"/>
-        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/get_started_with_iaso.html"/>
-    </url>
-    <url>
         <loc>Nonepages/users/how_to/import_export_dhis2_mappings.html</loc>
         <lastmod>2026-11-06</lastmod>
         <changefreq>daily</changefreq>
@@ -559,6 +559,14 @@
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso.html"/>
+    </url>
+    <url>
+        <loc>Nonepages/users/reference/geopackage_format.html</loc>
+        <lastmod>2026-11-06</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/geopackage_format.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/geopackage_format.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/geopackage_format.html"/>
     </url>
     <url>
         <loc>Nonepages/users/reference/how_we_work.html</loc>
@@ -1097,6 +1105,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/guidelines/git.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/use_cases/setup_bednet_campaign_with_ai.html</loc>
+        <lastmod>2026-11-06</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/use_cases/setup_bednet_campaign_with_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/use_cases/setup_bednet_campaign_with_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/use_cases/setup_bednet_campaign_with_ai.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/users/FAQ/faq.html</loc>
         <lastmod>2026-11-06</lastmod>
         <changefreq>daily</changefreq>
@@ -1137,14 +1153,6 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/edit_documentation.html"/>
     </url>
     <url>
-        <loc>Nonefr/pages/users/how_to/get_started_with_iaso.html</loc>
-        <lastmod>2026-11-06</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/get_started_with_iaso.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/get_started_with_iaso.html"/>
-        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/get_started_with_iaso.html"/>
-    </url>
-    <url>
         <loc>Nonefr/pages/users/how_to/import_export_dhis2_mappings.html</loc>
         <lastmod>2026-11-06</lastmod>
         <changefreq>daily</changefreq>
@@ -1167,6 +1175,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/users/reference/geopackage_format.html</loc>
+        <lastmod>2026-11-06</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/geopackage_format.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/geopackage_format.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/geopackage_format.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/how_we_work.html</loc>
@@ -1705,6 +1721,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/guidelines/git.html"/>
     </url>
     <url>
+        <loc>Nonees/pages/use_cases/setup_bednet_campaign_with_ai.html</loc>
+        <lastmod>2026-11-06</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/use_cases/setup_bednet_campaign_with_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/use_cases/setup_bednet_campaign_with_ai.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/use_cases/setup_bednet_campaign_with_ai.html"/>
+    </url>
+    <url>
         <loc>Nonees/pages/users/FAQ/faq.html</loc>
         <lastmod>2026-11-06</lastmod>
         <changefreq>daily</changefreq>
@@ -1745,14 +1769,6 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation.html"/>
     </url>
     <url>
-        <loc>Nonees/pages/users/how_to/get_started_with_iaso.html</loc>
-        <lastmod>2026-11-06</lastmod>
-        <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/get_started_with_iaso.html"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/get_started_with_iaso.html"/>
-        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/get_started_with_iaso.html"/>
-    </url>
-    <url>
         <loc>Nonees/pages/users/how_to/import_export_dhis2_mappings.html</loc>
         <lastmod>2026-11-06</lastmod>
         <changefreq>daily</changefreq>
@@ -1775,6 +1791,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/users/reference/geopackage_format.html</loc>
+        <lastmod>2026-11-06</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/reference/geopackage_format.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/geopackage_format.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/geopackage_format.html"/>
     </url>
     <url>
         <loc>Nonees/pages/users/reference/how_we_work.html</loc>

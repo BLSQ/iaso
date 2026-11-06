@@ -199,9 +199,9 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             # 2. PREFETCH CONFIGS
             # 3. PREFETCH CONFIGS ORG UNIT TYPES
             # 4. PREFETCH CONFIGS ORG UNIT GROUPS
-            # 6. SELECT INITIAL QS FOR OU WITH HIERARCHY
-            # 7. RETURN QS
-            # 8. MIN AGGREGATE IN BUILD TREE
+            # 5. SELECT INITIAL QS FOR OU WITH HIERARCHY
+            # 6. RETURN QS (recursive)
+            # 7. MIN AGGREGATE IN BUILD TREE
             res = self.client.get(self.get_url(), data={"level": 1})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
@@ -372,6 +372,14 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url(self.planning_other_account.pk))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_should_not_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.deprecated = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_tree(self):
         self.client.force_authenticate(self.superuser)
@@ -589,6 +597,45 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 }
             ],
         )
+
+    def test_queryset_should_exclude_descendants_of_rejected_org_units(self):
+        """
+        Given:
+
+        Root
+        └── Child 2 (rejected by level 1 config)
+            └── Child 2.1 (would match level 2 config)
+
+        Child 2.1 should not be returned because its parent is rejected.
+        """
+        self.planning_config_level_1.org_unit_types.set([self.org_unit_type_2])
+
+        self.client.force_authenticate(self.superuser)
+
+        original_build_org_unit_tree = PlanningViewSet._build_org_unit_tree
+
+        def assert_queryset_has_no_orphans(queryset: OrgUnitQuerySet, serializer):
+            org_units = list(queryset)
+            org_unit_ids = {org_unit.pk for org_unit in org_units}
+
+            # Root is always included.
+            self.assertEqual(org_unit_ids, {self.ou_root.pk})
+
+            # Child 2 is rejected, and Child 2.1 must not become an orphan.
+            self.assertNotIn(self.children_2.pk, org_unit_ids)
+            self.assertNotIn(self.children_2_1.pk, org_unit_ids)
+
+            return original_build_org_unit_tree(queryset, serializer)
+
+        # patching _build_org_unit_tree to do our test assert as it's the method that gets the queryset
+        with patch.object(
+            PlanningViewSet,
+            "_build_org_unit_tree",
+            side_effect=assert_queryset_has_no_orphans,
+        ):
+            res = self.client.get(self.get_url())
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_get_queryset_returns_distinct_values(self):
         """

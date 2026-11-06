@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import typing
+
 from typing import Any
 
 import django_filters
@@ -8,13 +10,15 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import PointField
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import BooleanField, Case, F, Q, Value, When
+from django.db.models import BooleanField, Case, Q, Value, When
 from django.db.models.functions import Cast
 from django.utils.translation import gettext_lazy as _
 from rest_framework import filters
 
 from iaso.api.common import NumberInFilter
+from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.models.microplanning import Planning
+from iaso.models.microplanning.planning_configs import PlanningConfigQuerySet
 from iaso.models.org_unit import OrgUnitQuerySet
 
 
@@ -34,66 +38,26 @@ class PlanningDropdownFilterSet(django_filters.FilterSet):
     form_ids = NumberInFilter(field_name="missions__missionwithforms__forms__id", distinct=True)
 
 
-class BasePlanningOrgUnitTreeFilterSet(django_filters.FilterSet):
+class BasePlanningOrgUnitTreeFilterSet(PlanningOrgUnitTreeQuerySetBuilder, django_filters.FilterSet):
     def __init__(self, planning: Planning, *args: Any, **kwargs: Any) -> None:
         self.planning = planning
         super().__init__(*args, **kwargs)
 
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
-        planning = self.planning
-
-        root = planning.org_unit
+        root = self.planning.org_unit
         root_level = len(str(root.path).split("."))
-
+        configs = typing.cast(PlanningConfigQuerySet, self.planning.configs.all())
+        processed_levels = {root_level + config.level - 1 for config in configs}
         level = self.form.cleaned_data.get("level")
         max_depth = self.form.cleaned_data.get("max_depth")
 
-        if max_depth is not None:
-            max_depth += root_level - 1
-
-        if level is not None:
-            nodes_level = root_level + level
-
-            root = (
-                queryset.hierarchy(root)
-                .filter(path__depth=nodes_level)
-                .only("id", "parent", "name", "path")
-                .distinct("id")
-            )
-
-        queryset = queryset.hierarchy(root)
-
-        if max_depth is not None:
-            queryset = queryset.filter(path__depth__lte=max_depth)
-
-        filter_qs = Q()
-        processed_levels = []
-
-        for config in planning.configs.all():
-            config_level = config.level + root_level
-            processed_levels.append(config_level)
-
-            sub_filter = Q(path__depth=config_level)
-
-            org_unit_types = list(config.org_unit_types.all())
-            org_unit_groups = list(config.org_unit_groups.all())
-
-            if org_unit_types:
-                sub_filter &= Q(org_unit_type__in=[x.pk for x in org_unit_types])
-
-            if org_unit_groups:
-                sub_filter &= Q(groups__in=[x.pk for x in org_unit_groups])
-
-            filter_qs |= sub_filter
-
-        filter_qs |= ~Q(path__depth__in=processed_levels)
-
-        return (
-            queryset.filter(filter_qs)
-            .annotate(
-                depth=F("path__depth"),
-            )
-            .distinct()
+        return self.build_queryset(
+            queryset=queryset,
+            root=root,
+            processed_levels=processed_levels,
+            configs=configs,
+            max_depth=max_depth,
+            level=level,
         )
 
 
@@ -143,7 +107,10 @@ class PlanningOrgUnitTreeFilterSet(BasePlanningOrgUnitTreeFilterSet):
             .annotate(
                 location_as_geom=Cast("location", PointField(dim=3)),
                 has_geo_json=Case(
-                    When(simplified_geom__isnull=False, then=Value(True)),
+                    When(
+                        simplified_geom__isnull=False,
+                        then=Value(True),
+                    ),
                     default=Value(False),
                     output_field=BooleanField(),
                 ),
@@ -185,3 +152,7 @@ class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
             .select_related("org_unit_type")
             .order_by("id")
         )
+
+
+class PlanningOrgUnitLevelOrgUnitCount(BasePlanningOrgUnitTreeFilterSet):
+    pass

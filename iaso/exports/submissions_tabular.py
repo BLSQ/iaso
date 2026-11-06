@@ -1,8 +1,8 @@
 """
 Queryset for the duckdb based csv/xlsx export of submissions (see `iaso.exports.tabular`).
 
-Each annotation mirrors a value of the legacy `get_row()` in `InstancesViewSet.list_file_export`, but computed
-by postgres instead of python.
+Each annotation is the value of one of the columns of `InstancesViewSet._file_export_columns`, computed by
+postgres.
 """
 
 from django.conf import settings
@@ -84,8 +84,8 @@ def build_submissions_tabular_queryset(
     qs: QuerySet, form: m.Form, file_content_template: dict, columns: list[dict]
 ) -> QuerySet:
     """
-    columns: the legacy export columns, each one gets a "field" key with the matching queryset column.
-    They are matched by position, so the annotations below must stay in the legacy `get_row()` order.
+    columns: the export columns (`InstancesViewSet._file_export_columns`), each one gets a "field" key with the
+    matching queryset column. They are matched by position, so the annotations below must stay in the columns order.
     """
     annotations = [
         F("id"),

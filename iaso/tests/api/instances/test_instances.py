@@ -1,5 +1,4 @@
 import asyncio
-import csv
 import datetime
 import io
 import json
@@ -30,7 +29,7 @@ from iaso import models as m
 from iaso.api import query_params as query
 from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.api.instances.views import import_data
-from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
+from iaso.models import FormVersion, Instance, InstanceLock
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.microplanning import Planning
 from iaso.models.team import Team
@@ -1508,223 +1507,11 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/instances/?format=csv", headers={"Content-Type": "text/csv"})
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
-    def test_can_retrieve_submissions_list_in_csv_format(self):
-        self.client.force_authenticate(self.yoda)
-
-        # Mark instance_1 as a reference instance.
-        OrgUnitReferenceInstance.objects.create(
-            org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
-        )
-
-        # 11, not 10: with_status() now spends one extra query checking whether the filtered-in form(s) are
-        # single_per_period, to be able to skip the (expensive on large datasets) duplicates computation otherwise.
-        # (was 12 before org_unit__org_unit_type was added to select_related: that saved the one per-instance
-        # lazy-load query for org_unit_type that CSV export was still paying for.)
-        with self.assertNumQueries(11):
-            response = self.client.get(
-                f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true&engine=legacy",
-                headers={"Content-Type": "text/csv"},
-            )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response["Content-Type"], "text/csv")
-
-        response_csv = response.getvalue().decode("utf-8")
-        expected_csv_row = (
-            f"{self.instance_1.id},"
-            "True,"
-            ","
-            "Vzhn0nceudr,"
-            ","
-            ","
-            ","
-            ","
-            "202001,"
-            f"{self.instance_1.source_created_at.strftime('%Y-%m-%d %H:%M:%S')},"
-            f"{self.instance_1.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
-            f"{self.instance_1.source_updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
-            "yoda (Yo Da),"
-            f"{self.instance_1.created_by_id},"
-            "READY,"
-            ","  # entity UUID
-            ","  # entity ID
-            "Coruscant Jedi Council,"
-            f"{self.jedi_council_corruscant.id},"
-            "jedi_council_corruscant_ref,"
-            "coruscant_code,"
-            "VALID,"
-            ","
-            ","
-            ","
-        )
-        self.assertIn(expected_csv_row, response_csv)
-
-    def test_submissions_list_csv_export_includes_validation_workflow(self):
-        self.client.force_authenticate(self.yoda)
-        self.create_validation_workflow(account=self.star_wars, forms=[self.form_1], name="Hydroponics validation")
-        self.instance_1.general_validation_status = ValidationWorkflowArtefactStatus.APPROVED
-        self.instance_1.save()
-
-        # Same count as test_can_retrieve_submissions_list_in_csv_format (form__validation_workflow is select_related)
-        with self.assertNumQueries(11):
-            response = self.client.get(
-                f"/api/instances/?form_ids={self.form_1.id}&csv=true&engine=legacy",
-                headers={"Content-Type": "text/csv"},
-            )
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        rows = list(csv.DictReader(io.StringIO(response.getvalue().decode("utf-8"))))
-        rows_by_id = {int(row["ID du formulaire"]): row for row in rows}
-        self.assertEqual(len(rows_by_id), self.form_1.instances.count())
-        for instance_id, row in rows_by_id.items():
-            self.assertEqual(row["Workflow"], "Hydroponics validation")
-            expected_status = ValidationWorkflowArtefactStatus.APPROVED if instance_id == self.instance_1.id else ""
-            self.assertEqual(row["Validation Status"], expected_status)
-
     def test_can_retrieve_submissions_list_in_xlsx_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response["Content-Type"], CONTENT_TYPE_XLSX)
-
-    def test_xlsx_export_is_constant_queries(self):
-        """GET /instances/?xlsx=true must evaluate in a number of queries that only depends on
-        the number of `queryset_iterator` pages involved, not on the number of exported instances
-        within a page (no per-instance N+1).
-
-        `json` is set explicitly (non-empty) on all instances involved (including
-        setUpTestData's instance_1..instance_4, which are also form_1 and so also included in
-        the export below): a real ingested instance always has it populated already
-        (process_instance_file/enketo submission compute it synchronously at upload time, and
-        it's essentially always non-empty -- _version/meta/instanceID are always present -- see
-        get_and_save_json_of_xml()). Leaving `json` at its default `{}` would instead exercise
-        that (falsy-`{}`) lazy-recompute-and-save path on every row on every request (`file` is a
-        bare mock with no real XML content, so it never resolves to a truthy json, however often
-        it's computed) -- real, but not what a normal export hits in production, and it would
-        make this test measure that per-request recompute/resave instead of the per-page
-        prefetch_related cost it's meant to guard.
-
-        `queryset_iterator` (`hat/common/utils.py`, chunk_size=100, called from `list_file_export`
-        via `generate_xlsx(..., queryset_iterator(queryset, 100), ...)`) evaluates its queryset
-        page by page via `Paginator` whenever it carries any prefetch_related lookups (org_unit/
-        org_unit__parent/.../entity/form_version__form, all set up in list_file_export, plus a
-        couple more from list()) -- and each page re-runs those prefetch_related lookups again,
-        restricted to that page. That's a real, constant cost *per page* (`ceil(N / 100)` pages
-        for N exported rows), not a per-instance N+1: it doesn't grow with how many rows are in
-        a given page, only with how many pages there are. So the invariant to check for isn't
-        "same query count at any N" (false in general, once N crosses a page boundary) -- it's
-        "the same, constant marginal cost per extra page, and zero marginal cost per extra row
-        within a page". 5, 150 and 250 instances (plus the 4 preexisting fixtures, always
-        included by the form_id filter, for 9/154/254 total rows) land on 1/2/3 pages -- enough
-        points to tell "constant cost per extra page" apart from "cost grows with row count" or
-        "cost compounds across pages"."""
-        self.client.force_authenticate(self.yoda)
-
-        org_unit = self.jedi_council_corruscant
-
-        for i, fixture_instance in enumerate((self.instance_1, self.instance_2, self.instance_3, self.instance_4)):
-            fixture_instance.json = {"_version": "1", "meta/instanceID": f"uuid:fixture-instance-{i}"}
-            fixture_instance.save()
-
-        # Warm up permission caches attached to `self.yoda`/the request user first: those are
-        # memoized after the first request and would otherwise make the measurements below
-        # differ for reasons unrelated to row/page count (see the same fix in
-        # test_instances_parquet.py).
-        self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true&engine=legacy")
-
-        def num_queries_for(n_instances):
-            created = [
-                self.create_form_instance(
-                    form=self.form_1,
-                    period="202001",
-                    org_unit=org_unit,
-                    project=self.project,
-                    created_by=self.yoda,
-                    json={"_version": "1", "meta/instanceID": f"uuid:instance-{i}"},
-                )
-                for i in range(n_instances)
-            ]
-            with CaptureQueriesContext(connection) as ctx:
-                response = self.client.get(f"/api/instances/?form_ids={self.form_1.pk}&xlsx=true&engine=legacy")
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            for instance in created:
-                instance.delete()
-            return len(ctx.captured_queries)
-
-        queries_for_1_page = num_queries_for(5)  # 5 + 4 fixtures = 9 rows -> 1 page
-        queries_for_2_pages = num_queries_for(150)  # 150 + 4 = 154 rows -> 2 pages
-        queries_for_3_pages = num_queries_for(250)  # 250 + 4 = 254 rows -> 3 pages
-
-        self.assertEqual(
-            queries_for_2_pages - queries_for_1_page,
-            queries_for_3_pages - queries_for_2_pages,
-            "Each additional queryset_iterator page must cost the same, constant number of extra "
-            "queries -- if the cost per page keeps growing (rather than staying flat), or if query "
-            "count grows within a single page (i.e. with row count rather than page count), "
-            "something in list_file_export()/get_row() is issuing a genuine per-instance query.",
-        )
-
-    def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
-        # Set up a new instance without source fields
-        new_date = datetime.datetime(2006, 5, 4, 3, 2, 1, tzinfo=pytz.UTC)
-        export_id = "TESTING"
-        period = "200605"
-        with patch("django.utils.timezone.now", lambda: new_date):
-            entity = m.Entity.objects.create(
-                uuid=uuid4(),
-                entity_type=m.EntityType.objects.create(account=self.star_wars),
-                account=self.star_wars,
-            )
-            # Explicitly set source fields to None because the test helpers will set default values otherwise
-            sourceless_instance = self.create_form_instance(
-                form=self.form_4,
-                period=period,
-                org_unit=self.jedi_council_corruscant,
-                project=self.project,
-                created_by=self.yoda,
-                export_id=export_id,
-                source_created_at=None,
-                source_updated_at=None,
-                json={"test": "test"},
-                entity=entity,
-            )
-
-        self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true&engine=legacy",
-            headers={"Content-Type": "text/csv"},
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response["Content-Type"], "text/csv")
-
-        response_csv = response.getvalue().decode("utf-8")
-        expected_csv_row = (
-            f"{sourceless_instance.id},"
-            "False,"
-            ","
-            f"{export_id},"
-            ","
-            ","
-            ","
-            ","
-            f"{period},"
-            f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
-            f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
-            f"{sourceless_instance.updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
-            "yoda (Yo Da),"
-            f"{self.instance_1.created_by_id},"
-            "READY,"
-            f"uuid:{sourceless_instance.entity.uuid},"
-            f"{sourceless_instance.entity.id},"
-            "Coruscant Jedi Council,"
-            f"{self.jedi_council_corruscant.id},"
-            "jedi_council_corruscant_ref,"
-            "coruscant_code,"
-            "VALID,"
-            ","
-            ","
-            ","
-        )
-        self.assertIn(expected_csv_row, response_csv)
 
     def test_submissions_list_in_csv_format_error_no_form(self):
         # Make sure IA-3275 is fixed by sending a 400 instead of letting the backend crash

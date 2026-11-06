@@ -20,15 +20,15 @@ The guide has two parts:
 
 | Tool | For | What it does |
 |---|---|---|
-| **Mobile apps** (up to six) | enumeration agents, distribution agents, special group teams, team leaders, store keepers, supervisors | register households with a QR ticket, distribute nets once per household, register workers and their attendance, track stock movements, fill in supervision checklists |
+| **Mobile projects** (up to six) | enumeration agents, distribution agents, special group teams, team leaders, stock managers, supervisors | register households with a QR ticket, distribute nets once per household, register workers and their attendance, track stock movements, fill in supervision checklists |
 | **15 ready-made forms** | all agents | in English and French, adapted to your allocation rule |
 | **Registries** | everyone | households, special groups (prisons, camps, boarding schools…) and workers, which agents find again on the phone |
-| **Stock tracking** | store keepers | balance of nets in each store, computed from receipts, issues, returns, transfers and losses |
+| **Stock tracking** | stock managers | balance of nets in each store, computed from receipts, issues, returns, transfers and losses |
 | **Web dashboards** | coordination team | campaign progress by region, district or health facility; worker attendance and payment sheet |
-| **Mobile reports** | team leaders, store keepers | progress, map of households, team attendance and stock, available offline on the phone |
-| **QR codes** | trainers | to install and configure the app on each phone in seconds |
+| **Mobile reports** | team leaders, stock managers | progress, map of households, team attendance and stock, available offline on the phone |
+| **QR codes** | trainers | to install the IASO app and configure it for each project in seconds |
 
-![The campaign apps in IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
+![The campaign projects in IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
 
 ## Before you start
 
@@ -36,14 +36,13 @@ The guide has two parts:
 |---|---|
 | An **IASO account** | You can create a free trial on [openiaso.com/pricing](https://www.openiaso.com/pricing/). |
 | An **AI assistant** | One that can run Python code and reach your IASO server: Claude or ChatGPT in the browser or in their app, or Claude Code (desktop app or terminal) with Python 3 on your computer. |
-| An **internet connection** | For your AI assistant and IASO. |
 | Your **files and campaign decisions** | Only if you want to test with your real campaign data. Your geographic data (from DHIS2, an Excel file or a GeoPackage file: the assistant imports it for you, or you can [import it yourself](../users/reference/user_guide.md#import-a-pyramid-into-a-data-source)) and the campaign decisions: districts covered, net allocation rule, roles and daily rates of workers, list of stores, list of agents (see the assistant's questions in [step 5](#step-5-answer-the-assistants-questions)). Otherwise, the assistant can propose demo data so you can test the setup first. |
-| An **Android phone** | With the [IASO app from Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=en), to test the mobile apps. |
+| An **Android phone** | With the [IASO app from Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=en), to test the mobile projects. |
 
 !!! tip "Using another AI assistant?"
     This guide has been tested with Claude and ChatGPT. If you run into difficulties with
-    another AI assistant, we're happy to collect your feedback: contact
-    [products@bluesquarehub.com](mailto:products@bluesquarehub.com).
+    another AI assistant, we're happy to collect your feedback:
+    [contact us at products@bluesquarehub.com](mailto:products@bluesquarehub.com).
 
 !!! note "Your IASO address"
     Everything in this guide happens on **[https://app.openiaso.com](https://app.openiaso.com/)**.
@@ -60,8 +59,7 @@ The guide has two parts:
    [openiaso.com/pricing](https://www.openiaso.com/pricing/).
 2. Choose the **user for the setup**: the assistant works in IASO as this user. You can use
    the main user of your newly created account: it already has all the permissions the kit
-   needs (listed in `SKILL.md`, section 1). Ideally, create a dedicated user and deactivate
-   it once the setup is done.
+   needs (listed in `SKILL.md`, section 1). Ideally, create a dedicated user for the setup.
 
 ---
 
@@ -98,8 +96,8 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 !!! warning "Keep your access key private"
     The access key works like your password. Never paste it into the conversation and never
-    share the zip once it contains the key. When the setup is finished, delete the key from
-    `iaso_config.txt`.
+    share the zip once it contains the key. Keep the kit with its key in a safe place: you
+    need it to come back to the assistant and make changes later (see step 7).
 
 ### Step 4: Give the kit to your AI assistant
 
@@ -113,7 +111,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 > scripts, no IASO connector. Start by checking access and making a backup of my account.
 > My geographic data comes from: [my DHIS2, already set up on the data source / the attached
 > Excel file / the attached GeoPackage / a demo pyramid / it is already in IASO]. Then ask
-> me the campaign questions one topic at a time. Show me the QR codes as soon as the apps
+> me the campaign questions one topic at a time. Show me the QR codes as soon as the projects
 > exist. Ask for my confirmation before each step that changes IASO. Don't stop before the
 > final checklist, and tell me at the end what you created and what I must test on a phone.
 
@@ -134,20 +132,18 @@ already made, the quicker the configuration:
 |---|---|---|
 | Campaign | name, country, form languages, districts covered, how many nets per household | the list of districts, the allocation rule |
 | Geography | where your places come from, at which level households are registered (village, health facility…) | your DHIS2 settings in IASO, or your Excel or GeoPackage file |
-| Apps | which apps you need (enumeration, distribution, special groups, workers, stock, supervision) | — |
+| Projects | which mobile projects you need (enumeration, distribution, special groups, workers, stock, supervision) | — |
 | Reports | which dashboards and mobile reports, and who can open each one | the list of people who follow the campaign |
 | Workers | the roles, daily rates, who validates attendance | the payment scale |
 | Stock | the stores tracked, the number of nets per bale | the list of stores |
-| Users | who uses which app, in which area | the list of agents |
+| Users | who uses which project, in which area | the list of agents |
 
 Not everything decided yet? You can still test the campaign setup: the assistant can propose
 demo data (demo pyramid, example districts, stores and agents) that you replace later with
 your own.
 
 Then the assistant builds the campaign step by step, asking for your go-ahead each time:
-geographic data, apps, forms, registries, stock, users, dashboards and mobile reports.
-
-![The QR codes page, to print for the training](./setup_bednet_campaign_with_ai_attachments/qr-codes.jpg){ .doc-shot }
+geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.
 
 ### Step 6: Test on a phone
 
@@ -155,19 +151,19 @@ geographic data, apps, forms, registries, stock, users, dashboards and mobile re
    [Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=en)
    (or scan the Play Store QR code the assistant gives you).
 2. **Choose the user to test with**: a test user created by the assistant, or your own
-   user. Either way, this user must have the apps you want to test: in IASO, go to
-   **Admin > Users**, edit the user and, in **Projects**, select the apps to test. To try the
-   different apps and switch from one to another, select all of them.
+   user. Either way, this user must have the projects you want to test: in IASO, go to
+   **Admin > Users**, edit the user and, in **Projects**, select the projects to test. To try
+   the different projects and switch from one to another, select all of them.
 3. **Find the QR codes** in IASO: open the menu and go to **Admin > Projects**. Each mobile
-   app of the campaign is listed there, with its QR code ready to scan.
+   project of the campaign is listed there, with its QR code ready to scan.
 4. **Open the IASO app** on the phone, choose to scan a QR code and scan the QR code of the
-   app to test. Accept the permission requests that show up (camera, location…).
+   project to test. Accept the permission requests that show up (camera, location…).
 5. **Log in** with the user chosen in point 2.
 6. Follow the test checklist the assistant gives you: register a household, find it again,
    distribute nets, register a worker, record a stock movement.
 7. Open the mobile reports, with network and then in airplane mode.
 
-![An app home screen on the phone](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
+![A project home screen on the phone](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
 ![The progress report in the app](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
 
 Before training the field teams, ask the assistant to delete the test data and the test
@@ -175,10 +171,9 @@ users.
 
 ### Step 7: After the setup
 
-- Delete the access key from `iaso_config.txt`, and delete the zip that contained it.
-- If you created a dedicated user for the setup, deactivate it.
 - To change something during the campaign (a question in a form, a new district, a report),
-  come back to the assistant with the kit. Forms already used on phones must be changed with
+  simply ask the assistant: come back to it with the kit, which still contains your access
+  key. Forms already used on phones must be changed with
   care: the kit tells the assistant how.
 - Follow the campaign in the web dashboards (**Pages** menu in IASO) and in the mobile reports.
 

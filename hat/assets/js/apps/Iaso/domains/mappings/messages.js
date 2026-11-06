@@ -90,10 +90,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'This question is considered to be never mapped but you can{breakLine}change your mind',
     },
-    changeMapping: {
-        id: 'iaso.mappings.changeMapping',
-        defaultMessage: 'Change the mapping to existing one :',
-    },
     searchDataElement: {
         id: 'iaso.mappings.label.searchDataElement',
         defaultMessage:
@@ -102,10 +98,6 @@ const MESSAGES = defineMessages({
     useInstanceProperty: {
         id: 'iaso.mappings.useInstanceProperty',
         defaultMessage: 'Use instance property to fill in this answer',
-    },
-    proposedNewOne: {
-        id: 'iaso.mappings.proposedNewOne',
-        defaultMessage: 'Proposed new one :',
     },
     confirm: {
         id: 'iaso.mappings.confirm',
@@ -163,10 +155,6 @@ const MESSAGES = defineMessages({
     proposedNewMapping: {
         id: 'iaso.mappings.label.proposedNewMapping',
         defaultMessage: 'Proposed new mapping',
-    },
-    options: {
-        id: 'iaso.mappings.label.options',
-        defaultMessage: 'Options :',
     },
     useValueFromForm: {
         id: 'iaso.mappings.label.useValueFromForm',
@@ -430,6 +418,126 @@ const MESSAGES = defineMessages({
     changeLog: {
         id: 'iaso.mappings.changeLog',
         defaultMessage: 'Link to changes log',
+    },
+    questions: {
+        id: 'iaso.mappings.tree.questions',
+        defaultMessage: 'Questions',
+    },
+    searchQuestion: {
+        id: 'iaso.mappings.tree.search',
+        defaultMessage: 'Search a question',
+    },
+    statusAll: {
+        id: 'iaso.mappings.tree.statusAll',
+        defaultMessage: 'All',
+    },
+    statusMapped: {
+        id: 'iaso.mappings.tree.statusMapped',
+        defaultMessage: 'Mapped',
+    },
+    statusUnmapped: {
+        id: 'iaso.mappings.tree.statusUnmapped',
+        defaultMessage: 'Not mapped',
+    },
+    statusNever: {
+        id: 'iaso.mappings.tree.statusNever',
+        defaultMessage: 'Never mapped',
+    },
+    showStatus: {
+        id: 'iaso.mappings.tree.showStatus',
+        defaultMessage: 'Show or hide: {status}',
+    },
+    noQuestionMatches: {
+        id: 'iaso.mappings.tree.noMatch',
+        defaultMessage: 'No question matches the current filters.',
+    },
+    questionPosition: {
+        id: 'iaso.mappings.tree.position',
+        defaultMessage: '{position} of {total}',
+    },
+    previousQuestion: {
+        id: 'iaso.mappings.tree.previous',
+        defaultMessage: 'Previous question (Alt+↑)',
+    },
+    nextQuestion: {
+        id: 'iaso.mappings.tree.next',
+        defaultMessage: 'Next question (Alt+↓)',
+    },
+    mappedProgress: {
+        id: 'iaso.mappings.tree.mappedProgress',
+        defaultMessage: '{mapped} of {total} questions mapped',
+    },
+    mappedTo: {
+        id: 'iaso.mappings.tree.mappedTo',
+        defaultMessage: 'Mapped to: {target}',
+    },
+    questionMapped: {
+        id: 'iaso.mappings.status.mapped',
+        defaultMessage: 'Mapped',
+    },
+    questionUnmapped: {
+        id: 'iaso.mappings.status.unmapped',
+        defaultMessage: 'Not mapped',
+    },
+    questionNever: {
+        id: 'iaso.mappings.status.never',
+        defaultMessage: 'Never mapped',
+    },
+    backToGeneral: {
+        id: 'iaso.mappings.panel.backToGeneral',
+        defaultMessage: 'Back to general information (Esc)',
+    },
+    bind: {
+        id: 'iaso.mappings.panel.bind',
+        defaultMessage: 'Bind',
+    },
+    path: {
+        id: 'iaso.mappings.panel.path',
+        defaultMessage: 'Path',
+    },
+    questionOptions: {
+        id: 'iaso.mappings.panel.options',
+        defaultMessage: 'Options',
+    },
+    dataElement: {
+        id: 'iaso.mappings.panel.dataElement',
+        defaultMessage: 'Data element',
+    },
+    valueType: {
+        id: 'iaso.mappings.panel.valueType',
+        defaultMessage: 'Value type',
+    },
+    domainType: {
+        id: 'iaso.mappings.panel.domainType',
+        defaultMessage: 'Domain type',
+    },
+    categoryOptionCombo: {
+        id: 'iaso.mappings.panel.categoryOptionCombo',
+        defaultMessage: 'Category option combo',
+    },
+    datasets: {
+        id: 'iaso.mappings.panel.datasets',
+        defaultMessage: 'Datasets',
+    },
+    changeMappingTitle: {
+        id: 'iaso.mappings.panel.changeMapping',
+        defaultMessage: 'Change the mapping',
+    },
+    proposedMapping: {
+        id: 'iaso.mappings.panel.proposedMapping',
+        defaultMessage: 'Proposed mapping',
+    },
+    repeatGroup: {
+        id: 'iaso.mappings.panel.repeatGroup',
+        defaultMessage: 'Repeat group: {program}',
+    },
+    showLess: {
+        id: 'iaso.mappings.panel.showLess',
+        defaultMessage: 'Show less',
+    },
+    nextUnmapped: {
+        id: 'iaso.mappings.panel.nextUnmapped',
+        defaultMessage: 'Next not mapped question',
     },
 });
 

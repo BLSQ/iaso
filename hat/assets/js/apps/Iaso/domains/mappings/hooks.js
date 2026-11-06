@@ -1,5 +1,5 @@
 import { useRedirectToReplace } from 'bluesquare-components';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
+import { getRequest, postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { baseUrls } from '../../constants/urls.ts';
 import { useApiParams } from '../../hooks/useApiParams';
@@ -69,32 +69,5 @@ export const useGetMappingVersionDetail = mappingVersionId => {
             return { mappingVersion, formVersion };
         },
         ...defaultTimes,
-    });
-};
-
-export const useApplyUpdate = () => {
-    return useSnackMutation({
-        mutationFn: ({ mappingVersionId, payload }) => {
-            return patchRequest(
-                `/api/mappingversions/${mappingVersionId}/`,
-                payload,
-            );
-        },
-        invalidateQueryKey: ['mappingversions'],
-        snackErrorMsg: MESSAGES.fetchMappingsError,
-    });
-};
-
-export const useApplyPartialUpdate = () => {
-    return useSnackMutation({
-        mutationFn: ({ mappingVersionId, questionName, mapping }) => {
-            return patchRequest(`/api/mappingversions/${mappingVersionId}/`, {
-                question_mappings: {
-                    [questionName]: mapping,
-                },
-            });
-        },
-        invalidateQueryKey: ['mappingversions'],
-        snackErrorMsg: MESSAGES.fetchMappingsError,
     });
 };

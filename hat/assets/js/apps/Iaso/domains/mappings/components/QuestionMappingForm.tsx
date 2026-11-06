@@ -1,15 +1,43 @@
 import React, { FunctionComponent } from 'react';
-import Alert from '@mui/lab/Alert';
-import { Button } from '@mui/material';
+import { Block, Delete } from '@mui/icons-material';
+import { Box, Button, Typography } from '@mui/material';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import { SxStyles } from '../../../types/general';
 import Descriptor from '../descriptor';
+import { getMappingLabel } from '../importMappings';
 import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
+import { buildQuestionMapping, isOrgUnitTarget } from '../utils';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
-import ObjectDumper from './ObjectDumper';
+import { MappingCard } from './QuestionPanel/MappingCard';
+import { MappingSummary } from './QuestionPanel/MappingSummary';
+
+const styles: SxStyles = {
+    actions: {
+        display: 'flex',
+        gap: 1,
+        mt: 2,
+    },
+    repeatGroup: {
+        mt: 1,
+    },
+    iasoField: {
+        mt: 2,
+        maxWidth: 500,
+    },
+    neverHint: {
+        alignSelf: 'center',
+    },
+    proposed: {
+        mt: 3,
+        pt: 2,
+        borderTop: 1,
+        borderColor: 'divider',
+    },
+};
 
 const Dhis2ProgramTrackedEntityAttributeSearch = ({
     questionMapping,
@@ -189,8 +217,12 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
     const questionMapping =
         mapping.question_mappings[Descriptor.getKey(question)] || {};
     const [newQuestionMapping, setNewQuestionMapping] = React.useState();
-    const [iasoField, setIasoField] = React.useState(fieldOptions[0]);
-    const [fieldType, setFieldType] = React.useState(fieldTypeOptions[0]);
+    // the Select takes and returns the option value, not the option
+    const [iasoField, setIasoField] = React.useState(fieldOptions[0]?.value);
+    const [fieldType, setFieldType] = React.useState(
+        fieldTypeOptions[0]?.value,
+    );
+    const { formatMessage } = useSafeIntl();
 
     if (indexedQuestions === undefined) {
         return <LoadingSpinner />;
@@ -256,188 +288,197 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
 
     return (
         <>
-            {questionMapping.id && (
-                <>
-                    <h3>
-                        <FormattedMessage {...MESSAGES.currentMapping} />
-                    </h3>
-                    <ObjectDumper object={questionMapping} />
-                </>
-            )}
-            {/* TODO see if this needs translation */}
-            <div>{JSON.stringify(repeatGroupMapping)}</div>
-
-            {isMapped(questionMapping) && (
-                <>
-                    <DuplicateHint
-                        mapping={questionMapping}
-                        mappingVersion={mappingVersion}
-                    />
-
-                    <br />
+            <MappingCard title={formatMessage(MESSAGES.currentMapping)}>
+                {/* same layout mapped or not, so moving between questions doesn't shift the page */}
+                <MappingSummary
+                    mapping={
+                        isMapped(questionMapping) ? questionMapping : undefined
+                    }
+                    mappingType={mapping.mapping.mapping_type}
+                    emptyLabel={formatMessage(
+                        isNeverMapped(questionMapping)
+                            ? MESSAGES.questionNever
+                            : MESSAGES.questionUnmapped,
+                    )}
+                />
+                <DuplicateHint
+                    mapping={questionMapping}
+                    mappingVersion={mappingVersion}
+                />
+                {repeatGroupMapping && (
+                    <Typography
+                        variant="caption"
+                        color="textSecondary"
+                        component="div"
+                        sx={styles.repeatGroup}
+                    >
+                        {formatMessage(MESSAGES.repeatGroup, {
+                            program: getMappingLabel(repeatGroupMapping),
+                        })}
+                    </Typography>
+                )}
+                <Box sx={styles.actions}>
                     <Button
-                        // className="button"
-                        color="primary"
-                        variant="contained"
+                        color="error"
+                        variant="outlined"
+                        startIcon={<Delete />}
+                        disabled={!isMapped(questionMapping)}
                         onClick={() => onUnmapQuestionMapping(questionMapping)}
                     >
                         <FormattedMessage {...MESSAGES.removeMapping} />
                     </Button>
-                </>
-            )}
-            {!isMapped(questionMapping) && !isNeverMapped(questionMapping) && (
-                <Button
-                    // className="button"
-                    color="primary"
-                    variant="contained"
-                    onClick={() => onNeverMapQuestionMapping(questionMapping)}
-                >
-                    <FormattedMessage {...MESSAGES.willNeverMap} />
-                </Button>
-            )}
-            {isNeverMapped(questionMapping) && (
-                <Alert severity="info">
-                    <FormattedMessage
-                        {...MESSAGES.neverMapAlert}
-                        values={{ breakLine: <br /> }}
-                    />
-                </Alert>
-            )}
-            <br />
-            <br />
-            <h3>
-                <FormattedMessage {...MESSAGES.changeMapping} />
-            </h3>
-            {mapping.mapping.mapping_type === 'AGGREGATE' && (
-                <Dhis2SearchComponent
-                    key={question.name}
-                    resourceName="dataElements"
-                    dataSourceId={mapping.mapping.data_source.id}
-                    defaultValue={
-                        !isMapped(questionMapping) &&
-                        !isNeverMapped(questionMapping)
-                            ? question.name
-                            : undefined
-                    }
-                    label={<FormattedMessage {...MESSAGES.searchDataElement} />}
-                    filter={
-                        // TODO not working endpoint send the first filter
-                        mapping.mapping_type === 'AGGREGATE'
-                            ? 'domainType:eq:AGGREGATE'
-                            : 'domainType:eq:TRACKER'
-                    }
-                    onChange={onChange}
-                    fields="id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]],dataSetElements[dataSet[id,name,periodType]]"
-                    mapOptions={mapToMapping}
-                />
-            )}
-
-            {
-                /* there's no relation from data elements to programs, need to fetch program's stages data elements */
-                mapping.mapping.mapping_type === 'EVENT' && (
-                    <Dhis2ProgramDataElementSearch
-                        question={question}
-                        onChange={onChange}
-                        mapping={mapping}
-                        questionMapping={questionMapping}
-                        programId={programId}
-                    />
-                )
-            }
-
-            {mapping.mapping.mapping_type === 'EVENT_TRACKER' && (
-                <div>
-                    <Select
-                        options={fieldTypeOptions}
-                        value={fieldType}
-                        onChange={setFieldType}
-                    />
-                    {fieldType && (
-                        <>
-                            {fieldType.value === 'dataElement' && (
-                                <Dhis2ProgramDataElementSearch
-                                    question={question}
-                                    onChange={onChange}
-                                    mapping={mapping}
-                                    questionMapping={questionMapping}
-                                    programId={programId}
-                                />
-                            )}
-                            {fieldType.value === 'trackedEntityAttribute' && (
-                                <Dhis2ProgramTrackedEntityAttributeSearch
-                                    question={question}
-                                    onChange={onChange}
-                                    mapping={mapping}
-                                    questionMapping={questionMapping}
-                                    programId={programId}
-                                />
-                            )}
-                            <p>
-                                <FormattedMessage
-                                    {...MESSAGES.useInstanceProperty}
-                                />
-                            </p>
-                            <Select
-                                options={fieldOptions}
-                                value={iasoField}
-                                onChange={setIasoField}
-                            />
-                        </>
-                    )}
-
-                    {questionMapping.map &&
-                        questionMapping.map((q, index) => (
-                            // considering questionMapping is a random json, using index here is acceptable
-                            // eslint-disable-next-line react/no-array-index-key
-                            <ObjectDumper key={index} object={q} />
-                        ))}
-                </div>
-            )}
-
-            {newQuestionMapping && (
-                <>
-                    <br />
-                    <h3>
-                        <FormattedMessage {...MESSAGES.proposedNewOne} />
-                    </h3>
-                    <br />
-                    <ObjectDumper object={newQuestionMapping} />
-                    <DuplicateHint
-                        mapping={newQuestionMapping}
-                        mappingVersion={mappingVersion}
-                    />
-                    <br />
                     <Button
-                        className="button"
-                        variant="contained"
                         color="primary"
-                        disabled={!newQuestionMapping}
-                        onClick={() => {
-                            let item = newQuestionMapping;
-                            if (
-                                mapping.mapping.mapping_type === 'EVENT_TRACKER'
-                            ) {
-                                item = [{ ...newQuestionMapping }];
-                                if (
-                                    iasoField &&
-                                    iasoField.value !== 'undefined'
-                                ) {
-                                    item = [
-                                        {
-                                            ...newQuestionMapping,
-                                            iaso_field: iasoField.value,
-                                        },
-                                    ];
-                                }
-                            }
-
-                            onConfirmedQuestionMapping(item);
-                        }}
+                        variant="outlined"
+                        startIcon={<Block />}
+                        disabled={
+                            isMapped(questionMapping) ||
+                            isNeverMapped(questionMapping)
+                        }
+                        onClick={() =>
+                            onNeverMapQuestionMapping(questionMapping)
+                        }
                     >
-                        <FormattedMessage {...MESSAGES.confirm} />
+                        <FormattedMessage {...MESSAGES.willNeverMap} />
                     </Button>
-                </>
-            )}
+                    {isNeverMapped(questionMapping) && (
+                        <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            sx={styles.neverHint}
+                        >
+                            <FormattedMessage
+                                {...MESSAGES.neverMapAlert}
+                                values={{ breakLine: ' ' }}
+                            />
+                        </Typography>
+                    )}
+                </Box>
+            </MappingCard>
+            <MappingCard title={formatMessage(MESSAGES.changeMappingTitle)}>
+                {mapping.mapping.mapping_type === 'AGGREGATE' && (
+                    <Dhis2SearchComponent
+                        key={question.name}
+                        resourceName="dataElements"
+                        dataSourceId={mapping.mapping.data_source.id}
+                        defaultValue={
+                            !isMapped(questionMapping) &&
+                            !isNeverMapped(questionMapping)
+                                ? question.name
+                                : undefined
+                        }
+                        label={
+                            <FormattedMessage {...MESSAGES.searchDataElement} />
+                        }
+                        filter={
+                            // TODO not working endpoint send the first filter
+                            mapping.mapping_type === 'AGGREGATE'
+                                ? 'domainType:eq:AGGREGATE'
+                                : 'domainType:eq:TRACKER'
+                        }
+                        onChange={onChange}
+                        fields="id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]],dataSetElements[dataSet[id,name,periodType]]"
+                        mapOptions={mapToMapping}
+                    />
+                )}
+
+                {
+                    /* there's no relation from data elements to programs, need to fetch program's stages data elements */
+                    mapping.mapping.mapping_type === 'EVENT' && (
+                        <Dhis2ProgramDataElementSearch
+                            question={question}
+                            onChange={onChange}
+                            mapping={mapping}
+                            questionMapping={questionMapping}
+                            programId={programId}
+                        />
+                    )
+                }
+
+                {mapping.mapping.mapping_type === 'EVENT_TRACKER' && (
+                    <div>
+                        <Select
+                            keyValue="fieldType"
+                            options={fieldTypeOptions}
+                            value={fieldType}
+                            onChange={setFieldType}
+                        />
+                        {fieldType && (
+                            <>
+                                {fieldType === 'dataElement' && (
+                                    <Dhis2ProgramDataElementSearch
+                                        question={question}
+                                        onChange={onChange}
+                                        mapping={mapping}
+                                        questionMapping={questionMapping}
+                                        programId={programId}
+                                    />
+                                )}
+                                {fieldType === 'trackedEntityAttribute' && (
+                                    <Dhis2ProgramTrackedEntityAttributeSearch
+                                        question={question}
+                                        onChange={onChange}
+                                        mapping={mapping}
+                                        questionMapping={questionMapping}
+                                        programId={programId}
+                                    />
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
+
+                {newQuestionMapping && (
+                    <Box sx={styles.proposed}>
+                        <Typography
+                            variant="subtitle1"
+                            color="primary"
+                            gutterBottom
+                        >
+                            {formatMessage(MESSAGES.proposedMapping)}
+                        </Typography>
+                        <MappingSummary
+                            mapping={newQuestionMapping}
+                            mappingType={mapping.mapping.mapping_type}
+                        />
+                        <DuplicateHint
+                            mapping={newQuestionMapping}
+                            mappingVersion={mappingVersion}
+                        />
+                        {mapping.mapping.mapping_type === 'EVENT_TRACKER' &&
+                            isOrgUnitTarget(newQuestionMapping) && (
+                                <Box sx={styles.iasoField}>
+                                    <Select
+                                        keyValue="iasoField"
+                                        label={formatMessage(
+                                            MESSAGES.useInstanceProperty,
+                                        )}
+                                        options={fieldOptions}
+                                        value={iasoField}
+                                        onChange={setIasoField}
+                                    />
+                                </Box>
+                            )}
+                        <Box sx={styles.actions}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() =>
+                                    onConfirmedQuestionMapping(
+                                        buildQuestionMapping(
+                                            newQuestionMapping,
+                                            mapping.mapping.mapping_type,
+                                            iasoField,
+                                        ),
+                                    )
+                                }
+                            >
+                                <FormattedMessage {...MESSAGES.confirm} />
+                            </Button>
+                        </Box>
+                    </Box>
+                )}
+            </MappingCard>
         </>
     );
 };

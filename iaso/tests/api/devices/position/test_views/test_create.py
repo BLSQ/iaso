@@ -30,9 +30,9 @@ class DevicesPositionAPITestCase(APITestCase):
             needs_authentication=True,
         )
 
-        cls.device_1 = m.Device.objects.create()
+        cls.device_1 = m.Device.objects.create(installation_id="device1", account=star_wars)
         cls.device_1.projects.set([cls.project_1])
-        cls.device_2 = m.Device.objects.create()
+        cls.device_2 = m.Device.objects.create(installation_id="device2", account=star_wars)
         cls.device_2.projects.set([cls.project_2])
 
     def test_post_ok_no_auth(self):
@@ -155,11 +155,11 @@ class DevicesPositionAPITestCase(APITestCase):
 
     def test_get_details_requires_auth(self):
         response = self.client.get(f"/api/devicespositions/1/?app_id={self.project_1.app_id}")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_list_requires_auth(self):
         response = self.client.get(f"/api/devicespositions/?app_id={self.project_1.app_id}")
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def assertValidDevicePositionListData(
         self, list_data: typing.Mapping, expected_length: int, with_result_key=True, paginated: bool = False

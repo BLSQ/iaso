@@ -515,7 +515,7 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         serie_id = "ad893d6d-355f-4ffe-a575-cea6bbe5914f"
         self.assertEqual(m.Device.objects.count(), 1)
-        device = m.Device.objects.get(imei=serie_id)
+        device = m.Device.objects.get(installation_id=serie_id)
 
         for instance_uuid in (DISASI_MAKULO_CATT, PATRICE_AKAMBU_CATT):
             catt_instance = m.Instance.objects.get(uuid=instance_uuid)

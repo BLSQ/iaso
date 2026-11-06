@@ -63,7 +63,6 @@ dependencies = [
     "jsonschema==4.20.0", # https://github.com/python-jsonschema/jsonschema/tags
     "libsass==0.23.0", # provides the 'sass' module used by compile_index_scss
     "lxml==4.9.4", # https://github.com/lxml/lxml/tags
-    "names-generator==0.2.0", # https://github.com/glentner/names_generator
     "nested-multipart-parser==1.5.0", # https://github.com/remigermain/nested-multipart-parser
     "numpy==1.26.2", # https://github.com/numpy/numpy/tags
     "oauth2client==4.1.3", # https://github.com/googleapis/oauth2client/tags
@@ -338,4 +337,9 @@ docs = [
 prod = [
     "gunicorn==23.0.0", # https://github.com/benoitc/gunicorn/tags
     "py-spy==0.4.2", # https://github.com/benfred/py-spy/releases
+]
+setuper = [
+    "click==8.1.7",
+    "names-generator==0.2.0", # https://github.com/glentner/names_generator
+    "pyarrow==21.0.0",
 ]

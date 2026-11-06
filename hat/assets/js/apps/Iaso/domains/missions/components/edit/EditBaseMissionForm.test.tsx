@@ -80,9 +80,11 @@ vi.mock('Iaso/domains/missions/components/DetailsWrapper', () => ({
 
 const renderComponent = (redirectBackUrl = '/missions') => {
     const data =
-        getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock({
-            name: 'Mission',
-        }) as unknown as MissionFormRetrieve;
+        getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock(
+            {
+                name: 'Mission',
+            },
+        ) as unknown as MissionFormRetrieve;
 
     renderWithThemeAndIntlProvider(
         <EditBaseMissionForm

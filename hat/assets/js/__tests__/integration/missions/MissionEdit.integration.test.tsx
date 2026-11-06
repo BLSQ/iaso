@@ -143,7 +143,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /select a form to add/i,
+                name: /add a form/i,
             }),
         );
     });
@@ -284,10 +284,14 @@ describe('Mission edit integration test', () => {
             ).toHaveValue('ET 1');
         });
         expect(
-            screen.getByRole('textbox', { name: /min cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /min (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('12');
         expect(
-            screen.getByRole('textbox', { name: /max cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /max (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('14');
     });
     it('renders initial data - MISSION_ORG_UNIT', async () => {
@@ -329,10 +333,14 @@ describe('Mission edit integration test', () => {
         });
 
         expect(
-            screen.getByRole('textbox', { name: /min cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /min (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('12');
         expect(
-            screen.getByRole('textbox', { name: /max cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /max (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('14');
     });
 
@@ -367,7 +375,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /select a form to add/i,
+                    name: /add a form/i,
                 }),
             );
         });
@@ -405,7 +413,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /select a form to add/i,
+                    name: /add a form/i,
                 }),
             );
         });
@@ -942,16 +950,22 @@ describe('Mission edit integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /max (new org units|entities) per assigned org unit/i,
+                }),
                 '20',
             );
         });
@@ -1047,16 +1061,22 @@ describe('Mission edit integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /max (new org units|entities) per assigned org unit/i,
+                }),
                 '20',
             );
         });

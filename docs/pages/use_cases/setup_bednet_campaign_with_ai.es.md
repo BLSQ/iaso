@@ -21,15 +21,15 @@ La guía tiene dos partes:
 
 | Herramienta | Para | Qué hace |
 |---|---|---|
-| **Aplicaciones móviles** (hasta seis) | agentes de empadronamiento, agentes de distribución, equipos de grupos especiales, jefes de equipo, encargados de almacén, supervisores | registrar los hogares con un ticket QR, distribuir los mosquiteros una sola vez por hogar, registrar a los trabajadores y su asistencia, seguir los movimientos de stock, rellenar las listas de supervisión |
+| **Proyectos móviles** (hasta seis) | agentes de empadronamiento, agentes de distribución, equipos de grupos especiales, jefes de equipo, gestores de stock, supervisores | registrar los hogares con un ticket QR, distribuir los mosquiteros una sola vez por hogar, registrar a los trabajadores y su asistencia, seguir los movimientos de stock, rellenar las listas de supervisión |
 | **15 formularios listos para usar** | todos los agentes | en inglés y francés, adaptados a su regla de asignación |
 | **Registros** | todos | hogares, grupos especiales (prisiones, campamentos, internados…) y trabajadores, que los agentes vuelven a encontrar en el teléfono |
-| **Seguimiento del stock** | encargados de almacén | saldo de mosquiteros de cada almacén, calculado a partir de recepciones, salidas, devoluciones, transferencias y pérdidas |
+| **Seguimiento del stock** | gestores de stock | saldo de mosquiteros de cada almacén, calculado a partir de recepciones, salidas, devoluciones, transferencias y pérdidas |
 | **Paneles web** | equipo de coordinación | avance de la campaña por región, distrito o establecimiento de salud; asistencia y hoja de pago de los trabajadores |
-| **Informes móviles** | jefes de equipo, encargados de almacén | avance, mapa de hogares, asistencia del equipo y stock, disponibles sin conexión en el teléfono |
-| **Códigos QR** | formadores | para instalar y configurar la aplicación en cada teléfono en segundos |
+| **Informes móviles** | jefes de equipo, gestores de stock | avance, mapa de hogares, asistencia del equipo y stock, disponibles sin conexión en el teléfono |
+| **Códigos QR** | formadores | para instalar la aplicación IASO y configurarla para cada proyecto en segundos |
 
-![Las aplicaciones de la campaña en IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
+![Los proyectos de la campaña en IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
 
 ## Antes de empezar
 
@@ -37,14 +37,13 @@ La guía tiene dos partes:
 |---|---|
 | Una **cuenta IASO** | Puede crear una prueba gratuita en [openiaso.com/pricing](https://www.openiaso.com/pricing/). |
 | Un **asistente de IA** | Capaz de ejecutar código Python y de acceder a su servidor IASO: Claude o ChatGPT en el navegador o en su aplicación, o Claude Code (aplicación de escritorio o terminal) con Python 3 en su ordenador. |
-| Una **conexión a internet** | Para su asistente de IA e IASO. |
 | Sus **archivos y decisiones de campaña** | Solo si quiere probar con los datos reales de su campaña. Sus datos geográficos (desde DHIS2, un archivo Excel o un archivo GeoPackage: el asistente los importa por usted, o puede [importarlos usted mismo](../users/reference/user_guide.md#importar-una-piramide-en-una-fuente-de-datos)) y las decisiones de la campaña: distritos cubiertos, regla de asignación de mosquiteros, funciones y tarifas diarias de los trabajadores, lista de almacenes, lista de agentes (vea las preguntas del asistente en el [paso 5](#paso-5-responder-a-las-preguntas-del-asistente)). Si no, el asistente puede proponer datos de demostración para probar primero la configuración. |
-| Un **teléfono Android** | Con la [aplicación IASO de Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=es), para probar las aplicaciones móviles. |
+| Un **teléfono Android** | Con la [aplicación IASO de Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=es), para probar los proyectos móviles. |
 
 !!! tip "¿Usa otro asistente de IA?"
     Esta guía se ha probado con Claude y ChatGPT. Si tiene dificultades con otro asistente
-    de IA, nos interesa su opinión: escriba a
-    [products@bluesquarehub.com](mailto:products@bluesquarehub.com).
+    de IA, nos interesa su opinión:
+    [contáctenos en products@bluesquarehub.com](mailto:products@bluesquarehub.com).
 
 !!! note "Su dirección de IASO"
     Toda esta guía se desarrolla en **[https://app.openiaso.com](https://app.openiaso.com/)**.
@@ -62,7 +61,7 @@ La guía tiene dos partes:
 2. Elija el **usuario para la configuración**: el asistente trabaja en IASO como este
    usuario. Puede usar el usuario principal de su cuenta recién creada: ya tiene todos los
    permisos que necesita el kit (indicados en `SKILL.md`, sección 1). Lo ideal es crear un
-   usuario dedicado y desactivarlo cuando termine la configuración.
+   usuario dedicado a la configuración.
 
 ---
 
@@ -100,8 +99,9 @@ nombre.
 
 !!! warning "Mantenga su clave de acceso en privado"
     La clave de acceso funciona como su contraseña. No la pegue nunca en la conversación y
-    no comparta nunca el zip una vez que la contiene. Cuando termine la configuración,
-    borre la clave de `iaso_config.txt`.
+    no comparta nunca el zip una vez que la contiene. Guarde el kit con su clave en un
+    lugar seguro: lo necesitará para volver al asistente y hacer cambios más adelante
+    (vea el paso 7).
 
 ### Paso 4: Dar el kit a su asistente de IA
 
@@ -116,7 +116,7 @@ nombre.
 > acceso y haciendo una copia de seguridad de mi cuenta. Mis datos geográficos vienen de:
 > [mi DHIS2, ya configurado en la fuente de datos / el archivo Excel adjunto / el GeoPackage
 > adjunto / una pirámide de demostración / ya están en IASO]. Después hazme las preguntas de
-> la campaña un tema a la vez. Muéstrame los códigos QR en cuanto existan las aplicaciones.
+> la campaña un tema a la vez. Muéstrame los códigos QR en cuanto existan los proyectos.
 > Pide mi confirmación antes de cada paso que modifique IASO. No te detengas antes de la
 > lista de comprobación final, y dime al final qué has creado y qué debo probar en un
 > teléfono.
@@ -139,21 +139,19 @@ rápida será la configuración:
 |---|---|---|
 | Campaña | nombre, país, idiomas de los formularios, distritos cubiertos, cuántos mosquiteros por hogar | la lista de distritos, la regla de asignación |
 | Geografía | de dónde vienen sus lugares, en qué nivel se registran los hogares (aldea, establecimiento de salud…) | su configuración DHIS2 en IASO, o su archivo Excel o GeoPackage |
-| Aplicaciones | qué aplicaciones necesita (empadronamiento, distribución, grupos especiales, trabajadores, stock, supervisión) | — |
+| Proyectos | qué proyectos móviles necesita (empadronamiento, distribución, grupos especiales, trabajadores, stock, supervisión) | — |
 | Informes | qué paneles e informes móviles, y quién puede abrir cada uno | la lista de personas que siguen la campaña |
 | Trabajadores | las funciones, las tarifas diarias, quién valida la asistencia | la escala de pagos |
 | Stock | los almacenes seguidos, el número de mosquiteros por fardo | la lista de almacenes |
-| Usuarios | quién usa qué aplicación, en qué zona | la lista de agentes |
+| Usuarios | quién usa qué proyecto, en qué zona | la lista de agentes |
 
 ¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
 asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
 distritos, almacenes y agentes) que luego sustituirá por los suyos.
 
 Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
-datos geográficos, aplicaciones, formularios, registros, stock, usuarios, paneles e informes
+datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
 móviles.
-
-![La página de códigos QR, para imprimir para la formación](./setup_bednet_campaign_with_ai_attachments/qr-codes.jpg){ .doc-shot }
 
 ### Paso 6: Probar en un teléfono
 
@@ -161,14 +159,14 @@ móviles.
    [Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=es)
    (o escanee el código QR de Play Store que le da el asistente).
 2. **Elija el usuario de prueba**: un usuario de prueba creado por el asistente, o su propio
-   usuario. En ambos casos, este usuario debe tener las aplicaciones que quiere probar: en
-   IASO, vaya a **Admin > Usuarios**, edite el usuario y, en **Proyectos**, seleccione las
-   aplicaciones que va a probar. Para probar las distintas aplicaciones y pasar de una a
-   otra, selecciónelas todas.
+   usuario. En ambos casos, este usuario debe tener los proyectos que quiere probar: en
+   IASO, vaya a **Admin > Usuarios**, edite el usuario y, en **Proyectos**, seleccione los
+   proyectos que va a probar. Para probar los distintos proyectos y pasar de uno a otro,
+   selecciónelos todos.
 3. **Encuentre los códigos QR** en IASO: abra el menú y vaya a **Admin > Proyectos**. Cada
-   aplicación móvil de la campaña aparece allí, con su código QR listo para escanear.
+   proyecto móvil de la campaña aparece allí, con su código QR listo para escanear.
 4. **Abra la aplicación IASO** en el teléfono, elija escanear un código QR y escanee el
-   código QR de la aplicación que va a probar. Acepte las solicitudes de permisos que
+   código QR del proyecto que va a probar. Acepte las solicitudes de permisos que
    aparezcan (cámara, ubicación…).
 5. **Inicie sesión** con el usuario elegido en el punto 2.
 6. Siga la lista de pruebas que le da el asistente: registrar un hogar, volver a
@@ -176,7 +174,7 @@ móviles.
    stock.
 7. Abra los informes móviles, con red y luego en modo avión.
 
-![Inicio de una aplicación en el teléfono](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
+![Inicio de un proyecto en el teléfono](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
 ![El informe de avance en la aplicación](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
 
 Antes de formar a los equipos de campo, pida al asistente que borre los datos y los usuarios
@@ -184,10 +182,9 @@ de prueba.
 
 ### Paso 7: Después de la configuración
 
-- Borre la clave de acceso de `iaso_config.txt` y elimine el zip que la contenía.
-- Si creó un usuario dedicado a la configuración, desactívelo.
 - Para cambiar algo durante la campaña (una pregunta de un formulario, un nuevo distrito, un
-  informe), vuelva al asistente con el kit. Los formularios que ya se usan en los teléfonos
+  informe), simplemente pídaselo al asistente: vuelva a él con el kit, que sigue conteniendo
+  su clave de acceso. Los formularios que ya se usan en los teléfonos
   deben modificarse con cuidado: el kit le explica al asistente cómo hacerlo.
 - Siga la campaña en los paneles web (menú **Pages** en IASO) y en los informes móviles.
 

@@ -209,15 +209,6 @@ ignore = [
     "DJ007",   # django-all-with-model-form
     "DJ008",   # django-model-without-dunder-str
     "DJ012",   # django-unordered-body-content-in-model
-    # flake8-datetimez (DTZ).
-#    "DTZ001",  # call-datetime-without-tzinfo
-#    "DTZ002",  # call-datetime-today
-#    "DTZ003",  # call-datetime-utcnow
-#    "DTZ004",  # call-datetime-utcfromtimestamp
-#    "DTZ005",  # call-datetime-now-without-tzinfo
-#    "DTZ006",  # call-datetime-fromtimestamp
-#    "DTZ007",  # call-datetime-strptime-without-zone
-#    "DTZ011",  # call-date-today
     # Error (E).
     "E402",    # module-import-not-at-top-of-file
     "E501",    # line-too-long

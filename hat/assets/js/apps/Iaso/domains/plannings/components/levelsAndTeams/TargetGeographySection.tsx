@@ -1,5 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
+import Alert from '@mui/material/Alert/Alert';
 import Button from '@mui/material/Button/Button';
 import Grid from '@mui/material/Grid/Grid';
 import Stack from '@mui/material/Stack/Stack';
@@ -15,6 +16,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import { useGetPlanningRootOrgUnit } from '../../hooks/requests/useGetPlanningRootOrgUnit';
 import { usePlanningFieldHandlers } from '../../hooks/usePlanningFieldHandlers';
+import { useProjectOrgUnitTypeIds } from '../../hooks/useProjectOrgUnitTypeIds';
 import MESSAGES from '../../messages';
 import { PlanningStepCard } from '../shared/PlanningStepCard';
 
@@ -23,6 +25,12 @@ const styles = {
         display: 'block',
         mt: 1,
         ml: 1.5,
+    },
+    selectProjectFirst: {
+        mb: 2,
+    },
+    teamColumn: {
+        pt: 2,
     },
     createTeam: {
         mt: 1,
@@ -70,12 +78,16 @@ export const TargetGeographySection: FC = () => {
     const { data: selectedOrgUnit } = useGetPlanningRootOrgUnit(
         values.selectedOrgUnit,
     );
+    const { orgUnitTypeIds: projectOrgUnitTypeIds } = useProjectOrgUnitTypeIds(
+        values.project,
+    );
+    const hasProject = Boolean(values.project);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useApiTeamsDropdownList(
             { projects: values?.project ? [values.project] : [] },
             {
                 query: {
-                    enabled: Boolean(values.project),
+                    enabled: hasProject,
                 },
             },
         );
@@ -102,6 +114,11 @@ export const TargetGeographySection: FC = () => {
                 MESSAGES.targetGeographyAndRootTeamInfos,
             )}
         >
+            {!hasProject && (
+                <Alert severity="info" sx={styles.selectProjectFirst}>
+                    {formatMessage(MESSAGES.selectProjectFirst)}
+                </Alert>
+            )}
             <Grid container columnSpacing={2}>
                 <Grid item xs={12} md={6}>
                     <OrgUnitTreeviewModal
@@ -112,7 +129,8 @@ export const TargetGeographySection: FC = () => {
                         }
                         errors={getErrors('selectedOrgUnit')}
                         required
-                        disabled={isReadOnly}
+                        disabled={isReadOnly || !hasProject}
+                        allowedTypes={projectOrgUnitTypeIds}
                     />
                     {values.selectedOrgUnit && selectedOrgUnit?.parent_name && (
                         <Typography
@@ -124,7 +142,7 @@ export const TargetGeographySection: FC = () => {
                         </Typography>
                     )}
                 </Grid>
-                <Grid item xs={12} md={6} sx={{ pt: 2 }}>
+                <Grid item xs={12} md={6} sx={styles.teamColumn}>
                     <InputComponent
                         type="select"
                         keyValue="selectedTeam"
@@ -135,14 +153,7 @@ export const TargetGeographySection: FC = () => {
                         required
                         options={teamsDropdown ?? []}
                         loading={isFetchingTeams}
-                        disabled={isReadOnly || !values.project}
-                        helperText={
-                            values.project
-                                ? undefined
-                                : formatMessage(
-                                      MESSAGES.selectProjectToPickRootTeam,
-                                  )
-                        }
+                        disabled={isReadOnly || !hasProject}
                         withMarginTop={false}
                     />
                     {!isReadOnly && (
@@ -151,7 +162,7 @@ export const TargetGeographySection: FC = () => {
                             defaultValues={{ project: values.project }}
                             lockedFields={['project', 'parent']}
                             onSuccess={onTeamCreated}
-                            iconProps={{ disabled: !values.project }}
+                            iconProps={{ disabled: !hasProject }}
                         />
                     )}
                 </Grid>

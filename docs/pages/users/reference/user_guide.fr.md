@@ -465,6 +465,64 @@ IASO permet d'importer et de gérer une ou plusieurs sources de données géogra
 
 Vous trouverez ici les sources de données avec leurs noms, versions et descriptions. Il est possible de modifier une source de données, de consulter l'historique des versions ou de comparer les sources et de les exporter vers DHIS2.
 
+#### Importer une pyramide dans une source de données
+
+Vous pouvez importer votre pyramide géographique (unités d'organisation) dans une source de
+données depuis DHIS2 ou depuis un fichier GeoPackage. Chaque import crée une nouvelle
+**version** de la source de données.
+
+**Connecter la source de données à DHIS2** (uniquement pour un import DHIS2) :
+
+1. Allez dans **Admin > Sources de données > Liste des sources de données** et cliquez sur
+   l'icône de **modification** de votre source de données.
+2. Renseignez le **nom**, l'**URL**, le **login** et le **mot de passe** DHIS2. Idéalement,
+   utilisez un utilisateur DHIS2 dédié, en lecture seule.
+3. Cliquez sur **Vérifier la configuration**. Le message **Connexion au serveur DHIS2 OK**
+   doit s'afficher. Sinon, vérifiez l'URL, le login et le mot de passe.
+4. Cliquez sur **Sauver**.
+
+**Depuis DHIS2** (après avoir connecté la source de données à DHIS2, voir ci-dessus) :
+
+1. Sur la **Liste des sources de données**, cliquez sur **Versions** sur votre source, puis
+   sur **Nouvelle version depuis DHIS2**.
+2. Cliquez sur **Lancer et montrer la tâche**. IASO ouvre la tâche pour que vous puissiez
+   suivre l'import. Vous pouvez fermer la page et revenir plus tard dans **Admin > Tâches**.
+3. Une fois la tâche terminée, faites de la nouvelle version la version par défaut :
+   modifiez de nouveau la source de données, choisissez le numéro de la nouvelle version
+   dans **Version par défaut** (votre compte démarre avec une version 1 vide), puis cliquez
+   sur **Sauver**.
+4. Passez les unités d'organisation importées au statut **Valide** : les unités importées de
+   cette façon arrivent avec le statut *Nouveau*, et IASO n'utilise que les unités *Valides*
+   dans les applications.
+    - Allez dans **Org Units**. Dans les filtres, changez le statut de *Valide* à *Nouveau*,
+      puis cliquez sur **Recherche**.
+    - Sélectionnez tous les résultats (**Tout sélectionner**), puis choisissez **Editer la
+      sélection**.
+    - Cochez **Modifier la validation**, choisissez *Validé*, enregistrez et confirmez les
+      modifications multiples. Le changement se fait en arrière-plan.
+
+!!! warning "Mes unités d'organisation n'apparaissent pas dans Org Units"
+    La liste **Org Units** n'affiche par défaut que les unités *Valides*. Juste après un
+    import DHIS2 depuis l'interface d'IASO, toutes vos unités sont au statut *Nouveau* : la
+    liste semble vide et l'import paraît avoir échoué. Ce n'est pas le cas : changez le
+    filtre de statut à *Nouveau* pour les voir, puis passez-les à *Valide* (point 4
+    ci-dessus).
+
+**Depuis un GeoPackage** (voir le [format GeoPackage d'IASO](./geopackage_format.md)) :
+
+1. Sur la **Liste des sources de données**, cliquez sur **Versions** sur votre source, puis
+   sur **Nouvelle version sur base d'un Geopackage**.
+2. Choisissez votre fichier.
+3. **Cochez « Passer le statut des org units à "Valide" ».** Sinon, tous vos lieux sont
+   importés avec le statut *Nouveau* et devront être validés avant de pouvoir être utilisés.
+4. Lancez l'import et suivez-le dans **Admin > Tâches**.
+5. Une fois la tâche terminée, faites de la nouvelle version la version par défaut :
+   modifiez la source de données, choisissez le numéro de la nouvelle version dans
+   **Version par défaut**, puis cliquez sur **Sauver**.
+
+Pour vérifier le résultat, allez dans **Org Units** et cherchez quelques lieux que vous
+connaissez, à chaque niveau : ils doivent avoir le statut *Valide*.
+
 #### Correspondance
 
 Cette fonctionnalité est plutôt géospatiale : elle permet d'établir des liens entre plusieurs pyramides géographiques.

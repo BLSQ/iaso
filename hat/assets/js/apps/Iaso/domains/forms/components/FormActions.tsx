@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Download } from '@mui/icons-material';
+import Download from '@mui/icons-material/Download';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import { Menu, MenuItem } from '@mui/material';
+import Menu from '@mui/material/Menu/Menu';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { Link } from 'react-router-dom';

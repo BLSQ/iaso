@@ -4,8 +4,9 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { ArrowUpwardOutlined } from '@mui/icons-material';
-import { Box, useTheme } from '@mui/material';
+import ArrowUpwardOutlined from '@mui/icons-material/ArrowUpwardOutlined';
+import Box from '@mui/material/Box/Box';
+import useTheme from '@mui/material/styles/useTheme';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,

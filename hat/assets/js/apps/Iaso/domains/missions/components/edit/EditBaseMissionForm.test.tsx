@@ -2,8 +2,8 @@ import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MissionFormRetrieve } from 'Iaso/api/missions';
 import { getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock } from 'Iaso/api/missions/endpoints/missions/missions.msw';
+import { MissionFormRetrieve } from 'Iaso/api/missions/models/missionFormRetrieve.zod';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { EditBaseMissionForm } from './EditBaseMissionForm';
 

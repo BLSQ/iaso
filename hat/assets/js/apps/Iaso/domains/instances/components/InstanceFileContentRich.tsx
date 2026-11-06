@@ -1,14 +1,12 @@
 import React, { useMemo, FunctionComponent, JSX } from 'react';
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
-import {
-    Box,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-    Tooltip,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { textPlaceholder } from 'bluesquare-components';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';

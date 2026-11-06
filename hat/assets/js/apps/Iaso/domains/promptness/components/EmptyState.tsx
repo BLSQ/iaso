@@ -1,6 +1,8 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import QueryStats from '@mui/icons-material/QueryStats';
-import { Box, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 
 type Props = {

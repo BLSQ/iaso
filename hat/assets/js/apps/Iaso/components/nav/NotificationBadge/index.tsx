@@ -1,14 +1,12 @@
 import React, { FunctionComponent, useCallback, useRef, useState } from 'react';
 import NotificationImportant from '@mui/icons-material/NotificationImportant';
-import {
-    ClickAwayListener,
-    Grow,
-    IconButton,
-    MenuItem,
-    MenuList,
-    Paper,
-    Popper,
-} from '@mui/material';
+import { ClickAwayListener } from '@mui/material/ClickAwayListener/ClickAwayListener';
+import Grow from '@mui/material/Grow/Grow';
+import IconButton from '@mui/material/IconButton/IconButton';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
+import MenuList from '@mui/material/MenuList/MenuList';
+import Paper from '@mui/material/Paper/Paper';
+import Popper from '@mui/material/Popper/Popper';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useRedirectToReplace } from 'bluesquare-components';
 import moment from 'moment';

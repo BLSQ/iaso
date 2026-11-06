@@ -1,17 +1,18 @@
 import React from 'react';
-import { SaveOutlined } from '@mui/icons-material';
-import { Alert, Button, useTheme } from '@mui/material';
+import SaveOutlined from '@mui/icons-material/SaveOutlined';
+import Alert from '@mui/material/Alert/Alert';
+import Button from '@mui/material/Button/Button';
+import useTheme from '@mui/material/styles/useTheme';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 
 import { LinkButton, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import {
-    MissionEntityTypeRetrieve,
-    MissionEntityTypeUpdateRequest,
-    MissionTypeDa2Enum,
-    useApiMicroplanningMissionsUpdate,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsUpdate } from 'Iaso/api/missions/endpoints/missions/missions';
+import { MissionEntityTypeRetrieve } from 'Iaso/api/missions/models/missionEntityTypeRetrieve.zod';
+import { MissionEntityTypeUpdateRequest } from 'Iaso/api/missions/models/missionEntityTypeUpdateRequest.zod';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
+
 import { DetailsWrapper } from 'Iaso/domains/missions/components/DetailsWrapper';
 import { EditMissionForm } from 'Iaso/domains/missions/components/EditMissionForm';
 import MESSAGES from 'Iaso/domains/missions/messages';

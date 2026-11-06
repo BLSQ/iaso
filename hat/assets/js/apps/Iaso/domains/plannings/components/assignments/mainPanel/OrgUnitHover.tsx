@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { LngLat, MapGeoJSONFeature, MapLayerMouseEvent } from 'maplibre-gl';
 import { Popup, useMap } from 'react-map-gl/maplibre';
 import { SxStyles } from 'Iaso/types/general';

@@ -5,7 +5,8 @@ import React, {
     useMemo,
 } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
-import { Tab, Tooltip } from '@mui/material';
+import Tab from '@mui/material/Tab/Tab';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import classnames from 'classnames';
 

@@ -8,15 +8,13 @@ import React, {
 } from 'react';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
-import {
-    Box,
-    ClickAwayListener,
-    FormControlLabel,
-    IconButton,
-    Paper,
-    Popper,
-    Switch,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import { ClickAwayListener } from '@mui/material/ClickAwayListener/ClickAwayListener';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Popper from '@mui/material/Popper/Popper';
+import Switch from '@mui/material/Switch/Switch';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';

@@ -1,6 +1,10 @@
 import React, { FunctionComponent } from 'react';
 
-import { Table, TableBody, Paper, Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import Typography from '@mui/material/Typography/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import isEqual from 'lodash/isEqual';

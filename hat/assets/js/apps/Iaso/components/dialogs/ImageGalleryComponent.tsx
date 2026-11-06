@@ -16,7 +16,10 @@ import Rotate90DegreesCwOutlined from '@mui/icons-material/Rotate90DegreesCwOutl
 import ZoomIn from '@mui/icons-material/ZoomIn';
 import ZoomOut from '@mui/icons-material/ZoomOut';
 
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { ShortFile } from 'Iaso/domains/instances/types/instance';
 import { SxStyles } from 'Iaso/types/general';

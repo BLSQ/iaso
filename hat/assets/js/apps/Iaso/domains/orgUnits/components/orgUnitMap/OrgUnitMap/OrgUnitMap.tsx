@@ -8,8 +8,9 @@ import React, {
     Dispatch,
     useState,
 } from 'react';
-import { Grid, useTheme } from '@mui/material';
 import { pink } from '@mui/material/colors';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import 'leaflet-draw';

@@ -1,12 +1,15 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, Grid, useTheme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { useFilterState } from '../../../../hooks/useFilterState';
 import { useDataSourceVersions } from '../../../dataSources/requests';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { baseUrl } from '../config';

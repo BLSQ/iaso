@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../forms/messages';
 import { ExtendedDataSource, fetchAssociatedOrgUnits } from '../requests';

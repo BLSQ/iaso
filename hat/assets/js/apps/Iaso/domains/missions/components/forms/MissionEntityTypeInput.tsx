@@ -3,10 +3,8 @@ import Grid from '@mui/material/Grid/Grid';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
 import { FormikProps } from 'formik/dist/types';
-import {
-    MissionEntityTypeUpdateRequest,
-    MissionEntityTypeCreateRequest,
-} from 'Iaso/api/missions';
+import { MissionEntityTypeCreateRequest } from 'Iaso/api/missions/models/missionEntityTypeCreateRequest.zod';
+import { MissionEntityTypeUpdateRequest } from 'Iaso/api/missions/models/missionEntityTypeUpdateRequest.zod';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';
 import { SelectInput } from 'Iaso/components/forms/SelectInput';
 import { useGetEntityTypesDropdown } from 'Iaso/domains/entities/hooks/requests';

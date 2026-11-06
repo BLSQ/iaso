@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Checkbox } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
 import {
     Column,
     formatThousand,

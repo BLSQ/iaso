@@ -6,7 +6,8 @@ import React, {
 } from 'react';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import { Box, Paper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
 import { useMap } from 'react-leaflet';
 import { SxStyles } from '../../../../types/general';
 

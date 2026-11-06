@@ -2,17 +2,15 @@ import React, { FC, useCallback, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SendIcon from '@mui/icons-material/Send';
-import {
-    Box,
-    Button,
-    FormControl,
-    FormControlLabel,
-    FormLabel,
-    Radio,
-    RadioGroup,
-    SxProps,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import FormControl from '@mui/material/FormControl/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel/FormLabel';
+import Radio from '@mui/material/Radio/Radio';
+import RadioGroup from '@mui/material/RadioGroup/RadioGroup';
 import type { Theme } from '@mui/material/styles';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { ChatQuickReplyQuestion } from './ChatPanel';

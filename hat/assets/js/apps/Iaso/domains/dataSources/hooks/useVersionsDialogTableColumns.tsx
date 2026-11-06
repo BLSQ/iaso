@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DownloadIcon from '@mui/icons-material/Download';
-import { Tooltip, IconButton as MuiIconButton, Link } from '@mui/material';
+import MuiIconButton from '@mui/material/IconButton/IconButton';
+import Link from '@mui/material/Link/Link';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { Column, useSafeIntl, IconButton } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { AddTask } from '../components/AddTaskComponent';

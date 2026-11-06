@@ -2,17 +2,15 @@ import React, { FunctionComponent } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ChatIcon from '@mui/icons-material/Chat';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
-import {
-    Divider,
-    Drawer,
-    IconButton,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Divider from '@mui/material/Divider/Divider';
+import Drawer from '@mui/material/Drawer/Drawer';
+import IconButton from '@mui/material/IconButton/IconButton';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';

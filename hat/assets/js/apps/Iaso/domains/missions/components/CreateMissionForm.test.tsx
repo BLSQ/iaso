@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 
 import { CreateMissionForm } from './CreateMissionForm';
 

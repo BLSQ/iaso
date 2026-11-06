@@ -1,11 +1,9 @@
 import React from 'react';
-import {
-    Checkbox,
-    FormControl,
-    FormControlLabelProps,
-    FormHelperText,
-} from '@mui/material';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
+import FormControl from '@mui/material/FormControl/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import type { FormControlLabelProps } from '@mui/material/FormControlLabel/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText/FormHelperText';
 import { FieldInputProps, FormikProps } from 'formik';
 
 type Props = Omit<

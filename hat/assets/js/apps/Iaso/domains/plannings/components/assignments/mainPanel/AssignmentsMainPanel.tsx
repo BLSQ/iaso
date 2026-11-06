@@ -1,7 +1,10 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
 import ListIcon from '@mui/icons-material/List';
 import MapIcon from '@mui/icons-material/Map';
-import { Box, Paper, Tab, Tabs } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';

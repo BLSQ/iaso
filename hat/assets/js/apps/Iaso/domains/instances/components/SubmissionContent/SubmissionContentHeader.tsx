@@ -1,7 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import RepeatIcon from '@mui/icons-material/Repeat';
-import { Box, ButtonBase, Chip, Theme, Typography, alpha } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import ButtonBase from '@mui/material/ButtonBase/ButtonBase';
+import Chip from '@mui/material/Chip/Chip';
+import { alpha } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

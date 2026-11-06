@@ -1,6 +1,8 @@
 import React, { useState, useCallback, FunctionComponent } from 'react';
 import EventIcon from '@mui/icons-material/Event';
-import { Grid, useTheme, Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';

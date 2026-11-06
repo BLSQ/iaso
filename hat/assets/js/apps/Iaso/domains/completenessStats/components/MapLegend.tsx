@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Paper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { scaleThreshold } from '@visx/scale';
 import { Legend } from 'Iaso/components/LegendBuilder/Legend';

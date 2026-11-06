@@ -1,15 +1,13 @@
 import React from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DescriptionIcon from '@mui/icons-material/Description';
-import {
-    Alert,
-    Box,
-    IconButton,
-    TableCell,
-    TableRow,
-    Typography,
-} from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
+import visuallyHidden from '@mui/utils/visuallyHidden/visuallyHidden';
 import { useSafeIntl } from 'bluesquare-components';
 import { ErrorMessage, Field, FieldArrayRenderProps } from 'formik';
 import { FormikProps } from 'formik/dist/types';

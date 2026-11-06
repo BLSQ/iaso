@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Grid, GridProps } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import type { GridProps } from '@mui/material/Grid/Grid';
 
 type TabPanelProps = {
     children?: React.ReactNode;

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import HelpOutline from '@mui/icons-material/HelpOutline';
-import { Box, IconButton, List, ListItem, Paper, Popper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { red } from '@mui/material/colors';
+import IconButton from '@mui/material/IconButton/IconButton';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
+import Paper from '@mui/material/Paper/Paper';
+import Popper from '@mui/material/Popper/Popper';
 
 type Props = {
     errors: string[];

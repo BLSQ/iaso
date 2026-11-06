@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import { ColorChip, CsvSvg, useSafeIntl } from 'bluesquare-components';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';

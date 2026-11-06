@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Chip, Typography, alpha } from '@mui/material';
-import { Theme } from '@mui/material/styles';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
+import { alpha, Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 import { parseGeoPoint } from 'Iaso/utils/map/mapUtils';
 import { formatFieldDate } from '../../utils/formatDate';

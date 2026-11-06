@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useEffect, useState, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import type { Theme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {

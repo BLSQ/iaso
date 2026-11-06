@@ -14,18 +14,16 @@ import PersonIcon from '@mui/icons-material/Person';
 import ReportIcon from '@mui/icons-material/Report';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
-import {
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    IconButton,
-    Paper,
-    SxProps,
-    TextField,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Chip from '@mui/material/Chip/Chip';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
 import type { Theme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField/TextField';
+import Typography from '@mui/material/Typography/Typography';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { useSafeIntl } from 'bluesquare-components';
 import ReactMarkdown from 'react-markdown';
 import { SxStyles } from 'Iaso/types/general';

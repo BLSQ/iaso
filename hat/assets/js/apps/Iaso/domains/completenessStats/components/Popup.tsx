@@ -1,13 +1,11 @@
 import React, { createRef, FunctionComponent, useCallback } from 'react';
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Grid,
-    Table,
-    TableBody,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Card from '@mui/material/Card/Card';
+import CardContent from '@mui/material/CardContent/CardContent';
+import Grid from '@mui/material/Grid/Grid';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     mapPopupStyles,

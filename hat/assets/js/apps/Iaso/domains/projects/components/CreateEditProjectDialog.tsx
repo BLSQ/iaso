@@ -5,7 +5,8 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Tab, Tabs } from '@mui/material';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     AddButton,

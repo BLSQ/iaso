@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Grid, GridSize } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid, { GridSize } from '@mui/material/Grid/Grid';
 import type { Theme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';

@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import PdfSvgComponent from '../../svg/PdfSvgComponent';
 import { FileScanStatusOpenButtonIcon } from './FileScanStatusOpenButtonIcon';
 import { useFileScanStatusOpenButtonTooltipText } from './useFileScanStatusOpenButtonTooltipText';

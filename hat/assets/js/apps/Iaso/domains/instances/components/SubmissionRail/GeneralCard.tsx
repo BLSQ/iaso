@@ -2,16 +2,14 @@ import React, { FunctionComponent, ReactNode, useState } from 'react';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import {
-    Box,
-    Button,
-    Chip,
-    Collapse,
-    Divider,
-    Link,
-    Paper,
-    Tooltip,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Chip from '@mui/material/Chip/Chip';
+import Collapse from '@mui/material/Collapse/Collapse';
+import Divider from '@mui/material/Divider/Divider';
+import Link from '@mui/material/Link/Link';
+import Paper from '@mui/material/Paper/Paper';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import {
     LinkWithLocation,
     textPlaceholder,

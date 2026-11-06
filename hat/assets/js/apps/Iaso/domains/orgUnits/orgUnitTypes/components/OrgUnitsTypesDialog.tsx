@@ -8,7 +8,8 @@ import React, {
     useState,
 } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Stack, Typography } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     IntlMessage,

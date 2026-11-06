@@ -6,17 +6,15 @@ import React, {
 } from 'react';
 
 import ReportIcon from '@mui/icons-material/Report';
-import {
-    Alert,
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    Typography,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     formatThousand,

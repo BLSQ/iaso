@@ -1,11 +1,9 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    Typography,
-} from '@mui/material';
+import AccordionDetails from '@mui/material/AccordionDetails/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary/AccordionSummary';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { Accordion } from 'Iaso/components/Accordion/Accordion';
 import { SxStyles } from 'Iaso/types/general';
 

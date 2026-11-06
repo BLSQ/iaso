@@ -1,11 +1,9 @@
 import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
-import {
-    ListItemText,
-    Switch,
-    Tooltip,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import useTheme from '@mui/material/styles/useTheme';
+import Switch from '@mui/material/Switch/Switch';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { truncateText } from 'bluesquare-components';
 
 type Props = {

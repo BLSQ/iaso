@@ -1,6 +1,9 @@
 import React, { FC, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Grid, Stack, Typography } from '@mui/material';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';

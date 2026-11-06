@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { Box, Typography, useTheme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import useTheme from '@mui/material/styles/useTheme';
+import Typography from '@mui/material/Typography/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { commonStyles } from 'bluesquare-components';

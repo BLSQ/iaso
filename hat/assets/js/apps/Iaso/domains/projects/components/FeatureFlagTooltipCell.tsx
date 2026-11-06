@@ -2,7 +2,8 @@ import React from 'react';
 
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Box, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 
 type Props = {
     iconVariant: 'warning' | 'info';

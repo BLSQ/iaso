@@ -5,7 +5,10 @@ import React, {
     useCallback,
 } from 'react';
 
-import { Box, Tab, TablePagination, Tabs } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tab from '@mui/material/Tab/Tab';
+import TablePagination from '@mui/material/TablePagination/TablePagination';
+import Tabs from '@mui/material/Tabs/Tabs';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InstanceFileInfoComponent from 'Iaso/domains/instances/components/InstanceFileInfoComponent';

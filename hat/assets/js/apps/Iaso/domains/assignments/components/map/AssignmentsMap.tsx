@@ -8,7 +8,7 @@ import React, {
 import Box from '@mui/material/Box/Box';
 import { LoadingSpinner } from 'bluesquare-components';
 import { MapContainer, GeoJSON, Pane } from 'react-leaflet';
-import { TeamRetrieve } from 'Iaso/api/teams';
+import { TeamRetrieve } from 'Iaso/api/teams/models/teamRetrieve.zod';
 import { Tile } from 'Iaso/components/maps/tools/TilesSwitchControl';
 import tiles from 'Iaso/constants/mapTiles';
 import {

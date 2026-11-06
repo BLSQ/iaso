@@ -1,13 +1,11 @@
 import React, { createRef, FunctionComponent } from 'react';
-import {
-    Box,
-    Card,
-    CardContent,
-    Divider,
-    Grid,
-    Typography,
-    CardMedia,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Card from '@mui/material/Card/Card';
+import CardContent from '@mui/material/CardContent/CardContent';
+import CardMedia from '@mui/material/CardMedia/CardMedia';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,

@@ -16,7 +16,7 @@ import type {
     FilterValues,
 } from 'bluesquare-components';
 
-import { useApiMicroplanningPlanningsDropdownList } from 'Iaso/api/plannings';
+import { useApiMicroplanningPlanningsDropdownList } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/shared/PlanningsDropdown';

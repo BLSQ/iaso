@@ -5,7 +5,11 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Grid, Tab, Tabs, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import Typography from '@mui/material/Typography/Typography';
 import {
     Column,
     useRedirectToReplace,

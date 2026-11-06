@@ -4,7 +4,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { PersonRemove } from '@mui/icons-material';
+import PersonRemove from '@mui/icons-material/PersonRemove';
 import Box from '@mui/material/Box/Box';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {

@@ -5,7 +5,8 @@ import React, {
     useCallback,
 } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
-import { Box, Paper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { Legend } from '../../hooks/useGetLegendOptions';

@@ -1,12 +1,15 @@
 import React, { Fragment, FunctionComponent, ReactNode } from 'react';
 
-import { Box, Button, IconButton, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { FormattedMessage } from 'react-intl';
 
 import MESSAGES from './messages';

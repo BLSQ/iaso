@@ -6,7 +6,9 @@ import React, {
     useState,
 } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { Box, Divider, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
 import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';

@@ -1,20 +1,18 @@
 import React from 'react';
 import DescriptionIcon from '@mui/icons-material/Description';
-import {
-    Alert,
-    Box,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
 import { AlertProps } from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
 import Divider from '@mui/material/Divider';
-import { visuallyHidden } from '@mui/utils';
+import Stack from '@mui/material/Stack/Stack';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
+import visuallyHidden from '@mui/utils/visuallyHidden/visuallyHidden';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { FieldArray } from 'formik';
 import { FormikContextType, FormikProps } from 'formik/dist/types';

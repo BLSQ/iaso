@@ -1,6 +1,6 @@
 import React from 'react';
-import { InfoOutlined } from '@mui/icons-material';
-import { Typography } from '@mui/material';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/missions/messages';
 

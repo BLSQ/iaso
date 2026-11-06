@@ -1,5 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Alert, Box, Button, Grid } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
 import {
     LoadingSpinner,
     useRedirectTo,
@@ -9,13 +12,13 @@ import { LinkButton } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { useQueryClient } from 'react-query';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
-import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags';
+import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags';
 import {
-    ApiAccountsUpdateBody,
     getApiAccountsAiApiKeyRetrieveQueryKey,
     useApiAccountsRetrieve,
     useApiAccountsUpdate,
-} from 'Iaso/api/accounts';
+} from 'Iaso/api/accounts/endpoints/account/account';
+import { ApiAccountsUpdateBody } from 'Iaso/api/accounts/models/apiAccountsUpdateBody.zod';
 import { useApiModulesDropdownList } from 'Iaso/api/modules';
 import Page404 from 'Iaso/components/errors/Page404';
 import { MainWrapper } from 'Iaso/components/MainWrapper';

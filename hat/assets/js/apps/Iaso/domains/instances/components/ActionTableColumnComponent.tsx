@@ -2,7 +2,7 @@ import React from 'react';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
-import { DialogContentText } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText/DialogContentText';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import { FormattedMessage } from 'react-intl';

@@ -17,7 +17,7 @@ import {
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
-import { useApiTeamsDropdownList } from 'Iaso/api/teams';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';

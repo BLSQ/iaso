@@ -1,9 +1,11 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useApiApiImportFiltersRetrieve } from 'Iaso/api/apiImports';
+import { useApiApiImportFiltersRetrieve } from 'Iaso/api/apiImports/endpoints/api-import/api-import';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
 import { useFilterState } from 'Iaso/hooks/useFilterState';

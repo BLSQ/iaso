@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import { Chip, Stack } from '@mui/material';
+import Chip from '@mui/material/Chip/Chip';
+import Stack from '@mui/material/Stack/Stack';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import MESSAGES from 'Iaso/domains/teams/components/teamTree/messages';

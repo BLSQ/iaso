@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, IntlMessage } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';

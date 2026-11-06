@@ -2,12 +2,12 @@ import React from 'react';
 import Box from '@mui/material/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProps } from 'formik';
-import {
-    MissionEntityTypeUpdateRequest,
-    MissionFormUpdateRequest,
-    MissionOrgUnitTypeUpdateRequest,
-    MissionTypeDa2Enum,
-} from 'Iaso/api/missions';
+
+import { MissionEntityTypeUpdateRequest } from 'Iaso/api/missions/models/missionEntityTypeUpdateRequest.zod';
+import { MissionFormUpdateRequest } from 'Iaso/api/missions/models/missionFormUpdateRequest.zod';
+import { MissionOrgUnitTypeUpdateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeUpdateRequest.zod';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
+
 import { MissionEntityTypeInput } from 'Iaso/domains/missions/components/forms/MissionEntityTypeInput';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import { MissionOrgUnitTypeInput } from 'Iaso/domains/missions/components/forms/MissionOrgUnitTypeInput';

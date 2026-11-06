@@ -1,9 +1,11 @@
 import React from 'react';
 import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
-import { Table, TableBody, Typography } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionEntityTypeRetrieve } from 'Iaso/api/missions';
+import { MissionEntityTypeRetrieve } from 'Iaso/api/missions/models/missionEntityTypeRetrieve.zod';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';
 import MESSAGES from 'Iaso/domains/missions/messages';
 import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/utils';

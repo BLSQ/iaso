@@ -9,16 +9,14 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
-import {
-    Box,
-    Button,
-    CircularProgress,
-    Paper,
-    SxProps,
-    TextField,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import Paper from '@mui/material/Paper/Paper';
 import type { Theme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField/TextField';
+import Typography from '@mui/material/Typography/Typography';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';

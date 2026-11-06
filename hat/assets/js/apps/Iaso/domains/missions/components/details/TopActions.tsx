@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, useTheme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import useTheme from '@mui/material/styles/useTheme';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 
 import { LinkButton, useRedirectTo } from 'bluesquare-components';
 import { useSafeIntl } from 'bluesquare-components';
-import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions/endpoints/missions/missions';
 import { DeleteButton } from 'Iaso/components/Buttons/DeleteButton';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';

@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,

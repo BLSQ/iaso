@@ -1,5 +1,9 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Button, Divider, Grid, Paper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
 import {
     SimpleModal,
     Table,

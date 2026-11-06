@@ -1,13 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import {
-    Button,
-    Box,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Grid,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import Grid from '@mui/material/Grid/Grid';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';

@@ -1,11 +1,9 @@
 import React, { ElementType, FC, useCallback } from 'react';
-import {
-    FormControl,
-    FormHelperText,
-    FormLabel,
-    ToggleButton,
-    ToggleButtonGroup,
-} from '@mui/material';
+import FormControl from '@mui/material/FormControl/FormControl';
+import FormHelperText from '@mui/material/FormHelperText/FormHelperText';
+import FormLabel from '@mui/material/FormLabel/FormLabel';
+import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup/ToggleButtonGroup';
 import { SxStyles } from 'Iaso/types/general';
 
 export type ToggleButtonOption = {

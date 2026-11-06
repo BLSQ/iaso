@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Table, TableBody } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles } from 'bluesquare-components';
 import { PaperTableRow } from '../../../components/tables/PaperTableRow';

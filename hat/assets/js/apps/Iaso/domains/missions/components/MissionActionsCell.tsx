@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { IconButton } from 'bluesquare-components';
-import {
-    PaginatedMissionPolymorphicListList,
-    useApiMicroplanningMissionsDestroy,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions/endpoints/missions/missions';
+import { PaginatedMissionPolymorphicListList } from 'Iaso/api/missions/models/paginatedMissionPolymorphicListList.zod';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';

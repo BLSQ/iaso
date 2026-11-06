@@ -1,4 +1,4 @@
-import type { ApiApiImportListParams } from 'Iaso/api/apiImports';
+import type { ApiApiImportListParams } from 'Iaso/api/apiImports/models/apiApiImportListParams.zod';
 import { Params } from 'Iaso/domains/apiimports/types/filters';
 
 export const paramsToApiParams = (params: Params): ApiApiImportListParams => {

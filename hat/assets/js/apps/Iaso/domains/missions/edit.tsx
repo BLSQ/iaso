@@ -7,7 +7,7 @@ import {
 import {
     useApiMicroplanningMissionsRetrieve,
     useApiMicroplanningMissionsUpdate,
-} from 'Iaso/api/missions';
+} from 'Iaso/api/missions/endpoints/missions/missions';
 import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';

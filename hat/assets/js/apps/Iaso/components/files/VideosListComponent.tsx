@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
-import { Masonry } from '@mui/lab';
+import Masonry from '@mui/lab/Masonry/Masonry';
 import Box from '@mui/material/Box/Box';
 import moment from 'moment';
+import { ShortFile } from 'Iaso/domains/instances/types/instance';
 import { getFileName } from 'Iaso/utils/filesUtils';
-import { ShortFile } from '../../domains/instances/types/instance';
 import VideoItem from './VideoItemComponent';
 
 type Props = {

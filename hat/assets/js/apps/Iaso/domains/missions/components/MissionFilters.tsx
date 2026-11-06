@@ -8,7 +8,7 @@ import {
     theme,
     useSafeIntl,
 } from 'bluesquare-components';
-import type { ApiMicroplanningMissionsListParams } from 'Iaso/api/missions';
+import type { ApiMicroplanningMissionsListParams } from 'Iaso/api/missions/models/apiMicroplanningMissionsListParams.zod';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';

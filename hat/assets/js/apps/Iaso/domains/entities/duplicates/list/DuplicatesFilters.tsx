@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box/Box';
 import Grid from '@mui/material/Grid/Grid';
-import { useApiTeamsDropdownList } from 'Iaso/api/teams';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';

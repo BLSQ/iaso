@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';

@@ -7,15 +7,13 @@ import React, {
 
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import {
-    Paper,
-    Divider,
-    Typography,
-    Grid,
-    Collapse,
-    Box,
-    PaperProps,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Collapse from '@mui/material/Collapse/Collapse';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
+import type { PaperProps } from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles(theme => ({

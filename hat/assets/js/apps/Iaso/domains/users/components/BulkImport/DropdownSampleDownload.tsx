@@ -2,7 +2,7 @@ import React from 'react';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Button from '@mui/material/Button/Button';
 import ButtonGroup from '@mui/material/ButtonGroup/ButtonGroup';
-import ClickAwayListener from '@mui/material/ClickAwayListener/ClickAwayListener';
+import { ClickAwayListener } from '@mui/material/ClickAwayListener/ClickAwayListener';
 import Grow from '@mui/material/Grow/Grow';
 import MenuItem from '@mui/material/MenuItem/MenuItem';
 import type { MenuItemProps } from '@mui/material/MenuItem/MenuItem';

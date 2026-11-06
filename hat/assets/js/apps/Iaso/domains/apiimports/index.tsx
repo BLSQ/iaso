@@ -7,7 +7,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useApiApiImportList } from 'Iaso/api/apiImports/';
+import { useApiApiImportList } from 'Iaso/api/apiImports/endpoints/api-import/api-import';
 import DownloadButtonsComponent from 'Iaso/components/DownloadButtonsComponent';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';

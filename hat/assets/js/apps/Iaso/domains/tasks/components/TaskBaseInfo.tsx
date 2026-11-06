@@ -1,13 +1,11 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import {
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    Button,
-    Box,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Table from '@mui/material/Table/Table';
 import { TablePropsSizeOverrides } from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { OverridableStringUnion } from '@mui/types/esm';
 import { useSafeIntl } from 'bluesquare-components';

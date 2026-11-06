@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { InstanceValidation } from 'Iaso/domains/instances/components/ValidationWorkflow/InstanceValidation';

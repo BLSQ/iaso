@@ -8,16 +8,14 @@ import React, {
 import PlusIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
-import {
-    Box,
-    Button,
-    Drawer,
-    Grid,
-    Typography,
-    Paper,
-    IconButton,
-    Tooltip,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Drawer from '@mui/material/Drawer/Drawer';
+import Grid from '@mui/material/Grid/Grid';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';

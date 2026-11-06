@@ -1,6 +1,9 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { Box, CircularProgress, Grid, IconButton } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import Grid from '@mui/material/Grid/Grid';
+import IconButton from '@mui/material/IconButton/IconButton';
 import { AlertModal, makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';

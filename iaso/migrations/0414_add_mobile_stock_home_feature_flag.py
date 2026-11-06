@@ -2,6 +2,7 @@ from django.db import migrations
 
 CODE = "MOBILE_STOCK_HOME"
 
+
 def create_mobile_stock_home_feature_flag(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
     FeatureFlag.objects.update_or_create(

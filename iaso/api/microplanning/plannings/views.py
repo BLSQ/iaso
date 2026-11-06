@@ -86,6 +86,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return PlanningDropdownFilterSet
         if self.action == "org_unit_tree":
             return PlanningOrgUnitTreeFilterSet
+        if self.action == "org_unit_tree_with_geom":
+            return PlanningOrgUnitTreeWithGeomFilterSet
         return None
 
     @property

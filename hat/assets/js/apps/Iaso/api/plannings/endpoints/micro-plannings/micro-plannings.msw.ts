@@ -17,6 +17,7 @@ import {
 } from '../../models';
 import type {
     OrgUnitTree,
+    OrgUnitTreeWithGeom,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
     PaginatedNestedPlanningConfigBulkList,
@@ -24,8 +25,6 @@ import type {
     PaginatedPlanningMissionPolymorphicListList,
     PaginatedPlanningReadList,
     PlanningDropdown,
-    PlanningLevelGeometry,
-    PlanningLevelTreeNode,
     PlanningMissionEntityTypeListTyped,
     PlanningMissionFormListTyped,
     PlanningMissionOrgUnitTypeListTyped,
@@ -370,90 +369,6 @@ export const getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveRespon
                         ]),
                     },
                 },
-                ...overrideResponse,
-            },
-        ]);
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeListResponseMock =
-    (): PlanningLevelTreeNode[] =>
-        faker.helpers.arrayElement([
-            Array.from(
-                { length: faker.number.int({ min: 1, max: 10 }) },
-                (_, i) => i + 1,
-            ).map(() => ({
-                id: faker.number.int(),
-                name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                org_unit_type_id: faker.helpers.arrayElement([
-                    faker.number.int(),
-                    null,
-                ]),
-                level: faker.number.int(),
-                parent_id: faker.helpers.arrayElement([
-                    faker.number.int(),
-                    null,
-                ]),
-                has_geo_json: faker.datatype.boolean(),
-                has_location: faker.datatype.boolean(),
-            })),
-            Array.from(
-                { length: faker.number.int({ min: 1, max: 10 }) },
-                (_, i) => i + 1,
-            ).map(() => ({
-                id: faker.number.int(),
-                name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                org_unit_type_id: faker.helpers.arrayElement([
-                    faker.number.int(),
-                    null,
-                ]),
-                level: faker.number.int(),
-                parent_id: faker.helpers.arrayElement([
-                    faker.number.int(),
-                    null,
-                ]),
-                has_geo_json: faker.datatype.boolean(),
-                has_location: faker.datatype.boolean(),
-            })),
-        ]);
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveResponseMock =
-    (
-        overrideResponse: Partial<Extract<PlanningLevelGeometry, object>> = {},
-    ): PlanningLevelGeometry =>
-        faker.helpers.arrayElement([
-            {
-                type: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                features: Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                ).map(() => ({
-                    type: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    id: faker.number.int(),
-                    geometry: {},
-                    properties: {
-                        id: faker.number.int(),
-                        name: faker.string.alpha({
-                            length: { min: 10, max: 20 },
-                        }),
-                    },
-                })),
-                ...overrideResponse,
-            },
-            {
-                type: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                features: Array.from(
-                    { length: faker.number.int({ min: 1, max: 10 }) },
-                    (_, i) => i + 1,
-                ).map(() => ({
-                    type: faker.string.alpha({ length: { min: 10, max: 20 } }),
-                    id: faker.number.int(),
-                    geometry: {},
-                    properties: {
-                        id: faker.number.int(),
-                        name: faker.string.alpha({
-                            length: { min: 10, max: 20 },
-                        }),
-                    },
-                })),
                 ...overrideResponse,
             },
         ]);
@@ -945,6 +860,314 @@ export const getApiMicroplanningPlanningsOrgUnitTreeListResponseMock =
             children: [],
         }));
 
+export const getApiMicroplanningPlanningsOrgUnitTreeWithGeomListResponseMock =
+    (): OrgUnitTreeWithGeom[] =>
+        Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => ({
+            id: faker.number.int(),
+            name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+            parent: faker.helpers.arrayElement([faker.number.int(), null]),
+            geom: faker.helpers.arrayElement([
+                {
+                    type: faker.helpers.arrayElement([
+                        faker.helpers.arrayElement(['MultiPolygon'] as const),
+                        undefined,
+                    ]),
+                    coordinates: faker.helpers.arrayElement([
+                        Array.from(
+                            { length: faker.number.int({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                        ).map(() =>
+                            Array.from(
+                                {
+                                    length: faker.number.int({
+                                        min: 1,
+                                        max: 10,
+                                    }),
+                                },
+                                (_, i) => i + 1,
+                            ).map(() =>
+                                Array.from(
+                                    {
+                                        length: faker.number.int({
+                                            min: 4,
+                                            max: 10,
+                                        }),
+                                    },
+                                    (_, i) => i + 1,
+                                ).map(() =>
+                                    Array.from(
+                                        {
+                                            length: faker.number.int({
+                                                min: 2,
+                                                max: 3,
+                                            }),
+                                        },
+                                        (_, i) => i + 1,
+                                    ).map(() =>
+                                        faker.number.float({
+                                            fractionDigits: 2,
+                                        }),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        undefined,
+                    ]),
+                },
+                null,
+            ]),
+            simplified_geom: faker.helpers.arrayElement([
+                {
+                    type: faker.helpers.arrayElement([
+                        faker.helpers.arrayElement(['MultiPolygon'] as const),
+                        undefined,
+                    ]),
+                    coordinates: faker.helpers.arrayElement([
+                        Array.from(
+                            { length: faker.number.int({ min: 1, max: 10 }) },
+                            (_, i) => i + 1,
+                        ).map(() =>
+                            Array.from(
+                                {
+                                    length: faker.number.int({
+                                        min: 1,
+                                        max: 10,
+                                    }),
+                                },
+                                (_, i) => i + 1,
+                            ).map(() =>
+                                Array.from(
+                                    {
+                                        length: faker.number.int({
+                                            min: 4,
+                                            max: 10,
+                                        }),
+                                    },
+                                    (_, i) => i + 1,
+                                ).map(() =>
+                                    Array.from(
+                                        {
+                                            length: faker.number.int({
+                                                min: 2,
+                                                max: 3,
+                                            }),
+                                        },
+                                        (_, i) => i + 1,
+                                    ).map(() =>
+                                        faker.number.float({
+                                            fractionDigits: 2,
+                                        }),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        undefined,
+                    ]),
+                },
+                null,
+            ]),
+            location: faker.helpers.arrayElement([
+                {
+                    type: faker.helpers.arrayElement([
+                        faker.helpers.arrayElement(['Point'] as const),
+                        undefined,
+                    ]),
+                    coordinates: faker.helpers.arrayElement([
+                        Array.from(
+                            { length: faker.number.int({ min: 2, max: 3 }) },
+                            (_, i) => i + 1,
+                        ).map(() => faker.number.float({ fractionDigits: 2 })),
+                        undefined,
+                    ]),
+                },
+                null,
+            ]),
+            depth: faker.number.int(),
+            org_unit_type: faker.helpers.arrayElement([
+                {
+                    id: faker.number.int(),
+                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    short_name: faker.string.alpha({
+                        length: { min: 10, max: 20 },
+                    }),
+                    category: faker.helpers.arrayElement([
+                        faker.helpers.arrayElement(
+                            Object.values(CategoryEe0Enum),
+                        ),
+                        null,
+                    ]),
+                },
+                null,
+            ]),
+            children: Array.from(
+                { length: faker.number.int({ min: 1, max: 10 }) },
+                (_, i) => i + 1,
+            ).map(() => ({
+                id: faker.number.int(),
+                name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                parent: faker.helpers.arrayElement([faker.number.int(), null]),
+                geom: faker.helpers.arrayElement([
+                    {
+                        type: faker.helpers.arrayElement([
+                            faker.helpers.arrayElement([
+                                'MultiPolygon',
+                            ] as const),
+                            undefined,
+                        ]),
+                        coordinates: faker.helpers.arrayElement([
+                            Array.from(
+                                {
+                                    length: faker.number.int({
+                                        min: 1,
+                                        max: 10,
+                                    }),
+                                },
+                                (_, i) => i + 1,
+                            ).map(() =>
+                                Array.from(
+                                    {
+                                        length: faker.number.int({
+                                            min: 1,
+                                            max: 10,
+                                        }),
+                                    },
+                                    (_, i) => i + 1,
+                                ).map(() =>
+                                    Array.from(
+                                        {
+                                            length: faker.number.int({
+                                                min: 4,
+                                                max: 10,
+                                            }),
+                                        },
+                                        (_, i) => i + 1,
+                                    ).map(() =>
+                                        Array.from(
+                                            {
+                                                length: faker.number.int({
+                                                    min: 2,
+                                                    max: 3,
+                                                }),
+                                            },
+                                            (_, i) => i + 1,
+                                        ).map(() =>
+                                            faker.number.float({
+                                                fractionDigits: 2,
+                                            }),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            undefined,
+                        ]),
+                    },
+                    null,
+                ]),
+                simplified_geom: faker.helpers.arrayElement([
+                    {
+                        type: faker.helpers.arrayElement([
+                            faker.helpers.arrayElement([
+                                'MultiPolygon',
+                            ] as const),
+                            undefined,
+                        ]),
+                        coordinates: faker.helpers.arrayElement([
+                            Array.from(
+                                {
+                                    length: faker.number.int({
+                                        min: 1,
+                                        max: 10,
+                                    }),
+                                },
+                                (_, i) => i + 1,
+                            ).map(() =>
+                                Array.from(
+                                    {
+                                        length: faker.number.int({
+                                            min: 1,
+                                            max: 10,
+                                        }),
+                                    },
+                                    (_, i) => i + 1,
+                                ).map(() =>
+                                    Array.from(
+                                        {
+                                            length: faker.number.int({
+                                                min: 4,
+                                                max: 10,
+                                            }),
+                                        },
+                                        (_, i) => i + 1,
+                                    ).map(() =>
+                                        Array.from(
+                                            {
+                                                length: faker.number.int({
+                                                    min: 2,
+                                                    max: 3,
+                                                }),
+                                            },
+                                            (_, i) => i + 1,
+                                        ).map(() =>
+                                            faker.number.float({
+                                                fractionDigits: 2,
+                                            }),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                            undefined,
+                        ]),
+                    },
+                    null,
+                ]),
+                location: faker.helpers.arrayElement([
+                    {
+                        type: faker.helpers.arrayElement([
+                            faker.helpers.arrayElement(['Point'] as const),
+                            undefined,
+                        ]),
+                        coordinates: faker.helpers.arrayElement([
+                            Array.from(
+                                {
+                                    length: faker.number.int({
+                                        min: 2,
+                                        max: 3,
+                                    }),
+                                },
+                                (_, i) => i + 1,
+                            ).map(() =>
+                                faker.number.float({ fractionDigits: 2 }),
+                            ),
+                            undefined,
+                        ]),
+                    },
+                    null,
+                ]),
+                depth: faker.number.int(),
+                org_unit_type: faker.helpers.arrayElement([
+                    {
+                        id: faker.number.int(),
+                        name: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                        short_name: faker.string.alpha({
+                            length: { min: 10, max: 20 },
+                        }),
+                        category: faker.helpers.arrayElement([
+                            faker.helpers.arrayElement(
+                                Object.values(CategoryEe0Enum),
+                            ),
+                            null,
+                        ]),
+                    },
+                    null,
+                ]),
+            })),
+        }));
+
 export const getApiMicroplanningPlanningsDropdownListResponseMock =
     (): PlanningDropdown[] =>
         Array.from(
@@ -1313,69 +1536,6 @@ export const getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveMockHa
         );
     };
 
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeListMockHandler = (
-    overrideResponse?:
-        | PlanningLevelTreeNode[]
-        | ((
-              info: Parameters<Parameters<typeof http.get>[1]>[0],
-          ) => Promise<PlanningLevelTreeNode[]> | PlanningLevelTreeNode[]),
-    options?: RequestHandlerOptions,
-) => {
-    return http.get(
-        '*/api/microplanning/plannings/:parentLookupPk/orgunits/level-tree/',
-        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-            await delay(
-                (() =>
-                    process.env?.MSW_DELAY
-                        ? parseInt(process.env.MSW_DELAY)
-                        : 0)(),
-            );
-
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : getApiMicroplanningPlanningsOrgunitsLevelTreeListResponseMock(),
-                { status: 200 },
-            );
-        },
-        options,
-    );
-};
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveMockHandler =
-    (
-        overrideResponse?:
-            | PlanningLevelGeometry
-            | ((
-                  info: Parameters<Parameters<typeof http.get>[1]>[0],
-              ) => Promise<PlanningLevelGeometry> | PlanningLevelGeometry),
-        options?: RequestHandlerOptions,
-    ) => {
-        return http.get(
-            '*/api/microplanning/plannings/:parentLookupPk/orgunits/level-tree/geometry/',
-            async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
-                await delay(
-                    (() =>
-                        process.env?.MSW_DELAY
-                            ? parseInt(process.env.MSW_DELAY)
-                            : 0)(),
-                );
-
-                return HttpResponse.json(
-                    overrideResponse !== undefined
-                        ? typeof overrideResponse === 'function'
-                            ? await overrideResponse(info)
-                            : overrideResponse
-                        : getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveResponseMock(),
-                    { status: 200 },
-                );
-            },
-            options,
-        );
-    };
-
 export const getApiMicroplanningPlanningsOrgunitsRootRetrieveMockHandler = (
     overrideResponse?:
         | PlanningOrgUnit
@@ -1657,6 +1817,37 @@ export const getApiMicroplanningPlanningsOrgUnitTreeListMockHandler = (
     );
 };
 
+export const getApiMicroplanningPlanningsOrgUnitTreeWithGeomListMockHandler = (
+    overrideResponse?:
+        | OrgUnitTreeWithGeom[]
+        | ((
+              info: Parameters<Parameters<typeof http.get>[1]>[0],
+          ) => Promise<OrgUnitTreeWithGeom[]> | OrgUnitTreeWithGeom[]),
+    options?: RequestHandlerOptions,
+) => {
+    return http.get(
+        '*/api/microplanning/plannings/:id/org-unit-tree/with-geom/',
+        async (info: Parameters<Parameters<typeof http.get>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningPlanningsOrgUnitTreeWithGeomListResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
 export const getApiMicroplanningPlanningsDropdownListMockHandler = (
     overrideResponse?:
         | PlanningDropdown[]
@@ -1758,8 +1949,6 @@ export const getMicroPlanningsMock = () => [
     getApiMicroplanningPlanningsCreateMockHandler(),
     getApiMicroplanningPlanningsOrgunitsChildrenRetrieveMockHandler(),
     getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveMockHandler(),
-    getApiMicroplanningPlanningsOrgunitsLevelTreeListMockHandler(),
-    getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveMockHandler(),
     getApiMicroplanningPlanningsOrgunitsRootRetrieveMockHandler(),
     getApiMicroplanningPlanningsRetrieveMockHandler(),
     getApiMicroplanningPlanningsUpdateMockHandler(),
@@ -1769,6 +1958,7 @@ export const getMicroPlanningsMock = () => [
     getApiMicroplanningPlanningsConfigsBulkUpdateMockHandler(),
     getApiMicroplanningPlanningsMissionsListMockHandler(),
     getApiMicroplanningPlanningsOrgUnitTreeListMockHandler(),
+    getApiMicroplanningPlanningsOrgUnitTreeWithGeomListMockHandler(),
     getApiMicroplanningPlanningsDropdownListMockHandler(),
     getApiMobilePlanningsListMockHandler(),
     getApiV2MobilePlanningsListMockHandler(),

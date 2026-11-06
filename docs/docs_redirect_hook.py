@@ -224,6 +224,14 @@ MOVED_PAGES = [
     ("pages/users/reference/iaso_modules", "pages/users/reference", "iaso_modules.html", "iaso_modules.html"),
     ("pages/users/reference/iaso_web", "pages/users/reference", "user_guide.html", "user_guide.html"),
     ("pages/users/reference/interop", "pages/users/reference", "interop.html", "interop.html"),
+    # "Get started with IASO" was merged into a section of the Home page.
+    (
+        "pages/users/how_to",
+        "",
+        "get_started_with_iaso.html",
+        "index.html",
+        {"": "get-started-with-iaso", "fr": "bien-demarrer-avec-iaso", "es": "primeros-pasos-con-iaso"},
+    ),
 ]
 
 REDIRECT_TEMPLATE = """<!doctype html>

@@ -56,13 +56,12 @@ export const OrgUnitTableRow: FC<Props> = ({ row, onOpenTeam }) => {
                     )}
                 </Box>
                 <Typography variant="caption" color="text.secondary">
-                    {/*todo : bug here ? org_unit_type_name does not exist */}
-                    {row.org_unit_type_name ?? textPlaceholder}
+                    {row.org_unit_type?.name ?? textPlaceholder}
                 </Typography>
             </TableCell>
             <TableCell>
                 <Typography variant="body2" sx={styles.secondary}>
-                    {row.parentName ?? textPlaceholder}
+                    {row.parentName}
                 </Typography>
             </TableCell>
             <TableCell>

@@ -58,6 +58,7 @@ type Props = {
     disabledMessage?: string;
     handleApplyOptions?: () => void;
     isDisabled?: boolean;
+    buttonType?: 'button' | 'icon';
 };
 
 const filterResults = (searchString: string, options: Option[]): Option[] => {
@@ -82,6 +83,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     disabledMessage,
     handleApplyOptions,
     isDisabled,
+    buttonType = 'button',
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -113,40 +115,48 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     const activeOptionsCount = options.filter(o => o.active).length;
 
     const displayedOptions = filterResults(searchString, options);
+    // Previous labelled button by default, small round icon on request.
+    const renderToggle = (toggleDisabled: boolean, contained: boolean) =>
+        buttonType === 'icon' ? (
+            <IconButton
+                disabled={toggleDisabled}
+                color="primary"
+                size="small"
+                onClick={toggleDrawer(true)}
+                id="ColumnsSelectDrawer-toggleDrawer"
+                aria-label={formatMessage(MESSAGES.columnSelect)}
+            >
+                <ViewColumnIcon fontSize="small" />
+            </IconButton>
+        ) : (
+            <Button
+                disabled={toggleDisabled}
+                variant={contained ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={toggleDrawer(true)}
+                id="ColumnsSelectDrawer-toggleDrawer"
+            >
+                <Box mr={1} display="inline-flex">
+                    <ViewColumnIcon />
+                </Box>
+                {formatMessage(MESSAGES.columnSelect)}
+            </Button>
+        );
     return (
         <>
             {disabled && disabledMessage && (
                 <Tooltip arrow title={disabledMessage}>
-                    <Box>
-                        <Button
-                            disabled
-                            variant="contained"
-                            color="primary"
-                            onClick={toggleDrawer(true)}
-                            id="ColumnsSelectDrawer-toggleDrawer"
-                        >
-                            <Box mr={1} display="inline-flex">
-                                <ViewColumnIcon />
-                            </Box>
-                            {formatMessage(MESSAGES.columnSelect)}
-                        </Button>
-                    </Box>
+                    <Box>{renderToggle(true, true)}</Box>
                 </Tooltip>
             )}
-            {(!disabled || (disabled && !disabledMessage)) && (
-                <Button
-                    disabled={disabled}
-                    variant="outlined"
-                    color="primary"
-                    onClick={toggleDrawer(true)}
-                    id="ColumnsSelectDrawer-toggleDrawer"
-                >
-                    <Box mr={1} display="inline-flex">
-                        <ViewColumnIcon />
-                    </Box>
-                    {formatMessage(MESSAGES.columnSelect)}
-                </Button>
-            )}
+            {(!disabled || (disabled && !disabledMessage)) &&
+                (buttonType === 'icon' ? (
+                    <Tooltip arrow title={formatMessage(MESSAGES.columnSelect)}>
+                        <span>{renderToggle(disabled, false)}</span>
+                    </Tooltip>
+                ) : (
+                    renderToggle(disabled, false)
+                ))}
             <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
                 <Box className={classes.root}>
                     <div className={classes.toolbar}>

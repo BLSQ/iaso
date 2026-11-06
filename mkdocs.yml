@@ -48,6 +48,7 @@ plugins:
           nav_translations:
             Home: Accueil
             Users: Guide d'utilisateur
+            Use cases configuration: Configuration par cas d'usage
             Developers: Développeurs
             References: Références
             Models: Modèles
@@ -66,6 +67,7 @@ plugins:
           nav_translations:
             Home: Inicio
             Users: Guía de usuario
+            Use cases configuration: Configuración por caso de uso
             Developers: Desarrolladores
             References: Referencias
             Models: Modelos
@@ -110,17 +112,19 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
   # (mkdocs-static-i18n swaps in the .fr.md/.es.md version of each file for you).
   - Home: index.md
   - Users:
-     - ./pages/users/how_to/get_started_with_iaso.md
      - ./pages/users/reference/iaso_concepts.md
      - ./pages/users/reference/iaso_modules.md
      - ./pages/users/reference/user_guide.md
      - ./pages/users/reference/iaso_mobile.md
+     - ./pages/users/reference/geopackage_format.md
      - Advanced configuration:
        - IASO and DHIS2:
          - ./pages/users/how_to/setup_dhis2_login_in_iaso.md
          - ./pages/users/how_to/deduce_form_from_another_form.md
          - ./pages/users/how_to/import_export_dhis2_mappings.md
        - FAQ: ./pages/users/FAQ/faq.md
+  - Use cases configuration:
+    - ./pages/use_cases/setup_bednet_campaign_with_ai.md
   - Developers:
     - References:
       # - Data model glossary:

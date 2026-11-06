@@ -1,6 +1,17 @@
 import type { Theme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
+    // `getOverriddenTheme` (styles/index.ts) adds a `background` shade to
+    // palette colors (used as `theme.palette.primary.background`), which
+    // MUI's PaletteColor does not know about by default.
+    interface PaletteColor {
+        background: string;
+    }
+
+    interface SimplePaletteColorOptions {
+        background?: string;
+    }
+
     interface TypeBackground {
         blueGrey: string;
         grey: string;

@@ -28,15 +28,15 @@ import type {
     ApiMicroplanningPlanningsListParams,
     ApiMicroplanningPlanningsMissionsListParams,
     ApiMicroplanningPlanningsOrgUnitTreeListParams,
+    ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
     ApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveParams,
     ApiMicroplanningPlanningsOrgunitsChildrenRetrieveParams,
-    ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-    ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
     ApiMicroplanningPlanningsOrgunitsRootRetrieveParams,
     ApiMobilePlanningsListParams,
     ApiV2MobilePlanningsListParams,
     NestedPlanningConfigBulkRequest,
     OrgUnitTree,
+    OrgUnitTreeWithGeom,
     PaginatedMobilePlanningList,
     PaginatedMobilePlanningV2List,
     PaginatedNestedPlanningConfigBulkList,
@@ -45,8 +45,6 @@ import type {
     PaginatedPlanningReadList,
     PatchedPlanningWriteRequest,
     PlanningDropdown,
-    PlanningLevelGeometry,
-    PlanningLevelTreeNode,
     PlanningOrgUnit,
     PlanningOrgUnitTable,
     PlanningRead,
@@ -697,379 +695,6 @@ export const invalidateApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetriev
                 queryKey: getCustomQueryOptions({
                     queryKey:
                         getApiMicroplanningPlanningsOrgunitsChildrenPaginatedRetrieveQueryKey(
-                            parentLookupPk,
-                            params,
-                        ),
-                }).queryKey,
-            },
-            options,
-        );
-
-        return queryClient;
-    };
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeListUrl = (
-    parentLookupPk: string,
-    params?: ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
-) => {
-    const normalizedParams = new URLSearchParams();
-
-    Object.entries(params || {}).forEach(([key, value]) => {
-        if (value !== undefined) {
-            normalizedParams.append(
-                key,
-                value === null ? 'null' : String(value),
-            );
-        }
-    });
-
-    const stringifiedParams = normalizedParams.toString();
-
-    return stringifiedParams.length > 0
-        ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${parentLookupPk}/orgunits/level-tree/?${stringifiedParams}`
-        : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${parentLookupPk}/orgunits/level-tree/`;
-};
-
-/**
- * Org units of every planning level, level 0 being the target geography. A level holds the org units of its types (and groups) located below an org unit of the level above; `parent_id` is that closest ancestor.
- */
-export const apiMicroplanningPlanningsOrgunitsLevelTreeList = async (
-    parentLookupPk: string,
-    params?: ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
-    options?: Parameters<typeof customFetchInstance>[1],
-): Promise<PlanningLevelTreeNode[]> => {
-    return customFetchInstance<PlanningLevelTreeNode[]>(
-        getApiMicroplanningPlanningsOrgunitsLevelTreeListUrl(
-            parentLookupPk,
-            params,
-        ),
-        {
-            credentials: 'same-origin',
-            ...options,
-            method: 'GET',
-        },
-    );
-};
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeListQueryKey = (
-    parentLookupPk: string,
-    params?: ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
-) => {
-    return [
-        'apiMicroplanningPlanningsOrgunitsLevelTreeList',
-        ...(parentLookupPk ? [parentLookupPk] : []),
-        ...(params ? [params] : []),
-    ] as const;
-};
-
-export const useApiMicroplanningPlanningsOrgunitsLevelTreeListQueryOptions = <
-    TData = Awaited<
-        ReturnType<typeof apiMicroplanningPlanningsOrgunitsLevelTreeList>
-    >,
-    TError = unknown,
->(
-    parentLookupPk: string,
-    params?: ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
-    options?: {
-        query?: UseQueryOptions<
-            Awaited<
-                ReturnType<
-                    typeof apiMicroplanningPlanningsOrgunitsLevelTreeList
-                >
-            >,
-            TError,
-            TData
-        >;
-        request?: SecondParameter<typeof customFetchInstance>;
-    },
-) => {
-    const { query: queryOptions, request: requestOptions } = options ?? {};
-
-    const queryKey =
-        queryOptions?.queryKey ??
-        getApiMicroplanningPlanningsOrgunitsLevelTreeListQueryKey(
-            parentLookupPk,
-            params,
-        );
-
-    const queryFn: QueryFunction<
-        Awaited<
-            ReturnType<typeof apiMicroplanningPlanningsOrgunitsLevelTreeList>
-        >
-    > = ({ signal }) =>
-        apiMicroplanningPlanningsOrgunitsLevelTreeList(parentLookupPk, params, {
-            signal,
-            ...requestOptions,
-        });
-
-    const customOptions = getCustomQueryOptions({
-        queryKey,
-        queryFn,
-        enabled: parentLookupPk !== null && parentLookupPk !== undefined,
-        ...queryOptions,
-    });
-
-    return customOptions as UseQueryOptions<
-        Awaited<
-            ReturnType<typeof apiMicroplanningPlanningsOrgunitsLevelTreeList>
-        >,
-        TError,
-        TData
-    > & { queryKey: QueryKey };
-};
-
-export type ApiMicroplanningPlanningsOrgunitsLevelTreeListQueryResult =
-    NonNullable<
-        Awaited<
-            ReturnType<typeof apiMicroplanningPlanningsOrgunitsLevelTreeList>
-        >
-    >;
-export type ApiMicroplanningPlanningsOrgunitsLevelTreeListQueryError = unknown;
-
-export function useApiMicroplanningPlanningsOrgunitsLevelTreeList<
-    TData = Awaited<
-        ReturnType<typeof apiMicroplanningPlanningsOrgunitsLevelTreeList>
-    >,
-    TError = unknown,
->(
-    parentLookupPk: string,
-    params?: ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
-    options?: {
-        query?: UseQueryOptions<
-            Awaited<
-                ReturnType<
-                    typeof apiMicroplanningPlanningsOrgunitsLevelTreeList
-                >
-            >,
-            TError,
-            TData
-        >;
-        request?: SecondParameter<typeof customFetchInstance>;
-    },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-    const queryOptions =
-        useApiMicroplanningPlanningsOrgunitsLevelTreeListQueryOptions(
-            parentLookupPk,
-            params,
-            options,
-        );
-
-    const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-        queryKey: QueryKey;
-    };
-
-    return withQueryKey(query, queryOptions.queryKey);
-}
-
-/**
- * @summary Invalidates the {@link useApiMicroplanningPlanningsOrgunitsLevelTreeList} query
- */
-export const invalidateApiMicroplanningPlanningsOrgunitsLevelTreeList = async (
-    queryClient: QueryClient,
-    parentLookupPk: string,
-    params?: ApiMicroplanningPlanningsOrgunitsLevelTreeListParams,
-    options?: InvalidateOptions,
-): Promise<QueryClient> => {
-    await queryClient.invalidateQueries(
-        {
-            queryKey: getCustomQueryOptions({
-                queryKey:
-                    getApiMicroplanningPlanningsOrgunitsLevelTreeListQueryKey(
-                        parentLookupPk,
-                        params,
-                    ),
-            }).queryKey,
-        },
-        options,
-    );
-
-    return queryClient;
-};
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveUrl =
-    (
-        parentLookupPk: string,
-        params: ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-    ) => {
-        const normalizedParams = new URLSearchParams();
-
-        Object.entries(params || {}).forEach(([key, value]) => {
-            if (value !== undefined) {
-                normalizedParams.append(
-                    key,
-                    value === null ? 'null' : String(value),
-                );
-            }
-        });
-
-        const stringifiedParams = normalizedParams.toString();
-
-        return stringifiedParams.length > 0
-            ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${parentLookupPk}/orgunits/level-tree/geometry/?${stringifiedParams}`
-            : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${parentLookupPk}/orgunits/level-tree/geometry/`;
-    };
-
-/**
- * GeoJSON of a level of the level tree: the simplified shape, or the location without shape.
- */
-export const apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve =
-    async (
-        parentLookupPk: string,
-        params: ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-        options?: Parameters<typeof customFetchInstance>[1],
-    ): Promise<PlanningLevelGeometry> => {
-        return customFetchInstance<PlanningLevelGeometry>(
-            getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveUrl(
-                parentLookupPk,
-                params,
-            ),
-            {
-                credentials: 'same-origin',
-                ...options,
-                method: 'GET',
-            },
-        );
-    };
-
-export const getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryKey =
-    (
-        parentLookupPk: string,
-        params?: ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-    ) => {
-        return [
-            'apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve',
-            ...(params ? [params] : []),
-            ...(parentLookupPk ? [parentLookupPk] : []),
-        ] as const;
-    };
-
-export const useApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryOptions =
-    <
-        TData = Awaited<
-            ReturnType<
-                typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-            >
-        >,
-        TError = unknown,
-    >(
-        parentLookupPk: string,
-        params: ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-        options?: {
-            query?: UseQueryOptions<
-                Awaited<
-                    ReturnType<
-                        typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-                    >
-                >,
-                TError,
-                TData
-            >;
-            request?: SecondParameter<typeof customFetchInstance>;
-        },
-    ) => {
-        const { query: queryOptions, request: requestOptions } = options ?? {};
-
-        const queryKey =
-            queryOptions?.queryKey ??
-            getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryKey(
-                parentLookupPk,
-                params,
-            );
-
-        const queryFn: QueryFunction<
-            Awaited<
-                ReturnType<
-                    typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-                >
-            >
-        > = ({ signal }) =>
-            apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve(
-                parentLookupPk,
-                params,
-                { signal, ...requestOptions },
-            );
-
-        const customOptions = getCustomQueryOptions({
-            queryKey,
-            queryFn,
-            enabled: parentLookupPk !== null && parentLookupPk !== undefined,
-            ...queryOptions,
-        });
-
-        return customOptions as UseQueryOptions<
-            Awaited<
-                ReturnType<
-                    typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-                >
-            >,
-            TError,
-            TData
-        > & { queryKey: QueryKey };
-    };
-
-export type ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryResult =
-    NonNullable<
-        Awaited<
-            ReturnType<
-                typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-            >
-        >
-    >;
-export type ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryError =
-    unknown;
-
-export function useApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve<
-    TData = Awaited<
-        ReturnType<
-            typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-        >
-    >,
-    TError = unknown,
->(
-    parentLookupPk: string,
-    params: ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-    options?: {
-        query?: UseQueryOptions<
-            Awaited<
-                ReturnType<
-                    typeof apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve
-                >
-            >,
-            TError,
-            TData
-        >;
-        request?: SecondParameter<typeof customFetchInstance>;
-    },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-    const queryOptions =
-        useApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryOptions(
-            parentLookupPk,
-            params,
-            options,
-        );
-
-    const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-        queryKey: QueryKey;
-    };
-
-    return withQueryKey(query, queryOptions.queryKey);
-}
-
-/**
- * @summary Invalidates the {@link useApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve} query
- */
-export const invalidateApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve =
-    async (
-        queryClient: QueryClient,
-        parentLookupPk: string,
-        params: ApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveParams,
-        options?: InvalidateOptions,
-    ): Promise<QueryClient> => {
-        await queryClient.invalidateQueries(
-            {
-                queryKey: getCustomQueryOptions({
-                    queryKey:
-                        getApiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieveQueryKey(
                             parentLookupPk,
                             params,
                         ),
@@ -2336,6 +1961,177 @@ export const invalidateApiMicroplanningPlanningsOrgUnitTreeList = async (
 
     return queryClient;
 };
+
+export const getApiMicroplanningPlanningsOrgUnitTreeWithGeomListUrl = (
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+) => {
+    const normalizedParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== undefined) {
+            normalizedParams.append(
+                key,
+                value === null ? 'null' : String(value),
+            );
+        }
+    });
+
+    const stringifiedParams = normalizedParams.toString();
+
+    return stringifiedParams.length > 0
+        ? `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/org-unit-tree/with-geom/?${stringifiedParams}`
+        : `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${id}/org-unit-tree/with-geom/`;
+};
+
+export const apiMicroplanningPlanningsOrgUnitTreeWithGeomList = async (
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+    options?: Parameters<typeof customFetchInstance>[1],
+): Promise<OrgUnitTreeWithGeom[]> => {
+    return customFetchInstance<OrgUnitTreeWithGeom[]>(
+        getApiMicroplanningPlanningsOrgUnitTreeWithGeomListUrl(id, params),
+        {
+            credentials: 'same-origin',
+            ...options,
+            method: 'GET',
+        },
+    );
+};
+
+export const getApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryKey = (
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+) => {
+    return [
+        'apiMicroplanningPlanningsOrgUnitTreeWithGeomList',
+        ...(id ? [id] : []),
+        ...(params ? [params] : []),
+    ] as const;
+};
+
+export const useApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryOptions = <
+    TData = Awaited<
+        ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+    >,
+    TError = unknown,
+>(
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<
+                ReturnType<
+                    typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList
+                >
+            >,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+        queryOptions?.queryKey ??
+        getApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryKey(id, params);
+
+    const queryFn: QueryFunction<
+        Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+        >
+    > = ({ signal }) =>
+        apiMicroplanningPlanningsOrgUnitTreeWithGeomList(id, params, {
+            signal,
+            ...requestOptions,
+        });
+
+    const customOptions = getCustomQueryOptions({
+        queryKey,
+        queryFn,
+        enabled: id !== null && id !== undefined,
+        ...queryOptions,
+    });
+
+    return customOptions as UseQueryOptions<
+        Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+        >,
+        TError,
+        TData
+    > & { queryKey: QueryKey };
+};
+
+export type ApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryResult =
+    NonNullable<
+        Awaited<
+            ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+        >
+    >;
+export type ApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryError =
+    unknown;
+
+export function useApiMicroplanningPlanningsOrgUnitTreeWithGeomList<
+    TData = Awaited<
+        ReturnType<typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList>
+    >,
+    TError = unknown,
+>(
+    id: number,
+    params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+    options?: {
+        query?: UseQueryOptions<
+            Awaited<
+                ReturnType<
+                    typeof apiMicroplanningPlanningsOrgUnitTreeWithGeomList
+                >
+            >,
+            TError,
+            TData
+        >;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+    const queryOptions =
+        useApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryOptions(
+            id,
+            params,
+            options,
+        );
+
+    const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+        queryKey: QueryKey;
+    };
+
+    return withQueryKey(query, queryOptions.queryKey);
+}
+
+/**
+ * @summary Invalidates the {@link useApiMicroplanningPlanningsOrgUnitTreeWithGeomList} query
+ */
+export const invalidateApiMicroplanningPlanningsOrgUnitTreeWithGeomList =
+    async (
+        queryClient: QueryClient,
+        id: number,
+        params?: ApiMicroplanningPlanningsOrgUnitTreeWithGeomListParams,
+        options?: InvalidateOptions,
+    ): Promise<QueryClient> => {
+        await queryClient.invalidateQueries(
+            {
+                queryKey: getCustomQueryOptions({
+                    queryKey:
+                        getApiMicroplanningPlanningsOrgUnitTreeWithGeomListQueryKey(
+                            id,
+                            params,
+                        ),
+                }).queryKey,
+            },
+            options,
+        );
+
+        return queryClient;
+    };
 
 export const getApiMicroplanningPlanningsDropdownListUrl = (
     params?: ApiMicroplanningPlanningsDropdownListParams,

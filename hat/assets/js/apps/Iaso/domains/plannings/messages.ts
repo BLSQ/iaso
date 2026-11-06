@@ -81,9 +81,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createPlanning',
         defaultMessage: 'Create planning',
     },
-    forms: {
-        defaultMessage: 'Forms',
-        id: 'iaso.forms.title',
+    missions: {
+        defaultMessage: 'Missions',
+        id: 'iaso.missions.title',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -379,6 +379,385 @@ const MESSAGES = defineMessages({
     planning: {
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
+    },
+    add: {
+        defaultMessage: 'Add',
+        id: 'iaso.label.add',
+    },
+    addMissions: {
+        defaultMessage: 'Add missions',
+        id: 'iaso.plannings.label.addMissions',
+    },
+    addMissionsToPlanning: {
+        defaultMessage: 'Add missions to this planning',
+        id: 'iaso.plannings.label.addMissionsToPlanning',
+    },
+    searchMission: {
+        defaultMessage: 'Search a mission',
+        id: 'iaso.plannings.label.searchMission',
+    },
+    alreadyLinked: {
+        defaultMessage: 'Already linked',
+        id: 'iaso.plannings.label.alreadyLinked',
+    },
+    linkMission: {
+        defaultMessage: 'Link mission',
+        id: 'iaso.plannings.label.linkMission',
+    },
+    notSavedYet: {
+        defaultMessage: 'Not saved yet',
+        id: 'iaso.plannings.label.notSavedYet',
+    },
+    willBeUnlinked: {
+        defaultMessage: 'Will be unlinked',
+        id: 'iaso.plannings.label.willBeUnlinked',
+    },
+    unlinkMission: {
+        defaultMessage: 'Unlink mission',
+        id: 'iaso.plannings.label.unlinkMission',
+    },
+    relinkMission: {
+        defaultMessage: 'Undo unlink',
+        id: 'iaso.plannings.label.relinkMission',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.label.type',
+    },
+    linkedMissionsCount: {
+        defaultMessage: '{count} linked',
+        id: 'iaso.plannings.label.linkedMissionsCount',
+    },
+    noMissionLinked: {
+        defaultMessage: 'No mission linked yet',
+        id: 'iaso.plannings.label.noMissionLinked',
+    },
+    noMissionLinkedDescription: {
+        defaultMessage:
+            'Link an existing mission or create a new one to define what agents collect on the field.',
+        id: 'iaso.plannings.label.noMissionLinkedDescription',
+    },
+    planningDetails: {
+        defaultMessage: 'Planning details',
+        id: 'iaso.plannings.label.planningDetails',
+    },
+    viewDetails: {
+        defaultMessage: 'View details',
+        id: 'iaso.label.viewDetails',
+    },
+    deprecated: {
+        defaultMessage: 'Deprecated',
+        id: 'iaso.plannings.label.deprecated',
+    },
+    readOnlyPlanning: {
+        defaultMessage: 'This planning is read only.',
+        id: 'iaso.plannings.label.readOnlyPlanning',
+    },
+    deprecatedPlanningInfos: {
+        defaultMessage:
+            'It was created before missions were introduced and can no longer be edited.',
+        id: 'iaso.plannings.label.deprecatedPlanningInfos',
+    },
+    openAssignments: {
+        defaultMessage: 'Open assignments',
+        id: 'iaso.plannings.label.openAssignments',
+    },
+    assignmentsForPlanning: {
+        defaultMessage: 'Assignments for planning: {name}',
+        id: 'iaso.plannings.label.assignmentsForPlanning',
+    },
+    info: {
+        defaultMessage: 'Info',
+        id: 'iaso.plannings.label.info',
+    },
+    levelsAndTeams: {
+        defaultMessage: 'Levels & teams',
+        id: 'iaso.plannings.label.levelsAndTeams',
+    },
+    targetGeographyAndRootTeam: {
+        defaultMessage: 'Target geography and root team',
+        id: 'iaso.plannings.label.targetGeographyAndRootTeam',
+    },
+    targetGeographyAndRootTeamInfos: {
+        defaultMessage:
+            'Select the org unit this planning covers, then the team responsible for it. The team hierarchy defines the levels below.',
+        id: 'iaso.plannings.label.targetGeographyAndRootTeamInfos',
+    },
+    rootTeam: {
+        defaultMessage: 'Root team',
+        id: 'iaso.plannings.label.rootTeam',
+    },
+    createNewRootTeam: {
+        defaultMessage: 'Create new root team',
+        id: 'iaso.plannings.label.createNewRootTeam',
+    },
+    or: {
+        defaultMessage: 'or',
+        id: 'iaso.plannings.label.or',
+    },
+    teamHierarchy: {
+        defaultMessage: 'Team hierarchy',
+        id: 'iaso.plannings.label.teamHierarchy',
+    },
+    teamHierarchyInfos: {
+        defaultMessage:
+            'Build the hierarchy below the root team. Changes update the levels automatically.',
+        id: 'iaso.plannings.label.teamHierarchyInfos',
+    },
+    selectProjectToPickRootTeam: {
+        defaultMessage:
+            'Select a project in the Info tab to choose a root team.',
+        id: 'iaso.plannings.label.selectProjectToPickRootTeam',
+    },
+    selectRootTeamFirst: {
+        defaultMessage: 'Select a root team to build its hierarchy.',
+        id: 'iaso.plannings.label.selectRootTeamFirst',
+    },
+    orgUnitsToAssign: {
+        defaultMessage: 'Org units to assign',
+        id: 'iaso.plannings.label.orgUnitsToAssign',
+    },
+    orgUnitLevelsInfos: {
+        defaultMessage:
+            '{count, plural, one {# level} other {# levels}} computed from the team hierarchy.',
+        id: 'iaso.plannings.label.orgUnitLevelsInfos',
+    },
+    orgUnitLevelsTypesInfos: {
+        defaultMessage:
+            'Each level goes one step down the org unit tree: level 1 offers the org unit types directly below the root org unit, ' +
+            'and each next level offers the types directly below the ones of the level above.',
+        id: 'iaso.plannings.label.orgUnitLevelsTypesInfos',
+    },
+    orgUnitLevelsGroupsInfos: {
+        defaultMessage:
+            'Groups only list those containing org units of the selected types, to narrow the level down.',
+        id: 'iaso.plannings.label.orgUnitLevelsGroupsInfos',
+    },
+    levelNumber: {
+        defaultMessage: 'Level {number}',
+        id: 'iaso.plannings.label.levelNumber',
+    },
+    rootLevel: {
+        defaultMessage: 'Root level',
+        id: 'iaso.plannings.label.rootLevel',
+    },
+    deepestLevel: {
+        defaultMessage: 'Deepest level',
+        id: 'iaso.plannings.label.deepestLevel',
+    },
+    teamsAndUsers: {
+        defaultMessage: 'Teams and users',
+        id: 'iaso.plannings.label.teamsAndUsers',
+    },
+    orgUnitTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.plannings.label.orgUnitTypes',
+    },
+    orgUnitGroups: {
+        defaultMessage: 'Org unit groups',
+        id: 'iaso.plannings.label.orgUnitGroups',
+    },
+    orgUnits: {
+        defaultMessage: 'Org units',
+        id: 'iaso.plannings.label.orgUnits',
+    },
+    allOrgUnits: {
+        defaultMessage: 'All org units',
+        id: 'iaso.plannings.label.allOrgUnits',
+    },
+    selectGeographyAndRootTeamFirst: {
+        defaultMessage:
+            'Select a target geography and a root team to define the levels.',
+        id: 'iaso.plannings.label.selectGeographyAndRootTeamFirst',
+    },
+    mixedOrgUnitTypeDepths: {
+        defaultMessage: 'Org unit types of a level must be at the same depth',
+        id: 'iaso.plannings.label.mixedOrgUnitTypeDepths',
+    },
+    notDirectlyBelowLevelAbove: {
+        defaultMessage: 'Org unit types must be directly below the level above',
+        id: 'iaso.plannings.label.notDirectlyBelowLevelAbove',
+    },
+    selectLevelAboveTypesFirst: {
+        defaultMessage: 'Select the org unit types of the level above first',
+        id: 'iaso.plannings.label.selectLevelAboveTypesFirst',
+    },
+    groupsWithoutLevelOrgUnits: {
+        defaultMessage: "No org units of this level's types in: {groups}",
+        id: 'iaso.plannings.label.groupsWithoutLevelOrgUnits',
+    },
+    explore: {
+        defaultMessage: 'Explore',
+        id: 'iaso.plannings.label.explore',
+    },
+    exploreModeTooltip: {
+        defaultMessage: 'Browse teams and open subteams',
+        id: 'iaso.plannings.label.exploreModeTooltip',
+    },
+    assign: {
+        defaultMessage: 'Assign',
+        id: 'iaso.plannings.label.assign',
+    },
+    assignModeTooltip: {
+        defaultMessage: 'Assign org units to team members',
+        id: 'iaso.plannings.label.assignModeTooltip',
+    },
+    assignmentsMode: {
+        defaultMessage: 'Mode',
+        id: 'iaso.plannings.label.assignmentsMode',
+    },
+    editingPublishedPlanning: {
+        defaultMessage: 'You are editing a published planning.',
+        id: 'iaso.plannings.label.editingPublishedPlanning',
+    },
+    editingPublishedPlanningDetails: {
+        defaultMessage:
+            'Every assignment change is sent to the agents concerned at their next synchronisation and can change the work they are doing on the field.',
+        id: 'iaso.plannings.label.editingPublishedPlanningDetails',
+    },
+    teamsPanelExploreHelp: {
+        defaultMessage:
+            'Click a member to open it and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.teamsPanelExploreHelp',
+    },
+    teamsPanelAssignNote: {
+        defaultMessage:
+            'Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.',
+        id: 'iaso.plannings.label.teamsPanelAssignNote',
+    },
+    hideTeams: {
+        defaultMessage: 'Hide teams',
+        id: 'iaso.plannings.label.hideTeams',
+    },
+    openTeam: {
+        defaultMessage: 'Open {name}',
+        id: 'iaso.plannings.label.openTeam',
+    },
+    targetGeographyCaption: {
+        defaultMessage: '{name} (target geography)',
+        id: 'iaso.plannings.label.targetGeographyCaption',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    parent: {
+        defaultMessage: 'Parent',
+        id: 'iaso.label.parent',
+    },
+    assignment: {
+        defaultMessage: 'Assignment',
+        id: 'iaso.plannings.label.assignment',
+    },
+    below: {
+        defaultMessage: 'Below',
+        id: 'iaso.plannings.label.below',
+    },
+    belowAssigned: {
+        defaultMessage: '{assigned} of {total} assigned',
+        id: 'iaso.plannings.label.belowAssigned',
+    },
+    notOnMap: {
+        defaultMessage: 'No shape or point: not shown on the map',
+        id: 'iaso.plannings.label.notOnMap',
+    },
+    noOrgUnitsToAssign: {
+        defaultMessage: 'No org units to assign on this level',
+        id: 'iaso.plannings.label.noOrgUnitsToAssign',
+    },
+    mapExploreHintTeams: {
+        defaultMessage:
+            'Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.mapExploreHintTeams',
+    },
+    mapExploreHintUsers: {
+        defaultMessage:
+            'Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.',
+        id: 'iaso.plannings.label.mapExploreHintUsers',
+    },
+    mapHintNoMember: {
+        defaultMessage:
+            'This team has no member. Add members in the team hierarchy of the planning.',
+        id: 'iaso.plannings.label.mapHintNoMember',
+    },
+    showHelp: {
+        defaultMessage: 'Show help',
+        id: 'iaso.plannings.label.showHelp',
+    },
+    hideHelp: {
+        defaultMessage: 'Hide help',
+        id: 'iaso.plannings.label.hideHelp',
+    },
+    legend: {
+        defaultMessage: 'Legend',
+        id: 'iaso.plannings.label.legend',
+    },
+    assignedTo: {
+        defaultMessage: 'Assigned to',
+        id: 'iaso.plannings.label.assignedTo',
+    },
+    unassigned: {
+        defaultMessage: 'Unassigned',
+        id: 'iaso.plannings.label.unassigned',
+    },
+    areaOf: {
+        defaultMessage: 'Area of {name}',
+        id: 'iaso.plannings.label.areaOf',
+    },
+    orgUnitsOffMap: {
+        defaultMessage:
+            '{count, plural, ' +
+            'one {# org unit has no shape or point. It is not on the map but appears in the list.} ' +
+            'other {# org units have no shape or point. They are not on the map but appear in the list.}}',
+        id: 'iaso.plannings.label.orgUnitsOffMap',
+    },
+    newPlanning: {
+        defaultMessage: 'New planning',
+        id: 'iaso.plannings.label.newPlanning',
+    },
+    fieldsToFix: {
+        defaultMessage: 'Fields to fix: {fields}',
+        id: 'iaso.plannings.label.fieldsToFix',
+    },
+    cantSaveFieldsToFix: {
+        defaultMessage:
+            "Can't save, required fields are missing or invalid in:",
+        id: 'iaso.plannings.label.cantSaveFieldsToFix',
+    },
+    noOrgUnitOfType: {
+        defaultMessage:
+            'No org unit of type {type} under {orgUnit}. Remove it or pick a deeper type.',
+        id: 'iaso.plannings.label.noOrgUnitOfType',
+    },
+    noOrgUnitInGroups: {
+        defaultMessage:
+            'The selected groups contain none of these org units. Nothing will be assigned at this level.',
+        id: 'iaso.plannings.label.noOrgUnitInGroups',
+    },
+    emptyLevelAbove: {
+        defaultMessage:
+            'The level above has no org unit, so these org units have no parent to be assigned from.',
+        id: 'iaso.plannings.label.emptyLevelAbove',
+    },
+    howCountIsComputed: {
+        defaultMessage: 'How {count} org units are computed',
+        id: 'iaso.plannings.label.howCountIsComputed',
+    },
+    typeUnderOrgUnit: {
+        defaultMessage: '{type} under {orgUnit}',
+        id: 'iaso.plannings.label.typeUnderOrgUnit',
+    },
+    notInSelectedGroups: {
+        defaultMessage: 'Not in the selected groups',
+        id: 'iaso.plannings.label.notInSelectedGroups',
+    },
+    assignableAtLevel: {
+        defaultMessage: 'Assignable at level {number}',
+        id: 'iaso.plannings.label.assignableAtLevel',
     },
 });
 

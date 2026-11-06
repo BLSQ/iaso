@@ -274,7 +274,7 @@ class EntityViewSet(ModelViewSet):
                 # Avoid duplicates
                 if Entity.objects.filter(attributes=instance):
                     raise serializers.ValidationError(
-                        {"attributes": "Entity with the attribute '{0}' already exists.".format(entity["attributes"])}
+                        {"attributes": "Entity with the attribute '{}' already exists.".format(entity["attributes"])}
                     )
                 entity_type = get_object_or_404(EntityType, pk=int(entity["entity_type"]))
                 account = request.user.iaso_profile.account
@@ -332,7 +332,8 @@ class EntityViewSet(ModelViewSet):
         return Response({"count": queryset.count()})
 
     def destroy(self, request, pk=None):
-        entity = Entity.objects_include_deleted.get(pk=pk)
+        queryset = Entity.objects_include_deleted.filter_for_user(request.user).distinct()
+        entity = get_object_or_404(queryset, pk=pk)
 
         entity = entity.soft_delete_with_instances_and_pending_duplicates(
             audit_source=ENTITY_API,

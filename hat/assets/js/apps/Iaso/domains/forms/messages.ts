@@ -1,6 +1,7 @@
+import { IntlMessage } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 
-const MESSAGES = defineMessages({
+const MESSAGES: Record<string, IntlMessage> = defineMessages({
     title: {
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
@@ -384,6 +385,19 @@ const MESSAGES = defineMessages({
     periodsAfterAllowed: {
         id: 'iaso.label.periodsAfterAllowed',
         defaultMessage: 'Allowed periods after',
+    },
+    promptness: {
+        id: 'iaso.promptness.title',
+        defaultMessage: 'Promptness',
+    },
+    promptnessGracePeriodDays: {
+        id: 'iaso.label.promptnessGracePeriodDays',
+        defaultMessage: 'Promptness grace period (days)',
+    },
+    promptnessGracePeriodDaysInfo: {
+        id: 'iaso.forms.promptnessGracePeriodDaysInfo',
+        defaultMessage:
+            'Number of days after the end of the period during which submissions are still considered on time',
     },
     singlePerPeriod: {
         id: 'iaso.label.singlePerPeriod',

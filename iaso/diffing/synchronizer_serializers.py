@@ -41,6 +41,10 @@ class GeometryComparisonSerializer(BaseComparisonSerializer):
 
 
 class DiffOrgUnitSerializer(serializers.ModelSerializer):
+    groups = serializers.SerializerMethodField()
+    geom = serializers.CharField()  # to keep legacy behavior before introduction of djangorestframework-gis
+    location = serializers.CharField()  # to keep legacy behavior before introduction of djangorestframework-gis
+
     class Meta:
         model = OrgUnit
         fields = [
@@ -59,6 +63,9 @@ class DiffOrgUnitSerializer(serializers.ModelSerializer):
             "closed_date",
             "groups",
         ]
+
+    def get_groups(self, obj):
+        return list(obj.groups.order_by("pk").values_list("pk", flat=True))
 
 
 class DataSourceVersionsSynchronizerDiffSerializer(serializers.Serializer):

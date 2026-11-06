@@ -3,12 +3,12 @@
 ### Code formatting
 
 
-We have adopted Black [](https://github.com/psf/black) as our code
+We have adopted ruff [](https://github.com/astral-sh/ruff) as our code
 formatting tool. Line length is 120.
 
-The easiest way to use is is to install the pre-commit hook:
-1. Install pre-commit: pip install pre-commit
-2. Execute pre-commit install to install git hooks in your .git/ directory.
+The easiest way to use it is to install the pre-commit hook:
+1. Install the dev dependencies, which include pre-commit: `uv sync`
+2. Execute `uv run pre-commit install` to install git hooks in your .git/ directory.
 
 Another good way to have it working is to set it up in your code editor.
 Pycharm, for example, has good support for this.

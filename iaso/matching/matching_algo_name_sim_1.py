@@ -97,7 +97,7 @@ class Algorithm:
         while children_1 and children_2:
             print(result)
             links = self.match_level(children_1, children_2, run)
-            result["Level %d Links Count" % index] = len(links)
+            result[f"Level {index} Links Count"] = len(links)
             children_2 = list(OrgUnit.objects.filter(parent__in=children_2))
 
             children_1 = list(

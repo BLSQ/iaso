@@ -27,7 +27,7 @@ services:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '22.18.0'
+    versionSpec: '22.23.4'
   displayName: 'Install Node.js'
 
 - script: |
@@ -96,7 +96,7 @@ steps:
     DJANGO_SUPERUSER_EMAIL: adm@example.com
     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
     DJANGO_SUPERUSER_USERNAME: adm
-    PLUGINS: polio,wfp,wfp_auth
+    PLUGINS: wfp,wfp_auth
     RDS_DB_NAME: does_not_matter
     RDS_HOSTNAME: localhost
     RDS_PASSWORD: postgres

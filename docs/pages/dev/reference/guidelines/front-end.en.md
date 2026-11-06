@@ -84,6 +84,52 @@ Example:
      <Box sx={styles.root}>
      ...
 
+### Reusable style overrides
+
+`hat/assets/js/apps/Iaso/styles/index.ts` exposes `SxStyles` overrides for compact variants of MUI components. Spread them into your `styles` object instead of redefining heights and paddings:
+
+- `smallTabsOverrides`: compact `Tabs` (36px height, reduced paddings, smaller icons)
+- `smallInputOverrides`: compact outlined inputs
+
+```tsx
+import { smallTabsOverrides } from 'Iaso/styles';
+
+const styles = {
+    tabs: {
+        ...smallTabsOverrides,
+        marginBottom: 3,
+    },
+} satisfies SxStyles;
+
+...
+<Tabs value={tab} onChange={handleChangeTab} sx={styles.tabs}>
+```
+
+## Page layouts
+
+For full pages with a white header bar and a grey scrollable body, use `GreyPageWrapper` from `Iaso/components/GreyPageWrapper` instead of combining `MainWrapper` with custom header styles.
+
+| Prop       | Type         | Description                                                                 |
+| ---------- | ------------ | --------------------------------------------------------------------------- |
+| `title`    | `ReactNode`  | Displayed on the left of the header                                         |
+| `actions`  | `ReactNode`  | Optional, displayed on the right of the header                              |
+| `maxWidth` | `Breakpoint` | Optional MUI breakpoint used to center and constrain header and body width |
+| `children` | `ReactNode`  | Page content                                                                |
+
+```tsx
+import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
+
+export const PlanningDetails: FC = () => (
+    <GreyPageWrapper
+        title={<PlanningHeaderTitle />}
+        actions={<PlanningHeaderActions />}
+        maxWidth="lg"
+    >
+        <PlanningContent />
+    </GreyPageWrapper>
+);
+```
+
 ## Translating
 
 ### Basic usage
@@ -373,6 +419,19 @@ const { filters, handleSearch, handleChange, filtersUpdated } = useFilterState({
 `useArrayState`: convenience hook for when the state is an array and we want to update elements based on index
 
 ## Code style
+
+- Don't use the array index as a React `key`. Use a stable id when items have one, otherwise wrap the list in `React.Children.toArray` so React assigns keys:
+
+```tsx
+// BAD
+{items.map((item, index) => <Chip key={index} label={item.name} />)}
+
+// GOOD, items have a stable id
+{items.map(item => <Chip key={item.id} label={item.name} />)}
+
+// GOOD, no stable id
+{React.Children.toArray(items.map(item => <Chip label={item.name} />))}
+```
 
 - Prefer `type?:string` to `type: string | undefined`
 - Prefer `const` to `let`:

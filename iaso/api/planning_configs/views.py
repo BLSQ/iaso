@@ -1,0 +1,67 @@
+from typing import Any
+
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import CreateModelMixin, UpdateModelMixin
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer, Serializer
+from rest_framework.viewsets import GenericViewSet
+
+from iaso.api.common import HasPermission
+from iaso.api.common.mixin import ProtectDestroyMixin
+from iaso.api.planning_configs.serializers.bulk_create import PlanningConfigBulkCreateSerializer
+from iaso.api.planning_configs.serializers.bulk_update import PlanningConfigBulkUpdateSerializer
+from iaso.api.planning_configs.serializers.create import PlanningConfigCreateSerializer
+from iaso.api.planning_configs.serializers.update import PlanningConfigUpdateSerializer
+from iaso.models import PlanningConfig
+from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION
+
+
+@extend_schema(tags=["Planning configs"])
+class PlanningConfigViewSet(ProtectDestroyMixin, UpdateModelMixin, CreateModelMixin, GenericViewSet):
+    permission_classes = (IsAuthenticated, HasPermission(CORE_PLANNING_WRITE_PERMISSION))
+    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
+
+    def get_queryset(self) -> QuerySet[PlanningConfig]:
+        return PlanningConfig.objects.filter_for_user(self.request.user)
+
+    def get_serializer_class(self) -> type[BaseSerializer]:
+        if self.action == "create":
+            return PlanningConfigCreateSerializer
+        if self.action in ["update", "partial_update"]:
+            return PlanningConfigUpdateSerializer
+        if self.action == "delete":
+            return Serializer
+        if self.action == "bulk_create":
+            return PlanningConfigBulkCreateSerializer
+        if self.action == "bulk_update":
+            return PlanningConfigBulkUpdateSerializer
+        raise NotImplementedError(f"Serializer for {self.action} not implemented")
+
+    @extend_schema(
+        request=PlanningConfigBulkCreateSerializer(many=True), responses=PlanningConfigBulkCreateSerializer(many=True)
+    )
+    @action(detail=False, methods=["post"], pagination_class=None, url_path="bulk-create")
+    def bulk_create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @extend_schema(
+        request=PlanningConfigBulkUpdateSerializer(many=True),
+        responses=PlanningConfigBulkUpdateSerializer(many=True),
+    )
+    @action(detail=False, methods=["put"], pagination_class=None, url_path="bulk-update")
+    def bulk_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        serializer = self.get_serializer(data=request.data, many=True, allow_empty=False, instance=self.get_queryset())
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(status=status.HTTP_204_NO_CONTENT, headers=headers)

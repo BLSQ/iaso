@@ -165,7 +165,7 @@ class LinkViewSet(viewsets.ViewSet):
         ]
 
         filename = "links"
-        filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        filename = "{}-{}".format(filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(link, **kwargs):
             return [
@@ -191,7 +191,7 @@ class LinkViewSet(viewsets.ViewSet):
                 streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
             )
             filename = filename + ".csv"
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = f"attachment; filename={filename}"
         return response
 
     def partial_update(self, request, pk=None):

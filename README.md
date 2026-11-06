@@ -152,7 +152,7 @@ uv run ./manage.py runserver
 
 ### Node.js and npm (native frontend)
 
-Frontend tooling is pinned to the same versions as Docker/CI (`node:22.18.0`, `npm@11.19.0`) via `package.json` (`engines` + `packageManager`), `.nvmrc`, and `.npmrc` (`engine-strict=true`). Wrong versions will fail `npm ci` / `npm install`.
+Frontend tooling is pinned to the same versions as Docker/CI (`node:22.23.4`, `npm@11.19.0`) via `package.json` (`engines` + `packageManager`), `.nvmrc`, and `.npmrc` (`engine-strict=true`). Wrong versions will fail `npm ci` / `npm install`.
 
 ```bash
 # Node (nvm, fnm, or asdf all read .nvmrc)
@@ -163,7 +163,7 @@ nvm use
 corepack enable
 corepack prepare npm@11.19.0 --activate
 
-node -v   # v22.18.0
+node -v   # v22.23.4
 npm -v    # 11.19.0
 npm ci
 ```
@@ -326,8 +326,8 @@ org units (these are childcare schools in the West of DRC):
 
 ```bash
 docker compose exec iaso ./manage.py tree_importer \
-    --org_unit_csv_file testdata/schools.csv \
-    --data_dict testdata/data_dict.json \
+    --org_unit_csv_file iaso/fixtures/seed_data/schools.csv \
+    --data_dict iaso/fixtures/seed_data/schools_data_dict.json \
     --source_name wb_schools_2019 \
     --version_number=1 \
     --project_id=1\
@@ -404,7 +404,6 @@ pattern to run a command is
 The following are some examples:
 
 - Run tests `docker compose exec iaso ./manage.py test`
-- Check type hints `docker compose exec iaso mypy .`
 - Create a shell inside the container`docker compose run iaso bash`
 - Run a shell command `docker compose run iaso eval curl http://google.com`
 - Run Django manage.py `docker compose exec iaso ./manage.py help`
@@ -817,8 +816,8 @@ formatting tool. Line length is 120.
 
 The easiest way to use it is to install the pre-commit hook:
 
-1. Install pre-commit: pip install pre-commit
-2. Execute pre-commit install to install git hooks in your .git/ directory.
+1. Install the dev dependencies, which include pre-commit: `uv sync`
+2. Execute `uv run pre-commit install` to install git hooks in your .git/ directory.
 
 Another good way to have it working is to set it up in your code editor.
 Pycharm, for example, has good support for this.
@@ -871,7 +870,7 @@ While editing scss files you have to compile it manually with the command:
 - Outside docker (virtualenv activated): `python manage.py compile_index_scss`
 
 The custom `compile_index_scss` management command compiles `iaso/static/css/index.scss` into
-`iaso/static/css/index.css` using `libsass` (see `requirements.txt`).
+`iaso/static/css/index.css` using `libsass` (see `pyproject.toml`).
 If you don't compile it, changes will not be reflected while deploying as we only use css file in production.
 
 ## Jupyter Notebook
@@ -987,7 +986,7 @@ External service dependencies:
 
 Currently supported version of Python is 3.9.
 
-Frontend: Node.js **22.18.0** and npm **11.19.0** (see `.nvmrc` / `package.json` `engines`; required for `npm ci` with the versioned lockfile).
+Frontend: Node.js **22.23.4** and npm **11.19.0** (see `.nvmrc` / `package.json` `engines`; required for `npm ci` with the versioned lockfile).
 
 The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
 

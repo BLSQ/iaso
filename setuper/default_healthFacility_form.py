@@ -60,12 +60,12 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
             "fields": "id,longitude,latitude,altitude",
         },
     )["orgunits"]
-    print("-- Submitting %d submissions" % limit)
+    print(f"-- Submitting {limit} submissions")
 
     for orgunit in orgunits:
         the_uuid = str(uuid.uuid4())
-        file_name = "example_%s.xml" % the_uuid
-        local_path = "generated/%s" % file_name
+        file_name = f"example_{the_uuid}.xml"
+        local_path = f"generated/{file_name}"
         current_datetime = int(datetime.now().timestamp())
 
         instance_body = [

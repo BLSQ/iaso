@@ -1,8 +1,7 @@
-from typing import Any, Protocol
 from urllib.parse import urlencode
 
 from django import forms as django_forms
-from django.contrib import admin, messages
+from django.contrib import messages
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
@@ -111,7 +110,6 @@ from ..models import (
 )
 from ..models.data_store import JsonDataStore
 from ..models.form_ai import TemporaryForm
-from ..models.microplanning import Assignment, Planning, PlanningSamplingResult
 from ..models.team import Team
 from ..models.validation_workflow import ValidationNode
 from ..utils.gis import convert_2d_point_to_3d
@@ -136,9 +134,7 @@ class IasoJSONEditorWidget(JSONEditorWidget):
         if options:
             default_options.update(options)
 
-        super(IasoJSONEditorWidget, self).__init__(
-            attrs=attrs, mode=mode, options=default_options, width=width, height=height
-        )
+        super().__init__(attrs=attrs, mode=mode, options=default_options, width=width, height=height)
 
 
 class ArrayFieldMultipleChoiceField(django_forms.MultipleChoiceField):
@@ -167,17 +163,6 @@ class ArrayFieldMultipleChoiceField(django_forms.MultipleChoiceField):
         super().__init__(*args, **kwargs)
 
 
-class AdminAttributes(Protocol):
-    """Workaround to avoid mypy errors, see https://github.com/python/mypy/issues/2087#issuecomment-462726600"""
-
-    short_description: str
-    admin_order_field: str
-
-
-def admin_attr_decorator(func: Any) -> AdminAttributes:
-    return func
-
-
 class OrgUnitReferenceInstanceInline(admin.TabularInline):
     model = OrgUnitReferenceInstance
     extra = 0
@@ -192,7 +177,6 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 
 
 @admin.register(OrgUnit)
-@admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
@@ -233,21 +217,18 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(OrgUnitType)
-@admin_attr_decorator
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
     list_filter = ("projects",)
 
     @admin.display(description="Projects")
-    @admin_attr_decorator
     def projects_list(self, obj):
         projects = obj.projects.all()
         return ", ".join(project.name for project in projects) if len(projects) > 0 else "-"
 
 
 @admin.register(Form)
-@admin_attr_decorator
 class FormAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_id")
     list_display = (
@@ -278,7 +259,6 @@ class FormAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(FormVersion)
-@admin_attr_decorator
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id", "version_id")
     ordering = ("form__name",)
@@ -292,7 +272,6 @@ class FormVersionAdmin(admin.GeoModelAdmin):
         description="Form name",
         ordering="form__name",
     )
-    @admin_attr_decorator
     def form_name(self, obj):
         return obj.form.name
 
@@ -300,7 +279,6 @@ class FormVersionAdmin(admin.GeoModelAdmin):
         description="Form ID",
         ordering="form__id",
     )
-    @admin_attr_decorator
     def form_id(self, obj):
         return obj.form.form_id
 
@@ -333,7 +311,6 @@ class InstanceFileAdminInline(admin.TabularInline):
 
 
 @admin.register(Instance)
-@admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("api_import",)
     search_fields = ("file_name", "uuid", "form__name", "form__form_id")
@@ -438,7 +415,6 @@ class InstanceAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(Device)
-@admin_attr_decorator
 class DeviceAdmin(admin.ModelAdmin):
     list_display = ("id", "imei", "test_device", "created_at")
     search_fields = ("imei",)
@@ -446,28 +422,24 @@ class DeviceAdmin(admin.ModelAdmin):
 
 
 @admin.register(InstanceFile)
-@admin_attr_decorator
 class InstanceFileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("instance",)
     search_fields = ("name", "file")
 
 
 @admin.register(Project)
-@admin_attr_decorator
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
     autocomplete_fields = ["account"]
     search_fields = ["name"]
 
     @admin.display(description="Feature flags")
-    @admin_attr_decorator
     def feature_flags_list(self, obj):
         flags = obj.feature_flags.all()
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
 
 
 @admin.register(ProjectFeatureFlags)
-@admin_attr_decorator
 class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
     list_display = ("featureflag", "project", "configuration")
     list_filter = ("project",)
@@ -475,21 +447,18 @@ class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
 
 
 @admin.register(FeatureFlag)
-@admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
     list_display = ("code", "name", "requires_authentication", "configuration_schema")
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Link)
-@admin_attr_decorator
 class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
     autocomplete_fields = ("validator",)
 
 
 @admin.register(Mapping)
-@admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("mapping_type",)
     search_fields = ("name", "form__name", "form__form_id")
@@ -500,7 +469,6 @@ class MappingAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(MappingVersion)
-@admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_version__form__name", "form_version__form__form_id", "form_version__version_id")
     # `name` is very often empty, so it can't be the only clickable column.
@@ -513,7 +481,6 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(Group)
-@admin_attr_decorator
 class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
     search_fields = ("name", "source_version")
@@ -524,7 +491,6 @@ class GroupAdmin(admin.ModelAdmin):
 
 
 @admin.register(Profile)
-@admin_attr_decorator
 class ProfileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)
     search_fields = ("user__username", "user__first_name", "user__last_name", "account__name")
@@ -535,7 +501,6 @@ class ProfileAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(ExportRequest)
-@admin_attr_decorator
 class ExportRequestAdmin(admin.GeoModelAdmin):
     list_filter = ("status",)
     search_fields = ("launcher__username", "launcher__email")
@@ -545,14 +510,12 @@ class ExportRequestAdmin(admin.GeoModelAdmin):
 
 
 @admin.register(ExportLog)
-@admin_attr_decorator
 class ExportLogAdmin(admin.GeoModelAdmin):
     list_display = ("id", "http_status", "url", "sent", "received")
     readonly_fields = list_display
 
 
 @admin.register(ExportStatus)
-@admin_attr_decorator
 class ExportStatusAdmin(admin.GeoModelAdmin):
     list_display = ("id", "status", "last_error_message")
     readonly_fields = (
@@ -620,7 +583,6 @@ def kill_running_task(_, request, queryset) -> None:
 
 
 @admin.register(Task)
-@admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
     list_display = ("name", "account", "status", "created_at", "launcher", "result_message", "result")
     list_filter = ("account", "status", "name")
@@ -741,7 +703,6 @@ class TaskLogAdmin(admin.ModelAdmin):
 
 
 @admin.register(SourceVersion)
-@admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = ["id", "data_source", "number", "created_at", "updated_at"]
@@ -752,7 +713,6 @@ class SourceVersionAdmin(admin.ModelAdmin):
 
 
 @admin.register(Entity)
-@admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
         "id",
@@ -819,14 +779,12 @@ class EntityAdmin(admin.ModelAdmin):
 
 
 @admin.register(JsonDataStore)
-@admin_attr_decorator
 class JsonDataStoreAdmin(admin.ModelAdmin):
     raw_id_fields = ["account", "org_unit"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(EntityType)
-@admin_attr_decorator
 class EntityTypeAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = (
@@ -836,61 +794,7 @@ class EntityTypeAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Planning)
-@admin_attr_decorator
-class PlanningAdmin(admin.ModelAdmin):
-    raw_id_fields = ("org_unit",)
-    autocomplete_fields = ("project", "forms", "team", "created_by")
-    search_fields = ("name", "description")
-    list_select_related = ("project", "org_unit", "team")
-    list_display = (
-        "id",
-        "name",
-        "description",
-        "project",
-        "org_unit",
-        # "forms",
-        "team",
-    )
-    list_filter = ("project",)
-    date_hierarchy = "started_at"
-
-    fieldsets = [
-        (
-            None,
-            {
-                "fields": (
-                    "name",
-                    "description",
-                    "project",
-                    "forms",
-                    "org_unit",
-                    "team",
-                    "started_at",
-                    "ended_at",
-                    "pipeline_uuids",
-                    "selected_sampling_result",
-                    "target_org_unit_types",
-                ),
-            },
-        ),
-        (
-            "update info",
-            {
-                "fields": (
-                    "created_at",
-                    "created_by",
-                    "updated_at",
-                    "deleted_at",
-                )
-            },
-        ),
-    ]
-    readonly_fields = ("updated_at", "created_at")
-
-
 @admin.register(Team)
-@admin_attr_decorator
 class TeamAdmin(admin.ModelAdmin):
     autocomplete_fields = ("project", "parent", "users", "manager", "created_by")
     search_fields = ("name", "description")
@@ -907,39 +811,6 @@ class TeamAdmin(admin.ModelAdmin):
     list_filter = ("project", "type")
     date_hierarchy = "created_at"
     readonly_fields = ("path",)
-
-
-@admin.register(Assignment)
-@admin_attr_decorator
-class AssignmentAdmin(admin.ModelAdmin):
-    raw_id_fields = ("org_unit",)
-    autocomplete_fields = ("planning", "team", "user", "created_by")
-    search_fields = ("planning__name", "user__username")
-    list_select_related = ("planning", "user")
-    list_display = (
-        "id",
-        "planning",
-    )
-    date_hierarchy = "created_at"
-
-
-@admin.register(PlanningSamplingResult)
-@admin_attr_decorator
-class PlanningSamplingResultAdmin(admin.ModelAdmin):
-    raw_id_fields = ("planning", "group", "task", "created_by")
-    readonly_fields = ("created_at", "parameters")
-    list_display = (
-        "id",
-        "planning",
-        "pipeline_id",
-        "pipeline_version",
-        "group",
-        "task",
-        "created_at",
-    )
-    list_filter = ("planning",)
-    search_fields = ("pipeline_id", "pipeline_version")
-    date_hierarchy = "created_at"
 
 
 @admin.register(InstanceLock)
@@ -1145,11 +1016,9 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     autocomplete_fields = ("entity1", "entity2", "analyze")
 
-    @admin_attr_decorator
     def entity1_desc(self, obj):
         return f"{obj.entity1.name} ({obj.entity1.id})"
 
-    @admin_attr_decorator
     def entity2_desc(self, obj):
         return f"{obj.entity2.name} ({obj.entity2.id})"
 

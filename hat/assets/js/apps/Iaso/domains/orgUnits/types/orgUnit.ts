@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Pagination, UrlParams } from 'bluesquare-components';
+import { PaginationType, UrlParams } from 'bluesquare-components';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
@@ -92,7 +92,7 @@ export type OrgUnit = {
     closed_date?: Date;
     default_image_id?: number;
 };
-export interface PaginatedOrgUnits extends Pagination {
+export interface PaginatedOrgUnits extends PaginationType {
     orgunits: OrgUnit[];
 }
 

@@ -33,8 +33,8 @@ def get_powerbi_service_principal_token(tenant_id, client_id, secret_value):
 
 def get_powerbi_report_token_with_sp(sp_access_token, group_id, report_id):
     body = {"accessLevel": "View"}
-    url = "https://api.powerbi.com/v1.0/myorg/groups/%s/reports/%s/GenerateToken" % (group_id, report_id)
-    headers = {"Content-Type": "application/json", "Authorization": "Bearer %s" % sp_access_token}
+    url = f"https://api.powerbi.com/v1.0/myorg/groups/{group_id}/reports/{report_id}/GenerateToken"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {sp_access_token}"}
     r = requests.post(url=url, json=body, headers=headers)
     r.raise_for_status()
     report_token = r.json()["token"]
@@ -133,14 +133,14 @@ def launch_dataset_refresh(group_id, data_set_id):
         config["tenant_id"], config["client_id"], config["secret_value"]
     )
     body = {"accessLevel": "View"}
-    url = "https://api.powerbi.com/v1.0/myorg/groups/%s/datasets/%s/refreshes" % (group_id, data_set_id)
-    headers = {"Content-Type": "application/json", "Authorization": "Bearer %s" % sp_access_token}
+    url = f"https://api.powerbi.com/v1.0/myorg/groups/{group_id}/datasets/{data_set_id}/refreshes"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {sp_access_token}"}
 
     r = requests.post(url=url, json=body, headers=headers)
     r.raise_for_status()
 
     if extra_sync_config:
         for extra_dataset_id in extra_sync_config:
-            url = "https://api.powerbi.com/v1.0/myorg/groups/%s/datasets/%s/refreshes" % (group_id, extra_dataset_id)
+            url = f"https://api.powerbi.com/v1.0/myorg/groups/{group_id}/datasets/{extra_dataset_id}/refreshes"
             r = requests.post(url=url, json=body, headers=headers)
             r.raise_for_status()

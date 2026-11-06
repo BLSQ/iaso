@@ -81,6 +81,38 @@ export const hasFormikFieldError = (key, errors, touched) => {
     return Boolean(get(errors, key) && get(touched, key));
 };
 
+const convertDrfErrorValue = (value: unknown): unknown => {
+    if (Array.isArray(value)) {
+        if (value.every(item => typeof item === 'string')) {
+            return value.join(' ');
+        }
+
+        return value.map(convertDrfErrorValue);
+    }
+
+    if (value && typeof value === 'object') {
+        const entries = Object.entries(value);
+
+        const nonFieldErrors = entries.find(
+            ([key]) => key === 'non_field_errors',
+        );
+
+        if (nonFieldErrors) {
+            const [, errors] = nonFieldErrors;
+
+            if (Array.isArray(errors)) {
+                return errors.join(' ');
+            }
+        }
+
+        return Object.fromEntries(
+            entries.map(([key, val]) => [key, convertDrfErrorValue(val)]),
+        );
+    }
+
+    return value;
+};
+
 export const convertDrfErrorsToFormik = <T>(
     errors: DrfValidationErrors<T>,
     helpers: FormikHelpers<T>,
@@ -88,14 +120,14 @@ export const convertDrfErrorsToFormik = <T>(
     const fieldErrors: FormikErrors<T> = {};
 
     Object.entries(errors).forEach(([key, value]) => {
-        if (!value?.length) return;
-
         if (key === 'non_field_errors') {
-            helpers.setStatus(value.join(' '));
+            if (Array.isArray(value)) {
+                helpers.setStatus(value.join(' '));
+            }
             return;
         }
 
-        fieldErrors[key as keyof T] = value.join(' ');
+        fieldErrors[key as keyof T] = convertDrfErrorValue(value) as never;
     });
 
     helpers.setErrors(fieldErrors);

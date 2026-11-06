@@ -22,7 +22,6 @@ TODO: Remove old trad?
 import json
 import os
 import sys
-import typing
 
 from collections import OrderedDict, defaultdict
 
@@ -63,7 +62,7 @@ if __name__ == "__main__":
 
     # keep trace of what we set in previous traduction file. so we can detect properly
     # if a plugin reuse a translation from the main file
-    previous_trad: typing.DefaultDict[str, typing.Dict[str, str]]
+    previous_trad: defaultdict[str, dict[str, str]]
     previous_trad = defaultdict(dict)
     for path in paths:
         trad_dir = path["translations_dir"]

@@ -1,7 +1,8 @@
 import React, { useContext, useMemo } from 'react';
-import { InventoryOutlined } from '@mui/icons-material';
+import { AccessAlarm, InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import AdsClickIcon from '@mui/icons-material/AdsClick';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
@@ -249,7 +250,8 @@ const menuItems = (
                             icon: props => <AssessmentIcon {...props} />,
                             isActive: pathname =>
                                 pathname?.includes(FORMS_STATS) &&
-                                !pathname?.includes('completeness'),
+                                !pathname?.includes('completeness') &&
+                                !pathname?.includes('promptness'),
                         },
                         {
                             label: formatMessage(MESSAGES.completeness),
@@ -263,6 +265,12 @@ const menuItems = (
                                 paths.completenessStatsPath.permissions,
                             key: 'completenessStats',
                             icon: props => <DoneAll {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.promptness),
+                            permissions: paths.promptnessPath.permissions,
+                            key: 'promptness',
+                            icon: props => <AccessAlarm {...props} />,
                         },
                     ],
                 },
@@ -368,6 +376,12 @@ const menuItems = (
                     permissions: paths.planningPath.permissions,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.missions),
+                    permissions: paths.missionsPath.permissions,
+                    key: 'missions',
+                    icon: props => <AdsClickIcon {...props} />,
                 },
             ],
         },

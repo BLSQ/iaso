@@ -1,6 +1,6 @@
 from iaso import models as m
-from iaso.models.project import DEFAULT_COLOR
 from iaso.test import TestCase
+from iaso.utils.colors import DEFAULT_COLOR
 
 
 class ProjectModelTestCase(TestCase):

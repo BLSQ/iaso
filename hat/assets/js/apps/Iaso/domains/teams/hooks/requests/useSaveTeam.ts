@@ -1,7 +1,8 @@
 import { useQueryClient } from 'react-query';
+import { getApiTeamsRetrieveQueryKey } from 'Iaso/api/teams';
+import { TEAM_QUERY_KEYS } from 'Iaso/domains/teams/constants';
 import { patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { Team } from '../../types/team';
 
 type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
 
@@ -14,7 +15,7 @@ export type SaveTeamQuery = {
     project: number;
     type?: TeamType;
     users: Array<number>;
-    parent?: number;
+    parent?: number | null;
     color?: string;
 };
 
@@ -42,7 +43,7 @@ export const convertAPIErrorsToState = (data: Record<string, string>) => {
 
 const ENDPOINT = '/api/teams/';
 
-const patchTeam = async (body: Partial<SaveTeamQuery>) => {
+export const patchTeam = async (body: Partial<SaveTeamQuery>) => {
     const url = `${ENDPOINT}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };
@@ -59,18 +60,20 @@ export const useSaveTeam = (
     const queryClient = useQueryClient();
     const editTeam = useSnackMutation({
         mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        invalidateQueryKey: ['teamsList', 'teamsDropdown', 'team'],
+        invalidateQueryKey: TEAM_QUERY_KEYS,
         ignoreErrorCodes,
         showSuccessSnackBar,
         options: {
-            onSuccess: (data: Team) => {
-                queryClient.invalidateQueries(['team', `team-${data.id}`]);
+            onSuccess: (data: { id: number }) => {
+                queryClient.invalidateQueries(
+                    getApiTeamsRetrieveQueryKey(data.id),
+                );
             },
         },
     });
     const createTeam = useSnackMutation({
         mutationFn: (data: SaveTeamQuery) => postTeam(data),
-        invalidateQueryKey: ['teamsList', 'teamsDropdown'],
+        invalidateQueryKey: TEAM_QUERY_KEYS,
         ignoreErrorCodes,
     });
 

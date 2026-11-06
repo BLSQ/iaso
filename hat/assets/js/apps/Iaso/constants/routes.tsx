@@ -2,6 +2,9 @@ import React, { ReactElement } from 'react';
 
 import { ApiImports } from 'Iaso/domains/apiimports';
 import { ValidateInstance } from 'Iaso/domains/instances/validate';
+import { MissionCreate } from 'Iaso/domains/missions/create';
+import { MissionDetail } from 'Iaso/domains/missions/details';
+import { MissionEdit } from 'Iaso/domains/missions/edit';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
@@ -12,11 +15,11 @@ import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInst
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import { ValidationWorkflowConfigurationDetail } from 'Iaso/domains/validationWorkflowsConfiguration/details';
 import PageError from '../components/errors/PageError';
+import { PageWorkInProgress } from '../components/workInProgress/PageWorkInProgress';
 import { Accounts } from '../domains/accounts';
 import AccountsDetails from '../domains/accounts/details';
 import { AccountsEdit } from '../domains/accounts/edit';
 import { Runs } from '../domains/algorithmRuns';
-import { Assignments } from '../domains/assignments';
 import Completeness from '../domains/completeness';
 import { CompletenessStats } from '../domains/completenessStats';
 import DataSources from '../domains/dataSources';
@@ -39,6 +42,7 @@ import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
+import { Missions } from '../domains/missions';
 import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
 import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
@@ -53,8 +57,10 @@ import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
 import { Planning } from '../domains/plannings';
+import { Assignments } from '../domains/plannings/assignments';
 import { Details as PlanningDetails } from '../domains/plannings/details';
 import { Projects } from '../domains/projects';
+import { Promptness } from '../domains/promptness';
 import { Registry } from '../domains/registry';
 import { SetupAccount } from '../domains/setup';
 import { Storages } from '../domains/storages';
@@ -79,6 +85,9 @@ export type RoutePath = {
     isRootUrl?: boolean;
     allowAnonymous?: boolean;
     featureFlag?: string;
+    // Incomplete page: redirects to the work in progress page unless SHOW_DEV_FEATURES is active
+    dev?: boolean;
+    plannedRelease?: string;
 };
 
 export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
@@ -261,6 +270,13 @@ export const completenessStatsPath = {
     element: <CompletenessStats />,
 };
 
+export const promptnessPath = {
+    baseUrl: baseUrls.promptness,
+    routerUrl: `${baseUrls.promptness}/*`,
+    permissions: [Permission.COMPLETENESS_STATS],
+    element: <Promptness />,
+};
+
 export const modulesPath = {
     baseUrl: baseUrls.modules,
     routerUrl: `${baseUrls.modules}/*`,
@@ -417,12 +433,41 @@ export const planningDetailsPath = {
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <PlanningDetails />,
 };
+export const missionsPath = {
+    baseUrl: baseUrls.missions,
+    routerUrl: `${baseUrls.missions}/*`,
+    permissions: [Permission.MISSION_READ],
+    element: <Missions />,
+};
+
+export const missionsCreatePath = {
+    baseUrl: baseUrls.missionsCreate,
+    routerUrl: `${baseUrls.missionsCreate}/*`,
+    permissions: [Permission.MISSION_READ, Permission.MISSION_WRITE],
+    element: <MissionCreate />,
+};
+
+export const missionsDetailPath = {
+    baseUrl: baseUrls.missionsDetails,
+    routerUrl: `${baseUrls.missionsDetails}/*`,
+    permissions: [Permission.MISSION_READ],
+    element: <MissionDetail />,
+};
+
+export const missionsEditPath = {
+    baseUrl: baseUrls.missionsEdit,
+    routerUrl: `${baseUrls.missionsEdit}/*`,
+    permissions: [Permission.MISSION_READ, Permission.MISSION_WRITE],
+    element: <MissionEdit />,
+};
+
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <Assignments />,
+    dev: true,
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,
@@ -581,6 +626,13 @@ export const page500 = {
     permissions: [],
 };
 
+export const workInProgressPath = {
+    baseUrl: baseUrls.workInProgress,
+    routerUrl: `${baseUrls.workInProgress}/*`,
+    element: <PageWorkInProgress />,
+    permissions: [],
+};
+
 export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
     formAIPath,
@@ -599,6 +651,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     algosPath,
     completenessPath,
     completenessStatsPath,
+    promptnessPath,
     usersPath,
     userDetailsPath,
     usersHistoryPath,
@@ -618,9 +671,14 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     page403,
     page404,
     page500,
+    workInProgressPath,
     teamsPath,
     planningPath,
     planningDetailsPath,
+    missionsPath,
+    missionsCreatePath,
+    missionsDetailPath,
+    missionsEditPath,
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,

@@ -63,7 +63,7 @@ class WorkflowVersionsStatus(models.TextChoices):
 
 
 def is_transition_allowed(self: "WorkflowVersion", new_status: str):
-    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.status, set())
+    allowed_set: set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.status, set())
     return new_status in allowed_set
 
 

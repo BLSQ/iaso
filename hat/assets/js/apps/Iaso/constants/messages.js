@@ -54,6 +54,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Planning List',
         id: 'iaso.label.planningList',
     },
+    missions: {
+        defaultMessage: 'Missions',
+        id: 'iaso.missions.title',
+    },
     dhis2Mappings: {
         defaultMessage: 'DHIS2 mappings',
         id: 'iaso.label.dhis2Mappings',
@@ -65,6 +69,10 @@ const MESSAGES = defineMessages({
     completenessStats: {
         defaultMessage: 'Completeness Stats',
         id: 'iaso.completenessStats.title',
+    },
+    promptness: {
+        defaultMessage: 'Promptness',
+        id: 'iaso.promptness.title',
     },
     archived: {
         defaultMessage: 'Archived',

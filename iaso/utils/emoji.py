@@ -3,7 +3,7 @@ import re
 
 def fix_emoji(payload):
     chrifnotspecial = lambda dec: (
-        "&#%d;" % dec if dec in [10, 13, 35, 38, 59, 60, 62] else chr(dec)
+        f"&#{dec};" if dec in [10, 13, 35, 38, 59, 60, 62] else chr(dec)
     )  # don't convert `\n\r#&;<>`
     payload = re.sub(r"&#(\d+);", lambda x: chrifnotspecial(int(x.group(1))), payload)
     # No idea why 'INFORMATION SEPARATOR's ended up in some messages,

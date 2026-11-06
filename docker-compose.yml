@@ -24,13 +24,8 @@ services:
             - ./tsconfig.json:/opt/app/tsconfig.json
             - ./vitest.config.ts:/opt/app/vitest.config.ts
             - ./babel-register.js:/opt/app/babel-register.js
-            - ./mypy.ini:/opt/app/mypy.ini
             - ./pyproject.toml:/opt/app/pyproject.toml
             - ./htmlcov:/opt/app/htmlcov
-            # test data
-            - ./testdata:/opt/app/testdata
-            # jupyter notebooks
-            - ./notebooks:/opt/notebooks
             # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
             - ../bluesquare-components:/opt/bluesquare-components
             # Optional Used to load dev snt-malaria-budgeting Python package.
@@ -39,8 +34,6 @@ services:
             - db
         env_file:
             -   .env
-        environment:
-            MCP_ENABLED: "true"
         logging: &iaso_logging
             driver: 'json-file'
             options:
@@ -83,7 +76,7 @@ services:
         command: start_webpack
 
     mcp-ui:
-        image: node:22.18.0-bullseye-slim
+        image: node:22.23.4-bookworm-slim
         working_dir: /opt/app/iaso/mcp/frontend
         ports:
             - "5173:5173"

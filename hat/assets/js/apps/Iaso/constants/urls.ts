@@ -318,6 +318,19 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
         ],
     },
+    promptness: {
+        url: 'forms/stats/promptness',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'formId',
+            'period',
+            'parentId',
+            'orgUnitId',
+            'orgUnitTypeIds',
+            'status',
+        ],
+    },
     modules: {
         url: 'settings/modules',
         params: ['accountId', 'search'],
@@ -512,17 +525,40 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     planningDetails: {
         url: 'planning/details',
-        params: ['accountId', 'planningId', 'mode', ...paginationPathParams],
-    },
-    assignments: {
-        url: 'planning/assignments',
         params: [
             'accountId',
             'planningId',
+            'mode',
+            'newMissionId',
             'tab',
-            'search',
             ...paginationPathParams,
         ],
+    },
+    missions: {
+        url: 'planning/missions',
+        params: [
+            'accountId',
+            'search',
+            'mission_type',
+            'planning_ids',
+            ...paginationPathParams,
+        ],
+    },
+    missionsDetails: {
+        url: 'planning/missions/detail',
+        params: ['accountId', 'id'],
+    },
+    missionsEdit: {
+        url: 'planning/missions/edit',
+        params: ['accountId', 'id'],
+    },
+    missionsCreate: {
+        url: 'planning/missions/create',
+        params: ['accountId', 'planningId', 'planningMode'],
+    },
+    assignments: {
+        url: 'planning/assignments',
+        params: ['accountId', 'planningId', 'teamId', 'mode', 'view'],
     },
     teams: {
         url: 'settings/users/teams',
@@ -696,6 +732,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     error403: { url: '403', params: [] },
     error404: { url: '404', params: [] },
     error500: { url: '500', params: [] },
+    workInProgress: { url: 'wip', params: [] },
     login: { url: 'login', params: [] },
     apiLogs: { url: 'api/logs', params: [] }, // used in FormFormComponents only
 };
@@ -765,6 +802,7 @@ type IasoBaseUrls = {
     algos: string;
     completeness: string;
     completenessStats: string;
+    promptness: string;
     modules: string;
     users: string;
     userDetails: string;
@@ -805,6 +843,7 @@ type IasoBaseUrls = {
     error403: string;
     error404: string;
     error500: string;
+    workInProgress: string;
     login: string;
     apiLogs: string;
     adminApiImport: string;
@@ -812,6 +851,10 @@ type IasoBaseUrls = {
     validationWorkflowsConfiguration: string;
     validationWorkflowsConfigurationDetail: string;
     validationWorkflowInstances: string;
+    missions: string;
+    missionsDetails: string;
+    missionsEdit: string;
+    missionsCreate: string;
 };
 
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;

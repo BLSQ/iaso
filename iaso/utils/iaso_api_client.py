@@ -16,7 +16,7 @@ class IasoClient:
         self.authenticate_with_token(token)
 
     def authenticate_with_token(self, token):
-        self.headers["Authorization"] = "Bearer %s" % token
+        self.headers["Authorization"] = f"Bearer {token}"
 
     def post(self, url, json=None, data=None, files=None):
         self.log(url, json)

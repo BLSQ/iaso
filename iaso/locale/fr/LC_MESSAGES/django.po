@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-15 12:17+0000\n"
+"POT-Creation-Date: 2026-11-03 09:55+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -38,6 +38,11 @@ msgstr "Cette fonctionnalité est désactivée pour votre compte."
 #: iaso/api/common/permissions.py
 msgid "The related module(s) are not activated for your account."
 msgstr "Le ou les modules associés ne sont pas activés pour votre compte."
+
+#: iaso/api/common/serializer.py
+#, python-brace-format
+msgid "{lookup_field}s provided are not unique"
+msgstr "Les {lookup_field}s fournis ne sont pas uniques"
 
 #: iaso/api/common/serializer_fields.py
 msgid "Enter a valid phone number."
@@ -160,7 +165,8 @@ msgstr "Le type de légende ordinal nécéssite au moins deux éléments d'éche
 
 #: iaso/api/metrics/serializers.py
 msgid "Ordinal legend type allows a maximum of twelve scale items."
-msgstr "Le type de légende ordinal permet un maximum de douze éléments d'échelle."
+msgstr ""
+"Le type de légende ordinal permet un maximum de douze éléments d'échelle."
 
 #: iaso/api/metrics/serializers.py
 msgid "The file must be a CSV."
@@ -227,6 +233,35 @@ msgstr "ID du parent de l'unité organisationnelle"
 msgid "Org unit type IDs (comma-separated)"
 msgstr "IDs des types d'unité organisationnelle (séparés par des virgules)"
 
+#: iaso/api/microplanning/filters.py
+msgid "Max depth cannot exceed the root level you asked for plus one."
+msgstr "La profondeur maximale ne peut pas dépasser le niveau racine demandé, augmenté de un."
+
+#: iaso/api/microplanning/filters.py iaso/api/teams/filters.py
+msgid ""
+"The maximum depth of the tree to return, counting from the root of the "
+"entire hierarchy. Selecting a subtree does not reset the depth."
+msgstr ""
+"La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de "
+"la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne "
+"réinitialise pas la profondeur."
+
+#: iaso/api/microplanning/filters.py
+msgid ""
+"The maximum depth of the tree to return, counting from the root of the "
+"entire hierarchy. Selecting a subtree does not reset the depth. It cannot be "
+"greater than the depth of the selected root + 1."
+msgstr "La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de la racine de la hiérarchie complète. "
+"La sélection d'un sous-arbre ne réinitialise pas la profondeur. Celle-ci ne peut pas être supérieure à la profondeur de la racine sélectionnée + 1."
+
+#: iaso/api/microplanning/serializers/planning_config/bulk.py
+#: iaso/api/planning_configs/serializers/bulk_update.py
+#: iaso/api/planning_configs/serializers/update.py
+msgid ""
+"A planning configuration with this level already exists for this planning."
+msgstr ""
+"Une configuration de planning avec ce niveau existe déjà pour ce planning."
+
 #: iaso/api/microplanning/views.py
 msgid "No assignments to delete"
 msgstr "Aucune assignation à effacer"
@@ -235,6 +270,24 @@ msgstr "Aucune assignation à effacer"
 #, python-format
 msgid "Successfully deleted %(count)s assignments"
 msgstr "%(count)s assignations ont été supprimées avec succès"
+
+#: iaso/api/missions/serializers/create/mission_entity_type.py
+#: iaso/api/missions/serializers/create/mission_form.py
+#: iaso/api/missions/serializers/create/mission_org_unit_type.py
+#: iaso/api/missions/serializers/update/mission_entity_type.py
+#: iaso/api/missions/serializers/update/mission_form.py
+#: iaso/api/missions/serializers/update/mission_org_unit_type.py
+msgid "Minimum cardinality must be inferior than the maximum cardinality"
+msgstr "La cardinalité minimale doit être inférieure à la cardinalité maximale"
+
+#: iaso/api/missions/serializers/create/mission_entity_type.py
+#: iaso/api/missions/serializers/create/mission_form.py
+#: iaso/api/missions/serializers/create/mission_org_unit_type.py
+#: iaso/api/missions/serializers/update/mission_entity_type.py
+#: iaso/api/missions/serializers/update/mission_form.py
+#: iaso/api/missions/serializers/update/mission_org_unit_type.py
+msgid "Each form may only be specified once."
+msgstr "Chaque formulaire ne peut être spécifié qu'une seule fois."
 
 #: iaso/api/notifications/views.py
 #, python-format
@@ -379,59 +432,59 @@ msgstr "ID de source de données"
 msgid "Validation status"
 msgstr "Statut de validation"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "You cannot create or edit an Org unit of this type"
 msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 #, python-brace-format
 msgid "Invalid validation status : {validation_status}"
 msgstr "Statut de validation invalide : {validation_status}"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Can't parse geo_json"
 msgstr "Impossible d'analyser le champ geo_json"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "You cannot create an Org Unit without a parent"
 msgstr "Vous ne pouvez pas créer une unité organisationnelle sans parent"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
 msgstr ""
 "Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
 "cette version"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Org unit name is required"
 msgstr "Le nom de l'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Unauthorized version id"
 msgstr "ID de version non autorisé"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Opening date must be anterior to closed date"
 msgstr "La date d'ouverture doit être antérieure à la date de fermeture"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Org unit type is required"
 msgstr "Le type d'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py
+#: iaso/api/org_units/views.py
 msgid "Parent is not in the same version"
 msgstr "Le parent n'est pas dans la même version"
 
@@ -487,6 +540,10 @@ msgstr "Nombre de modifications d'unités organisationnelles"
 #, python-format
 msgid "Form: %(name)s"
 msgstr "Formulaire : %(name)s"
+
+#: iaso/api/planning_configs/serializers/bulk_create.py
+msgid "Level and planning must be unique together"
+msgstr "La combinaison niveau et planning doit être unique"
 
 #: iaso/api/profile_logs/filters.py
 msgid "User IDs"
@@ -581,6 +638,30 @@ msgstr "ID de Formulaire"
 #: iaso/api/stocks/filters.py
 msgid "Form Version ID"
 msgstr "ID de Version de Formulaire"
+
+#: iaso/api/teams/serializer_fields.py
+#, python-brace-format
+msgid "Invalid team type, expected {expected_type}."
+msgstr "Type d'équipe non valide, {expected_type} attendu."
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+msgid "Sub teams must be in the same project"
+msgstr "Les sous-équipes doivent appartenir au même projet"
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+msgid "Teams cannot have both users and sub teams"
+msgstr ""
+"Les équipes ne peuvent pas comporter à la fois des utilisateurs et des sous-"
+"équipes."
+
+#: iaso/api/teams/serializers/create.py iaso/api/teams/serializers/update.py
+#, python-format
+msgid "Incorrect type: expected %(expected_type)s"
+msgstr "Type incorrect : %(expected_type)s attendu"
+
+#: iaso/api/teams/serializers/update.py
+msgid "Cannot create loop in teams tree"
+msgstr "Impossible de créer une boucle dans l’arborescence des équipes"
 
 #: iaso/api/validation_workflow_instances/filters.py
 msgid "Org unit IDs (comma-separated)"
@@ -901,6 +982,36 @@ msgstr "Population"
 msgid "Any"
 msgstr "Quelconque"
 
+#: iaso/models/microplanning/plannings.py
+msgid ""
+"Indicates that this planning is now considered deprecated as it was created "
+"before the mission feature was launched."
+msgstr ""
+"Indique que cette planification est désormais considérée comme obsolète, car "
+"elle a été créée avant le lancement de la fonctionnalité « mission »."
+
+#: iaso/models/microplanning/plannings.py
+#, python-brace-format
+msgid "Planning Config for planning {planning} at level {level}"
+msgstr ""
+"Configuration de planning pour le planning {planning} au niveau {level}"
+
+#: iaso/models/missions.py
+msgid "Form Filling"
+msgstr "Remplissage de formulaires"
+
+#: iaso/models/missions.py
+msgid "Org Unit and Form"
+msgstr "Unité organisationnelle et formulaire"
+
+#: iaso/models/missions.py
+msgid "Entity and Form"
+msgstr "Entité et formulaire"
+
+#: iaso/models/missions.py
+msgid "The mission it fulfills, within planning"
+msgstr "La mission qu'elle remplit, dans le cadre de la planification"
+
 #: iaso/models/org_unit.py
 msgid "Country"
 msgstr "Pays"
@@ -988,6 +1099,14 @@ msgstr "Payé"
 #: iaso/models/payments.py
 msgid "Partially Paid"
 msgstr "Partiellement payé"
+
+#: iaso/models/team.py
+msgid "Team of teams"
+msgstr "Equipe d'équipes"
+
+#: iaso/models/team.py
+msgid "Team of users"
+msgstr "Equipe d'utilisateurs"
 
 #: iaso/models/validation_workflow/validation_node.py
 msgid "Accepted"
@@ -1248,6 +1367,14 @@ msgstr "Gestion du compte"
 #: iaso/permissions/core_permissions.py
 msgid "Pipeline management"
 msgstr "Gestion des pipelines"
+
+#: iaso/permissions/core_permissions.py
+msgid "Edit mission"
+msgstr "Editer la mission"
+
+#: iaso/permissions/core_permissions.py
+msgid "Read mission"
+msgstr "Lire la mission"
 
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py

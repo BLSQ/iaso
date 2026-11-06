@@ -1,0 +1,88 @@
+import React, { FunctionComponent } from 'react';
+import { Assignment } from '@mui/icons-material';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import {
+    IconButton as IconButtonComponent,
+    Setting,
+} from 'bluesquare-components';
+import moment from 'moment';
+import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
+import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
+import { baseUrls } from 'Iaso/constants/urls';
+import { PLANNING_WRITE } from 'Iaso/utils/permissions';
+import MESSAGES from '../../messages';
+import { Planning } from '../../types';
+import { canAssignPlanning, getAssignmentsUrl } from '../../utils';
+
+interface ActionsCellProps extends Setting<Planning> {
+    deletePlanning: (id: number) => void;
+}
+
+export const ActionsCell: FunctionComponent<ActionsCellProps> = ({
+    row: { original: planning },
+    deletePlanning,
+}) => {
+    const canAssign = canAssignPlanning(planning);
+    const hasStarted = Boolean(
+        planning.started_at &&
+        moment().isAfter(moment(planning.started_at, 'DD/MM/YYYY'), 'day'),
+    );
+    const cannotDelete = Boolean(planning.published_at || hasStarted);
+    if (planning.deprecated) {
+        return (
+            <IconButtonComponent
+                url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/edit`}
+                tooltipMessage={MESSAGES.viewDetails}
+                icon="remove-red-eye"
+                size="small"
+            />
+        );
+    }
+    return (
+        <>
+            <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
+                <IconButtonComponent
+                    url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/edit`}
+                    tooltipMessage={MESSAGES.editPlanning}
+                    icon="edit"
+                    size="small"
+                />
+            </DisplayIfUserHasPerm>
+            <IconButtonComponent
+                url={getAssignmentsUrl(planning.id)}
+                tooltipMessage={MESSAGES.assignments}
+                size="small"
+                replace={false}
+                overrideIcon={Assignment}
+                disabled={!canAssign}
+            />
+            <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
+                <IconButtonComponent
+                    url={`/${baseUrls.planningDetails}/planningId/${planning.id}/mode/copy`}
+                    tooltipMessage={MESSAGES.duplicatePlanning}
+                    overrideIcon={FileCopyIcon}
+                    size="small"
+                />
+            </DisplayIfUserHasPerm>
+            <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
+                <DeleteDialog
+                    titleMessage={{
+                        ...MESSAGES.deletePlanning,
+                        values: {
+                            planningName: planning.name,
+                        },
+                    }}
+                    message={{
+                        ...MESSAGES.deleteWarning,
+                        values: {
+                            name: planning.name,
+                        },
+                    }}
+                    disabled={cannotDelete}
+                    onConfirm={() => deletePlanning(planning.id)}
+                    keyName="delete-planning"
+                />
+            </DisplayIfUserHasPerm>
+        </>
+    );
+};

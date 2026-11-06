@@ -13,6 +13,7 @@ import { makeStyles } from '@mui/styles';
 import { textPlaceholder } from 'bluesquare-components';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
+import { FieldType } from 'Iaso/domains/forms/types/forms';
 import {
     slugifyValue,
     translateLabel,
@@ -24,7 +25,7 @@ import { InstanceImagePreview } from './InstanceImagePreview';
 // Define types for the component
 export type Descriptor = {
     name: string;
-    type: string;
+    type: FieldType;
     label?: Record<string, string> | string;
     children?: Descriptor[];
     bind?: {

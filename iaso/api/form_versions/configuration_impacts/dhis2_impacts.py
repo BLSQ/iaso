@@ -12,9 +12,9 @@ if typing.TYPE_CHECKING:
 
 def dhis2_impacts(
     previous_form_version: "FormVersion",
-    removed_question_names: typing.Set[str],
-    modified_question_names: typing.Set[str],
-) -> typing.List[ConfigurationImpact]:
+    removed_question_names: set[str],
+    modified_question_names: set[str],
+) -> list[ConfigurationImpact]:
     """`dhis2_mapping`: a DHIS2 mapping of `previous_form_version` exports it, and it is removed: the new version's copy
     of the mapping won't (target: the mapping version). Its modified questions being kept by the copy, not there."""
     mapping_versions = MappingVersion.objects.filter(form_version=previous_form_version).select_related("mapping")

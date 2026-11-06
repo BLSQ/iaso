@@ -19,6 +19,18 @@ type Project = {
     updated_at: string;
     needs_authentication: boolean;
 };
+
+type FormOrgUnitType = {
+    id: number;
+    depth: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    sub_unit_types: FormOrgUnitType[];
+};
+
+// xml-external is not rendered as a file. background-audio is shown like audio.
+
 // https://xlsform.org/en/#question-types
 export type FieldType =
     | 'integer'
@@ -45,6 +57,7 @@ export type FieldType =
     | 'end'
     | 'image'
     | 'audio'
+    | 'photo'
     | 'background-audio'
     | 'video'
     | 'file'
@@ -53,6 +66,12 @@ export type FieldType =
     | 'acknowledge'
     | 'hidden'
     | 'xml-external'
+    | 'deviceid'
+    | 'subscriberid'
+    | 'simserial'
+    | 'phonenumber'
+    | 'group'
+    | 'repeat'
     | 'boolean';
 
 export type PossibleField = {
@@ -80,7 +99,7 @@ export type Form = {
     form_id: string;
     device_field: string;
     location_field: string;
-    org_unit_types: string;
+    org_unit_types: FormOrgUnitType[];
     org_unit_type_ids: number[];
     org_unit_groups: { id: number; name: string }[];
     org_unit_group_ids: number[];
@@ -90,6 +109,7 @@ export type Form = {
     single_per_period: boolean;
     periods_before_allowed: number;
     periods_after_allowed: number;
+    promptness_grace_period_days?: number | null;
     latest_form_version?: {
         id: number;
         version_id: string;
@@ -188,6 +208,7 @@ export type FormDataType = {
     single_per_period: FieldError<boolean | null>;
     periods_before_allowed: FieldError<number>;
     periods_after_allowed: FieldError<number>;
+    promptness_grace_period_days?: FieldError<number | null>;
     device_field: FieldError<string>;
     location_field: FieldError<string>;
     possible_fields: FieldError<PossibleField[]>;
@@ -214,6 +235,7 @@ export type FormsParams = {
     onlyDeleted?: string;
     planning?: string;
     projectsIds?: string;
+    orgUnitTypeIds?: string;
     fields?: string;
     orgUnitId: string;
 };

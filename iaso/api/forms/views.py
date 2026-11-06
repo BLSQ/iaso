@@ -83,9 +83,9 @@ class FormsViewSet(ModelViewSet):
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)
 
-        planning_ids = self.request.query_params.get("planning", None)
-        if planning_ids:
-            queryset = queryset.filter(plannings__id__in=planning_ids.split(","))
+        mission_ids = self.request.query_params.get("mission", None)
+        if mission_ids:
+            queryset = queryset.filter(mission_forms__id__in=mission_ids.split(","))
 
         org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
         if org_unit_type_ids:
@@ -98,6 +98,10 @@ class FormsViewSet(ModelViewSet):
         projects_ids = self.request.query_params.get("projectsIds")
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
+
+        entity_types_ids = self.request.query_params.get("entity_type_ids")
+        if entity_types_ids:
+            queryset = queryset.filter_on_entity_types_ids(*entity_types_ids.split(","))
 
         requested_fields = self.request.query_params.get("fields")
         if requested_fields and self._is_export():
@@ -303,7 +307,7 @@ class FormsViewSet(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         original = get_object_or_404(Form, pk=self.kwargs["pk"])
-        response = super(FormsViewSet, self).destroy(request, *args, **kwargs)
+        response = super().destroy(request, *args, **kwargs)
         destroyed_form = Form.objects_only_deleted.get(pk=original.id)
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response

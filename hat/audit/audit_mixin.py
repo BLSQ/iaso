@@ -4,7 +4,7 @@ from hat.audit.models import Modification
 
 
 class AuditMixin:
-    audit_serializer: serializers.ModelSerializer
+    audit_serializer: type[serializers.BaseSerializer]
 
     def perform_create(self, serializer):
         # noinspection PyUnresolvedReferences
@@ -17,7 +17,7 @@ class AuditMixin:
             past_value=[],
             new_value=serialized,
             content_object=instance,
-            source="API " + self.request.method + self.request.path,
+            source=f"API {self.request.method} {self.request.path}",
         )
 
     def perform_update(self, serializer):
@@ -32,7 +32,7 @@ class AuditMixin:
             past_value=old_value,
             new_value=new_value,
             content_object=instance,
-            source="API " + self.request.method + self.request.path,
+            source=f"API {self.request.method} {self.request.path}",
         )
 
     def perform_destroy(self, instance):

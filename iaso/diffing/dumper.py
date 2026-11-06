@@ -95,7 +95,7 @@ class Dumper:
             if field == "geometry":
                 header.append("distance diff (KM)")
         for i in range(1, number_of_parents + 1):
-            header.extend(["parent %d name before" % i, "parent %d name after" % i])
+            header.extend([f"parent {i} name before", f"parent {i} name after"])
 
         writer.writerow(header)
 
@@ -175,7 +175,7 @@ class Dumper:
                     else:
                         results.append(
                             " vs ".join([str(comparison.before), str(comparison.after)])
-                            + ((" Dist : %.2f " % comparison.distance) if comparison.distance else "")
+                            + ((f" Dist : {comparison.distance:.2f} ") if comparison.distance else "")
                         )
 
                 display.append(results)

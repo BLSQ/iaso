@@ -130,7 +130,7 @@ if args.localuser and args.localpwd:
             "%{http_code}",  # This as well
             f"{to}api/datastore/",
         ]
-        post_output = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        post_output = subprocess.run(command, capture_output=True)
         if post_output.returncode != 0:
             print("COULD NOT CREATE", key)
             not_created.append(key)

@@ -1,5 +1,4 @@
 from itertools import islice
-from typing import List
 
 from django.utils.timezone import now
 
@@ -8,11 +7,12 @@ from iaso.models import EntityDuplicate
 from iaso.models.task import Task
 
 
-def create_entity_duplicates(task: Task, potential_duplicates: List[PotentialDuplicate]) -> None:
+def create_entity_duplicates(task: Task, potential_duplicates: list[PotentialDuplicate]) -> None:
     eda = task.entity_duplicate_analyzis.first()
 
     if not eda:
-        raise Exception("No entity duplicate analyze found for task %s" % task)
+        msg = f"No entity duplicate analyze found for task {task}"
+        raise Exception(msg)
 
     task.report_progress_and_stop_if_killed(progress_message="Started creation of entity duplicates")
 

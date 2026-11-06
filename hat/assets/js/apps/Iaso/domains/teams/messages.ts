@@ -41,6 +41,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
+    deleteWarning: {
+        id: 'iaso.label.deleteWarning',
+        defaultMessage: 'Are you sure you want to delete {name}?',
+    },
     description: {
         id: 'iaso.versionsDialog.label.description',
         defaultMessage: 'Description',

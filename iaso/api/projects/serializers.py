@@ -10,7 +10,7 @@ from qr_code.qrcode.utils import QRCodeOptions
 from rest_framework import serializers
 
 from iaso.models import FeatureFlag, Form, Project, ProjectFeatureFlags
-from iaso.models.project import DEFAULT_COLOR
+from iaso.utils.colors import DEFAULT_COLOR
 
 from ..common import ModelSerializer, TimestampField
 

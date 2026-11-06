@@ -52,6 +52,7 @@ const useStyles = makeStyles(styles);
 
 type Props = {
     title?: string;
+    titleAdornment?: React.ReactNode;
     children?: React.ReactNode;
     displayBackButton?: boolean;
     goBack?: () => void;
@@ -62,6 +63,7 @@ type Props = {
 
 const TopBar: FunctionComponent<Props> = ({
     title = '',
+    titleAdornment,
     children,
     displayBackButton = false,
     goBack = () => null,
@@ -152,6 +154,7 @@ const TopBar: FunctionComponent<Props> = ({
                         >
                             {title}
                         </Typography>
+                        {titleAdornment}
                     </Grid>
                     {currentUser && !isMobileLayout && (
                         <Grid container item xs={5} justifyContent="flex-end">

@@ -11,6 +11,8 @@ const FORMS = 'iaso_forms';
 const FORMS_STATS = 'iaso_forms_stats';
 const LINKS = 'iaso_links';
 const MAPPINGS = 'iaso_mappings';
+const MISSION_READ = 'iaso_mission_read';
+const MISSION_WRITE = 'iaso_mission_write';
 const MOBILE_APP_OFFLINE_SETUP = 'iaso_mobile_app_offline_setup';
 const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
 const ORG_UNIT_TYPES = 'iaso_org_unit_types';
@@ -23,6 +25,7 @@ const PLANNING_READ = 'iaso_planning_read';
 const PLANNING_WRITE = 'iaso_planning_write';
 const PROJECTS = 'iaso_projects';
 const REGISTRY_WRITE = 'iaso_registry_write';
+const REPORTS = 'iaso_reports';
 const REGISTRY_READ = 'iaso_registry_read';
 const ORG_UNITS_CHANGE_REQUEST_REVIEW = 'iaso_org_unit_change_request_review';
 const ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION =
@@ -62,6 +65,8 @@ export {
     LINKS,
     MAPPINGS,
     METRIC_TYPES,
+    MISSION_READ,
+    MISSION_WRITE,
     MOBILE_APP_OFFLINE_SETUP,
     MODULES,
     ORG_UNITS,
@@ -80,6 +85,7 @@ export {
     PROJECTS,
     REGISTRY_READ,
     REGISTRY_WRITE,
+    REPORTS,
     SOURCES,
     SOURCES_CAN_CHANGE_DEFAULT_VERSION,
     SOURCE_WRITE,

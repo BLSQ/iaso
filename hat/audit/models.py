@@ -94,12 +94,7 @@ class Modification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (
-            self.content_type,
-            self.object_id,
-            self.user,
-            self.created_at,
-        )
+        return f"{self.content_type} - {self.object_id} - {self.user} - {self.created_at}"
 
     def values_for_user(self, user=None):
         """`(past_value, new_value)`, without the personal data the user can't see when this is a submission log.

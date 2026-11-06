@@ -1,24 +1,45 @@
+from __future__ import annotations
+
 import operator
-import typing
 
 from functools import reduce
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from django_ltree.fields import PathField  # type: ignore
+from django.db.models import F
+from django.utils.translation import gettext_lazy as _
+from django_ltree.fields import PathField
+from typing_extensions import Self
 
-from iaso.models import Project
+from iaso.models import Account, Project
+from iaso.models.common import CreatedAndUpdatedModel
 from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.color import ColorField
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+        account: Account | None = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+        return self.filter_for_account(account)
 
-    def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
+    def filter_for_account(self, account: Account) -> Self:
+        if not account:
+            return self.none()
+        return self.filter(project__account=account)
+
+    def annotate_with_depth(self) -> Self:
+        return self.annotate(depth=F("path__depth"))
+
+    def hierarchy(self, teams: list[Team] | Self | Team) -> Self:
         """The Team and all their descendants"""
         if isinstance(teams, Team):
             query = models.Q(path__descendants=teams.path)
@@ -32,21 +53,35 @@ class TeamQuerySet(models.QuerySet):
 
         return self.filter(query)
 
+    def get_tree(
+        self,
+        root: list[Team] | Self | Team | None = None,
+        max_depth: int | None = None,
+    ) -> Self:
+        if not root:
+            root = self.filter(parent__isnull=True)
+
+        queryset = self.hierarchy(root)
+
+        if max_depth is not None:
+            queryset = queryset.filter(path__depth__lte=max_depth)
+
+        return queryset.order_by("path")
+
 
 class TeamType(models.TextChoices):
-    TEAM_OF_TEAMS = "TEAM_OF_TEAMS", "Team of teams"
-    TEAM_OF_USERS = "TEAM_OF_USERS", "Team of users"
+    TEAM_OF_TEAMS = "TEAM_OF_TEAMS", _("Team of teams")
+    TEAM_OF_USERS = "TEAM_OF_USERS", _("Team of users")
 
     @classmethod
     def is_valid_team_type(cls, value):
         return value in cls.values
 
 
-TeamManager = models.Manager.from_queryset(TeamQuerySet)
-
-
-class Team(SoftDeletableModel):
-    objects = TeamManager()
+class Team(CreatedAndUpdatedModel, SoftDeletableModel):
+    objects = DefaultSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
 
     class Meta:
         ordering = ("name",)
@@ -58,13 +93,15 @@ class Team(SoftDeletableModel):
     manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="managed_teams")
     parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
     path = PathField(unique=True)
-    # scope = models.ManyToManyField("OrgUnit", related_name="teams")
     type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
     color = ColorField(default=COLOR_CHOICES[0][0])
 
-    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_created_by"
+    )
+    updated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="%(class)s_updated_by"
+    )
 
     # Path management logic, taken from org_unit.
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
@@ -87,7 +124,7 @@ class Team(SoftDeletableModel):
                 super().save(*args, **kwargs)
                 Team.objects.bulk_update(self.calculate_paths(force_recalculate=force_recalculate), ["path"])
 
-    def calculate_paths(self, force_recalculate: bool = False) -> typing.List["Team"]:
+    def calculate_paths(self, force_recalculate: bool = False) -> list[Team]:
         """Calculate the path for this Team and all its children recursively.
 
         This method will check if this instance path should change. If it is the case (or if force_recalculate is

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 09:55+0000\n"
+"POT-Creation-Date: 2026-11-06 10:34+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -213,31 +213,42 @@ msgstr "L'année de chaque valeur doit faire partie des 'years' soumises."
 msgid "metric_type_ids must be a comma-separated list of integers."
 msgstr "metric_type_ids doit être une liste d'entiers séparés par une virgule"
 
-#: iaso/api/microplanning/filters.py
+#: iaso/api/microplanning/assignments/views.py
+msgid "No assignments to delete"
+msgstr "Aucune assignation à effacer"
+
+#: iaso/api/microplanning/assignments/views.py
+#, python-format
+msgid "Successfully deleted %(count)s assignments"
+msgstr "%(count)s assignations ont été supprimées avec succès"
+
+#: iaso/api/microplanning/common/filters.py
 msgid "Planning is missing sampling group or target org unit scope"
 msgstr ""
 "La planification manque d'un groupe d'échantillonnage ou d'une unité "
 "organisationnelle cible"
 
-#: iaso/api/microplanning/filters.py
+#: iaso/api/microplanning/common/filters.py
 msgid "One or more org unit types are not target types for this planning"
 msgstr ""
 "Un ou plusieurs types d'unités organisationnelles ne sont pas des types "
 "cibles pour cette planification"
 
-#: iaso/api/microplanning/filters.py
+#: iaso/api/microplanning/common/filters.py
 msgid "Org unit parent ID"
 msgstr "ID du parent de l'unité organisationnelle"
 
-#: iaso/api/microplanning/filters.py iaso/api/stocks/filters.py
+#: iaso/api/microplanning/common/filters.py iaso/api/stocks/filters.py
 msgid "Org unit type IDs (comma-separated)"
 msgstr "IDs des types d'unité organisationnelle (séparés par des virgules)"
 
-#: iaso/api/microplanning/filters.py
+#: iaso/api/microplanning/plannings/filters.py
 msgid "Max depth cannot exceed the root level you asked for plus one."
-msgstr "La profondeur maximale ne peut pas dépasser le niveau racine demandé, augmenté de un."
+msgstr ""
+"La profondeur maximale ne peut pas dépasser le niveau racine demandé, "
+"augmenté de un."
 
-#: iaso/api/microplanning/filters.py iaso/api/teams/filters.py
+#: iaso/api/microplanning/plannings/filters.py iaso/api/teams/filters.py
 msgid ""
 "The maximum depth of the tree to return, counting from the root of the "
 "entire hierarchy. Selecting a subtree does not reset the depth."
@@ -246,30 +257,24 @@ msgstr ""
 "la racine de l'ensemble de la hiérarchie. La sélection d'un sous-arbre ne "
 "réinitialise pas la profondeur."
 
-#: iaso/api/microplanning/filters.py
+#: iaso/api/microplanning/plannings/filters.py
 msgid ""
 "The maximum depth of the tree to return, counting from the root of the "
 "entire hierarchy. Selecting a subtree does not reset the depth. It cannot be "
 "greater than the depth of the selected root + 1."
-msgstr "La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de la racine de la hiérarchie complète. "
-"La sélection d'un sous-arbre ne réinitialise pas la profondeur. Celle-ci ne peut pas être supérieure à la profondeur de la racine sélectionnée + 1."
+msgstr ""
+"La profondeur maximale de l'arborescence à renvoyer, en comptant à partir de "
+"la racine de la hiérarchie complète. La sélection d'un sous-arbre ne "
+"réinitialise pas la profondeur. Celle-ci ne peut pas être supérieure à la "
+"profondeur de la racine sélectionnée + 1."
 
-#: iaso/api/microplanning/serializers/planning_config/bulk.py
+#: iaso/api/microplanning/plannings/serializers/planning_config/bulk.py
 #: iaso/api/planning_configs/serializers/bulk_update.py
 #: iaso/api/planning_configs/serializers/update.py
 msgid ""
 "A planning configuration with this level already exists for this planning."
 msgstr ""
 "Une configuration de planning avec ce niveau existe déjà pour ce planning."
-
-#: iaso/api/microplanning/views.py
-msgid "No assignments to delete"
-msgstr "Aucune assignation à effacer"
-
-#: iaso/api/microplanning/views.py
-#, python-format
-msgid "Successfully deleted %(count)s assignments"
-msgstr "%(count)s assignations ont été supprimées avec succès"
 
 #: iaso/api/missions/serializers/create/mission_entity_type.py
 #: iaso/api/missions/serializers/create/mission_form.py
@@ -982,6 +987,12 @@ msgstr "Population"
 msgid "Any"
 msgstr "Quelconque"
 
+#: iaso/models/microplanning/planning_configs.py
+#, python-brace-format
+msgid "Planning Config for planning {planning} at level {level}"
+msgstr ""
+"Configuration de planning pour le planning {planning} au niveau {level}"
+
 #: iaso/models/microplanning/plannings.py
 msgid ""
 "Indicates that this planning is now considered deprecated as it was created "
@@ -989,12 +1000,6 @@ msgid ""
 msgstr ""
 "Indique que cette planification est désormais considérée comme obsolète, car "
 "elle a été créée avant le lancement de la fonctionnalité « mission »."
-
-#: iaso/models/microplanning/plannings.py
-#, python-brace-format
-msgid "Planning Config for planning {planning} at level {level}"
-msgstr ""
-"Configuration de planning pour le planning {planning} au niveau {level}"
 
 #: iaso/models/missions.py
 msgid "Form Filling"
@@ -1331,6 +1336,10 @@ msgstr "Stockages"
 #: iaso/permissions/core_permissions.py
 msgid "Soumissions"
 msgstr "Soumissions"
+
+#: iaso/permissions/core_permissions.py
+msgid "View personal data (PII) in submissions"
+msgstr "Consulter les données personnelles (PII) dans les soumissions"
 
 #: iaso/permissions/core_permissions.py
 msgid "Editer soumissions"

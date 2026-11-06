@@ -46,6 +46,7 @@ from .team import Team
 from .tenant_users import TenantUser
 from .validation_workflow import ValidationNode, ValidationNodeTemplate, ValidationWorkflow
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
+from .workspace import Workspace
 
 
 __all__ = [
@@ -139,4 +140,5 @@ __all__ = [
     "WorkflowChange",
     "WorkflowFollowup",
     "WorkflowVersion",
+    "Workspace",
 ]

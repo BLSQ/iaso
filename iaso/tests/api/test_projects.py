@@ -332,6 +332,7 @@ class ProjectsAPITestCase(APITestCase):
 
         feature_flag_codes = [flag["code"] for flag in response.json()["featureflags"]]
         self.assertNotIn("MOBILE_STOCK", feature_flag_codes)
+        self.assertNotIn("MOBILE_STOCK_HOME", feature_flag_codes)
 
     def test_feature_flags_except_no_activated_modules_shows_mobile_stock_with_stock_module(self):
         account = self.jane.iaso_profile.account
@@ -346,6 +347,7 @@ class ProjectsAPITestCase(APITestCase):
 
         feature_flag_codes = [flag["code"] for flag in response.json()["featureflags"]]
         self.assertIn("MOBILE_STOCK", feature_flag_codes)
+        self.assertIn("MOBILE_STOCK_HOME", feature_flag_codes)
 
     def test_feature_flags_filter_mobile_no_org_unit_without_flag(self):
         """Test that MOBILE_NO_ORG_UNIT is filtered out when account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG"""

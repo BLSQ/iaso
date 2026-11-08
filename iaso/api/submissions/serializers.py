@@ -26,6 +26,11 @@ class LocationSerializer(StrictSerializer):
     accuracy = serializers.DecimalField(max_digits=7, decimal_places=2, min_value=0, required=False, allow_null=True)
 
 
+class SubmissionEntitySerializer(StrictSerializer):
+    uuid = serializers.UUIDField(required=False, help_text="Generated when registering, required when following")
+    entity_type_id = serializers.IntegerField()
+
+
 class SubmissionCreateSerializer(StrictSerializer):
     """One submission: its envelope, checked here, and its flat content, checked against the form by odk_cli."""
 
@@ -37,6 +42,11 @@ class SubmissionCreateSerializer(StrictSerializer):
     period = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     source_created_at = serializers.DateTimeField(required=False, allow_null=True)
     location = LocationSerializer(required=False, allow_null=True)
+    entity = SubmissionEntitySerializer(
+        required=False,
+        allow_null=True,
+        help_text="With the entity type's reference form, registers a new entity; with another form, follows one",
+    )
     content = serializers.DictField(
         help_text="The answers, by question name, as `Instance.json`; `_version` picks the form version"
     )
@@ -70,6 +80,7 @@ class SubmissionResultSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     uuid = serializers.CharField(required=False)
     form_version = serializers.CharField(required=False)
+    entity_uuid = serializers.CharField(required=False, help_text="The entity registered or followed")
     errors = SubmissionErrorSerializer(many=True, required=False)
     warnings = SubmissionErrorSerializer(many=True, required=False)
 

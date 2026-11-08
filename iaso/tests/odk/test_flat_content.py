@@ -42,7 +42,9 @@ DESCRIPTOR = {
             "name": "meta",
             "type": "group",
             "control": {"bodyless": True},
-            "children": [{"name": "instanceID", "type": "calculate", "bind": {"readonly": "true()"}}],
+            "children": [
+                {"name": "instanceID", "type": "calculate", "bind": {"readonly": "true()", "jr:preload": "uid"}}
+            ],
         },
     ],
 }

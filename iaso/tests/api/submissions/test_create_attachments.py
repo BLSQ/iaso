@@ -74,6 +74,7 @@ class SubmissionsCreateAttachmentsTestCase(SubmissionsTestCase):
         )
 
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIsInstance(data.pop("import_id"), int)
         self.assertEqual(data, {"back.jpg": ["Not the answer of any submission"]})
         self.assertNothingSaved()
 

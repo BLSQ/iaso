@@ -15,6 +15,7 @@ IMPORT_TYPE = (
     ("instance", "Form instance"),
     ("bulk", "Bulk Org Units and Instances"),
     ("storageLog", "Storage logs"),
+    ("submissionsJson", "Submissions (JSON API)"),
 )
 
 

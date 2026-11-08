@@ -40,6 +40,7 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
         data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertResponseCompliantToSwagger(data, "SubmissionsResult")
         instance = m.Instance.objects.get()
+        self.assertEqual(data.pop("import_id"), instance.api_import_id)
         self.assertEqual(
             data,
             {
@@ -214,6 +215,7 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
 
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertResponseCompliantToSwagger(data, "SubmissionsResult")
+        self.assertIsInstance(data.pop("import_id"), int)
         self.assertEqual(
             data, {"results": [{"ref": "row-1", "status": "valid", "uuid": submission_uuid, "form_version": VERSION}]}
         )

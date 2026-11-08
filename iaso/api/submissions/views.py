@@ -9,6 +9,8 @@ from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hat.api_import.models import APIImport
+from iaso.api.submissions.audit import finish_audit, start_audit
 from iaso.api.submissions.creation import (
     Batch,
     PreparedSubmission,
@@ -138,10 +140,19 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             multipart.is_valid(raise_exception=True)
             data = multipart.validated_data["payload"]
             files = {name: request.FILES[name] for name in request.FILES}
-        body = SubmissionsCreateSerializer(data=data)
-        body.is_valid(raise_exception=True)
 
+        api_import = start_audit(request, data, files)
         batch = Batch(request.user, files)
+        response = self._create(request, batch, data, query.validated_data["dry_run"], api_import)
+        finish_audit(api_import, response, batch.project)
+        if isinstance(response.data, dict):
+            response.data["import_id"] = api_import.id
+        return response
+
+    def _create(self, request: Request, batch: Batch, data: Any, dry_run: bool, api_import: APIImport) -> Response:
+        body = SubmissionsCreateSerializer(data=data)
+        if not body.is_valid():
+            return Response(body.errors, status=status.HTTP_400_BAD_REQUEST)
         results: list[dict[str, Any]] = []
         prepared: list[PreparedSubmission] = []
         for index, item in enumerate(body.validated_data["submissions"]):
@@ -168,11 +179,11 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
                 {name: ["Not the answer of any submission"] for name in batch.unused_files()},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if query.validated_data["dry_run"]:
+        if dry_run:
             return Response({"results": [_result(submission) for submission in prepared]}, status=status.HTTP_200_OK)
 
         with transaction.atomic():
-            instances = save_submissions(prepared, request.user)
+            instances = save_submissions(prepared, request.user, api_import)
         return Response(
             {
                 "results": [

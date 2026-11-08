@@ -13,6 +13,7 @@ from typing import Any, Callable, Optional
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
+from django.db import connection
 
 from hat.api_import.models import APIImport
 from hat.audit.models import INSTANCE_API, log_modification
@@ -56,6 +57,8 @@ class PreparedSubmission:
     source_created_at: Any
     location: Optional[dict]
     xml: bytes = b""
+    #: the flat content sent: compared with a submission saved with its uuid
+    content: dict = field(default_factory=dict)
     existing: Optional[Instance] = None
     #: (name, file): the name the answer gives it, the file's own may differ
     attachments: list[tuple[str, UploadedFile]] = field(default_factory=list)
@@ -170,6 +173,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         location=data.get("location"),
         attachments=attachments,
         entity=entity,
+        content=content,
     )
     existing = _existing(batch, prepared, content, errors)
     if errors:
@@ -202,6 +206,34 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in ignored
     ]
     return prepared, []
+
+
+def recheck_under_lock(batch: Batch, submissions: list[PreparedSubmission]) -> dict[str, list[SubmissionError]]:
+    """In the saving transaction, before `save_submissions`: each new uuid locked until the transaction ends, then
+    checked again - a concurrent request (a client retrying too early) may have saved it since `prepare_submission`
+    checked. The problems by ref; a submission saved meanwhile with the same content becomes `unchanged`."""
+    new = [submission for submission in submissions if not submission.existing]
+    uuids = sorted({submission.uuid for submission in new})
+    if not uuids:
+        return {}
+    with connection.cursor() as cursor:
+        # in a fixed order: two requests locking the same uuids can't wait on each other
+        cursor.execute(
+            "SELECT pg_advisory_xact_lock(hashtext('submission_uuid:' || id)) FROM unnest(%s::text[]) AS id ORDER BY id",
+            [uuids],
+        )
+    taken = set(Instance.objects.filter(uuid__in=uuids).values_list("uuid", flat=True))
+    problems = {}
+    for submission in new:
+        if submission.uuid not in taken:
+            continue
+        errors: list[SubmissionError] = []
+        existing = _existing(batch, submission, submission.content, errors)
+        if errors:
+            problems[submission.ref] = errors
+        elif existing:
+            submission.existing = existing
+    return problems
 
 
 def save_submissions(

@@ -122,7 +122,7 @@ class SubmissionsPatchTestCase(SubmissionsTestCase):
             {"content": {"double_population": 7}}, [("CALCULATION_MISMATCH", "content.double_population")]
         )
         self.assertRefused({"content": {"nope": 1}}, [("UNKNOWN_QUESTION", "content.nope")])
-        self.assertRefused({"content": {"_version": "2026010101"}}, [("INVALID", "content._version")])
+        self.assertRefused({"content": {"_version": "2026010101"}}, [("UNKNOWN_REFERENCE", "content._version")])
         self.assertRefused({"content": {"instanceID": "uuid:other"}}, [("INVALID", "content.instanceID")])
 
     def test_what_get_returns_can_be_sent_back(self):

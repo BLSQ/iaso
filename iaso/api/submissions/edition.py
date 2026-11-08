@@ -3,6 +3,9 @@ content - a name sent is set, `null` clears it, a name absent is untouched; a re
 position, `{}` leaves one as it is, a longer list adds instances, `null` removes one (`null` for the whole repeat: all of
 them), before the answers.
 
+`content._version` moves the submission to another version of its form: the answers of questions that version doesn't
+have are dropped (`DROPPED` warnings), the questions it adds are answered as any other.
+
 The content goes through odk_cli `edit` (as Collect reopens a submission): what depends on the answers is computed
 again, and the whole submission must be valid afterwards. The org unit context (`current_ou_name`...) is injected
 again, as Enketo does on an edit."""
@@ -27,10 +30,10 @@ from iaso.api.submissions.creation import (
     org_unit_context,
     read_file,
 )
-from iaso.models import Instance, OrgUnit
-from iaso.odk.flat_content import FlatContent
+from iaso.models import FormVersion, Instance, OrgUnit
+from iaso.odk.flat_content import FlatContent, dropped_answers
 from iaso.odk.instance_editor import InstanceEditError, edit_instance
-from iaso.odk.submission_xml import NoSuchElement, remove_repeat_instances
+from iaso.odk.submission_xml import NoSuchElement, move_to_version, remove_repeat_instances
 
 
 logger = logging.getLogger(__name__)
@@ -77,22 +80,11 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
     if content is None and patch.org_unit is None:
         return (None, errors) if errors else (patch, [])
 
-    form_version = instance.form_version
-    if form_version is None or not form_version.file:
-        errors.append(SubmissionError("INVALID", "content", "This submission's form version can't be edited"))
-        return None, errors
     content = content or {}
-    version_id = content.get("_version")
-    if version_id is not None and version_id != form_version.version_id:
-        errors.append(
-            SubmissionError(
-                "INVALID",
-                "content._version",
-                "Moving a submission to another form version isn't supported yet",
-                answer=str(version_id),
-                expected=form_version.version_id,
-            )
-        )
+    form_version = _form_version(instance, content.get("_version"), errors)
+    if form_version is None:
+        return None, errors
+    moved = form_version != instance.form_version
     flat = FlatContent(form_version.get_or_save_form_descriptor())
     answers = flat.to_answers(content)
     errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
@@ -109,6 +101,14 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
     if errors:
         return None, errors
 
+    if moved and answers.removed:
+        return None, [
+            SubmissionError(
+                "INVALID",
+                answers.removed[0][0],
+                "Move the submission to another form version and remove repeat instances in two PATCHes",
+            )
+        ]
     submission = read_file(instance.file)
     if answers.removed:
         try:
@@ -116,11 +116,14 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
         except NoSuchElement as missing:
             field_name = next(name for name, path in answers.removed if path == str(missing))
             return None, [SubmissionError("INVALID", field_name, "No such repeat instance in this submission")]
+    xform = read_file(form_version.file)
+    if moved:
+        submission = move_to_version(submission, xform, form_version.version_id)
 
     org_unit = patch.org_unit or instance.org_unit
     prefilled = org_unit_context(org_unit, flat.names()) if org_unit else {}
     try:
-        patch.xml = edit_instance(read_file(form_version.file), submission, answers.answers, form_csvs(form), prefilled)
+        patch.xml = edit_instance(xform, submission, answers.answers, form_csvs(form), prefilled)
     except InstanceEditError as refusal:
         return None, [
             SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)
@@ -137,7 +140,31 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
     patch.warnings = [
         SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in ignored
     ]
+    if moved:
+        patch.warnings += [
+            SubmissionError("DROPPED", name, "Not in this form version: the answer is dropped", answer=value)
+            for name, value in dropped_answers(instance.json or {}, computed)
+        ]
     return patch, []
+
+
+def _form_version(instance: Instance, version_id: Any, errors: list) -> Optional[FormVersion]:
+    """The version the patched submission is of: its own, or the one `_version` moves it to."""
+    if version_id is None or str(version_id) == getattr(instance.form_version, "version_id", None):
+        form_version = instance.form_version
+        if form_version is None or not form_version.file:
+            errors.append(SubmissionError("INVALID", "content", "This submission's form version can't be edited"))
+            return None
+        return form_version
+    form_version = FormVersion.objects.find_for_form(instance.form_id, str(version_id))
+    if form_version is None or not form_version.file:
+        errors.append(
+            SubmissionError(
+                "UNKNOWN_REFERENCE", "content._version", "No such version of this form", answer=str(version_id)
+            )
+        )
+        return None
+    return form_version
 
 
 def save_patch(patch: PreparedPatch, user: User) -> Instance:

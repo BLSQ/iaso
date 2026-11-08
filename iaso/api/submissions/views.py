@@ -16,6 +16,7 @@ from iaso.api.submissions.creation import (
     PreparedSubmission,
     SubmissionError,
     prepare_submission,
+    recheck_under_lock,
     save_submissions,
 )
 from iaso.api.submissions.edition import PreparedPatch, prepare_patch, save_patch
@@ -196,6 +197,16 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             return Response({"results": [_result(submission) for submission in prepared]}, status=status.HTTP_200_OK)
 
         with transaction.atomic():
+            problems = recheck_under_lock(batch, prepared)
+            if problems:
+                # saved meanwhile by another request with another content: refused as if it had been first
+                results = [
+                    _refused(submission.ref, problems[submission.ref])
+                    if submission.ref in problems
+                    else _result(submission)
+                    for submission in prepared
+                ]
+                return Response({"results": results}, status=status.HTTP_400_BAD_REQUEST)
             instances = save_submissions(prepared, request.user, api_import)
         return Response(
             {

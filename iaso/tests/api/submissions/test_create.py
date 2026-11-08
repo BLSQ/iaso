@@ -1,5 +1,7 @@
 import uuid
 
+from unittest import mock
+
 from django.db import connection
 from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
@@ -8,6 +10,7 @@ from rest_framework import status
 
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
+from iaso.api.submissions.creation import recheck_under_lock
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.tests.api.submissions.fixtures import URL, VERSION, SubmissionsTestCase, requires_odk_cli
 
@@ -274,6 +277,40 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
             data["results"][0]["errors"],
             [{"code": "UUID_NOT_AVAILABLE", "field": "uuid", "message": "This uuid can't be used"}],
         )
+
+    def test_saved_meanwhile_by_a_concurrent_request(self):
+        """A retry sent before the first request answered: both checked the uuid as free; the second one to save
+        finds it taken under the lock."""
+        submission_uuid = str(uuid.uuid4())
+
+        def saved_meanwhile(content):
+            competing = []
+
+            def recheck(batch, prepared):
+                if not competing:
+                    competing.append("the other request, saving first")
+                    self.assertJSONResponse(
+                        self.post(self.submission(uuid=submission_uuid, content=content)), status.HTTP_201_CREATED
+                    )
+                return recheck_under_lock(batch, prepared)
+
+            return mock.patch("iaso.api.submissions.views.recheck_under_lock", side_effect=recheck)
+
+        with saved_meanwhile({"population": 4}):
+            response = self.post(self.submission(uuid=submission_uuid))
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual([(e["code"], e["field"]) for e in data["results"][0]["errors"]], [("CONFLICT", "uuid")])
+        instance = m.Instance.objects.get()
+        self.assertEqual((str(instance.uuid), instance.json["population"]), (submission_uuid, "4"), "only the first")
+
+        # the same content: as a retry, unchanged
+        other_uuid = str(uuid.uuid4())
+        submission_uuid = other_uuid
+        with saved_meanwhile({}):
+            response = self.post(self.submission(uuid=other_uuid))
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        first = m.Instance.objects.get(uuid=other_uuid)
+        self.assertEqual((data["results"][0]["status"], data["results"][0]["id"]), ("unchanged", first.id))
 
     def test_permissions(self):
         reader = self.create_user_with_profile(

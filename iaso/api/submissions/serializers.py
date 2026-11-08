@@ -1,4 +1,7 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+
+from iaso.models import Instance
 
 
 #: per request: odk_cli runs once per submission
@@ -67,3 +70,40 @@ class SubmissionResultSerializer(serializers.Serializer):
 
 class SubmissionsResultSerializer(serializers.Serializer):
     results = SubmissionResultSerializer(many=True)
+
+
+class SubmissionLocationSerializer(serializers.Serializer):
+    latitude = serializers.FloatField(source="location.y")
+    longitude = serializers.FloatField(source="location.x")
+    altitude = serializers.FloatField(source="location.z", allow_null=True)
+    accuracy = serializers.DecimalField(max_digits=7, decimal_places=2, allow_null=True)
+
+
+class SubmissionSerializer(serializers.ModelSerializer):
+    """A submission in the shape `POST` and `PATCH` take: what is read can be sent back as is."""
+
+    location = serializers.SerializerMethodField()
+    content = serializers.JSONField(source="json")
+
+    class Meta:
+        model = Instance
+        fields = [
+            "id",
+            "uuid",
+            "form_id",
+            "project_id",
+            "org_unit_id",
+            "period",
+            "source_created_at",
+            "location",
+            "updated_at",
+            "deleted",
+            "content",
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(SubmissionLocationSerializer(allow_null=True))
+    def get_location(self, instance: Instance):
+        if instance.location is None:
+            return None
+        return SubmissionLocationSerializer(instance).data

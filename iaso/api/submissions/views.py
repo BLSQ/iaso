@@ -14,12 +14,14 @@ from iaso.api.submissions.creation import (
     prepare_submission,
     save_submissions,
 )
-from iaso.api.submissions.permissions import HasSubmissionsUpdatePermission
+from iaso.api.submissions.permissions import HasSubmissionsReadPermission, HasSubmissionsUpdatePermission
 from iaso.api.submissions.serializers import (
     SubmissionCreateSerializer,
     SubmissionsCreateSerializer,
+    SubmissionSerializer,
     SubmissionsResultSerializer,
 )
+from iaso.models import Instance
 from iaso.odk.instance_editor import InstanceEditorUnavailable
 
 
@@ -41,6 +43,22 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
     checked by odk_cli, as ODK Collect would. Reads are on `/api/instances/`."""
 
     permission_classes = [permissions.IsAuthenticated, HasSubmissionsUpdatePermission]
+    serializer_class = SubmissionSerializer
+
+    def get_permissions(self):
+        if self.action == "retrieve":
+            return [permissions.IsAuthenticated(), HasSubmissionsReadPermission()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        user = self.request.user
+        # without its content (a mobile upload half done), a submission has nothing to read back
+        return Instance.objects.filter_for_user(user).filter_on_user_projects(user).filter(json__isnull=False)
+
+    def retrieve(self, request: Request, pk=None) -> Response:
+        """A submission in the shape `POST` and `PATCH` take: `content` is its flat content (`Instance.json`), with
+        `_version`; `updated_at`, to detect a concurrent change."""
+        return Response(self.get_serializer(self.get_object()).data)
 
     @extend_schema(
         request=SubmissionsCreateSerializer,

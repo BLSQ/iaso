@@ -156,6 +156,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
       #   - ./pages/dev/how_to/deploy.md
       # - Use the APIs:
       - ./pages/dev/how_to/use_iaso_apis.md
+      - ./pages/dev/how_to/write_submissions_with_the_api.md
       # - Run docs locally:
       #   - ./pages/dev/how_to/run_docs_locally.md
       # - Write a visit on an NFC card:

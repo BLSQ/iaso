@@ -138,7 +138,14 @@ class FlatContent:
         questions = self.questions(scope_node)
         for name, value in content.items():
             field_name = f"{field_prefix}.{name}"
-            if name in IGNORED_KEYS and scope_node is self.descriptor:
+            if scope_node is self.descriptor and name in IGNORED_KEYS:
+                continue
+            if scope_node is self.descriptor and name == INSTANCE_ID:
+                # `meta/instanceID`: the submission uuid, checked apart from the questions
+                try:
+                    result.instance_id = to_xml_text(value)
+                except ValueError as error:
+                    result.problems.append(ContentProblem("INVALID", field_name, str(error), _shown(value)))
                 continue
             question = questions.get(name)
             if question is None:
@@ -154,9 +161,7 @@ class FlatContent:
             except ValueError as error:
                 result.problems.append(ContentProblem("INVALID", field_name, str(error), _shown(value)))
                 continue
-            if name == INSTANCE_ID:
-                result.instance_id = text
-            elif _is_computed(question.node):
+            if _is_computed(question.node):
                 result.held_back.append(HeldBack(field_name, path, text, _is_volatile(question.node)))
             else:
                 result.answers[path] = text

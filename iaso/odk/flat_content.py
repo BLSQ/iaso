@@ -20,6 +20,8 @@ from iaso.enketo.enketo_xml import ORG_UNIT_INJECTABLE_QUESTION_NAMES
 
 
 GROUP_TYPES = ("survey", "group")
+#: answered with a file name: the file comes with the submission (`InstanceFile`)
+BINARY_TYPES = frozenset({"image", "audio", "video", "file", "background-audio"})
 REPEAT_TYPE = "repeat"
 SELECT_MULTIPLE_TYPE = "select all that apply"
 
@@ -82,6 +84,8 @@ class Answers:
     held_back: list[HeldBack] = field(default_factory=list)
     problems: list[ContentProblem] = field(default_factory=list)
     instance_id: Optional[str] = None
+    #: (field, file name) of the binary questions answered
+    attachments: list[tuple[str, str]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -165,6 +169,8 @@ class FlatContent:
                 result.held_back.append(HeldBack(field_name, path, text, _is_volatile(question.node)))
             else:
                 result.answers[path] = text
+                if text and question.node.get("type") in BINARY_TYPES:
+                    result.attachments.append((field_name, text))
 
     def _repeat_answers(self, question: _Question, value: Any, path: str, field_name: str, result: Answers):
         if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):

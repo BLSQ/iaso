@@ -12,9 +12,10 @@ from typing import Any, Optional
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 
 from hat.audit.models import INSTANCE_API, log_modification
-from hat.sync.views import process_instance_file
+from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.views import import_data
 from iaso.enketo.enketo_xml import ORG_UNIT_INJECTABLE_QUESTION_NAMES, build_substitutions
@@ -55,6 +56,7 @@ class PreparedSubmission:
     location: Optional[dict]
     xml: bytes = b""
     existing: Optional[Instance] = None
+    attachments: list[UploadedFile] = field(default_factory=list)
     warnings: list[SubmissionError] = field(default_factory=list)
 
     @property
@@ -86,13 +88,20 @@ class PreparedSubmission:
 
 
 class Batch:
-    """What the submissions of one request share: the user, lookups done once, the uuids already used."""
+    """What the submissions of one request share: the user, lookups done once, the uuids and the attached files
+    already used."""
 
-    def __init__(self, user: User):
+    def __init__(self, user: User, files: Optional[dict[str, UploadedFile]] = None):
         self.user = user
         self.account = user.iaso_profile.account
         self.form_versions_cache: dict = {}
         self.uuids: set[str] = set()
+        #: the request's files, by part name: a binary answer names one
+        self.files = files or {}
+        self.used_files: set[str] = set()
+
+    def unused_files(self) -> list[str]:
+        return sorted(set(self.files) - self.used_files)
 
 
 def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Optional[PreparedSubmission], list]:
@@ -115,6 +124,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     flat = FlatContent(form_version.get_or_save_form_descriptor())
     answers = flat.to_answers(content)
     errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
+    attachments = _attachments(batch, answers.attachments, errors)
     submission_uuid = _uuid(batch, data.get("uuid"), answers.instance_id, errors)
     if errors or project is None or org_unit is None:
         return None, errors
@@ -129,6 +139,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         period=data.get("period") or None,
         source_created_at=data.get("source_created_at"),
         location=data.get("location"),
+        attachments=attachments,
     )
     existing = _existing(batch, prepared, content, errors)
     if errors:
@@ -178,6 +189,8 @@ def save_submissions(submissions: list[PreparedSubmission], user: User) -> list[
         instance = cache.instance(submission.uuid)
         file = ContentFile(submission.xml, name=f"{submission.uuid}.xml")
         process_instance_file(instance, file, user, xml_content=submission.xml)
+        for attachment in submission.attachments:
+            create_instance_file(instance, attachment.name, attachment)
         log_modification(None, instance, INSTANCE_API, user=user)
         instances.append(instance)
     return instances
@@ -268,6 +281,26 @@ def _uuid(batch: Batch, sent: Optional[uuid_module.UUID], instance_id: Optional[
         errors.append(SubmissionError("INVALID", "uuid", "Used by another submission of this request"))
     batch.uuids.add(submission_uuid)
     return submission_uuid
+
+
+def _attachments(batch: Batch, answered: list[tuple[str, str]], errors: list) -> list[UploadedFile]:
+    """The files the binary answers name: each one sent, and used by one answer only."""
+    attachments = []
+    for field_name, file_name in answered:
+        if file_name not in batch.files:
+            errors.append(
+                SubmissionError(
+                    "MISSING_ATTACHMENT", field_name, "No file of this name in the request", answer=file_name
+                )
+            )
+        elif file_name in batch.used_files:
+            errors.append(
+                SubmissionError("INVALID", field_name, "This file is already used by another answer", answer=file_name)
+            )
+        else:
+            batch.used_files.add(file_name)
+            attachments.append(batch.files[file_name])
+    return attachments
 
 
 def _existing(batch: Batch, submission: PreparedSubmission, content: dict, errors: list) -> Optional[Instance]:

@@ -49,6 +49,12 @@ class SubmissionsCreateSerializer(StrictSerializer):
     submissions = serializers.ListField(child=serializers.DictField(), min_length=1, max_length=MAX_SUBMISSIONS)
 
 
+class SubmissionsMultipartSerializer(serializers.Serializer):
+    """With files: the JSON in `payload`, then one part per file, named as the binary answers name them."""
+
+    payload = serializers.JSONField(help_text='The JSON body: {"submissions": [...]}')
+
+
 class SubmissionErrorSerializer(serializers.Serializer):
     code = serializers.CharField()
     field = serializers.CharField(allow_null=True)

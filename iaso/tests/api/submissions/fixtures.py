@@ -42,6 +42,7 @@ HOUSEHOLD_SURVEY = {
             ],
         },
         {"type": "calculate", "name": "double_population", "bind": {"calculate": "${population} * 2"}},
+        {"type": "image", "name": "photo", "label": "Photo of the house"},
         {
             "type": "text",
             "name": "district_code",

@@ -9,10 +9,6 @@ from iaso.tests.api.submissions.fixtures import URL, VERSION, SubmissionsTestCas
 
 @requires_odk_cli
 class SubmissionsRetrieveTestCase(SubmissionsTestCase):
-    def create(self, **overrides) -> m.Instance:
-        data = self.assertJSONResponse(self.post(self.submission(**overrides)), status.HTTP_201_CREATED)
-        return m.Instance.objects.get(id=data["results"][0]["id"])
-
     def test_the_shape_post_takes(self):
         instance = self.create(
             uuid=str(uuid.uuid4()),

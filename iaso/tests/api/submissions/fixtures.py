@@ -7,6 +7,7 @@ from unittest import skipUnless
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from pyxform.builder import create_survey_element_from_dict
+from rest_framework import status
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_UPDATE_PERMISSION
@@ -139,3 +140,7 @@ class SubmissionsTestCase(SwaggerTestCaseMixin, APITestCase):
 
     def post(self, *submissions, query=""):
         return self.client.post(f"{URL}{query}", {"submissions": list(submissions)}, format="json")
+
+    def create(self, **overrides) -> m.Instance:
+        data = self.assertJSONResponse(self.post(self.submission(**overrides)), status.HTTP_201_CREATED)
+        return m.Instance.objects.get(id=data["results"][0]["id"])

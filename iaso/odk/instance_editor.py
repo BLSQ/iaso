@@ -67,15 +67,23 @@ class InstanceEditorUnavailable(Exception):
     """odk_cli isn't installed, or failed in a way that isn't the submission's fault."""
 
 
-def edit_instance(xform: bytes, submission: bytes, answers: Answers, csvs: Optional[dict[str, bytes]] = None) -> bytes:
+def edit_instance(
+    xform: bytes,
+    submission: bytes,
+    answers: Answers,
+    csvs: Optional[dict[str, bytes]] = None,
+    prefilled: Optional[Answers] = None,
+) -> bytes:
     """The edited submission XML.
 
     `answers`: question path below the root (`group/question`, `repeat[2]/question` for the 2nd repeat instance, added
     if missing) -> value as written in the XML, `None` to clear it. `csvs`: the form's CSV attachments, by name, for
-    `pulldata()`."""
+    `pulldata()`. `prefilled`: as in `new_instance`, set again before the answers (the org unit context)."""
     # numeric entities of emojis written by old devices, which the XML parser refuses
     files = {"--instance": fix_emoji(submission.decode("utf-8"))}
-    return _run("edit", xform, files, answers, csvs)
+    if prefilled:
+        files["--prefilled-file"] = json.dumps(prefilled).encode()
+    return _run("edit", xform, files, answers, csvs, prefilled=prefilled)
 
 
 def new_instance(xform: bytes, prefilled: Answers, answers: Answers, csvs: Optional[dict[str, bytes]] = None) -> bytes:

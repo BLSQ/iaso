@@ -66,6 +66,20 @@ sys.exit({exit_code})
         self.assertEqual(json.loads(files[named["--answers-file"]]), {"group/question": "1", "repeat[2]/other": None})
         self.assertEqual(files["names.csv"], "name\nAmina")
 
+    def test_edit_without_prefilled_sends_none(self):
+        with self.fake_odk_cli(stdout="<data/>"):
+            self.edit()
+        with open(self.calls) as file:
+            self.assertNotIn("--prefilled-file", json.load(file)["arguments"])
+
+    def test_edit_with_prefilled(self):
+        with self.fake_odk_cli(stdout="<data/>"):
+            edit_instance(b"<h:html/>", b"<data/>", {"a": "1"}, prefilled={"current_ou_name": "Brussels"})
+        with open(self.calls) as file:
+            call = json.load(file)
+        named = dict(zip(call["arguments"][1::2], call["arguments"][2::2]))
+        self.assertEqual(json.loads(call["files"][named["--prefilled-file"]]), {"current_ou_name": "Brussels"})
+
     def test_emoji_entities_of_old_devices_are_fixed_first(self):
         with self.fake_odk_cli(stdout="<data/>"):
             edit_instance(b"<h:html/>", b"<data><a>&#55357;&#56397;</a></data>", {"a": "1"})

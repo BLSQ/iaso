@@ -20,7 +20,7 @@ from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.views import import_data
 from iaso.enketo.enketo_xml import ORG_UNIT_INJECTABLE_QUESTION_NAMES, build_substitutions
-from iaso.models import Form, FormVersion, Instance, OrgUnit, Project
+from iaso.models import Entity, EntityType, Form, FormVersion, Instance, OrgUnit, Project
 from iaso.odk.flat_content import INSTANCE_ID, FlatContent, same_text, to_xml_text
 from iaso.odk.instance_editor import InstanceEditError, new_instance
 from iaso.periods import detect
@@ -58,6 +58,8 @@ class PreparedSubmission:
     xml: bytes = b""
     existing: Optional[Instance] = None
     attachments: list[UploadedFile] = field(default_factory=list)
+    #: (uuid, entity type id) of the entity it registers or follows
+    entity: Optional[tuple[str, int]] = None
     warnings: list[SubmissionError] = field(default_factory=list)
 
     @property
@@ -74,6 +76,8 @@ class PreparedSubmission:
             "orgUnitId": self.org_unit.id,
             "period": self.period,
         }
+        if self.entity:
+            data["entityUuid"], data["entityTypeId"] = self.entity
         if self.source_created_at:
             data["created_at"] = int(self.source_created_at.timestamp())
         if self.location:
@@ -102,6 +106,8 @@ class Batch:
         self.used_files: set[str] = set()
         #: the project of the first submission checked: the audit's app id
         self.project: Optional[Project] = None
+        #: (uuid, entity type id) of the entities registered by this request's submissions
+        self.registered_entities: set[tuple[str, int]] = set()
 
     def unused_files(self) -> list[str]:
         return sorted(set(self.files) - self.used_files)
@@ -130,6 +136,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
     attachments = _attachments(batch, answers.attachments, errors)
     submission_uuid = _uuid(batch, data.get("uuid"), answers.instance_id, errors)
+    entity = _entity(batch, form, data.get("entity"), errors)
     if errors or project is None or org_unit is None:
         return None, errors
 
@@ -144,6 +151,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         source_created_at=data.get("source_created_at"),
         location=data.get("location"),
         attachments=attachments,
+        entity=entity,
     )
     existing = _existing(batch, prepared, content, errors)
     if errors:
@@ -289,6 +297,47 @@ def _uuid(batch: Batch, sent: Optional[uuid_module.UUID], instance_id: Optional[
         errors.append(SubmissionError("INVALID", "uuid", "Used by another submission of this request"))
     batch.uuids.add(submission_uuid)
     return submission_uuid
+
+
+def _entity(batch: Batch, form: Form, sent: Optional[dict], errors: list) -> Optional[tuple[str, int]]:
+    """The entity a submission registers - its form is the entity type's reference form - or follows (any other
+    form): checked against the form instead of trusted, as the mobile upload does (an unknown uuid there creates an
+    entity whatever the form)."""
+    if not sent:
+        return None
+    entity_type = EntityType.objects.filter(account=batch.account, id=sent["entity_type_id"]).first()
+    if entity_type is None:
+        errors.append(
+            SubmissionError(
+                "UNKNOWN_REFERENCE", "entity.entity_type_id", f"Unknown entity type {sent['entity_type_id']}"
+            )
+        )
+        return None
+    entity_uuid = str(sent["uuid"]) if sent.get("uuid") else None
+    key = (entity_uuid, entity_type.id)
+    known = entity_uuid is not None and (
+        key in batch.registered_entities
+        or Entity.objects_include_deleted.filter(
+            account=batch.account, entity_type=entity_type, uuid=entity_uuid
+        ).exists()
+    )
+    if entity_type.reference_form_id == form.id:
+        if known:
+            errors.append(SubmissionError("CONFLICT", "entity.uuid", "This entity is already registered"))
+            return None
+        key = (entity_uuid or str(uuid_module.uuid4()), entity_type.id)
+        batch.registered_entities.add(key)
+        return key
+    if not known:
+        errors.append(
+            SubmissionError(
+                "UNKNOWN_REFERENCE",
+                "entity.uuid",
+                f"Form {form.id} isn't the registration form of {entity_type.name}: the entity must exist",
+            )
+        )
+        return None
+    return key
 
 
 def _attachments(batch: Batch, answered: list[tuple[str, str]], errors: list) -> list[UploadedFile]:

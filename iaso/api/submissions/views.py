@@ -221,6 +221,8 @@ def _result(submission: PreparedSubmission) -> dict[str, Any]:
         "uuid": submission.uuid,
         "form_version": submission.form_version.version_id,
     }
+    if submission.entity:
+        result["entity_uuid"] = submission.entity[0]
     if submission.warnings:
         result["warnings"] = [warning.as_json() for warning in submission.warnings]
     return result

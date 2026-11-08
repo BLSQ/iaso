@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from iaso.odk.flat_content import ContentProblem, FlatContent, HeldBack, same_text, to_xml_text
+from iaso.odk.flat_content import ContentProblem, FlatContent, HeldBack, dropped_answers, same_text, to_xml_text
 
 
 #: as pyxform's `to_json_dict()` writes it
@@ -305,3 +305,28 @@ class ValuesTestCase(SimpleTestCase):
         self.assertFalse(same_text("a", "b"))
         self.assertFalse(same_text("1", None))
         self.assertTrue(same_text("2026-01-15", "2026-01-15"))
+
+
+class DroppedAnswersTestCase(SimpleTestCase):
+    def test_answers_missing_after(self):
+        before = {
+            "_version": "1",
+            "head_name": "Alice",
+            "population": "",
+            # not answered: nothing dropped
+            "note": "",
+            "kept": "yes",
+            "child": [{"child_name": "Bob", "toy": "ball"}, {"child_name": "Eve"}],
+            "pet": [{"pet_name": "Rex"}],
+        }
+        after = {"_version": "2", "kept": "yes", "population": "3", "child": [{"child_name": "Bob"}]}
+
+        self.assertEqual(
+            dropped_answers(before, after),
+            [
+                ("content.head_name", "Alice"),
+                ("content.child[1].toy", "ball"),
+                ("content.child[2].child_name", "Eve"),
+                ("content.pet[1].pet_name", "Rex"),
+            ],
+        )

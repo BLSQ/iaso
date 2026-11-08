@@ -123,7 +123,10 @@ curl -X PATCH "$IASO/api/submissions/456/" \
   first). `"child": null` removes them all. A repeat following a count (`repeat_count`) changes with its count only.
 - `org_unit_id` and `period` can change too; the org unit's values (`current_ou_name`...) follow.
 - `expected_updated_at` (optional): refused (`CONFLICT`) if the submission changed since it was read.
-- The whole submission must be valid afterwards. Moving a submission to another form version isn't supported yet.
+- The whole submission must be valid afterwards.
+- `content._version` moves the submission to another version of its form: the questions that version adds can be
+  answered in the same `PATCH` (a required one must be), the answers of questions it doesn't have are dropped, each
+  reported in `warnings` (`DROPPED`). Repeats are removed in another `PATCH`.
 - `?dry_run=true`: answers the submission as it would be, saves nothing.
 - Answers `{"submission": {...}, "warnings": [...]}`, or `400` with `{"errors": [...]}`; `import_id` as for `POST`:
   every `PATCH` is kept too.

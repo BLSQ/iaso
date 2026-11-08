@@ -289,6 +289,25 @@ def same_text(sent: Optional[str], stored: Optional[str]) -> bool:
         return sent == stored
 
 
+def dropped_answers(before: dict[str, Any], after: dict[str, Any], prefix: str = "content") -> list[tuple[str, str]]:
+    """The answers of the flat content `before` that `after` hasn't any more, (field, value): the repeat instances
+    compared by position."""
+    dropped = []
+    for name, value in before.items():
+        if name in IGNORED_KEYS:
+            continue
+        field_name = f"{prefix}.{name}"
+        if isinstance(value, list) and all(isinstance(item, dict) for item in value):
+            later = after.get(name)
+            later = later if isinstance(later, list) else []
+            for index, item in enumerate(value, start=1):
+                later_item = later[index - 1] if index <= len(later) and isinstance(later[index - 1], dict) else {}
+                dropped += dropped_answers(item, later_item, f"{field_name}[{index}]")
+        elif name not in after and value not in (None, ""):
+            dropped.append((field_name, _shown(value)))
+    return dropped
+
+
 def _value_at(flat: dict[str, Any], field_name: str) -> Any:
     """`content.child[2].age` in the flat content."""
     value: Any = flat

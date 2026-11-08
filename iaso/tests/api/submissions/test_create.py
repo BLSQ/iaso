@@ -184,6 +184,9 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
             ({"project_id": self.france_project.id}, [("UNKNOWN_REFERENCE", "project_id")]),
             ({"content": {"_version": "1999"}}, [("INVALID", "content._version")]),
             ({"content": {"nope": "1"}}, [("UNKNOWN_QUESTION", "content.nope")]),
+            # nothing to remove in a new submission
+            ({"content": {"child": None}}, [("INVALID", "content.child")]),
+            ({"content": {"child": [{"child_name": "Bob"}, None]}}, [("INVALID", "content.child[2]")]),
             ({"content": {"instanceID": "uuid:other"}, "uuid": str(uuid.uuid4())}, [("INVALID", "content.instanceID")]),
             ({"orgunit_id": 1}, [("INVALID", "orgunit_id")]),
             ({"location": {"latitude": 91, "longitude": 4}}, [("INVALID", "location.latitude")]),

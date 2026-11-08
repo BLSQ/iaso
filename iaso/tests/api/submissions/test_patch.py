@@ -1,9 +1,13 @@
+import copy
+
+from django.core.files.base import ContentFile
+from pyxform.builder import create_survey_element_from_dict
 from rest_framework import status
 
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
-from iaso.tests.api.submissions.fixtures import URL, SubmissionsTestCase, requires_odk_cli
+from iaso.tests.api.submissions.fixtures import HOUSEHOLD_SURVEY, URL, SubmissionsTestCase, requires_odk_cli
 
 
 @requires_odk_cli
@@ -124,6 +128,37 @@ class SubmissionsPatchTestCase(SubmissionsTestCase):
         self.assertRefused({"content": {"nope": 1}}, [("UNKNOWN_QUESTION", "content.nope")])
         self.assertRefused({"content": {"_version": "2026010101"}}, [("UNKNOWN_REFERENCE", "content._version")])
         self.assertRefused({"content": {"instanceID": "uuid:other"}}, [("INVALID", "content.instanceID")])
+
+    def test_a_problem_already_there_is_only_reported(self):
+        # the form now wants at least 5 people: this submission (3) was saved before
+        survey = copy.deepcopy(HOUSEHOLD_SURVEY)
+        household = next(child for child in survey["children"] if child["name"] == "household")
+        population = next(child for child in household["children"] if child["name"] == "population")
+        population["bind"] = {"constraint": ". >= 5", "jr:constraintMsg": "At least 5"}
+        xform = create_survey_element_from_dict(survey).to_xml(validate=False).encode()
+        self.form_version.file.save("household.xml", ContentFile(xform))
+
+        data = self.assertPatched({"content": {"head_name": "Alicia"}})
+
+        self.assertEqual(self.instance.json["head_name"], "Alicia")
+        self.assertEqual(self.instance.json["population"], "3", "left as it is")
+        self.assertEqual(
+            data["warnings"],
+            [
+                {
+                    "code": "CONSTRAINT",
+                    "field": "content.population",
+                    "question": "household/population",
+                    "message": "Already in the submission, left as it is: At least 5",
+                    "answer": "3",
+                }
+            ],
+        )
+        # answered, it must be right
+        self.file_name = self.instance.file.name
+        self.assertRefused({"content": {"population": 4}}, [("CONSTRAINT", "content.population")])
+        data = self.assertPatched({"content": {"population": 5}})
+        self.assertEqual(data["warnings"], [])
 
     def test_what_get_returns_can_be_sent_back(self):
         read = self.assertJSONResponse(self.client.get(f"{URL}{self.instance.id}/"), status.HTTP_200_OK)

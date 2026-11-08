@@ -14,8 +14,8 @@ RUN apt-get update && apt-get --yes install \
 # Collect would (`iaso.odk.instance_editor`, used by /api/submissions/). Its release binary, published on S3, checked
 # against the checksum pinned here - same URL and checksum in docker/django/Dockerfile and docker/prod/Dockerfile.
 # linux/amd64 only: elsewhere, /api/submissions/ answers 503.
-ARG ODK_CLI_URL=https://blsq-io.s3.eu-west-1.amazonaws.com/odk-cli/1.0.2/odk_cli-linux-amd64
-ARG ODK_CLI_SHA256=eee7d3ba8d3de3f54d1e21bbcb51e1f30cf711c681dc331d54908efeec618bcf
+ARG ODK_CLI_URL=https://blsq-io.s3.eu-west-1.amazonaws.com/odk-cli/1.0.3/odk_cli-linux-amd64
+ARG ODK_CLI_SHA256=db1318a013d08abac23c64e644a7eeb7d1b4fe1ea4327d8d723c2203c0357c68
 RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
         curl -fsSL -o /usr/local/bin/odk_cli "${ODK_CLI_URL}" \
         && echo "${ODK_CLI_SHA256}  /usr/local/bin/odk_cli" | sha256sum -c - \

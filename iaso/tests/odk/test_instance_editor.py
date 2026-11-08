@@ -80,6 +80,28 @@ sys.exit({exit_code})
         named = dict(zip(call["arguments"][1::2], call["arguments"][2::2]))
         self.assertEqual(json.loads(call["files"][named["--prefilled-file"]]), {"current_ou_name": "Brussels"})
 
+    def test_existing_problems_kept_as_warnings(self):
+        warning = {"code": "CONSTRAINT", "path": "household/adults", "message": "Too many", "answer": "9"}
+        with self.fake_odk_cli(stdout="<data/>", stderr=json.dumps({"warnings": [warning]})):
+            existing = []
+            xml = edit_instance(b"<h:html/>", b"<data/>", {"a": "1"}, existing_problems=existing)
+
+        self.assertEqual(xml, b"<data/>")
+        self.assertEqual(existing, [EditProblem("CONSTRAINT", "Too many", "household/adults", "9")])
+        with open(self.calls) as file:
+            self.assertIn("--keep-existing-problems", json.load(file)["arguments"])
+
+        with self.fake_odk_cli(stdout="<data/>"):
+            existing = []
+            edit_instance(b"<h:html/>", b"<data/>", {"a": "1"}, existing_problems=existing)
+        self.assertEqual(existing, [], "none")
+
+    def test_existing_problems_not_asked(self):
+        with self.fake_odk_cli(stdout="<data/>"):
+            self.edit()
+        with open(self.calls) as file:
+            self.assertNotIn("--keep-existing-problems", json.load(file)["arguments"])
+
     def test_emoji_entities_of_old_devices_are_fixed_first(self):
         with self.fake_odk_cli(stdout="<data/>"):
             edit_instance(b"<h:html/>", b"<data><a>&#55357;&#56397;</a></data>", {"a": "1"})

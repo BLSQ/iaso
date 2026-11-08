@@ -73,17 +73,21 @@ def edit_instance(
     answers: Answers,
     csvs: Optional[dict[str, bytes]] = None,
     prefilled: Optional[Answers] = None,
+    existing_problems: Optional[list[EditProblem]] = None,
 ) -> bytes:
     """The edited submission XML.
 
     `answers`: question path below the root (`group/question`, `repeat[2]/question` for the 2nd repeat instance, added
     if missing) -> value as written in the XML, `None` to clear it. `csvs`: the form's CSV attachments, by name, for
-    `pulldata()`. `prefilled`: as in `new_instance`, set again before the answers (the org unit context)."""
+    `pulldata()`. `prefilled`: as in `new_instance`, set again before the answers (the org unit context).
+
+    `existing_problems`: when given, the problems the submission already had on questions not answered don't refuse
+    the edit: they are added there (odk_cli's `--keep-existing-problems`)."""
     # numeric entities of emojis written by old devices, which the XML parser refuses
     files = {"--instance": fix_emoji(submission.decode("utf-8"))}
     if prefilled:
         files["--prefilled-file"] = json.dumps(prefilled).encode()
-    return _run("edit", xform, files, answers, csvs, prefilled=prefilled)
+    return _run("edit", xform, files, answers, csvs, prefilled=prefilled, warnings=existing_problems)
 
 
 def new_instance(xform: bytes, prefilled: Answers, answers: Answers, csvs: Optional[dict[str, bytes]] = None) -> bytes:
@@ -101,6 +105,7 @@ def _run(
     answers: Answers,
     csvs: Optional[dict[str, bytes]],
     prefilled: Optional[Answers] = None,
+    warnings: Optional[list[EditProblem]] = None,
 ) -> bytes:
     unwritable = [
         EditProblem("INVALID", "The value contains characters XML can't hold", path, value)
@@ -124,6 +129,8 @@ def _run(
         arguments += ["--answers-file", written("answers.json", json.dumps(answers).encode())]
         for index, (name, content) in enumerate((csvs or {}).items()):
             arguments += ["--csv", f"{name}={written(f'attachment_{index}.csv', content)}"]
+        if warnings is not None:
+            arguments.append("--keep-existing-problems")
 
         try:
             result = subprocess.run(arguments, capture_output=True, timeout=TIMEOUT_SECONDS, check=False)
@@ -133,22 +140,31 @@ def _run(
             raise InstanceEditorUnavailable(f"odk_cli didn't answer within {TIMEOUT_SECONDS}s")
 
     if result.returncode == 0:
+        if warnings is not None and result.stderr.strip():
+            warnings += _problems(_stderr_json(result.stderr).get("warnings", []))
         return result.stdout
-    try:
-        failure = json.loads(result.stderr)
-    except ValueError:
-        failure = {}
-    if not isinstance(failure, dict) or not failure.get("refused"):
+    failure = _stderr_json(result.stderr)
+    if not failure.get("refused"):
         # not the submission's fault: an XForm JavaRosa can't parse, a crash...
         raise InstanceEditorUnavailable(f"odk_cli failed: {result.stderr[:1000]!r}")
-    raise InstanceEditError(
-        [
-            EditProblem(
-                error["code"] if error["code"] in EDIT_CODES else "INVALID",
-                error["message"],
-                error.get("path"),
-                error.get("answer"),
-            )
-            for error in failure["errors"]
-        ]
-    )
+    raise InstanceEditError(_problems(failure["errors"]))
+
+
+def _stderr_json(stderr: bytes) -> dict:
+    try:
+        parsed = json.loads(stderr)
+    except ValueError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _problems(errors: list[dict]) -> list[EditProblem]:
+    return [
+        EditProblem(
+            error["code"] if error["code"] in EDIT_CODES else "INVALID",
+            error["message"],
+            error.get("path"),
+            error.get("answer"),
+        )
+        for error in errors
+    ]

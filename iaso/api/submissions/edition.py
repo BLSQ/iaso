@@ -19,11 +19,14 @@ from typing import Any, Optional
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import UploadedFile
 
 from hat.audit.models import INSTANCE_API, log_modification
+from hat.sync.views import create_instance_file
 from iaso.api.submissions.creation import (
     Batch,
     SubmissionError,
+    attachments_sent,
     check_period,
     find_org_unit,
     form_csvs,
@@ -48,11 +51,16 @@ class PreparedPatch:
     xml: Optional[bytes] = None
     #: the content once saved: what `dry_run` shows
     json: Optional[dict] = None
+    #: the files sent for its binary answers, to attach
+    attachments: list[tuple[str, UploadedFile]] = field(default_factory=list)
     warnings: list[SubmissionError] = field(default_factory=list)
 
 
-def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple[Optional[PreparedPatch], list]:
-    """`data`: as validated by `SubmissionPatchSerializer`. The patch ready to save, or the problems."""
+def prepare_patch(
+    user: User, instance: Instance, data: dict[str, Any], files: Optional[dict[str, UploadedFile]] = None
+) -> tuple[Optional[PreparedPatch], list]:
+    """`data`: as validated by `SubmissionPatchSerializer`; `files`: those sent with it, by name. The patch ready to
+    save, or the problems."""
     errors: list[SubmissionError] = []
     patch = PreparedPatch(instance=instance)
     form = instance.form
@@ -77,7 +85,9 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
         check_period(form, patch.period, errors)
 
     content = data.get("content")
+    batch = Batch(user, files or {})
     if content is None and patch.org_unit is None:
+        errors += _unused_files(batch)
         return (None, errors) if errors else (patch, [])
 
     content = content or {}
@@ -98,6 +108,8 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
                 expected=f"uuid:{instance.uuid}",
             )
         )
+    patch.attachments = _attachments_of_patch(batch, instance, answers.attachments, errors)
+    errors += _unused_files(batch)
     if errors:
         return None, errors
 
@@ -148,6 +160,36 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
     return patch, []
 
 
+def _attachments_of_patch(
+    batch: Batch, instance: Instance, answered: list[tuple[str, str]], errors: list
+) -> list[tuple[str, UploadedFile]]:
+    """The files sent for the binary answers. An answer can name a file of the submission instead: one it has (as
+    `GET` returns it); a file sent must have a name the submission's files don't, so a name never means two files."""
+    if not answered:
+        return []
+    attached = set(instance.instancefile_set.filter(deleted=False).values_list("name", flat=True))
+    new = []
+    for field_name, file_name in answered:
+        if file_name in batch.files and file_name in attached:
+            batch.used_files.add(file_name)
+            errors.append(
+                SubmissionError(
+                    "CONFLICT",
+                    field_name,
+                    "The submission has a file of this name already: send this one under another name",
+                    answer=file_name,
+                )
+            )
+        elif file_name not in attached:
+            new.append((field_name, file_name))
+    return attachments_sent(batch, new, errors)
+
+
+def _unused_files(batch: Batch) -> list[SubmissionError]:
+    # a typo in an answer mustn't lose a file silently
+    return [SubmissionError("INVALID", name, "Not the answer of any question") for name in batch.unused_files()]
+
+
 def _form_version(instance: Instance, version_id: Any, errors: list) -> Optional[FormVersion]:
     """The version the patched submission is of: its own, or the one `_version` moves it to."""
     if version_id is None or str(version_id) == getattr(instance.form_version, "version_id", None):
@@ -190,6 +232,8 @@ def save_patch(patch: PreparedPatch, user: User) -> Instance:
             logger.exception(error)
     instance.last_modified_by = user
     instance.save()
+    for name, attachment in patch.attachments:
+        create_instance_file(instance, name, attachment)
     log_modification(original, instance, INSTANCE_API, user=user)
     return instance
 

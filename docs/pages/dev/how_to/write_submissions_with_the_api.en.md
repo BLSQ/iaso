@@ -127,6 +127,8 @@ curl -X PATCH "$IASO/api/submissions/456/" \
 - `content._version` moves the submission to another version of its form: the questions that version adds can be
   answered in the same `PATCH` (a required one must be), the answers of questions it doesn't have are dropped, each
   reported in `warnings` (`DROPPED`). Repeats are removed in another `PATCH`.
+- Files: multipart as for `POST`. A photo answer can also name a file the submission has (as `GET` returns it); a new
+  file must have a name the submission's files don't (`CONFLICT`). The previous file stays attached.
 - `?dry_run=true`: answers the submission as it would be, saves nothing.
 - Answers `{"submission": {...}, "warnings": [...]}`, or `400` with `{"errors": [...]}`; `import_id` as for `POST`:
   every `PATCH` is kept too.

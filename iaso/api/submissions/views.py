@@ -1,6 +1,7 @@
 from copy import copy
 from typing import Any, Optional
 
+from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
@@ -22,6 +23,7 @@ from iaso.api.submissions.permissions import HasSubmissionsReadPermission, HasSu
 from iaso.api.submissions.serializers import (
     SubmissionCreateSerializer,
     SubmissionErrorsSerializer,
+    SubmissionPatchMultipartSerializer,
     SubmissionPatchResultSerializer,
     SubmissionPatchSerializer,
     SubmissionsCreateSerializer,
@@ -69,7 +71,10 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
         return Response(self.get_serializer(self.get_object()).data)
 
     @extend_schema(
-        request=SubmissionPatchSerializer,
+        request={
+            "application/json": SubmissionPatchSerializer,
+            "multipart/form-data": SubmissionPatchMultipartSerializer,
+        },
         parameters=[DRY_RUN_PARAMETER],
         responses={
             200: OpenApiResponse(
@@ -83,18 +88,23 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
     )
     def partial_update(self, request: Request, pk=None) -> Response:
         """Changes a submission's org unit, period and content (a merge patch on its flat content), checked by odk_cli
-        as an edit in ODK Collect: the whole submission must be valid afterwards."""
+        as an edit in ODK Collect: the whole submission must be valid afterwards.
+
+        With files: as for `POST`; a binary answer can also name a file the submission has."""
         query = DryRunSerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
-        api_import = start_audit(request, request.data, {}, submission_id=pk)
-        response, instance = self._partial_update(request, pk, query.validated_data["dry_run"])
+        data, files = _body_and_files(request, SubmissionPatchMultipartSerializer)
+        api_import = start_audit(request, data, files, submission_id=pk)
+        response, instance = self._partial_update(request, pk, data, files, query.validated_data["dry_run"])
         finish_audit(api_import, response, instance.project if instance else None)
         response.data["import_id"] = api_import.id
         return response
 
-    def _partial_update(self, request: Request, pk, dry_run: bool) -> tuple[Response, Optional[Instance]]:
+    def _partial_update(
+        self, request: Request, pk, data: Any, files: dict[str, UploadedFile], dry_run: bool
+    ) -> tuple[Response, Optional[Instance]]:
         """The response, and the submission when found."""
-        body = SubmissionPatchSerializer(data=request.data)
+        body = SubmissionPatchSerializer(data=data)
         if not body.is_valid():
             errors = [error.as_json() for error in _serializer_errors(body.errors)]
             return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST), None
@@ -110,7 +120,7 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
                 )
                 return locked, instance
             try:
-                patch, errors = prepare_patch(request.user, instance, body.validated_data)
+                patch, errors = prepare_patch(request.user, instance, body.validated_data, files)
             except InstanceEditorUnavailable:
                 return _unavailable(), instance
             if errors:
@@ -142,14 +152,7 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
         question's answer is the name of its part."""
         query = DryRunSerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
-        files = {}
-        data = request.data
-        if request.content_type.startswith("multipart/"):
-            multipart = SubmissionsMultipartSerializer(data=request.data)
-            multipart.is_valid(raise_exception=True)
-            data = multipart.validated_data["payload"]
-            files = {name: request.FILES[name] for name in request.FILES}
-
+        data, files = _body_and_files(request, SubmissionsMultipartSerializer)
         api_import = start_audit(request, data, files)
         batch = Batch(request.user, files)
         response = self._create(request, batch, data, query.validated_data["dry_run"], api_import)
@@ -202,6 +205,15 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+def _body_and_files(request: Request, multipart_serializer) -> tuple[Any, dict[str, UploadedFile]]:
+    """The JSON body, and the files by name: multipart, the JSON in a `payload` part."""
+    if not request.content_type.startswith("multipart/"):
+        return request.data, {}
+    multipart = multipart_serializer(data=request.data)
+    multipart.is_valid(raise_exception=True)
+    return multipart.validated_data["payload"], {name: request.FILES[name] for name in request.FILES}
 
 
 def _unavailable() -> Response:

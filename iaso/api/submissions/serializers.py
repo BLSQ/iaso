@@ -65,6 +65,12 @@ class SubmissionsMultipartSerializer(serializers.Serializer):
     payload = serializers.JSONField(help_text='The JSON body: {"submissions": [...]}')
 
 
+class SubmissionPatchMultipartSerializer(serializers.Serializer):
+    """With files: the JSON in `payload`, then one part per file, named as the binary answers name them."""
+
+    payload = serializers.JSONField(help_text='The JSON body: {"content": {...}, ...}')
+
+
 class SubmissionErrorSerializer(serializers.Serializer):
     code = serializers.CharField()
     field = serializers.CharField(allow_null=True)

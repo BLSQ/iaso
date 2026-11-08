@@ -25,8 +25,9 @@ class SubmissionsCreateAttachmentsTestCase(SubmissionsTestCase):
         self.assertFalse(m.InstanceFile.objects.exists())
 
     def test_a_binary_answer_names_its_file(self):
+        # the part named as the answer, the file's own name (from the phone) another
         response = self.post_multipart(
-            [self.submission(content={"photo": "front.jpg"})], {"front.jpg": self.jpeg("front.jpg")}
+            [self.submission(content={"photo": "front.jpg"})], {"front.jpg": self.jpeg("IMG_0001.jpg")}
         )
 
         data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
@@ -35,7 +36,7 @@ class SubmissionsCreateAttachmentsTestCase(SubmissionsTestCase):
         self.assertEqual(instance.json["photo"], "front.jpg")
         attachment = m.InstanceFile.objects.get()
         self.assertEqual((attachment.instance, attachment.name), (instance, "front.jpg"))
-        self.assertEqual(attachment.file.read(), b"\xff\xd8\xfffront.jpg")
+        self.assertEqual(attachment.file.read(), b"\xff\xd8\xffIMG_0001.jpg")
 
     def test_files_of_several_submissions(self):
         response = self.post_multipart(

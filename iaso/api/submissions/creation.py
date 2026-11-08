@@ -57,7 +57,8 @@ class PreparedSubmission:
     location: Optional[dict]
     xml: bytes = b""
     existing: Optional[Instance] = None
-    attachments: list[UploadedFile] = field(default_factory=list)
+    #: (name, file): the name the answer gives it, the file's own may differ
+    attachments: list[tuple[str, UploadedFile]] = field(default_factory=list)
     #: (uuid, entity type id) of the entity it registers or follows
     entity: Optional[tuple[str, int]] = None
     warnings: list[SubmissionError] = field(default_factory=list)
@@ -146,7 +147,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
     # a repeat absent has no instance: `null` only removes one on PATCH
     errors += [SubmissionError("INVALID", name, "Nothing to remove in a new submission") for name, _ in answers.removed]
-    attachments = _attachments(batch, answers.attachments, errors)
+    attachments = attachments_sent(batch, answers.attachments, errors)
     submission_uuid = _uuid(batch, data.get("uuid"), answers.instance_id, errors)
     entity = _entity(batch, form, data.get("entity"), errors)
     if errors or project is None or org_unit is None:
@@ -222,8 +223,8 @@ def save_submissions(
         instance = cache.instance(submission.uuid)
         file = ContentFile(submission.xml, name=f"{submission.uuid}.xml")
         process_instance_file(instance, file, user, xml_content=submission.xml)
-        for attachment in submission.attachments:
-            create_instance_file(instance, attachment.name, attachment)
+        for name, attachment in submission.attachments:
+            create_instance_file(instance, name, attachment)
         log_modification(None, instance, INSTANCE_API, user=user)
         instances.append(instance)
     return instances
@@ -369,8 +370,8 @@ def _entity(batch: Batch, form: Form, sent: Optional[dict], errors: list) -> Opt
     return key
 
 
-def _attachments(batch: Batch, answered: list[tuple[str, str]], errors: list) -> list[UploadedFile]:
-    """The files the binary answers name: each one sent, and used by one answer only."""
+def attachments_sent(batch: Batch, answered: list[tuple[str, str]], errors: list) -> list[tuple[str, UploadedFile]]:
+    """The files the binary answers name, (name, file): each one sent, and used by one answer only."""
     attachments = []
     for field_name, file_name in answered:
         if file_name not in batch.files:
@@ -385,7 +386,7 @@ def _attachments(batch: Batch, answered: list[tuple[str, str]], errors: list) ->
             )
         else:
             batch.used_files.add(file_name)
-            attachments.append(batch.files[file_name])
+            attachments.append((file_name, batch.files[file_name]))
     return attachments
 
 

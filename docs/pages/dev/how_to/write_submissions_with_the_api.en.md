@@ -53,7 +53,8 @@ curl -X POST "$IASO/api/submissions/" \
 - 1 to 100 submissions per request, **all or none**: if one is refused, nothing is saved.
 - `uuid`: sending the same submission again (a retry after a timeout) answers `"status": "unchanged"`; another
   content with the same uuid is refused (`CONFLICT`, use `PATCH`). Generated when absent.
-- `ref`: your own key (a row number), repeated in the results. Defaults to the position in the list.
+- `ref`: your own key (a row number), repeated in the results, unique in the request. Defaults to the position in
+  the list.
 - Optional: `project_id` (required when the form is in several projects), `source_created_at`, `location`
   (`latitude`, `longitude`, `altitude`, `accuracy`), `entity` (below).
 - `?dry_run=true`: checks everything, saves nothing.
@@ -96,6 +97,16 @@ curl -X POST "$IASO/api/submissions/" -H "Authorization: Bearer $TOKEN" \
 ```
 
 A file no answer names, or an answer naming a file not sent, refuses the request.
+
+Several submissions can each have their `photo.jpg`: name each part `<ref>/<file name>`, the answer stays the file
+name.
+
+```bash
+  -F "row-12/photo.jpg=@house_a.jpg" -F "row-13/photo.jpg=@house_b.jpg"
+```
+
+The part named after the file alone, as above, works when no other submission of the request has a file of that
+name.
 
 ### Entities
 

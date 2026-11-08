@@ -202,6 +202,11 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
         )
 
     @requires_odk_cli
+    def test_refs_are_unique(self):
+        response = self.post(self.submission(), self.submission(content={"head_name": "Bob"}))
+
+        self.assertRefused(response, [("row-1", "valid", []), ("row-1", "refused", [("INVALID", "ref")])])
+
     def test_project_required_when_the_form_is_in_several(self):
         other_project = m.Project.objects.create(name="Belgium malaria", app_id="be.malaria", account=self.account)
         self.form.projects.add(other_project)

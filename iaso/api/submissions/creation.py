@@ -8,7 +8,7 @@ import uuid as uuid_module
 from dataclasses import dataclass, field
 from io import BytesIO
 from types import SimpleNamespace
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -108,6 +108,13 @@ class Batch:
         self.project: Optional[Project] = None
         #: (uuid, entity type id) of the entities registered by this request's submissions
         self.registered_entities: set[tuple[str, int]] = set()
+        self._cache: dict = {}
+
+    def cached(self, key: tuple, compute: Callable[[], Any]) -> Any:
+        """A lookup done once per request: the submissions of a batch mostly share a form, a project, a version."""
+        if key not in self._cache:
+            self._cache[key] = compute()
+        return self._cache[key]
 
     def unused_files(self) -> list[str]:
         return sorted(set(self.files) - self.used_files)
@@ -118,7 +125,10 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     errors: list[SubmissionError] = []
     user = batch.user
 
-    form = Form.objects.filter_for_user_and_app_id(user).filter(id=data["form_id"]).first()
+    form = batch.cached(
+        ("form", data["form_id"]),
+        lambda: Form.objects.filter_for_user_and_app_id(user).filter(id=data["form_id"]).first(),
+    )
     if form is None:
         return None, [SubmissionError("UNKNOWN_REFERENCE", "form_id", f"Unknown form {data['form_id']}")]
 
@@ -162,7 +172,12 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
 
     prefilled = {INSTANCE_ID: f"uuid:{submission_uuid}", **org_unit_context(org_unit, flat.names())}
     try:
-        prepared.xml = new_instance(read_file(form_version.file), prefilled, answers.answers, form_csvs(form))
+        prepared.xml = new_instance(
+            batch.cached(("xform", form_version.id), lambda: read_file(form_version.file)),
+            prefilled,
+            answers.answers,
+            batch.cached(("csvs", form.id), lambda: form_csvs(form)),
+        )
     except InstanceEditError as refusal:
         return None, [
             SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)
@@ -213,13 +228,18 @@ def save_submissions(
 
 
 def _project(batch: Batch, form: Form, project_id: Optional[int], errors: list) -> Optional[Project]:
-    projects = Project.objects.filter_on_user_projects(batch.user).filter(account=batch.account, forms=form)
+    projects = batch.cached(
+        ("projects", form.id),
+        lambda: list(
+            Project.objects.filter_on_user_projects(batch.user).filter(account=batch.account, forms=form).order_by("id")
+        ),
+    )
     if project_id is not None:
-        project = projects.filter(id=project_id).first()
+        project = next((project for project in projects if project.id == project_id), None)
         if project is None:
             errors.append(SubmissionError("UNKNOWN_REFERENCE", "project_id", f"Form {form.id} isn't in this project"))
         return project
-    candidates = list(projects.order_by("id")[:2])
+    candidates = projects[:2]
     if len(candidates) != 1:
         errors.append(
             SubmissionError("INVALID", "project_id", f"Form {form.id} is in several projects: project_id is required")
@@ -240,7 +260,10 @@ def find_org_unit(
     if org_unit is None:
         errors.append(SubmissionError("UNKNOWN_REFERENCE", "org_unit_id", f"Unknown org unit {org_unit_id}"))
         return None
-    if not form.org_unit_types.filter(id=org_unit.org_unit_type_id).exists():
+    form_type_ids = batch.cached(
+        ("org_unit_types", form.id), lambda: set(form.org_unit_types.values_list("id", flat=True))
+    )
+    if org_unit.org_unit_type_id not in form_type_ids:
         errors.append(
             SubmissionError("INVALID", "org_unit_id", f"Form {form.id} isn't filled for this org unit's type")
         )
@@ -265,7 +288,7 @@ def check_period(form: Form, period: Optional[str], errors: list) -> None:
 
 def _form_version(batch: Batch, form: Form, version_id: Any, errors: list) -> Optional[FormVersion]:
     if version_id is None:
-        form_version = FormVersion.objects.latest_version(form)
+        form_version = batch.cached(("latest_version", form.id), lambda: FormVersion.objects.latest_version(form))
     elif isinstance(version_id, str):
         form_version = FormVersion.objects.find_for_form(form.id, version_id, batch.form_versions_cache)
     else:

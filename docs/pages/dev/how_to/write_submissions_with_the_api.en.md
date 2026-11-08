@@ -57,6 +57,9 @@ curl -X POST "$IASO/api/submissions/" \
   the list.
 - Optional: `project_id` (required when the form is in several projects), `source_created_at`, `location`
   (`latitude`, `longitude`, `altitude`, `accuracy`), `entity` (below).
+- A form taking one submission per period ("single per period"): a second one for the same org unit and period
+  is refused (`CONFLICT` on `period`), change the first one with `PATCH`. A `PATCH` can't move a submission into a
+  taken slot either.
 - `?dry_run=true`: checks everything, saves nothing.
 - `import_id`: every request is kept, refused or not, in the API imports.
 

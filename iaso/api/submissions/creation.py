@@ -109,6 +109,8 @@ class Batch:
         self.files = files or {}
         self.used_files: set[str] = set()
         self.refs: set[str] = set()
+        #: (form id, org unit id, period) of this request's submissions of `single_per_period` forms
+        self.slots: set[tuple[int, int, str]] = set()
         #: the project of the first submission checked: the audit's app id
         self.project: Optional[Project] = None
         #: (uuid, entity type id) of the entities registered by this request's submissions
@@ -158,6 +160,14 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     attachments = attachments_sent(batch, answers.attachments, errors, ref)
     submission_uuid = _uuid(batch, data.get("uuid"), answers.instance_id, errors)
     entity = _entity(batch, form, data.get("entity"), errors)
+    if form.single_per_period and org_unit is not None and data.get("period"):
+        slot = (form.id, org_unit.id, data["period"])
+        taken = taken_slot(form, org_unit.id, data["period"], exclude_uuid=submission_uuid)
+        if slot in batch.slots:
+            errors.append(SubmissionError("CONFLICT", "period", "Another submission of this request has this slot"))
+        elif taken:
+            errors.append(slot_conflict(taken))
+        batch.slots.add(slot)
     if errors or project is None or org_unit is None:
         return None, errors
 
@@ -216,14 +226,13 @@ def recheck_under_lock(batch: Batch, submissions: list[PreparedSubmission]) -> d
     uuids = sorted({submission.uuid for submission in new})
     if not uuids:
         return {}
-    with connection.cursor() as cursor:
-        # in a fixed order: two requests locking the same uuids can't wait on each other
-        cursor.execute(
-            "SELECT pg_advisory_xact_lock(hashtext('submission_uuid:' || id)) FROM unnest(%s::text[]) AS id ORDER BY id",
-            [uuids],
-        )
+    single = [submission for submission in new if submission.form.single_per_period and submission.period]
+    lock(
+        [f"submission_uuid:{submission_uuid}" for submission_uuid in uuids]
+        + [slot_key(submission.form.id, submission.org_unit.id, submission.period) for submission in single]
+    )
     taken = set(Instance.objects.filter(uuid__in=uuids).values_list("uuid", flat=True))
-    problems = {}
+    problems: dict[str, list[SubmissionError]] = {}
     for submission in new:
         if submission.uuid not in taken:
             continue
@@ -233,7 +242,45 @@ def recheck_under_lock(batch: Batch, submissions: list[PreparedSubmission]) -> d
             problems[submission.ref] = errors
         elif existing:
             submission.existing = existing
+    for submission in single:
+        if submission.existing or submission.ref in problems:
+            continue
+        taken_id = taken_slot(submission.form, submission.org_unit.id, submission.period, exclude_uuid=submission.uuid)
+        if taken_id:
+            problems[submission.ref] = [slot_conflict(taken_id)]
     return problems
+
+
+def lock(keys: list[str]) -> None:
+    """Transaction-scoped advisory locks, in a fixed order: two requests locking the same keys can't wait on each
+    other."""
+    if not keys:
+        return
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT pg_advisory_xact_lock(hashtext(key)) FROM unnest(%s::text[]) AS key ORDER BY key",
+            [sorted(set(keys))],
+        )
+
+
+def slot_key(form_id: int, org_unit_id: int, period: str) -> str:
+    return f"submission_slot:{form_id}:{org_unit_id}:{period}"
+
+
+def taken_slot(form: Form, org_unit_id: int, period: str, exclude_uuid: Optional[str] = None) -> Optional[int]:
+    """The submission of a `single_per_period` form (one per org unit and period) already in this slot, if any."""
+    others = Instance.objects.filter(form=form, org_unit_id=org_unit_id, period=period).exclude(deleted=True)
+    if exclude_uuid:
+        others = others.exclude(uuid=exclude_uuid)
+    return others.order_by("id").values_list("id", flat=True).first()
+
+
+def slot_conflict(instance_id: int, field_name: str = "period") -> SubmissionError:
+    return SubmissionError(
+        "CONFLICT",
+        field_name,
+        f"Submission {instance_id} has this org unit and period, the form takes one per period: use PATCH to change it",
+    )
 
 
 def save_submissions(

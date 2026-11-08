@@ -31,8 +31,12 @@ from iaso.api.submissions.creation import (
     check_period,
     find_org_unit,
     form_csvs,
+    lock,
     org_unit_context,
     read_file,
+    slot_conflict,
+    slot_key,
+    taken_slot,
 )
 from iaso.models import FormVersion, Instance, OrgUnit
 from iaso.odk.flat_content import FlatContent, dropped_answers
@@ -84,6 +88,16 @@ def prepare_patch(
         patch.period = data["period"] or None
         patch.period_changed = patch.period != instance.period
         check_period(form, patch.period, errors)
+
+    if form.single_per_period and (patch.org_unit is not None or patch.period_changed) and not errors:
+        org_unit_id = (patch.org_unit or instance.org_unit).id
+        period = patch.period if patch.period_changed else instance.period
+        if period:
+            lock([slot_key(form.id, org_unit_id, period)])
+            # the slot it moves to: never its own
+            taken = taken_slot(form, org_unit_id, period)
+            if taken:
+                errors.append(slot_conflict(taken, "period" if patch.period_changed else "org_unit_id"))
 
     content = data.get("content")
     batch = Batch(user, files or {})

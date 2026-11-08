@@ -7,7 +7,8 @@ them), before the answers.
 have are dropped (`DROPPED` warnings), the questions it adds are answered as any other.
 
 The content goes through odk_cli `edit` (as Collect reopens a submission): what depends on the answers is computed
-again, and the whole submission must be valid afterwards. The org unit context (`current_ou_name`...) is injected
+again, and the submission must be valid afterwards: a problem it already had on a question the patch doesn't answer
+(saved before its form changed...) is reported in the warnings, any other one refuses it. The org unit context (`current_ou_name`...) is injected
 again, as Enketo does on an edit."""
 
 import logging
@@ -35,7 +36,7 @@ from iaso.api.submissions.creation import (
 )
 from iaso.models import FormVersion, Instance, OrgUnit
 from iaso.odk.flat_content import FlatContent, dropped_answers
-from iaso.odk.instance_editor import InstanceEditError, edit_instance
+from iaso.odk.instance_editor import EditProblem, InstanceEditError, edit_instance
 from iaso.odk.submission_xml import NoSuchElement, move_to_version, remove_repeat_instances
 
 
@@ -134,8 +135,10 @@ def prepare_patch(
 
     org_unit = patch.org_unit or instance.org_unit
     prefilled = org_unit_context(org_unit, flat.names()) if org_unit else {}
+    # moved, what the version adds would pass for problems already there: the moved submission must be valid
+    existing_problems: Optional[list[EditProblem]] = None if moved else []
     try:
-        patch.xml = edit_instance(xform, submission, answers.answers, form_csvs(form), prefilled)
+        patch.xml = edit_instance(xform, submission, answers.answers, form_csvs(form), prefilled, existing_problems)
     except InstanceEditError as refusal:
         return None, [
             SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)
@@ -151,6 +154,16 @@ def prepare_patch(
         ]
     patch.warnings = [
         SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in ignored
+    ]
+    patch.warnings += [
+        SubmissionError(
+            p.code,
+            flat.field_of(p.path),
+            f"Already in the submission, left as it is: {p.message}",
+            question=p.path,
+            answer=p.answer,
+        )
+        for p in existing_problems or []
     ]
     if moved:
         patch.warnings += [

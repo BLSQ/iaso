@@ -88,7 +88,8 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
     )
     def partial_update(self, request: Request, pk=None) -> Response:
         """Changes a submission's org unit, period and content (a merge patch on its flat content), checked by odk_cli
-        as an edit in ODK Collect: the whole submission must be valid afterwards.
+        as an edit in ODK Collect: the submission must be valid afterwards, but for the problems it already had on
+        questions the patch doesn't answer (reported in `warnings`).
 
         With files: as for `POST`; a binary answer can also name a file the submission has."""
         query = DryRunSerializer(data=request.query_params)

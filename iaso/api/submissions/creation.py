@@ -239,6 +239,10 @@ def _project(batch: Batch, form: Form, project_id: Optional[int], errors: list) 
         if project is None:
             errors.append(SubmissionError("UNKNOWN_REFERENCE", "project_id", f"Form {form.id} isn't in this project"))
         return project
+    if not projects:
+        # the form is in none of the user's projects
+        errors.append(SubmissionError("UNKNOWN_REFERENCE", "form_id", f"Unknown form {form.id}"))
+        return None
     candidates = projects[:2]
     if len(candidates) != 1:
         errors.append(

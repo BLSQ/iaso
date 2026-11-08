@@ -1,0 +1,5 @@
+from iaso.api.common.permissions import HasPermission
+from iaso.permissions.core_permissions import CORE_SUBMISSIONS_UPDATE_PERMISSION
+
+
+HasSubmissionsUpdatePermission = HasPermission(CORE_SUBMISSIONS_UPDATE_PERMISSION)

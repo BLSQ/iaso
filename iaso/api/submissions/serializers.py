@@ -107,3 +107,30 @@ class SubmissionSerializer(serializers.ModelSerializer):
         if instance.location is None:
             return None
         return SubmissionLocationSerializer(instance).data
+
+
+class SubmissionPatchSerializer(StrictSerializer):
+    org_unit_id = serializers.IntegerField(required=False)
+    period = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    content = serializers.DictField(
+        required=False,
+        help_text="JSON Merge Patch on the flat content: a name sent is set, null clears it, a name absent is "
+        "untouched; a repeat's list gives its instances by position, {} leaves one as it is",
+    )
+    expected_updated_at = serializers.DateTimeField(
+        required=False, help_text="`updated_at` as read: refused if the submission changed since"
+    )
+
+    def validate(self, attrs):
+        if not {"org_unit_id", "period", "content"} & set(attrs):
+            raise serializers.ValidationError("Nothing to change: org_unit_id, period or content")
+        return attrs
+
+
+class SubmissionPatchResultSerializer(serializers.Serializer):
+    submission = SubmissionSerializer()
+    warnings = SubmissionErrorSerializer(many=True)
+
+
+class SubmissionErrorsSerializer(serializers.Serializer):
+    errors = SubmissionErrorSerializer(many=True)

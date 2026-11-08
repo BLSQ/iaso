@@ -105,8 +105,8 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         return None, [SubmissionError("UNKNOWN_REFERENCE", "form_id", f"Unknown form {data['form_id']}")]
 
     project = _project(batch, form, data.get("project_id"), errors)
-    org_unit = _org_unit(batch, form, project, data["org_unit_id"], errors)
-    _check_period(form, data.get("period"), errors)
+    org_unit = find_org_unit(batch, form, project, data["org_unit_id"], errors)
+    check_period(form, data.get("period"), errors)
     content = data["content"]
     form_version = _form_version(batch, form, content.get("_version"), errors)
     if form_version is None:
@@ -137,9 +137,9 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         prepared.existing = existing
         return prepared, []
 
-    prefilled = {INSTANCE_ID: f"uuid:{submission_uuid}", **_injected(org_unit, flat.names())}
+    prefilled = {INSTANCE_ID: f"uuid:{submission_uuid}", **org_unit_context(org_unit, flat.names())}
     try:
-        prepared.xml = new_instance(_read(form_version.file), prefilled, answers.answers, _csvs(form))
+        prepared.xml = new_instance(read_file(form_version.file), prefilled, answers.answers, form_csvs(form))
     except InstanceEditError as refusal:
         return None, [
             SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)
@@ -199,7 +199,7 @@ def _project(batch: Batch, form: Form, project_id: Optional[int], errors: list) 
     return candidates[0]
 
 
-def _org_unit(
+def find_org_unit(
     batch: Batch, form: Form, project: Optional[Project], org_unit_id: int, errors: list
 ) -> Optional[OrgUnit]:
     org_unit = (
@@ -218,7 +218,7 @@ def _org_unit(
     return org_unit
 
 
-def _check_period(form: Form, period: Optional[str], errors: list) -> None:
+def check_period(form: Form, period: Optional[str], errors: list) -> None:
     if not form.period_type:
         if period:
             errors.append(SubmissionError("INVALID", "period", f"Form {form.id} has no period"))
@@ -314,7 +314,7 @@ def _same_content(sent: dict, stored: dict) -> bool:
     return True
 
 
-def _injected(org_unit: OrgUnit, form_names: set) -> dict[str, str]:
+def org_unit_context(org_unit: OrgUnit, form_names: set) -> dict[str, str]:
     """The org unit context Enketo injects (`current_ou_name`, `parent1_ou_id`...), for the questions the form has."""
     names = [name for name in ORG_UNIT_INJECTABLE_QUESTION_NAMES if name in form_names]
     if not names:
@@ -323,15 +323,15 @@ def _injected(org_unit: OrgUnit, form_names: set) -> dict[str, str]:
     return {key.removeprefix(".//"): "" if value is None else str(value) for key, value in substitutions.items()}
 
 
-def _csvs(form: Form) -> dict[str, bytes]:
+def form_csvs(form: Form) -> dict[str, bytes]:
     """The form's CSV attachments, for `pulldata()`."""
     return {
-        attachment.name: _read(attachment.file)
+        attachment.name: read_file(attachment.file)
         for attachment in form.attachments.filter(name__iendswith=".csv").order_by("id")
     }
 
 
-def _read(file) -> bytes:
+def read_file(file) -> bytes:
     file.open("rb")
     try:
         return file.read()

@@ -1,6 +1,8 @@
+from copy import copy
 from typing import Any
 
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import permissions, serializers, status, viewsets
@@ -14,9 +16,13 @@ from iaso.api.submissions.creation import (
     prepare_submission,
     save_submissions,
 )
+from iaso.api.submissions.edition import PreparedPatch, prepare_patch, save_patch
 from iaso.api.submissions.permissions import HasSubmissionsReadPermission, HasSubmissionsUpdatePermission
 from iaso.api.submissions.serializers import (
     SubmissionCreateSerializer,
+    SubmissionErrorsSerializer,
+    SubmissionPatchResultSerializer,
+    SubmissionPatchSerializer,
     SubmissionsCreateSerializer,
     SubmissionSerializer,
     SubmissionsResultSerializer,
@@ -61,6 +67,50 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
         return Response(self.get_serializer(self.get_object()).data)
 
     @extend_schema(
+        request=SubmissionPatchSerializer,
+        parameters=[DRY_RUN_PARAMETER],
+        responses={
+            200: OpenApiResponse(
+                SubmissionPatchResultSerializer, description="Saved; dry_run: the submission as it would be"
+            ),
+            400: OpenApiResponse(SubmissionErrorsSerializer, description="Refused: nothing was saved"),
+            403: OpenApiResponse(description="The submission is locked"),
+            404: OpenApiResponse(description="No such submission for this user"),
+            503: OpenApiResponse(description="odk_cli is unavailable"),
+        },
+    )
+    def partial_update(self, request: Request, pk=None) -> Response:
+        """Changes a submission's org unit, period and content (a merge patch on its flat content), checked by odk_cli
+        as an edit in ODK Collect: the whole submission must be valid afterwards."""
+        query = DryRunSerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        body = SubmissionPatchSerializer(data=request.data)
+        if not body.is_valid():
+            return Response(
+                {"errors": [error.as_json() for error in _serializer_errors(body.errors)]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            queryset = self.get_queryset().select_related("form", "form_version", "org_unit")
+            instance = get_object_or_404(queryset.select_for_update(of=("self",)), pk=pk)
+            if not instance.can_user_modify(request.user):
+                return Response(
+                    {"detail": "This submission is locked by a higher level"}, status=status.HTTP_403_FORBIDDEN
+                )
+            try:
+                patch, errors = prepare_patch(request.user, instance, body.validated_data)
+            except InstanceEditorUnavailable:
+                return _unavailable()
+            if errors:
+                return Response({"errors": [error.as_json() for error in errors]}, status=status.HTTP_400_BAD_REQUEST)
+            warnings = [warning.as_json() for warning in patch.warnings]
+            if query.validated_data["dry_run"]:
+                return Response({"submission": _preview(patch), "warnings": warnings})
+            instance = save_patch(patch, request.user)
+        return Response({"submission": self.get_serializer(instance).data, "warnings": warnings})
+
+    @extend_schema(
         request=SubmissionsCreateSerializer,
         parameters=[DRY_RUN_PARAMETER],
         responses={
@@ -89,10 +139,7 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             try:
                 submission, errors = prepare_submission(batch, ref, envelope.validated_data)
             except InstanceEditorUnavailable:
-                return Response(
-                    {"detail": "Submissions can't be checked right now, try again later"},
-                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
-                )
+                return _unavailable()
             if errors:
                 results.append(_refused(ref, errors))
                 continue
@@ -115,6 +162,25 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+def _unavailable() -> Response:
+    return Response(
+        {"detail": "Submissions can't be checked right now, try again later"},
+        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )
+
+
+def _preview(patch: PreparedPatch) -> dict[str, Any]:
+    """The submission as the patch would save it, nothing saved."""
+    instance = copy(patch.instance)
+    if patch.org_unit is not None:
+        instance.org_unit = patch.org_unit
+    if patch.period_changed:
+        instance.period = patch.period
+    if patch.json is not None:
+        instance.json = patch.json
+    return SubmissionSerializer(instance).data
 
 
 def _result(submission: PreparedSubmission) -> dict[str, Any]:

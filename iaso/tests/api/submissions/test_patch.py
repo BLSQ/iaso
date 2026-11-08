@@ -69,6 +69,28 @@ class SubmissionsPatchTestCase(SubmissionsTestCase):
         )
         self.assertEqual(self.instance.json["children_count"], "2")
 
+    def test_null_removes_repeat_instances(self):
+        self.assertPatched({"content": {"child": [{}, {"child_name": "Eve"}, {"child_name": "Paul"}]}})
+
+        # Bob removed: Eve is then the first, the answer in the list is for her
+        self.assertPatched({"content": {"child": [None, {"child_age": 3}]}})
+
+        self.assertEqual(
+            self.instance.json["child"],
+            [{"child_name": "Eve", "child_age": "3"}, {"child_name": "Paul", "child_age": ""}],
+        )
+        self.assertEqual(self.instance.json["children_count"], "2", "computed again")
+        modification = Modification.objects.filter(object_id=str(self.instance.id)).latest("id")
+        self.assertEqual(len(modification.past_value[0]["fields"]["json"]["child"]), 3)
+
+        self.assertPatched({"content": {"child": None}})
+
+        self.assertNotIn("child", self.instance.json)
+        self.assertEqual(self.instance.json["children_count"], "0")
+
+    def test_removing_what_isnt_there(self):
+        self.assertRefused({"content": {"child": [{}, None]}}, [("INVALID", "content.child[2]")])
+
     def test_change_the_org_unit_injects_its_context_again(self):
         self.assertPatched({"org_unit_id": self.brussels.id, "content": {"district_code": "BXL"}})
 

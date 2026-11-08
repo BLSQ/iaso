@@ -118,7 +118,9 @@ curl -X PATCH "$IASO/api/submissions/456/" \
 ```
 
 - `content` is merged into the submission: a question sent is set, `null` clears it, a question not sent is left as
-  it is. In a repeat, the list gives the repeats by position: `{}` leaves one as it is, a longer list adds repeats.
+  it is. In a repeat, the list gives the repeats by position: `{}` leaves one as it is, a longer list adds repeats,
+  `null` removes one (`"child": [null, {"child_age": 3}]`: the first child removed, the age is the second's, now the
+  first). `"child": null` removes them all. A repeat following a count (`repeat_count`) changes with its count only.
 - `org_unit_id` and `period` can change too; the org unit's values (`current_ou_name`...) follow.
 - `expected_updated_at` (optional): refused (`CONFLICT`) if the submission changed since it was read.
 - The whole submission must be valid afterwards. Moving a submission to another form version isn't supported yet.

@@ -144,6 +144,8 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     flat = FlatContent(form_version.get_or_save_form_descriptor())
     answers = flat.to_answers(content)
     errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
+    # a repeat absent has no instance: `null` only removes one on PATCH
+    errors += [SubmissionError("INVALID", name, "Nothing to remove in a new submission") for name, _ in answers.removed]
     attachments = _attachments(batch, answers.attachments, errors)
     submission_uuid = _uuid(batch, data.get("uuid"), answers.instance_id, errors)
     entity = _entity(batch, form, data.get("entity"), errors)

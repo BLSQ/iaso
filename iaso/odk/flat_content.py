@@ -86,6 +86,10 @@ class Answers:
     instance_id: Optional[str] = None
     #: (field, file name) of the binary questions answered
     attachments: list[tuple[str, str]] = field(default_factory=list)
+    #: repeat instances to remove (`null` in a repeat's list, or for the whole repeat), before the answers: (field,
+    #: path in the submission as it is, every repeat indexed - `child[2]`, `child[1]/toy[*]` for all of them). The
+    #: answers' paths are those after the removals.
+    removed: list[tuple[str, str]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -135,10 +139,14 @@ class FlatContent:
 
     def to_answers(self, content: dict[str, Any]) -> Answers:
         result = Answers()
-        self._scope_answers(self.descriptor, content, "", "content", result)
+        self._scope_answers(self.descriptor, content, "", "", "content", result)
         return result
 
-    def _scope_answers(self, scope_node, content: dict[str, Any], prefix: str, field_prefix: str, result: Answers):
+    def _scope_answers(
+        self, scope_node, content: dict[str, Any], prefix: str, saved_prefix: str, field_prefix: str, result: Answers
+    ):
+        """`prefix`: the scope's path once the removals done (the answers'), `saved_prefix`: in the submission as it
+        is (the removals')."""
         questions = self.questions(scope_node)
         for name, value in content.items():
             field_name = f"{field_prefix}.{name}"
@@ -158,7 +166,7 @@ class FlatContent:
             path = f"{prefix}{question.path}"
             node_type = question.node.get("type")
             if node_type == REPEAT_TYPE:
-                self._repeat_answers(question, value, path, field_name, result)
+                self._repeat_answers(question, value, path, f"{saved_prefix}{question.path}", field_name, result)
                 continue
             try:
                 text = to_xml_text(value)
@@ -172,15 +180,39 @@ class FlatContent:
                 if text and question.node.get("type") in BINARY_TYPES:
                     result.attachments.append((field_name, text))
 
-    def _repeat_answers(self, question: _Question, value: Any, path: str, field_name: str, result: Answers):
-        if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+    def _repeat_answers(
+        self, question: _Question, value: Any, path: str, saved_path: str, field_name: str, result: Answers
+    ):
+        counted = "jr:count" in (question.node.get("control") or {})
+        if value is None or (isinstance(value, list) and None in value):
+            if counted:
+                result.problems.append(
+                    ContentProblem("INVALID", field_name, "Its instances follow its count: change the count instead")
+                )
+                return
+        if value is None:
+            result.removed.append((field_name, f"{saved_path}[*]"))
+            return
+        if not isinstance(value, list) or not all(item is None or isinstance(item, dict) for item in value):
             result.problems.append(
                 ContentProblem("INVALID", field_name, "A repeat is a list of objects, one per repeat instance")
             )
             return
+        kept = 0
         for index, item in enumerate(value, start=1):
-            instance_path = path if index == 1 else f"{path}[{index}]"
-            self._scope_answers(question.node, item, f"{instance_path}/", f"{field_name}[{index}]", result)
+            if item is None:
+                result.removed.append((f"{field_name}[{index}]", f"{saved_path}[{index}]"))
+                continue
+            kept += 1
+            instance_path = path if kept == 1 else f"{path}[{kept}]"
+            self._scope_answers(
+                question.node,
+                item,
+                f"{instance_path}/",
+                f"{saved_path}[{index}]/",
+                f"{field_name}[{index}]",
+                result,
+            )
 
     def field_of(self, path: Optional[str]) -> Optional[str]:
         """The input field of an odk_cli path: `household/child[2]/age` → `content.child[2].age` (groups dropped,

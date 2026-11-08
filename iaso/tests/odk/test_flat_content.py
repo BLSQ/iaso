@@ -177,6 +177,52 @@ class FlatContentToAnswersTestCase(SimpleTestCase):
                     ],
                 )
 
+    def test_null_removes_repeat_instances_answers_renumbered(self):
+        answers = self.content.to_answers(
+            {
+                "child": [
+                    None,
+                    {"child_name": "Eve", "vaccine": [{}, None, {"vaccine_name": "measles"}]},
+                    {"vaccine": None},
+                ]
+            }
+        )
+
+        self.assertEqual(
+            answers.removed,
+            [
+                ("content.child[1]", "child[1]"),
+                ("content.child[2].vaccine[2]", "child[2]/vaccine[2]"),
+                ("content.child[3].vaccine", "child[3]/vaccine[*]"),
+            ],
+        )
+        # where they are once the removals done: Eve is the first child, measles her second vaccine
+        self.assertEqual(answers.answers, {"child/child_name": "Eve", "child/vaccine[2]/vaccine_name": "measles"})
+        self.assertEqual(answers.problems, [])
+
+    def test_a_counted_repeat_is_not_removed(self):
+        content = FlatContent(
+            {
+                "name": "data",
+                "type": "survey",
+                "children": [
+                    {"name": "child", "type": "repeat", "control": {"jr:count": "${n}"}, "children": []},
+                ],
+            }
+        )
+        for value in (None, [{}, None]):
+            with self.subTest(value=value):
+                answers = content.to_answers({"child": value})
+                self.assertEqual(
+                    answers.problems,
+                    [
+                        ContentProblem(
+                            "INVALID", "content.child", "Its instances follow its count: change the count instead"
+                        )
+                    ],
+                )
+                self.assertEqual(answers.removed, [])
+
     def test_field_of_an_odk_cli_path(self):
         self.assertEqual(self.content.field_of("household/population"), "content.population")
         self.assertEqual(self.content.field_of("child/details/child_age"), "content.child[1].child_age")

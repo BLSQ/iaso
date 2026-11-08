@@ -1,6 +1,7 @@
 """Patching a submission: its envelope (org unit, period) and its content, a JSON Merge Patch (RFC 7396) on the flat
 content - a name sent is set, `null` clears it, a name absent is untouched; a repeat's list gives its instances by
-position, `{}` leaves one as it is, a longer list adds instances.
+position, `{}` leaves one as it is, a longer list adds instances, `null` removes one (`null` for the whole repeat: all of
+them), before the answers.
 
 The content goes through odk_cli `edit` (as Collect reopens a submission): what depends on the answers is computed
 again, and the whole submission must be valid afterwards. The org unit context (`current_ou_name`...) is injected
@@ -29,6 +30,7 @@ from iaso.api.submissions.creation import (
 from iaso.models import Instance, OrgUnit
 from iaso.odk.flat_content import FlatContent
 from iaso.odk.instance_editor import InstanceEditError, edit_instance
+from iaso.odk.submission_xml import NoSuchElement, remove_repeat_instances
 
 
 logger = logging.getLogger(__name__)
@@ -107,12 +109,18 @@ def prepare_patch(user: User, instance: Instance, data: dict[str, Any]) -> tuple
     if errors:
         return None, errors
 
+    submission = read_file(instance.file)
+    if answers.removed:
+        try:
+            submission = remove_repeat_instances(submission, [path for _, path in answers.removed])
+        except NoSuchElement as missing:
+            field_name = next(name for name, path in answers.removed if path == str(missing))
+            return None, [SubmissionError("INVALID", field_name, "No such repeat instance in this submission")]
+
     org_unit = patch.org_unit or instance.org_unit
     prefilled = org_unit_context(org_unit, flat.names()) if org_unit else {}
     try:
-        patch.xml = edit_instance(
-            read_file(form_version.file), read_file(instance.file), answers.answers, form_csvs(form), prefilled
-        )
+        patch.xml = edit_instance(read_file(form_version.file), submission, answers.answers, form_csvs(form), prefilled)
     except InstanceEditError as refusal:
         return None, [
             SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)

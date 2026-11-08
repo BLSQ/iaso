@@ -123,4 +123,5 @@ curl -X PATCH "$IASO/api/submissions/456/" \
 - `expected_updated_at` (optional): refused (`CONFLICT`) if the submission changed since it was read.
 - The whole submission must be valid afterwards. Moving a submission to another form version isn't supported yet.
 - `?dry_run=true`: answers the submission as it would be, saves nothing.
-- Answers `{"submission": {...}, "warnings": [...]}`, or `400` with `{"errors": [...]}`.
+- Answers `{"submission": {...}, "warnings": [...]}`, or `400` with `{"errors": [...]}`; `import_id` as for `POST`:
+  every `PATCH` is kept too.

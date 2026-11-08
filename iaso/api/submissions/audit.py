@@ -1,5 +1,5 @@
-"""Every `POST /api/submissions/` is kept in an `APIImport`, refused or not: what was sent, and why it was refused, so
-support can see it and the client can point at it (`import_id`). Written outside the request's transaction, so a
+"""Every `POST` and `PATCH` of `/api/submissions/` is kept in an `APIImport`, refused or not: what was sent, and why it
+was refused, so support can see it and the client can point at it (`import_id`). Written outside the request's transaction, so a
 refusal's rollback keeps it.
 
 The files sent are described (name, size, type, sha256), not kept: they may be large or hold personal data."""
@@ -21,8 +21,13 @@ from iaso.models import Project
 IMPORT_TYPE = "submissionsJson"
 
 
-def start_audit(request: Request, data: Any, files: dict[str, UploadedFile]) -> APIImport:
+def start_audit(
+    request: Request, data: Any, files: dict[str, UploadedFile], submission_id: Optional[str] = None
+) -> APIImport:
+    """`submission_id`: the one a `PATCH` is about (from its URL)."""
     body = data if isinstance(data, dict) else {"body": data}
+    if submission_id is not None:
+        body = {"submission_id": submission_id, **body}
     if files:
         body = {**body, "attachments": [_describe(name, file) for name, file in files.items()]}
     return APIImport.objects.create(

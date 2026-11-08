@@ -148,7 +148,9 @@ class SubmissionPatchSerializer(StrictSerializer):
 class SubmissionPatchResultSerializer(serializers.Serializer):
     submission = SubmissionSerializer()
     warnings = SubmissionErrorSerializer(many=True)
+    import_id = serializers.IntegerField(help_text="The request, as kept for the audit (`APIImport`)")
 
 
 class SubmissionErrorsSerializer(serializers.Serializer):
     errors = SubmissionErrorSerializer(many=True)
+    import_id = serializers.IntegerField(help_text="The request, as kept for the audit (`APIImport`)")

@@ -1,8 +1,7 @@
 from copy import copy
-from typing import Any
+from typing import Any, Optional
 
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import permissions, serializers, status, viewsets
@@ -87,31 +86,41 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
         as an edit in ODK Collect: the whole submission must be valid afterwards."""
         query = DryRunSerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
+        api_import = start_audit(request, request.data, {}, submission_id=pk)
+        response, instance = self._partial_update(request, pk, query.validated_data["dry_run"])
+        finish_audit(api_import, response, instance.project if instance else None)
+        response.data["import_id"] = api_import.id
+        return response
+
+    def _partial_update(self, request: Request, pk, dry_run: bool) -> tuple[Response, Optional[Instance]]:
+        """The response, and the submission when found."""
         body = SubmissionPatchSerializer(data=request.data)
         if not body.is_valid():
-            return Response(
-                {"errors": [error.as_json() for error in _serializer_errors(body.errors)]},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            errors = [error.as_json() for error in _serializer_errors(body.errors)]
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST), None
 
         with transaction.atomic():
-            queryset = self.get_queryset().select_related("form", "form_version", "org_unit")
-            instance = get_object_or_404(queryset.select_for_update(of=("self",)), pk=pk)
+            queryset = self.get_queryset().select_related("form", "form_version", "org_unit", "project")
+            instance = queryset.select_for_update(of=("self",)).filter(pk=pk).first()
+            if instance is None:
+                return Response({"detail": "No such submission"}, status=status.HTTP_404_NOT_FOUND), None
             if not instance.can_user_modify(request.user):
-                return Response(
+                locked = Response(
                     {"detail": "This submission is locked by a higher level"}, status=status.HTTP_403_FORBIDDEN
                 )
+                return locked, instance
             try:
                 patch, errors = prepare_patch(request.user, instance, body.validated_data)
             except InstanceEditorUnavailable:
-                return _unavailable()
+                return _unavailable(), instance
             if errors:
-                return Response({"errors": [error.as_json() for error in errors]}, status=status.HTTP_400_BAD_REQUEST)
+                errors_json = [error.as_json() for error in errors]
+                return Response({"errors": errors_json}, status=status.HTTP_400_BAD_REQUEST), instance
             warnings = [warning.as_json() for warning in patch.warnings]
-            if query.validated_data["dry_run"]:
-                return Response({"submission": _preview(patch), "warnings": warnings})
+            if dry_run:
+                return Response({"submission": _preview(patch), "warnings": warnings}), instance
             instance = save_patch(patch, request.user)
-        return Response({"submission": self.get_serializer(instance).data, "warnings": warnings})
+        return Response({"submission": self.get_serializer(instance).data, "warnings": warnings}), instance
 
     @extend_schema(
         request={

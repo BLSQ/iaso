@@ -51,6 +51,34 @@ class SubmissionsCreateAttachmentsTestCase(SubmissionsTestCase):
         files_by_instance = dict(m.InstanceFile.objects.values_list("instance_id", "name"))
         self.assertEqual(files_by_instance, {data["results"][0]["id"]: "a.jpg", data["results"][1]["id"]: "b.jpg"})
 
+    def test_the_same_file_name_in_several_submissions(self):
+        submissions = [
+            self.submission(ref=ref, org_unit_id=org_unit.id, content={"photo": "photo.jpg"})
+            for ref, org_unit in (("row-1", self.antwerp), ("row-2", self.brussels), ("row-3", self.antwerp))
+        ]
+        # a part per submission; the last one alone with this name, its part needs no ref
+        files = {
+            "row-1/photo.jpg": self.jpeg("antwerp.jpg"),
+            "row-2/photo.jpg": self.jpeg("brussels.jpg"),
+            "photo.jpg": self.jpeg("antwerp_again.jpg"),
+        }
+
+        data = self.assertJSONResponse(self.post_multipart(submissions, files), status.HTTP_201_CREATED)
+
+        attached = {
+            attachment.instance_id: (attachment.name, attachment.file.read())
+            for attachment in m.InstanceFile.objects.all()
+        }
+        self.assertEqual(
+            [attached[result["id"]] for result in data["results"]],
+            [
+                ("photo.jpg", b"\xff\xd8\xffantwerp.jpg"),
+                ("photo.jpg", b"\xff\xd8\xffbrussels.jpg"),
+                ("photo.jpg", b"\xff\xd8\xffantwerp_again.jpg"),
+            ],
+        )
+        self.assertEqual(m.Instance.objects.get(id=data["results"][1]["id"]).json["photo"], "photo.jpg")
+
     def test_a_missing_file(self):
         response = self.post_multipart([self.submission(content={"photo": "front.jpg"})], {})
 
@@ -61,7 +89,7 @@ class SubmissionsCreateAttachmentsTestCase(SubmissionsTestCase):
                 {
                     "code": "MISSING_ATTACHMENT",
                     "field": "content.photo",
-                    "message": "No file of this name in the request",
+                    "message": "No file of this name in the request: a part named row-1/front.jpg or front.jpg",
                     "answer": "front.jpg",
                 }
             ],
@@ -77,6 +105,15 @@ class SubmissionsCreateAttachmentsTestCase(SubmissionsTestCase):
         data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
         self.assertIsInstance(data.pop("import_id"), int)
         self.assertEqual(data, {"back.jpg": ["Not the answer of any submission"]})
+        self.assertNothingSaved()
+
+        # the part of another submission's ref
+        response = self.post_multipart(
+            [self.submission(content={"photo": "front.jpg"})],
+            {"front.jpg": self.jpeg("front.jpg"), "row-2/front.jpg": self.jpeg("front.jpg")},
+        )
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(data["row-2/front.jpg"], ["Not the answer of any submission"])
         self.assertNothingSaved()
 
     def test_a_file_used_twice(self):

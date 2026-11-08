@@ -102,9 +102,10 @@ class Batch:
         self.account = user.iaso_profile.account
         self.form_versions_cache: dict = {}
         self.uuids: set[str] = set()
-        #: the request's files, by part name: a binary answer names one
+        #: the request's files, by part name: `<ref>/<answer>`, or the answer alone
         self.files = files or {}
         self.used_files: set[str] = set()
+        self.refs: set[str] = set()
         #: the project of the first submission checked: the audit's app id
         self.project: Optional[Project] = None
         #: (uuid, entity type id) of the entities registered by this request's submissions
@@ -125,6 +126,10 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     """`data`: the envelope as validated by `SubmissionCreateSerializer`. The submission built, or the problems."""
     errors: list[SubmissionError] = []
     user = batch.user
+    if ref in batch.refs:
+        # the results and the files (`<ref>/<name>`) are told apart by it
+        return None, [SubmissionError("INVALID", "ref", "Another submission of this request has this ref", answer=ref)]
+    batch.refs.add(ref)
 
     form = batch.cached(
         ("form", data["form_id"]),
@@ -147,7 +152,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
     # a repeat absent has no instance: `null` only removes one on PATCH
     errors += [SubmissionError("INVALID", name, "Nothing to remove in a new submission") for name, _ in answers.removed]
-    attachments = attachments_sent(batch, answers.attachments, errors)
+    attachments = attachments_sent(batch, answers.attachments, errors, ref)
     submission_uuid = _uuid(batch, data.get("uuid"), answers.instance_id, errors)
     entity = _entity(batch, form, data.get("entity"), errors)
     if errors or project is None or org_unit is None:
@@ -370,23 +375,36 @@ def _entity(batch: Batch, form: Form, sent: Optional[dict], errors: list) -> Opt
     return key
 
 
-def attachments_sent(batch: Batch, answered: list[tuple[str, str]], errors: list) -> list[tuple[str, UploadedFile]]:
-    """The files the binary answers name, (name, file): each one sent, and used by one answer only."""
+def attachments_sent(
+    batch: Batch, answered: list[tuple[str, str]], errors: list, ref: Optional[str] = None
+) -> list[tuple[str, UploadedFile]]:
+    """The files the binary answers name, (name, file): each one sent, and used by one answer only.
+
+    A file's part is named `<ref>/<name>` - several submissions of a request can each have their `photo.jpg` - or
+    `<name>` alone, when no other submission has a file of that name."""
     attachments = []
     for field_name, file_name in answered:
-        if file_name not in batch.files:
+        part = f"{ref}/{file_name}"
+        if ref is None or part not in batch.files:
+            part = file_name
+        if part not in batch.files:
             errors.append(
                 SubmissionError(
-                    "MISSING_ATTACHMENT", field_name, "No file of this name in the request", answer=file_name
+                    "MISSING_ATTACHMENT",
+                    field_name,
+                    f"No file of this name in the request: a part named {ref}/{file_name} or {file_name}"
+                    if ref is not None
+                    else "No file of this name in the request",
+                    answer=file_name,
                 )
             )
-        elif file_name in batch.used_files:
+        elif part in batch.used_files:
             errors.append(
                 SubmissionError("INVALID", field_name, "This file is already used by another answer", answer=file_name)
             )
         else:
-            batch.used_files.add(file_name)
-            attachments.append((file_name, batch.files[file_name]))
+            batch.used_files.add(part)
+            attachments.append((file_name, batch.files[part]))
     return attachments
 
 

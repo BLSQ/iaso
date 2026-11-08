@@ -211,6 +211,19 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
         self.assertEqual(m.Instance.objects.get().project, other_project)
 
     @requires_odk_cli
+    def test_a_form_of_none_of_the_users_projects(self):
+        malaria = m.Project.objects.create(name="Belgium malaria", app_id="be.malaria", account=self.account)
+        malaria_only = self.create_user_with_profile(
+            username="malaria_editor",
+            account=self.account,
+            permissions=[CORE_SUBMISSIONS_UPDATE_PERMISSION],
+            projects=[malaria],
+        )
+        self.client.force_authenticate(malaria_only)
+
+        self.assertRefused(self.post(self.submission()), [("row-1", "refused", [("UNKNOWN_REFERENCE", "form_id")])])
+
+    @requires_odk_cli
     def test_dry_run_saves_nothing(self):
         submission_uuid = str(uuid.uuid4())
         response = self.post(self.submission(uuid=submission_uuid), query="?dry_run=true")

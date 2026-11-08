@@ -25,6 +25,7 @@ from iaso.api.submissions.serializers import (
     SubmissionPatchSerializer,
     SubmissionsCreateSerializer,
     SubmissionSerializer,
+    SubmissionsMultipartSerializer,
     SubmissionsResultSerializer,
 )
 from iaso.models import Instance
@@ -111,7 +112,10 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
         return Response({"submission": self.get_serializer(instance).data, "warnings": warnings})
 
     @extend_schema(
-        request=SubmissionsCreateSerializer,
+        request={
+            "application/json": SubmissionsCreateSerializer,
+            "multipart/form-data": SubmissionsMultipartSerializer,
+        },
         parameters=[DRY_RUN_PARAMETER],
         responses={
             201: SubmissionsResultSerializer,
@@ -121,13 +125,23 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
         },
     )
     def create(self, request: Request) -> Response:
-        """Creates 1 to 100 submissions, all or none: one refused submission refuses the whole request."""
+        """Creates 1 to 100 submissions, all or none: one refused submission refuses the whole request.
+
+        With files (images, documents...): multipart, the JSON in a `payload` part, one part per file; a binary
+        question's answer is the name of its part."""
         query = DryRunSerializer(data=request.query_params)
         query.is_valid(raise_exception=True)
-        body = SubmissionsCreateSerializer(data=request.data)
+        files = {}
+        data = request.data
+        if request.content_type.startswith("multipart/"):
+            multipart = SubmissionsMultipartSerializer(data=request.data)
+            multipart.is_valid(raise_exception=True)
+            data = multipart.validated_data["payload"]
+            files = {name: request.FILES[name] for name in request.FILES}
+        body = SubmissionsCreateSerializer(data=data)
         body.is_valid(raise_exception=True)
 
-        batch = Batch(request.user)
+        batch = Batch(request.user, files)
         results: list[dict[str, Any]] = []
         prepared: list[PreparedSubmission] = []
         for index, item in enumerate(body.validated_data["submissions"]):
@@ -148,6 +162,12 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
 
         if len(prepared) < len(results):
             return Response({"results": results}, status=status.HTTP_400_BAD_REQUEST)
+        if batch.unused_files():
+            # every file sent must be one of a submission: a typo in an answer mustn't lose it silently
+            return Response(
+                {name: ["Not the answer of any submission"] for name in batch.unused_files()},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if query.validated_data["dry_run"]:
             return Response({"results": [_result(submission) for submission in prepared]}, status=status.HTTP_200_OK)
 

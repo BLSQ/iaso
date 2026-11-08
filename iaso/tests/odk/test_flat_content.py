@@ -20,6 +20,7 @@ DESCRIPTOR = {
         {"name": "visit_time", "type": "calculate", "calculation": "format-date-time(now(), '%H')"},
         {"name": "start", "type": "start"},
         {"name": "current_ou_name", "type": "text"},
+        {"name": "photo", "type": "image"},
         {
             "name": "symptoms",
             "type": "select all that apply",
@@ -36,6 +37,7 @@ DESCRIPTOR = {
                     "children": [{"name": "child_age", "type": "integer"}],
                 },
                 {"name": "vaccine", "type": "repeat", "children": [{"name": "vaccine_name", "type": "text"}]},
+                {"name": "child_photo", "type": "image"},
             ],
         },
         {
@@ -83,6 +85,17 @@ class FlatContentToAnswersTestCase(SimpleTestCase):
                 "child[2]/vaccine/vaccine_name": "polio",
                 "child[2]/vaccine[2]/vaccine_name": "measles",
             },
+        )
+
+    def test_binary_answers_are_listed_as_attachments(self):
+        answers = self.content.to_answers(
+            {"photo": "front.jpg", "child": [{"child_photo": "bob.jpg"}, {"child_photo": None}]}
+        )
+
+        self.assertEqual(answers.answers["photo"], "front.jpg")
+        self.assertEqual(answers.answers["child[2]/child_photo"], None)
+        self.assertEqual(
+            answers.attachments, [("content.photo", "front.jpg"), ("content.child[1].child_photo", "bob.jpg")]
         )
 
     def test_empty_values_clear(self):

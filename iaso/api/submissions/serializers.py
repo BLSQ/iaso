@@ -76,6 +76,7 @@ class SubmissionResultSerializer(serializers.Serializer):
 
 class SubmissionsResultSerializer(serializers.Serializer):
     results = SubmissionResultSerializer(many=True)
+    import_id = serializers.IntegerField(help_text="The request, as kept for the audit (`APIImport`)")
 
 
 class SubmissionLocationSerializer(serializers.Serializer):

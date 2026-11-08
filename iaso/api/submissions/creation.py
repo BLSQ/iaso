@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 
+from hat.api_import.models import APIImport
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.import_cache import InstanceImportCache
@@ -99,6 +100,8 @@ class Batch:
         #: the request's files, by part name: a binary answer names one
         self.files = files or {}
         self.used_files: set[str] = set()
+        #: the project of the first submission checked: the audit's app id
+        self.project: Optional[Project] = None
 
     def unused_files(self) -> list[str]:
         return sorted(set(self.files) - self.used_files)
@@ -114,6 +117,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         return None, [SubmissionError("UNKNOWN_REFERENCE", "form_id", f"Unknown form {data['form_id']}")]
 
     project = _project(batch, form, data.get("project_id"), errors)
+    batch.project = batch.project or project
     org_unit = find_org_unit(batch, form, project, data["org_unit_id"], errors)
     check_period(form, data.get("period"), errors)
     content = data["content"]
@@ -169,9 +173,12 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
     return prepared, []
 
 
-def save_submissions(submissions: list[PreparedSubmission], user: User) -> list[Instance]:
+def save_submissions(
+    submissions: list[PreparedSubmission], user: User, api_import: Optional[APIImport] = None
+) -> list[Instance]:
     """Saves the new submissions as the mobile app's upload does (`import_data` then the XML), in the caller's
-    transaction. The instances, in the order of `submissions` (the existing one for an unchanged submission)."""
+    transaction, linked to the request's `api_import`. The instances, in the order of `submissions` (the existing one
+    for an unchanged submission)."""
     new = [submission for submission in submissions if not submission.existing]
     cache = InstanceImportCache([submission.uuid for submission in new])
     for project in {submission.project for submission in new}:
@@ -179,6 +186,7 @@ def save_submissions(submissions: list[PreparedSubmission], user: User) -> list[
             [submission.as_mobile_instance_data() for submission in new if submission.project == project],
             user,
             project.app_id,
+            api_import=api_import,
             cache=cache,
         )
     instances = []

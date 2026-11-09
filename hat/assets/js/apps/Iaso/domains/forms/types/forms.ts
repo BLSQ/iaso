@@ -18,6 +18,7 @@ type Project = {
     created_at: string;
     updated_at: string;
     needs_authentication: boolean;
+    color?: string;
 };
 
 type FormOrgUnitType = {

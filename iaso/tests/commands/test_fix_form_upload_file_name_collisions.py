@@ -221,7 +221,7 @@ class FixFormUploadFileNameCollisionsTestCase(MarkdownReportMixin, APITestCase):
             "last_modified_by": instance.last_modified_by.username if instance.last_modified_by else None,
             "json_instance_id": (instance.json or {}).get("instanceID"),
             "json_user_name": (instance.json or {}).get("user_name"),
-            "device": instance.device.imei if instance.device else None,
+            "device": instance.device.installation_id if instance.device else None,
             "file_size": instance.file_size,
             "file_instance_id": next(
                 (xml_id for xml_id in USER_BY_XML_ID if file_content and xml_id in file_content), None

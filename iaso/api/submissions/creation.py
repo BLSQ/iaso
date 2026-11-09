@@ -13,7 +13,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
 
 from hat.api_import.models import APIImport
-from hat.audit.models import INSTANCE_API, log_modification
+from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.views import import_data
@@ -196,7 +196,7 @@ def recheck_under_lock(batch: Batch, submissions: list[PreparedSubmission]) -> d
         if submission.uuid not in taken:
             continue
         errors: list[SubmissionError] = []
-        existing = _existing(batch, submission, submission.content, errors)
+        existing = _existing(batch, submission, submission.content, errors, fresh=True)
         if errors:
             problems[submission.ref] = errors
         elif existing:
@@ -211,7 +211,10 @@ def recheck_under_lock(batch: Batch, submissions: list[PreparedSubmission]) -> d
 
 
 def save_submissions(
-    submissions: list[PreparedSubmission], user: User, api_import: Optional[APIImport] = None
+    submissions: list[PreparedSubmission],
+    user: User,
+    api_import: Optional[APIImport] = None,
+    form_versions_cache: Optional[dict] = None,
 ) -> list[Instance]:
     """Saves the new submissions as the mobile app's upload does (`import_data` then the XML), in the caller's
     transaction, linked to the request's `api_import`. The instances, in the order of `submissions` (the existing one
@@ -227,17 +230,20 @@ def save_submissions(
             cache=cache,
         )
     instances = []
+    # one INSERT for the audit rows, as the mobile bulk upload does
+    modifications = []
     for submission in submissions:
         if submission.existing:
             instances.append(submission.existing)
             continue
         instance = cache.instance(submission.uuid)
         file = ContentFile(submission.xml, name=f"{submission.uuid}.xml")
-        process_instance_file(instance, file, user, xml_content=submission.xml)
+        process_instance_file(instance, file, user, xml_content=submission.xml, form_versions_cache=form_versions_cache)
         for name, attachment in submission.attachments:
             create_instance_file(instance, name, attachment)
-        log_modification(None, instance, INSTANCE_API, user=user)
+        modifications.append(log_modification(None, instance, INSTANCE_API, user=user, save=False))
         instances.append(instance)
+    Modification.objects.bulk_create(modifications)
     return instances
 
 
@@ -281,6 +287,20 @@ def _form_version(batch: Batch, form: Form, version_id: Any, errors: list) -> Op
     return form_version
 
 
+def sent_uuids(items: list[Any]) -> list[str]:
+    """The uuids the submissions of a request may have, as sent (`uuid`, `content.instanceID`), before checking them:
+    to look their instances up at once."""
+    uuids = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        content = item.get("content") if isinstance(item.get("content"), dict) else {}
+        for value in (item.get("uuid"), content.get("instanceID")):
+            if isinstance(value, str):
+                uuids.append(value.removeprefix("uuid:"))
+    return uuids
+
+
 def _uuid(batch: Batch, sent: Optional[uuid_module.UUID], instance_id: Optional[str], errors: list) -> str:
     """The submission's uuid: sent, else the one of its `instanceID`, else a new one."""
     submission_uuid = str(sent) if sent else None
@@ -297,7 +317,7 @@ def _uuid(batch: Batch, sent: Optional[uuid_module.UUID], instance_id: Optional[
                 submission_uuid = str(uuid_module.UUID(instance_id.removeprefix("uuid:")))
             except ValueError:
                 errors.append(SubmissionError("INVALID", "content.instanceID", "Not a uuid", answer=instance_id))
-    submission_uuid = submission_uuid or str(uuid_module.uuid4())
+    submission_uuid = submission_uuid or batch.new_uuid()
     if submission_uuid in batch.uuids:
         errors.append(SubmissionError("INVALID", "uuid", "Used by another submission of this request"))
     batch.uuids.add(submission_uuid)
@@ -345,9 +365,15 @@ def _entity(batch: Batch, form: Form, sent: Optional[dict], errors: list) -> Opt
     return key
 
 
-def _existing(batch: Batch, submission: PreparedSubmission, content: dict, errors: list) -> Optional[Instance]:
-    """A submission sent again (a retry after a timeout) is `unchanged`; another one with its uuid is refused."""
-    existing = list(Instance.objects.filter(uuid=submission.uuid).order_by("id"))
+def _existing(
+    batch: Batch, submission: PreparedSubmission, content: dict, errors: list, fresh: bool = False
+) -> Optional[Instance]:
+    """A submission sent again (a retry after a timeout) is `unchanged`; another one with its uuid is refused.
+    `fresh`: read again, not from the request's lookups (under the lock, where a concurrent request may have saved it)."""
+    if fresh:
+        existing = list(Instance.objects.filter(uuid=submission.uuid).order_by("id"))
+    else:
+        existing = batch.instances_with_uuid(submission.uuid)
     if not existing:
         return None
     visible_ids = set(

@@ -25,7 +25,7 @@ class DeviceQuerySet(models.QuerySet):
     def with_current_owner(self) -> Self:
         subquery = (
             DeviceOwnership.objects.filter(device_id=OuterRef("pk"))
-            .filter(Q(end__gte=datetime.datetime.now()) | Q(end__isnull=True))
+            .filter(Q(end__gte=datetime.datetime.now(datetime.timezone.utc)) | Q(end__isnull=True))
             .select_related("user")
             .order_by("-start")
         )[:1]

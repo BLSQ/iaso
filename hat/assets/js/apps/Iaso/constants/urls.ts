@@ -558,7 +558,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: ['accountId', 'planningId', 'teamId', 'mode', 'view'],
+        params: [
+            'accountId',
+            'planningId',
+            'teamId',
+            'mode',
+            'view',
+            'onlyUnassigned',
+        ],
     },
     teams: {
         url: 'settings/users/teams',

@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Box,
     Table,
@@ -63,9 +63,9 @@ export const OrgUnitsTable: FC = () => {
     const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
     const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
-    const { openTeam } = useAssignmentsParams();
+    const { openTeam, onlyUnassigned } = useAssignmentsParams();
     const { data: assignments } = useAssignments(`${planning.id}`);
-    const rows = useMemo(
+    const levelRows = useMemo(
         () =>
             getLevelOrgUnitRows({
                 parents: parents ?? [],
@@ -78,9 +78,15 @@ export const OrgUnitsTable: FC = () => {
             }),
         [parents, selectedTeam.type, tree, assignments],
     );
+    const rows = useMemo(
+        () =>
+            onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
+        [levelRows, onlyUnassigned],
+    );
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
+    useEffect(() => setPage(0), [onlyUnassigned]);
     // Selecting a team on another level can leave fewer pages than the current one.
     const lastPage = Math.max(0, Math.ceil(rows.length / rowsPerPage) - 1);
     const currentPage = Math.min(page, lastPage);
@@ -153,7 +159,9 @@ export const OrgUnitsTable: FC = () => {
                                         color="text.secondary"
                                     >
                                         {formatMessage(
-                                            MESSAGES.noOrgUnitsToAssign,
+                                            levelRows.length
+                                                ? MESSAGES.allOrgUnitsAssigned
+                                                : MESSAGES.noOrgUnitsToAssign,
                                         )}
                                     </Typography>
                                 </TableCell>

@@ -1,13 +1,14 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
 import ListIcon from '@mui/icons-material/List';
 import MapIcon from '@mui/icons-material/Map';
-import { Box, Paper, Tab, Tabs } from '@mui/material';
+import { Paper, Stack, Tab, Tabs } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
 import { AssignmentsMap } from './AssignmentsMap';
+import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
 import { OrgUnitsTable } from './OrgUnitsTable';
 
 const styles = {
@@ -37,7 +38,13 @@ export const AssignmentsMainPanel: FC = () => {
 
     return (
         <Paper sx={styles.panel}>
-            <Box sx={styles.header}>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                gap={1}
+                sx={styles.header}
+            >
                 <Tabs value={view} onChange={handleChangeView}>
                     <Tab
                         value="map"
@@ -52,7 +59,8 @@ export const AssignmentsMainPanel: FC = () => {
                         iconPosition="start"
                     />
                 </Tabs>
-            </Box>
+                <OnlyUnassignedToggle />
+            </Stack>
             {view === 'map' && <AssignmentsMap />}
             {view === 'list' && <OrgUnitsTable />}
         </Paper>

@@ -16,6 +16,8 @@ const CIRCLE_LAYER_ID = `${SOURCE_ID}-circle`;
 
 export const FILL_OPACITY = 0.6;
 const HOVER_FILL_OPACITY = 0.85;
+const DIMMED_FILL_OPACITY = 0.15;
+const DIMMED_CIRCLE_OPACITY = 0.25;
 export const getUnassignedColor = (theme: Theme): string =>
     theme.palette.grey[400];
 
@@ -33,17 +35,15 @@ const isHovered: ExpressionSpecification = [
     false,
 ];
 
+const orgUnitIdKey: ExpressionSpecification = ['to-string', ['get', 'id']];
+
 // Styles by org unit id, so assignment changes never touch the geometry.
 const getFillColor = (
-    colorByOrgUnitId: Map<number, string>,
+    colorByOrgUnitId: ExpressionSpecification,
     unassignedColor: string,
 ): ExpressionSpecification => [
     'coalesce',
-    [
-        'get',
-        ['to-string', ['get', 'id']],
-        ['literal', Object.fromEntries(colorByOrgUnitId)],
-    ],
+    ['get', orgUnitIdKey, colorByOrgUnitId],
     unassignedColor,
 ];
 
@@ -52,29 +52,41 @@ type Props = {
     colorByOrgUnitId: Map<number, string>;
     // Org units without a shape are drawn at their location.
     showPoints: boolean;
+    dimAssigned: boolean;
 };
 
 export const AssignableOrgUnitsLayer: FC<Props> = ({
     geoJson,
     colorByOrgUnitId,
     showPoints,
+    dimAssigned,
 }) => {
     const theme = useTheme();
+    const colorByOrgUnitIdLiteral: ExpressionSpecification = useMemo(
+        () => ['literal', Object.fromEntries(colorByOrgUnitId)],
+        [colorByOrgUnitId],
+    );
     const fillColor = useMemo(
-        () => getFillColor(colorByOrgUnitId, getUnassignedColor(theme)),
-        [colorByOrgUnitId, theme],
+        () => getFillColor(colorByOrgUnitIdLiteral, getUnassignedColor(theme)),
+        [colorByOrgUnitIdLiteral, theme],
+    );
+    const isDimmed: ExpressionSpecification | boolean = useMemo(
+        () => dimAssigned && ['has', orgUnitIdKey, colorByOrgUnitIdLiteral],
+        [colorByOrgUnitIdLiteral, dimAssigned],
     );
     const fillPaint: FillLayerSpecification['paint'] = useMemo(
         () => ({
             'fill-color': fillColor,
             'fill-opacity': [
                 'case',
+                isDimmed,
+                DIMMED_FILL_OPACITY,
                 isHovered,
                 HOVER_FILL_OPACITY,
                 FILL_OPACITY,
             ],
         }),
-        [fillColor],
+        [fillColor, isDimmed],
     );
     const circlePaint: CircleLayerSpecification['paint'] = useMemo(
         () => ({
@@ -82,8 +94,9 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
             'circle-radius': ['case', isHovered, 8, 6],
             'circle-stroke-color': theme.palette.common.white,
             'circle-stroke-width': 2,
+            'circle-opacity': ['case', isDimmed, DIMMED_CIRCLE_OPACITY, 1],
         }),
-        [fillColor, theme.palette.common.white],
+        [fillColor, isDimmed, theme.palette.common.white],
     );
     const linePaint: LineLayerSpecification['paint'] = useMemo(
         () => ({

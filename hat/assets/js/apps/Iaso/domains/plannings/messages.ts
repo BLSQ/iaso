@@ -669,6 +669,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No org units to assign on this level',
         id: 'iaso.plannings.label.noOrgUnitsToAssign',
     },
+    allOrgUnitsAssigned: {
+        defaultMessage: 'All org units are assigned.',
+        id: 'iaso.plannings.label.allOrgUnitsAssigned',
+    },
+    showOnlyUnassignedOrgUnits: {
+        defaultMessage: 'Show only unassigned org units',
+        id: 'iaso.plannings.label.showOnlyUnassignedOrgUnits',
+    },
+    showAllOrgUnits: {
+        defaultMessage: 'Show all org units',
+        id: 'iaso.plannings.label.showAllOrgUnits',
+    },
     mapExploreHintTeams: {
         defaultMessage:
             'Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.',

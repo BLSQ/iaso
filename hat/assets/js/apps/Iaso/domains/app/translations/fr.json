@@ -2307,5 +2307,8 @@
     "iaso.plannings.label.below": "En dessous",
     "iaso.plannings.label.belowAssigned": "{assigned} sur {total} assignées",
     "iaso.plannings.label.notOnMap": "Ni forme ni point : non affichée sur la carte",
-    "iaso.plannings.label.noOrgUnitsToAssign": "Aucune unité d'organisation à assigner à ce niveau"
+    "iaso.plannings.label.noOrgUnitsToAssign": "Aucune unité d'organisation à assigner à ce niveau",
+    "iaso.plannings.label.allOrgUnitsAssigned": "Toutes les unités d'organisation sont assignées.",
+    "iaso.plannings.label.showOnlyUnassignedOrgUnits": "Afficher uniquement les unités d'organisation non assignées",
+    "iaso.plannings.label.showAllOrgUnits": "Afficher toutes les unités d'organisation"
 }

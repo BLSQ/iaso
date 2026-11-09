@@ -149,4 +149,5 @@ export type AssignmentsParams = {
     teamId?: string;
     mode?: AssignmentsMode;
     view?: AssignmentsView;
+    onlyUnassigned?: 'true';
 };

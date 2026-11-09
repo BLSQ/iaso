@@ -23,7 +23,7 @@ from django.core.files.uploadedfile import UploadedFile
 
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.sync.views import create_instance_file
-from iaso.api.submissions.creation import (
+from iaso.api.submissions.common import (
     Batch,
     SubmissionError,
     attachments_sent,

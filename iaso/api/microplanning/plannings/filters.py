@@ -102,15 +102,12 @@ class PlanningOrgUnitTreeFilterSet(BasePlanningOrgUnitTreeFilterSet):
         include_rejected_ou = self.form.cleaned_data.get("include_rejected_ou", None)
         include_new_ou = self.form.cleaned_data.get("include_new_ou", None)
 
-        if not include_rejected_ou and not include_new_ou:
-            queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
-        else:
-            allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
-            if include_rejected_ou:
-                allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
-            if include_new_ou:
-                allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
-            queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
+        allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
+        if include_rejected_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
+        if include_new_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
+        queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
 
         queryset = super().filter_queryset(queryset)
 
@@ -164,15 +161,12 @@ class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
         include_rejected_ou = self.form.cleaned_data.get("include_rejected_ou", None)
         include_new_ou = self.form.cleaned_data.get("include_new_ou", None)
 
-        if not include_rejected_ou and not include_new_ou:
-            queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)
-        else:
-            allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
-            if include_rejected_ou:
-                allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
-            if include_new_ou:
-                allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
-            queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
+        allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
+        if include_rejected_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
+        if include_new_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
+        queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
 
         queryset = super().filter_queryset(queryset)
         # why the defer(None) ? because OrgUnitQuerySet filter_for_user_and_app_id has an hidden defer("geom")..

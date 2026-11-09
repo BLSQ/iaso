@@ -27,6 +27,13 @@ class InstanceEditorTestCase(SimpleTestCase):
         self.addCleanup(directory.cleanup)
         self.directory = directory.name
         self.calls = os.path.join(self.directory, "calls.json")
+        self.xform = self.written("form.xml", "<h:html/>")
+
+    def written(self, name, content):
+        path = os.path.join(self.directory, name)
+        with open(path, "w") as file:
+            file.write(content)
+        return path
 
     def fake_odk_cli(self, stdout="", stderr="", exit_code=0, sleep=0):
         """Records its arguments and the files they name, then answers as told."""
@@ -50,18 +57,22 @@ sys.exit({exit_code})
         return override_settings(ODK_CLI_PATH=script)
 
     def edit(self, answers=None, csvs=None):
-        return edit_instance(b"<h:html/>", b"<data/>", answers or {"group/question": "1"}, csvs)
+        return edit_instance(self.xform, b"<data/>", answers or {"group/question": "1"}, csvs)
 
     def test_edited_xml_from_stdout(self):
         with self.fake_odk_cli(stdout="<data>edited</data>"):
-            xml = self.edit({"group/question": "1", "repeat[2]/other": None}, {"names.csv": b"name\nAmina"})
+            xml = self.edit(
+                {"group/question": "1", "repeat[2]/other": None},
+                {"names.csv": self.written("names.csv", "name\nAmina")},
+            )
         self.assertEqual(xml, b"<data>edited</data>")
         with open(self.calls) as file:
             call = json.load(file)
         arguments, files = call["arguments"], call["files"]
         self.assertEqual(arguments[0], "edit")
         named = dict(zip(arguments[1::2], arguments[2::2]))
-        self.assertEqual(files[named["--xform"]], "<h:html/>")
+        self.assertEqual(named["--xform"], self.xform, "the form's file as it is, not a copy")
+        self.assertIn(f"names.csv={os.path.join(self.directory, 'names.csv')}", arguments)
         self.assertEqual(files[named["--instance"]], "<data/>")
         self.assertEqual(json.loads(files[named["--answers-file"]]), {"group/question": "1", "repeat[2]/other": None})
         self.assertEqual(files["names.csv"], "name\nAmina")
@@ -74,7 +85,7 @@ sys.exit({exit_code})
 
     def test_edit_with_prefilled(self):
         with self.fake_odk_cli(stdout="<data/>"):
-            edit_instance(b"<h:html/>", b"<data/>", {"a": "1"}, prefilled={"current_ou_name": "Brussels"})
+            edit_instance(self.xform, b"<data/>", {"a": "1"}, prefilled={"current_ou_name": "Brussels"})
         with open(self.calls) as file:
             call = json.load(file)
         named = dict(zip(call["arguments"][1::2], call["arguments"][2::2]))
@@ -84,7 +95,7 @@ sys.exit({exit_code})
         warning = {"code": "CONSTRAINT", "path": "household/adults", "message": "Too many", "answer": "9"}
         with self.fake_odk_cli(stdout="<data/>", stderr=json.dumps({"warnings": [warning]})):
             existing = []
-            xml = edit_instance(b"<h:html/>", b"<data/>", {"a": "1"}, existing_problems=existing)
+            xml = edit_instance(self.xform, b"<data/>", {"a": "1"}, existing_problems=existing)
 
         self.assertEqual(xml, b"<data/>")
         self.assertEqual(existing, [EditProblem("CONSTRAINT", "Too many", "household/adults", "9")])
@@ -93,7 +104,7 @@ sys.exit({exit_code})
 
         with self.fake_odk_cli(stdout="<data/>"):
             existing = []
-            edit_instance(b"<h:html/>", b"<data/>", {"a": "1"}, existing_problems=existing)
+            edit_instance(self.xform, b"<data/>", {"a": "1"}, existing_problems=existing)
         self.assertEqual(existing, [], "none")
 
     def test_existing_problems_not_asked(self):
@@ -104,7 +115,7 @@ sys.exit({exit_code})
 
     def test_emoji_entities_of_old_devices_are_fixed_first(self):
         with self.fake_odk_cli(stdout="<data/>"):
-            edit_instance(b"<h:html/>", b"<data><a>&#55357;&#56397;</a></data>", {"a": "1"})
+            edit_instance(self.xform, b"<data><a>&#55357;&#56397;</a></data>", {"a": "1"})
         with open(self.calls) as file:
             files = json.load(file)["files"]
         self.assertIn("<data><a>\U0001f44d</a></data>", files.values())
@@ -168,7 +179,10 @@ sys.exit({exit_code})
     def test_new_sends_the_prefilled_and_the_answers(self):
         with self.fake_odk_cli(stdout="<data>new</data>"):
             xml = new_instance(
-                b"<h:html/>", {"current_ou_id": "12"}, {"child[2]/name": "Eve"}, {"names.csv": b"name\nAmina"}
+                self.xform,
+                {"current_ou_id": "12"},
+                {"child[2]/name": "Eve"},
+                {"names.csv": self.written("names.csv", "name\nAmina")},
             )
         self.assertEqual(xml, b"<data>new</data>")
         with open(self.calls) as file:
@@ -185,6 +199,6 @@ sys.exit({exit_code})
     def test_new_refuses_prefilled_values_xml_cant_hold(self):
         with self.fake_odk_cli(stdout="<data/>"):
             with self.assertRaises(InstanceEditError) as raised:
-                new_instance(b"<h:html/>", {"current_ou_name": "a\x00b"}, {"name": "c"})
+                new_instance(self.xform, {"current_ou_name": "a\x00b"}, {"name": "c"})
         self.assertEqual([problem.path for problem in raised.exception.problems], ["current_ou_name"])
         self.assertFalse(os.path.exists(self.calls))

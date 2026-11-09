@@ -2,7 +2,8 @@
 the engine of ODK Collect, so a submission is checked and computed as Collect would on the device - the calculates and
 the relevance follow the answers, then the required questions and the constraints are checked.
 
-The binary is `settings.ODK_CLI_PATH`; one process per submission (a native image starts in milliseconds)."""
+The binary is `settings.ODK_CLI_PATH`; one process per submission (a native image starts in milliseconds). It reads the
+form's files from the paths it is given (`iaso.odk.form_files.local_copy`), the submission's in a temporary directory."""
 
 import json
 import os
@@ -68,18 +69,18 @@ class InstanceEditorUnavailable(Exception):
 
 
 def edit_instance(
-    xform: bytes,
+    xform: str,
     submission: bytes,
     answers: Answers,
-    csvs: Optional[dict[str, bytes]] = None,
+    csvs: Optional[dict[str, str]] = None,
     prefilled: Optional[Answers] = None,
     existing_problems: Optional[list[EditProblem]] = None,
 ) -> bytes:
-    """The edited submission XML.
+    """The edited submission XML. `xform`: the path of the XForm.
 
     `answers`: question path below the root (`group/question`, `repeat[2]/question` for the 2nd repeat instance, added
-    if missing) -> value as written in the XML, `None` to clear it. `csvs`: the form's CSV attachments, by name, for
-    `pulldata()`. `prefilled`: as in `new_instance`, set again before the answers (the org unit context).
+    if missing) -> value as written in the XML, `None` to clear it. `csvs`: the paths of the form's CSV attachments, by
+    name, for `pulldata()`. `prefilled`: as in `new_instance`, set again before the answers (the org unit context).
 
     `existing_problems`: when given, the problems the submission already had on questions not answered don't refuse
     the edit: they are added there (odk_cli's `--keep-existing-problems`)."""
@@ -90,7 +91,7 @@ def edit_instance(
     return _run("edit", xform, files, answers, csvs, prefilled=prefilled, warnings=existing_problems)
 
 
-def new_instance(xform: bytes, prefilled: Answers, answers: Answers, csvs: Optional[dict[str, bytes]] = None) -> bytes:
+def new_instance(xform: str, prefilled: Answers, answers: Answers, csvs: Optional[dict[str, str]] = None) -> bytes:
     """A new submission XML: the blank form as Collect starts one (defaults, preloads: `instanceID`, `start`...),
     `prefilled` by question name as Collect's prefilled answers (read-only questions and calculates accepted), then
     `answers` as in `edit_instance`."""
@@ -100,10 +101,10 @@ def new_instance(xform: bytes, prefilled: Answers, answers: Answers, csvs: Optio
 
 def _run(
     command: str,
-    xform: bytes,
+    xform: str,
     files: dict[str, bytes],
     answers: Answers,
-    csvs: Optional[dict[str, bytes]],
+    csvs: Optional[dict[str, str]],
     prefilled: Optional[Answers] = None,
     warnings: Optional[list[EditProblem]] = None,
 ) -> bytes:
@@ -123,12 +124,12 @@ def _run(
                 file.write(content)
             return path
 
-        arguments = [settings.ODK_CLI_PATH, command, "--xform", written("form.xml", xform)]
+        arguments = [settings.ODK_CLI_PATH, command, "--xform", xform]
         for index, (option, content) in enumerate(files.items()):
             arguments += [option, written(f"file_{index}", content)]
         arguments += ["--answers-file", written("answers.json", json.dumps(answers).encode())]
-        for index, (name, content) in enumerate((csvs or {}).items()):
-            arguments += ["--csv", f"{name}={written(f'attachment_{index}.csv', content)}"]
+        for name, path in (csvs or {}).items():
+            arguments += ["--csv", f"{name}={path}"]
         if warnings is not None:
             arguments.append("--keep-existing-problems")
 

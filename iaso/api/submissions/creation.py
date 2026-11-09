@@ -22,7 +22,7 @@ from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.views import import_data
 from iaso.enketo.enketo_xml import ORG_UNIT_INJECTABLE_QUESTION_NAMES, build_substitutions
 from iaso.models import Entity, EntityType, Form, FormVersion, Instance, OrgUnit, Project
-from iaso.odk.flat_content import INSTANCE_ID, FlatContent, same_text, to_xml_text
+from iaso.odk.flat_content import INSTANCE_ID, ContentProblem, FlatContent, HeldBack, same_text, to_xml_text
 from iaso.odk.instance_editor import InstanceEditError, new_instance
 from iaso.periods import detect
 
@@ -154,7 +154,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
 
     flat = FlatContent(form_version.get_or_save_form_descriptor())
     answers = flat.to_answers(content)
-    errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
+    errors += content_errors(answers.problems)
     # a repeat absent has no instance: `null` only removes one on PATCH
     errors += [SubmissionError("INVALID", name, "Nothing to remove in a new submission") for name, _ in answers.removed]
     attachments = attachments_sent(batch, answers.attachments, errors, ref)
@@ -193,29 +193,60 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         return prepared, []
 
     prefilled = {INSTANCE_ID: f"uuid:{submission_uuid}", **org_unit_context(org_unit, flat.names())}
-    try:
-        prepared.xml = new_instance(
+    run, errors = run_form(
+        flat,
+        answers.held_back,
+        form,
+        lambda: new_instance(
             batch.cached(("xform", form_version.id), lambda: read_file(form_version.file)),
             prefilled,
             answers.answers,
             batch.cached(("csvs", form.id), lambda: form_csvs(form)),
-        )
+        ),
+        batch.form_versions_cache,
+    )
+    if run is None:
+        return None, errors
+    prepared.xml = run.xml
+    prepared.warnings = run.warnings
+    return prepared, []
+
+
+@dataclass(frozen=True)
+class FormRun:
+    """odk_cli's submission, checked: its XML, the content read from it, and the warnings (computed values sent that
+    can't be compared)."""
+
+    xml: bytes
+    json: dict[str, Any]
+    warnings: list[SubmissionError]
+
+
+def run_form(
+    flat: FlatContent,
+    held_back: list[HeldBack],
+    form: Form,
+    run: Callable[[], bytes],
+    form_versions_cache: Optional[dict] = None,
+) -> tuple[Optional[FormRun], list[SubmissionError]]:
+    """`run`: odk_cli on the answers (`new_instance` or `edit_instance`). Its refusal is the submission's errors; the
+    computed values the client sent are compared with odk_cli's: refused when they differ, warnings when volatile."""
+    try:
+        xml = run()
     except InstanceEditError as refusal:
         return None, [
             SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)
             for p in refusal.problems
         ]
-
-    computed = Instance(form=form).xml_file_to_json(BytesIO(prepared.xml), batch.form_versions_cache)
-    refused, ignored = flat.mismatches(answers.held_back, computed)
+    computed = Instance(form=form).xml_file_to_json(BytesIO(xml), form_versions_cache)
+    refused, ignored = flat.mismatches(held_back, computed)
     if refused:
-        return None, [
-            SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in refused
-        ]
-    prepared.warnings = [
-        SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in ignored
-    ]
-    return prepared, []
+        return None, content_errors(refused)
+    return FormRun(xml=xml, json=computed, warnings=content_errors(ignored)), []
+
+
+def content_errors(problems: list[ContentProblem]) -> list[SubmissionError]:
+    return [SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in problems]
 
 
 def recheck_under_lock(batch: Batch, submissions: list[PreparedSubmission]) -> dict[str, list[SubmissionError]]:

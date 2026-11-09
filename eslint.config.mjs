@@ -321,7 +321,7 @@ export default defineConfig([
             'no-continue': 'warn',
             'no-nested-ternary': 'warn',
             'no-prototype-builtins': 'warn',
-            // as recommended by mui itself : https://mui.com/material-ui/guides/minimizing-bundle-size/?utm_source=chatgpt.com#enforce-best-practices-with-eslint
+            // as recommended by mui itself : https://mui.com/material-ui/guides/minimizing-bundle-size/?#enforce-best-practices-with-eslint
             "no-restricted-imports": [
               "error",
               {

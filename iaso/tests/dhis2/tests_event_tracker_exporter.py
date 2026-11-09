@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import UploadedFile
 logger = logging.getLogger(__name__)
 import os
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
@@ -232,7 +232,9 @@ class DataValueExporterTests(TestCase):
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
-        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
+            tzinfo=timezone.utc
+        )
         instance.org_unit = self.org_unit
         instance.json = json
         instance.json["version"] = self.form_version.version_id
@@ -245,7 +247,9 @@ class DataValueExporterTests(TestCase):
         instance.save()
         # force to past creation date
         # looks the first save don't take it
-        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
+            tzinfo=timezone.utc
+        )
         instance.save()
         return instance
 

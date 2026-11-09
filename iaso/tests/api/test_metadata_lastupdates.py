@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest import mock
 from unittest.mock import patch
 
@@ -12,7 +12,7 @@ from iaso.test import APITestCase
 
 class MetadataLastUpdatesTestCase(APITestCase):
     @classmethod
-    @mock.patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 1))
+    @mock.patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 1, tzinfo=timezone.utc))
     def setUpTestData(cls):
         n = cls.now = now()
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -20,7 +20,7 @@ class MetadataLastUpdatesTestCase(APITestCase):
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 7)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 7, tzinfo=timezone.utc)):
             jedi_council = cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         jedi_academy = cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
         project_1 = cls.project_1 = m.Project.objects.create(
@@ -33,9 +33,9 @@ class MetadataLastUpdatesTestCase(APITestCase):
         sw_source.projects.add(project_2)
         sw_source.save()
 
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 1)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 1, tzinfo=timezone.utc)):
             form_1 = cls.form_1 = m.Form.objects.create(name="Hydroponics study", created_at=n)
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 2)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 2, tzinfo=timezone.utc)):
             form_2 = cls.form_2 = m.Form.objects.create(
                 name="Hydroponic public survey",
                 form_id="sample2",
@@ -45,22 +45,22 @@ class MetadataLastUpdatesTestCase(APITestCase):
                 single_per_period=True,
                 created_at=n,
             )
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 5)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 5, tzinfo=timezone.utc)):
             form_version = cls.form_version = form_2.form_versions.create(
                 file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
             )
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 3)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 3, tzinfo=timezone.utc)):
             form_3 = cls.form_3 = m.Form.objects.create(name="form3", created_at=n)
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 4)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 4, tzinfo=timezone.utc)):
             form_4 = cls.form_4 = m.Form.objects.create(name="form4", created_at=n)
 
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 1)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 1, tzinfo=timezone.utc)):
             ou_1 = cls.ou_1 = m.OrgUnit.objects.create(name="OU1", org_unit_type=jedi_council, version=sw_version)
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 4)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 4, tzinfo=timezone.utc)):
             ou_2 = cls.ou_2 = m.OrgUnit.objects.create(name="OU2", org_unit_type=jedi_council, version=sw_version)
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 2)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 2, tzinfo=timezone.utc)):
             ou_3 = cls.ou_3 = m.OrgUnit.objects.create(name="OU3", org_unit_type=jedi_academy, version=sw_version)
-        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 3)):
+        with patch("django.utils.timezone.now", lambda: datetime(1970, 1, 1, 0, 0, 3, tzinfo=timezone.utc)):
             ou_4 = cls.ou_4 = m.OrgUnit.objects.create(name="OU4", org_unit_type=jedi_academy, version=sw_version)
 
         cls.yoda = cls.create_user_with_profile(

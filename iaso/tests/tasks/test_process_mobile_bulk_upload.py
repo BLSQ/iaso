@@ -106,7 +106,7 @@ def create_entity_with_registration(
         account=m.Account.objects.first(),
     )
     if deleted:
-        entity.deleted_at = datetime.datetime.now(pytz.UTC)
+        entity.deleted_at = timezone.now()
 
     with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_instance_file:
         instance = m.Instance.objects.create(

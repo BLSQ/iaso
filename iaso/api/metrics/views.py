@@ -1,11 +1,10 @@
 import csv
 
-from datetime import datetime
-
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform, KeyTransform
 from django.http import HttpResponse
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
@@ -179,7 +178,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
         writer.writerow(headers)
         writer.writerows(rows)
 
-        filename = f"metric_values_export_{datetime.now().strftime('%Y-%m-%d')}.csv"
+        filename = f"metric_values_export_{timezone.now().strftime('%Y-%m-%d')}.csv"
 
         response["Content-Disposition"] = f"attachment; filename={filename}"
         return response

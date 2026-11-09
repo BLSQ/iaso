@@ -174,7 +174,7 @@ class PlanningConfigUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         }
         self.assertValidBody(data)
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(10):
             res = self.client.put(reverse("planning_configs-detail", kwargs={"pk": self.planning_config.pk}), data=data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 

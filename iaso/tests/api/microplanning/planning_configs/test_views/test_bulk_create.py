@@ -256,7 +256,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         ]
         self.assertValidBody(data)
 
-        with self.assertNumQueries(33):
+        with self.assertNumQueries(15):
             res = self.client.post(reverse("planning_configs-bulk-create"), data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)

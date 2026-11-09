@@ -12,7 +12,8 @@ Get a token as in [Use the APIs](use_iaso_apis.md); the user needs the "Edit sub
 `content` has the shape of a submission's `json` (as `GET /api/instances/{id}/` or `GET /api/submissions/{id}/`
 return it):
 
-- the answers by question name, groups left out: `{"head_name": "Alice", "population": 7}`;
+- the answers by question name, groups left out, as text like the submission holds them:
+  `{"head_name": "Alice", "population": "7"}`; a number (`7`) is also accepted and stored as text;
 - a repeat group as a list, one object per repeat: `"child": [{"child_name": "Bob"}, {"child_name": "Eve"}]`;
 - a "select multiple" as the submission holds it, its choices in one space-separated text: `"fever cough"`; a list
   (`["fever", "cough"]`) is also accepted and joined with spaces;
@@ -36,7 +37,7 @@ curl -X POST "$IASO/api/submissions/" \
         "form_id": 12,
         "org_unit_id": 123,
         "period": "202611",
-        "content": {"head_name": "Alice", "population": 7, "child": [{"child_name": "Bob", "child_age": 4}]}
+        "content": {"head_name": "Alice", "population": "7", "child": [{"child_name": "Bob", "child_age": "4"}]}
       }
     ]
   }'
@@ -129,12 +130,12 @@ name.
 ```bash
 curl -X PATCH "$IASO/api/submissions/456/" \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"content": {"population": 8, "child": [{}, {"child_name": "Eve"}]}, "expected_updated_at": "2026-11-08T10:00:00.123456Z"}'
+  -d '{"content": {"population": "8", "child": [{}, {"child_name": "Eve"}]}, "expected_updated_at": "2026-11-08T10:00:00.123456Z"}'
 ```
 
 - `content` is merged into the submission: a question sent is set, `null` clears it, a question not sent is left as
   it is. In a repeat, the list gives the repeats by position: `{}` leaves one as it is, a longer list adds repeats,
-  `null` removes one (`"child": [null, {"child_age": 3}]`: the first child removed, the age is the second's, now the
+  `null` removes one (`"child": [null, {"child_age": "3"}]`: the first child removed, the age is the second's, now the
   first). `"child": null` removes them all. A repeat following a count (`repeat_count`) changes with its count only.
 - `org_unit_id` and `period` can change too; the org unit's values (`current_ou_name`...) follow.
 - `expected_updated_at` (optional): refused (`CONFLICT`) if the submission changed since it was read.

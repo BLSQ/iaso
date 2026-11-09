@@ -9,6 +9,7 @@ from .openhexa_admin import OpenHEXAInstanceAdmin, OpenHEXAWorkspaceAdmin  # noq
 from .planning_configs import PlanningConfigAdmin  # noqa
 from .planning_samplings import PlanningSamplingResultAdmin  # noqa: F401
 from .plannings import PlanningAdmin  # noqa
+from .storage_password import StoragePasswordAdmin  # noqa
 from .user_admin import UserAdmin
 
 

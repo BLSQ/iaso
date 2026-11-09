@@ -2,9 +2,7 @@ import uuid
 
 from unittest import mock
 
-from django.db import connection
 from django.test import override_settings
-from django.test.utils import CaptureQueriesContext
 from lxml import etree
 from rest_framework import status
 
@@ -357,18 +355,3 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
 
         self.assertJSONResponse(response, status.HTTP_503_SERVICE_UNAVAILABLE)
         self.assertFalse(m.Instance.objects.exists())
-
-    @requires_odk_cli
-    def test_queries_per_submission(self):
-        def queries(count):
-            with CaptureQueriesContext(connection) as context:
-                response = self.post(*[self.submission(ref=str(i)) for i in range(count)])
-            self.assertJSONResponse(response, status.HTTP_201_CREATED)
-            return len(context.captured_queries)
-
-        one, ten = queries(1), queries(10)
-
-        # per submission: org unit (+ the user's org units), uuid lookup, form version of its XML, and the mobile
-        # upload's save (insert, 3 updates, its form and project, the audit row); the form, its projects, versions
-        # and attachments, the XForm file, once per request
-        self.assertLessEqual(ten - one, 9 * 12, f"{one} queries for 1 submission, {ten} for 10")

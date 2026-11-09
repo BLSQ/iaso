@@ -105,11 +105,11 @@ def run_form(
 
 def not_checked(failure: InstanceEditorUnavailable) -> SubmissionError:
     """odk_cli couldn't check the submission: a 400 all the same, as a 5xx makes a load balancer take the server for
-    unhealthy. Logged: busy as a warning, anything else (a crash on the form, odk_cli missing) as an error."""
+    unhealthy. Logged as a warning, not an error: it would reach Sentry for every submission of a form odk_cli fails on."""
     if isinstance(failure, InstanceEditorBusy):
         logger.warning("Submission not checked: %s", failure)
         return SubmissionError("NOT_CHECKED", None, "The server is busy: send it again later")
-    logger.error("Submission not checked: %s", failure)
+    logger.warning("Submission not checked: %s", failure)
     return SubmissionError("NOT_CHECKED", None, "This submission can't be checked with this form")
 
 

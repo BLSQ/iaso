@@ -352,15 +352,15 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
 
     @override_settings(ODK_CLI_PATH="/nonexistent/odk_cli")
     def test_odk_cli_unavailable(self):
-        """A 400 rather than a 5xx (a load balancer would take the server for unhealthy), logged as an error; the
+        """A 400 rather than a 5xx (a load balancer would take the server for unhealthy), logged as a warning; the
         submissions after it aren't checked."""
         with mock.patch("iaso.api.submissions.common.logger") as logger:
             response = self.post(self.submission(ref="a"), self.submission(ref="b"))
 
         data = self.assertRefused(response, [("a", "refused", [("NOT_CHECKED", None)])])
         self.assertEqual(data["results"][0]["errors"][0]["message"], "This submission can't be checked with this form")
-        logger.warning.assert_not_called()
-        (message, failure), _ = logger.error.call_args
+        logger.error.assert_not_called()  # not to Sentry, for each submission of the form
+        (message, failure), _ = logger.warning.call_args
         self.assertIn("isn't installed at /nonexistent/odk_cli", message % failure)
 
     def test_odk_cli_busy(self):

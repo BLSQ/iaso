@@ -212,7 +212,8 @@ class SubmissionsPatchTestCase(SubmissionsTestCase):
             mock.patch("iaso.api.submissions.common.logger") as logger,
         ):
             self.assertRefused({"content": {"head_name": "Alicia"}}, [("NOT_CHECKED", None)])
-        logger.error.assert_called_once()
+        logger.warning.assert_called_once()
+        logger.error.assert_not_called()
 
     def test_who_can_patch(self):
         reader = self.create_user_with_profile(

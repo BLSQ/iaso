@@ -1,14 +1,12 @@
 import React, { useMemo } from 'react';
 import {
-    ChipList,
     Column,
     formatThousand,
     IconButton,
-    textPlaceholder,
+    Setting,
     useSafeIntl,
 } from 'bluesquare-components';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
-import { Project } from 'Iaso/domains/projects/types/project';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
@@ -21,8 +19,9 @@ import {
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { useDeleteForm } from '../hooks/useDeleteForm';
+import { useGetProjectChips } from '../hooks/useGetProjectChips';
 import MESSAGES from '../messages';
-import { FormsParams } from '../types/forms';
+import { Form, FormsParams } from '../types/forms';
 
 export const baseUrl = baseUrls.forms;
 
@@ -162,6 +161,7 @@ export const useFormsTableColumns = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
+    const getProjectChips = useGetProjectChips();
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -169,19 +169,8 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                Cell: settings => {
-                    const projects: Project[] = settings.value ?? [];
-                    if (projects.length === 0) return textPlaceholder;
-                    return (
-                        <ChipList
-                            items={projects.map(project => ({
-                                id: project.id ?? project.name,
-                                label: project.name,
-                                color: project.color ?? undefined,
-                            }))}
-                        />
-                    );
-                },
+                Cell: ({ value: projects }: Setting<Form['projects']>) =>
+                    getProjectChips(projects),
             },
             {
                 Header: formatMessage(MESSAGES.name),
@@ -272,6 +261,7 @@ export const useFormsTableColumns = ({
         orgUnitId,
         hasDhis2Module,
         deleteForm,
+        getProjectChips,
     ]);
 };
 

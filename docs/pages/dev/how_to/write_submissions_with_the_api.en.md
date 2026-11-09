@@ -14,7 +14,8 @@ return it):
 
 - the answers by question name, groups left out: `{"head_name": "Alice", "population": 7}`;
 - a repeat group as a list, one object per repeat: `"child": [{"child_name": "Bob"}, {"child_name": "Eve"}]`;
-- a "select multiple" as a list or a space-separated text: `["fever", "cough"]`;
+- a "select multiple" as the submission holds it, its choices in one space-separated text: `"fever cough"`; a list
+  (`["fever", "cough"]`) is also accepted and joined with spaces;
 - `_version`: the form version (the latest one if absent); any version of the form can be used.
 
 Values the form computes (calculations, `start`, `deviceid`...) are computed by the server. They can be sent back as

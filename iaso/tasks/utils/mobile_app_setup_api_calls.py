@@ -1,3 +1,9 @@
+# The calls the mobile app makes on its first login, in the order the export task makes them.
+#
+# - `paginated`: the endpoint is paginated, each page is saved as `<filename>-<page>.json`.
+# - `page_size`: the `limit` sent to a paginated endpoint (the server's default otherwise).
+# - `sub_steps`: the share of the task's progress bar for this call, spread over its pages.
+#   The heaviest calls come last, so the progress bar moves steadily.
 API_CALLS = [
     {
         "path": "/api/orgunittypes/",
@@ -32,13 +38,6 @@ API_CALLS = [
         "filename": "formattachments",
     },
     {
-        "path": "/api/mobile/orgunits/",
-        "filename": "orgunits",
-        "query_params": {"shapes": 0},
-        "page_size": 25000,
-        "paginated": True,
-    },
-    {
         "path": "/api/mobile/orgunits/changes/",
         "required_feature_flag": "MOBILE_ORG_UNIT_REGISTRY",
         "filename": "orgunitchanges",
@@ -59,18 +58,6 @@ API_CALLS = [
         "filename": "storage-blacklisted",
     },
     {
-        "path": "/api/mobile/entities/",
-        "required_feature_flag": "ENTITY",
-        "filename": "entities",
-        "paginated": True,
-    },
-    {
-        "path": "/api/mobile/entities/deleted/",
-        "required_feature_flag": "ENTITY",
-        "filename": "deletedentities",
-        "paginated": True,
-    },
-    {
         "path": "/api/mobile/entitytypes/",
         "required_feature_flag": "ENTITY",
         "filename": "entitytypes",
@@ -85,5 +72,26 @@ API_CALLS = [
         "path": "/api/mobile/workflows/",
         "required_feature_flag": "ENTITY",
         "filename": "workflows",
+    },
+    {
+        "path": "/api/mobile/orgunits/",
+        "filename": "orgunits",
+        "query_params": {"shapes": 0},
+        "page_size": 5000,
+        "paginated": True,
+        "sub_steps": 20,
+    },
+    {
+        "path": "/api/mobile/entities/",
+        "required_feature_flag": "ENTITY",
+        "filename": "entities",
+        "paginated": True,
+        "sub_steps": 50,
+    },
+    {
+        "path": "/api/mobile/entities/deleted/",
+        "required_feature_flag": "ENTITY",
+        "filename": "deletedentities",
+        "paginated": True,
     },
 ]

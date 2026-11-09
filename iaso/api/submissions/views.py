@@ -11,14 +11,8 @@ from rest_framework.response import Response
 
 from hat.api_import.models import APIImport
 from iaso.api.submissions.audit import finish_audit, start_audit
-from iaso.api.submissions.creation import (
-    Batch,
-    PreparedSubmission,
-    SubmissionError,
-    prepare_submission,
-    recheck_under_lock,
-    save_submissions,
-)
+from iaso.api.submissions.common import Batch, SubmissionError
+from iaso.api.submissions.creation import PreparedSubmission, prepare_submission, recheck_under_lock, save_submissions
 from iaso.api.submissions.edition import PreparedPatch, prepare_patch, save_patch
 from iaso.api.submissions.permissions import HasSubmissionsReadPermission, HasSubmissionsUpdatePermission
 from iaso.api.submissions.serializers import (

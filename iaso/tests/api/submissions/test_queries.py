@@ -2,6 +2,8 @@
 method: a query added in the per-submission loop, or a file read for each submission instead of once per request, fails
 here with the profiler's report."""
 
+import uuid
+
 from django.core.files.base import ContentFile
 from rest_framework import status
 
@@ -13,17 +15,8 @@ from iaso.tests.utils.query_profiler import QueryProfiler
 PERMISSIONS = ("auth_permission", "django_content_type")
 # a table counted per submission (`PER_SUBMISSION`), the others once per request whatever the number of submissions
 PER_SUBMISSION = {
-    # the uuid check (`_existing`); the mobile import's get_or_create by file name (select + insert) and its save;
-    # `process_instance_file`'s two saves
-    "iaso_instance": 6,
-    # the org unit (`find_org_unit`) and the user's org units filter, again for each submission of the same org unit
-    "iaso_orgunit": 2,
-    # the org unit's version and project, in `find_org_unit`'s query
-    "iaso_sourceversion": 1,
-    "iaso_project": 0,
-    # the version of the saved XML (`process_instance_file` doesn't get the request's form versions cache)
-    "iaso_formversion": 1,
-    "audit_modification": 1,
+    # the mobile import's get_or_create by file name (select + insert) and its save; `process_instance_file`'s two saves
+    "iaso_instance": 5,
 }
 PER_REQUEST = {
     # the form and the latest version, its attachments (CSVs), the account, the org unit type
@@ -32,15 +25,18 @@ PER_REQUEST = {
     "iaso_formattachment": 1,
     "iaso_account": 1,
     "iaso_orgunittype": 1,
-    # the project (form, user, app id), the org unit's version, the uuid recheck and the slot locks (`unnest`)
+    # the org unit and the user's org units (`find_org_unit`, once per org unit), with its version and project
+    "iaso_orgunit": 2,
+    "iaso_sourceversion": 2,
+    # the project (form, user, app id)
     "iaso_project": 5,
-    "iaso_sourceversion": 1,
+    # the mobile import's cache and lookup, the uuid recheck under the lock (`unnest`); the uuids sent, at once
     "iaso_instance": 3,
     "unnest": 1,
+    # the audit rows, in one INSERT
+    "audit_modification": 1,
     # the request's audit (`APIImport`): created, then its result
     "vector_control_apiimport": 2,
-    "iaso_orgunit": 0,
-    "audit_modification": 0,
 }
 
 
@@ -101,7 +97,23 @@ class SubmissionsQueriesTestCase(SubmissionsTestCase):
         with profiler.report_on_failure("submissions_post_dry_run.md"):
             profiler.assertStorageCalls({"_open": [self.form_version.file.name]})
             self.assertEqual(profiler.table_counts()["audit_modification"], 0)
-            self.assertEqual(profiler.table_counts()["iaso_instance"], 1, "the uuid check, no insert")
+            self.assertEqual(profiler.table_counts()["iaso_instance"], 0, "no uuid sent: nothing to look up")
+
+    def test_the_uuids_sent_are_looked_up_at_once(self):
+        with QueryProfiler() as profiler:
+            # as `uuid`, or as the content's `instanceID`
+            response = self.post(
+                *[self.submission(ref=str(i), uuid=str(uuid.uuid4())) for i in range(5)],
+                *[self.submission(ref=str(i), content={"instanceID": f"uuid:{uuid.uuid4()}"}) for i in range(5, 10)],
+            )
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        with profiler.report_on_failure("submissions_post_uuids_sent.md"):
+            self.assertLessEqual(
+                profiler.table_counts()["iaso_instance"],
+                PER_REQUEST["iaso_instance"] + 1 + 10 * PER_SUBMISSION["iaso_instance"],
+                "one query for the 10 uuids sent, not one each",
+            )
 
     def test_patch(self):
         instance = self.create()

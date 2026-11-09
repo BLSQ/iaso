@@ -12,7 +12,13 @@ from rest_framework.response import Response
 from hat.api_import.models import APIImport
 from iaso.api.submissions.audit import finish_audit, start_audit
 from iaso.api.submissions.common import Batch, SubmissionError, not_checked
-from iaso.api.submissions.creation import PreparedSubmission, prepare_submission, recheck_under_lock, save_submissions
+from iaso.api.submissions.creation import (
+    PreparedSubmission,
+    prepare_submission,
+    recheck_under_lock,
+    save_submissions,
+    sent_uuids,
+)
 from iaso.api.submissions.edition import PreparedPatch, prepare_patch, save_patch
 from iaso.api.submissions.permissions import HasSubmissionsReadPermission, HasSubmissionsUpdatePermission
 from iaso.api.submissions.serializers import (
@@ -163,6 +169,7 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             return Response(body.errors, status=status.HTTP_400_BAD_REQUEST)
         results: list[dict[str, Any]] = []
         prepared: list[PreparedSubmission] = []
+        batch.prefetch_instances(sent_uuids(body.validated_data["submissions"]))
         for index, item in enumerate(body.validated_data["submissions"]):
             ref = item["ref"] if isinstance(item.get("ref"), str) else str(index)
             envelope = SubmissionCreateSerializer(data=item)
@@ -203,7 +210,7 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
                     for submission in prepared
                 ]
                 return Response({"results": results}, status=status.HTTP_400_BAD_REQUEST)
-            instances = save_submissions(prepared, request.user, api_import)
+            instances = save_submissions(prepared, request.user, api_import, batch.form_versions_cache)
         return Response(
             {
                 "results": [

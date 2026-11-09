@@ -2,6 +2,7 @@
 files, the envelope's checks (org unit, period, one submission per slot), and running a submission through odk_cli."""
 
 import logging
+import uuid as uuid_module
 
 from dataclasses import dataclass
 from io import BytesIO
@@ -48,6 +49,8 @@ class Batch:
         self.account = user.iaso_profile.account
         self.form_versions_cache: dict = {}
         self.uuids: set[str] = set()
+        #: the instances with the uuids the request sends, looked up at once (`prefetch_instances`)
+        self._instances_by_uuid: dict[str, list[Instance]] = {}
         #: the request's files, by part name: `<ref>/<answer>`, or the answer alone
         self.files = files or {}
         self.used_files: set[str] = set()
@@ -65,6 +68,25 @@ class Batch:
         if key not in self._cache:
             self._cache[key] = compute()
         return self._cache[key]
+
+    def prefetch_instances(self, uuids: list[str]) -> None:
+        """The instances with these uuids, in one query instead of one per submission."""
+        uuids = {uuid for uuid in uuids if uuid}
+        self._instances_by_uuid.update({uuid: [] for uuid in uuids})
+        for instance in Instance.objects.filter(uuid__in=uuids).order_by("id"):
+            self._instances_by_uuid[instance.uuid].append(instance)
+
+    def new_uuid(self) -> str:
+        """A uuid for a submission sent without any: no instance can have it yet, nothing to look up."""
+        uuid = str(uuid_module.uuid4())
+        self._instances_by_uuid[uuid] = []
+        return uuid
+
+    def instances_with_uuid(self, uuid: str) -> list[Instance]:
+        """Oldest first. A uuid not prefetched is looked up: one made for a submission sent without any, or missed."""
+        if uuid not in self._instances_by_uuid:
+            self._instances_by_uuid[uuid] = list(Instance.objects.filter(uuid=uuid).order_by("id"))
+        return self._instances_by_uuid[uuid]
 
     def unused_files(self) -> list[str]:
         return sorted(set(self.files) - self.used_files)
@@ -159,11 +181,13 @@ def attachments_sent(
 def find_org_unit(
     batch: Batch, form: Form, project: Optional[Project], org_unit_id: int, errors: list
 ) -> Optional[OrgUnit]:
-    org_unit = (
-        OrgUnit.objects.filter_for_user_and_project(batch.user, project)
+    # once per request: its submissions are mostly for a few org units
+    org_unit = batch.cached(
+        ("org_unit", getattr(project, "id", None), org_unit_id),
+        lambda: OrgUnit.objects.filter_for_user_and_project(batch.user, project)
         .filter(id=org_unit_id)
         .select_related("org_unit_type", "parent")
-        .first()
+        .first(),
     )
     if org_unit is None:
         errors.append(SubmissionError("UNKNOWN_REFERENCE", "org_unit_id", f"Unknown org unit {org_unit_id}"))

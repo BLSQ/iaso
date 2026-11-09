@@ -279,6 +279,13 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
         self.assertEqual(
             (again["results"][0]["status"], again["results"][0]["id"]), ("unchanged", first["results"][0]["id"])
         )
+        # written otherwise (capitals): the same uuid
+        upper = self.assertJSONResponse(
+            self.post(self.submission(uuid=submission_uuid.upper())), status.HTTP_201_CREATED
+        )
+        self.assertEqual(
+            (upper["results"][0]["status"], upper["results"][0]["id"]), ("unchanged", first["results"][0]["id"])
+        )
         self.assertEqual(m.Instance.objects.count(), 1)
 
         response = self.post(self.submission(uuid=submission_uuid, content={"population": 4}))

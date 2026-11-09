@@ -210,6 +210,19 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         if self.action == "levels_org_unit_count":
             qs = qs.select_related("org_unit").only("id", "org_unit", "org_unit__id", "org_unit__path")
 
+            if not self.request.data:
+                # optimization as if we have a body, we don't need to prefetch those - less queries, database happy
+
+                qs = qs.prefetch_related(
+                    Prefetch(
+                        "configs",
+                        queryset=PlanningConfig.objects.prefetch_related(
+                            "org_unit_types",
+                            "org_unit_groups",
+                        ),
+                    )
+                )
+
             return qs
 
         if self.action in ["org_unit_tree", "org_unit_tree_with_geom"]:
@@ -387,19 +400,6 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         # TODO : once DRF supports QUERY HTTP method, switch to it.
 
         qs = self.get_queryset()
-
-        if not request.data:
-            # optimization as if we have a body, we don't need to prefetch those - less queries, database happy
-            qs = qs.prefetch_related(
-                Prefetch(
-                    "configs",
-                    queryset=PlanningConfig.objects.prefetch_related(
-                        "org_unit_types",
-                        "org_unit_groups",
-                    ),
-                )
-            )
-
         planning = get_object_or_404(qs, pk=pk)
 
         request_serializer = LevelOrgUnitCountRequestSerializer(
@@ -412,7 +412,9 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         # if the data passed is empty , we use the actual configs from the planning
         # otherwise we pass the data from serializer
 
-        queryset = OrgUnit.objects.filter_for_user(request.user).filter(validation_status=OrgUnit.VALIDATION_VALID)
+        org_units_queryset = OrgUnit.objects.filter_for_user(request.user).filter(
+            validation_status=OrgUnit.VALIDATION_VALID
+        )
 
         root = planning.org_unit
         root_level = len(str(root.path).split("."))
@@ -422,14 +424,14 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             processed_levels = {root_level + config.level - 1 for config in configs}
         else:
             configs = request_serializer.validated_data
-            processed_levels = {root_level + x["level"] - 1 for x in request_serializer.validated_data}
+            processed_levels = {root_level + x["level"] - 1 for x in request_data}
 
         qs = OrgUnit.objects.none()
         if processed_levels:
             qs = (
                 PlanningOrgUnitTreeQuerySetBuilder()
                 .build_queryset(
-                    queryset=queryset,
+                    queryset=org_units_queryset,
                     root=root,
                     processed_levels=processed_levels,
                     configs=configs,

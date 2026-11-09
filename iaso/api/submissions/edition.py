@@ -15,7 +15,6 @@ import logging
 
 from copy import copy
 from dataclasses import dataclass, field
-from io import BytesIO
 from typing import Any, Optional
 
 from django.contrib.auth.models import User
@@ -29,18 +28,20 @@ from iaso.api.submissions.creation import (
     SubmissionError,
     attachments_sent,
     check_period,
+    content_errors,
     find_org_unit,
     form_csvs,
     lock,
     org_unit_context,
     read_file,
+    run_form,
     slot_conflict,
     slot_key,
     taken_slot,
 )
 from iaso.models import FormVersion, Instance, OrgUnit
 from iaso.odk.flat_content import FlatContent, dropped_answers
-from iaso.odk.instance_editor import EditProblem, InstanceEditError, edit_instance
+from iaso.odk.instance_editor import EditProblem, edit_instance
 from iaso.odk.submission_xml import NoSuchElement, move_to_version, remove_repeat_instances
 
 
@@ -112,7 +113,7 @@ def prepare_patch(
     moved = form_version != instance.form_version
     flat = FlatContent(form_version.get_or_save_form_descriptor())
     answers = flat.to_answers(content)
-    errors += [SubmissionError(p.code, p.field, p.message, answer=p.answer) for p in answers.problems]
+    errors += content_errors(answers.problems)
     if answers.instance_id is not None and answers.instance_id != f"uuid:{instance.uuid}":
         errors.append(
             SubmissionError(
@@ -151,24 +152,17 @@ def prepare_patch(
     prefilled = org_unit_context(org_unit, flat.names()) if org_unit else {}
     # moved, what the version adds would pass for problems already there: the moved submission must be valid
     existing_problems: Optional[list[EditProblem]] = None if moved else []
-    try:
-        patch.xml = edit_instance(xform, submission, answers.answers, form_csvs(form), prefilled, existing_problems)
-    except InstanceEditError as refusal:
-        return None, [
-            SubmissionError(p.code, flat.field_of(p.path), p.message, question=p.path, answer=p.answer)
-            for p in refusal.problems
-        ]
-
-    computed = Instance(form=form).xml_file_to_json(BytesIO(patch.xml))
-    patch.json = computed
-    refused, ignored = flat.mismatches(answers.held_back, computed)
-    if refused:
-        return None, [
-            SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in refused
-        ]
-    patch.warnings = [
-        SubmissionError(p.code, p.field, p.message, answer=p.answer, expected=p.expected) for p in ignored
-    ]
+    run, errors = run_form(
+        flat,
+        answers.held_back,
+        form,
+        lambda: edit_instance(xform, submission, answers.answers, form_csvs(form), prefilled, existing_problems),
+    )
+    if run is None:
+        return None, errors
+    patch.xml = run.xml
+    patch.json = run.json
+    patch.warnings = run.warnings
     patch.warnings += [
         SubmissionError(
             p.code,
@@ -182,7 +176,7 @@ def prepare_patch(
     if moved:
         patch.warnings += [
             SubmissionError("DROPPED", name, "Not in this form version: the answer is dropped", answer=value)
-            for name, value in dropped_answers(instance.json or {}, computed)
+            for name, value in dropped_answers(instance.json or {}, run.json)
         ]
     return patch, []
 

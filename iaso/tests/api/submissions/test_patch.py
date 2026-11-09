@@ -167,6 +167,16 @@ class SubmissionsPatchTestCase(SubmissionsTestCase):
 
         self.assertEqual(self.instance.json["head_name"], "Alicia")
 
+    def test_volatile_calculates_are_only_reported(self):
+        data = self.assertPatched({"content": {"head_name": "Alicia", "visit_hour": "99"}})
+
+        self.assertEqual(
+            [(warning["code"], warning["field"], warning["answer"]) for warning in data["warnings"]],
+            [("CALCULATION_IGNORED", "content.visit_hour", "99")],
+        )
+        self.assertEqual(self.instance.json["head_name"], "Alicia", "saved all the same")
+        self.assertNotEqual(self.instance.json["visit_hour"], "99")
+
     def test_expected_updated_at(self):
         read = self.assertJSONResponse(self.client.get(f"{URL}{self.instance.id}/"), status.HTTP_200_OK)
         self.assertPatched({"period": "202612", "expected_updated_at": read["updated_at"]})

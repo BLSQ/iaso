@@ -2310,5 +2310,13 @@
     "iaso.plannings.label.noOrgUnitsToAssign": "Aucune unité d'organisation à assigner à ce niveau",
     "iaso.plannings.label.allOrgUnitsAssigned": "Toutes les unités d'organisation sont assignées.",
     "iaso.plannings.label.showOnlyUnassignedOrgUnits": "Afficher uniquement les unités d'organisation non assignées",
-    "iaso.plannings.label.showAllOrgUnits": "Afficher toutes les unités d'organisation"
+    "iaso.plannings.label.showAllOrgUnits": "Afficher toutes les unités d'organisation",
+    "iaso.plannings.label.findOrgUnit": "Trouver une unité d'organisation",
+    "iaso.plannings.label.findOrgUnitCaption": "Seuls les niveaux d'unités d'organisation utilisés par ce planning sont listés. Afficher une unité d'organisation ouvre l'équipe qui l'assigne.",
+    "iaso.plannings.label.findOrgUnitTooManyRows": "Seules les {count} premières unités d'organisation sont listées. Affinez votre recherche pour voir les autres.",
+    "iaso.plannings.label.loadingAllOrgUnits": "Chargement de toutes les unités d'organisation : les résultats ne sont pas encore complets.",
+    "iaso.plannings.label.noOrgUnitMatchesSearch": "Aucune unité d'organisation ne correspond à votre recherche.",
+    "iaso.plannings.label.searchByName": "Rechercher par nom",
+    "iaso.plannings.label.show": "Afficher",
+    "iaso.plannings.label.clearFoundOrgUnit": "Effacer l'unité d'organisation trouvée"
 }

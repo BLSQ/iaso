@@ -36,6 +36,7 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
     return {
         planningId: params.planningId,
         teamId: params.teamId,
+        focusOrgUnitId: params.focusOrgUnitId,
         mode: (params.mode as AssignmentsMode) ?? 'explore',
         view: (params.view as AssignmentsView) ?? 'map',
         onlyUnassigned,

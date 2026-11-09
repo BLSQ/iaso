@@ -7,6 +7,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
+import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
 import { AssignmentsMap } from './AssignmentsMap';
 import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
 import { OrgUnitsTable } from './OrgUnitsTable';
@@ -24,6 +25,11 @@ const styles = {
         px: 2,
         borderBottom: 1,
         borderColor: 'divider',
+    },
+    filters: {
+        flex: '0 1 340px',
+        justifyContent: 'flex-end',
+        minWidth: 0,
     },
 } satisfies SxStyles;
 
@@ -59,7 +65,15 @@ export const AssignmentsMainPanel: FC = () => {
                         iconPosition="start"
                     />
                 </Tabs>
-                <OnlyUnassignedToggle />
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    gap={1}
+                    sx={styles.filters}
+                >
+                    <OnlyUnassignedToggle />
+                    <FindOrgUnitField />
+                </Stack>
             </Stack>
             {view === 'map' && <AssignmentsMap />}
             {view === 'list' && <OrgUnitsTable />}

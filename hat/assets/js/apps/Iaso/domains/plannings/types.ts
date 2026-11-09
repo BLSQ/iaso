@@ -150,4 +150,5 @@ export type AssignmentsParams = {
     mode?: AssignmentsMode;
     view?: AssignmentsView;
     onlyUnassigned?: 'true';
+    focusOrgUnitId?: string;
 };

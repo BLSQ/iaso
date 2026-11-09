@@ -681,6 +681,41 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Show all org units',
         id: 'iaso.plannings.label.showAllOrgUnits',
     },
+    findOrgUnit: {
+        defaultMessage: 'Find an org unit',
+        id: 'iaso.plannings.label.findOrgUnit',
+    },
+    findOrgUnitCaption: {
+        defaultMessage:
+            'Only the org unit levels used by this planning are listed. Showing an org unit opens the team that assigns it.',
+        id: 'iaso.plannings.label.findOrgUnitCaption',
+    },
+    findOrgUnitTooManyRows: {
+        defaultMessage:
+            'Only the first {count} org units are listed. Refine your search to see the others.',
+        id: 'iaso.plannings.label.findOrgUnitTooManyRows',
+    },
+    loadingAllOrgUnits: {
+        defaultMessage:
+            'Loading all org units: the results are not complete yet.',
+        id: 'iaso.plannings.label.loadingAllOrgUnits',
+    },
+    noOrgUnitMatchesSearch: {
+        defaultMessage: 'No org unit matches your search.',
+        id: 'iaso.plannings.label.noOrgUnitMatchesSearch',
+    },
+    searchByName: {
+        defaultMessage: 'Search by name',
+        id: 'iaso.plannings.label.searchByName',
+    },
+    show: {
+        defaultMessage: 'Show',
+        id: 'iaso.plannings.label.show',
+    },
+    clearFoundOrgUnit: {
+        defaultMessage: 'Clear the found org unit',
+        id: 'iaso.plannings.label.clearFoundOrgUnit',
+    },
     mapExploreHintTeams: {
         defaultMessage:
             'Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.',

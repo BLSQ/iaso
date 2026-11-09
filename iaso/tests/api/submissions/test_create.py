@@ -231,6 +231,7 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
 
         self.assertRefused(response, [("row-1", "valid", []), ("row-1", "refused", [("INVALID", "ref")])])
 
+    @requires_odk_cli
     def test_project_required_when_the_form_is_in_several(self):
         other_project = m.Project.objects.create(name="Belgium malaria", app_id="be.malaria", account=self.account)
         self.form.projects.add(other_project)
@@ -306,6 +307,7 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
             [{"code": "UUID_NOT_AVAILABLE", "field": "uuid", "message": "This uuid can't be used"}],
         )
 
+    @requires_odk_cli
     def test_saved_meanwhile_by_a_concurrent_request(self):
         """A retry sent before the first request answered: both checked the uuid as free; the second one to save
         finds it taken under the lock."""

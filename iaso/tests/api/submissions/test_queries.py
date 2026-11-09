@@ -2,12 +2,8 @@
 method: a query added in the per-submission loop, or a file read for each submission instead of once per request, fails
 here with the profiler's report."""
 
-from contextlib import contextmanager
-from unittest import mock
-
 from rest_framework import status
 
-from iaso.api.submissions import common
 from iaso.tests.api.submissions.fixtures import URL, SubmissionsTestCase, requires_odk_cli
 from iaso.tests.utils.query_profiler import QueryProfiler
 
@@ -47,30 +43,11 @@ PER_REQUEST = {
 }
 
 
-@contextmanager
-def files_read():
-    """The names of the files the submissions code reads. Django reopens a `FieldFile` it read already without asking
-    the storage again, so the profiler's storage calls don't show a file read twice - that can still be a second
-    download on S3."""
-    names = []
-
-    def read_file(file):
-        names.append(file.name)
-        return common.read_file(file)
-
-    with (
-        mock.patch("iaso.api.submissions.creation.read_file", read_file),
-        mock.patch("iaso.api.submissions.edition.read_file", read_file),
-    ):
-        yield names
-
-
 @requires_odk_cli
 class SubmissionsQueriesTestCase(SubmissionsTestCase):
     def post_profiled(self, count, query=""):
-        with QueryProfiler() as profiler, files_read() as names:
+        with QueryProfiler() as profiler:
             response = self.post(*[self.submission(ref=str(i)) for i in range(count)], query=query)
-        profiler.files_read = names
         return response, profiler
 
     def test_post(self):
@@ -88,7 +65,7 @@ class SubmissionsQueriesTestCase(SubmissionsTestCase):
             # the XForm read once per request; per submission, its XML saved (`exists`: Django's available name check)
             profiler.assertStorageCalls({"_open": [self.form_version.file.name]}, exclude=("_save", "exists"))
             profiler.assertStorageCounts({"_open": 1, "_save": 10, "exists": 10})
-            self.assertEqual(profiler.files_read, [self.form_version.file.name], "the XForm, once per request")
+            profiler.assertFilesOpened([self.form_version.file.name])
 
     def test_post_per_request_tables_dont_grow(self):
         _, one = self.post_profiled(1)
@@ -114,7 +91,7 @@ class SubmissionsQueriesTestCase(SubmissionsTestCase):
         instance = self.create()
         original_xml = instance.file.name
 
-        with QueryProfiler() as profiler, files_read() as names:
+        with QueryProfiler() as profiler:
             response = self.client.patch(f"{URL}{instance.id}/", {"content": {"head_name": "Alicia"}}, format="json")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
@@ -146,7 +123,7 @@ class SubmissionsQueriesTestCase(SubmissionsTestCase):
             )
             profiler.assertStorageCounts({"_open": 2, "_save": 1, "exists": 2})
             self.assertEqual(profiler.storage_names("_save"), [instance.file.name])
-            self.assertEqual(names, [original_xml, self.form_version.file.name], "the submission's XML and the XForm")
+            profiler.assertFilesOpened([original_xml, self.form_version.file.name])
 
     def test_get_reads_no_file(self):
         instance = self.create()

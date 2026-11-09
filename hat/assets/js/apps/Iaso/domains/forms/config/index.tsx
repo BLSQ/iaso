@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import {
+    ChipList,
     Column,
     formatThousand,
     IconButton,
+    textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
-import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
+import { Project } from 'Iaso/domains/projects/types/project';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
@@ -167,7 +169,19 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                Cell: settings => <ProjectChips projects={settings.value} />,
+                Cell: settings => {
+                    const projects: Project[] = settings.value ?? [];
+                    if (projects.length === 0) return textPlaceholder;
+                    return (
+                        <ChipList
+                            items={projects.map(project => ({
+                                id: project.id ?? project.name,
+                                label: project.name,
+                                color: project.color ?? undefined,
+                            }))}
+                        />
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.name),

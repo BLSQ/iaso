@@ -1,4 +1,3 @@
-import copy
 import json
 import os
 import re
@@ -17,23 +16,26 @@ from django.test import TestCase
 from iaso.models import ERRORED, SUCCESS, Account, Project, Task
 from iaso.tasks import export_mobile_app_setup_for_user as export_module
 from iaso.tasks.export_mobile_app_setup_for_user import SERVER, export_mobile_app_setup_for_user
-from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
+from iaso.tasks.mobile_app_setup.api_calls import API_CALLS
+from iaso.utils import iaso_api_client
 from iaso.utils.encryption import decrypt_file
 
 
 PASSWORD = "supersecret"
-S3 = "https://iaso-bucket.s3.amazonaws.com"
-S3_SIGNATURE = "?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123"
+# The files the API responses reference (form versions, attachments, reports) are signed storage URLs.
+STORAGE = "https://iaso-bucket.s3.amazonaws.com"
+SIGNATURE = "?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123"
+REPORT_PATH = "/test/reports/report_1.zip"
+REPORT_URL = f"{STORAGE}{REPORT_PATH}{SIGNATURE}"
 
 ALL_FEATURE_FLAGS = ["ENTITY", "REPORTS", "PLANNING", "MOBILE_ORG_UNIT_REGISTRY"]
 
-# Attachments of form 10 live on S3 (signed URLs), the one of form 11 on our own server (local storage).
 FORM_ATTACHMENTS = {
     10: [
-        f"{S3}/test/form_attachments/form_a/image_1.png{S3_SIGNATURE}",
-        f"{S3}/test/form_attachments/form_a/image_2.png{S3_SIGNATURE}",
+        f"{STORAGE}/test/form_attachments/form_a/image_1.png{SIGNATURE}",
+        f"{STORAGE}/test/form_attachments/form_a/image_2.png{SIGNATURE}",
     ],
-    11: [f"{SERVER}/media/test/form_attachments/form_b/choices.csv"],
+    11: [f"{STORAGE}/test/form_attachments/form_b/choices.csv{SIGNATURE}"],
 }
 
 
@@ -56,6 +58,11 @@ def _page(results, page, pages, count):
         "pages": pages,
         "limit": 1,
     }
+
+
+def _url_pattern(url):
+    """Matches `url` independently of its query string (ignore a storage signature)."""
+    return re.compile(re.escape(url.split("?")[0]) + r"(\?.*)?$")
 
 
 class FakeIasoServer:
@@ -93,7 +100,7 @@ class FakeIasoServer:
         self.mock.add_callback(responses.GET, f"{SERVER}{path}", callback=callback)
 
     def _file(self, url, body):
-        self.mock.add(responses.GET, re.compile(re.escape(url.split("?")[0]) + r"(\?.*)?$"), body=body)
+        self.mock.add(responses.GET, _url_pattern(url), body=body)
 
     def _register(self):
         self._json(
@@ -114,13 +121,13 @@ class FakeIasoServer:
             "/api/formversions/",
             {
                 "form_versions": [
-                    {"id": 1, "form_id": 10, "file": f"{S3}/test/forms/form_a_v1.xml{S3_SIGNATURE}"},
-                    {"id": 2, "form_id": 11, "file": f"{SERVER}/media/test/forms/form_b_v1.xml"},
+                    {"id": 1, "form_id": 10, "file": f"{STORAGE}/test/forms/form_a_v1.xml{SIGNATURE}"},
+                    {"id": 2, "form_id": 11, "file": f"{STORAGE}/test/forms/form_b_v1.xml{SIGNATURE}"},
                 ]
             },
         )
-        self._file(f"{S3}/test/forms/form_a_v1.xml", b"<form-a/>")
-        self._file(f"{SERVER}/media/test/forms/form_b_v1.xml", b"<form-b/>")
+        self._file(f"{STORAGE}/test/forms/form_a_v1.xml", b"<form-a/>")
+        self._file(f"{STORAGE}/test/forms/form_b_v1.xml", b"<form-b/>")
 
         attachments = [
             {"id": index, "form_id": form_id, "file": url}
@@ -144,15 +151,9 @@ class FakeIasoServer:
         self._paginated("/api/mobile/entitytypes/", [[{"id": 1}]])
         self._json(
             "/api/mobile/reports/",
-            [
-                # Absolute URL: a signed S3 URL or, with a local storage, built by the API from the request.
-                {"name": "Report 1", "url": f"{SERVER}/media/reports/report_1.zip"},
-                # Relative URL: a local storage without request in the serializer context.
-                {"name": "Report 2", "url": "/media/reports/report_2.zip"},
-            ],
+            [{"name": "Report 1", "url": REPORT_URL}],
         )
-        self._file(f"{SERVER}/media/reports/report_1.zip", b"report-1")
-        self._file(f"{SERVER}/media/reports/report_2.zip", b"report-2")
+        self._file(REPORT_URL, b"report-1")
         self._json("/api/mobile/workflows/", {"workflows": []})
 
 
@@ -167,6 +168,10 @@ class ExportMobileAppSetupTestCase(TestCase):
             launcher=self.user,
             account=Account.objects.get(name="test"),
         )
+        # Refactor note:
+        # Because of `upload_file_to_s3`, and `decrypt_file`, the tests write files to disk.
+        # Once we migrate the task to use Django's storage in a subsequent PR, we can use Django's
+        # InMemoryStorage and stop mocking the upload.
         self.out_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.out_dir, ignore_errors=True)
         self.uploaded = []
@@ -245,7 +250,6 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
                 "entitytypes-1.json",
                 "reports.json",
                 "reports/report_1.zip",
-                "reports/report_2.zip",
                 "workflows.json",
                 "orgunits-1.json",
                 "orgunits-2.json",
@@ -280,15 +284,15 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
                 self.assertIn("app_id=com.fixtures.app", call.request.url)
 
     def test_api_calls_config_is_not_mutated(self):
-        api_calls_before = copy.deepcopy(API_CALLS)
+        api_calls_before = [(call, dict(call.default_params)) for call in API_CALLS]
 
         self.run_export(FakeIasoServer())
 
-        self.assertEqual(API_CALLS, api_calls_before)
+        self.assertEqual([(call, dict(call.default_params)) for call in API_CALLS], api_calls_before)
         # Also catches a mutation made by an earlier test run in the same process.
         for call in API_CALLS:
             for param in ["app_id", "page", "limit"]:
-                self.assertNotIn(param, call.get("query_params", {}), call["path"])
+                self.assertNotIn(param, call.default_params, call.path)
 
     def test_file_urls_are_rewritten_to_files_in_the_zip(self):
         self.run_export(FakeIasoServer())
@@ -300,9 +304,8 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
         self.assertEqual(archive.read("forms/form_a_v1.xml"), b"<form-a/>")
 
         reports = json.loads(archive.read("reports.json"))
-        self.assertEqual([r["url"] for r in reports], ["reports/report_1.zip", "reports/report_2.zip"])
+        self.assertEqual([r["url"] for r in reports], ["reports/report_1.zip"])
         self.assertEqual(archive.read("reports/report_1.zip"), b"report-1")
-        self.assertEqual(archive.read("reports/report_2.zip"), b"report-2")
 
         attachments = json.loads(archive.read("formattachments.json"))["results"]
         self.assertEqual(
@@ -313,7 +316,7 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
             self.assertIn(path, names)
         self.assertEqual(
             archive.read("formattachments/10/image_2.png"),
-            f"content of {S3}/test/form_attachments/form_a/image_2.png".encode(),
+            f"content of {STORAGE}/test/form_attachments/form_a/image_2.png".encode(),
         )
 
     def test_manifest_download_urls_point_to_each_attachment(self):
@@ -335,16 +338,20 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
         self.assertEqual(len(server.calls_to("/api/forms/10/manifest/")), 1)
         self.assertEqual(len(server.calls_to("/api/forms/11/manifest/")), 1)
 
-    def test_auth_header_is_only_sent_to_our_own_server(self):
+    def test_auth_header_is_only_sent_to_the_api(self):
         server = FakeIasoServer()
         self.run_export(server)
 
         for call in server.calls:
             url = call.request.url
-            if url.startswith(S3):
-                self.assertNotIn("Authorization", call.request.headers, url)
-            elif not url.startswith(f"{SERVER}/api/apps/current/"):
+            if url.startswith(f"{SERVER}/api/") and not url.startswith(f"{SERVER}/api/apps/current/"):
+                # Including the form manifests
                 self.assertTrue(call.request.headers["Authorization"].startswith("Bearer "), url)
+            else:
+                # The app info (before authentication) and the media files
+                self.assertNotIn("Authorization", call.request.headers, url)
+        self.assertEqual(len(server.calls_to("/api/forms/10/manifest/")), 1)
+        self.assertEqual(len(server.calls_to(REPORT_PATH)), 1)
 
     def test_no_auth_header_when_app_does_not_need_authentication(self):
         server = FakeIasoServer(needs_authentication=False)
@@ -387,7 +394,7 @@ class ExportMobileAppSetupProgressTest(ExportMobileAppSetupTestCase):
         with mock.patch.object(Task, "report_progress_and_stop_if_killed", autospec=True, side_effect=record):
             self.run_export(FakeIasoServer())
 
-        expected_end_value = 2 + sum(call.get("sub_steps", 1) for call in API_CALLS)
+        expected_end_value = 2 + sum(call.sub_steps for call in API_CALLS)
         self.assertEqual(reported[0], (0, "Starting", expected_end_value))
         self.assertEqual(self.task.end_value, expected_end_value)
 
@@ -402,6 +409,8 @@ class ExportMobileAppSetupProgressTest(ExportMobileAppSetupTestCase):
 
 
 class ExportMobileAppSetupRetryTest(ExportMobileAppSetupTestCase):
+    """Test the retries on failed API calls and downloads."""
+
     def test_api_call_is_retried(self):
         server = FakeIasoServer()
         server.mock.replace(responses.GET, f"{SERVER}/api/mobile/forms/", status=502, body="Bad gateway")
@@ -415,23 +424,21 @@ class ExportMobileAppSetupRetryTest(ExportMobileAppSetupTestCase):
 
     def test_download_is_retried(self):
         server = FakeIasoServer()
-        url = f"{SERVER}/media/reports/report_1.zip"
-        server.mock.replace(responses.GET, re.compile(re.escape(url) + r"(\?.*)?$"), status=503)
-        server.mock.add(responses.GET, url, body=b"report-1")
+        server.mock.replace(responses.GET, _url_pattern(REPORT_URL), status=503)
+        server.mock.add(responses.GET, _url_pattern(REPORT_URL), body=b"report-1")
 
         self.run_export(server)
 
         self.assertEqual(self.task.status, SUCCESS, self.task.result)
-        self.assertEqual(len(server.calls_to("/media/reports/report_1.zip")), 2)
+        self.assertEqual(len(server.calls_to(REPORT_PATH)), 2)
         self.assertEqual(self.open_export().read("reports/report_1.zip"), b"report-1")
 
     def test_task_errors_when_retries_are_exhausted(self):
         server = FakeIasoServer()
-        url = f"{SERVER}/media/reports/report_1.zip"
-        server.mock.replace(responses.GET, re.compile(re.escape(url) + r"(\?.*)?$"), status=404)
+        server.mock.replace(responses.GET, _url_pattern(REPORT_URL), status=503)
 
         self.run_export(server)
 
         self.assertEqual(self.task.status, ERRORED)
-        self.assertEqual(len(server.calls_to("/media/reports/report_1.zip")), export_module.MAX_RETRIES)
+        self.assertEqual(len(server.calls_to(REPORT_PATH)), 1 + iaso_api_client.RETRIES)
         self.upload_mock.assert_not_called()

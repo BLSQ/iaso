@@ -30,8 +30,8 @@ class DeviceLogCreateSerializer(ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.user = self.context["user"]
-        self.project = self.context["project"]
+        self.user = self.context.get("user", None)
+        self.project = self.context.get("project", None)
         if self.project and self.project.account:
             self.fields["device"].queryset = Device.objects.all().filter(account=self.project.account)
             self.fields["projects"].child_relation.queryset = Project.objects.all().filter(account=self.project.account)

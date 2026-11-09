@@ -1,4 +1,7 @@
+from typing import Optional
+
 from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, TimestampField
@@ -18,7 +21,7 @@ class ListDeviceSerializer(ModelSerializer):
     last_app_version_id = serializers.CharField(read_only=True, allow_null=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    current_owner = NestedUserSerializer(read_only=True, allow_null=True)
+    current_owner = serializers.SerializerMethodField()
     instance_count = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -36,14 +39,13 @@ class ListDeviceSerializer(ModelSerializer):
         ]
         read_only_fields = fields
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        if instance.current_owner_id:
-            representation["current_owner"] = {
-                "id": instance.current_owner_id,
-                "username": instance.current_owner_username,
-            }
-        return representation
+    @extend_schema_field(NestedUserSerializer(allow_null=True))
+    def get_current_owner(self, obj: Device) -> Optional[dict]:
+        if getattr(obj, "current_owner_id", None):
+            return NestedUserSerializer(
+                instance={"id": obj.current_owner_id, "username": obj.current_owner_username}
+            ).data
+        return None
 
 
 class DetailsDeviceSerializer(ModelSerializer):

@@ -22,7 +22,7 @@ class DeviceFilter(django_filters.FilterSet):
     app_version = CharFilter(field_name="logs__app_version", lookup_expr="icontains")
     app_id = CharFilter(field_name="logs__app_id", lookup_expr="icontains")
     team = django_filters.ModelChoiceFilter(queryset=Team.objects.none(), method="team_search")
-    project_ids = NumberInFilter(field_name="projects__id", lookup_expr="in")
+    project_ids = NumberInFilter(field_name="projects__id", lookup_expr="in", distinct=True)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

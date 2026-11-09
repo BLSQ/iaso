@@ -19,7 +19,7 @@ from iaso.api.common import NumberInFilter
 from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.models.microplanning import Planning
 from iaso.models.microplanning.planning_configs import PlanningConfigQuerySet
-from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.models.org_unit import OrgUnit, OrgUnitQuerySet
 
 
 User = get_user_model()
@@ -95,8 +95,20 @@ class PlanningOrgUnitTreeFilterSet(BasePlanningOrgUnitTreeFilterSet):
             "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth."
         ),
     )
+    include_new_ou = django_filters.BooleanFilter()
+    include_rejected_ou = django_filters.BooleanFilter()
 
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
+        include_rejected_ou = self.form.cleaned_data.get("include_rejected_ou", None)
+        include_new_ou = self.form.cleaned_data.get("include_new_ou", None)
+
+        allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
+        if include_rejected_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
+        if include_new_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
+        queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
+
         queryset = super().filter_queryset(queryset)
 
         empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
@@ -135,6 +147,8 @@ class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
             "The maximum depth of the tree to return, counting from the root of the entire hierarchy. Selecting a subtree does not reset the depth. It cannot be greater than the depth of the selected root + 1."
         ),
     )
+    include_new_ou = django_filters.BooleanFilter()
+    include_rejected_ou = django_filters.BooleanFilter()
 
     class Meta:
         form = BasePlanningOrgUnitTreeFilterSetForm
@@ -144,6 +158,16 @@ class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
         self.form.root_level = len(str(planning.org_unit.path).split("."))
 
     def filter_queryset(self, queryset: OrgUnitQuerySet) -> OrgUnitQuerySet:
+        include_rejected_ou = self.form.cleaned_data.get("include_rejected_ou", None)
+        include_new_ou = self.form.cleaned_data.get("include_new_ou", None)
+
+        allowed_validation_statuses = [OrgUnit.VALIDATION_VALID]
+        if include_rejected_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_REJECTED)
+        if include_new_ou:
+            allowed_validation_statuses.append(OrgUnit.VALIDATION_NEW)
+        queryset = queryset.filter(validation_status__in=allowed_validation_statuses)
+
         queryset = super().filter_queryset(queryset)
         # why the defer(None) ? because OrgUnitQuerySet filter_for_user_and_app_id has an hidden defer("geom")..
         return (
@@ -152,7 +176,3 @@ class PlanningOrgUnitTreeWithGeomFilterSet(BasePlanningOrgUnitTreeFilterSet):
             .select_related("org_unit_type")
             .order_by("id")
         )
-
-
-class PlanningOrgUnitLevelOrgUnitCount(BasePlanningOrgUnitTreeFilterSet):
-    pass

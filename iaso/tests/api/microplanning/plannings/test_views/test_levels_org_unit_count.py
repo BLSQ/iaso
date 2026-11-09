@@ -74,8 +74,12 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
         # create org units
         cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
 
-        cls.ou_root = OrgUnit.objects.create(name="Root", version=cls.source_version)
-        cls.children_1 = OrgUnit.objects.create(parent=cls.ou_root, version=cls.source_version, name="Child 1")
+        cls.ou_root = OrgUnit.objects.create(
+            name="Root", version=cls.source_version, validation_status=OrgUnit.VALIDATION_VALID
+        )
+        cls.children_1 = OrgUnit.objects.create(
+            parent=cls.ou_root, version=cls.source_version, name="Child 1", validation_status=OrgUnit.VALIDATION_VALID
+        )
         cls.children_2 = OrgUnit.objects.create(
             parent=cls.ou_root,
             version=cls.source_version,
@@ -83,47 +87,93 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             org_unit_type=cls.org_unit_type,
             location=Point(x=4, y=50, z=100),
             simplified_geom=cls.mock_multipolygon,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
 
-        cls.children_1_1 = OrgUnit.objects.create(parent=cls.children_1, version=cls.source_version, name="Child 1.1")
-        cls.children_1_2 = OrgUnit.objects.create(parent=cls.children_1, version=cls.source_version, name="Child 1.2")
+        cls.children_1_1 = OrgUnit.objects.create(
+            parent=cls.children_1,
+            version=cls.source_version,
+            name="Child 1.1",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cls.children_1_2 = OrgUnit.objects.create(
+            parent=cls.children_1,
+            version=cls.source_version,
+            name="Child 1.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
 
         cls.children_2_1 = OrgUnit.objects.create(
-            parent=cls.children_2, version=cls.source_version, name="Child 2.1", org_unit_type=cls.org_unit_type_2
+            parent=cls.children_2,
+            version=cls.source_version,
+            name="Child 2.1",
+            org_unit_type=cls.org_unit_type_2,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_1.groups.set([cls.org_unit_group_2])
         cls.children_2_2 = OrgUnit.objects.create(
-            parent=cls.children_2, version=cls.source_version, name="Child 2.2", org_unit_type=cls.org_unit_type
+            parent=cls.children_2,
+            version=cls.source_version,
+            name="Child 2.2",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_2.groups.set([cls.org_unit_group])
 
         cls.children_1_1_1 = OrgUnit.objects.create(
-            parent=cls.children_1_1, version=cls.source_version, name="Child 1.1.1"
+            parent=cls.children_1_1,
+            version=cls.source_version,
+            name="Child 1.1.1",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_1_1_2 = OrgUnit.objects.create(
-            parent=cls.children_1_1, version=cls.source_version, name="Child 1.1.2"
+            parent=cls.children_1_1,
+            version=cls.source_version,
+            name="Child 1.1.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_1_2_1 = OrgUnit.objects.create(
-            parent=cls.children_1_2, version=cls.source_version, name="Child 1.2.1"
+            parent=cls.children_1_2,
+            version=cls.source_version,
+            name="Child 1.2.1",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_1_2_2 = OrgUnit.objects.create(
-            parent=cls.children_1_2, version=cls.source_version, name="Child 1.2.2"
+            parent=cls.children_1_2,
+            version=cls.source_version,
+            name="Child 1.2.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
 
         cls.children_2_1_1 = OrgUnit.objects.create(
-            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.1", org_unit_type=cls.org_unit_type
+            parent=cls.children_2_1,
+            version=cls.source_version,
+            name="Child 2.1.1",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_1_1.groups.set([cls.org_unit_group])
 
         cls.children_2_1_2 = OrgUnit.objects.create(
-            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.2", org_unit_type=cls.org_unit_type
+            parent=cls.children_2_1,
+            version=cls.source_version,
+            name="Child 2.1.2",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_1_2.groups.set([cls.org_unit_group_2])
         cls.children_2_2_1 = OrgUnit.objects.create(
-            parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.1", org_unit_type=cls.org_unit_type
+            parent=cls.children_2_2,
+            version=cls.source_version,
+            name="Child 2.2.1",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_2_2 = OrgUnit.objects.create(
-            parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.2"
+            parent=cls.children_2_2,
+            version=cls.source_version,
+            name="Child 2.2.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
 
         # create planning
@@ -397,3 +447,47 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
                 {"level": 2, "depth": 3, "count": 1},
             ],
         )
+
+    def test_only_valid_org_unit_should_be_included(self):
+        # tree should normally be
+        # root
+        # |── children_2 -> level 1 config
+        #   |── children_2_1 -> level 2 config
+        #     |── children_2_1_1
+        #     |── children_2_1_2
+        # so data should be:
+        # level: 0, count: 1
+        # level: 1, count: 1
+        # level: 2, count: 1
+        # But setting children_2 to REJECTED or NEW
+        # root
+        # level: 0, count: 1
+        self.client.force_authenticate(self.superuser)
+        body = []
+        self.assertValidBody(body)
+        res = self.client.post(self.get_url(), data=body)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 3)
+        self.assertCountEqual(
+            res_data,
+            [
+                {"level": 0, "depth": 1, "count": 1},
+                {"level": 1, "depth": 2, "count": 1},
+                {"level": 2, "depth": 3, "count": 1},
+            ],
+        )
+
+        for validation_status in [OrgUnit.VALIDATION_REJECTED, OrgUnit.VALIDATION_NEW]:
+            with self.subTest(f"validation status {validation_status}"):
+                self.children_2.validation_status = validation_status
+                self.children_2.save()
+
+                body = []
+                self.assertValidBody(body)
+                res = self.client.post(self.get_url(), data=body)
+                res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                self.assertValidResponse(res_data, 1)
+                self.assertCountEqual(
+                    res_data,
+                    [{"level": 0, "depth": 1, "count": 1}],
+                )

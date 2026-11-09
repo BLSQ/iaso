@@ -409,16 +409,24 @@ def check_period(form: Form, period: Optional[str], errors: list) -> None:
 
 
 def _form_version(batch: Batch, form: Form, version_id: Any, errors: list) -> Optional[FormVersion]:
+    """The version `_version` names (a number is read as text, as on PATCH), the latest one without it."""
     if version_id is None:
         form_version = batch.cached(("latest_version", form.id), lambda: FormVersion.objects.latest_version(form))
-    elif isinstance(version_id, str):
-        form_version = FormVersion.objects.find_for_form(form.id, version_id, batch.form_versions_cache)
-    else:
-        form_version = None
+        if form_version is None or not form_version.file:
+            errors.append(SubmissionError("INVALID", "form_id", f"Form {form.id} has no version to fill"))
+            return None
+        return form_version
+    form_version = FormVersion.objects.find_for_form(form.id, str(version_id), batch.form_versions_cache)
     if form_version is None or not form_version.file:
-        errors.append(SubmissionError("INVALID", "content._version", f"Unknown version of form {form.id}"))
+        errors.append(unknown_version(version_id))
         return None
     return form_version
+
+
+def unknown_version(version_id: Any) -> SubmissionError:
+    return SubmissionError(
+        "UNKNOWN_REFERENCE", "content._version", "No such version of this form", answer=str(version_id)
+    )
 
 
 def _uuid(batch: Batch, sent: Optional[uuid_module.UUID], instance_id: Optional[str], errors: list) -> str:

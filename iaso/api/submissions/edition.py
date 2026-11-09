@@ -38,6 +38,7 @@ from iaso.api.submissions.creation import (
     slot_conflict,
     slot_key,
     taken_slot,
+    unknown_version,
 )
 from iaso.models import FormVersion, Instance, OrgUnit
 from iaso.odk.flat_content import FlatContent, dropped_answers
@@ -221,11 +222,7 @@ def _form_version(instance: Instance, version_id: Any, errors: list) -> Optional
         return form_version
     form_version = FormVersion.objects.find_for_form(instance.form_id, str(version_id))
     if form_version is None or not form_version.file:
-        errors.append(
-            SubmissionError(
-                "UNKNOWN_REFERENCE", "content._version", "No such version of this form", answer=str(version_id)
-            )
-        )
+        errors.append(unknown_version(version_id))
         return None
     return form_version
 

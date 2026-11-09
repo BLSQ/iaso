@@ -185,7 +185,7 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
             ({"period": "2026Q4"}, [("INVALID", "period")]),
             ({"period": None}, [("INVALID", "period")]),
             ({"project_id": self.france_project.id}, [("UNKNOWN_REFERENCE", "project_id")]),
-            ({"content": {"_version": "1999"}}, [("INVALID", "content._version")]),
+            ({"content": {"_version": "1999"}}, [("UNKNOWN_REFERENCE", "content._version")]),
             ({"content": {"nope": "1"}}, [("UNKNOWN_QUESTION", "content.nope")]),
             # nothing to remove in a new submission
             ({"content": {"child": None}}, [("INVALID", "content.child")]),
@@ -203,6 +203,28 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
             self.post(self.submission(org_unit_id=self.antwerp.id)),
             [("row-1", "refused", [("UNKNOWN_REFERENCE", "org_unit_id")])],
         )
+
+    @requires_odk_cli
+    def test_version(self):
+        """`_version` as PATCH takes it: an unknown one is UNKNOWN_REFERENCE, a number is read as text."""
+        data = self.assertJSONResponse(
+            self.post(self.submission(content={"_version": "1999"})), status.HTTP_400_BAD_REQUEST
+        )
+        error = data["results"][0]["errors"][0]
+        self.assertEqual(
+            (error["code"], error["field"], error["message"], error["answer"]),
+            ("UNKNOWN_REFERENCE", "content._version", "No such version of this form", "1999"),
+        )
+
+        # a form nobody can fill yet
+        census = m.Form.objects.create(name="Belgium census", period_type="MONTH")
+        census.projects.add(self.project)
+        census.org_unit_types.add(self.district)
+        self.assertRefused(
+            self.post(self.submission(form_id=census.id)), [("row-1", "refused", [("INVALID", "form_id")])]
+        )
+
+        self.assertEqual(self.create(content={"_version": int(VERSION)}).json["_version"], VERSION)
 
     @requires_odk_cli
     def test_refs_are_unique(self):

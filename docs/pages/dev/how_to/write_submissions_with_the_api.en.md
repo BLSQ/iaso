@@ -87,7 +87,9 @@ curl -X POST "$IASO/api/submissions/" \
 }
 ```
 
-`503`: the submissions can't be checked right now; send them again later.
+When odk_cli can't check a submission, it's refused with `NOT_CHECKED` (a `400`, never a `5xx`, which a load
+balancer would take for an unhealthy server) and the ones after it aren't checked: "The server is busy: send it again
+later" when it timed out, "This submission can't be checked with this form" otherwise (a form odk_cli fails on).
 
 ### With files
 

@@ -68,6 +68,10 @@ class InstanceEditorUnavailable(Exception):
     """odk_cli isn't installed, or failed in a way that isn't the submission's fault."""
 
 
+class InstanceEditorBusy(InstanceEditorUnavailable):
+    """odk_cli didn't answer in time: the server is busy, trying again later may work."""
+
+
 def edit_instance(
     xform: str,
     submission: bytes,
@@ -138,7 +142,7 @@ def _run(
         except FileNotFoundError:
             raise InstanceEditorUnavailable(f"odk_cli isn't installed at {settings.ODK_CLI_PATH} (ODK_CLI_PATH)")
         except subprocess.TimeoutExpired:
-            raise InstanceEditorUnavailable(f"odk_cli didn't answer within {TIMEOUT_SECONDS}s")
+            raise InstanceEditorBusy(f"odk_cli didn't answer within {TIMEOUT_SECONDS}s")
 
     if result.returncode == 0:
         if warnings is not None and result.stderr.strip():

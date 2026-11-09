@@ -9,6 +9,7 @@ from rest_framework import status
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api.submissions.creation import recheck_under_lock
+from iaso.odk.instance_editor import InstanceEditorBusy
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.tests.api.submissions.fixtures import URL, VERSION, SubmissionsTestCase, requires_odk_cli
 
@@ -351,7 +352,26 @@ class SubmissionsCreateTestCase(SubmissionsTestCase):
 
     @override_settings(ODK_CLI_PATH="/nonexistent/odk_cli")
     def test_odk_cli_unavailable(self):
-        response = self.post(self.submission())
+        """A 400 rather than a 5xx (a load balancer would take the server for unhealthy), logged as an error; the
+        submissions after it aren't checked."""
+        with mock.patch("iaso.api.submissions.common.logger") as logger:
+            response = self.post(self.submission(ref="a"), self.submission(ref="b"))
 
-        self.assertJSONResponse(response, status.HTTP_503_SERVICE_UNAVAILABLE)
-        self.assertFalse(m.Instance.objects.exists())
+        data = self.assertRefused(response, [("a", "refused", [("NOT_CHECKED", None)])])
+        self.assertEqual(data["results"][0]["errors"][0]["message"], "This submission can't be checked with this form")
+        logger.warning.assert_not_called()
+        (message, failure), _ = logger.error.call_args
+        self.assertIn("isn't installed at /nonexistent/odk_cli", message % failure)
+
+    def test_odk_cli_busy(self):
+        busy = InstanceEditorBusy("didn't answer within 10s")
+        with (
+            mock.patch("iaso.api.submissions.creation.new_instance", side_effect=busy),
+            mock.patch("iaso.api.submissions.common.logger") as logger,
+        ):
+            response = self.post(self.submission())
+
+        data = self.assertRefused(response, [("row-1", "refused", [("NOT_CHECKED", None)])])
+        self.assertEqual(data["results"][0]["errors"][0]["message"], "The server is busy: send it again later")
+        logger.warning.assert_called_once_with("Submission not checked: %s", busy)
+        logger.error.assert_not_called()

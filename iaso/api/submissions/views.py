@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from hat.api_import.models import APIImport
 from iaso.api.submissions.audit import finish_audit, start_audit
-from iaso.api.submissions.common import Batch, SubmissionError
+from iaso.api.submissions.common import Batch, SubmissionError, not_checked
 from iaso.api.submissions.creation import PreparedSubmission, prepare_submission, recheck_under_lock, save_submissions
 from iaso.api.submissions.edition import PreparedPatch, prepare_patch, save_patch
 from iaso.api.submissions.permissions import HasSubmissionsReadPermission, HasSubmissionsUpdatePermission
@@ -78,7 +78,6 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             400: OpenApiResponse(SubmissionErrorsSerializer, description="Refused: nothing was saved"),
             403: OpenApiResponse(description="The submission is locked"),
             404: OpenApiResponse(description="No such submission for this user"),
-            503: OpenApiResponse(description="odk_cli is unavailable"),
         },
     )
     def partial_update(self, request: Request, pk=None) -> Response:
@@ -117,8 +116,10 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
                 return locked, instance
             try:
                 patch, errors = prepare_patch(request.user, instance, body.validated_data, files)
-            except InstanceEditorUnavailable:
-                return _unavailable(), instance
+            except InstanceEditorUnavailable as failure:
+                return Response(
+                    {"errors": [not_checked(failure).as_json()]}, status=status.HTTP_400_BAD_REQUEST
+                ), instance
             if errors:
                 errors_json = [error.as_json() for error in errors]
                 return Response({"errors": errors_json}, status=status.HTTP_400_BAD_REQUEST), instance
@@ -138,7 +139,6 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
             201: SubmissionsResultSerializer,
             200: OpenApiResponse(SubmissionsResultSerializer, description="dry_run: every submission is valid"),
             400: OpenApiResponse(SubmissionsResultSerializer, description="Refused: nothing was saved"),
-            503: OpenApiResponse(description="odk_cli is unavailable"),
         },
     )
     def create(self, request: Request) -> Response:
@@ -171,8 +171,10 @@ class SubmissionsViewSet(viewsets.GenericViewSet):
                 continue
             try:
                 submission, errors = prepare_submission(batch, ref, envelope.validated_data)
-            except InstanceEditorUnavailable:
-                return _unavailable()
+            except InstanceEditorUnavailable as failure:
+                # the next ones aren't checked: odk_cli would most likely fail on them too
+                results.append(_refused(ref, [not_checked(failure)]))
+                break
             if errors:
                 results.append(_refused(ref, errors))
                 continue
@@ -220,13 +222,6 @@ def _body_and_files(request: Request, multipart_serializer) -> tuple[Any, dict[s
     multipart = multipart_serializer(data=request.data)
     multipart.is_valid(raise_exception=True)
     return multipart.validated_data["payload"], {name: request.FILES[name] for name in request.FILES}
-
-
-def _unavailable() -> Response:
-    return Response(
-        {"detail": "Submissions can't be checked right now, try again later"},
-        status=status.HTTP_503_SERVICE_UNAVAILABLE,
-    )
 
 
 def _preview(patch: PreparedPatch) -> dict[str, Any]:

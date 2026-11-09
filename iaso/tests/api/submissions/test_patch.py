@@ -1,6 +1,9 @@
 import copy
 
+from unittest import mock
+
 from django.core.files.base import ContentFile
+from django.test import override_settings
 from pyxform.builder import create_survey_element_from_dict
 from rest_framework import status
 
@@ -202,6 +205,14 @@ class SubmissionsPatchTestCase(SubmissionsTestCase):
             with self.subTest(body=body):
                 data = self.assertJSONResponse(self.patch(body), status.HTTP_400_BAD_REQUEST)
                 self.assertEqual({error["code"] for error in data["errors"]}, {"INVALID"})
+
+    def test_odk_cli_unavailable(self):
+        with (
+            override_settings(ODK_CLI_PATH="/nonexistent/odk_cli"),
+            mock.patch("iaso.api.submissions.common.logger") as logger,
+        ):
+            self.assertRefused({"content": {"head_name": "Alicia"}}, [("NOT_CHECKED", None)])
+        logger.error.assert_called_once()
 
     def test_who_can_patch(self):
         reader = self.create_user_with_profile(

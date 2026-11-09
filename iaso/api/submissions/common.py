@@ -1,6 +1,8 @@
 """What creating and patching submissions share: the problems as the API reports them, the request's caches and
 files, the envelope's checks (org unit, period, one submission per slot), and running a submission through odk_cli."""
 
+import logging
+
 from dataclasses import dataclass
 from io import BytesIO
 from types import SimpleNamespace
@@ -14,8 +16,11 @@ from iaso.enketo.enketo_xml import ORG_UNIT_INJECTABLE_QUESTION_NAMES, build_sub
 from iaso.models import Form, Instance, OrgUnit, Project
 from iaso.odk.flat_content import ContentProblem, FlatContent, HeldBack
 from iaso.odk.form_files import local_copy
-from iaso.odk.instance_editor import InstanceEditError
+from iaso.odk.instance_editor import InstanceEditError, InstanceEditorBusy, InstanceEditorUnavailable
 from iaso.periods import detect
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -96,6 +101,16 @@ def run_form(
     if refused:
         return None, content_errors(refused)
     return FormRun(xml=xml, json=computed, warnings=content_errors(ignored)), []
+
+
+def not_checked(failure: InstanceEditorUnavailable) -> SubmissionError:
+    """odk_cli couldn't check the submission: a 400 all the same, as a 5xx makes a load balancer take the server for
+    unhealthy. Logged: busy as a warning, anything else (a crash on the form, odk_cli missing) as an error."""
+    if isinstance(failure, InstanceEditorBusy):
+        logger.warning("Submission not checked: %s", failure)
+        return SubmissionError("NOT_CHECKED", None, "The server is busy: send it again later")
+    logger.error("Submission not checked: %s", failure)
+    return SubmissionError("NOT_CHECKED", None, "This submission can't be checked with this form")
 
 
 def content_errors(problems: list[ContentProblem]) -> list[SubmissionError]:

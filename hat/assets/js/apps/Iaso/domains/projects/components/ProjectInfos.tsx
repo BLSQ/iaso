@@ -18,7 +18,7 @@ export type ProjectForm = {
     id?: Form;
     app_id: Form;
     description: Form;
-    name: Form;
+    name: { value: string; errors: Array<string> };
     feature_flags: {
         value: Array<ProjectFeatureFlag> | undefined;
         errors: Array<string>;

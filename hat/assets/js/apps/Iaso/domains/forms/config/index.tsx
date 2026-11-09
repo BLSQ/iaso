@@ -3,10 +3,10 @@ import {
     Column,
     formatThousand,
     IconButton,
+    Setting,
     useSafeIntl,
 } from 'bluesquare-components';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
-import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
@@ -19,8 +19,9 @@ import {
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { useDeleteForm } from '../hooks/useDeleteForm';
+import { useGetProjectChips } from '../hooks/useGetProjectChips';
 import MESSAGES from '../messages';
-import { FormsParams } from '../types/forms';
+import { Form, FormsParams } from '../types/forms';
 
 export const baseUrl = baseUrls.forms;
 
@@ -160,6 +161,7 @@ export const useFormsTableColumns = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
+    const getProjectChips = useGetProjectChips();
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -167,7 +169,8 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                Cell: settings => <ProjectChips projects={settings.value} />,
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getProjectChips(original.projects),
             },
             {
                 Header: formatMessage(MESSAGES.name),
@@ -258,6 +261,7 @@ export const useFormsTableColumns = ({
         orgUnitId,
         hasDhis2Module,
         deleteForm,
+        getProjectChips,
     ]);
 };
 

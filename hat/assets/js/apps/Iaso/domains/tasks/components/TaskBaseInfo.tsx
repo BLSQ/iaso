@@ -12,7 +12,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import getDisplayName from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
 
-import { Task } from '../types';
+import { Task, TaskResult, TaskResultFile } from '../types';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -37,22 +37,34 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
     );
 };
 
+const getResultFile = (
+    data: TaskResult['data'],
+): TaskResultFile | undefined => {
+    if (typeof data === 'string') {
+        return data.startsWith('file:')
+            ? { file: data.replace('file:', '') }
+            : undefined;
+    }
+    // External tasks write their result through the API, so ignore malformed data like the backend does.
+    return typeof data?.file === 'string' && data.file ? data : undefined;
+};
+
 type Props = {
-    task: Task<any>;
+    task: Task<TaskResult>;
     size?: OverridableStringUnion<'small' | 'medium', TablePropsSizeOverrides>;
 };
 export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
     const { formatMessage } = useSafeIntl();
-    const taskHasDownloadableFile =
-        task.result &&
-        task.result.data &&
-        (typeof task.result.data === 'string' ||
-            task.result.data instanceof String) &&
-        task.result.data.startsWith('file:');
+    const resultFile = getResultFile(task.result?.data);
+    const taskHasDownloadableFile = Boolean(resultFile);
+    const fileExpiresAt = resultFile?.expires_at
+        ? moment(resultFile.expires_at)
+        : undefined;
+    const fileHasExpired = Boolean(fileExpiresAt?.isSameOrBefore(moment()));
     const { data } = useQuery(
         ['taskDetails', task.id],
         () => getRequest(`/api/tasks/${task.id}/presigned-url/`),
-        { enabled: Boolean(taskHasDownloadableFile) },
+        { enabled: taskHasDownloadableFile && !fileHasExpired },
     );
     return (
         <>
@@ -90,6 +102,18 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
                             value={task.progress_message}
                         />
                     )}
+                    {fileExpiresAt && (
+                        <Row
+                            label={formatMessage(MESSAGES.fileAvailableUntil)}
+                            value={
+                                fileHasExpired
+                                    ? formatMessage(MESSAGES.fileExpired, {
+                                          date: fileExpiresAt.format('LTS'),
+                                      })
+                                    : `${fileExpiresAt.format('LTS')} (${fileExpiresAt.fromNow()})`
+                            }
+                        />
+                    )}
                 </TableBody>
             </Table>
             {taskHasDownloadableFile && (
@@ -97,7 +121,7 @@ export const TaskBaseInfo: FunctionComponent<Props> = ({ task, size }) => {
                     variant="contained"
                     href={data?.presigned_url}
                     target="_blank"
-                    disabled={!data || !data.presigned_url}
+                    disabled={fileHasExpired || !data || !data.presigned_url}
                 >
                     {formatMessage(MESSAGES.exportMobileAppDownloadBtn)}
                 </Button>

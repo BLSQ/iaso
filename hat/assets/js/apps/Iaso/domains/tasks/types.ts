@@ -32,6 +32,17 @@ export type Task<T> = {
     polio_notification_import_id?: number;
 };
 
+export type TaskResultFile = {
+    file: string;
+    expires_at?: string; // DateTime
+};
+
+// A file is reported either as "file:<name>", or as { file, expires_at } when it expires.
+export type TaskResult = {
+    result: string;
+    data?: Nullable<string | TaskResultFile>;
+};
+
 export type TaskLog = {
     message: string;
     created_at: number; // date

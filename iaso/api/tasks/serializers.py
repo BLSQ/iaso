@@ -80,6 +80,19 @@ class DeploymentStatusSerializer(serializers.Serializer):
     blocking_tasks = DeploymentStatusTaskGroupSerializer(many=True, read_only=True)
 
 
+class TaskPresignedUrlSerializer(serializers.Serializer):
+    presigned_url = serializers.URLField(
+        read_only=True,
+        allow_null=True,
+        help_text="Temporary URL to download the file produced by the task. Null if the file has expired.",
+    )
+    expires_at = serializers.DateTimeField(
+        read_only=True,
+        allow_null=True,
+        help_text="Date after which the file can no longer be downloaded. Null if the file does not expire.",
+    )
+
+
 class ExternalTaskSerializer(TaskSerializer):
     def update(self, task, validated_data):
         has_progress_message = validated_data.get("progress_message", None) is not None

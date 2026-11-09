@@ -1752,6 +1752,8 @@
     "iaso.task.label.SUCCESS": "Success",
     "iaso.tasks.errored": "Errored",
     "iaso.tasks.exported": "Exported",
+    "iaso.tasks.fileAvailableUntil": "File available until",
+    "iaso.tasks.fileExpired": "Expired on {date}",
     "iaso.tasks.killed": "Killed",
     "iaso.tasks.killSignalSent": "Kill signal sent",
     "iaso.tasks.killTask": "Stop the task",

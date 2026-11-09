@@ -18,7 +18,7 @@ def clean_up_devices(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0413_remove_mobile_change_requests_tab_test_schema"),
+        ("iaso", "0414_add_mobile_stock_home_feature_flag"),
     ]
 
     operations = [

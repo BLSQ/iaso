@@ -2,8 +2,8 @@ from iaso.test import IasoMigratorTestCase
 
 
 class Test0414DirectMigration(IasoMigratorTestCase):
-    migrate_from = ("iaso", "0413_remove_mobile_change_requests_tab_test_schema")
-    migrate_to = ("iaso", "0414_remove_device_imei_remove_device_projects_and_more")
+    migrate_from = ("iaso", "0414_add_mobile_stock_home_feature_flag")
+    migrate_to = ("iaso", "0415_remove_device_imei_remove_device_projects_and_more")
     num_queries = 36
 
     def prepare(self):

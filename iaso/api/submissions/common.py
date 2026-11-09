@@ -13,6 +13,7 @@ from django.db import connection
 from iaso.enketo.enketo_xml import ORG_UNIT_INJECTABLE_QUESTION_NAMES, build_substitutions
 from iaso.models import Form, Instance, OrgUnit, Project
 from iaso.odk.flat_content import ContentProblem, FlatContent, HeldBack
+from iaso.odk.form_files import local_copy
 from iaso.odk.instance_editor import InstanceEditError
 from iaso.periods import detect
 
@@ -219,10 +220,10 @@ def org_unit_context(org_unit: OrgUnit, form_names: set) -> dict[str, str]:
     return {key.removeprefix(".//"): "" if value is None else str(value) for key, value in substitutions.items()}
 
 
-def form_csvs(form: Form) -> dict[str, bytes]:
-    """The form's CSV attachments, for `pulldata()`."""
+def form_csvs(form: Form) -> dict[str, str]:
+    """The paths of local copies of the form's CSV attachments, by name, for `pulldata()`."""
     return {
-        attachment.name: read_file(attachment.file)
+        attachment.name: local_copy(attachment.file)
         for attachment in form.attachments.filter(name__iendswith=".csv").order_by("id")
     }
 

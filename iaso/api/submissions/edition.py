@@ -42,6 +42,7 @@ from iaso.api.submissions.common import (
 )
 from iaso.models import FormVersion, Instance, OrgUnit
 from iaso.odk.flat_content import FlatContent, dropped_answers
+from iaso.odk.form_files import local_copy
 from iaso.odk.instance_editor import EditProblem, edit_instance
 from iaso.odk.submission_xml import NoSuchElement, move_to_version, remove_repeat_instances
 
@@ -145,9 +146,10 @@ def prepare_patch(
         except NoSuchElement as missing:
             field_name = next(name for name, path in answers.removed if path == str(missing))
             return None, [SubmissionError("INVALID", field_name, "No such repeat instance in this submission")]
-    xform = read_file(form_version.file)
+    xform = local_copy(form_version.file)
     if moved:
-        submission = move_to_version(submission, xform, form_version.version_id)
+        with open(xform, "rb") as local:
+            submission = move_to_version(submission, local.read(), form_version.version_id)
 
     org_unit = patch.org_unit or instance.org_unit
     prefilled = org_unit_context(org_unit, flat.names()) if org_unit else {}

@@ -2,6 +2,7 @@
 method: a query added in the per-submission loop, or a file read for each submission instead of once per request, fails
 here with the profiler's report."""
 
+from django.core.files.base import ContentFile
 from rest_framework import status
 
 from iaso.tests.api.submissions.fixtures import URL, SubmissionsTestCase, requires_odk_cli
@@ -62,10 +63,25 @@ class SubmissionsQueriesTestCase(SubmissionsTestCase):
                 },
                 exclude=PERMISSIONS,
             )
-            # the XForm read once per request; per submission, its XML saved (`exists`: Django's available name check)
+            # the XForm read once (its local copy made); per submission, its XML saved (`exists`: Django's available
+            # name check)
             profiler.assertStorageCalls({"_open": [self.form_version.file.name]}, exclude=("_save", "exists"))
             profiler.assertStorageCounts({"_open": 1, "_save": 10, "exists": 10})
             profiler.assertFilesOpened([self.form_version.file.name])
+
+    def test_post_reads_the_xform_once_per_server(self):
+        self.post_profiled(1)
+        response, profiler = self.post_profiled(1)
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        with profiler.report_on_failure("submissions_post_again.md"):
+            profiler.assertFilesOpened([])
+            profiler.assertStorageCounts({"_save": 1, "exists": 1})
+
+        # a new version: new files, read once
+        self.form_version.file.save("household.xml", ContentFile(self.form_version.file.read()))
+        _, profiler = self.post_profiled(1)
+        profiler.assertFilesOpened([self.form_version.file.name])
 
     def test_post_per_request_tables_dont_grow(self):
         _, one = self.post_profiled(1)
@@ -117,13 +133,12 @@ class SubmissionsQueriesTestCase(SubmissionsTestCase):
                 },
                 exclude=PERMISSIONS,
             )
-            # read: the submission's XML and the XForm, each call (no cache yet); a new XML saved next to the old one
-            profiler.assertStorageCalls(
-                {"_open": [original_xml, self.form_version.file.name]}, exclude=("_save", "exists")
-            )
-            profiler.assertStorageCounts({"_open": 2, "_save": 1, "exists": 2})
+            # read: the submission's XML only, the XForm's local copy made when it was created; a new XML saved next to
+            # the old one
+            profiler.assertStorageCalls({"_open": [original_xml]}, exclude=("_save", "exists"))
+            profiler.assertStorageCounts({"_open": 1, "_save": 1, "exists": 2})
             self.assertEqual(profiler.storage_names("_save"), [instance.file.name])
-            profiler.assertFilesOpened([original_xml, self.form_version.file.name])
+            profiler.assertFilesOpened([original_xml])
 
     def test_get_reads_no_file(self):
         instance = self.create()

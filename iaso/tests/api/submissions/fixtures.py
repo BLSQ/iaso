@@ -1,11 +1,13 @@
 """A household survey built with pyxform, as an uploaded XLSForm would be, for the submissions API tests."""
 
 import os
+import tempfile
 
 from unittest import skipUnless
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from pyxform.builder import create_survey_element_from_dict
 from rest_framework import status
 
@@ -127,6 +129,12 @@ class SubmissionsTestCase(SwaggerTestCaseMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.client.force_authenticate(self.user)
+        # the local copies of the forms' files: none from another test
+        cache = tempfile.TemporaryDirectory()
+        self.addCleanup(cache.cleanup)
+        override = override_settings(ODK_CLI_CACHE_DIR=cache.name)
+        override.enable()
+        self.addCleanup(override.disable)
 
     def submission(self, **overrides):
         content = overrides.pop("content", {})

@@ -27,7 +27,6 @@ from iaso.api.submissions.common import (
     form_csvs,
     lock,
     org_unit_context,
-    read_file,
     run_form,
     slot_conflict,
     slot_key,
@@ -36,6 +35,7 @@ from iaso.api.submissions.common import (
 )
 from iaso.models import Entity, EntityType, Form, FormVersion, Instance, OrgUnit, Project
 from iaso.odk.flat_content import INSTANCE_ID, FlatContent, same_text, to_xml_text
+from iaso.odk.form_files import local_copy
 from iaso.odk.instance_editor import new_instance
 
 
@@ -163,7 +163,7 @@ def prepare_submission(batch: Batch, ref: str, data: dict[str, Any]) -> tuple[Op
         answers.held_back,
         form,
         lambda: new_instance(
-            batch.cached(("xform", form_version.id), lambda: read_file(form_version.file)),
+            local_copy(form_version.file),
             prefilled,
             answers.answers,
             batch.cached(("csvs", form.id), lambda: form_csvs(form)),

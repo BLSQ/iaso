@@ -61,7 +61,7 @@ describe('useFormsTableColumns', () => {
         vi.clearAllMocks();
     });
 
-    it('passes the projects value to useGetProjectChips', () => {
+    it('passes the row projects to useGetProjectChips', () => {
         mockGetProjectChips.mockReturnValue('chips');
         const { result } = renderHook(() =>
             useFormsTableColumns({
@@ -75,7 +75,9 @@ describe('useFormsTableColumns', () => {
 
         const projectsCol = result.current.find(col => col.id === 'projects');
         const projects = [{ id: 1, name: 'Census' }];
-        expect(projectsCol?.Cell?.({ value: projects })).toBe('chips');
+        expect(
+            projectsCol?.Cell?.({ row: { original: { projects } } }),
+        ).toBe('chips');
         expect(mockGetProjectChips).toHaveBeenCalledWith(projects);
     });
 });

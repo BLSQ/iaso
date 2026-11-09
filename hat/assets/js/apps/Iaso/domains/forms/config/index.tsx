@@ -4,9 +4,7 @@ import {
     formatThousand,
     IconButton,
     Setting,
-    textPlaceholder,
     useSafeIntl,
-    ChipList,
 } from 'bluesquare-components';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
@@ -171,19 +169,8 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                Cell: ({ row: { original } }: Setting<Form>) => {
-                    const projects = original.projects ?? [];
-                    if (projects.length === 0) return textPlaceholder;
-                    return (
-                        <ChipList
-                            items={projects.map(project => ({
-                                id: project.id ?? project.name,
-                                label: project.name,
-                                color: project.color ?? undefined,
-                            }))}
-                        />
-                    );
-                },
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getProjectChips(original.projects),
             },
             {
                 Header: formatMessage(MESSAGES.name),

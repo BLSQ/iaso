@@ -2,6 +2,8 @@ import datetime
 
 from unittest import TestCase
 
+from django.utils import timezone
+
 from iaso.periods import (
     DayPeriod,
     FinancialNovPeriod,
@@ -137,7 +139,7 @@ class PeriodTests(TestCase):
 
     def test_bound_sanity(self):
         # this check is here as a reminder to update the higher bound once we approach the original 2030 bound
-        current = datetime.datetime.now()
+        current = timezone.now()
         self.assertLess(current.year + 2, int(YearPeriod.HIGHER_BOUND))
         year, _ = Period.from_string(MonthPeriod.HIGHER_BOUND).parts
         self.assertLess(current.year + 2, year)

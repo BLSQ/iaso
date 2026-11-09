@@ -46,6 +46,7 @@ class FeatureFlag(models.Model):
     LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
     HOME_OFFLINE = "HOME_OFFLINE"
     MOBILE_STOCK = "MOBILE_STOCK"
+    MOBILE_STOCK_HOME = "MOBILE_STOCK_HOME"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),

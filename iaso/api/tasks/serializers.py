@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
@@ -71,6 +70,19 @@ class DeploymentStatusSerializer(serializers.Serializer):
     blocking_tasks = DeploymentStatusTaskGroupSerializer(many=True, read_only=True)
 
 
+class TaskPresignedUrlSerializer(serializers.Serializer):
+    presigned_url = serializers.URLField(
+        read_only=True,
+        allow_null=True,
+        help_text="Temporary URL to download the file produced by the task. Null if the file has expired.",
+    )
+    expires_at = serializers.DateTimeField(
+        read_only=True,
+        allow_null=True,
+        help_text="Date after which the file can no longer be downloaded. Null if the file does not expire.",
+    )
+
+
 class ExternalTaskSerializer(TaskSerializer):
     def update(self, task, validated_data):
         has_progress_message = validated_data.get("progress_message", None) is not None
@@ -90,7 +102,7 @@ class ExternalTaskSerializer(TaskSerializer):
                 or validated_data["status"] == ERRORED
                 or validated_data["status"] == KILLED
             ):
-                task.ended_at = datetime.now()
+                task.ended_at = timezone.now()
         if has_progress_message:
             task.progress_message = validated_data["progress_message"]
         if has_progress_value:
@@ -145,7 +157,7 @@ class ExternalTaskPostSerializer(serializers.Serializer):
             name=name,
             status=RUNNING,
             external=True,
-            started_at=datetime.now(),
+            started_at=timezone.now(),
             should_be_killed=False,
         )
         task.save()

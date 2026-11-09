@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from iaso.models import AlgorithmRun, Link, MatchingAlgorithm, OrgUnit
 
@@ -105,7 +105,7 @@ class Algorithm:
             )
 
             index = index + 1
-        run.ended_at = datetime.now()
+        run.ended_at = timezone.now()
         run.result = result
         run.finished = True
         run.save()

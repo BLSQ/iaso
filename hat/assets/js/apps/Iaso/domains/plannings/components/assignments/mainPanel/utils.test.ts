@@ -1,11 +1,11 @@
-import { PlanningLevelTreeNode } from 'Iaso/api/plannings';
 import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
-import { Assignment } from './types';
+import { Assignment, LevelOrgUnitNode } from './types';
 import {
     countOrgUnitsOffMap,
     getAssigneeByOrgUnitId,
     getAssigneeColorByOrgUnitId,
     getLevelOrgUnitRows,
+    getLevelTreeParams,
     getTeamIdByOrgUnitId,
 } from './utils';
 
@@ -56,31 +56,28 @@ describe('getAssigneeColorByOrgUnitId', () => {
 });
 
 describe('countOrgUnitsOffMap', () => {
-    const makeNode = (
-        id: number,
-        level: number,
-        hasShape: boolean,
-        hasLocation: boolean,
-    ): PlanningLevelTreeNode =>
-        ({
-            id,
-            level,
-            has_geo_json: hasShape,
-            has_location: hasLocation,
-        }) as PlanningLevelTreeNode;
-    const levelTree = [
-        makeNode(1, 1, true, false),
-        makeNode(2, 1, false, true),
-        makeNode(3, 1, false, false),
-        makeNode(4, 2, false, false),
+    const nodes = [
+        { has_geo_json: true, has_location: false },
+        { has_geo_json: false, has_location: true },
+        { has_geo_json: false, has_location: false },
     ];
 
-    it('counts the org units of the level with neither a shape nor a drawn point', () => {
-        expect(countOrgUnitsOffMap(levelTree, 1, true)).toBe(1);
+    it('counts the org units with neither a shape nor a drawn point', () => {
+        expect(countOrgUnitsOffMap(nodes, true)).toBe(1);
     });
 
     it('counts org units with only a location when points are not drawn', () => {
-        expect(countOrgUnitsOffMap(levelTree, 1, false)).toBe(2);
+        expect(countOrgUnitsOffMap(nodes, false)).toBe(2);
+    });
+});
+
+describe('getLevelTreeParams', () => {
+    it('starts from the planning root without a level for level 0', () => {
+        expect(getLevelTreeParams(0, 2)).toEqual({ max_depth: 2 });
+    });
+
+    it('starts from the level and stops after the requested number of depths', () => {
+        expect(getLevelTreeParams(2, 3)).toEqual({ level: 2, max_depth: 5 });
     });
 });
 
@@ -114,32 +111,31 @@ describe('getLevelOrgUnitRows', () => {
     const makeNode = (
         id: number,
         name: string,
-        level: number,
-        parentId: number | null = null,
+        children: LevelOrgUnitNode[] = [],
         hasShape = true,
     ) =>
         ({
             id,
             name,
-            level,
-            parent_id: parentId,
+            children,
             has_geo_json: hasShape,
             has_location: false,
-        }) as PlanningLevelTreeNode;
-    const levelTree = [
-        makeNode(1, 'Province', 0),
-        makeNode(2, 'Zone B', 1, 1),
-        makeNode(3, 'Zone A', 1, 1, false),
-        makeNode(4, 'Area 1', 2, 2),
-        makeNode(5, 'Area 2', 2, 2),
+        }) as unknown as LevelOrgUnitNode;
+    const parents = [
+        makeNode(1, 'Province', [
+            makeNode(2, 'Zone B', [
+                makeNode(4, 'Area 1'),
+                makeNode(5, 'Area 2'),
+            ]),
+            makeNode(3, 'Zone A', [], false),
+        ]),
     ];
     const team = { name: 'Team 2', color: '#alpha' };
     const user = { name: 'jdoe', color: '#user' };
 
     it('lists the org units of the level sorted by name, with their parent, assignee and map presence', () => {
         const rows = getLevelOrgUnitRows({
-            levelTree,
-            level: 1,
+            parents,
             assigneeByOrgUnitId: new Map([[2, team]]),
             teamIdByOrgUnitId: new Map(),
             showPoints: false,
@@ -164,8 +160,7 @@ describe('getLevelOrgUnitRows', () => {
 
     it('counts the assigned org units below an org unit assigned to a sub-team', () => {
         const [row] = getLevelOrgUnitRows({
-            levelTree,
-            level: 1,
+            parents,
             assigneeByOrgUnitId: new Map([
                 [2, team],
                 [4, user],
@@ -179,8 +174,7 @@ describe('getLevelOrgUnitRows', () => {
 
     it('has nothing below an org unit that is not assigned to a sub-team', () => {
         const [row] = getLevelOrgUnitRows({
-            levelTree,
-            level: 1,
+            parents,
             assigneeByOrgUnitId: new Map([[2, user]]),
             teamIdByOrgUnitId: new Map(),
             showPoints: false,

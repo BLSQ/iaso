@@ -26,6 +26,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
+import { useClearRootOrgUnitOutsideProject } from '../hooks/useClearRootOrgUnitOutsideProject';
 import { useMissingFieldsSnackBar } from '../hooks/useMissingFieldsSnackBar';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
@@ -94,6 +95,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     children,
 }) => {
     const formik = usePlanningForm(planning, savedConfigs, mode);
+    useClearRootOrgUnitOutsideProject(formik);
     const {
         values,
         initialValues,

@@ -80,8 +80,12 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         # create org units
         cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
 
-        cls.ou_root = OrgUnit.objects.create(name="Root", version=cls.source_version)
-        cls.children_1 = OrgUnit.objects.create(parent=cls.ou_root, version=cls.source_version, name="Child 1")
+        cls.ou_root = OrgUnit.objects.create(
+            name="Root", version=cls.source_version, validation_status=OrgUnit.VALIDATION_VALID
+        )
+        cls.children_1 = OrgUnit.objects.create(
+            parent=cls.ou_root, version=cls.source_version, name="Child 1", validation_status=OrgUnit.VALIDATION_VALID
+        )
         cls.children_2 = OrgUnit.objects.create(
             parent=cls.ou_root,
             version=cls.source_version,
@@ -89,47 +93,93 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             org_unit_type=cls.org_unit_type,
             location=Point(x=4, y=50, z=100),
             simplified_geom=cls.mock_multipolygon,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
 
-        cls.children_1_1 = OrgUnit.objects.create(parent=cls.children_1, version=cls.source_version, name="Child 1.1")
-        cls.children_1_2 = OrgUnit.objects.create(parent=cls.children_1, version=cls.source_version, name="Child 1.2")
+        cls.children_1_1 = OrgUnit.objects.create(
+            parent=cls.children_1,
+            version=cls.source_version,
+            name="Child 1.1",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cls.children_1_2 = OrgUnit.objects.create(
+            parent=cls.children_1,
+            version=cls.source_version,
+            name="Child 1.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
 
         cls.children_2_1 = OrgUnit.objects.create(
-            parent=cls.children_2, version=cls.source_version, name="Child 2.1", org_unit_type=cls.org_unit_type_2
+            parent=cls.children_2,
+            version=cls.source_version,
+            name="Child 2.1",
+            org_unit_type=cls.org_unit_type_2,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_1.groups.set([cls.org_unit_group_2])
         cls.children_2_2 = OrgUnit.objects.create(
-            parent=cls.children_2, version=cls.source_version, name="Child 2.2", org_unit_type=cls.org_unit_type
+            parent=cls.children_2,
+            version=cls.source_version,
+            name="Child 2.2",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_2.groups.set([cls.org_unit_group])
 
         cls.children_1_1_1 = OrgUnit.objects.create(
-            parent=cls.children_1_1, version=cls.source_version, name="Child 1.1.1"
+            parent=cls.children_1_1,
+            version=cls.source_version,
+            name="Child 1.1.1",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_1_1_2 = OrgUnit.objects.create(
-            parent=cls.children_1_1, version=cls.source_version, name="Child 1.1.2"
+            parent=cls.children_1_1,
+            version=cls.source_version,
+            name="Child 1.1.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_1_2_1 = OrgUnit.objects.create(
-            parent=cls.children_1_2, version=cls.source_version, name="Child 1.2.1"
+            parent=cls.children_1_2,
+            version=cls.source_version,
+            name="Child 1.2.1",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_1_2_2 = OrgUnit.objects.create(
-            parent=cls.children_1_2, version=cls.source_version, name="Child 1.2.2"
+            parent=cls.children_1_2,
+            version=cls.source_version,
+            name="Child 1.2.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
 
         cls.children_2_1_1 = OrgUnit.objects.create(
-            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.1", org_unit_type=cls.org_unit_type
+            parent=cls.children_2_1,
+            version=cls.source_version,
+            name="Child 2.1.1",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_1_1.groups.set([cls.org_unit_group])
 
         cls.children_2_1_2 = OrgUnit.objects.create(
-            parent=cls.children_2_1, version=cls.source_version, name="Child 2.1.2", org_unit_type=cls.org_unit_type
+            parent=cls.children_2_1,
+            version=cls.source_version,
+            name="Child 2.1.2",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_1_2.groups.set([cls.org_unit_group_2])
         cls.children_2_2_1 = OrgUnit.objects.create(
-            parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.1", org_unit_type=cls.org_unit_type
+            parent=cls.children_2_2,
+            version=cls.source_version,
+            name="Child 2.2.1",
+            org_unit_type=cls.org_unit_type,
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
         cls.children_2_2_2 = OrgUnit.objects.create(
-            parent=cls.children_2_2, version=cls.source_version, name="Child 2.2.2"
+            parent=cls.children_2_2,
+            version=cls.source_version,
+            name="Child 2.2.2",
+            validation_status=OrgUnit.VALIDATION_VALID,
         )
 
         # create planning
@@ -199,9 +249,9 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
             # 2. PREFETCH CONFIGS
             # 3. PREFETCH CONFIGS ORG UNIT TYPES
             # 4. PREFETCH CONFIGS ORG UNIT GROUPS
-            # 6. SELECT INITIAL QS FOR OU WITH HIERARCHY
-            # 7. RETURN QS
-            # 8. MIN AGGREGATE IN BUILD TREE
+            # 5. SELECT INITIAL QS FOR OU WITH HIERARCHY
+            # 6. RETURN QS (recursive)
+            # 7. MIN AGGREGATE IN BUILD TREE
             res = self.client.get(self.get_url(), data={"level": 1})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data)
@@ -357,6 +407,126 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(root["depth"], 3)
         self.assertEqual(len(root["children"]), 0)  # <= should be 2 here, but with max_depth, it's 0
 
+    def test_filters_include_new_ou(self):
+        """
+        By default, OU with validation status NEW should be dropped
+        """
+
+        self.children_2_1.validation_status = OrgUnit.VALIDATION_NEW
+        self.children_2_1.save()
+
+        self.client.force_authenticate(self.superuser)
+
+        # tree should be
+        # root
+        # |── children_2
+        # since children_2_1 is dropped
+
+        res = self.client.get(self.get_url())
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidResponse(res_data)
+        self.assertEqual(len(res_data), 1)
+        root = res_data[0]
+        self.assertEqual(root["id"], self.ou_root.id)
+        self.assertEqual(len(root["children"]), 1)
+
+        children = root["children"][0]
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(len(children["children"]), 0)
+
+        data = {
+            "include_new_ou": False,
+        }
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidResponse(res_data)
+        self.assertEqual(len(res_data), 1)
+        root = res_data[0]
+        self.assertEqual(root["id"], self.ou_root.id)
+        self.assertEqual(len(root["children"]), 1)
+
+        children = root["children"][0]
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(len(children["children"]), 0)
+
+        data = {
+            "include_new_ou": True,
+        }
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidResponse(res_data)
+        self.assertEqual(len(res_data), 1)
+        root = res_data[0]
+        self.assertEqual(root["id"], self.ou_root.id)
+        self.assertEqual(len(root["children"]), 1)
+
+        children = root["children"][0]
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(len(children["children"]), 1)
+
+    def test_filters_include_rejected_ou(self):
+        """
+        By default, OU with validation status NEW should be dropped
+        """
+
+        self.children_2_1.validation_status = OrgUnit.VALIDATION_REJECTED
+        self.children_2_1.save()
+
+        self.client.force_authenticate(self.superuser)
+
+        # tree should be
+        # root
+        # |── children_2
+        # since children_2_1 is dropped
+
+        res = self.client.get(self.get_url())
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidResponse(res_data)
+        self.assertEqual(len(res_data), 1)
+        root = res_data[0]
+        self.assertEqual(root["id"], self.ou_root.id)
+        self.assertEqual(len(root["children"]), 1)
+
+        children = root["children"][0]
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(len(children["children"]), 0)
+
+        data = {
+            "include_rejected_ou": False,
+        }
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidResponse(res_data)
+        self.assertEqual(len(res_data), 1)
+        root = res_data[0]
+        self.assertEqual(root["id"], self.ou_root.id)
+        self.assertEqual(len(root["children"]), 1)
+
+        children = root["children"][0]
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(len(children["children"]), 0)
+
+        data = {
+            "include_rejected_ou": True,
+        }
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+
+        self.assertValidResponse(res_data)
+        self.assertEqual(len(res_data), 1)
+        root = res_data[0]
+        self.assertEqual(root["id"], self.ou_root.id)
+        self.assertEqual(len(root["children"]), 1)
+
+        children = root["children"][0]
+        self.assertEqual(children["id"], self.children_2.pk)
+        self.assertEqual(len(children["children"]), 1)
+
     def test_should_raise_404_if_planning_is_deleted_or_does_not_exist(self):
         self.planning.delete()
         self.assertSoftDeleted(self.planning)
@@ -372,6 +542,14 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url(self.planning_other_account.pk))
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_should_not_raise_a_404_if_planning_is_deprecated(self):
+        self.planning.deprecated = True
+        self.planning.save()
+
+        self.client.force_authenticate(self.superuser)
+        res = self.client.get(self.get_url())
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_tree(self):
         self.client.force_authenticate(self.superuser)
@@ -589,6 +767,45 @@ class PlanningOrgUnitTreeViewAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 }
             ],
         )
+
+    def test_queryset_should_exclude_descendants_of_rejected_org_units(self):
+        """
+        Given:
+
+        Root
+        └── Child 2 (rejected by level 1 config)
+            └── Child 2.1 (would match level 2 config)
+
+        Child 2.1 should not be returned because its parent is rejected.
+        """
+        self.planning_config_level_1.org_unit_types.set([self.org_unit_type_2])
+
+        self.client.force_authenticate(self.superuser)
+
+        original_build_org_unit_tree = PlanningViewSet._build_org_unit_tree
+
+        def assert_queryset_has_no_orphans(queryset: OrgUnitQuerySet, serializer):
+            org_units = list(queryset)
+            org_unit_ids = {org_unit.pk for org_unit in org_units}
+
+            # Root is always included.
+            self.assertEqual(org_unit_ids, {self.ou_root.pk})
+
+            # Child 2 is rejected, and Child 2.1 must not become an orphan.
+            self.assertNotIn(self.children_2.pk, org_unit_ids)
+            self.assertNotIn(self.children_2_1.pk, org_unit_ids)
+
+            return original_build_org_unit_tree(queryset, serializer)
+
+        # patching _build_org_unit_tree to do our test assert as it's the method that gets the queryset
+        with patch.object(
+            PlanningViewSet,
+            "_build_org_unit_tree",
+            side_effect=assert_queryset_has_no_orphans,
+        ):
+            res = self.client.get(self.get_url())
+
+        self.assertJSONResponse(res, status.HTTP_200_OK)
 
     def test_get_queryset_returns_distinct_values(self):
         """

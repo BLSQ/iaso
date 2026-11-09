@@ -1,8 +1,10 @@
 import uuid
 
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
 
 import rest_framework.status
+
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT_PERMISSION
@@ -406,7 +408,7 @@ class StockLedgerItemAPITestCase(APITestCase):
         sku_2.org_unit_types.set([org_unit_type_1, org_unit_type_2])
 
         cls.instance = instance = m.Instance.objects.create(
-            created_at=datetime.now(),
+            created_at=timezone.now(),
         )
 
         form = m.Form.objects.create(name="form1")
@@ -427,7 +429,7 @@ class StockLedgerItemAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime(2025, 11, 5, 0, 0, 0),
+            created_at=datetime(2025, 11, 5, 0, 0, 0, tzinfo=dt_timezone.utc),
         )
 
     def test_not_authenticated_without_rights_list(self):

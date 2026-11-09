@@ -20,9 +20,6 @@ const combinedConfigPath = generateCombinedConfig(LIB_PATH);
 const pluginKeysPath = generatePluginKeysFile(LIB_PATH);
 const languageConfigsPath = generateLanguageConfigs(LIB_PATH);
 
-console.log('Available CPUs:', require('node:os').availableParallelism());
-console.log('CPU count:', require('node:os').cpus().length);
-
 export default defineConfig({
     plugins: [react(), tsconfigPaths()],
     test: {

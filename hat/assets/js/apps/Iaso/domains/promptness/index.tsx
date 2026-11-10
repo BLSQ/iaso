@@ -14,6 +14,10 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from 'Iaso/types/general';
 import { SUBMISSIONS, SUBMISSIONS_UPDATE } from 'Iaso/utils/permissions';
+import {
+    DownloadMenuButton,
+    useDownloadOption,
+} from '../../components/DownloadMenuButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
@@ -27,6 +31,7 @@ import { TotalsCards } from './components/TotalsCards';
 import { DEFAULT_PAGE_SIZE, ORG_UNIT_FIELDS } from './constants';
 import {
     canComputePromptness,
+    getPromptnessCsvUrl,
     useGetPromptnessStats,
     useGetPromptnessSummary,
 } from './hooks/api/usePromptnessStats';
@@ -91,6 +96,19 @@ const styles: SxStyles = {
         px: 2,
         py: 1.5,
     },
+    tableContainer: {
+        position: 'relative',
+        px: 2,
+        pb: 1,
+    },
+    toolbar: {
+        position: 'absolute',
+        top: theme => theme.spacing(1),
+        left: theme => theme.spacing(2),
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+    },
 };
 
 export const Promptness: FunctionComponent = () => {
@@ -147,7 +165,7 @@ export const Promptness: FunctionComponent = () => {
               isSearchActive: 'true',
           })
         : undefined;
-
+    const downloadOption = useDownloadOption();
     return (
         <>
             <TopBar
@@ -163,7 +181,6 @@ export const Promptness: FunctionComponent = () => {
                         params={params}
                         forms={formsWithPeriod}
                         isFetchingForms={isFetchingForms}
-                        canExport={canCompute}
                     />
                 </Paper>
                 {!params.formId && (
@@ -259,7 +276,22 @@ export const Promptness: FunctionComponent = () => {
                                 )}
                             </Box>
                             <Divider />
-                            <Box px={2} pb={1}>
+                            <Box sx={styles.tableContainer}>
+                                <Box sx={styles.toolbar}>
+                                    <DownloadMenuButton
+                                        buttonType="icon"
+                                        options={[
+                                            downloadOption(
+                                                'csv',
+                                                getPromptnessCsvUrl(params),
+                                            ),
+                                        ]}
+                                        disabled={
+                                            isFetchingStats ||
+                                            !stats?.results?.length
+                                        }
+                                    />
+                                </Box>
                                 <TableWithDeepLink
                                     data={stats?.results ?? []}
                                     pages={stats?.pages ?? 1}

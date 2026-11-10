@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Button, Grid, Typography } from '@mui/material';
-import { ColorChip, CsvSvg, useSafeIntl } from 'bluesquare-components';
+import { Box, Grid, Typography } from '@mui/material';
+import { ColorChip, useSafeIntl } from 'bluesquare-components';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
@@ -15,12 +15,10 @@ import { PERIOD_TYPE_PLACEHOLDER } from '../../periods/constants';
 import PERIOD_MESSAGES from '../../periods/messages';
 import { getCurrentPeriodString } from '../../periods/utils';
 import {
-    CSV_EXPORT_ENABLED,
     ORG_UNIT_FIELDS,
     PROMPTNESS_STATUSES,
     STATUS_MESSAGES,
 } from '../constants';
-import { getPromptnessCsvUrl } from '../hooks/api/usePromptnessStats';
 import MESSAGES from '../messages';
 import { PromptnessRouterParams, PromptnessStatus } from '../types';
 import { useGetStatusColor } from '../utils';
@@ -30,7 +28,6 @@ type Props = {
     forms?: FormsDropdownOptions;
     isFetchingForms: boolean;
     orgUnitId?: string;
-    canExport: boolean;
 };
 
 const baseUrl = baseUrls.promptness;
@@ -55,7 +52,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     forms,
     isFetchingForms,
     orgUnitId,
-    canExport,
 }) => {
     const { formatMessage } = useSafeIntl();
     const {
@@ -264,17 +260,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             <Box sx={styles.buttons}>
-                {CSV_EXPORT_ENABLED && (
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<CsvSvg />}
-                        href={getPromptnessCsvUrl(params)}
-                        disabled={!canExport}
-                    >
-                        {formatMessage(MESSAGES.exportCsv)}
-                    </Button>
-                )}
                 <SearchButton
                     disabled={!filtersUpdated}
                     onSearch={handleSearch}

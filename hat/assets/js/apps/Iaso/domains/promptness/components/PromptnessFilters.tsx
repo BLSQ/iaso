@@ -42,13 +42,11 @@ type Props = {
     params: PromptnessRouterParams;
     forms?: FormsDropdownOptions;
     isFetchingForms: boolean;
-    // The org unit whose figures are displayed: the parent, or one drilled down below it
     orgUnitId?: string;
 };
 
 const baseUrl = baseUrls.promptness;
 
-// Wider than the default drawer (400px): the period picker needs room to show the year
 const DRAWER_WIDTH = 520;
 
 type FormOption = NonNullable<FormsDropdownOptions>[number];
@@ -59,8 +57,6 @@ const findForm = (
 ): FormOption['original'] | undefined =>
     forms?.find(form => `${form.value}` === `${formId ?? ''}`)?.original;
 
-// The period has to follow the period type of the form: it is kept when its
-// type matches, otherwise it is replaced by the current period
 const getPeriodForForm = (
     form: FormOption['original'] | undefined,
     period?: string,
@@ -293,7 +289,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                 label: MESSAGES.parent,
                 type: 'custom',
                 required: true,
-                // Only the applied org unit is displayed in the chip
                 formatValue: (value?: string) =>
                     `${initialParent?.id ?? ''}` === `${value ?? ''}`
                         ? initialParent?.name

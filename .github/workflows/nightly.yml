@@ -9,9 +9,9 @@ on:
         required: false
         type: string
         default: develop
-  push:
-    branches:
-      - IA-5602_run-ci-nightly
+#  push:
+#    branches:
+#      - IA-5602_run-ci-nightly
 
 
 permissions:

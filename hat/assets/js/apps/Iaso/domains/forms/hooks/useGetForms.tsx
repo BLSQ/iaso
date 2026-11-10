@@ -10,7 +10,6 @@ import { FormsParams } from '../types/forms';
 export const DEFAULT_VISIBLE_COLUMNS = [
     'projects',
     'name',
-    'created_at',
     'updated_at',
     'org_unit_types',
 ];

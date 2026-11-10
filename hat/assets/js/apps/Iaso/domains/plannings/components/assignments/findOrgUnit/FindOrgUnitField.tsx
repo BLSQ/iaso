@@ -12,8 +12,8 @@ import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { usePlanningOrgUnitTree } from '../usePlanningOrgUnitTree';
 import { FindOrgUnitDialog } from './FindOrgUnitDialog';
-import { usePlanningOrgUnitTree } from './usePlanningOrgUnitTree';
 
 const styles = {
     container: {

@@ -8,8 +8,8 @@ import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';
 import { useAssignments } from '../mainPanel/useAssignments';
 import { getAssigneeByOrgUnitId } from '../mainPanel/utils';
+import { usePlanningOrgUnits } from '../usePlanningOrgUnitTree';
 import { FindOrgUnitTreeRow } from './FindOrgUnitTreeRow';
-import { useFindOrgUnits } from './usePlanningOrgUnitTree';
 import { flattenFindOrgUnitRows, getOrgUnitChain } from './utils';
 
 // Keeps a broad search responsive on large plannings.
@@ -56,7 +56,8 @@ export const FindOrgUnitTree: FC<Props> = ({
     const [search, setSearch] = useState('');
     // Expanded or collapsed by hand, against the default of the roots and the selected branch.
     const [toggledIds, setToggledIds] = useState<Set<number>>(new Set());
-    const orgUnits = useFindOrgUnits();
+    // The planning root and level 1 show first.
+    const { orgUnits } = usePlanningOrgUnits(0, 2);
 
     const expandedIds = useMemo(() => {
         if (!orgUnits) return new Set<number>();

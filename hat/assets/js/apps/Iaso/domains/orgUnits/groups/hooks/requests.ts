@@ -1,3 +1,4 @@
+import { UseMutationResult } from 'react-query';
 import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import {
@@ -7,11 +8,12 @@ import {
     patchRequest,
 } from '../../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
+import { Group } from '../types/group';
 
 import MESSAGES from '../messages';
 
 export const useGetGroups = params => {
-    const newParams = {
+    const newParams: Record<string, string> = {
         limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
@@ -41,9 +43,9 @@ export const useGetGroups = params => {
     );
 };
 
-export const useSaveGroups = () =>
-    useSnackMutation(
-        body =>
+export const useSaveGroups = (): UseMutationResult<any, any, Partial<Group>> =>
+    useSnackMutation<any, any, Partial<Group>>(
+        (body: Partial<Group>) =>
             body.id
                 ? patchRequest(`/api/groups/${body.id}/`, body)
                 : postRequest('/api/groups/', body),

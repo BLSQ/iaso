@@ -11,9 +11,9 @@ import {
 } from 'bluesquare-components';
 import DownloadButtonsComponent from 'Iaso/components/DownloadButtonsComponent';
 import { usePrepareGroupExportUrls } from 'Iaso/domains/orgUnits/groups/hooks/usePrepareGroupExportUrls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 import { Filters } from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 import { useTableColumns } from './config';
@@ -49,11 +49,13 @@ const Groups = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
                 <Box
-                    mt={1}
-                    mp={2}
-                    display="flex"
-                    justifyContent="flex-end"
-                    alignItems="end"
+                    sx={{
+                        mt: 1,
+                        p: 2,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'end',
+                    }}
                 >
                     <GroupsDialog
                         saveGroup={saveGroup}
@@ -64,7 +66,6 @@ const Groups = () => {
                                 onClick={openDialog}
                             />
                         )}
-                        params={params}
                     />
                 </Box>
                 {data && data?.groups?.length > 0 && (

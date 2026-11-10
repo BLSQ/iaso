@@ -6,8 +6,22 @@ import ConfirmCancelDialogComponent from '../../../../components/dialogs/Confirm
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useCustomComponentsByKey } from '../../../../plugins/hooks/customComponents';
 import MESSAGES from '../messages';
+import { Group } from '../types/group';
 
-const initialGroup = currentGroup => {
+type FormField<T> = {
+    value: T;
+    errors: string[];
+};
+
+// Local dialog form state — not the API Group payload
+type GroupFormState = {
+    id: FormField<number | null>;
+    name: FormField<string>;
+    source_ref: FormField<string | null>;
+    block_of_countries: FormField<boolean | undefined>;
+};
+
+const initialGroup = (currentGroup?: Partial<Group> | null): GroupFormState => {
     return {
         id: { value: get(currentGroup, 'id', null), errors: [] },
         name: { value: get(currentGroup, 'name', ''), errors: [] },
@@ -29,8 +43,8 @@ type Props = {
     }: {
         openDialog: () => void;
     }) => React.JSX.Element;
-    initialData?: Record<string, any>;
-    saveGroup: (group: any) => Promise<any>;
+    initialData?: Partial<Group>;
+    saveGroup: (group: Partial<Group>) => Promise<any>;
 };
 
 const GroupDialog: FunctionComponent<Props> = ({
@@ -39,9 +53,12 @@ const GroupDialog: FunctionComponent<Props> = ({
     renderTrigger,
     saveGroup,
 }) => {
-    const [group, setGroup] = useState(initialGroup(null));
+    const [group, setGroup] = useState<GroupFormState>(initialGroup(null));
 
-    const setFieldValue = (fieldName, fieldValue) => {
+    const setFieldValue = (
+        fieldName: keyof GroupFormState,
+        fieldValue: any,
+    ) => {
         setGroup({
             ...group,
             [fieldName]: {
@@ -51,7 +68,10 @@ const GroupDialog: FunctionComponent<Props> = ({
         });
     };
 
-    const setFieldErrors = (fieldName, fieldError) => {
+    const setFieldErrors = (
+        fieldName: keyof GroupFormState,
+        fieldError: string,
+    ) => {
         setGroup({
             ...group,
             [fieldName]: {
@@ -61,7 +81,7 @@ const GroupDialog: FunctionComponent<Props> = ({
         });
     };
 
-    const onConfirm = closeDialog => {
+    const onConfirm = (closeDialog: () => void) => {
         const currentGroup = {
             id: initialData?.id,
             name: group.name.value,
@@ -77,7 +97,12 @@ const GroupDialog: FunctionComponent<Props> = ({
             .catch(error => {
                 if (error.status === 400) {
                     Object.keys(error.details).forEach(errorKey => {
-                        setFieldErrors(errorKey, error.details[errorKey]);
+                        if (errorKey in group) {
+                            setFieldErrors(
+                                errorKey as keyof GroupFormState,
+                                error.details[errorKey],
+                            );
+                        }
                     });
                 }
             });
@@ -109,7 +134,9 @@ const GroupDialog: FunctionComponent<Props> = ({
                 <Grid xs={12} item>
                     <InputComponent
                         keyValue="name"
-                        onChange={(key, value) => setFieldValue(key, value)}
+                        onChange={(key: string, value: any) =>
+                            setFieldValue(key as keyof GroupFormState, value)
+                        }
                         value={group.name.value}
                         errors={group.name.errors}
                         type="text"
@@ -118,7 +145,9 @@ const GroupDialog: FunctionComponent<Props> = ({
                     />
                     <InputComponent
                         keyValue="source_ref"
-                        onChange={(key, value) => setFieldValue(key, value)}
+                        onChange={(key: string, value: any) =>
+                            setFieldValue(key as keyof GroupFormState, value)
+                        }
                         value={group.source_ref.value}
                         errors={group.source_ref.errors}
                         type="text"

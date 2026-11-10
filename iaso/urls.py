@@ -84,6 +84,7 @@ from .api.microplanning.org_units.views import PlanningOrgUnitsViewSet
 from .api.microplanning.planning_samplings.views import PlanningSamplingResultViewSet
 from .api.microplanning.plannings.views import PlanningViewSet
 from .api.microplanning.plannings.views_mobile import MobilePlanningV2ViewSet, MobilePlanningViewSet
+from .api.microplanning.plannings_nested_assignments.views import PlanningNestedAssignmentViews
 from .api.missions.views import MissionViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -236,10 +237,17 @@ router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, ba
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/missions", MissionViewSet, basename="missions")
-router.register(r"microplanning/plannings", PlanningViewSet, basename="planning").register(
+planning_routes = router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
+planning_routes.register(
     r"orgunits",
     PlanningOrgUnitsViewSet,
     basename="planning-orgunits",
+    parents_query_lookups=["pk"],
+)
+planning_routes.register(
+    r"assignments",
+    PlanningNestedAssignmentViews,
+    basename="planning-nested-assignments",
     parents_query_lookups=["pk"],
 )
 router.register(r"microplanning/planning-configs", PlanningConfigViewSet, basename="planning_configs")

@@ -81,6 +81,7 @@ describe('ColumnsSelectDrawer', () => {
 
             expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
             expect(screen.getByText('Column 1')).toBeInTheDocument();
+            expect(screen.getByText('Columns')).toBeInTheDocument();
         });
 
         it('should render a disabled button with tooltip if disabled and message provided', async () => {
@@ -212,6 +213,50 @@ describe('ColumnsSelectDrawer', () => {
             expect(mockHandleApplyOptions).toHaveBeenCalledTimes(1);
         });
 
+        it('should close the drawer after apply', async () => {
+            const user = userEvent.setup();
+            renderWithThemeAndIntlProvider(
+                <ColumnsSelectDrawer
+                    {...baseProps}
+                    handleApplyOptions={mockHandleApplyOptions}
+                />,
+            );
+
+            await user.click(
+                screen.getByRole('button', { name: /select visible columns/i }),
+            );
+            expect(screen.getByText('Columns')).toBeInTheDocument();
+
+            await user.click(screen.getByRole('button', { name: /apply/i }));
+
+            await waitFor(() => {
+                expect(screen.queryByText('Columns')).not.toBeInTheDocument();
+            });
+        });
+
+        it('should clear the search from the footer Clear button', async () => {
+            const user = userEvent.setup();
+            renderWithThemeAndIntlProvider(
+                <ColumnsSelectDrawer
+                    {...baseProps}
+                    handleApplyOptions={mockHandleApplyOptions}
+                />,
+            );
+
+            await user.click(
+                screen.getByRole('button', { name: /select visible columns/i }),
+            );
+
+            const searchInput = screen.getByPlaceholderText(/search/i);
+            await user.type(searchInput, '3');
+            expect(screen.queryByText('Column 1')).not.toBeInTheDocument();
+
+            await user.click(screen.getByRole('button', { name: /^clear$/i }));
+
+            expect(searchInput).toHaveValue('');
+            expect(screen.getByText('Column 1')).toBeInTheDocument();
+        });
+
         it('should disable the apply button if isDisabled prop is true', async () => {
             const user = userEvent.setup();
             renderWithThemeAndIntlProvider(
@@ -246,6 +291,39 @@ describe('ColumnsSelectDrawer', () => {
             expect(
                 screen.queryByRole('button', { name: /apply/i }),
             ).not.toBeInTheDocument();
+        });
+    });
+
+    describe('Warnings', () => {
+        it('should render a warning indicator when an option has a warning', async () => {
+            const user = userEvent.setup();
+            const optionsWithWarning: Option[] = [
+                ...mockOptions.slice(0, 2),
+                {
+                    key: 'instances_count',
+                    label: 'Number of submissions',
+                    active: false,
+                    disabled: false,
+                    warning: 'Including this column can make the API call very slow',
+                },
+            ];
+
+            renderWithThemeAndIntlProvider(
+                <ColumnsSelectDrawer
+                    {...baseProps}
+                    options={optionsWithWarning}
+                />,
+            );
+
+            await user.click(
+                screen.getByRole('button', { name: /select visible columns/i }),
+            );
+
+            expect(
+                document.querySelector(
+                    '[data-test="column-warning-instances_count"]',
+                ),
+            ).toBeInTheDocument();
         });
     });
 });

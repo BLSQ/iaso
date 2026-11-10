@@ -105,4 +105,22 @@ describe('useFormsTableColumns', () => {
         ).toBe('type-chips');
         expect(mockGetOrgUnitTypeChips).toHaveBeenCalledWith(orgUnitTypes);
     });
+
+    it('exposes period_type and single_per_period as optional columns', () => {
+        const { result } = renderHook(() =>
+            useFormsTableColumns({
+                orgUnitId: '',
+                onlyDeleted: false,
+                showDeleted: false,
+                params: defaultParams,
+                count: 0,
+            }),
+        );
+
+        const columnIds = result.current.map(col => col.id);
+        expect(columnIds).toContain('period_type');
+        expect(columnIds).toContain('single_per_period');
+        expect(result.current.find(col => col.id === 'period_type')?.Cell).toBeTruthy();
+        expect(result.current.find(col => col.id === 'single_per_period')?.Cell).toBeTruthy();
+    });
 });

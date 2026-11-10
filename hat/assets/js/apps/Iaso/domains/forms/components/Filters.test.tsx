@@ -3,24 +3,16 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
-import { FormResponse } from '../hooks/useGetForms';
 import MESSAGES from '../messages';
-import { Form } from '../types/forms';
 import { Filters } from './Filters';
-
-const mockFormsResponse = {
-    forms: [{ id: 1, name: 'Form 1' } as Form],
-} as FormResponse;
 
 const renderFilters = (params = {}) =>
     renderWithThemeAndIntlProvider(
         <MemoryRouter>
             <Filters
-                isLoadingForms={false}
-                forms={mockFormsResponse}
                 params={{
                     pageSize: '10',
-                    order: 'asc',
+                    order: '-updated_at',
                     page: '1',
                     orgUnitId: '1',
                     ...params,

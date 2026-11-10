@@ -17,6 +17,14 @@ const MESSAGES = defineMessages({
         id: 'blsq.table.columnSelect.tooltip',
         defaultMessage: 'Select visible columns',
     },
+    title: {
+        id: 'blsq.table.columnSelect.title',
+        defaultMessage: 'Columns',
+    },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
     apply: {
         defaultMessage: 'Apply',
         id: 'iaso.label.apply',

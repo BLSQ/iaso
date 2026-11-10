@@ -12,6 +12,7 @@ import {
     Tooltip,
     Button,
     Box,
+    Typography,
 } from '@mui/material';
 
 import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
@@ -20,7 +21,7 @@ import { InView } from 'react-intersection-observer';
 import { ColumnDrawerSwitch } from './ColumnDrawerSwitch';
 import { MESSAGES } from './messages';
 
-import { useStyles } from './styles';
+import { styles } from './styles';
 
 export type Option = {
     active: boolean;
@@ -85,23 +86,31 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     isDisabled,
     buttonType = 'button',
 }) => {
-    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [searchString, setSearchString] = useState<string>('');
 
-    const toggleDrawer = open => () => {
+    const toggleDrawer = (open: boolean) => () => {
         setIsOpen(open);
     };
 
-    const handleSearch =
-        (reset = false) =>
-        event => {
-            setSearchString(reset ? '' : event.target.value);
-        };
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchString(event.target.value);
+    };
+
+    const handleSearchReset = () => {
+        setSearchString('');
+    };
+
+    const handleApply = () => {
+        handleApplyOptions?.();
+        setIsOpen(false);
+        setSearchString('');
+    };
 
     const handleChangeOptions = useCallback(
-        index => event => {
+        (index?: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+            if (index === undefined) return;
             const newOptions = [...options];
             newOptions[index] = {
                 ...newOptions[index],
@@ -158,58 +167,57 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                     renderToggle(disabled, false)
                 ))}
             <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
-                <Box className={classes.root}>
-                    <div className={classes.toolbar}>
+                <Box sx={styles.root} role="presentation">
+                    <Box sx={styles.header}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
-                            <IconButton onClick={toggleDrawer(false)}>
+                            <IconButton
+                                onClick={toggleDrawer(false)}
+                                aria-label={
+                                    formatMessage(MESSAGES.close) as string
+                                }
+                            >
                                 <ArrowBack />
                             </IconButton>
                         </Tooltip>
-                        <div className={classes.search}>
+                        <Typography variant="h6">
+                            {formatMessage(MESSAGES.title)}
+                        </Typography>
+                    </Box>
+                    <Divider />
+                    <Box sx={styles.content} id="ColumnsSelectDrawer-list">
+                        <Box sx={styles.search}>
                             <InputBase
                                 value={searchString}
-                                onChange={handleSearch()}
-                                className={classes.input}
+                                onChange={handleSearchChange}
+                                sx={styles.input}
                                 placeholder={formatMessage(MESSAGES.search)}
                                 inputProps={{
                                     'aria-label': formatMessage(
                                         MESSAGES.search,
                                     ),
-                                    className: classes.input,
                                     id: 'ColumnsSelectDrawer-search',
                                 }}
                             />
-                        </div>
-                        {searchString !== '' && (
-                            <Tooltip
-                                title={formatMessage(MESSAGES.resetSearch)}
-                            >
-                                <IconButton
-                                    onClick={handleSearch(true)}
-                                    id="ColumnsSelectDrawer-search-empty"
+                            {searchString !== '' && (
+                                <Tooltip
+                                    title={formatMessage(MESSAGES.resetSearch)}
                                 >
-                                    <Close />
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                    </div>
-                    <Divider />
-                    <div
-                        className={
-                            handleApplyOptions
-                                ? classes.listWithApply
-                                : classes.list
-                        }
-                        id="ColumnsSelectDrawer-list"
-                    >
-                        <List>
+                                    <IconButton
+                                        onClick={handleSearchReset}
+                                        id="ColumnsSelectDrawer-search-empty"
+                                        size="small"
+                                    >
+                                        <Close fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Box>
+                        <List disablePadding>
                             {displayedOptions.map(o => (
                                 <InView key={o.key}>
                                     {({ inView, ref }) => (
-                                        <div ref={ref} id={o.key}>
-                                            <ListItem
-                                                className={classes.listItem}
-                                            >
+                                        <Box ref={ref} id={o.key}>
+                                            <ListItem sx={styles.listItem}>
                                                 {inView && (
                                                     <ColumnDrawerSwitch
                                                         disabled={
@@ -221,9 +229,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                         onChange={handleChangeOptions(
                                                             o.index,
                                                         )}
-                                                        className={
-                                                            classes.switch
-                                                        }
+                                                        sx={styles.switch}
                                                         toolTipTitle={
                                                             <TooltipTitle
                                                                 option={o}
@@ -244,31 +250,33 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                     </>
                                                 )}
                                             </ListItem>
-                                        </div>
+                                        </Box>
                                     )}
                                 </InView>
                             ))}
                         </List>
-                    </div>
+                    </Box>
                     {handleApplyOptions && (
-                        <Box
-                            sx={{
-                                height: theme => theme.spacing(8),
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                padding: theme => theme.spacing(2),
-                            }}
-                        >
-                            <Button
-                                onClick={handleApplyOptions}
-                                variant="contained"
-                                color="primary"
-                                size="small"
-                                disabled={isDisabled}
-                            >
-                                {formatMessage(MESSAGES.apply)}
-                            </Button>
-                        </Box>
+                        <>
+                            <Divider />
+                            <Box sx={styles.footer}>
+                                <Button
+                                    onClick={handleSearchReset}
+                                    data-test="columns-clear"
+                                >
+                                    {formatMessage(MESSAGES.clear)}
+                                </Button>
+                                <Button
+                                    onClick={handleApply}
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={isDisabled}
+                                    data-test="columns-apply"
+                                >
+                                    {formatMessage(MESSAGES.apply)}
+                                </Button>
+                            </Box>
+                        </>
                     )}
                 </Box>
             </Drawer>

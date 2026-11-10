@@ -6,12 +6,14 @@ import {
     useMediaQuery,
     useTheme,
 } from '@mui/material';
+import { Theme } from '@mui/material';
+import { SxProps } from '@mui/system';
 import { truncateText } from 'bluesquare-components';
 
 type Props = {
     disabled: boolean;
     onChange?: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-    className: string;
+    sx: SxProps<Theme>;
     checked: boolean;
     toolTipTitle: string | ReactElement;
     primaryText: string;
@@ -22,7 +24,7 @@ type Props = {
 export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
     disabled,
     onChange = () => null,
-    className,
+    sx,
     checked,
     toolTipTitle,
     primaryText,
@@ -45,7 +47,7 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                     // @ts-ignore
                     'data-test-column-switch': secondaryText,
                 }}
-                className={className}
+                sx={sx}
             />
             <Tooltip
                 title={toolTipTitle}

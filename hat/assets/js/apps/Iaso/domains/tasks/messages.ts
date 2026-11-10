@@ -133,6 +133,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Download file',
         id: 'iaso.users.exportMobileAppDownloadBtn',
     },
+    fileAvailableUntil: {
+        defaultMessage: 'File available until',
+        id: 'iaso.tasks.fileAvailableUntil',
+    },
+    fileExpired: {
+        defaultMessage: 'Expired on {date}',
+        id: 'iaso.tasks.fileExpired',
+    },
     params: {
         defaultMessage: 'Parameters',
         id: 'iaso.label.parameters',

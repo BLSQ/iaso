@@ -41,7 +41,7 @@ export const useGetProjectsDropdownOptions = (
                 if (!data) return [];
                 return data.projects.map(project => {
                     return {
-                        value: asString ? project.id?.toString() : project.id,
+                        value: asString ? project.id.toString() : project.id,
                         label: project.name,
                         color: project.color,
                     };

@@ -1,6 +1,7 @@
 import re
 import traceback
 
+from datetime import datetime
 from logging import getLogger
 from typing import Optional
 from urllib.parse import unquote
@@ -19,6 +20,7 @@ from iaso.models import (
     Account,
     KilledException,
 )
+from iaso.services.tasks import TaskResultFile
 
 
 logger = getLogger(__name__)
@@ -127,6 +129,17 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "data": result_data}
         self.create_log_entry_if_needed(message)
         self.save()
+
+    def report_success_with_file(self, message: Optional[str], file_name: str, expires_at: Optional[datetime] = None):
+        """Report success for a task that produced a file on S3, optionally only available until `expires_at`."""
+        logger.info(f"Task {self} produced file {file_name} (expires at: {expires_at})")
+        result_file = TaskResultFile(file=file_name, expires_at=expires_at)
+        self.report_success_with_result(message=message, result_data=result_file.to_json())
+
+    @property
+    def result_file(self) -> Optional[TaskResultFile]:
+        """The file produced by the task on S3, if any."""
+        return TaskResultFile.from_json((self.result or {}).get("data"))
 
     def report_success(self, message: Optional[str] = None):
         logger.info(f"Task {self} reported success with message {message}")

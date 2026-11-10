@@ -49,7 +49,6 @@ from ..models import (
     BulkCreateUserFile,
     DataSource,
     DataSourceVersionsSynchronization,
-    Device,
     DeviceOwnership,
     DevicePosition,
     Entity,
@@ -412,13 +411,6 @@ class InstanceAdmin(admin.GeoModelAdmin):
                 Entity.objects_include_deleted.all()
             )  # use the manager that includes soft-deleted objects
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-
-@admin.register(Device)
-class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("id", "imei", "test_device", "created_at")
-    search_fields = ("imei",)
-    list_filter = ("test_device",)
 
 
 @admin.register(InstanceFile)

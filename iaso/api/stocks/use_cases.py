@@ -1,6 +1,6 @@
 import logging
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.db.models import Case, F, Sum, When
 
@@ -21,7 +21,7 @@ def compute_new_stock_item_value(stock_item: StockItem):
     queryset = StockLedgerItem.objects.filter(sku=stock_item.sku, org_unit=stock_item.org_unit)
     last_reset = queryset.filter(impact=StockImpacts.RESET).order_by("-created_at").only("created_at").first()
 
-    start_date = last_reset.created_at if last_reset else datetime.fromtimestamp(0)
+    start_date = last_reset.created_at if last_reset else datetime.fromtimestamp(0, tz=timezone.utc)
 
     stock_balance = queryset.filter(created_at__gte=start_date).aggregate(
         balance=Sum(

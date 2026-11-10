@@ -35,7 +35,7 @@ import sys
 import time
 import zipfile
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from uuid import uuid4
 
@@ -153,7 +153,7 @@ def build_batch_zip(
 ):
     buffer = io.BytesIO()
     instances_json = []
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for i in range(batch_size):

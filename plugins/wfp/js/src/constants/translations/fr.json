@@ -1,8 +1,4 @@
 {
-    "iaso.label.actions": "Action(s)",
-    "iaso.label.entities": "Entités",
-    "iaso.label.no": "Non",
-    "iaso.label.yes": "Oui",
     "iaso.permissions.iaso_wfp_beneficiary_export": "Exporter les bénéficiaires PAM",
     "iaso.permissions.iaso_wfp_beneficiary_export_tooltip": "Permet de voir les bénéficiaires calculés par l'ETL PAM et de les exporter (CODA 2.0 et données brutes). Les données personnelles ne sont exportées qu'avec la permission de les voir",
     "iaso.wfp.beneficiaries.admission": "admission : {admissionType}",

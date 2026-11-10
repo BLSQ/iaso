@@ -1,8 +1,4 @@
 {
-    "iaso.label.actions": "Action(s)",
-    "iaso.label.entities": "Entities",
-    "iaso.label.no": "No",
-    "iaso.label.yes": "Yes",
     "iaso.permissions.iaso_wfp_beneficiary_export": "Export WFP beneficiaries",
     "iaso.permissions.iaso_wfp_beneficiary_export_tooltip": "Allows to see the beneficiaries computed by the WFP ETL and to export them (CODA 2.0 and raw data). Personal data is only exported with the permission to view it",
     "iaso.wfp.beneficiaries.admission": "admission: {admissionType}",

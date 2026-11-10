@@ -49,6 +49,11 @@ const useStyles = makeStyles(theme => ({
         marginRight: theme.spacing(0.75),
         verticalAlign: 'middle',
     },
+    assistances: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: theme.spacing(0.5),
+    },
 }));
 
 export const Visits: FunctionComponent<{
@@ -157,13 +162,15 @@ export const Visits: FunctionComponent<{
                                         {formatMessage(MESSAGES.none)}
                                     </Box>
                                 ) : (
-                                    visit.steps.map(step => (
-                                        <ColorChip
-                                            size="small"
-                                            key={step.id}
-                                            label={`${step.assistance_type}: ${step.quantity_given}${step.ration_size ? ` (${step.ration_size})` : ''}`}
-                                        />
-                                    ))
+                                    <Box className={classes.assistances}>
+                                        {visit.steps.map(step => (
+                                            <ColorChip
+                                                size="small"
+                                                key={step.id}
+                                                label={`${step.assistance_type}: ${step.quantity_given}${step.ration_size ? ` (${step.ration_size})` : ''}`}
+                                            />
+                                        ))}
+                                    </Box>
                                 )}
                             </TableCell>
                             <TableCell>

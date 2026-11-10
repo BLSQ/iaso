@@ -2,8 +2,8 @@ import { renderHook, act } from '@testing-library/react';
 import { Column } from 'bluesquare-components';
 import { describe, expect, it, vi } from 'vitest';
 import { FormsParams } from '../types/forms';
-import { DEFAULT_VISIBLE_COLUMNS } from './useGetForms';
 import { useColumnsSelectDrawer } from './useColumnsSelectDrawer';
+import { DEFAULT_VISIBLE_COLUMNS } from './useGetForms';
 
 const mockRedirectToReplace = vi.fn();
 
@@ -74,7 +74,9 @@ describe('useColumnsSelectDrawer', () => {
             result.current.options.find(option => option.key === 'actions'),
         ).toBeUndefined();
         expect(
-            result.current.visibleColumns.some(column => column.id === 'actions'),
+            result.current.visibleColumns.some(
+                column => column.id === 'actions',
+            ),
         ).toBe(true);
     });
 

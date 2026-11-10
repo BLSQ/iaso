@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { textPlaceholder } from 'bluesquare-components';
 import { describe, expect, it } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
@@ -17,9 +17,7 @@ describe('PeriodTypeCell', () => {
     });
 
     it('renders the translated label for a known period type', () => {
-        renderWithThemeAndIntlProvider(
-            <PeriodTypeCell value="MONTH" />,
-        );
+        renderWithThemeAndIntlProvider(<PeriodTypeCell value="MONTH" />);
 
         expect(screen.getByText('Month')).toBeInTheDocument();
     });

@@ -22,6 +22,7 @@
     "blsq.treeview.search.options.label.noOptions": "Aucun résultat trouvé",
     "blsq.treeview.search.results.label.display": "Afficher",
     "blsq.treeview.search.results.label.resultsLower": "résultat(s)",
+    "iaso.forms.instancesCountColumnWarning": "Inclure cette colonne peut ralentir l'appel API",
     "iaso.account.created_at": "Date de création",
     "iaso.accounts.accountTabs.ariaLabel": "Onglets du compte",
     "iaso.accounts.accountTabs.general.title": "Général",

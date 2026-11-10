@@ -60,20 +60,29 @@ class GroupsViewSet(ModelViewSet):
             return Group.objects.none()
 
         profile = self.request.user.iaso_profile
+        # Filter via version ids (subquery) instead of joining projects M2M — avoids DISTINCT cost
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=profile.account)
+            .values_list("id", flat=True)
+            .distinct()
+        )
         queryset = (
-            Group.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+            Group.objects.filter(source_version_id__in=version_ids)
             .select_related("source_version", "source_version__data_source")
-            .prefetch_related(
-                "group_sets",
+            .prefetch_related("group_sets")
+        )
+        # Full org unit id lists are only needed on retrieve / write — never on list
+        if self.action in ("retrieve", "partial_update"):
+            queryset = queryset.prefetch_related(
                 Prefetch("org_units", queryset=OrgUnit.objects.only("id")),
             )
-        )
         return queryset
 
     def filter_queryset(self, queryset, allow_anon=False):
         light = self.request.GET.get("light", False)
-        if not light:
-            queryset = queryset.annotate(org_unit_count=Count("org_units", distinct=True))
+        if not light and getattr(self, "action", None) != "dropdown":
+            # No distinct needed: queryset is not joined on projects anymore
+            queryset = queryset.annotate(org_unit_count=Count("org_units"))
 
         version = self.request.query_params.get("version", None)
         version_ids = self.request.query_params.get(

@@ -62,7 +62,15 @@ class GroupSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
     def get_org_units(self, obj):
-        """Return list of org unit IDs for read operations."""
+        """Return list of org unit IDs for read operations.
+
+        On list, skip loading ids (can be huge); keep an empty list so the response shape stays stable.
+        Use org_unit_count for the table instead.
+        """
+        view = self.context.get("view")
+        if view is not None and getattr(view, "action", None) == "list":
+            return []
+
         cache = getattr(obj, "_prefetched_objects_cache", None)
         if cache and "org_units" in cache:
             return [org_unit.id for org_unit in cache["org_units"]]

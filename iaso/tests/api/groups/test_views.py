@@ -103,6 +103,21 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidGroupListData(response.json(), 2)
 
+    def test_groups_list_skips_org_unit_ids_but_keeps_count(self):
+        """GET /groups/ list keeps response shape but does not load org unit ids (perf)"""
+
+        # org units are on source_version_2, same as group_2
+        self.group_2.org_units.add(self.org_unit_1, self.org_unit_2)
+
+        self.client.force_authenticate(self.core_permission_user)
+        response = self.client.get("/api/groups/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        groups_by_id = {group["id"]: group for group in response.json()["groups"]}
+        group_2_data = groups_by_id[self.group_2.id]
+        self.assertEqual(group_2_data["org_units"], [])
+        self.assertEqual(group_2_data["org_unit_count"], 2)
+
     def test_groups_list_paginated(self):
         """GET /groups/ paginated happy path"""
 
@@ -140,11 +155,15 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_retrieve_ok_1(self):
         """GET /groups/<group_id> happy path"""
 
+        self.group_2.org_units.add(self.org_unit_1)
         self.client.force_authenticate(self.core_permission_user)
-        response = self.client.get(f"/api/groups/{self.group_1.id}/")
+        response = self.client.get(f"/api/groups/{self.group_2.id}/")
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        self.assertValidGroupData(response.json())
+        response_data = response.json()
+        self.assertValidGroupData(response_data)
+        self.assertIn("org_units", response_data)
+        self.assertEqual(response_data["org_units"], [self.org_unit_1.id])
 
     def test_groups_create_without_auth(self):
         """POST /groups/ without auth: 401"""

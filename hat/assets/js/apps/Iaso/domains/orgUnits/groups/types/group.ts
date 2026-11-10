@@ -38,7 +38,7 @@ export type Group = {
     source_version: GroupSourceVersion;
     group_sets: GroupSet[];
     org_unit_count: number;
-    // SerializerMethodField returns org unit ids; swagger may show string
+    // List returns [] for perf; retrieve returns org unit ids
     org_units: number[];
     created_at: number;
     updated_at: number;

@@ -129,9 +129,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Logs',
         id: 'iaso.storages.logs',
     },
-    exportMobileAppDownloadBtn: {
-        defaultMessage: 'Download file',
-        id: 'iaso.users.exportMobileAppDownloadBtn',
+    download: {
+        defaultMessage: 'Download',
+        id: 'iaso.label.download',
     },
     fileAvailableUntil: {
         defaultMessage: 'File available until',
@@ -148,6 +148,117 @@ const MESSAGES = defineMessages({
     result_message: {
         defaultMessage: 'Result Message',
         id: 'iaso.label.result_message',
+    },
+    createdBy: {
+        defaultMessage: 'Created by',
+        id: 'iaso.tasks.createdBy',
+    },
+    relaunchedBy: {
+        defaultMessage: 'Relaunched by {user}',
+        id: 'iaso.tasks.relaunchedBy',
+    },
+    duration: {
+        defaultMessage: 'Duration',
+        id: 'iaso.tasks.duration',
+    },
+    runningFor: {
+        defaultMessage: 'Running for',
+        id: 'iaso.tasks.runningFor',
+    },
+    stepCreated: {
+        defaultMessage: 'Created',
+        id: 'iaso.tasks.stepCreated',
+    },
+    stepStarted: {
+        defaultMessage: 'Started',
+        id: 'iaso.tasks.stepStarted',
+    },
+    stepFailed: {
+        defaultMessage: 'Failed',
+        id: 'iaso.tasks.stepFailed',
+    },
+    stepStopped: {
+        defaultMessage: 'Stopped',
+        id: 'iaso.tasks.stepStopped',
+    },
+    stopRequested: {
+        defaultMessage: 'Stop requested',
+        id: 'iaso.tasks.stopRequested',
+    },
+    external: {
+        defaultMessage: 'External',
+        id: 'iaso.tasks.external',
+    },
+    workerLastSeen: {
+        defaultMessage: 'Worker last seen {time}',
+        id: 'iaso.tasks.workerLastSeen',
+    },
+    waitingForWorker: {
+        defaultMessage: 'Waiting for a worker',
+        id: 'iaso.tasks.waitingForWorker',
+    },
+    inProgress: {
+        defaultMessage: 'In progress',
+        id: 'iaso.tasks.inProgress',
+    },
+    succeeded: {
+        defaultMessage: 'Completed',
+        id: 'iaso.tasks.succeeded',
+    },
+    failed: {
+        defaultMessage: 'Failed',
+        id: 'iaso.tasks.failed',
+    },
+    fileAvailableUntilDate: {
+        defaultMessage: 'Available until {date} ({relative})',
+        id: 'iaso.tasks.fileAvailableUntilDate',
+    },
+    stop: {
+        defaultMessage: 'Stop',
+        id: 'iaso.tasks.stop',
+    },
+    relaunchShort: {
+        defaultMessage: 'Relaunch',
+        id: 'iaso.tasks.relaunchShort',
+    },
+    logsCount: {
+        defaultMessage: '{count, plural, one {# entry} other {# entries}}',
+        id: 'iaso.tasks.logsCount',
+    },
+    stepStart: {
+        defaultMessage: 'Start',
+        id: 'iaso.tasks.stepStart',
+    },
+    stopTaskTitle: {
+        defaultMessage: 'Stop {name}?',
+        id: 'iaso.tasks.stopTaskTitle',
+    },
+    stopTaskWarning: {
+        defaultMessage:
+            'The task stops at its next progress update. This cannot be undone.',
+        id: 'iaso.tasks.stopTaskWarning',
+    },
+    stopTaskConfirm: {
+        defaultMessage: 'Stop task',
+        id: 'iaso.tasks.stopTaskConfirm',
+    },
+    queuedHint: {
+        defaultMessage:
+            'The task starts automatically when a worker is free. You can close this window.',
+        id: 'iaso.tasks.queuedHint',
+    },
+    logsNotStarted: {
+        defaultMessage:
+            'No logs yet. They appear here as soon as the task starts.',
+        id: 'iaso.tasks.logsNotStarted',
+    },
+    stepRunning: {
+        defaultMessage: 'Running',
+        id: 'iaso.tasks.stepRunning',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
     },
 });
 

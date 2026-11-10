@@ -8,7 +8,7 @@ import {
     TestingQueryClient,
 } from '../../../../../tests/helpers';
 import { Task, TaskResult } from '../types';
-import { TaskBaseInfo } from './TaskBaseInfo';
+import { TaskResultPanel } from './TaskResultPanel';
 
 const { mockGetRequest } = vi.hoisted(() => ({
     mockGetRequest: vi.fn(),
@@ -21,7 +21,10 @@ vi.mock('Iaso/libs/Api', () => ({
 const PRESIGNED_URL = 'https://s3.example.com/export.zip?signature=abc';
 const NOW = new Date(2026, 9, 14, 10, 30);
 
-const makeTask = (result: TaskResult): Task<TaskResult> => ({
+const makeTask = (
+    result: TaskResult,
+    overrides: Partial<Task<TaskResult>> = {},
+): Task<TaskResult> => ({
     id: 1,
     name: 'superset_export',
     created_at: moment(NOW).unix(),
@@ -34,9 +37,10 @@ const makeTask = (result: TaskResult): Task<TaskResult> => ({
     status: 'SUCCESS',
     should_be_killed: false,
     progress_message: 'Superset tables exported (224.7 MB)',
+    ...overrides,
 });
 
-describe('TaskBaseInfo', () => {
+describe('TaskResultPanel', () => {
     beforeEach(() => {
         vi.useFakeTimers({ toFake: ['Date'] });
         vi.setSystemTime(NOW);
@@ -54,26 +58,27 @@ describe('TaskBaseInfo', () => {
         const task = makeTask({
             result: 'SUCCESS',
             data: {
-                file: 'export.zip',
+                file: 'exports/export.zip',
                 expires_at: new Date(2026, 9, 17, 14, 0).toISOString(),
             },
         });
 
-        renderWithThemeAndIntlProvider(<TaskBaseInfo task={task} />);
+        renderWithThemeAndIntlProvider(<TaskResultPanel task={task} />);
 
-        expect(screen.getByText('File available until')).toBeInTheDocument();
+        expect(screen.getByText('export')).toBeInTheDocument();
+        expect(screen.getByText('ZIP')).toBeInTheDocument();
         expect(
-            screen.getByText('17/10/2026 14:00 (in 3 days)'),
+            screen.getByText('Available until 17/10/2026 14:00 (in 3 days)'),
         ).toBeInTheDocument();
         expect(
-            await screen.findByRole('link', { name: 'Download file' }),
+            await screen.findByRole('link', { name: 'Download' }),
         ).toHaveAttribute('href', PRESIGNED_URL);
         expect(mockGetRequest).toHaveBeenCalledWith(
             `/api/tasks/${task.id}/presigned-url/`,
         );
     });
 
-    it('disables the download of an expired file', () => {
+    it('shows an expired file without a download', () => {
         const task = makeTask({
             result: 'SUCCESS',
             data: {
@@ -82,25 +87,24 @@ describe('TaskBaseInfo', () => {
             },
         });
 
-        renderWithThemeAndIntlProvider(<TaskBaseInfo task={task} />);
+        renderWithThemeAndIntlProvider(<TaskResultPanel task={task} />);
 
+        expect(screen.getByText('Completed')).toBeInTheDocument();
         expect(
             screen.getByText('Expired on 12/10/2026 09:00'),
         ).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: 'Download file' }),
-        ).toBeDisabled();
+        expect(screen.queryByText('Download')).toBeNull();
         expect(mockGetRequest).not.toHaveBeenCalled();
     });
 
     it('does not show an expiry for files without one', async () => {
         const task = makeTask({ result: 'SUCCESS', data: 'file:export.zip' });
 
-        renderWithThemeAndIntlProvider(<TaskBaseInfo task={task} />);
+        renderWithThemeAndIntlProvider(<TaskResultPanel task={task} />);
 
-        expect(screen.queryByText('File available until')).toBeNull();
+        expect(screen.queryByText(/Available until/)).toBeNull();
         expect(
-            await screen.findByRole('link', { name: 'Download file' }),
+            await screen.findByRole('link', { name: 'Download' }),
         ).toHaveAttribute('href', PRESIGNED_URL);
     });
 
@@ -112,12 +116,47 @@ describe('TaskBaseInfo', () => {
             } as TaskResult['data'],
         });
 
-        renderWithThemeAndIntlProvider(<TaskBaseInfo task={task} />);
+        renderWithThemeAndIntlProvider(<TaskResultPanel task={task} />);
 
-        expect(screen.queryByText('File available until')).toBeNull();
-        expect(
-            screen.queryByRole('button', { name: 'Download file' }),
-        ).toBeNull();
+        expect(screen.getByText('Completed')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Download' })).toBeNull();
         expect(mockGetRequest).not.toHaveBeenCalled();
+    });
+
+    it('shows the error message', () => {
+        const task = makeTask(
+            {
+                result: 'ERRORED',
+                message: 'Bad GPKG parent',
+            },
+            {
+                status: 'ERRORED',
+                progress_message: 'Bad GPKG parent',
+                progress_value: 80,
+                end_value: 100,
+            },
+        );
+
+        renderWithThemeAndIntlProvider(<TaskResultPanel task={task} />);
+
+        expect(screen.getByText('Failed')).toBeInTheDocument();
+        expect(screen.getByText('Bad GPKG parent')).toBeInTheDocument();
+    });
+
+    it('tells a queued task will start on its own', () => {
+        const task = makeTask(
+            { result: 'ERRORED', message: 'Previous run failed' },
+            { status: 'QUEUED', progress_message: 'Previous run failed' },
+        );
+
+        renderWithThemeAndIntlProvider(<TaskResultPanel task={task} />);
+
+        expect(screen.getByText('Waiting for a worker')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'The task starts automatically when a worker is free. You can close this window.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('Previous run failed')).toBeNull();
     });
 });

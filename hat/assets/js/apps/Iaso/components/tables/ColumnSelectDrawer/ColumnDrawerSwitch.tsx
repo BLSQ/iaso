@@ -1,5 +1,12 @@
-import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
+import React, {
+    ChangeEvent,
+    FunctionComponent,
+    ReactElement,
+    ReactNode,
+} from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
+    Box,
     ListItemText,
     Switch,
     Tooltip,
@@ -19,6 +26,7 @@ type Props = {
     primaryText: string;
     secondaryText: string;
     size?: 'small' | 'medium' | undefined;
+    warning?: string | ReactNode;
 };
 
 export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
@@ -30,6 +38,7 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
     primaryText,
     secondaryText,
     size = 'small',
+    warning,
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -77,6 +86,19 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                     secondary={truncateText(secondaryText, 35)}
                 />
             </Tooltip>
+            {warning && (
+                <Tooltip title={warning} placement="top" arrow>
+                    <Box
+                        display="inline-flex"
+                        color="warning.main"
+                        ml={0.5}
+                        flexShrink={0}
+                        data-test={`column-warning-${secondaryText}`}
+                    >
+                        <WarningAmberIcon fontSize="small" />
+                    </Box>
+                </Tooltip>
+            )}
         </>
     );
 };

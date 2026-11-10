@@ -1,12 +1,13 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Paper } from '@mui/material';
-import { getOrderArray } from 'bluesquare-components';
+import { getOrderArray, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
 import { useFormsTableColumns } from '../config';
 import { useColumnsSelectDrawer } from '../hooks/useColumnsSelectDrawer';
 import { tableDefaults, useGetForms } from '../hooks/useGetForms';
+import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
 import { FormsTableToolbar } from './FormsTableToolbar';
 
@@ -31,6 +32,7 @@ export const FormsTable: FunctionComponent<Props> = ({
     tableDefaults: tableDefaultsProp,
     displayColumnsSelectDrawer = true,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const apiParams = usePrefixedParams(paramsPrefix, params) as FormsParams;
 
     const { data: forms, isFetching: isLoadingForms } = useGetForms(
@@ -49,10 +51,20 @@ export const FormsTable: FunctionComponent<Props> = ({
         count: forms?.count ?? 0,
     });
 
+    const columnWarnings = useMemo(
+        () => ({
+            instances_count: formatMessage(
+                MESSAGES.instancesCountColumnWarning,
+            ),
+        }),
+        [formatMessage],
+    );
+
     const { visibleColumns, ...columnsSelect } = useColumnsSelectDrawer(
         columns,
         params,
         baseUrl,
+        columnWarnings,
     );
     const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
 

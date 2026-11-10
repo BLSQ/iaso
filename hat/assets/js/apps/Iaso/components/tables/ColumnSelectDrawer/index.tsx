@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useCallback } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useCallback,
+    type ReactNode,
+} from 'react';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Close from '@mui/icons-material/Close';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
@@ -29,6 +34,8 @@ export type Option = {
     key: string;
     label: string;
     index?: number;
+    /** Optional caution shown next to the column (e.g. slow API fields). */
+    warning?: string | ReactNode;
 };
 
 type TooltipProps = {
@@ -241,6 +248,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                                 : o.key
                                                         }
                                                         secondaryText={o.key}
+                                                        warning={o.warning}
                                                     />
                                                 )}
                                                 {!inView && (

@@ -745,6 +745,11 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
         id: 'iaso.forms.instances_count',
         defaultMessage: 'Number of submissions',
     },
+    instancesCountColumnWarning: {
+        id: 'iaso.forms.instancesCountColumnWarning',
+        defaultMessage:
+            'Including this column can make the API call very slow',
+    },
     projectsInfo: {
         id: 'iaso.forms.projectsInfo',
         defaultMessage:

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, type ReactNode } from 'react';
 import { useRedirectToReplace } from 'bluesquare-components';
 import { Column } from 'bluesquare-components';
 import { Option } from '../../../components/tables/ColumnSelectDrawer';
@@ -9,6 +9,7 @@ export const useColumnsSelectDrawer = (
     columns: Column[],
     params: FormsParams,
     baseUrl: string,
+    warnings: Record<string, string | ReactNode> = {},
 ): {
     options: Option[];
     setOptions: (options: Option[]) => void;
@@ -28,8 +29,9 @@ export const useColumnsSelectDrawer = (
                 label: column.Header,
                 active: column.id && visibleColumnsKeys.includes(column.id),
                 disabled: false,
+                warning: column.id ? warnings[column.id] : undefined,
             })) as Option[];
-    }, [visibleColumnsKeys, columns]);
+    }, [visibleColumnsKeys, columns, warnings]);
     const setOptions = (options: Option[]) => {
         setVisibleColumnsKeys(
             options.filter(option => option.active).map(option => option.key),

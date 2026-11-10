@@ -1,4 +1,10 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import {
+    useState,
+    useMemo,
+    useCallback,
+    useEffect,
+    type ReactNode,
+} from 'react';
 import { useRedirectToReplace, Column } from 'bluesquare-components';
 import { Option } from './index';
 
@@ -10,6 +16,8 @@ type Args = {
     baseUrl: string;
     defaultColumns: string[];
     hiddenColumns?: string[];
+    /** Optional per-column caution messages, keyed by column id/accessor. */
+    warnings?: Record<string, string | ReactNode>;
 };
 
 export type ColumnSelectDrawerResult = {
@@ -29,6 +37,7 @@ export const useColumnSelectDrawer = ({
     baseUrl,
     defaultColumns,
     hiddenColumns = DEFAULT_HIDDEN_COLUMNS,
+    warnings = {},
 }: Args): ColumnSelectDrawerResult => {
     const defaultColumnsKey = defaultColumns.join(',');
     const hiddenColumnsKey = hiddenColumns.join(',');
@@ -72,9 +81,10 @@ export const useColumnSelectDrawer = ({
                     label: column.Header || key,
                     active: visibleColumnsKeys.includes(key),
                     disabled: false,
+                    warning: warnings[key],
                 };
             }) as Option[];
-    }, [columns, visibleColumnsKeys, hiddenColumnsKey]);
+    }, [columns, visibleColumnsKeys, hiddenColumnsKey, warnings]);
 
     const setOptions = (newOptions: Option[]) => {
         setVisibleColumnsKeys(newOptions.filter(o => o.active).map(o => o.key));

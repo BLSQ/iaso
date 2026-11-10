@@ -166,6 +166,16 @@ export const Promptness: FunctionComponent = () => {
           })
         : undefined;
     const downloadOption = useDownloadOption();
+
+    const resetPageToOne = JSON.stringify([
+        params.formId,
+        params.period,
+        params.parentId,
+        params.orgUnitId,
+        params.orgUnitTypeIds,
+        params.status,
+    ]);
+
     return (
         <>
             <TopBar
@@ -309,6 +319,7 @@ export const Promptness: FunctionComponent = () => {
                                     }}
                                     elevation={0}
                                     countOnTop
+                                    resetPageToOne={resetPageToOne}
                                 />
                             </Box>
                         </Paper>

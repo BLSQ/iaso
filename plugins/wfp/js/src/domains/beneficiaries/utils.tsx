@@ -41,11 +41,15 @@ export const muacColor = (
 export const formatDate = (value?: string | null): string =>
     value ? moment(value).format('YYYY-MM-DD') : '';
 
-export const whzColor = (color: string | null): ChipProps['color'] => {
-    const colors: Record<string, ChipProps['color']> = {
-        Green: 'success',
-        Yellow: 'warning',
-        Red: 'error',
-    };
-    return color ? colors[color] : 'default';
+export const whzColor = (theme: Theme, color?: string | null): string => {
+    switch (color) {
+        case 'Green':
+            return theme.palette.success.main;
+        case 'Yellow':
+            return theme.palette.yellow.main;
+        case 'Red':
+            return theme.palette.error.main;
+        default:
+            return theme.palette.grey[500];
+    }
 };

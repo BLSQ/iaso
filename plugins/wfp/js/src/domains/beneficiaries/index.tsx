@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
@@ -12,6 +12,8 @@ import MESSAGES from './messages';
 import { Params, Filters } from './types';
 
 const baseUrl = baseUrls.wfpBeneficiaries;
+
+const styles = { root: { padding: 4 } };
 
 export const Beneficiaries: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as Params;
@@ -37,13 +39,11 @@ export const Beneficiaries: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.entities)}
                 displayBackButton={false}
             />
-            <Box
-                sx={theme => commonStyles(theme).containerFullHeightNoTabPadded}
-            >
+            <MainWrapper sx={styles.root}>
                 <BeneficiaryFilters params={params} />
                 <Exports filters={searched} disabled={isFetching} />
                 <TableList data={data} loading={isFetching} params={params} />
-            </Box>
+            </MainWrapper>
         </>
     );
 };

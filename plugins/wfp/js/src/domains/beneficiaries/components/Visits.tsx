@@ -1,25 +1,62 @@
 import React, { FunctionComponent } from 'react';
 import {
     Box,
-    Chip,
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableRow,
 } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useSafeIntl } from 'bluesquare-components';
+import { ColorChip, commonStyles, useSafeIntl } from 'bluesquare-components';
 import { SubmissionLink } from './Fragments';
 import MESSAGES from './../messages';
 import { Journey, Visit } from './../types';
 import { formatDate, muacColor, whzColor } from './../utils';
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+    root: {
+        '& th': {
+            height: 40,
+            fontSize: 12,
+            color: theme.palette.text.secondary,
+            background: 'rgba(0, 0, 0, 0.02)',
+            whiteSpace: 'nowrap',
+        },
+        '& td': { padding: theme.spacing(0.75, 2) },
+        '& tbody tr:last-child td': { borderBottom: 'none' },
+        '& tbody tr:hover': { background: 'rgba(0, 0, 0, 0.03)' },
+    },
+    visitNumber: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 24,
+        height: 24,
+        borderRadius: '50%',
+        background: alpha(theme.palette.primary.main, 0.08),
+        color: theme.palette.primary.main,
+        fontWeight: 500,
+        fontSize: 12,
+    },
+    muac: {
+        display: 'inline-block',
+        width: 10,
+        height: 10,
+        borderRadius: '50%',
+        marginRight: theme.spacing(0.75),
+        verticalAlign: 'middle',
+    },
+}));
 
 export const Visits: FunctionComponent<{
     journey: Journey;
     visits: Visit[];
 }> = ({ journey, visits }) => {
     const { formatMessage } = useSafeIntl();
+    const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const headers = [
         '#',
@@ -34,21 +71,7 @@ export const Visits: FunctionComponent<{
     ];
     return (
         <Box sx={{ overflowX: 'auto' }}>
-            <Table
-                size="small"
-                sx={{
-                    '& th': {
-                        height: 40,
-                        fontSize: 12,
-                        color: 'text.secondary',
-                        background: 'rgba(0, 0, 0, 0.02)',
-                        whiteSpace: 'nowrap',
-                    },
-                    '& td': { py: 0.75, px: 2 },
-                    '& tbody tr:last-child td': { borderBottom: 'none' },
-                    '& tbody tr:hover': { background: 'rgba(0, 0, 0, 0.03)' },
-                }}
-            >
+            <Table size="small" className={classes.root}>
                 <TableHead>
                     <TableRow>
                         {headers.map(header => (
@@ -72,21 +95,7 @@ export const Visits: FunctionComponent<{
                             <TableCell>
                                 <Box
                                     component="span"
-                                    sx={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '50%',
-                                        background: alpha(
-                                            theme.palette.primary.main,
-                                            0.08,
-                                        ),
-                                        color: 'primary.main',
-                                        fontWeight: 500,
-                                        fontSize: 12,
-                                    }}
+                                    className={classes.visitNumber}
                                 >
                                     {visit.number}
                                 </Box>
@@ -100,13 +109,8 @@ export const Visits: FunctionComponent<{
                                     <>
                                         <Box
                                             component="span"
+                                            className={classes.muac}
                                             sx={{
-                                                display: 'inline-block',
-                                                width: 10,
-                                                height: 10,
-                                                borderRadius: '50%',
-                                                mr: 0.75,
-                                                verticalAlign: 'middle',
                                                 background: muacColor(
                                                     theme,
                                                     Number(visit.muac_size),
@@ -120,18 +124,18 @@ export const Visits: FunctionComponent<{
                             </TableCell>
                             <TableCell>
                                 {visit.whz_color && (
-                                    <Chip
+                                    <ColorChip
                                         size="small"
-                                        color={whzColor(visit.whz_color)}
+                                        color={whzColor(theme, visit.whz_color)}
                                         label={visit.whz_color}
                                     />
                                 )}
                             </TableCell>
                             <TableCell>
                                 {visit.oedema ? (
-                                    <Chip
+                                    <ColorChip
                                         size="small"
-                                        color="error"
+                                        color={theme.palette.error.main}
                                         label={formatMessage(MESSAGES.yes)}
                                     />
                                 ) : (
@@ -154,7 +158,7 @@ export const Visits: FunctionComponent<{
                                     </Box>
                                 ) : (
                                     visit.steps.map(step => (
-                                        <Chip
+                                        <ColorChip
                                             size="small"
                                             key={step.id}
                                             label={`${step.assistance_type}: ${step.quantity_given}${step.ration_size ? ` (${step.ration_size})` : ''}`}

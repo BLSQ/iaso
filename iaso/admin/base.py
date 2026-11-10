@@ -96,7 +96,6 @@ from ..models import (
     StockRulesVersion,
     StorageDevice,
     StorageLogEntry,
-    StoragePassword,
     Task,
     TaskLease,
     TaskLog,
@@ -937,20 +936,6 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     inlines = [
         StorageLogEntryInline,
     ]
-
-
-@admin.register(StoragePassword)
-class StoragePasswordAdmin(admin.ModelAdmin):
-    fields = (
-        "password",
-        "is_compromised",
-        "project",
-        "created_at",
-        "updated_at",
-    )
-    readonly_fields = ("created_at", "updated_at")
-    list_display = ("project", "password")
-    list_filter = ("project", "is_compromised")
 
 
 @admin.register(Workflow)

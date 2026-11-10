@@ -6,7 +6,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Group, OrgUnit, OrgUnitType, Planning, PlanningConfig, Team
+from iaso.models import Assignment, Group, OrgUnit, OrgUnitType, Planning, PlanningConfig, Team
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -94,7 +94,11 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
             name="Root", version=cls.source_version, validation_status=OrgUnit.VALIDATION_VALID
         )
         cls.children_1 = OrgUnit.objects.create(
-            parent=cls.ou_root, version=cls.source_version, name="Child 1", validation_status=OrgUnit.VALIDATION_VALID
+            parent=cls.ou_root,
+            version=cls.source_version,
+            name="Child 1",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            org_unit_type=cls.org_unit_type,
         )
         cls.children_2 = OrgUnit.objects.create(
             parent=cls.ou_root,
@@ -211,6 +215,16 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         cls.planning_config_level_2 = PlanningConfig.objects.create(level=2, planning=cls.planning)
         cls.planning_config_level_2.org_unit_types.set([cls.org_unit_type_2])
         cls.planning_config_level_2.org_unit_groups.set([cls.org_unit_group_2])
+
+        # resulting tree
+        # root
+        # |- chidlren_2
+
+        # create assignments
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_1)
+        Assignment.objects.create(planning=cls.planning, team=cls.team, org_unit=cls.children_1)
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_1_1)
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1_1, org_unit=cls.children_1_1_1)
 
     def assertValidResponse(self, response: Any, expected_length: int):
         self.assertValidListData(

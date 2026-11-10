@@ -73,7 +73,7 @@ class PlanningOrgUnitTableSerializer(ModelSerializer):
         if planning is None:
             return None
         return (
-            Assignment.objects.filter(planning=planning, org_unit=org_unit, deleted_at__isnull=True)
+            Assignment.objects.filter(planning=planning, org_unit=org_unit)
             .select_related("user__iaso_profile", "team")
             .first()
         )

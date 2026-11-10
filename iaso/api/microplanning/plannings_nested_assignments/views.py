@@ -107,7 +107,9 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             return Assignment.objects.none()
 
         if self.action == "org_units":
-            return parent.assignment_set.only("org_unit_id", "planning_id", "id", "user_id", "team_id")
+            return parent.assignment_set.filter(deleted_at__isnull=True).only(
+                "org_unit_id", "planning_id", "id", "user_id", "team_id"
+            )
 
         if self.action == "teams":
             configs = parent.configs.all()

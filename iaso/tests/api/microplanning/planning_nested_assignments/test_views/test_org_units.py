@@ -501,6 +501,22 @@ class NestedPlanningAssignmentOrgUnitAPITestCase(SwaggerTestCaseMixin, APITestCa
             ],
         )
 
+    def test_response_does_not_include_soft_deleted_assignments(self):
+        self.client.force_authenticate(self.superuser)
+
+        res = self.client.get(self.get_url())
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 3)
+
+        assignment_pk = self.assignment_1.pk
+        self.assignment_1.delete()
+        self.assertSoftDeleted(self.assignment_1)
+
+        res = self.client.get(self.get_url())
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 2)
+        self.assertNotIn(assignment_pk, [x["id"] for x in res_data["results"]])
+
     def test_response(self):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url())

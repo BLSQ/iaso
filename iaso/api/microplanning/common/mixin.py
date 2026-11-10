@@ -32,9 +32,7 @@ class PlanningOrgUnitChildrenQuerysetMixin:
         return queryset.prefetch_related(
             Prefetch(
                 "assignment_set",
-                queryset=Assignment.objects.filter(planning=planning, deleted_at__isnull=True).select_related(
-                    "user__iaso_profile", "team"
-                ),
+                queryset=Assignment.objects.filter(planning=planning).select_related("user__iaso_profile", "team"),
                 to_attr="_planning_assignments_prefetched",
             )
         )

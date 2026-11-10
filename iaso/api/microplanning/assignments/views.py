@@ -84,7 +84,7 @@ class AssignmentViewSet(PlanningOrgUnitChildrenQuerysetMixin, AuditMixin, ModelV
         org_units = list(self.get_bulk_assign_org_units_queryset(planning, requester, serializer.validated_data))
 
         assignments_to_update = Assignment.objects.select_related("user", "team", "org_unit").filter(
-            planning=planning, org_unit__in=org_units, deleted_at__isnull=True
+            planning=planning, org_unit__in=org_units
         )
         assignment_values = list(assignments_to_update.values("id", "org_unit_id"))
         assignment_ids_to_update = [assignment["id"] for assignment in assignment_values]
@@ -166,7 +166,7 @@ class AssignmentViewSet(PlanningOrgUnitChildrenQuerysetMixin, AuditMixin, ModelV
 
         # Get all assignments for this planning that are not already deleted
         assignments = (
-            Assignment.objects.filter(planning=planning, deleted_at__isnull=True)
+            Assignment.objects.filter(planning=planning)
             .select_related("user", "team", "org_unit")
             .filter_for_user(requester)
         )

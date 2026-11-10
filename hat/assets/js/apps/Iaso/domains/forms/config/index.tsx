@@ -4,16 +4,15 @@ import {
     formatThousand,
     IconButton,
     Setting,
-    textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PeriodTypeCell } from 'Iaso/components/Cells/PeriodTypeCell';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetOrgUnitTypeChips } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypeChips';
-import periodMessages from '../../periods/messages';
 import { useGetProjectChips } from '../../projects/hooks/useGetProjectChips';
 import { userHasAccessToModule } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
@@ -207,16 +206,7 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.periodType),
                 id: 'period_type',
                 accessor: 'period_type',
-                Cell: ({ value }: Setting<Form>) => {
-                    if (!value) {
-                        return textPlaceholder;
-                    }
-                    const message =
-                        periodMessages[String(value).toLowerCase()];
-                    return message
-                        ? formatMessage(message)
-                        : textPlaceholder;
-                },
+                Cell: PeriodTypeCell,
             },
             {
                 Header: formatMessage(MESSAGES.singlePerPeriod),

@@ -309,6 +309,7 @@ dev = [
     "time-machine==2.13.0", # https://github.com/adamchainz/time-machine/tags
     "vcrpy==4.1.1", # trypelim - https://github.com/kevin1024/vcrpy
     "openapi-schema-validator>=0.6.3",
+    { include-group = "setuper" },
 ]
 docs = [
     "griffe==0.25.5", # must match mkdocstrings 0.20 (newer versions crash the build)
@@ -330,7 +331,7 @@ prod = [
     "py-spy==0.4.2", # https://github.com/benfred/py-spy/releases
 ]
 setuper = [
-    "click==8.1.7",
     "names-generator==0.2.0", # https://github.com/glentner/names_generator
-    "pyarrow==21.0.0",
+    "pyarrow==21.0.0",  # https://github.com/apache/arrow/releases
+    "requests",  # no need to pin because it's already pinned in the main dependencies
 ]

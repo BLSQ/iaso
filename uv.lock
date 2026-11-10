@@ -1983,9 +1983,12 @@ dev = [
     { name = "django-sslserver" },
     { name = "django-test-migrations" },
     { name = "locust" },
+    { name = "names-generator" },
     { name = "openapi-schema-validator" },
     { name = "pre-commit" },
+    { name = "pyarrow" },
     { name = "redgreenunittest" },
+    { name = "requests" },
     { name = "responses" },
     { name = "ruff" },
     { name = "tblib" },
@@ -2012,9 +2015,9 @@ prod = [
     { name = "py-spy" },
 ]
 setuper = [
-    { name = "click" },
     { name = "names-generator" },
     { name = "pyarrow" },
+    { name = "requests" },
 ]
 
 [package.metadata]
@@ -2125,9 +2128,12 @@ dev = [
     { name = "django-sslserver", specifier = "==0.22" },
     { name = "django-test-migrations", specifier = "==1.4.0" },
     { name = "locust", specifier = "==2.20.0" },
+    { name = "names-generator", specifier = "==0.2.0" },
     { name = "openapi-schema-validator", specifier = ">=0.6.3" },
     { name = "pre-commit", specifier = "==4.1.0" },
+    { name = "pyarrow", specifier = "==21.0.0" },
     { name = "redgreenunittest", specifier = "==0.1.1" },
+    { name = "requests" },
     { name = "responses", specifier = "==0.24.1" },
     { name = "ruff", specifier = "==0.9.6" },
     { name = "tblib", specifier = "==3.0.0" },
@@ -2154,9 +2160,9 @@ prod = [
     { name = "py-spy", specifier = "==0.4.2" },
 ]
 setuper = [
-    { name = "click", specifier = "==8.1.7" },
     { name = "names-generator", specifier = "==0.2.0" },
     { name = "pyarrow", specifier = "==21.0.0" },
+    { name = "requests" },
 ]
 
 [[package]]

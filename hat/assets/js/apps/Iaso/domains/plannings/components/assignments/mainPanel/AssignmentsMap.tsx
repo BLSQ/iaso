@@ -20,7 +20,7 @@ import { OpenTeamOnClick } from './OpenTeamOnClick';
 import { OrgUnitHover } from './OrgUnitHover';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
 import { useAssignments } from './useAssignments';
-import { useLevelGeometry } from './useLevelGeometry';
+import { OrgUnitFeatureCollection, useLevelGeometry } from './useLevelGeometry';
 import {
     countOrgUnitsOffMap,
     getAssigneeColorByOrgUnitId,
@@ -43,6 +43,19 @@ const EMPTY_FEATURE_COLLECTION: FeatureCollection = {
     type: 'FeatureCollection',
     features: [],
 };
+
+// Close enough to see the org unit among its neighbours.
+const FOCUS_MAX_ZOOM = 12;
+
+const findFeature = (
+    collections: (OrgUnitFeatureCollection | undefined)[],
+    orgUnitId?: number,
+) =>
+    orgUnitId === undefined
+        ? undefined
+        : collections
+              .flatMap(collection => collection?.features ?? [])
+              .find(feature => feature.id === orgUnitId);
 
 const INITIAL_VIEW_STATE = {
     longitude: defaultCenter.lng,
@@ -70,7 +83,19 @@ export const AssignmentsMap: FC = () => {
         () => getTeamIdByOrgUnitId(assignments ?? []),
         [assignments],
     );
+    // The found org unit once its team's geometry is loaded, the team's area otherwise.
+    const focusedFeature = useMemo(
+        () => findFeature([members, area], focusedOrgUnitId),
+        [members, area, focusedOrgUnitId],
+    );
     const areaBounds = useMemo(() => area && getGeoJsonBounds(area), [area]);
+    const fitBounds = useMemo(
+        () => (focusedFeature ? getGeoJsonBounds(focusedFeature) : areaBounds),
+        [focusedFeature, areaBounds],
+    );
+    const fitKey = focusedFeature
+        ? `${selectedTeam.id}-${focusedFeature.id}`
+        : selectedTeam.id;
 
     // Created once the first area is known, then kept and refitted when selecting other teams.
     const isMapCreated = useRef(false);
@@ -86,8 +111,12 @@ export const AssignmentsMap: FC = () => {
                         bounds={areaBounds}
                     >
                         <FitBoundsOnChange
-                            bounds={areaBounds}
-                            fitKey={selectedTeam.id}
+                            bounds={fitBounds}
+                            fitKey={fitKey}
+                            maxZoom={
+                                focusedFeature ? FOCUS_MAX_ZOOM : undefined
+                            }
+                            fitInitialKey={Boolean(focusedFeature)}
                         />
                         {/* Always mounted, in this order, so the area border stays above the org units. */}
                         <AssignableOrgUnitsLayer

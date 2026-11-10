@@ -2,8 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { Box, Button, Tooltip } from '@mui/material';
 import { ExcellSvg, useSafeIntl } from 'bluesquare-components';
 import { useDownloadButtonStyles } from 'Iaso/components/DownloadButtonsComponent';
-import { exportUrl } from './../requests';
 import MESSAGES from './../messages';
+import { exportUrl } from './../requests';
 import { Filters } from './../types';
 
 type Props = {

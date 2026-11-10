@@ -6,8 +6,8 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../constants/urls';
-import { useGetBeneficiaryOptions } from './../requests';
 import MESSAGES from './../messages';
+import { useGetBeneficiaryOptions } from './../requests';
 import { Params } from './../types';
 
 type Props = {

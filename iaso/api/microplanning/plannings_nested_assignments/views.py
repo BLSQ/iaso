@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from rest_framework.generics import BaseFilterProtocol
 
 
+@extend_schema(tags=["Assignments"])
 class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
     permission_classes = [IsAuthenticated, HasPermission(CORE_PLANNING_READ_PERMISSION)]
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]

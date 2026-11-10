@@ -92,18 +92,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
         This might return duplicates if distinct is set to False (default). Set it to True to get distinct values.
         """
-
+        queryset = self
         if user and user.is_anonymous and app_id is None:
             return self.none()
-
-        queryset = self.prefetch_related(
-            "projects",
-            "projects__account",
-            "projects__projectfeatureflags_set",
-            "allow_creating_sub_unit_types",
-            "reference_forms",
-            "sub_unit_types",
-        )
 
         if user and user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)

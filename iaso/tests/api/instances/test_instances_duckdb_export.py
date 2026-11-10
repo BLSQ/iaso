@@ -546,7 +546,7 @@ class InstancesExportContentTestCase(BaseAPITransactionTestCase):
         self.create_form_instance(**not_exported, deleted=True, json={"head_name": "deleted"})
         self.create_form_instance(
             **not_exported,
-            device=m.Device.objects.create(imei="test", test_device=True),
+            device=m.Device.objects.create(installation_id="test", test_device=True),
             json={"head_name": "test device"},
         )
         no_file = self.create_form_instance(**not_exported, json={"head_name": "no file"})

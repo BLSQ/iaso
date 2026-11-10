@@ -27,6 +27,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "name",
             "source_ref",
             "source_version",
+            "source_version_id",
             "group_sets",
             "org_unit_count",
             "org_unit_ids",
@@ -39,6 +40,13 @@ class GroupSerializer(serializers.ModelSerializer):
         ref_name = "iaso_group_serializer"
 
     source_version = SourceVersionSerializerForGroup(read_only=True)
+    # Create-only: omit to keep account.default_version behavior. Ignored/rejected on update.
+    source_version_id = serializers.PrimaryKeyRelatedField(
+        source="source_version",
+        write_only=True,
+        required=False,
+        queryset=SourceVersion.objects.none(),  # Scoped in __init__
+    )
     group_sets = GroupSetSerializer(many=True, read_only=True)
     org_unit_count = serializers.IntegerField(read_only=True)
     org_units = serializers.SerializerMethodField(read_only=True)
@@ -63,8 +71,15 @@ class GroupSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get("request")
+        user = request.user if request else None
+
+        # source_version can only be set at creation time
+        if self.instance is not None:
+            self.fields.pop("source_version_id", None)
+        elif request and "source_version_id" in self.fields and user and user.is_authenticated:
+            self.fields["source_version_id"].queryset = SourceVersion.objects.filter_for_user(user)
+
         if request and "org_unit_ids" in self.fields:
-            user = request.user
             if user and user.is_authenticated:
                 profile = user.iaso_profile
                 queryset = OrgUnit.objects.filter_for_user(user)
@@ -76,21 +91,30 @@ class GroupSerializer(serializers.ModelSerializer):
                 self.fields["org_unit_ids"].child_relation.queryset = queryset
 
     def validate(self, attrs):
-        default_version = self._fetch_user_default_source_version()
+        if self.instance is not None and "source_version" in attrs:
+            raise serializers.ValidationError({"source_version_id": "Source version cannot be changed after creation"})
+
+        source_version = attrs.get("source_version")
+        if self.instance is not None:
+            source_version = self.instance.source_version
+        elif source_version is None:
+            source_version = self._fetch_user_default_source_version()
+            attrs["source_version"] = source_version
+
         if "source_ref" in attrs and attrs["source_ref"]:
-            # Check if the source_ref is already used by another group
-            potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=default_version)
+            potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=source_version)
+            if self.instance is not None:
+                potential_group = potential_group.exclude(pk=self.instance.pk)
             if potential_group.exists():
                 raise serializers.ValidationError(
-                    {"source_ref": "This source ref is already used by another group in your default version"}
+                    {"source_ref": "This source ref is already used by another group in this source version"}
                 )
 
         return super().validate(attrs)
 
     def create(self, validated_data):
         org_unit_ids = validated_data.pop("org_unit_ids", [])
-        default_version = self._fetch_user_default_source_version()
-        validated_data["source_version"] = default_version
+        # source_version is set in validate() (explicit or account default)
         group = super().create(validated_data)
         if org_unit_ids:
             group.org_units.set(org_unit_ids)

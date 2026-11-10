@@ -172,6 +172,39 @@ class GroupsAPITestCase(APITestCase):
             self.core_permission_user.iaso_profile.account.default_version_id, response_data["source_version"]["id"]
         )
 
+    def test_groups_create_with_source_version_id(self):
+        """POST /groups/ with an explicit source_version_id (non-default)"""
+
+        self.client.force_authenticate(self.core_permission_user)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "group on version 1", "source_version_id": self.source_version_1.id},
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        response_data = response.json()
+        self.assertValidGroupData(response_data, skip=["org_unit_count"])
+        self.assertEqual(self.source_version_1.id, response_data["source_version"]["id"])
+        self.assertNotEqual(
+            self.core_permission_user.iaso_profile.account.default_version_id, response_data["source_version"]["id"]
+        )
+
+    def test_groups_create_with_invalid_source_version_id(self):
+        """POST /groups/ with a source_version_id outside the account"""
+
+        other_data_source = m.DataSource.objects.create(name="Other account source")
+        other_version = m.SourceVersion.objects.create(data_source=other_data_source, number=1)
+
+        self.client.force_authenticate(self.core_permission_user)
+        response = self.client.post(
+            "/api/groups/",
+            data={"name": "group on foreign version", "source_version_id": other_version.id},
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("source_version_id", response.json())
+
     def test_groups_create_invalid(self):
         """POST /groups/ with missing data"""
 
@@ -196,7 +229,7 @@ class GroupsAPITestCase(APITestCase):
         response = self.client.post("/api/groups/", data=data, format="json")
         self.assertContains(
             response,
-            "This source ref is already used by another group in your default version",
+            "This source ref is already used by another group in this source version",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -365,6 +398,21 @@ class GroupsAPITestCase(APITestCase):
         self.group_1.refresh_from_db()
         self.assertEqual("test group (updated)", self.group_1.name)
         self.assertEqual(1, self.group_1.source_version.number)
+
+    def test_groups_partial_update_ignores_source_version_id(self):
+        """PATCH /groups/<group_id>: source_version_id cannot change the version"""
+
+        self.client.force_authenticate(self.core_permission_user)
+        response = self.client.patch(
+            f"/api/groups/{self.group_1.id}/",
+            data={"name": "still on version 1", "source_version_id": self.source_version_2.id},
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.group_1.refresh_from_db()
+        self.assertEqual("still on version 1", self.group_1.name)
+        self.assertEqual(self.source_version_1.id, self.group_1.source_version_id)
 
     def test_groups_partial_update_with_blank_source_ref(self):
         """PATCH /groups/<group_id>: removing a source_ref doesn't crash"""

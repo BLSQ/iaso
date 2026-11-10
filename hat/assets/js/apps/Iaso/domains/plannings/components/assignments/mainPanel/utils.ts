@@ -1,8 +1,13 @@
-import { PlanningLevelTreeNode } from 'Iaso/api/plannings';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { collectTeamTreeNodes } from 'Iaso/domains/teams/utils';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
-import { Assignee, Assignment, OrgUnitRow } from './types';
+import {
+    Assignee,
+    Assignment,
+    LevelOrgUnitNode,
+    MapPresence,
+    OrgUnitRow,
+} from './types';
 
 export const getAssigneeByOrgUnitId = (
     tree: TeamTreeNode,
@@ -42,70 +47,61 @@ export const getAssigneeColorByOrgUnitId = (
     );
 
 // Points are only drawn on the level assigned to users.
-export const isOffMap = (
-    node: PlanningLevelTreeNode,
-    showPoints: boolean,
-): boolean => !node.has_geo_json && !(showPoints && node.has_location);
+export const isOffMap = (node: MapPresence, showPoints: boolean): boolean =>
+    !node.has_geo_json && !(showPoints && node.has_location);
 
 export const countOrgUnitsOffMap = (
-    levelTree: PlanningLevelTreeNode[],
-    level: number,
+    nodes: MapPresence[],
     showPoints: boolean,
-): number =>
-    levelTree.filter(node => node.level === level && isOffMap(node, showPoints))
-        .length;
+): number => nodes.filter(node => isOffMap(node, showPoints)).length;
+
+// Planning levels are consecutive depths below the planning root, which is level 0.
+export const getLevelTreeParams = (
+    level: number,
+    depthsCount: number,
+): { level?: number; max_depth: number } => ({
+    // Without a level, the API starts from the planning root.
+    ...(level > 0 ? { level } : {}),
+    // The API counts the planning root as depth 1.
+    max_depth: level + depthsCount,
+});
 
 type LevelOrgUnitRowsParams = {
-    levelTree: PlanningLevelTreeNode[];
-    level: number;
+    parents: LevelOrgUnitNode[];
     assigneeByOrgUnitId: Map<number, Assignee>;
     teamIdByOrgUnitId: Map<number, number>;
     showPoints: boolean;
 };
 
 export const getLevelOrgUnitRows = ({
-    levelTree,
-    level,
+    parents,
     assigneeByOrgUnitId,
     teamIdByOrgUnitId,
     showPoints,
-}: LevelOrgUnitRowsParams): OrgUnitRow[] => {
-    const nameById = new Map(levelTree.map(node => [node.id, node.name]));
-    const childIdsByParentId = new Map<number, number[]>();
-    levelTree.forEach(node => {
-        if (node.level !== level + 1 || node.parent_id === null) return;
-        childIdsByParentId.set(node.parent_id, [
-            ...(childIdsByParentId.get(node.parent_id) ?? []),
-            node.id,
-        ]);
-    });
-    return levelTree
-        .filter(node => node.level === level)
-        .map(node => {
-            const teamId = teamIdByOrgUnitId.get(node.id);
-            const childIds = childIdsByParentId.get(node.id) ?? [];
-            return {
-                ...node,
-                parentName:
-                    node.parent_id !== null
-                        ? nameById.get(node.parent_id)
-                        : undefined,
-                assignee: assigneeByOrgUnitId.get(node.id),
-                teamId,
-                below:
-                    teamId && childIds.length
-                        ? {
-                              assigned: childIds.filter(id =>
-                                  assigneeByOrgUnitId.has(id),
-                              ).length,
-                              total: childIds.length,
-                          }
-                        : undefined,
-                isOffMap: isOffMap(node, showPoints),
-            };
-        })
+}: LevelOrgUnitRowsParams): OrgUnitRow[] =>
+    parents
+        .flatMap(parent =>
+            parent.children.map(({ children, ...orgUnit }) => {
+                const teamId = teamIdByOrgUnitId.get(orgUnit.id);
+                return {
+                    ...orgUnit,
+                    parentName: parent.name,
+                    assignee: assigneeByOrgUnitId.get(orgUnit.id),
+                    teamId,
+                    below:
+                        teamId && children.length
+                            ? {
+                                  assigned: children.filter(child =>
+                                      assigneeByOrgUnitId.has(child.id),
+                                  ).length,
+                                  total: children.length,
+                              }
+                            : undefined,
+                    isOffMap: isOffMap(orgUnit, showPoints),
+                };
+            }),
+        )
         .sort((a, b) => a.name.localeCompare(b.name));
-};
 
 // Only assignments to a team: users can't be opened.
 export const getTeamIdByOrgUnitId = (

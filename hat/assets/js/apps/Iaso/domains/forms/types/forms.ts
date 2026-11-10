@@ -18,6 +18,7 @@ type Project = {
     created_at: string;
     updated_at: string;
     needs_authentication: boolean;
+    color?: string;
 };
 
 type FormOrgUnitType = {
@@ -230,6 +231,7 @@ export type FormsParams = {
     onlyDeleted?: string;
     planning?: string;
     projectsIds?: string;
+    orgUnitTypeIds?: string;
     fields?: string;
     orgUnitId: string;
 };

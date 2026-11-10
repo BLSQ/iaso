@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-05 06:29+0000\n"
+"POT-Creation-Date: 2026-11-10 12:10+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -831,15 +831,15 @@ msgstr "Cousin"
 msgid "Produced"
 msgstr "Produit"
 
-#: iaso/models/device.py
+#: iaso/models/device_position.py
 msgid "Car"
 msgstr "Voiture"
 
-#: iaso/models/device.py
+#: iaso/models/device_position.py
 msgid "Foot"
 msgstr "À pied"
 
-#: iaso/models/device.py
+#: iaso/models/device_position.py
 msgid "Truc"
 msgstr "Truc"
 
@@ -1405,6 +1405,10 @@ msgstr "Copie des unités organisationnelles"
 #: iaso/tasks/copy_version.py
 msgid "Fixing parents"
 msgstr "Correction des parents"
+
+#: iaso/templates/admin/iaso/widget/password-reveal-input.html
+msgid "Password"
+msgstr "Mot de passe"
 
 #: iaso/templates/emails/base_iaso_email.html
 msgid "Resources to get started"

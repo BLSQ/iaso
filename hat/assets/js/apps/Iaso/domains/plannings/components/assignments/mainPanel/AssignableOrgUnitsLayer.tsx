@@ -5,6 +5,7 @@ import {
     CircleLayerSpecification,
     ExpressionSpecification,
     FillLayerSpecification,
+    FilterSpecification,
     LineLayerSpecification,
 } from 'maplibre-gl';
 import { Layer, Source } from 'react-map-gl/maplibre';
@@ -22,6 +23,9 @@ export const ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS = [
     FILL_LAYER_ID,
     CIRCLE_LAYER_ID,
 ];
+
+// A circle layer otherwise draws a circle on every vertex of the shapes.
+const isPoint: FilterSpecification = ['==', ['geometry-type'], 'Point'];
 
 const isHovered: ExpressionSpecification = [
     'boolean',
@@ -95,6 +99,7 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
             <Layer
                 id={CIRCLE_LAYER_ID}
                 type="circle"
+                filter={isPoint}
                 paint={circlePaint}
                 layout={{ visibility: showPoints ? 'visible' : 'none' }}
             />

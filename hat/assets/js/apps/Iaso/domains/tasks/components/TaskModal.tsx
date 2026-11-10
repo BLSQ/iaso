@@ -1,16 +1,58 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { Box, CircularProgress, Grid, IconButton } from '@mui/material';
+import {
+    Box,
+    CircularProgress,
+    Divider,
+    IconButton,
+    Typography,
+} from '@mui/material';
 import { AlertModal, makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
-import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
-import { TaskBaseInfo } from 'Iaso/domains/tasks/components/TaskBaseInfo';
+import { TaskHeader } from 'Iaso/domains/tasks/components/TaskHeader';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
+import { TaskResultPanel } from 'Iaso/domains/tasks/components/TaskResultPanel';
+import { TaskSummary } from 'Iaso/domains/tasks/components/TaskSummary';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 import { useGetTaskDetails } from 'Iaso/domains/tasks/hooks/useGetTasks';
 import { Task } from 'Iaso/domains/tasks/types';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
+import { ACTIVE_STATUSES } from '../utils';
 import { TaskParameters, TaskParams } from './TaskParameters';
+
+const styles: SxStyles = {
+    columns: {
+        display: 'grid',
+        gap: 2,
+        alignItems: 'start',
+        gridTemplateColumns: {
+            xs: 'minmax(0, 1fr)',
+            md: 'minmax(0, 1fr) 248px',
+        },
+        gridTemplateRows: { md: 'auto 1fr' },
+        gridTemplateAreas: {
+            xs: '"result" "side" "logs"',
+            md: '"result side" "logs side"',
+        },
+    },
+    result: { gridArea: 'result', display: 'grid', gap: 2, minWidth: 0 },
+    side: { gridArea: 'side', minWidth: 0 },
+    logs: { gridArea: 'logs', minWidth: 0 },
+    logsPlaceholder: {
+        m: 2,
+        p: 2,
+        display: 'flex',
+        gap: 1.5,
+        alignItems: 'center',
+        border: 1,
+        borderStyle: 'dashed',
+        borderColor: 'divider',
+        borderRadius: 1,
+        color: 'text.secondary',
+    },
+};
 
 export type Props = {
     task: Task<any>;
@@ -26,20 +68,19 @@ const TaskModal: FunctionComponent<Props> = ({
     taskParams = [],
 }) => {
     const queryClient = useQueryClient();
-    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+    const { formatMessage } = useSafeIntl();
     const [isRunning, setRunning] = useState(false);
     const { data, isFetching } = useGetLogs(task.id, isRunning);
-    const { formatMessage } = useSafeIntl();
     useEffect(() => {
-        setRunning(['RUNNING', 'QUEUED'].includes(data?.status ?? task.status));
+        setRunning(ACTIVE_STATUSES.includes(data?.status ?? task.status));
         if (task.status != data?.status) {
             queryClient.invalidateQueries(['tasks']).then();
         }
     }, [data, task, setRunning, queryClient]);
-    const { data: fetchedTask } = useGetTaskDetails(task.id);
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [data, messagesEndRef]);
+    // Polled while running, to follow progress and the worker heartbeat
+    const { data: fetchedTask } = useGetTaskDetails(task.id, isRunning);
+    // Some callers only know the id and status of the task
+    const currentTask = fetchedTask ?? task;
     return (
         <AlertModal
             isOpen={isOpen}
@@ -48,39 +89,45 @@ const TaskModal: FunctionComponent<Props> = ({
             id="task-logs-modal"
             maxWidth="md"
         >
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
-                    <WidgetPaper title={formatMessage(MESSAGES.task)}>
-                        <TaskBaseInfo size="small" task={fetchedTask ?? task} />
-                    </WidgetPaper>
-                </Grid>
-                {taskParams && taskParams.length > 0 ? (
-                    <Grid item xs={6}>
-                        <TaskParameters taskParams={taskParams} />
-                    </Grid>
-                ) : null}
-            </Grid>
-
-            <Box
-                sx={{
-                    mt: 2,
-                }}
-            >
-                <TaskLogMessages
-                    messages={data?.logs}
-                    isFetching={isFetching}
-                    isRunning={isRunning}
-                />
-            </Box>
-            {(isFetching || isRunning) && (
-                <Box
-                    mt={2}
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }}
-                >
+            {currentTask.created_at ? (
+                <Box display="grid" gap={2}>
+                    <TaskHeader task={currentTask} />
+                    <Divider />
+                    <Box sx={styles.columns}>
+                        <Box sx={styles.result}>
+                            <TaskResultPanel task={currentTask} />
+                            {taskParams.length > 0 && (
+                                <TaskParameters taskParams={taskParams} />
+                            )}
+                        </Box>
+                        <Box sx={styles.side}>
+                            <TaskSummary task={currentTask} />
+                        </Box>
+                        <Box sx={styles.logs}>
+                            <TaskLogMessages
+                                messages={data?.logs}
+                                isFetching={isFetching}
+                                isRunning={isRunning}
+                                startedAt={currentTask.started_at}
+                                singleLine
+                                emptyPlaceholder={
+                                    currentTask.status === 'QUEUED' && (
+                                        <Box sx={styles.logsPlaceholder}>
+                                            <HourglassEmptyIcon color="disabled" />
+                                            <Typography variant="body2">
+                                                {formatMessage(
+                                                    MESSAGES.logsNotStarted,
+                                                )}
+                                            </Typography>
+                                        </Box>
+                                    )
+                                }
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+            ) : (
+                <Box display="flex" justifyContent="center" p={4}>
                     <CircularProgress color="primary" />
                 </Box>
             )}

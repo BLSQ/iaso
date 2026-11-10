@@ -641,9 +641,12 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
             device_field = self.form.device_field
             if not device_field:
                 device_field = "deviceid"
-            imei = self.json.get(device_field, None)
-            if imei is not None:
-                device, created = Device.objects.get_or_create(imei=imei)
+            installation_id = self.json.get(device_field, None)
+            if installation_id is not None:
+                device, created = Device.objects.get_or_create(installation_id=installation_id)
+                if created:
+                    device.account = self.project.account
+                    device.save()
                 self.device = device
                 if save:
                     self.save()
@@ -870,7 +873,7 @@ class Instance(MissionArtefact, ValidationWorkflowArtefact):
             "last_modified_by": last_modified_by,
             "modification": True,
             "id": self.id,
-            "device_id": self.device.imei if self.device else None,
+            "device_id": self.device.installation_id if self.device else None,
             "device_app_version": self.app_version,
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,

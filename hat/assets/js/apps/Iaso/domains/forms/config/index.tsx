@@ -3,24 +3,20 @@ import {
     Column,
     formatThousand,
     IconButton,
+    Setting,
     useSafeIntl,
 } from 'bluesquare-components';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
-import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser, User } from '../../../utils/usersUtils';
-import {
-    userHasAccessToModule,
-    userHasOneOfPermissions,
-    userHasPermission,
-} from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasAccessToModule } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { useDeleteForm } from '../hooks/useDeleteForm';
+import { useGetProjectChips } from '../hooks/useGetProjectChips';
 import MESSAGES from '../messages';
-import { FormsParams } from '../types/forms';
+import { Form, FormsParams } from '../types/forms';
 
 export const baseUrl = baseUrls.forms;
 
@@ -117,23 +113,6 @@ export const useFormVersionsTableColumns = ({
     );
 };
 
-const getActionsColWidth = (user: User): number => {
-    const baseWidth = 50;
-    let width = baseWidth * 2;
-    if (
-        userHasOneOfPermissions(
-            [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
-            user,
-        )
-    ) {
-        width += baseWidth;
-    }
-    if (userHasPermission(Permission.FORMS, user)) {
-        width += baseWidth * 3;
-    }
-    return width;
-};
-
 type FormsTableColumnsProps = {
     orgUnitId: string;
     onlyDeleted: boolean;
@@ -160,6 +139,7 @@ export const useFormsTableColumns = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
+    const getProjectChips = useGetProjectChips();
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -167,7 +147,8 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                Cell: settings => <ProjectChips projects={settings.value} />,
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getProjectChips(original.projects),
             },
             {
                 Header: formatMessage(MESSAGES.name),
@@ -223,7 +204,7 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
-                width: getActionsColWidth(user),
+                width: 100,
                 id: 'actions',
                 accessor: 'actions',
                 Cell: settings => {
@@ -252,12 +233,12 @@ export const useFormsTableColumns = ({
         return cols;
     }, [
         formatMessage,
-        user,
         onlyDeleted,
         showDeleted,
         orgUnitId,
         hasDhis2Module,
         deleteForm,
+        getProjectChips,
     ]);
 };
 

@@ -192,7 +192,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
         ]
         self.assertValidBody(data)
 
-        with self.assertNumQueries(37):
+        with self.assertNumQueries(25):
             res = self.client.put(self.get_url(), data=data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)

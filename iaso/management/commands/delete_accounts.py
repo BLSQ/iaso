@@ -44,7 +44,6 @@ then launch the delete command with appropriate account to delete (or don't spec
 
 """
 
-import datetime
 import random
 import time
 import traceback
@@ -65,6 +64,7 @@ from django.db import connection
 from django.db.models import ForeignKey, ManyToManyRel, OneToOneField, Q, QuerySet, TextField
 from django.db.models.deletion import PROTECT, SET_NULL, Collector, ProtectedError
 from django.db.models.functions import Cast
+from django.utils import timezone
 
 from hat.audit.models import Modification
 from iaso.models import (
@@ -395,7 +395,7 @@ class Command(BaseCommand):
     # -----------------------------------------------------------------------
     def _log(self, message):
         if self.verbosity > 0:
-            self.stdout.write(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {message}")
+            self.stdout.write(f"[{timezone.now().strftime('%H:%M:%S')}] {message}")
 
     def _delete_with_sql(self, sql, params=None, label="SQL"):
         """Deletes data by executing a SQL query - useful for deleting models where there's no clear FK path to the Account model (e.g. users_profile)."""

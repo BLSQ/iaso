@@ -615,6 +615,7 @@
     "iaso.label.execute": "Ejecutar",
     "iaso.label.exitFullscreen": "Salir de pantalla completa",
     "iaso.label.export": "Exportar",
+    "iaso.label.exportFormat": "Exportar {format}",
     "iaso.label.exportRequests": "Solicitudes de exportación",
     "iaso.label.exportSelection": "Exportar {count} envíos",
     "iaso.label.featureDisabled": "Función temporalmente deshabilitada",

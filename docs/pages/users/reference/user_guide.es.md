@@ -474,6 +474,61 @@ fuentes de datos y exportarlas a DHIS2.
 
 <img src="./user_guide_attachments/image52.png" style="width:6.5in;height:1.86111in" />
 
+#### Importar una pirámide en una fuente de datos
+
+Puede importar su pirámide geográfica (unidades organizativas) en una fuente de datos desde
+DHIS2 o desde un archivo GeoPackage. Cada importación crea una nueva **versión** de la
+fuente de datos.
+
+**Conectar la fuente de datos a DHIS2** (solo para una importación desde DHIS2):
+
+1. Vaya a **Admin > Fuentes de datos > Lista de fuentes de datos** y haga clic en el icono
+   de **edición** de su fuente de datos.
+2. Rellene el **nombre**, la **URL**, el **usuario** y la **contraseña** de DHIS2. Lo ideal
+   es usar un usuario DHIS2 dedicado, de solo lectura.
+3. Haga clic en **Probar configuración**. Debe aparecer el mensaje **Conexión al servidor
+   correcta**. Si no aparece, compruebe la URL, el usuario y la contraseña.
+4. Haga clic en **Guardar**.
+
+**Desde DHIS2** (después de conectar la fuente de datos a DHIS2, ver arriba):
+
+1. En la **Lista de fuentes de datos**, haga clic en **Versions** en su fuente y luego en
+   **New version from DHIS2**.
+2. Haga clic en **Iniciar y mostrar tarea**. IASO abre la tarea para que pueda seguir la
+   importación. Puede cerrar la página y volver más tarde en **Admin > Tasks**.
+3. Cuando la tarea haya terminado, convierta la nueva versión en la predeterminada: vuelva a
+   editar la fuente de datos, elija el número de la nueva versión en **Versión
+   predeterminada** (su cuenta empieza con una versión 1 vacía) y haga clic en **Guardar**.
+4. Pase las unidades organizativas importadas al estado **Valid**: las unidades importadas de
+   esta forma llegan con el estado *New*, e IASO solo usa las unidades *Valid* en las
+   aplicaciones.
+    - Vaya a **Org Units**. En los filtros, cambie el estado de *Valid* a *New* y haga clic
+      en **Search**.
+    - Seleccione todos los resultados (**Seleccionar todo**) y elija **Editar selección**.
+    - Marque **Editar validación**, elija *Validated*, guarde y confirme los cambios
+      masivos. El cambio se ejecuta en segundo plano.
+
+!!! warning "Mis unidades organizativas no aparecen en Org Units"
+    La lista **Org Units** solo muestra por defecto las unidades *Valid*. Justo después de
+    una importación desde DHIS2 en la interfaz de IASO, todas sus unidades están en *New*: la
+    lista parece vacía y parece que la importación ha fallado. No es así: cambie el filtro de
+    estado a *New* para verlas y luego páselas a *Valid* (punto 4 anterior).
+
+**Desde un GeoPackage** (vea el [formato GeoPackage de IASO](./geopackage_format.md)):
+
+1. En la **Lista de fuentes de datos**, haga clic en **Versions** en su fuente y luego en
+   **New version from a Geopackage**.
+2. Elija su archivo.
+3. **Marque "Hacer que el estado de las unidades organizativas sea "Valid"".** Si no, todos
+   sus lugares se importan con el estado *New* y habrá que validarlos antes de poder usarlos.
+4. Lance la importación y sígala en **Admin > Tasks**.
+5. Cuando la tarea haya terminado, convierta la nueva versión en la predeterminada: edite la
+   fuente de datos, elija el número de la nueva versión en **Versión predeterminada** y haga
+   clic en **Guardar**.
+
+Para comprobar el resultado, vaya a **Org Units** y busque algunos lugares que conozca, en
+cada nivel: deben tener el estado *Valid*.
+
 #### Coincidencia
 
 Esta es más bien una funcionalidad "geoespacial": tener varias fuentes de pirámide geográfica

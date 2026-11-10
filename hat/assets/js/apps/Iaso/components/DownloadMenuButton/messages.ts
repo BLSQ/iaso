@@ -5,6 +5,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.download',
         defaultMessage: 'Download',
     },
+    export: {
+        id: 'iaso.label.export',
+        defaultMessage: 'Export',
+    },
+    exportFormat: {
+        id: 'iaso.label.exportFormat',
+        defaultMessage: 'Export {format}',
+    },
     preparing: {
         id: 'iaso.label.downloadPreparing',
         defaultMessage:

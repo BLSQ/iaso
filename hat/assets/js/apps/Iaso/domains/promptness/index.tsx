@@ -173,16 +173,14 @@ export const Promptness: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <MainWrapper sx={styles.root}>
-                <Paper sx={styles.filters}>
-                    <PromptnessFilters
-                        // Reset the filters state when drilling down from the table
-                        key={currentOrgUnitId}
-                        orgUnitId={currentOrgUnitId}
-                        params={params}
-                        forms={formsWithPeriod}
-                        isFetchingForms={isFetchingForms}
-                    />
-                </Paper>
+                <PromptnessFilters
+                    // Reset the filters state when drilling down from the table
+                    key={currentOrgUnitId}
+                    orgUnitId={currentOrgUnitId}
+                    params={params}
+                    forms={formsWithPeriod}
+                    isFetchingForms={isFetchingForms}
+                />
                 {!params.formId && (
                     <EmptyState
                         title={formatMessage(MESSAGES.selectForm)}

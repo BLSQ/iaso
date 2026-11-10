@@ -50,7 +50,7 @@ const getForms = (params: FormsParams) => {
 };
 
 export const tableDefaults = {
-    order: 'name',
+    order: '-updated_at',
     limit: 10,
     page: 1,
 };

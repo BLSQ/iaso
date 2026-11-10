@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Paper } from '@mui/material';
+import { getOrderArray } from 'bluesquare-components';
 import {
     DownloadMenuButton,
     useDownloadOption,
@@ -125,7 +126,7 @@ export const FormsTable: FunctionComponent<Props> = ({
             <TableWithDeepLink
                 elevation={0}
                 baseUrl={baseUrl}
-                defaultSorted={[{ id: 'name', desc: false }]}
+                defaultSorted={getOrderArray(tableDefaults.order)}
                 columns={visibleColumns}
                 params={params}
                 paramsPrefix={paramsPrefix}

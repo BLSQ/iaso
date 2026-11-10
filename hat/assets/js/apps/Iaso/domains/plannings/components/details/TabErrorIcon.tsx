@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
+import { keyframes } from '@emotion/react';
 import ErrorSharpIcon from '@mui/icons-material/ErrorSharp';
-import { Box, keyframes, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';

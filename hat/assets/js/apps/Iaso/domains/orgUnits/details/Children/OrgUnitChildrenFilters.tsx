@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { SearchButton } from '../../../../components/SearchButton';
 import { OU_CHILDREN_PREFIX } from '../../../../constants/urls';

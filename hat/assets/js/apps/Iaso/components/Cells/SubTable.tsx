@@ -1,11 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableProps,
-    TableRow,
-} from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import type { TableProps } from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { textPlaceholder } from 'bluesquare-components';
 import { SxStyles } from '../../types/general';
 

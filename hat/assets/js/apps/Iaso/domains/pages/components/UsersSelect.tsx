@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
-import { Chip } from '@mui/material';
 import { AutocompleteRenderGetTagProps } from '@mui/material/Autocomplete/Autocomplete';
+import Chip from '@mui/material/Chip/Chip';
 import { FieldInputProps, FormikProps } from 'formik';
 
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';

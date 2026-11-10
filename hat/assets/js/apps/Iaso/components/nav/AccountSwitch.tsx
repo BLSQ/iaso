@@ -1,13 +1,11 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import {
-    ClickAwayListener,
-    Grow,
-    MenuItem,
-    MenuList,
-    Paper,
-    Popper,
-    Typography,
-} from '@mui/material';
+import { ClickAwayListener } from '@mui/material/ClickAwayListener/ClickAwayListener';
+import Grow from '@mui/material/Grow/Grow';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
+import MenuList from '@mui/material/MenuList/MenuList';
+import Paper from '@mui/material/Paper/Paper';
+import Popper from '@mui/material/Popper/Popper';
+import Typography from '@mui/material/Typography/Typography';
 
 import { useSwitchAccount } from '../../hooks/useSwitchAccount';
 import { useCurrentUser } from '../../utils/usersUtils';

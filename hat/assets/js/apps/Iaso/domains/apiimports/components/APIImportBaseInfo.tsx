@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Done } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Table, TableBody } from '@mui/material';
+import Done from '@mui/icons-material/Done';
+import Table from '@mui/material/Table/Table';
 import { TablePropsSizeOverrides } from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { OverridableStringUnion } from '@mui/types/esm';
 import { useSafeIntl } from 'bluesquare-components';
 

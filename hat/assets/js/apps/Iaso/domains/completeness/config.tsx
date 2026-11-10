@@ -1,10 +1,11 @@
 import React from 'react';
-import { CallMerge } from '@mui/icons-material';
+import CallMerge from '@mui/icons-material/CallMerge';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
 
-import { IconButton, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import {
     Column,
     formatThousand,

@@ -1,5 +1,8 @@
 import React, { FC } from 'react';
-import { Box, Chip, SxProps, Theme, alpha } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
+import { alpha, Theme } from '@mui/material/styles';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';

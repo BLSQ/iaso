@@ -1,7 +1,11 @@
 import React, { ChangeEvent, FC, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
-import { Card, IconButton, Pagination, Stack, Typography } from '@mui/material';
+import Card from '@mui/material/Card/Card';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

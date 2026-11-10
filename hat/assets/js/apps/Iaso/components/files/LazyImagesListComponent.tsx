@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { grey } from '@mui/material/colors';
+import Grid from '@mui/material/Grid/Grid';
 import { LazyImage, LoadingSpinner } from 'bluesquare-components';
 import { ShortFile } from '../../domains/instances/types/instance';
 import { getFileName } from '../../utils/filesUtils';

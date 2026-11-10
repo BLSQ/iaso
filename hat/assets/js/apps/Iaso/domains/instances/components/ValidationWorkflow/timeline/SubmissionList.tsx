@@ -1,6 +1,8 @@
 import React from 'react';
-import { List, ListItem, ListItemText } from '@mui/material';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
 import { ListItemSecondaryText } from 'Iaso/domains/instances/components/ValidationWorkflow/timeline/ListItemSecondaryText';
 import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 import { AvatarTimeline } from './AvatarTimeline';

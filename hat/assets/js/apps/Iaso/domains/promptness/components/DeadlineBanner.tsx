@@ -1,6 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { CalendarMonth, HourglassEmpty, Settings } from '@mui/icons-material';
-import { Box, Button, Chip, Grid, Paper, Typography } from '@mui/material';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
+import Settings from '@mui/icons-material/Settings';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Chip from '@mui/material/Chip/Chip';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';

@@ -1,7 +1,9 @@
 import React, { FC, useCallback } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import PersonIcon from '@mui/icons-material/Person';
-import { Box, Tooltip, alpha } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import { alpha } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';

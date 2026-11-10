@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import LocationDisabledIcon from '@mui/icons-material/LocationDisabled';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { Box, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 

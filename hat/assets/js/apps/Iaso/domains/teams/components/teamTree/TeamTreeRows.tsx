@@ -9,7 +9,8 @@ import {
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
-import { Paper, Typography } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { SxStyles } from 'Iaso/types/general';
 import { getDisplayName } from 'Iaso/utils/usersUtils';

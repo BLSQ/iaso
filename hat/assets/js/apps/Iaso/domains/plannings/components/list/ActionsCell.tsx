@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Assignment } from '@mui/icons-material';
+import Assignment from '@mui/icons-material/Assignment';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import {
     IconButton as IconButtonComponent,

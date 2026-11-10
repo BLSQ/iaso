@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import Add from '@mui/icons-material/Add';
-import { Box, Button } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import {
     ConfirmCancelModal,
     IntlMessage,

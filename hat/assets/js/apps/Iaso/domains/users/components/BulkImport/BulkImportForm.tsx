@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import {
-    Box,
-    FormControlLabel,
-    Checkbox,
-    Collapse,
-    Alert,
-    Typography,
-    Container,
-    Button,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
+import Collapse from '@mui/material/Collapse/Collapse';
+import Container from '@mui/material/Container/Container';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import Typography from '@mui/material/Typography/Typography';
 import {
     useSafeIntl,
     FilesUpload,

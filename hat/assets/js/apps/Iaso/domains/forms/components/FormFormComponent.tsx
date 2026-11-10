@@ -1,7 +1,12 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { FormatListBulleted, History, QueryStats } from '@mui/icons-material';
-import { Box, Grid, Theme, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import History from '@mui/icons-material/History';
+import QueryStats from '@mui/icons-material/QueryStats';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     ExternalLink,
     InputWithInfos,

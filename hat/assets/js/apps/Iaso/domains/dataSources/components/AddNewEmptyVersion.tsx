@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../messages';

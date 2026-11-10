@@ -1,7 +1,9 @@
 import React, { FC, ReactNode } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import { Box, Button, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { UnderConstructionIllustration } from 'Iaso/components/svg/UnderConstructionIllustration';

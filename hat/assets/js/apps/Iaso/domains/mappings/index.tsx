@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import {
     commonStyles,

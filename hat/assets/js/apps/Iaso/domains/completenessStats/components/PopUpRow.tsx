@@ -1,7 +1,8 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 
-import { TableCell, TableRow } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles(theme => ({
     cellLeft: {

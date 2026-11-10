@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Breadcrumbs, Link, Typography } from '@mui/material';
+import Breadcrumbs from '@mui/material/Breadcrumbs/Breadcrumbs';
+import Link from '@mui/material/Link/Link';
+import Typography from '@mui/material/Typography/Typography';
 import { Link as RouterLink } from 'react-router-dom';
 import { useGenUrl } from 'Iaso/routing/routing';
 import { useOrgUnitBreadCrumbs } from '../../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';

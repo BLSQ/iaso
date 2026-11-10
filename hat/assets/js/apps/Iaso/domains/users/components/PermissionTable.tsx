@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { Column, Table, useSafeIntl } from 'bluesquare-components';
 import PermissionTooltip from 'Iaso/domains/users/components/PermissionTooltip';
 import MESSAGES from 'Iaso/domains/users/messages';

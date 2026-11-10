@@ -1,9 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import CheckBox from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
-import { Button, Container, Divider, Grid } from '@mui/material';
+import Button from '@mui/material/Button/Button';
 import { grey } from '@mui/material/colors';
-import { makeStyles } from '@mui/styles';
+import Container from '@mui/material/Container/Container';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     useSafeIntl,

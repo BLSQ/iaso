@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
 import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
 import { getFileName, getFileType } from 'Iaso/utils/filesUtils';

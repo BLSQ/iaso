@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import Add from '@mui/icons-material/Add';
-import { Box, Button } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import { useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import DownloadButtonsComponent from '../../../../components/DownloadButtonsComponent';

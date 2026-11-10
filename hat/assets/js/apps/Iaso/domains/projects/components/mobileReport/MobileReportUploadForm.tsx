@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Typography from '@mui/material/Typography/Typography';
 import { FilesUpload, useSafeIntl } from 'bluesquare-components';
 import {
     Report,

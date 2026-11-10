@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import useTheme from '@mui/material/styles/useTheme';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { commonStyles } from 'bluesquare-components';
 import L from 'leaflet';

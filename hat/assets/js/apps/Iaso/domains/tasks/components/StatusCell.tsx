@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Chip } from '@mui/material';
+import Chip from '@mui/material/Chip/Chip';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/tasks/messages';
 import { Task } from 'Iaso/domains/tasks/types';

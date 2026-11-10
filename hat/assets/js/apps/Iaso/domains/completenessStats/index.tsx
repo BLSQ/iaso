@@ -5,8 +5,13 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Grid, Paper, Tab, Tabs, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
+import useTheme from '@mui/material/styles/useTheme';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     useRedirectTo,

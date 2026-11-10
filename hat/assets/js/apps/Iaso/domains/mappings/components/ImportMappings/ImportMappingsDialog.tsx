@@ -1,11 +1,9 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-} from '@mui/material';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import { useImportSources } from '../../hooks/useImportSources';

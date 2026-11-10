@@ -3,14 +3,12 @@ import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import {
-    Card,
-    Chip,
-    IconButton,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Card from '@mui/material/Card/Card';
+import Chip from '@mui/material/Chip/Chip';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Stack from '@mui/material/Stack/Stack';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { MissionPolymorphicList } from 'Iaso/api/missions';
 import { baseUrls } from 'Iaso/constants/urls';

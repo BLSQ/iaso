@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import MESSAGES from '../messages';

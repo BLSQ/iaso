@@ -10,7 +10,6 @@ import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,
 } from 'hat/assets/js/tests/helpers';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
     getApiMicroplanningMissionsRetrieveMockHandler,
@@ -20,6 +19,7 @@ import {
     getApiMicroplanningMissionsUpdateMockHandler,
     getApiMicroplanningMissionsUpdateResponseMock,
 } from 'Iaso/api/missions/endpoints/missions/missions.msw';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionEdit } from 'Iaso/domains/missions/edit';
 import {

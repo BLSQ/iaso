@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Button, Typography, Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { SyncResponse } from '../../types/sync';

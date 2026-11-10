@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 
-import { Box, Grid, Skeleton } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Skeleton from '@mui/material/Skeleton/Skeleton';
 import { HEIGHT } from '../config';
 
 export const Placeholder: FunctionComponent = () => {

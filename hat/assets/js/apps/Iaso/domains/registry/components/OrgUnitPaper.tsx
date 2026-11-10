@@ -5,8 +5,11 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { Box, Paper, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     useRedirectToReplace,

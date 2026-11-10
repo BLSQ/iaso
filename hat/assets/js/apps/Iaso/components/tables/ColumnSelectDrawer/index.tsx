@@ -2,17 +2,15 @@ import React, { FunctionComponent, useState, useCallback } from 'react';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Close from '@mui/icons-material/Close';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import {
-    Drawer,
-    IconButton,
-    List,
-    ListItem,
-    Divider,
-    InputBase,
-    Tooltip,
-    Button,
-    Box,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Drawer from '@mui/material/Drawer/Drawer';
+import IconButton from '@mui/material/IconButton/IconButton';
+import InputBase from '@mui/material/InputBase/InputBase';
+import List from '@mui/material/List/List';
+import ListItem from '@mui/material/ListItem/ListItem';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 
 import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { InView } from 'react-intersection-observer';

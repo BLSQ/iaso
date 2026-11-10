@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Button, Grid, Typography } from '@mui/material';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 

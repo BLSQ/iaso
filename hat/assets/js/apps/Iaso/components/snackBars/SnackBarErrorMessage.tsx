@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Button, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Button from '@mui/material/Button/Button';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import MESSAGES from './messages';

@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Alert, Box, Grid } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
 import { SxStyles } from 'Iaso/types/general';

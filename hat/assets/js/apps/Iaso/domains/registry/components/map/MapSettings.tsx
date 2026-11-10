@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import Settings from '@mui/icons-material/Settings';
-import { Box, FormControlLabel, Switch } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import Switch from '@mui/material/Switch/Switch';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 
 import { SxStyles } from '../../../../types/general';

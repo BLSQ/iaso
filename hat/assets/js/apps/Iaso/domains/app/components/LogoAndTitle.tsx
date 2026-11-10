@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useContext } from 'react';
-import { Box, Theme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
 
 import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
 import { Logo } from './Logo';

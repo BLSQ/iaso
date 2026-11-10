@@ -1,6 +1,6 @@
 import React from 'react';
 import CrisisAlertIcon from '@mui/icons-material/CrisisAlert';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/missions/messages';
 

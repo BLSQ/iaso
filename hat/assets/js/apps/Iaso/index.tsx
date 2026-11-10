@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
+import GlobalStyles from '@mui/material/GlobalStyles/GlobalStyles';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from 'bluesquare-components';
 import { SnackbarProvider } from 'notistack';

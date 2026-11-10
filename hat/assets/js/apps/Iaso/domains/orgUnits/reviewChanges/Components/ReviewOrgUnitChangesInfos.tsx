@@ -1,12 +1,10 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import {
-    Card,
-    CardContent,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-} from '@mui/material';
+import Card from '@mui/material/Card/Card';
+import CardContent from '@mui/material/CardContent/CardContent';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';

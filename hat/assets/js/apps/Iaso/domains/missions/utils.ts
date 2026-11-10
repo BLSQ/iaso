@@ -1,9 +1,7 @@
-import {
-    MissionEntityTypeRetrieve,
-    MissionFormRetrieve,
-    MissionOrgUnitTypeRetrieve,
-    MissionTypeDa2Enum,
-} from 'Iaso/api/missions';
+import { MissionEntityTypeRetrieve } from 'Iaso/api/missions/models/missionEntityTypeRetrieve.zod';
+import { MissionFormRetrieve } from 'Iaso/api/missions/models/missionFormRetrieve.zod';
+import { MissionOrgUnitTypeRetrieve } from 'Iaso/api/missions/models/missionOrgUnitTypeRetrieve.zod';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 
 export const LEFT_CELL_WIDTH = '200px';
 

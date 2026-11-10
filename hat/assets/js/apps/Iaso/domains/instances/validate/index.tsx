@@ -1,14 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import {
-    Box,
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Switch,
-    useTheme,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup/FormGroup';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+import Switch from '@mui/material/Switch/Switch';
 import { commonStyles, useGoBack, useSafeIntl } from 'bluesquare-components';
-import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff';
+import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff/endpoints/submission-diff/submission-diff';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';

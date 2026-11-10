@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
-import { Button } from '@mui/material';
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button/Button';
 
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';

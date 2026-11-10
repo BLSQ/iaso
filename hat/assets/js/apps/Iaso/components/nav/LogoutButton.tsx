@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import ExitIcon from '@mui/icons-material/ExitToApp';
-import { IconButton as MuiIconButton, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import MuiIconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from './messages';

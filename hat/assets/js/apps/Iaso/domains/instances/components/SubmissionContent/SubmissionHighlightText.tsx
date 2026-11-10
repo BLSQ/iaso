@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 
 /** Wrap the first occurrence of `query` in `text` with a <mark>. */
 export const SubmissionHighlightText: FunctionComponent<{

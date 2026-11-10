@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
 import EditNoteIcon from '@mui/icons-material/EditNote';
-import { Card, Stack, Typography } from '@mui/material';
+import Card from '@mui/material/Card/Card';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { FormikProvider } from 'formik';
 import DatesRange from 'Iaso/components/filters/DatesRange';

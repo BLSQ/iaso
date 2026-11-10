@@ -2,14 +2,12 @@ import React from 'react';
 import DraftsIcon from '@mui/icons-material/Drafts';
 import EmailIcon from '@mui/icons-material/Email';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Typography,
-} from '@mui/material';
+import Accordion from '@mui/material/Accordion/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary/AccordionSummary';
 import LinearProgress from '@mui/material/LinearProgress';
-import { Box } from '@mui/system';
+import Typography from '@mui/material/Typography/Typography';
+import Box from '@mui/system/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { SubmissionList } from 'Iaso/domains/instances/components/ValidationWorkflow/timeline/SubmissionList';

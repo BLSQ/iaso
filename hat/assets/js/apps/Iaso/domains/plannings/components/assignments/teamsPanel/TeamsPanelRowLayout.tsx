@@ -1,5 +1,9 @@
 import React, { ReactNode, forwardRef } from 'react';
-import { Box, Stack, SxProps, Theme, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Stack from '@mui/material/Stack/Stack';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { SxStyles } from 'Iaso/types/general';
 
 export const INDENT_PX = 18;

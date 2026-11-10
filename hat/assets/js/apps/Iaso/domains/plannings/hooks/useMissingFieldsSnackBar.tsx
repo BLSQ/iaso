@@ -1,6 +1,9 @@
 import React, { FC, useCallback, useEffect, useRef } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-import { Button, ButtonProps, IconButton, Stack } from '@mui/material';
+import Button from '@mui/material/Button/Button';
+import type { ButtonProps } from '@mui/material/Button/Button';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Stack from '@mui/material/Stack/Stack';
 import { useSafeIntl } from 'bluesquare-components';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';

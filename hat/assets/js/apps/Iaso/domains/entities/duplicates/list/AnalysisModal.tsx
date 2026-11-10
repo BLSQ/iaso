@@ -4,7 +4,7 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import { noOp } from 'Iaso/utils';
 import InputComponent from '../../../../components/forms/InputComponent';

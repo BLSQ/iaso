@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Table, TableBody } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { useSafeIntl } from 'bluesquare-components';
 import { WidgetPaperRow as Row } from '../../../components/papers/WidgetPaperRow';
 import { useCurrentUser } from '../../../utils/usersUtils';

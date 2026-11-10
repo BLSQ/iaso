@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { SxStyles } from 'Iaso/types/general';
 import { MissionPanel } from '../missions/MissionPanel';
 import { PlanningForm } from './PlanningForm';

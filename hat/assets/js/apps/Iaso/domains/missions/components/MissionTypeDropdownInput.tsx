@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { useApiMicroplanningMissionsMissionTypesDropdownList } from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsMissionTypesDropdownList } from 'Iaso/api/missions/endpoints/missions/missions';
 import {
     SelectInput,
     SelectInputProps,

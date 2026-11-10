@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
 import { useFormikContext } from 'formik';
 import { useApiTeamsDropdownList } from 'Iaso/api/teams';
 import { useAppLocales } from 'Iaso/domains/app/constants';

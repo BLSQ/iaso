@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, IconButton } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { legendColors } from './colors';
 import { LegendRange } from './LegendRange';

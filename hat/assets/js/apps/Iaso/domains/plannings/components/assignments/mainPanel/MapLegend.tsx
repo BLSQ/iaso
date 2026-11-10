@@ -2,14 +2,12 @@ import React, { FC, useCallback, useState } from 'react';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
-import {
-    Box,
-    ButtonBase,
-    Paper,
-    Typography,
-    alpha,
-    useTheme,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import ButtonBase from '@mui/material/ButtonBase/ButtonBase';
+import Paper from '@mui/material/Paper/Paper';
+import { alpha } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

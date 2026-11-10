@@ -1,18 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import CheckedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import NotCheckedIcon from '@mui/icons-material/HighlightOffOutlined';
-import {
-    Alert,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { useSafeIntl } from 'bluesquare-components';
-import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
-import { ApiAccountsRetrieveQueryResult } from 'Iaso/api/accounts';
+import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags';
+import { ApiAccountsRetrieveQueryResult } from 'Iaso/api/accounts/endpoints/account/account';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { getOverriddenTheme } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';

@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import Alert from '@mui/lab/Alert';
-import { Container, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Container from '@mui/material/Container/Container';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     LinkWithLocation,

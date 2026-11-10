@@ -1,5 +1,5 @@
 import { ElementType } from 'react';
-import { Theme } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import { PermissionsMessages } from 'Iaso/domains/users/permissionsMessages';
 import { MenuItem } from '../domains/app/types';
 import {

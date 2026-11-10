@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useApiModulesList } from 'Iaso/api/modules';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';

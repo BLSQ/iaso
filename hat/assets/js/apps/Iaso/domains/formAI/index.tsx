@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
 import {
     LoadingSpinner,
     useRedirectToReplace,

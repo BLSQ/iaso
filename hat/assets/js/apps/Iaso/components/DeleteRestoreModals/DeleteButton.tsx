@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Button, SxProps } from '@mui/material';
+import Button from '@mui/material/Button/Button';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 

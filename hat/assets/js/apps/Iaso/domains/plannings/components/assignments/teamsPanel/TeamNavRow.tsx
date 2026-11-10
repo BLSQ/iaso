@@ -1,7 +1,9 @@
 import React, { FC, MouseEvent, useCallback, useEffect, useRef } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Box, IconButton, alpha } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import { alpha } from '@mui/material/styles';
 import { TeamTypeIcon } from 'Iaso/domains/teams/components/teamTree/teamType';
 import { SxStyles } from 'Iaso/types/general';
 import { INDENT_PX, TeamsPanelRowLayout } from './TeamsPanelRowLayout';

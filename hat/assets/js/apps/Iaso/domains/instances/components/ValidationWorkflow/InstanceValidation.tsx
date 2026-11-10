@@ -1,5 +1,6 @@
 import React from 'react';
-import { Alert, Box } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/instances/messages';
 import { ValidationNodeRetrieveResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';

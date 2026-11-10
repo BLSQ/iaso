@@ -2,13 +2,13 @@ import { faker } from '@faker-js/faker';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { setupServer } from 'msw/node';
 import { vi } from 'vitest';
-import { ApiDiffInstancesListParams } from 'Iaso/api/instanceDiff';
 import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff/endpoints/submission-diff/submission-diff';
 import {
     getApiDiffInstancesListMockHandler,
     getApiDiffInstancesListResponseMock,
     getSubmissionDiffMock,
 } from 'Iaso/api/instanceDiff/endpoints/submission-diff/submission-diff.msw';
+import { ApiDiffInstancesListParams } from 'Iaso/api/instanceDiff/models/apiDiffInstancesListParams.zod';
 import {
     QueryClientWrapperWithIntlProvider,
     TestingQueryClient,

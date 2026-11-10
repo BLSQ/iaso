@@ -1,13 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Box, Table, TableBody } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { useSafeIntl } from 'bluesquare-components';
 import {
     ApiAccountsAiApiKeyRetrieveQueryResult,
     ApiAccountsRetrieveQueryResult,
     useApiAccountsAiApiKeyDestroy,
-} from 'Iaso/api/accounts';
+} from 'Iaso/api/accounts/endpoints/account/account';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { WidgetPaperRow as Row } from 'Iaso/components/papers/WidgetPaperRow';

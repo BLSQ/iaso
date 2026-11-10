@@ -5,7 +5,9 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import {
     AddButton,
     ConfirmCancelModal,

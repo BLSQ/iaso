@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { TeamRetrieve } from 'Iaso/api/teams';
+import { TeamRetrieve } from 'Iaso/api/teams/models/teamRetrieve.zod';
 import { OrgUnitTypeHierarchyDropdownValue } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning } from 'Iaso/domains/plannings/types';
 import { PlanningOrgUnits } from 'Iaso/domains/plannings/types';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
 
 type Props = {

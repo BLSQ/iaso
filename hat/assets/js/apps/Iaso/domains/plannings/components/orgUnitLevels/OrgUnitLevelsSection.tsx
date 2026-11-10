@@ -1,14 +1,12 @@
 import React, { FC, useCallback, useMemo, useState } from 'react';
 import PublicIcon from '@mui/icons-material/Public';
-import {
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { useGetTeamTree } from 'Iaso/domains/teams/hooks/requests/useGetTeamTree';

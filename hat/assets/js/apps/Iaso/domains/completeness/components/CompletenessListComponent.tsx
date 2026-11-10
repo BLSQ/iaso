@@ -1,6 +1,6 @@
 import React, { useState, useMemo, FunctionComponent } from 'react';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles } from 'bluesquare-components';
 import { INSTANCE_STATUSES } from '../../instances/constants';
 import { PERIOD_TYPE_QUARTER } from '../../periods/constants';

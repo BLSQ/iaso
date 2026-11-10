@@ -1,5 +1,5 @@
 import React, { FC, useMemo } from 'react';
-import { useTheme } from '@mui/material';
+import useTheme from '@mui/material/styles/useTheme';
 import { FeatureCollection } from 'geojson';
 import { Layer, LineLayerSpecification, Source } from 'react-map-gl/maplibre';
 

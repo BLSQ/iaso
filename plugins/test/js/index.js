@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, { useEffect, useState } from 'react';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LoadingSpinner,
@@ -7,7 +8,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import React, { useEffect, useState } from 'react';
 
 import { getRequest } from 'Iaso/libs/Api';
 import tableColumns from './columns';

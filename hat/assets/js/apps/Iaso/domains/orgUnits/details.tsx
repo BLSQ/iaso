@@ -5,9 +5,12 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Grid, Tab, Tabs } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { alpha } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     commonStyles,

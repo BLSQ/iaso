@@ -1,12 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import {
-    FormControlLabel,
-    FormControl,
-    FormLabel,
-    RadioGroup,
-    Radio,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import FormControl from '@mui/material/FormControl/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel/FormLabel';
+import Radio from '@mui/material/Radio/Radio';
+import RadioGroup from '@mui/material/RadioGroup/RadioGroup';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles(() => ({
     radioGroup: {

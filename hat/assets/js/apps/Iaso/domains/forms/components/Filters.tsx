@@ -82,6 +82,7 @@ const Filters = ({ params }: Props) => {
         (next: FilterValues) => {
             redirectTo(baseUrl, {
                 ...params,
+                page: '1',
                 search: next.search || undefined,
                 projectsIds: next.projectsIds || undefined,
                 orgUnitTypeIds: next.orgUnitTypeIds || undefined,

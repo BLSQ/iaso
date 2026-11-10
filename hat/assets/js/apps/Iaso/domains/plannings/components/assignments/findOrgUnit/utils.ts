@@ -1,3 +1,4 @@
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { LevelOrgUnitNode } from '../mainPanel/types';
 
 // Children are missing for the org units below the loaded depth.
@@ -44,6 +45,35 @@ export const getOrgUnitChain = (
         orgUnit = orgUnit.parent ? orgUnitById.get(orgUnit.parent) : undefined;
     }
     return chain;
+};
+
+type LocatedOrgUnit = {
+    teamId: number;
+    // The found org unit, or its ancestor where the descent stopped.
+    shownOrgUnitId: number;
+};
+
+// Each team assigns the level below its own. Going down the chain, the descent opens the sub-team
+// an ancestor is assigned to, until it reaches the org unit or an ancestor no sub-team holds.
+export const locateOrgUnit = (
+    chain: LevelOrgUnitNode[],
+    rootTeam: TeamTreeNode,
+    teamIdByOrgUnitId: Map<number, number>,
+): LocatedOrgUnit | undefined => {
+    const orgUnit = chain.at(-1);
+    if (!orgUnit) return undefined;
+    let team = rootTeam;
+    let shown = orgUnit;
+    for (const ancestorOrSelf of chain.slice(1)) {
+        shown = ancestorOrSelf;
+        if (shown.id === orgUnit.id) break;
+        const subTeam = team.children.find(
+            child => child.id === teamIdByOrgUnitId.get(shown.id),
+        );
+        if (!subTeam) break;
+        team = subTeam;
+    }
+    return { teamId: team.id, shownOrgUnitId: shown.id };
 };
 
 // While searching, every branch holding a match is expanded and the others are hidden.

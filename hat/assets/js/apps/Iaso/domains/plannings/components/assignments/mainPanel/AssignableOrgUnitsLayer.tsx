@@ -1,5 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { Theme, useTheme } from '@mui/material';
+import { amber } from '@mui/material/colors';
 import { FeatureCollection } from 'geojson';
 import {
     CircleLayerSpecification,
@@ -18,6 +19,8 @@ export const FILL_OPACITY = 0.6;
 const HOVER_FILL_OPACITY = 0.85;
 const DIMMED_FILL_OPACITY = 0.15;
 const DIMMED_CIRCLE_OPACITY = 0.25;
+// The org unit found with "Find an org unit".
+export const FOCUS_COLOR = amber[600];
 export const getUnassignedColor = (theme: Theme): string =>
     theme.palette.grey[400];
 
@@ -47,12 +50,23 @@ const getFillColor = (
     unassignedColor,
 ];
 
+// Org unit ids are positive: -1 matches none.
+export const getIsFocused = (
+    focusedOrgUnitId?: number,
+): ExpressionSpecification => ['==', ['get', 'id'], focusedOrgUnitId ?? -1];
+
+export const FOCUS_LINE_PAINT: LineLayerSpecification['paint'] = {
+    'line-color': FOCUS_COLOR,
+    'line-width': 4,
+};
+
 type Props = {
     geoJson: FeatureCollection;
     colorByOrgUnitId: Map<number, string>;
     // Org units without a shape are drawn at their location.
     showPoints: boolean;
     dimAssigned: boolean;
+    focusedOrgUnitId?: number;
 };
 
 export const AssignableOrgUnitsLayer: FC<Props> = ({
@@ -60,6 +74,7 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
     colorByOrgUnitId,
     showPoints,
     dimAssigned,
+    focusedOrgUnitId,
 }) => {
     const theme = useTheme();
     const colorByOrgUnitIdLiteral: ExpressionSpecification = useMemo(
@@ -73,6 +88,10 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
     const isDimmed: ExpressionSpecification | boolean = useMemo(
         () => dimAssigned && ['has', orgUnitIdKey, colorByOrgUnitIdLiteral],
         [colorByOrgUnitIdLiteral, dimAssigned],
+    );
+    const isFocused = useMemo(
+        () => getIsFocused(focusedOrgUnitId),
+        [focusedOrgUnitId],
     );
     const fillPaint: FillLayerSpecification['paint'] = useMemo(
         () => ({
@@ -92,11 +111,16 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         () => ({
             'circle-color': fillColor,
             'circle-radius': ['case', isHovered, 8, 6],
-            'circle-stroke-color': theme.palette.common.white,
-            'circle-stroke-width': 2,
+            'circle-stroke-color': [
+                'case',
+                isFocused,
+                FOCUS_COLOR,
+                theme.palette.common.white,
+            ],
+            'circle-stroke-width': ['case', isFocused, 4, 2],
             'circle-opacity': ['case', isDimmed, DIMMED_CIRCLE_OPACITY, 1],
         }),
-        [fillColor, isDimmed, theme.palette.common.white],
+        [fillColor, isDimmed, isFocused, theme.palette.common.white],
     );
     const linePaint: LineLayerSpecification['paint'] = useMemo(
         () => ({
@@ -109,6 +133,12 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         <Source id={SOURCE_ID} type="geojson" data={geoJson}>
             <Layer id={FILL_LAYER_ID} type="fill" paint={fillPaint} />
             <Layer id={`${SOURCE_ID}-line`} type="line" paint={linePaint} />
+            <Layer
+                id={`${SOURCE_ID}-focus`}
+                type="line"
+                filter={isFocused}
+                paint={FOCUS_LINE_PAINT}
+            />
             <Layer
                 id={CIRCLE_LAYER_ID}
                 type="circle"

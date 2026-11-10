@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, { FC, useCallback, useMemo, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -10,10 +10,14 @@ import {
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { usePlanningOrgUnitTree } from '../usePlanningOrgUnitTree';
+import { useAssignments } from '../mainPanel/useAssignments';
+import { getTeamIdByOrgUnitId } from '../mainPanel/utils';
+import { usePlanningOrgUnits } from '../usePlanningOrgUnitTree';
 import { FindOrgUnitDialog } from './FindOrgUnitDialog';
+import { getOrgUnitChain, locateOrgUnit } from './utils';
 
 const styles = {
     container: {
@@ -56,24 +60,38 @@ export const FindOrgUnitField: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { focusOrgUnitId, updateParams } = useAssignmentsParams();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    // Hovering or focusing the field starts loading the full tree, which the dialog needs.
-    const [isFullTreeWanted, setIsFullTreeWanted] = useState(false);
-    const fullTree = usePlanningOrgUnitTree(
-        isFullTreeWanted || isDialogOpen || Boolean(focusOrgUnitId),
-    );
+    const { planning, tree } = useAssignmentsContext();
+    const { data: assignments } = useAssignments(`${planning.id}`);
+    // Same org units as the dialog, which can only pick loaded ones.
+    const { orgUnits } = usePlanningOrgUnits(0, 2);
     const focusedOrgUnit = focusOrgUnitId
-        ? fullTree?.orgUnitById.get(Number(focusOrgUnitId))
+        ? orgUnits?.orgUnitById.get(Number(focusOrgUnitId))
         : undefined;
+    const teamIdByOrgUnitId = useMemo(
+        () => getTeamIdByOrgUnitId(assignments ?? []),
+        [assignments],
+    );
 
-    const wantFullTree = useCallback(() => setIsFullTreeWanted(true), []);
     const openDialog = useCallback(() => setIsDialogOpen(true), []);
     const closeDialog = useCallback(() => setIsDialogOpen(false), []);
     const handleShow = useCallback(
         (orgUnitId: number) => {
-            updateParams({ focusOrgUnitId: `${orgUnitId}` });
+            const located =
+                orgUnits &&
+                locateOrgUnit(
+                    getOrgUnitChain(orgUnits.orgUnitById, orgUnitId),
+                    tree,
+                    teamIdByOrgUnitId,
+                );
+            if (located) {
+                updateParams({
+                    teamId: `${located.teamId}`,
+                    focusOrgUnitId: `${located.shownOrgUnitId}`,
+                });
+            }
             setIsDialogOpen(false);
         },
-        [updateParams],
+        [orgUnits, tree, teamIdByOrgUnitId, updateParams],
     );
     const handleClear = useCallback(
         () => updateParams({ focusOrgUnitId: undefined }),
@@ -84,8 +102,6 @@ export const FindOrgUnitField: FC = () => {
         <Box sx={styles.container}>
             <ButtonBase
                 onClick={openDialog}
-                onMouseEnter={wantFullTree}
-                onFocus={wantFullTree}
                 sx={[
                     styles.field,
                     Boolean(focusedOrgUnit) && styles.fieldWithClear,

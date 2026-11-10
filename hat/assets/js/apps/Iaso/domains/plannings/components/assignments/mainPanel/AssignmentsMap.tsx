@@ -57,7 +57,10 @@ export const AssignmentsMap: FC = () => {
     const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
     const { area, members, membersPresence, isFetching } =
         useLevelGeometry(selectedLevel);
-    const { openTeam, onlyUnassigned } = useAssignmentsParams();
+    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const focusedOrgUnitId = focusOrgUnitId
+        ? Number(focusOrgUnitId)
+        : undefined;
     const { data: assignments } = useAssignments(`${planning.id}`);
     const colorByOrgUnitId = useMemo(
         () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
@@ -92,9 +95,11 @@ export const AssignmentsMap: FC = () => {
                             colorByOrgUnitId={colorByOrgUnitId}
                             showPoints={showPoints}
                             dimAssigned={onlyUnassigned}
+                            focusedOrgUnitId={focusedOrgUnitId}
                         />
                         <ScopeAreaLayer
                             geoJson={area ?? EMPTY_FEATURE_COLLECTION}
+                            focusedOrgUnitId={focusedOrgUnitId}
                         />
                         <OrgUnitHover
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}

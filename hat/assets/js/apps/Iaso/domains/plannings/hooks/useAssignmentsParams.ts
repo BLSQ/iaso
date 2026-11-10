@@ -21,8 +21,10 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
             redirectToReplace(baseUrls.assignments, { ...params, ...changes }),
         [params, redirectToReplace],
     );
+    // The found org unit belongs to the team it was found in.
     const openTeam = useCallback(
-        (teamId: number) => updateParams({ teamId: `${teamId}` }),
+        (teamId: number) =>
+            updateParams({ teamId: `${teamId}`, focusOrgUnitId: undefined }),
         [updateParams],
     );
     const onlyUnassigned = params.onlyUnassigned === 'true';

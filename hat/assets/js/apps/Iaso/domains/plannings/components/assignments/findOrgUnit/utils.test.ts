@@ -1,9 +1,11 @@
+import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { LevelOrgUnitNode } from '../mainPanel/types';
 import {
     FindOrgUnitRow,
     flattenFindOrgUnitRows,
     getOrgUnitChain,
     indexTree,
+    locateOrgUnit,
 } from './utils';
 
 const makeOrgUnit = (
@@ -116,5 +118,51 @@ describe('flattenFindOrgUnitRows', () => {
                 ({ orgUnit }) => orgUnit.id,
             ),
         ).toEqual([1, 3, 6]);
+    });
+});
+
+describe('locateOrgUnit', () => {
+    const makeTeam = (id: number, children: TeamTreeNode[] = []) =>
+        ({ id, children }) as unknown as TeamTreeNode;
+    const rootTeam = makeTeam(10, [makeTeam(20, [makeTeam(30)])]);
+    const chainTo = (orgUnitId: number) =>
+        getOrgUnitChain(fullTree.orgUnitById, orgUnitId);
+
+    it('opens the sub-teams the ancestors are assigned to, down to the team assigning the org unit', () => {
+        const teamIdByOrgUnitId = new Map([
+            [2, 20],
+            [4, 30],
+        ]);
+        expect(locateOrgUnit(chainTo(7), rootTeam, teamIdByOrgUnitId)).toEqual({
+            teamId: 30,
+            shownOrgUnitId: 7,
+        });
+    });
+
+    it('stops at the first ancestor no sub-team holds and shows it', () => {
+        const teamIdByOrgUnitId = new Map([[2, 20]]);
+        expect(locateOrgUnit(chainTo(7), rootTeam, teamIdByOrgUnitId)).toEqual({
+            teamId: 20,
+            shownOrgUnitId: 4,
+        });
+    });
+
+    it('does not open a team that is not a sub-team of the current one', () => {
+        const teamIdByOrgUnitId = new Map([[2, 30]]);
+        expect(locateOrgUnit(chainTo(4), rootTeam, teamIdByOrgUnitId)).toEqual({
+            teamId: 10,
+            shownOrgUnitId: 2,
+        });
+    });
+
+    it('shows the planning root in the root team', () => {
+        expect(locateOrgUnit(chainTo(1), rootTeam, new Map())).toEqual({
+            teamId: 10,
+            shownOrgUnitId: 1,
+        });
+    });
+
+    it('locates nothing for an empty chain', () => {
+        expect(locateOrgUnit([], rootTeam, new Map())).toBeUndefined();
     });
 });

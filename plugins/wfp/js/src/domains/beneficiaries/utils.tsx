@@ -1,5 +1,4 @@
 import { Theme } from '@mui/material/styles';
-import { ChipProps } from '@mui/material';
 import moment from 'moment';
 
 // Colors of the nutrition programmes
@@ -52,4 +51,12 @@ export const whzColor = (theme: Theme, color?: string | null): string => {
         default:
             return theme.palette.grey[500];
     }
+};
+
+const BAD_EXITS = ['death', 'defaulter', 'non_respondent'];
+export const exitColor = (theme: Theme, exitType: string): string => {
+    if (exitType === 'cured') return theme.palette.success.main;
+    if (BAD_EXITS.includes(exitType)) return theme.palette.error.main;
+    if (exitType.includes('transfer')) return theme.palette.primary.main;
+    return theme.palette.warning.main;
 };

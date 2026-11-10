@@ -4,9 +4,14 @@ import { FormsParams } from '../types/forms';
 import { shouldShowDeletedColumn, useFormsTableColumns } from './index';
 
 const mockGetProjectChips = vi.fn();
+const mockGetOrgUnitTypeChips = vi.fn();
 
-vi.mock('../hooks/useGetProjectChips', () => ({
+vi.mock('../../projects/hooks/useGetProjectChips', () => ({
     useGetProjectChips: () => mockGetProjectChips,
+}));
+
+vi.mock('../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypeChips', () => ({
+    useGetOrgUnitTypeChips: () => mockGetOrgUnitTypeChips,
 }));
 
 vi.mock('../../../utils/usersUtils', () => ({
@@ -79,5 +84,25 @@ describe('useFormsTableColumns', () => {
             projectsCol?.Cell?.({ row: { original: { projects } } }),
         ).toBe('chips');
         expect(mockGetProjectChips).toHaveBeenCalledWith(projects);
+    });
+
+    it('passes the row org unit types to useGetOrgUnitTypeChips', () => {
+        mockGetOrgUnitTypeChips.mockReturnValue('type-chips');
+        const { result } = renderHook(() =>
+            useFormsTableColumns({
+                orgUnitId: '',
+                onlyDeleted: false,
+                showDeleted: false,
+                params: defaultParams,
+                count: 0,
+            }),
+        );
+
+        const typesCol = result.current.find(col => col.id === 'org_unit_types');
+        const orgUnitTypes = [{ id: 1, short_name: 'DIST', name: 'District' }];
+        expect(
+            typesCol?.Cell?.({ row: { original: { org_unit_types: orgUnitTypes } } }),
+        ).toBe('type-chips');
+        expect(mockGetOrgUnitTypeChips).toHaveBeenCalledWith(orgUnitTypes);
     });
 });

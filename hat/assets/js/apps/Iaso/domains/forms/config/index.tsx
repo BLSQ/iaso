@@ -10,11 +10,12 @@ import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetOrgUnitTypeChips } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypeChips';
+import { useGetProjectChips } from '../../projects/hooks/useGetProjectChips';
 import { userHasAccessToModule } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { useDeleteForm } from '../hooks/useDeleteForm';
-import { useGetProjectChips } from '../hooks/useGetProjectChips';
 import MESSAGES from '../messages';
 import { Form, FormsParams } from '../types/forms';
 
@@ -140,6 +141,7 @@ export const useFormsTableColumns = ({
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
     const getProjectChips = useGetProjectChips();
+    const getOrgUnitTypeChips = useGetOrgUnitTypeChips();
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -179,10 +181,8 @@ export const useFormsTableColumns = ({
                 sortable: false,
                 accessor: 'org_unit_types',
                 id: 'org_unit_types',
-                Cell: settings =>
-                    settings.row.original.org_unit_types
-                        ?.map((o: { short_name: string }) => o.short_name)
-                        ?.join(', '),
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getOrgUnitTypeChips(original.org_unit_types),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitsGroups),
@@ -239,6 +239,7 @@ export const useFormsTableColumns = ({
         hasDhis2Module,
         deleteForm,
         getProjectChips,
+        getOrgUnitTypeChips,
     ]);
 };
 

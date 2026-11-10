@@ -203,6 +203,11 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
 
     @admin.display(description="Accounts")
     def get_account_names(self, obj):
+        version = obj.version
+        data_source = getattr(version, "data_source", None)
+        if not version or not data_source:
+            return "-"
+
         accounts = set(
             f"{project.account.name} ({project.account.id})" for project in obj.version.data_source.projects.all()
         )

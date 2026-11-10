@@ -51,7 +51,7 @@ const getForms = (params: FormsParams) => {
 
 export const tableDefaults = {
     order: 'name',
-    limit: 50,
+    limit: 10,
     page: 1,
 };
 

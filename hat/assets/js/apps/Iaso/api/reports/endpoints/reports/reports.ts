@@ -346,7 +346,7 @@ export const useApiReportsCreate = <
     );
 };
 export const getApiReportsRetrieveUrl = (
-    id: number,
+    id: string,
     params?: ApiReportsRetrieveParams,
 ) => {
     const normalizedParams = new URLSearchParams();
@@ -382,7 +382,7 @@ export const getApiReportsRetrieveUrl = (
  * - `POST /api/reports/{id}/publish/` (version_id): choose the published version
  */
 export const apiReportsRetrieve = async (
-    id: number,
+    id: string,
     params?: ApiReportsRetrieveParams,
     options?: Parameters<typeof customFetchInstance>[1],
 ): Promise<Report> => {
@@ -394,7 +394,7 @@ export const apiReportsRetrieve = async (
 };
 
 export const getApiReportsRetrieveQueryKey = (
-    id: number,
+    id: string,
     params?: ApiReportsRetrieveParams,
 ) => {
     return [
@@ -408,7 +408,7 @@ export const useApiReportsRetrieveQueryOptions = <
     TData = Awaited<ReturnType<typeof apiReportsRetrieve>>,
     TError = unknown,
 >(
-    id: number,
+    id: string,
     params?: ApiReportsRetrieveParams,
     options?: {
         query?: UseQueryOptions<
@@ -452,7 +452,7 @@ export function useApiReportsRetrieve<
     TData = Awaited<ReturnType<typeof apiReportsRetrieve>>,
     TError = unknown,
 >(
-    id: number,
+    id: string,
     params?: ApiReportsRetrieveParams,
     options?: {
         query?: UseQueryOptions<
@@ -477,7 +477,7 @@ export function useApiReportsRetrieve<
  */
 export const invalidateApiReportsRetrieve = async (
     queryClient: QueryClient,
-    id: number,
+    id: string,
     params?: ApiReportsRetrieveParams,
     options?: InvalidateOptions,
 ): Promise<QueryClient> => {
@@ -494,7 +494,7 @@ export const invalidateApiReportsRetrieve = async (
 };
 
 export const getApiReportsPartialUpdateUrl = (
-    id: number,
+    id: string,
     params?: ApiReportsPartialUpdateParams,
 ) => {
     const normalizedParams = new URLSearchParams();
@@ -530,7 +530,7 @@ export const getApiReportsPartialUpdateUrl = (
  * - `POST /api/reports/{id}/publish/` (version_id): choose the published version
  */
 export const apiReportsPartialUpdate = async (
-    id: number,
+    id: string,
     patchedReportRequest?: PatchedReportRequest,
     params?: ApiReportsPartialUpdateParams,
     options?: Parameters<typeof customFetchInstance>[1],
@@ -643,7 +643,7 @@ export type ApiReportsPartialUpdateMutationBody =
     | undefined;
 export type ApiReportsPartialUpdateMutationError = unknown;
 export type ApiReportsPartialUpdateMutationVariables = {
-    id: number;
+    id: string;
     data?: PatchedReportRequest;
     params?: ApiReportsPartialUpdateParams;
 };
@@ -672,7 +672,7 @@ export const useApiReportsPartialUpdate = <
     );
 };
 export const getApiReportsDestroyUrl = (
-    id: number,
+    id: string,
     params?: ApiReportsDestroyParams,
 ) => {
     const normalizedParams = new URLSearchParams();
@@ -708,7 +708,7 @@ export const getApiReportsDestroyUrl = (
  * - `POST /api/reports/{id}/publish/` (version_id): choose the published version
  */
 export const apiReportsDestroy = async (
-    id: number,
+    id: string,
     params?: ApiReportsDestroyParams,
     options?: Parameters<typeof customFetchInstance>[1],
 ): Promise<void> => {
@@ -789,7 +789,7 @@ export type ApiReportsDestroyMutationResult = NonNullable<
 
 export type ApiReportsDestroyMutationError = unknown;
 export type ApiReportsDestroyMutationVariables = {
-    id: number;
+    id: string;
     params?: ApiReportsDestroyParams;
 };
 
@@ -817,7 +817,7 @@ export const useApiReportsDestroy = <
     );
 };
 export const getApiReportsPublishCreateUrl = (
-    id: number,
+    id: string,
     params?: ApiReportsPublishCreateParams,
 ) => {
     const normalizedParams = new URLSearchParams();
@@ -842,7 +842,7 @@ export const getApiReportsPublishCreateUrl = (
  * Choose the version of the report served to the mobile app.
  */
 export const apiReportsPublishCreate = async (
-    id: number,
+    id: string,
     reportPublishRequest: ReportPublishRequest,
     params?: ApiReportsPublishCreateParams,
     options?: Parameters<typeof customFetchInstance>[1],
@@ -962,7 +962,7 @@ export type ApiReportsPublishCreateMutationResult = NonNullable<
 export type ApiReportsPublishCreateMutationBody = ReportPublishRequest;
 export type ApiReportsPublishCreateMutationError = unknown;
 export type ApiReportsPublishCreateMutationVariables = {
-    id: number;
+    id: string;
     data: ReportPublishRequest;
     params?: ApiReportsPublishCreateParams;
 };
@@ -991,7 +991,7 @@ export const useApiReportsPublishCreate = <
     );
 };
 export const getApiReportsVersionsListUrl = (
-    id: number,
+    id: string,
     params?: ApiReportsVersionsListParams,
 ) => {
     const normalizedParams = new URLSearchParams();
@@ -1016,7 +1016,7 @@ export const getApiReportsVersionsListUrl = (
  * List the versions of the report, the most recent first.
  */
 export const apiReportsVersionsList = async (
-    id: number,
+    id: string,
     params?: ApiReportsVersionsListParams,
     options?: Parameters<typeof customFetchInstance>[1],
 ): Promise<ReportVersion[]> => {
@@ -1031,7 +1031,7 @@ export const apiReportsVersionsList = async (
 };
 
 export const getApiReportsVersionsListQueryKey = (
-    id: number,
+    id: string,
     params?: ApiReportsVersionsListParams,
 ) => {
     return [
@@ -1045,7 +1045,7 @@ export const useApiReportsVersionsListQueryOptions = <
     TData = Awaited<ReturnType<typeof apiReportsVersionsList>>,
     TError = unknown,
 >(
-    id: number,
+    id: string,
     params?: ApiReportsVersionsListParams,
     options?: {
         query?: UseQueryOptions<
@@ -1089,7 +1089,7 @@ export function useApiReportsVersionsList<
     TData = Awaited<ReturnType<typeof apiReportsVersionsList>>,
     TError = unknown,
 >(
-    id: number,
+    id: string,
     params?: ApiReportsVersionsListParams,
     options?: {
         query?: UseQueryOptions<
@@ -1118,7 +1118,7 @@ export function useApiReportsVersionsList<
  */
 export const invalidateApiReportsVersionsList = async (
     queryClient: QueryClient,
-    id: number,
+    id: string,
     params?: ApiReportsVersionsListParams,
     options?: InvalidateOptions,
 ): Promise<QueryClient> => {
@@ -1135,7 +1135,7 @@ export const invalidateApiReportsVersionsList = async (
 };
 
 export const getApiReportsVersionsCreateUrl = (
-    id: number,
+    id: string,
     params?: ApiReportsVersionsCreateParams,
 ) => {
     const normalizedParams = new URLSearchParams();
@@ -1160,7 +1160,7 @@ export const getApiReportsVersionsCreateUrl = (
  * Upload a new version of the report. It is published unless `publish` is false.
  */
 export const apiReportsVersionsCreate = async (
-    id: number,
+    id: string,
     reportVersionCreateRequest: ReportVersionCreateRequest,
     params?: ApiReportsVersionsCreateParams,
     options?: Parameters<typeof customFetchInstance>[1],
@@ -1267,7 +1267,7 @@ export type ApiReportsVersionsCreateMutationResult = NonNullable<
 export type ApiReportsVersionsCreateMutationBody = ReportVersionCreateRequest;
 export type ApiReportsVersionsCreateMutationError = unknown;
 export type ApiReportsVersionsCreateMutationVariables = {
-    id: number;
+    id: string;
     data: ReportVersionCreateRequest;
     params?: ApiReportsVersionsCreateParams;
 };

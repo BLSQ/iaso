@@ -86,48 +86,6 @@ const styles: SxStyles = {
     },
 };
 
-type OrgUnitTypesInputProps = {
-    form?: FormOption['original'];
-    value?: string;
-    onChange: (value?: string) => void;
-};
-
-// The org unit types depend on the projects of the form selected in the drawer:
-// a component of its own to fetch them with a hook
-const OrgUnitTypesInput: FunctionComponent<OrgUnitTypesInputProps> = ({
-    form,
-    value,
-    onChange,
-}) => {
-    const { formatMessage } = useSafeIntl();
-    const { data: orgUnitTypes, isFetching } =
-        useGetOrgUnitTypesDropdownOptions({
-            projectIds: form?.project_ids,
-            enabled: Boolean(form),
-        });
-    return (
-        <InputComponent
-            type="select"
-            keyValue="orgUnitTypeIds"
-            onChange={(_key, newValue?: string) => onChange(newValue)}
-            value={value}
-            label={MESSAGES.orgUnitTypes}
-            options={orgUnitTypes ?? []}
-            loading={isFetching}
-            // Only when nothing is selected, the chips are enough otherwise
-            placeholder={value ? undefined : formatMessage(MESSAGES.allTypes)}
-            helperText={formatMessage(
-                value
-                    ? MESSAGES.orgUnitTypesSelectedInfo
-                    : MESSAGES.orgUnitTypesInfo,
-            )}
-            multi
-            // the drawer already spaces fields
-            withMarginTop={false}
-        />
-    );
-};
-
 export const PromptnessFilters: FunctionComponent<Props> = ({
     params,
     forms,
@@ -138,12 +96,12 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     const getStatusColor = useGetStatusColor();
     const formatPeriod = useFormatPeriod();
     const { data: initialParent } = useGetOrgUnit(orgUnitId, ORG_UNIT_FIELDS);
-    // Org unit types of the applied form, to name them in the chips
     const appliedForm = findForm(forms, params.formId);
-    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions({
-        projectIds: appliedForm?.project_ids,
-        enabled: Boolean(appliedForm),
-    });
+    const { data: orgUnitTypes, isFetching: isFetchingTypes } =
+        useGetOrgUnitTypesDropdownOptions({
+            projectIds: appliedForm?.project_ids,
+            enabled: Boolean(appliedForm),
+        });
 
     const getPeriodTypeLabel = useCallback(
         (periodType?: string | null) =>
@@ -197,29 +155,12 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
             {
                 key: 'formId',
                 label: MESSAGES.form,
-                type: 'custom',
+                type: 'select',
+                options: forms ?? [],
+                loading: isFetchingForms,
+                placeholder: formatMessage(MESSAGES.selectForm),
                 required: true,
-                formatValue: (value?: string) =>
-                    forms?.find(form => `${form.value}` === `${value ?? ''}`)
-                        ?.label,
-                renderCustom: ({
-                    value,
-                    onChange,
-                }: FilterFieldRenderContext) => (
-                    <InputComponent
-                        type="select"
-                        keyValue="formId"
-                        onChange={(_key, newValue) => onChange(newValue)}
-                        value={value}
-                        label={MESSAGES.form}
-                        loading={isFetchingForms}
-                        options={forms ?? []}
-                        errors={getFormErrors(findForm(forms, value))}
-                        placeholder={formatMessage(MESSAGES.selectForm)}
-                        required
-                        withMarginTop={false}
-                    />
-                ),
+                errors: getFormErrors(findForm(forms, params.formId)),
             },
             {
                 key: 'period',
@@ -233,14 +174,12 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                     values: draftValues,
                     onChange,
                 }: FilterFieldRenderContext) => {
-                    // The form selected in the drawer, not yet applied
                     const draftForm = findForm(forms, draftValues.formId);
                     const periodTypeLabel = getPeriodTypeLabel(
                         draftForm?.period_type,
                     );
                     return (
                         <Box>
-                            {/* The period picker depends on the period type of the form */}
                             {!draftForm && (
                                 <InputComponent
                                     type="select"
@@ -256,7 +195,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
                             )}
                             {draftForm && (
                                 <PeriodPicker
-                                    // Reset the picker when the period type changes
                                     key={draftForm.period_type}
                                     title={`${formatMessage(MESSAGES.period)} *`}
                                     periodType={
@@ -345,26 +283,17 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
             {
                 key: 'orgUnitTypeIds',
                 label: MESSAGES.orgUnitTypes,
-                type: 'custom',
-                formatValue: (value?: string) =>
-                    value
-                        ?.split(',')
-                        .map(
-                            id =>
-                                orgUnitTypes?.find(
-                                    type => `${type.value}` === id,
-                                )?.label ?? id,
-                        ),
-                renderCustom: ({
-                    value,
-                    values: draftValues,
-                    onChange,
-                }: FilterFieldRenderContext) => (
-                    <OrgUnitTypesInput
-                        form={findForm(forms, draftValues.formId)}
-                        value={value}
-                        onChange={onChange}
-                    />
+                type: 'select',
+                multi: true,
+                options: orgUnitTypes ?? [],
+                loading: isFetchingTypes,
+                placeholder: params.orgUnitTypeIds
+                    ? undefined
+                    : formatMessage(MESSAGES.allTypes),
+                helperText: formatMessage(
+                    params.orgUnitTypeIds
+                        ? MESSAGES.orgUnitTypesSelectedInfo
+                        : MESSAGES.orgUnitTypesInfo,
                 ),
             },
         ],
@@ -379,6 +308,9 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
             statusOptions,
             renderStatusTags,
             orgUnitTypes,
+            isFetchingTypes,
+            params.formId,
+            params.orgUnitTypeIds,
         ],
     );
     const values: FilterValues = useMemo(

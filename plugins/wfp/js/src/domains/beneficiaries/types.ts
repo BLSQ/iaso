@@ -71,3 +71,43 @@ export type BeneficiaryOptions = {
 };
 
 export type ExportKind = 'coda' | 'raw';
+
+// A field of a submission: its path in the JSON (e.g. "household/size") and its value
+export type SubmissionRow = {
+    key: string;
+    value: string | number | boolean | null;
+};
+
+export type Submission = {
+    id: number;
+    form_name: string | null;
+    form_id: string | null;
+    org_unit_name: string | null;
+    source_created_at: string | null;
+    created_at: string | null;
+    updated_at: string | null;
+    deleted: boolean;
+};
+
+export type SubmissionFields = {
+    submission: Submission;
+    rows: SubmissionRow[];
+};
+
+export type BeneficiaryDetails = {
+    entity: {
+        id: number;
+        uuid: string;
+        entity_type_name: string | null;
+        created_at: string | null;
+        deleted_at: string | null;
+        reference_submission_id: number | null;
+    };
+    beneficiary: {
+        gender: string | null;
+        birth_date: string | null;
+        guidelines: string | null;
+    } | null;
+    attributes: SubmissionRow[];
+    submissions: (Submission & { rows: SubmissionRow[] })[];
+};

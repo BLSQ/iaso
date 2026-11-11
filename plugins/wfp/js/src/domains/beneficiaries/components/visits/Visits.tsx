@@ -7,15 +7,18 @@ import {
     TableHead,
     TableRow,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { Theme } from '@mui/material/styles';
+import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { Journey, Visit } from '../../types';
 import { VisitRow } from './VisitRow';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    root: {
+const styles: SxStyles = {
+    container: {
+        overflowX: 'auto',
+    },
+    table: (theme: Theme) => ({
         '& th': {
             height: 40,
             fontSize: 12,
@@ -26,15 +29,17 @@ const useStyles = makeStyles(theme => ({
         '& td': { padding: theme.spacing(0.75, 2) },
         '& tbody tr:last-child td': { borderBottom: 'none' },
         '& tbody tr:hover': { background: 'rgba(0, 0, 0, 0.03)' },
+    }),
+    emptyCell: {
+        color: 'text.secondary',
     },
-}));
+};
 
 export const Visits: FunctionComponent<{
     journey: Journey;
     visits: Visit[];
 }> = ({ journey, visits }) => {
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
     const headers = [
         '#',
         formatMessage(MESSAGES.date),
@@ -47,8 +52,8 @@ export const Visits: FunctionComponent<{
         formatMessage(MESSAGES.submission),
     ];
     return (
-        <Box sx={{ overflowX: 'auto' }}>
-            <Table size="small" className={classes.root}>
+        <Box sx={styles.container}>
+            <Table size="small" sx={styles.table}>
                 <TableHead>
                     <TableRow>
                         {headers.map(header => (
@@ -59,10 +64,7 @@ export const Visits: FunctionComponent<{
                 <TableBody>
                     {visits.length === 0 && (
                         <TableRow>
-                            <TableCell
-                                colSpan={9}
-                                sx={{ color: 'text.secondary' }}
-                            >
+                            <TableCell colSpan={9} sx={styles.emptyCell}>
                                 {formatMessage(MESSAGES.noVisits)}
                             </TableCell>
                         </TableRow>

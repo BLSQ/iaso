@@ -5,7 +5,7 @@ import { baseUrls } from '../../../constants/urls';
 import { useColumns } from '../config';
 import MESSAGES from './../messages';
 import { Params, Beneficiary } from './../types';
-import { BeneficiaryDataDialog } from './Fragments';
+import { BeneficiaryDialog } from './details/BeneficiaryDialog';
 import { JourneysDetails } from './journeys/JourneysDetails';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -41,7 +41,7 @@ export const TableList: FunctionComponent<Props> = ({
                     SubComponent: JourneysDetails,
                 }}
             />
-            <BeneficiaryDataDialog
+            <BeneficiaryDialog
                 entityId={dataEntityId}
                 onClose={() => setDataEntityId(undefined)}
             />

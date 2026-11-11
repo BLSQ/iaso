@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableRow } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import { alpha, useTheme, Theme } from '@mui/material/styles';
 import { ColorChip, useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { Visit } from '../../types';
 import { formatDate, muacColor, whzColor } from '../../utils';
-import { SubmissionLink } from '../Fragments';
+import { SubmissionLink } from '../details/SubmissionLink';
 
-const useStyles = makeStyles(theme => ({
-    visitNumber: {
+const styles: SxStyles = {
+    visitNumber: (theme: Theme) => ({
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -20,21 +20,24 @@ const useStyles = makeStyles(theme => ({
         color: theme.palette.primary.main,
         fontWeight: 500,
         fontSize: 12,
-    },
+    }),
     muac: {
         display: 'inline-block',
         width: 10,
         height: 10,
         borderRadius: '50%',
-        marginRight: theme.spacing(0.75),
+        mr: 0.75,
         verticalAlign: 'middle',
     },
     assistances: {
         display: 'flex',
         flexWrap: 'wrap',
-        gap: theme.spacing(0.5),
+        gap: 0.5,
     },
-}));
+    noWrap: {
+        whiteSpace: 'nowrap',
+    },
+};
 
 type Props = {
     visit: Visit;
@@ -46,26 +49,23 @@ export const VisitRow: FunctionComponent<Props> = ({
     programmeType,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     return (
         <TableRow>
             <TableCell>
-                <Box component="span" className={classes.visitNumber}>
+                <Box component="span" sx={styles.visitNumber}>
                     {visit.number}
                 </Box>
             </TableCell>
-            <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                {formatDate(visit.date)}
-            </TableCell>
+            <TableCell sx={styles.noWrap}>{formatDate(visit.date)}</TableCell>
             <TableCell>{visit.org_unit_name ?? ''}</TableCell>
-            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+            <TableCell sx={styles.noWrap}>
                 {visit.muac_size && (
                     <>
                         <Box
                             component="span"
-                            className={classes.muac}
                             sx={{
+                                ...styles.muac,
                                 background: muacColor(
                                     theme,
                                     Number(visit.muac_size),
@@ -106,7 +106,7 @@ export const VisitRow: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.none)}
                     </Box>
                 ) : (
-                    <Box className={classes.assistances}>
+                    <Box sx={styles.assistances}>
                         {visit.steps.map(step => (
                             <ColorChip
                                 size="small"

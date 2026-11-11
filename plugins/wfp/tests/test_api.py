@@ -89,6 +89,38 @@ class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
         self.assertIn({"value": "TSFP", "label": "TSFP"}, data["programmes"])
         self.assertEqual(data["org_unit_groups"], [{"value": self.group.id, "label": "Friendship (South Sudan - 1)"}])
 
+    def test_data_of_a_beneficiary(self):
+        self.client.force_authenticate(self.user)
+        data = self.assertJSONResponse(self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), 200)
+        self.assertEqual(data["entity"]["id"], self.entity.id)
+        self.assertEqual(data["entity"]["reference_submission_id"], self.entity.attributes_id)
+        self.assertEqual(data["beneficiary"]["guidelines"], "NEW")
+        self.assertIn({"key": "is_twin", "value": "no"}, data["attributes"])
+        self.assertEqual(len(data["submissions"]), 4)
+        self.assertEqual(
+            [s["org_unit_name"] for s in data["submissions"]],
+            ["Bentiu PHCC", "Bentiu PHCC", "Bentiu PHCC", "Rubkona PHCC"],
+        )
+        self.assertIn({"key": "muac", "value": "12.4"}, data["submissions"][-1]["rows"])
+
+    def test_data_of_a_beneficiary_is_restricted(self):
+        self.client.force_authenticate(self.partner)
+        self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{self.rubkona_entity.id}/data/").status_code, 404)
+        data = self.assertJSONResponse(self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), 200)
+        self.assertNotIn(self.rubkona_instance.id, [s["id"] for s in data["submissions"]])
+        self.client.force_authenticate(self.user)
+        self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{self.other_entity.id}/data/").status_code, 404)
+
+    def test_submission_fields(self):
+        self.client.force_authenticate(self.user)
+        url = f"{BENEFICIARIES_URL}submissions/{self.rubkona_instance.id}/fields/"
+        data = self.assertJSONResponse(self.client.get(url), 200)
+        self.assertEqual(data["submission"]["id"], self.rubkona_instance.id)
+        self.assertEqual(data["submission"]["org_unit_name"], "Rubkona PHCC")
+        self.assertEqual(data["rows"], [{"key": "muac", "value": "12.4"}])
+        self.client.force_authenticate(self.partner)
+        self.assertEqual(self.client.get(url).status_code, 404)
+
     def test_coda_export_is_downloaded_right_away(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BENEFICIARIES_URL}export/coda/", {"org_unit_group": self.group.id})

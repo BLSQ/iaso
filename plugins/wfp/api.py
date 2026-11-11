@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from iaso.api.common import HasPermission, Paginator
 from iaso.models import EntityType, Group
 
+from .details import beneficiary_details, submission_details
 from .exports import KIND_CODA, KIND_RAW, export_response
 from .filters import attach_journeys, facility_scope, filtered_beneficiaries, filters_from_params, with_counts
 from .models import NUTRITION_PROGRAMMES, Journey, Step, Visit
@@ -73,6 +74,55 @@ class BeneficiarySerializer(serializers.Serializer):
     visits_count = serializers.IntegerField()
     last_visit_date = serializers.DateTimeField()
     journeys = JourneySerializer(many=True)
+
+
+class RowsField(serializers.Field):
+    """Flattened (path, value) rows of a submission, as `{"key": ..., "value": ...}` objects."""
+
+    def to_representation(self, rows):
+        return [{"key": key, "value": value} for key, value in rows]
+
+
+class SubmissionSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    form_name = serializers.CharField(source="form.name", default=None)
+    form_id = serializers.CharField(source="form.form_id", default=None)
+    org_unit_name = serializers.CharField(source="org_unit.name", default=None)
+    source_created_at = serializers.DateTimeField()
+    created_at = serializers.DateTimeField()
+    updated_at = serializers.DateTimeField()
+    deleted = serializers.BooleanField()
+
+
+class SubmissionWithFieldsSerializer(SubmissionSerializer):
+    rows = RowsField()
+
+
+class SubmissionFieldsSerializer(serializers.Serializer):
+    submission = SubmissionSerializer()
+    rows = RowsField()
+
+
+class EntitySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    uuid = serializers.UUIDField()
+    entity_type_name = serializers.CharField(source="entity_type.name", default=None)
+    created_at = serializers.DateTimeField()
+    deleted_at = serializers.DateTimeField()
+    reference_submission_id = serializers.IntegerField(source="attributes_id", default=None)
+
+
+class EtlBeneficiarySerializer(serializers.Serializer):
+    gender = serializers.CharField()
+    birth_date = serializers.DateField()
+    guidelines = serializers.CharField()
+
+
+class BeneficiaryDetailsSerializer(serializers.Serializer):
+    entity = EntitySerializer()
+    beneficiary = EtlBeneficiarySerializer(allow_null=True)
+    attributes = RowsField()
+    submissions = SubmissionWithFieldsSerializer(many=True)
 
 
 ORDERS = {
@@ -177,6 +227,18 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def export_raw(self, request):
         """The ETL tables and the submissions of the selection, one sheet per form."""
         return export_response(request.user, KIND_RAW, filters_from_params(request.query_params))
+
+    @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
+    def data(self, request, entity_id):
+        """All the data of the entity: ETL beneficiary, reference form and every submission linked to it."""
+        details = beneficiary_details(request.user, request.user.iaso_profile.account, entity_id)
+        return Response(BeneficiaryDetailsSerializer(details).data)
+
+    @action(detail=False, methods=["get"], url_path=r"submissions/(?P<instance_id>\d+)/fields")
+    def submission_fields(self, request, instance_id):
+        """All the fields of a submission of the account."""
+        details = submission_details(request.user, request.user.iaso_profile.account, instance_id)
+        return Response(SubmissionFieldsSerializer(details).data)
 
 
 router = routers.SimpleRouter()

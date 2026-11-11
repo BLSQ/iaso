@@ -10,17 +10,17 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 from django.template import loader
 from django.utils import timezone
 
-from iaso.models import Entity, EntityType, Group, Instance
+from iaso.models import Entity, EntityType, Group
 from iaso.utils.pii import filter_submission_json
 
 from .common import ETL
+from .details import beneficiary_details, submission_details
 from .exports import KIND_CODA, KIND_RAW, export_response
 from .filters import (
     attach_journeys,
     facility_scope,
     filtered_beneficiaries,
     filters_from_params,
-    restricted_org_units,
     with_counts,
 )
 from .models import NUTRITION_PROGRAMMES, Beneficiary, Journey, Visit
@@ -42,24 +42,6 @@ def debug(request, id):
 def _user_account(user):
     profile = getattr(user, "iaso_profile", None)
     return profile.account if profile else None
-
-
-def _flatten_json(data, prefix=""):
-    """Turn a submission JSON into a flat list of (path, value) rows for display."""
-    rows = []
-    if isinstance(data, dict):
-        for key, value in data.items():
-            rows.extend(
-                _flatten_json(value, f"{prefix}{key}/" if isinstance(value, (dict, list)) else f"{prefix}{key}")
-            )
-    elif isinstance(data, list):
-        for index, value in enumerate(data):
-            rows.extend(
-                _flatten_json(value, f"{prefix}{index}/" if isinstance(value, (dict, list)) else f"{prefix}{index}")
-            )
-    else:
-        rows.append((prefix, data))
-    return rows
 
 
 def _facility_scope(request):
@@ -147,36 +129,8 @@ def beneficiary_data(request, entity_id):
     account = _user_account(request.user)
     if account is None:
         return HttpResponseForbidden("User has no account")
-
-    entities = Entity.objects.filter(account=account).select_related("entity_type", "attributes")
-    submissions = Instance.objects.filter(entity_id=entity_id)
-    restricted = restricted_org_units(request.user)
-    if restricted is not None:
-        # users restricted to some facilities only see their beneficiaries and the submissions made there
-        entities = entities.filter(
-            id__in=Visit.objects.filter(org_unit_id__in=restricted.values("id")).values(
-                "journey__beneficiary__entity_id"
-            )
-        )
-        submissions = submissions.filter(org_unit_id__in=restricted.values("id"))
-    entity = get_object_or_404(entities, id=entity_id)
-    beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
-    submissions = submissions.select_related("form", "org_unit").order_by("source_created_at", "created_at")
-    for submission in submissions:
-        submission.rows = _flatten_json(filter_submission_json(submission.json or {}, submission.form, request.user))
-
     template = loader.get_template("beneficiary_data.html")
-    context = {
-        "entity": entity,
-        "beneficiary": beneficiary,
-        "attributes": (
-            _flatten_json(filter_submission_json(entity.attributes.json or {}, entity.attributes.form, request.user))
-            if entity.attributes
-            else []
-        ),
-        "submissions": submissions,
-    }
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(beneficiary_details(request.user, account, entity_id), request))
 
 
 @login_required
@@ -185,18 +139,8 @@ def submission_fields(request, instance_id):
     account = _user_account(request.user)
     if account is None:
         return HttpResponseForbidden("User has no account")
-
-    submissions = Instance.objects.filter(entity__account=account).select_related("form", "org_unit")
-    restricted = restricted_org_units(request.user)
-    if restricted is not None:
-        submissions = submissions.filter(org_unit_id__in=restricted.values("id"))
-    submission = get_object_or_404(submissions, id=instance_id)
     template = loader.get_template("submission_fields.html")
-    context = {
-        "submission": submission,
-        "rows": _flatten_json(filter_submission_json(submission.json or {}, submission.form, request.user)),
-    }
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(submission_details(request.user, account, instance_id), request))
 
 
 @login_required

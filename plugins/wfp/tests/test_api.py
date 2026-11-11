@@ -5,20 +5,17 @@ from unittest import mock
 import openpyxl
 
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from iaso import models as m
-from iaso.test import APIAssertionsMixin
+from iaso.test import APITestCase
 from plugins.wfp.tests.test_views import OrgUnitScopeTestData
 
 
 BENEFICIARIES_URL = "/api/wfp/beneficiaries/"
 
 
-class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
+class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
     """Same data as the screen: a beneficiary visiting Bentiu (in the partner group) and Rubkona, another only Rubkona."""
-
-    client_class = APIClient
 
     def _beneficiaries(self, user, params=None):
         self.client.force_authenticate(user)

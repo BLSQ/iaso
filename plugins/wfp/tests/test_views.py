@@ -127,8 +127,11 @@ class BeneficiariesViewTestCase(TestCase):
         self.assertContains(response, reverse("wfp_submission_fields", args=[self.visit_instance.id]))
 
 
-class ExportTestData(TestCase):
-    """An entity with a reference submission, a visit and a medical submission, plus one in another account."""
+class ExportTestData:
+    """An entity with a reference submission, a visit and a medical submission, plus one in another account.
+
+    A mixin, so that it can be combined with `iaso.test.TestCase` or `iaso.test.APITestCase`.
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -195,7 +198,7 @@ class ExportTestData(TestCase):
         Beneficiary.objects.create(entity=cls.other_entity, account=cls.other_account, birth_date=date(2023, 1, 1))
 
 
-class CodaExportTestCase(ExportTestData):
+class CodaExportTestCase(ExportTestData, TestCase):
     def _export(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse("wfp_beneficiaries_coda_export"))
@@ -240,7 +243,7 @@ class CodaExportTestCase(ExportTestData):
         self.assertEqual(len(list(workbook.active.iter_rows())), 2)  # the two header rows only
 
 
-class RawExportTestCase(ExportTestData):
+class RawExportTestCase(ExportTestData, TestCase):
     def _export(self, params=None):
         self.client.force_login(self.user)
         response = self.client.get(reverse("wfp_beneficiaries_raw_export"), params or {})
@@ -337,7 +340,7 @@ class OrgUnitScopeTestData(ExportTestData):
         )
 
 
-class OrgUnitScopeTestCase(OrgUnitScopeTestData):
+class OrgUnitScopeTestCase(OrgUnitScopeTestData, TestCase):
     def _workbook(self, url_name, user, params=None):
         self.client.force_login(user)
         response = self.client.get(reverse(url_name), params or {})

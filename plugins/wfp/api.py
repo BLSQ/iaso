@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from iaso.api.common import HasPermission, Paginator
 from iaso.models import EntityType, Group
 
-from .details import beneficiary_details, submission_details
-from .exports import KIND_CODA, KIND_RAW, export_response
+from .utils.details import beneficiary_details, submission_details
+from .utils.exports import KIND_CODA, KIND_RAW, export_response
 from .filters import attach_journeys, facility_scope, filtered_beneficiaries, filters_from_params, with_counts
 from .models import NUTRITION_PROGRAMMES, Journey, Step, Visit
 from .permissions import WFP_BENEFICIARY_EXPORT_PERMISSION

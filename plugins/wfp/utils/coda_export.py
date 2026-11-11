@@ -24,8 +24,8 @@ from django.db.models import Prefetch
 from iaso.models import Group, Instance, OrgUnit
 from iaso.utils.pii import filter_submission_json
 
-from .common import _extract_rations
-from .models import Beneficiary, Journey, Visit
+from ..common import _extract_rations
+from ..models import Beneficiary, Journey, Visit
 
 
 BATCH_SIZE = 500

@@ -14,8 +14,8 @@ from iaso.models import Entity, EntityType, Group
 from iaso.utils.pii import filter_submission_json
 
 from .common import ETL
-from .details import beneficiary_details, submission_details
-from .exports import KIND_CODA, KIND_RAW, export_response
+from .utils.details import beneficiary_details, submission_details
+from .utils.exports import KIND_CODA, KIND_RAW, export_response
 from .filters import (
     attach_journeys,
     facility_scope,

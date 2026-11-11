@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'ETL beneficiaries',
     },
     entityType: {
-        id: 'iaso.wfp.beneficiaries.entityType',
+        id: 'iaso.entityTypes.label',
         defaultMessage: 'Entity type',
     },
     programme: {
@@ -31,11 +31,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Entity id',
     },
     uuid: {
-        id: 'iaso.wfp.beneficiaries.uuid',
+        id: 'iaso.label.uuid',
         defaultMessage: 'UUID',
     },
     gender: {
-        id: 'iaso.wfp.beneficiaries.gender',
+        id: 'iaso.entities.gender',
         defaultMessage: 'Gender',
     },
     birthDate: {
@@ -51,7 +51,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Visits',
     },
     lastVisit: {
-        id: 'iaso.wfp.beneficiaries.lastVisit',
+        id: 'iaso.entities.lastVisit',
         defaultMessage: 'Last visit',
     },
     seeEntity: {
@@ -87,11 +87,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No visits',
     },
     date: {
-        id: 'iaso.wfp.beneficiaries.date',
+        id: 'iaso.label.date',
         defaultMessage: 'Date',
     },
     orgUnit: {
-        id: 'iaso.wfp.beneficiaries.orgUnit',
+        id: 'iaso.label.orgUnitSingle',
         defaultMessage: 'Org unit',
     },
     muac: {
@@ -115,7 +115,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assistance',
     },
     submission: {
-        id: 'iaso.wfp.beneficiaries.submission',
+        id: 'iaso.instance.titleSingle',
         defaultMessage: 'Submission',
     },
     yes: {
@@ -153,12 +153,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Debug',
     },
     close: {
-        id: 'iaso.wfp.beneficiaries.close',
+        id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
     loading: {
-        id: 'iaso.wfp.beneficiaries.loading',
-        defaultMessage: 'Loading…',
+        id: 'iaso.label.loading',
+        defaultMessage: 'Loading',
     },
     couldNotLoadData: {
         id: 'iaso.wfp.beneficiaries.couldNotLoadData',
@@ -183,6 +183,74 @@ const MESSAGES = defineMessages({
     noBeneficiaries: {
         id: 'iaso.wfp.beneficiaries.noBeneficiaries',
         defaultMessage: 'No beneficiaries found',
+    },
+    entityTitle: {
+        id: 'iaso.wfp.beneficiaries.entityTitle',
+        defaultMessage: 'Entity {id} · {entityType}',
+    },
+    created: {
+        id: 'iaso.wfp.beneficiaries.created',
+        defaultMessage: 'Created',
+    },
+    deleted: {
+        id: 'iaso.wfp.beneficiaries.deleted',
+        defaultMessage: 'Deleted',
+    },
+    etlGender: {
+        id: 'iaso.wfp.beneficiaries.etlGender',
+        defaultMessage: 'ETL gender',
+    },
+    etlBirthDate: {
+        id: 'iaso.wfp.beneficiaries.etlBirthDate',
+        defaultMessage: 'ETL birth date',
+    },
+    etlGuidelines: {
+        id: 'iaso.wfp.beneficiaries.etlGuidelines',
+        defaultMessage: 'ETL guidelines',
+    },
+    referenceForm: {
+        id: 'iaso.entityTypes.referenceForm',
+        defaultMessage: 'Reference form',
+    },
+    referenceFormSubmission: {
+        id: 'iaso.wfp.beneficiaries.referenceFormSubmission',
+        defaultMessage: 'Reference form · submission {id}',
+    },
+    noReferenceData: {
+        id: 'iaso.wfp.beneficiaries.noReferenceData',
+        defaultMessage: 'No reference form data',
+    },
+    linkedSubmissions: {
+        id: 'iaso.wfp.beneficiaries.linkedSubmissions',
+        defaultMessage: 'Submissions linked to the entity ({count})',
+    },
+    noSubmissions: {
+        id: 'iaso.wfp.beneficiaries.noSubmissions',
+        defaultMessage: 'No submissions',
+    },
+    noFields: {
+        id: 'iaso.wfp.beneficiaries.noFields',
+        defaultMessage: 'No fields',
+    },
+    deletedTag: {
+        id: 'iaso.wfp.beneficiaries.deletedTag',
+        defaultMessage: '(deleted)',
+    },
+    deviceDate: {
+        id: 'iaso.wfp.beneficiaries.deviceDate',
+        defaultMessage: 'device: {date}',
+    },
+    syncedDate: {
+        id: 'iaso.wfp.beneficiaries.syncedDate',
+        defaultMessage: 'synced: {date}',
+    },
+    updatedDate: {
+        id: 'iaso.wfp.beneficiaries.updatedDate',
+        defaultMessage: 'updated: {date}',
+    },
+    openSubmission: {
+        id: 'iaso.wfp.beneficiaries.openSubmission',
+        defaultMessage: 'Open submission',
     },
 });
 

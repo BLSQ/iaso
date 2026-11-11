@@ -4,6 +4,7 @@ from unittest import mock
 
 import openpyxl
 
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -22,17 +23,17 @@ class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
     def _beneficiaries(self, user, params=None):
         self.client.force_authenticate(user)
         response = self.client.get(BENEFICIARIES_URL, params or {})
-        return self.assertJSONResponse(response, 200)
+        return self.assertJSONResponse(response, status.HTTP_200_OK)
 
     def _workbook(self, response):
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         return openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
 
     def test_requires_the_export_permission(self):
         user = self.create_user_with_profile(username="no_permission", account=self.account)
         self.client.force_authenticate(user)
         for path in ["", "options/", "export/coda/", "export/raw/"]:
-            self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{path}").status_code, 403)
+            self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{path}").status_code, status.HTTP_403_FORBIDDEN)
 
     def test_list_has_the_journeys_and_visits_of_the_account(self):
         data = self._beneficiaries(self.user)
@@ -67,7 +68,7 @@ class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
         response = self.client.get(
             BENEFICIARIES_URL, {"order": "-journeys_count", "page": 1, "limit": 50}, HTTP_ACCEPT="text/html"
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_org_unit_group_keeps_the_visits_in_the_group(self):
         data = self._beneficiaries(self.user, {"org_unit_group": self.group.id})
@@ -84,14 +85,16 @@ class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
 
     def test_options(self):
         self.client.force_authenticate(self.user)
-        data = self.assertJSONResponse(self.client.get(f"{BENEFICIARIES_URL}options/"), 200)
+        data = self.assertJSONResponse(self.client.get(f"{BENEFICIARIES_URL}options/"), status.HTTP_200_OK)
         self.assertEqual(data["entity_types"], [{"value": self.entity.entity_type_id, "label": "Child"}])
         self.assertIn({"value": "TSFP", "label": "TSFP"}, data["programmes"])
         self.assertEqual(data["org_unit_groups"], [{"value": self.group.id, "label": "Friendship (South Sudan - 1)"}])
 
     def test_data_of_a_beneficiary(self):
         self.client.force_authenticate(self.user)
-        data = self.assertJSONResponse(self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), 200)
+        data = self.assertJSONResponse(
+            self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), status.HTTP_200_OK
+        )
         self.assertEqual(data["entity"]["id"], self.entity.id)
         self.assertEqual(data["entity"]["reference_submission_id"], self.entity.attributes_id)
         self.assertEqual(data["beneficiary"]["guidelines"], "NEW")
@@ -105,33 +108,39 @@ class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
 
     def test_data_of_a_beneficiary_is_restricted(self):
         self.client.force_authenticate(self.partner)
-        self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{self.rubkona_entity.id}/data/").status_code, 404)
-        data = self.assertJSONResponse(self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), 200)
+        self.assertEqual(
+            self.client.get(f"{BENEFICIARIES_URL}{self.rubkona_entity.id}/data/").status_code, status.HTTP_404_NOT_FOUND
+        )
+        data = self.assertJSONResponse(
+            self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), status.HTTP_200_OK
+        )
         self.assertNotIn(self.rubkona_instance.id, [s["id"] for s in data["submissions"]])
         self.client.force_authenticate(self.user)
-        self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{self.other_entity.id}/data/").status_code, 404)
+        self.assertEqual(
+            self.client.get(f"{BENEFICIARIES_URL}{self.other_entity.id}/data/").status_code, status.HTTP_404_NOT_FOUND
+        )
 
     def test_submission_fields(self):
         self.client.force_authenticate(self.user)
         url = f"{BENEFICIARIES_URL}submissions/{self.rubkona_instance.id}/fields/"
-        data = self.assertJSONResponse(self.client.get(url), 200)
+        data = self.assertJSONResponse(self.client.get(url), status.HTTP_200_OK)
         self.assertEqual(data["submission"]["id"], self.rubkona_instance.id)
         self.assertEqual(data["submission"]["org_unit_name"], "Rubkona PHCC")
         self.assertEqual(data["rows"], [{"key": "muac", "value": "12.4"}])
         self.client.force_authenticate(self.partner)
-        self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(self.client.get(url).status_code, status.HTTP_404_NOT_FOUND)
 
     def test_coda_export_is_downloaded_right_away(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BENEFICIARIES_URL}export/coda/", {"org_unit_group": self.group.id})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('filename="coda-2-export-', response["Content-Disposition"])
         rows = list(self._workbook(response).active.iter_rows(values_only=True))
         column = rows[1].index("health center name")
         self.assertEqual([row[column] for row in rows[2:]], ["Bentiu PHCC"])
         self.assertFalse(m.Task.objects.exists())
 
-    @mock.patch("plugins.wfp.coda_export.BATCH_SIZE", 1)
+    @mock.patch("plugins.wfp.utils.coda_export.BATCH_SIZE", 1)
     def test_coda_export_of_several_batches(self):
         self.client.force_authenticate(self.user)
         rows = list(
@@ -143,7 +152,7 @@ class BeneficiariesAPITestCase(APIAssertionsMixin, OrgUnitScopeTestData):
     def test_raw_export_is_downloaded_right_away(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BENEFICIARIES_URL}export/raw/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('filename="wfp-raw-data-', response["Content-Disposition"])
         visits = list(self._workbook(response)["visits"].iter_rows(values_only=True))
         self.assertEqual(len(visits) - 1, 3)

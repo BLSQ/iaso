@@ -9,6 +9,8 @@ import {
     Filters,
     BeneficiaryOptions,
     ExportKind,
+    BeneficiaryDetails,
+    SubmissionFields,
 } from './types';
 
 const beneficiariesUrl = '/api/wfp/beneficiaries/';
@@ -41,3 +43,24 @@ export const exportUrl = (kind: ExportKind, filters: Filters): string => {
     ).toString();
     return `${beneficiariesUrl}export/${kind}/${queryString ? `?${queryString}` : ''}`;
 };
+
+export const useGetBeneficiaryDetails = (
+    entityId?: number,
+): UseQueryResult<BeneficiaryDetails> =>
+    useSnackQuery({
+        queryKey: ['wfpBeneficiaryDetails', entityId],
+        queryFn: () => getRequest(`${beneficiariesUrl}${entityId}/data/`),
+        options: { enabled: entityId !== undefined, retry: false },
+        dispatchOnError: false,
+    });
+
+export const useGetSubmissionFields = (
+    instanceId: number,
+): UseQueryResult<SubmissionFields> =>
+    useSnackQuery({
+        queryKey: ['wfpSubmissionFields', instanceId],
+        queryFn: () =>
+            getRequest(`${beneficiariesUrl}submissions/${instanceId}/fields/`),
+        options: { staleTime: Infinity, retry: false },
+        dispatchOnError: false,
+    });

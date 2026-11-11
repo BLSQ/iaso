@@ -40,6 +40,9 @@ export const muacColor = (
 export const formatDate = (value?: string | null): string =>
     value ? moment(value).format('YYYY-MM-DD') : '';
 
+export const formatDateTime = (value?: string | null): string =>
+    value ? moment(value).format('YYYY-MM-DD HH:mm') : '';
+
 export const whzColor = (theme: Theme, color?: string | null): string => {
     switch (color) {
         case 'Green':

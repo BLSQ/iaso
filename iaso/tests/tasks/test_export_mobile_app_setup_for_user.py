@@ -13,7 +13,7 @@ import responses
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from iaso.models import ERRORED, SUCCESS, Account, Project, Task
+from iaso.models import ERRORED, SUCCESS, Account, FeatureFlag, Project, Task
 from iaso.tasks import export_mobile_app_setup_for_user as export_module
 from iaso.tasks.export_mobile_app_setup_for_user import SERVER, export_mobile_app_setup_for_user
 from iaso.tasks.mobile_app_setup.api_calls import API_CALLS
@@ -28,7 +28,12 @@ SIGNATURE = "?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123"
 REPORT_PATH = "/test/reports/report_1.zip"
 REPORT_URL = f"{STORAGE}{REPORT_PATH}{SIGNATURE}"
 
-ALL_FEATURE_FLAGS = ["ENTITY", "REPORTS", "PLANNING", "MOBILE_ORG_UNIT_REGISTRY"]
+ALL_FEATURE_FLAGS = [
+    FeatureFlag.ENTITY,
+    FeatureFlag.REPORTS,
+    FeatureFlag.PLANNING,
+    FeatureFlag.MOBILE_ORG_UNIT_REGISTRY,
+]
 
 FORM_ATTACHMENTS = {
     10: [

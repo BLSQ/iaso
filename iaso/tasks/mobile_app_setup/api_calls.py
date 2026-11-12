@@ -4,6 +4,7 @@ from collections.abc import Collection, Iterator
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
+from iaso.models import FeatureFlag
 from iaso.tasks.mobile_app_setup.assets import AssetFile, form_attachment_files, form_version_files, report_files
 from iaso.utils.iaso_api_client import IasoClient
 
@@ -97,14 +98,30 @@ API_CALLS = (
     ApiCall(
         path="/api/mobile/orgunits/changes/",
         filename="orgunitchanges",
-        required_feature_flag="MOBILE_ORG_UNIT_REGISTRY",
+        required_feature_flag=FeatureFlag.MOBILE_ORG_UNIT_REGISTRY,
     ),
-    ApiCall(path="/api/mobile/plannings/", filename="plannings", required_feature_flag="PLANNING"),
-    ApiCall(path="/api/mobile/storage/passwords/", filename="storage-passwords", required_feature_flag="ENTITY"),
-    ApiCall(path="/api/mobile/storage/blacklisted/", filename="storage-blacklisted", required_feature_flag="ENTITY"),
-    ApiCall(path="/api/mobile/entitytypes/", filename="entitytypes", required_feature_flag="ENTITY", paginated=True),
-    ApiCall(path="/api/mobile/reports/", filename="reports", required_feature_flag="REPORTS", asset_files=report_files),
-    ApiCall(path="/api/mobile/workflows/", filename="workflows", required_feature_flag="ENTITY"),
+    ApiCall(path="/api/mobile/plannings/", filename="plannings", required_feature_flag=FeatureFlag.PLANNING),
+    ApiCall(
+        path="/api/mobile/storage/passwords/", filename="storage-passwords", required_feature_flag=FeatureFlag.ENTITY
+    ),
+    ApiCall(
+        path="/api/mobile/storage/blacklisted/",
+        filename="storage-blacklisted",
+        required_feature_flag=FeatureFlag.ENTITY,
+    ),
+    ApiCall(
+        path="/api/mobile/entitytypes/",
+        filename="entitytypes",
+        required_feature_flag=FeatureFlag.ENTITY,
+        paginated=True,
+    ),
+    ApiCall(
+        path="/api/mobile/reports/",
+        filename="reports",
+        required_feature_flag=FeatureFlag.REPORTS,
+        asset_files=report_files,
+    ),
+    ApiCall(path="/api/mobile/workflows/", filename="workflows", required_feature_flag=FeatureFlag.ENTITY),
     ApiCall(
         path="/api/mobile/orgunits/",
         filename="orgunits",
@@ -114,9 +131,16 @@ API_CALLS = (
         sub_steps=20,
     ),
     ApiCall(
-        path="/api/mobile/entities/", filename="entities", required_feature_flag="ENTITY", paginated=True, sub_steps=50
+        path="/api/mobile/entities/",
+        filename="entities",
+        required_feature_flag=FeatureFlag.ENTITY,
+        paginated=True,
+        sub_steps=50,
     ),
     ApiCall(
-        path="/api/mobile/entities/deleted/", filename="deletedentities", required_feature_flag="ENTITY", paginated=True
+        path="/api/mobile/entities/deleted/",
+        filename="deletedentities",
+        required_feature_flag=FeatureFlag.ENTITY,
+        paginated=True,
     ),
 )

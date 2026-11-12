@@ -145,7 +145,9 @@ const DownloadStatusText: FunctionComponent<{ state: DownloadState }> = ({
     if (state.status === 'preparing') {
         text = formatMessage(MESSAGES.preparing);
     } else if (percent !== undefined) {
-        text = formatMessage(MESSAGES.downloadingPercent, { percent });
+        text = formatMessage(MESSAGES.downloadingPercent, {
+            percent: `${percent}`,
+        });
     } else {
         text = formatMessage(MESSAGES.downloadingSize, {
             size: (state.loadedBytes / 1024 / 1024).toFixed(1),

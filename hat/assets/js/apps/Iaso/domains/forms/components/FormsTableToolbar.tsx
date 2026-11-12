@@ -1,16 +1,15 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
-import { Count } from 'bluesquare-components';
+import { TableToolbar } from 'bluesquare-components';
 import {
     DownloadMenuButton,
+    DownloadOption,
     useDownloadOption,
 } from 'Iaso/components/DownloadMenuButton';
-import { SxStyles } from 'Iaso/types/general';
-import { cleanupParams } from 'Iaso/utils/requests';
 import {
     ColumnsSelectDrawer,
     Option,
-} from '../../../components/tables/ColumnSelectDrawer';
+} from 'Iaso/components/tables/ColumnSelectDrawer';
+import { cleanupParams } from 'Iaso/utils/requests';
 import { DEFAULT_VISIBLE_COLUMNS, tableDefaults } from '../hooks/useGetForms';
 import { FormsParams } from '../types/forms';
 
@@ -32,21 +31,6 @@ type Props = {
 
 const downloadBaseUrl = '/api/forms';
 
-const styles = {
-    root: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        px: 2,
-        borderBottom: theme => `1px solid ${theme.palette.divider}`,
-    },
-    actions: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.5,
-    },
-} satisfies SxStyles;
-
 export const FormsTableToolbar: FunctionComponent<Props> = ({
     count,
     isLoading,
@@ -57,7 +41,7 @@ export const FormsTableToolbar: FunctionComponent<Props> = ({
 }) => {
     const downloadOption = useDownloadOption();
 
-    const downloadQueryString = useMemo(() => {
+    const downloadOptions: DownloadOption[] = useMemo(() => {
         const {
             pageSize: _pageSize,
             page: _page,
@@ -67,7 +51,7 @@ export const FormsTableToolbar: FunctionComponent<Props> = ({
             onlyDeleted,
             ...filterParams
         } = params as FormsParams & Record<string, string | undefined>;
-        return new URLSearchParams(
+        const downloadQueryString = new URLSearchParams(
             cleanupParams({
                 ...filterParams,
                 order: params.order ?? tableDefaults.order,
@@ -76,13 +60,23 @@ export const FormsTableToolbar: FunctionComponent<Props> = ({
                 fields: params.fields ?? DEFAULT_VISIBLE_COLUMNS.join(','),
             }),
         ).toString();
-    }, [params]);
+        return [
+            downloadOption(
+                'csv',
+                `${downloadBaseUrl}/?${downloadQueryString}&csv=true`,
+            ),
+            downloadOption(
+                'xlsx',
+                `${downloadBaseUrl}/?${downloadQueryString}&xlsx=true`,
+            ),
+        ];
+    }, [downloadOption, params]);
 
     return (
-        <Box sx={styles.root}>
-            <Count count={count} />
-            <Box sx={styles.actions}>
-                {displayColumnsSelectDrawer && (
+        <TableToolbar
+            count={count}
+            columnsSelect={
+                displayColumnsSelectDrawer ? (
                     <ColumnsSelectDrawer
                         options={columnsSelect.options}
                         setOptions={columnsSelect.setOptions}
@@ -92,22 +86,17 @@ export const FormsTableToolbar: FunctionComponent<Props> = ({
                         isDisabled={columnsSelect.isDisabled}
                         buttonType="icon"
                     />
-                )}
-                <DownloadMenuButton
-                    buttonType="icon"
-                    options={[
-                        downloadOption(
-                            'csv',
-                            `${downloadBaseUrl}/?${downloadQueryString}&csv=true`,
-                        ),
-                        downloadOption(
-                            'xlsx',
-                            `${downloadBaseUrl}/?${downloadQueryString}&xlsx=true`,
-                        ),
-                    ]}
-                    disabled={isLoading || !hasForms}
-                />
-            </Box>
-        </Box>
+                ) : undefined
+            }
+            download={
+                downloadOptions.length > 0 ? (
+                    <DownloadMenuButton
+                        buttonType="icon"
+                        options={downloadOptions}
+                        disabled={isLoading || !hasForms}
+                    />
+                ) : undefined
+            }
+        />
     );
 };

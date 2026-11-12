@@ -4,6 +4,7 @@ import { Box, Button, Divider, Paper, Typography } from '@mui/material';
 import {
     LoadingSpinner,
     makeRedirectionUrl,
+    TableToolbar,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Link as RouterLink } from 'react-router-dom';
@@ -14,6 +15,10 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from 'Iaso/types/general';
 import { SUBMISSIONS, SUBMISSIONS_UPDATE } from 'Iaso/utils/permissions';
+import {
+    DownloadMenuButton,
+    useDownloadOption,
+} from '../../components/DownloadMenuButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useGetFormsDropdownOptions } from '../forms/hooks/useGetFormsDropdownOptions';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
@@ -27,6 +32,7 @@ import { TotalsCards } from './components/TotalsCards';
 import { DEFAULT_PAGE_SIZE, ORG_UNIT_FIELDS } from './constants';
 import {
     canComputePromptness,
+    getPromptnessCsvUrl,
     useGetPromptnessStats,
     useGetPromptnessSummary,
 } from './hooks/api/usePromptnessStats';
@@ -147,6 +153,16 @@ export const Promptness: FunctionComponent = () => {
               isSearchActive: 'true',
           })
         : undefined;
+    const downloadOption = useDownloadOption();
+
+    const resetPageToOne = JSON.stringify([
+        params.formId,
+        params.period,
+        params.parentId,
+        params.orgUnitId,
+        params.orgUnitTypeIds,
+        params.status,
+    ]);
 
     return (
         <>
@@ -155,17 +171,14 @@ export const Promptness: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <MainWrapper sx={styles.root}>
-                <Paper sx={styles.filters}>
-                    <PromptnessFilters
-                        // Reset the filters state when drilling down from the table
-                        key={currentOrgUnitId}
-                        orgUnitId={currentOrgUnitId}
-                        params={params}
-                        forms={formsWithPeriod}
-                        isFetchingForms={isFetchingForms}
-                        canExport={canCompute}
-                    />
-                </Paper>
+                <PromptnessFilters
+                    // Reset the filters state when drilling down from the table
+                    key={currentOrgUnitId}
+                    orgUnitId={currentOrgUnitId}
+                    params={params}
+                    forms={formsWithPeriod}
+                    isFetchingForms={isFetchingForms}
+                />
                 {!params.formId && (
                     <EmptyState
                         title={formatMessage(MESSAGES.selectForm)}
@@ -259,28 +272,45 @@ export const Promptness: FunctionComponent = () => {
                                 )}
                             </Box>
                             <Divider />
-                            <Box px={2} pb={1}>
-                                <TableWithDeepLink
-                                    data={stats?.results ?? []}
-                                    pages={stats?.pages ?? 1}
-                                    count={stats?.count ?? 0}
-                                    defaultSorted={[
-                                        {
-                                            id: defaultOrder.replace('-', ''),
-                                            desc: defaultOrder.startsWith('-'),
-                                        },
-                                    ]}
-                                    columns={columns}
-                                    baseUrl={baseUrl}
-                                    params={params}
-                                    extraProps={{
-                                        loading: isFetchingStats,
-                                        defaultPageSize: DEFAULT_PAGE_SIZE,
-                                    }}
-                                    elevation={0}
-                                    countOnTop
-                                />
-                            </Box>
+                            <TableToolbar
+                                count={stats?.count}
+                                download={
+                                    <DownloadMenuButton
+                                        buttonType="icon"
+                                        options={[
+                                            downloadOption(
+                                                'csv',
+                                                getPromptnessCsvUrl(params),
+                                            ),
+                                        ]}
+                                        disabled={
+                                            isFetchingStats ||
+                                            !stats?.results?.length
+                                        }
+                                    />
+                                }
+                            />
+                            <TableWithDeepLink
+                                data={stats?.results ?? []}
+                                pages={stats?.pages ?? 1}
+                                count={stats?.count ?? 0}
+                                defaultSorted={[
+                                    {
+                                        id: defaultOrder.replace('-', ''),
+                                        desc: defaultOrder.startsWith('-'),
+                                    },
+                                ]}
+                                columns={columns}
+                                baseUrl={baseUrl}
+                                params={params}
+                                extraProps={{
+                                    loading: isFetchingStats,
+                                    defaultPageSize: DEFAULT_PAGE_SIZE,
+                                }}
+                                elevation={0}
+                                showCount={false}
+                                resetPageToOne={resetPageToOne}
+                            />
                         </Paper>
                     </Box>
                 )}

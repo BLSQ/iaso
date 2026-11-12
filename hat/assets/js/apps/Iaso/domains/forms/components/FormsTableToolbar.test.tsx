@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
@@ -10,13 +10,28 @@ vi.mock('bluesquare-components', async importOriginal => {
         await importOriginal<typeof import('bluesquare-components')>();
     return {
         ...actual,
-        Count: ({ count }: { count?: number }) => (
-            <div data-testid="forms-count">{count}</div>
+        TableToolbar: ({
+            count,
+            columnsSelect,
+            download,
+            extraActions,
+        }: {
+            count?: number;
+            columnsSelect?: ReactNode;
+            download?: ReactNode;
+            extraActions?: ReactNode;
+        }) => (
+            <div data-testid="base-table-toolbar">
+                <div data-testid="forms-count">{count}</div>
+                {columnsSelect}
+                {download}
+                {extraActions}
+            </div>
         ),
     };
 });
 
-vi.mock('../../../components/tables/ColumnSelectDrawer', () => ({
+vi.mock('Iaso/components/tables/ColumnSelectDrawer', () => ({
     ColumnsSelectDrawer: () => <div data-testid="columns-select-drawer" />,
 }));
 

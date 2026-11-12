@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { Box, Button, Grid, Theme } from '@mui/material';
+import React, { SyntheticEvent, useCallback } from 'react';
+import { Box, Button, Grid, Tab, Tabs, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ColumnWithAccessor,
@@ -19,10 +19,31 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useSaveNodeOrder } from 'Iaso/domains/validationWorkflowsConfiguration/api/PostPutPatch';
 import { useWorkflowNodesColumns } from 'Iaso/domains/validationWorkflowsConfiguration/config';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { smallTabsOverrides } from 'Iaso/styles';
+import { SxStyles } from 'Iaso/types/general';
+import { MainWrapper } from '../../components/MainWrapper';
 import { AddNode } from './components/CreateEditNode/CreateEditNode';
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import {
+    getActiveTab,
+    TabKey,
+    useSelectWorkflowTab,
+    WORKFLOW_TABS,
+} from './detailsTabs';
 import { useSortableTableState } from './hooks/useSortableTableState';
 import MESSAGES from './messages';
+
+const styles = {
+    tabs: {
+        ...smallTabsOverrides,
+        flexShrink: 0,
+        marginBottom: 3,
+    },
+    root: {
+        backgroundColor: theme => theme.palette.primary.background,
+        padding: 4,
+    },
+} satisfies SxStyles;
 
 const useStyles = makeStyles((theme: Theme) => {
     return {
@@ -52,6 +73,12 @@ export const ValidationWorkflowConfigurationDetail = () => {
     );
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
+    const activeTab = getActiveTab(params.tab);
+    const selectTab = useSelectWorkflowTab();
+    const handleChangeTab = useCallback(
+        (_event: SyntheticEvent, tab: TabKey) => selectTab(tab),
+        [selectTab],
+    );
     const classes: Record<string, string> = useStyles();
     const { data: workflow, isFetching: isLoading } =
         useApiValidationWorkflowsRetrieve(params.slug);
@@ -83,79 +110,100 @@ export const ValidationWorkflowConfigurationDetail = () => {
     return (
         <>
             <TopBar title={title} goBack={goBack} displayBackButton />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                <Box mb={2}>
-                    <Grid container spacing={2}>
-                        <Grid container item xs={12} md={8} lg={6}>
-                            <WidgetPaper
-                                className={classes.infoPaper}
-                                title={formatMessage(MESSAGES.infos)}
-                                sx={{ position: 'relative' }}
-                            >
-                                <Box className={classes.infoPaperBox}>
-                                    {isLoading && <LoadingSpinner absolute />}
-                                    <WorkflowBaseInfo workflow={workflow} />
-                                </Box>
-                            </WidgetPaper>
-                        </Grid>
-                    </Grid>
-                </Box>
-                <WidgetPaper
-                    className={classes.infoPaper}
-                    title={formatMessage(MESSAGES.steps)}
+            <MainWrapper sx={styles.root}>
+                <Tabs
+                    value={activeTab}
+                    onChange={handleChangeTab}
+                    sx={styles.tabs}
                 >
-                    <Box className={classes.count}>
-                        {`${(workflow?.node_templates ?? []).length} `}
-                        {formatMessage(MESSAGES.steps)}
+                    {WORKFLOW_TABS.map(({ key, label, Icon }) => (
+                        <Tab
+                            key={key}
+                            value={key}
+                            label={formatMessage(label)}
+                            iconPosition="start"
+                            icon={<Icon />}
+                        />
+                    ))}
+                </Tabs>
+                {activeTab === 'general' && (
+                    <Box mb={2}>
+                        <Grid container spacing={2} justifyContent="center">
+                            <Grid container item xs={12} md={8} lg={6}>
+                                <WidgetPaper
+                                    className={classes.infoPaper}
+                                    title={formatMessage(MESSAGES.infos)}
+                                    sx={{ position: 'relative' }}
+                                >
+                                    <Box className={classes.infoPaperBox}>
+                                        {isLoading && (
+                                            <LoadingSpinner absolute />
+                                        )}
+                                        <WorkflowBaseInfo workflow={workflow} />
+                                    </Box>
+                                </WidgetPaper>
+                            </Grid>
+                        </Grid>
                     </Box>
-                    <SortableTable
-                        items={items}
-                        onChange={newItems =>
-                            handleSortChange(
-                                newItems as NonNullable<
-                                    ValidationWorkflowRetrieve['node_templates']
-                                >[number][],
-                            )
-                        }
-                        columns={columns as ColumnWithAccessor[]}
-                        disabled={workflow?.has_processes}
-                    />
-                    {!workflow?.has_processes && (
-                        <Box m={2} textAlign="right">
-                            <Box display="inline-block" mr={2}>
-                                <Button
-                                    color="primary"
-                                    disabled={!isOrderChanged}
-                                    data-test="reset-follow-up-order"
-                                    onClick={handleResetOrder}
-                                    variant="contained"
-                                >
-                                    {formatMessage(MESSAGES.resetOrder)}
-                                </Button>
-                            </Box>
-
-                            <Box display="inline-block" mr={2}>
-                                <Button
-                                    color="primary"
-                                    disabled={!isOrderChanged}
-                                    data-test="save-follow-up-order"
-                                    onClick={saveItems}
-                                    variant="contained"
-                                >
-                                    {formatMessage(MESSAGES.saveOrder)}
-                                </Button>
-                            </Box>
-
-                            <AddNode
-                                workflowSlug={workflow?.slug ?? ''}
-                                iconProps={{
-                                    disabled: !Boolean(workflow?.slug),
-                                }}
-                            />
+                )}
+                {activeTab === 'steps' && (
+                    <WidgetPaper
+                        className={classes.infoPaper}
+                        title={formatMessage(MESSAGES.steps)}
+                    >
+                        <Box className={classes.count}>
+                            {`${(workflow?.node_templates ?? []).length} `}
+                            {formatMessage(MESSAGES.steps)}
                         </Box>
-                    )}
-                </WidgetPaper>
-            </Box>
+                        <SortableTable
+                            items={items}
+                            onChange={newItems =>
+                                handleSortChange(
+                                    newItems as NonNullable<
+                                        ValidationWorkflowRetrieve['node_templates']
+                                    >[number][],
+                                )
+                            }
+                            columns={columns as ColumnWithAccessor[]}
+                            disabled={workflow?.has_processes}
+                        />
+                        {!workflow?.has_processes && (
+                            <Box m={2} textAlign="right">
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!isOrderChanged}
+                                        data-test="reset-follow-up-order"
+                                        onClick={handleResetOrder}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.resetOrder)}
+                                    </Button>
+                                </Box>
+
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!isOrderChanged}
+                                        data-test="save-follow-up-order"
+                                        onClick={saveItems}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.saveOrder)}
+                                    </Button>
+                                </Box>
+
+                                <AddNode
+                                    workflowSlug={workflow?.slug ?? ''}
+                                    iconProps={{
+                                        disabled: !Boolean(workflow?.slug),
+                                    }}
+                                />
+                            </Box>
+                        )}
+                    </WidgetPaper>
+                )}
+            </MainWrapper>
         </>
     );
 };

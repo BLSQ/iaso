@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.steps',
         defaultMessage: 'step(s)',
     },
+    general: {
+        id: 'iaso.instance.general',
+        defaultMessage: 'General',
+    },
     canSkipPreviousNodes: {
         id: 'iaso.workflows.label.canSkipPreviousNodes',
         defaultMessage: 'Can skip previous steps',

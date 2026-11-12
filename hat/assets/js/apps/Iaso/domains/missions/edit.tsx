@@ -3,6 +3,7 @@ import {
     useSafeIntl,
     useRedirectTo,
     LoadingSpinner,
+    useGoBack,
 } from 'bluesquare-components';
 import {
     useApiMicroplanningMissionsRetrieve,
@@ -31,6 +32,7 @@ export const MissionEdit: FunctionComponent = () => {
     const { data, isLoading } = useApiMicroplanningMissionsRetrieve(missionId);
 
     const redirectTo = useRedirectTo();
+    const goBack = useGoBack(`/${baseUrls.missionsDetails}/id/${missionId}/`);
     const redirectBackUrl: string = `/${baseUrls.missionsDetails}/id/${missionId}/`;
 
     const { mutateAsync: save } = useApiMicroplanningMissionsUpdate({
@@ -50,7 +52,7 @@ export const MissionEdit: FunctionComponent = () => {
                 <TopBar
                     title={formatMessage(MESSAGES.editMission)}
                     displayBackButton
-                    goBack={() => redirectTo(redirectBackUrl)}
+                    goBack={goBack}
                 />
                 <LoadingSpinner />
             </>
@@ -65,7 +67,7 @@ export const MissionEdit: FunctionComponent = () => {
         <>
             <TopBar
                 title={formatMessage(MESSAGES.editMission)}
-                goBack={() => redirectTo(redirectBackUrl)}
+                goBack={goBack}
                 displayBackButton
             />
             {isMissionFormRetrieve(data) && (
@@ -73,7 +75,7 @@ export const MissionEdit: FunctionComponent = () => {
                     data={data}
                     missionId={missionId}
                     save={save}
-                    redirectBackUrl={redirectBackUrl}
+                    goBack={goBack}
                 />
             )}
             {isMissionOrgUnitTypeRetrieve(data) && (
@@ -81,7 +83,7 @@ export const MissionEdit: FunctionComponent = () => {
                     data={data}
                     missionId={missionId}
                     save={save}
-                    redirectBackUrl={redirectBackUrl}
+                    goBack={goBack}
                 />
             )}
             {isMissionEntityTypeRetrieve(data) && (
@@ -89,7 +91,7 @@ export const MissionEdit: FunctionComponent = () => {
                     data={data}
                     missionId={missionId}
                     save={save}
-                    redirectBackUrl={redirectBackUrl}
+                    goBack={goBack}
                 />
             )}
         </>

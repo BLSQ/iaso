@@ -1,8 +1,10 @@
 """Unit tests for the mobile app setup export."""
 
+import dataclasses
 import io
 import json
 import re
+import uuid
 import zipfile
 
 from unittest import mock
@@ -27,6 +29,7 @@ from iaso.tasks.mobile_app_setup.assets import (
 from iaso.tasks.mobile_app_setup.exporter import export_app_setup
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 from iaso.test import APITestCase
+from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 from iaso.utils.iaso_api_client import HttpClient
 
 
@@ -461,3 +464,75 @@ class AssetFilesContractTest(APITestCase):
 
         download_urls = sorted(re.findall(r"<downloadUrl>(.*?)</downloadUrl>", rewritten))
         self.assertEqual(download_urls, attachment_paths)
+
+
+class EntityCursorPaginationContractTest(EntityAPITestCase):
+    """Verify the surface of the mobile entity endpoint.
+
+    This is a tripwire test designed to test the pagination with the real mobile entity api.
+    While most of the task treats the API as opaque and just saves the json payloads to the zip,
+    the entity api calls rely on specific cursor pagination behavior.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.entities = []
+        for i in range(3):
+            instance = cls.create_form_instance(
+                project=cls.project, org_unit=cls.ou_country, form=cls.form_1, uuid=uuid.uuid4()
+            )
+            entity = m.Entity.objects.create(
+                name=f"entity_{i}", entity_type=cls.entity_type, attributes=instance, account=cls.account
+            )
+            instance.entity = entity
+            instance.save()
+            cls.entities.append(entity)
+
+    def setUp(self):
+        self.client.force_authenticate(self.yoda)
+        self.requests = []
+        self.responses = []
+
+    def get_json(self, path, params=None):
+        response = self.client.get(path, params)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.requests.append(dict(params))
+        self.responses.append(json.loads(response.content))
+        return response.json()
+
+    def fetch_pages(self, filename):
+        call = next(call for call in API_CALLS if call.filename == filename)
+        self.assertEqual(call.pagination, Pagination.CURSOR)
+        return list(dataclasses.replace(call, page_size=2).fetch_pages(self, self.project.app_id))
+
+    def assert_cursor_pages(self, pages, expected_ids):
+        self.assertEqual([page.number for page in pages], [1, 2])
+
+        self.assertNotIn("cursor", self.requests[0])
+        self.assertIsNotNone(self.responses[0]["next_cursor"])
+        self.assertEqual(self.requests[1]["cursor"], self.responses[0]["next_cursor"])
+        self.assertEqual([(r["count"], r["pages"]) for r in self.responses], [(3, 2), (None, None)])
+        self.assertEqual([r["has_next"] for r in self.responses], [True, False])
+        # With a cursor, the server echoes the `page` param sent.
+        self.assertEqual([r["page"] for r in self.responses], [1, 2])
+
+        # The task copies the totals of page 1 to page 2.
+        for page in pages:
+            self.assertEqual((page.payload["count"], page.payload["pages"], page.total_pages), (3, 2, 2))
+
+        ids = [entity["id"] for page in pages for entity in page.payload["results"]]
+        self.assertEqual(ids, expected_ids)
+
+    def test_entities(self):
+        pages = self.fetch_pages("entities")
+
+        self.assert_cursor_pages(pages, [str(entity.uuid) for entity in self.entities])
+
+    def test_deleted_entities(self):
+        for entity in self.entities:
+            entity.delete()
+
+        pages = self.fetch_pages("deletedentities")
+
+        self.assert_cursor_pages(pages, [entity.id for entity in self.entities])

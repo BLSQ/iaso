@@ -1,7 +1,6 @@
 import { UseMutationResult } from 'react-query';
 import { iasoFetch } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { getCookie } from 'Iaso/utils/cookies';
 import MESSAGES from '../messages';
 
 // Django's LogoutView only accepts POST, protected by CSRF.

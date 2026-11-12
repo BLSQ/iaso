@@ -1,7 +1,6 @@
 import logging
 
 from collections.abc import Sequence
-from typing import Optional
 
 from iaso.tasks.mobile_app_setup.api_calls import ApiCall
 from iaso.tasks.mobile_app_setup.archive import ZipArchive
@@ -22,7 +21,6 @@ def export_app_setup(
     progress: ExportProgress,
     access_token: str,
     payload_transformers: Sequence[PayloadTransformer] = (),
-    options: Optional[dict] = None,
 ):
     """Mimic the API calls of the mobile app's initial sync, and writes their responses and files to the archive."""
     # Public endpoint, no auth needed
@@ -52,7 +50,7 @@ def export_app_setup(
                     content = (client if file.from_api else storage).get_bytes(file.url)
                     archive.write_bytes(file.path, file.rewrite(content) if file.rewrite else content)
             for transform in payload_transformers:
-                transform(call.filename, page.payload, options or {})
+                transform(call.filename, page.payload)
             archive.write_json(page.filename, page.payload)
             progress.page_done(call, page)
         progress.call_done(call)

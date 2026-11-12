@@ -27,7 +27,7 @@ from iaso.models import Project
 from iaso.tasks.mobile_app_setup.api_calls import API_CALLS
 from iaso.tasks.mobile_app_setup.archive import ZipArchive
 from iaso.tasks.mobile_app_setup.exporter import export_app_setup
-from iaso.tasks.mobile_app_setup.hooks import payload_transformers
+from iaso.tasks.mobile_app_setup.hooks import make_payload_transformers
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import HttpClient, IasoClient
@@ -54,6 +54,7 @@ def export_mobile_app_setup_for_user(
     user = User.objects.get(id=user_id)
     project = Project.objects.get(id=project_id)
     export_name = f"mobile-app-export-{uuid.uuid4()}"
+    payload_transformers = make_payload_transformers(project, options or {})
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_path = os.path.join(tmp_dir, export_name)
@@ -69,7 +70,6 @@ def export_mobile_app_setup_for_user(
                 progress=progress,
                 access_token=str(RefreshToken.for_user(user).access_token),
                 payload_transformers=payload_transformers,
-                options=options or {},
             )
 
         s3_object_name = _encrypt_and_upload_to_s3(tmp_dir, export_name, password)

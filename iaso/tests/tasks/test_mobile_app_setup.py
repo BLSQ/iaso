@@ -27,7 +27,7 @@ from iaso.tasks.mobile_app_setup.assets import (
     rewrite_manifest,
 )
 from iaso.tasks.mobile_app_setup.exporter import export_app_setup
-from iaso.tasks.mobile_app_setup.hooks import register_payload_transformer
+from iaso.tasks.mobile_app_setup.hooks import make_payload_transformers, register_payload_transformer_factory
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 from iaso.test import APITestCase
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
@@ -392,34 +392,61 @@ class ExportAppSetupTest(SimpleTestCase):
             url, payload["file"] = payload["file"], "files/f.xml"
             return [AssetFile(path="files/f.xml", url=url)]
 
-        def transform(filename, payload, options):
+        def transform(filename, payload):
             # After the files: their URLs are already rewritten.
             self.assertEqual((filename, payload["file"]), ("a", "files/f.xml"))
-            payload["value"] = options["value"]
+            payload["value"] = 2
 
         archive = self.export(
             client,
             [ApiCall(path="/api/a/", filename="a", asset_files=asset_files)],
             storage=FakeStorage({"https://x/f.xml": b"f"}),
             payload_transformers=[transform],
-            options={"value": 2},
         )
 
         self.assertEqual(json.loads(archive.read("a.json")), {"file": "files/f.xml", "value": 2})
 
 
 class PayloadTransformersTest(SimpleTestCase):
-    def test_register_payload_transformer_once(self):
-        transformers = []
+    def setUp(self):
+        self.factories = []
+        patcher = mock.patch("iaso.tasks.mobile_app_setup.hooks.payload_transformer_factories", self.factories)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
-        def transform(filename, payload, options):
+    def test_register_payload_transformer_factory_once(self):
+        def make_transformer(project, options):
+            return None
+
+        register_payload_transformer_factory(make_transformer)
+        register_payload_transformer_factory(make_transformer)
+
+        self.assertEqual(self.factories, [make_transformer])
+
+    def test_factories_are_called_with_the_project_and_options(self):
+        project = mock.sentinel.project
+        calls = []
+
+        def transform(filename, payload):
             pass
 
-        with mock.patch("iaso.tasks.mobile_app_setup.hooks.payload_transformers", transformers):
-            register_payload_transformer(transform)
-            register_payload_transformer(transform)
+        def make_transformer(project, options):
+            calls.append((project, options))
+            return transform
 
-        self.assertEqual(transformers, [transform])
+        register_payload_transformer_factory(make_transformer)
+
+        self.assertEqual(make_payload_transformers(project, {"a": 1}), [transform])
+        self.assertEqual(calls, [(project, {"a": 1})])
+
+    def test_factories_returning_none_are_skipped(self):
+        def transform(filename, payload):
+            pass
+
+        register_payload_transformer_factory(lambda project, options: None)
+        register_payload_transformer_factory(lambda project, options: transform)
+
+        self.assertEqual(make_payload_transformers(mock.sentinel.project, {}), [transform])
 
 
 class AssetFilesContractTest(APITestCase):

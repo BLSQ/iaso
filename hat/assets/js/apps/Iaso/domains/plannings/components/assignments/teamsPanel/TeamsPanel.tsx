@@ -16,6 +16,8 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { DeleteAssignmentsDialog } from '../assign/DeleteAssignmentsDialog';
+import { useMemberAssignments } from '../assign/useMemberAssignments';
 import {
     useSelectedTeamArea,
     useTeamIdsWithArea,
@@ -80,6 +82,13 @@ export const TeamsPanel: FC = () => {
     } = useAssignmentsContext();
     const { hasArea } = useSelectedTeamArea();
     const teamIdsWithArea = useTeamIdsWithArea();
+    const {
+        getAssignedCount,
+        requestRemoval,
+        pendingRemoval,
+        confirmRemoval,
+        cancelRemoval,
+    } = useMemberAssignments();
     const targetGeographyName = planning.org_unit_details?.name;
     const [isOpen, setIsOpen] = useState(true);
     const toggleOpen = useCallback(() => setIsOpen(open => !open), []);
@@ -162,6 +171,12 @@ export const TeamsPanel: FC = () => {
                             isCurrentAssignee={row.key === currentAssignee?.key}
                             isPickable={teamIdsWithArea.has(row.parentTeam.id)}
                             onPickAssignee={pickAssignee}
+                            assignedCount={getAssignedCount(row)}
+                            onRemoveAssignments={
+                                row.parentTeam.id === selectedTeam.id
+                                    ? requestRemoval
+                                    : undefined
+                            }
                         />
                     ),
                 )}
@@ -174,6 +189,13 @@ export const TeamsPanel: FC = () => {
             >
                 {formatMessage(MESSAGES.teamsPanelAssignNote)}
             </Typography>
+            <DeleteAssignmentsDialog
+                open={Boolean(pendingRemoval)}
+                title={pendingRemoval?.title ?? ''}
+                text={pendingRemoval?.text ?? ''}
+                onConfirm={confirmRemoval}
+                onClose={cancelRemoval}
+            />
         </Paper>
     );
 };

@@ -1,3 +1,4 @@
+import { AssigneeRef, isAssignedTo } from '../api/utils';
 import { Assignment, LevelOrgUnitNode } from '../mainPanel/types';
 
 // Undefined for the root team: its area is the whole target geography.
@@ -53,4 +54,53 @@ export const getOrgUnitIdsWithAssignmentsBelow = (
             )
             .map(member => member.id),
     );
+};
+
+// Limited to the assignable org units: a user can be a member of several teams.
+export const getOrgUnitIdsAssignedTo = (
+    assignments: Assignment[],
+    assignee: AssigneeRef,
+    assignableOrgUnitIds: Set<number>,
+): number[] =>
+    assignments
+        .filter(
+            assignment =>
+                assignableOrgUnitIds.has(assignment.org_unit) &&
+                isAssignedTo(assignment, assignee),
+        )
+        .map(assignment => assignment.org_unit);
+
+export const getAssignedOrgUnitIds = (
+    assignments: Assignment[],
+    orgUnitIds: Set<number>,
+): number[] =>
+    assignments
+        .filter(assignment => orgUnitIds.has(assignment.org_unit))
+        .map(assignment => assignment.org_unit);
+
+export const filterByName = <T extends { name: string }>(
+    items: T[],
+    search: string,
+): T[] => {
+    const query = search.trim().toLowerCase();
+    return query
+        ? items.filter(item => item.name.toLowerCase().includes(query))
+        : items;
+};
+
+// Reassigning an org unit clears the assignments made inside it; assigning it to its current assignee changes nothing.
+export const countClearedByReassign = (
+    orgUnitIds: number[],
+    assignments: Assignment[],
+    assignee: AssigneeRef,
+    orgUnitIdsWithAssignmentsBelow: Set<number>,
+): number => {
+    const assignmentByOrgUnitId = new Map(
+        assignments.map(assignment => [assignment.org_unit, assignment]),
+    );
+    return orgUnitIds.filter(
+        orgUnitId =>
+            orgUnitIdsWithAssignmentsBelow.has(orgUnitId) &&
+            !isAssignedTo(assignmentByOrgUnitId.get(orgUnitId), assignee),
+    ).length;
 };

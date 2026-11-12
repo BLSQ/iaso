@@ -17,19 +17,11 @@ import {
     Typography,
 } from '@mui/material';
 import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
-import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
-import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
-import { useLevelOrgUnits } from './useLevelOrgUnits';
-import {
-    getAssigneeByOrgUnitId,
-    getLevelOrgUnitRows,
-    getTeamIdByOrgUnitId,
-} from './utils';
+import { useLevelOrgUnitRows } from './useLevelOrgUnitRows';
 
 const styles = {
     container: {
@@ -69,7 +61,7 @@ export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
-    const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
+    const { rows, isFetching } = useLevelOrgUnitRows();
     const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)

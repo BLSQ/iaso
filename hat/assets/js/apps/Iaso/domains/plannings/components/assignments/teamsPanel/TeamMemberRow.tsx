@@ -1,7 +1,8 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, MouseEvent, useCallback } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 import PersonIcon from '@mui/icons-material/Person';
-import { Box, Tooltip, alpha } from '@mui/material';
+import { Box, IconButton, Tooltip, Typography, alpha } from '@mui/material';
 import { amber } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
@@ -60,6 +61,11 @@ const styles = {
     openIcon: {
         color: 'primary.main',
     },
+    count: {
+        minWidth: 22,
+        textAlign: 'right',
+        fontWeight: 500,
+    },
 } satisfies SxStyles;
 
 const useTeamCaption = (team?: TeamTreeNode): string => {
@@ -78,9 +84,11 @@ type Props = {
     onOpen: (teamId: number) => void;
     isAssignMode: boolean;
     isCurrentAssignee: boolean;
-    onPickAssignee: (memberKey: string) => void;
     isPickable: boolean;
     onPickAssignee: (teamId: number, memberKey: string) => void;
+    assignedCount: number;
+    // Only for the members of the selected team.
+    onRemoveAssignments?: (memberKey: string) => void;
 };
 
 export const TeamMemberRow: FC<Props> = ({
@@ -90,6 +98,8 @@ export const TeamMemberRow: FC<Props> = ({
     isCurrentAssignee,
     isPickable,
     onPickAssignee,
+    assignedCount,
+    onRemoveAssignments,
 }) => {
     const { formatMessage } = useSafeIntl();
     const teamCaption = useTeamCaption(team);
@@ -99,6 +109,13 @@ export const TeamMemberRow: FC<Props> = ({
     const handlePick = useCallback(
         () => onPickAssignee(parentTeam.id, key),
         [onPickAssignee, parentTeam.id, key],
+    );
+    const handleRemove = useCallback(
+        (event: MouseEvent) => {
+            event.stopPropagation();
+            onRemoveAssignments?.(key);
+        },
+        [onRemoveAssignments, key],
     );
     const isPicked = isAssignMode && isCurrentAssignee;
     const isDisabled = isAssignMode && !isPickable;
@@ -137,8 +154,33 @@ export const TeamMemberRow: FC<Props> = ({
             nameSx={isPicked ? styles.currentAssigneeName : undefined}
             caption={caption}
             trailing={
-                team &&
-                !isAssignMode && <ChevronRightIcon sx={styles.openIcon} />
+                <>
+                    <Tooltip title={formatMessage(MESSAGES.orgUnitsAssigned)}>
+                        <Typography variant="body2" sx={styles.count}>
+                            {assignedCount}
+                        </Typography>
+                    </Tooltip>
+                    {isAssignMode && onRemoveAssignments && (
+                        <Tooltip
+                            title={formatMessage(
+                                MESSAGES.removeMemberAssignments,
+                            )}
+                        >
+                            <span>
+                                <IconButton
+                                    size="small"
+                                    disabled={assignedCount === 0}
+                                    onClick={handleRemove}
+                                >
+                                    <LinkOffIcon fontSize="small" />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                    )}
+                    {team && !isAssignMode && (
+                        <ChevronRightIcon sx={styles.openIcon} />
+                    )}
+                </>
             }
         >
             <Box

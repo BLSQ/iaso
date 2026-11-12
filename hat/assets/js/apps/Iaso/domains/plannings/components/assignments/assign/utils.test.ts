@@ -1,6 +1,10 @@
 import { Assignment, LevelOrgUnitNode } from '../mainPanel/types';
 import {
+    countClearedByReassign,
+    filterByName,
     getAssignableOrgUnitIds,
+    getAssignedOrgUnitIds,
+    getOrgUnitIdsAssignedTo,
     getOrgUnitIdsWithAssignmentsBelow,
     getTeamAreaOrgUnitIds,
     getTeamIdsWithArea,
@@ -87,5 +91,67 @@ describe('getTeamIdsWithArea', () => {
             makeAssignment(11, { user: 7 }),
         ];
         expect(getTeamIdsWithArea(4, assignments)).toEqual(new Set([4, 5]));
+    });
+});
+
+describe('getOrgUnitIdsAssignedTo', () => {
+    it('returns the assignable org units assigned to the member, ignoring its other teams', () => {
+        const assignments = [
+            makeAssignment(11, { user: 7 }),
+            makeAssignment(12, { team: 5 }),
+            makeAssignment(21, { user: 7 }),
+        ];
+        expect(
+            getOrgUnitIdsAssignedTo(
+                assignments,
+                { team: null, user: 7 },
+                new Set([11, 12]),
+            ),
+        ).toEqual([11]);
+    });
+});
+
+describe('getAssignedOrgUnitIds', () => {
+    it('returns the given org units that are assigned', () => {
+        const assignments = [
+            makeAssignment(11, { user: 7 }),
+            makeAssignment(21, { team: 5 }),
+        ];
+        expect(getAssignedOrgUnitIds(assignments, new Set([11, 12]))).toEqual([
+            11,
+        ]);
+    });
+});
+
+describe('filterByName', () => {
+    const items = [
+        { name: 'Kinshasa' },
+        { name: 'Kasai' },
+        { name: 'Bas-Uele' },
+    ];
+
+    it('keeps the items whose name contains the search, ignoring case and spaces around', () => {
+        expect(filterByName(items, ' KA ')).toEqual([{ name: 'Kasai' }]);
+    });
+
+    it('keeps every item without a search', () => {
+        expect(filterByName(items, '')).toEqual(items);
+    });
+});
+
+describe('countClearedByReassign', () => {
+    it('counts the org units with assignments inside that change assignee', () => {
+        const assignments = [
+            makeAssignment(11, { team: 5 }),
+            makeAssignment(12, { team: 6 }),
+        ];
+        expect(
+            countClearedByReassign(
+                [11, 12, 21],
+                assignments,
+                { team: 5, user: null },
+                new Set([11, 12]),
+            ),
+        ).toBe(1);
     });
 });

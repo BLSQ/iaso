@@ -3,8 +3,6 @@ import re
 
 from datetime import UTC, date, datetime
 
-import pytz
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
@@ -34,7 +32,7 @@ class DateTimestampField(serializers.Field):
     Use only for mobile APIs"""
 
     def to_representation(self, value: date):
-        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
+        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=UTC).timestamp()
 
     def to_internal_value(self, data: float):
         return datetime.fromtimestamp(data, tz=UTC).date()

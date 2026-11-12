@@ -1,9 +1,8 @@
 import datetime
 
 from collections import OrderedDict
+from datetime import UTC
 from unittest import mock
-
-import pytz
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -22,7 +21,7 @@ class OrgUnitAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         # FIXME Copy pasted from orgunit api test should move to proper fixture
-        mocked = datetime.datetime(2018, 4, 4, 0, 0, 0, tzinfo=pytz.utc)
+        mocked = datetime.datetime(2018, 4, 4, 0, 0, 0, tzinfo=UTC)
         with mock.patch("django.utils.timezone.now", mock.Mock(return_value=mocked)):
             cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
             marvel = m.Account.objects.create(name="MCU")

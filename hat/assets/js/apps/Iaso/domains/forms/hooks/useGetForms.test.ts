@@ -10,16 +10,12 @@ describe('forms table defaults', () => {
         });
     });
 
-    it('hides created_at and optional columns from the default visible set', () => {
+    it('defaults visible columns to projects, name, updated_at and org unit types', () => {
         expect(DEFAULT_VISIBLE_COLUMNS).toEqual([
             'projects',
             'name',
             'updated_at',
             'org_unit_types',
         ]);
-        expect(DEFAULT_VISIBLE_COLUMNS).not.toContain('created_at');
-        expect(DEFAULT_VISIBLE_COLUMNS).not.toContain('period_type');
-        expect(DEFAULT_VISIBLE_COLUMNS).not.toContain('single_per_period');
-        expect(DEFAULT_VISIBLE_COLUMNS).not.toContain('instances_count');
     });
 });

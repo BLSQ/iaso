@@ -234,29 +234,6 @@ describe('ColumnsSelectDrawer', () => {
             });
         });
 
-        it('should clear the search from the footer Clear button', async () => {
-            const user = userEvent.setup();
-            renderWithThemeAndIntlProvider(
-                <ColumnsSelectDrawer
-                    {...baseProps}
-                    handleApplyOptions={mockHandleApplyOptions}
-                />,
-            );
-
-            await user.click(
-                screen.getByRole('button', { name: /select visible columns/i }),
-            );
-
-            const searchInput = screen.getByPlaceholderText(/search/i);
-            await user.type(searchInput, '3');
-            expect(screen.queryByText('Column 1')).not.toBeInTheDocument();
-
-            await user.click(screen.getByRole('button', { name: /^clear$/i }));
-
-            expect(searchInput).toHaveValue('');
-            expect(screen.getByText('Column 1')).toBeInTheDocument();
-        });
-
         it('should disable the apply button if isDisabled prop is true', async () => {
             const user = userEvent.setup();
             renderWithThemeAndIntlProvider(
@@ -320,9 +297,9 @@ describe('ColumnsSelectDrawer', () => {
             );
 
             expect(
-                document.querySelector(
-                    '[data-test="column-warning-instances_count"]',
-                ),
+                screen.getByRole('img', {
+                    name: 'Including this column can make the API call very slow',
+                }),
             ).toBeInTheDocument();
         });
     });

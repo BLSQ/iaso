@@ -179,9 +179,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                         <Tooltip title={formatMessage(MESSAGES.close)}>
                             <IconButton
                                 onClick={toggleDrawer(false)}
-                                aria-label={
-                                    formatMessage(MESSAGES.close) as string
-                                }
+                                aria-label={formatMessage(MESSAGES.close)}
                             >
                                 <ArrowBack />
                             </IconButton>
@@ -268,12 +266,6 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                         <>
                             <Divider />
                             <Box sx={styles.footer}>
-                                <Button
-                                    onClick={handleSearchReset}
-                                    data-test="columns-clear"
-                                >
-                                    {formatMessage(MESSAGES.clear)}
-                                </Button>
                                 <Button
                                     onClick={handleApply}
                                     variant="contained"

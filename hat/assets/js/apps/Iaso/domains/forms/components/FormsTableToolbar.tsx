@@ -27,6 +27,7 @@ type Props = {
     params: FormsParams;
     columnsSelect: ColumnsSelect;
     displayColumnsSelectDrawer?: boolean;
+    hasForms?: boolean;
 };
 
 const downloadBaseUrl = '/api/forms';
@@ -52,6 +53,7 @@ export const FormsTableToolbar: FunctionComponent<Props> = ({
     params,
     columnsSelect,
     displayColumnsSelectDrawer = true,
+    hasForms = false,
 }) => {
     const downloadOption = useDownloadOption();
 
@@ -103,7 +105,7 @@ export const FormsTableToolbar: FunctionComponent<Props> = ({
                             `${downloadBaseUrl}/?${downloadQueryString}&xlsx=true`,
                         ),
                     ]}
-                    disabled={isLoading}
+                    disabled={isLoading || !hasForms}
                 />
             </Box>
         </Box>

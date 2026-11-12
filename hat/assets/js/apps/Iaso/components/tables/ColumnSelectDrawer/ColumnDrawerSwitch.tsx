@@ -9,11 +9,11 @@ import {
     Box,
     ListItemText,
     Switch,
+    Theme,
     Tooltip,
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import { Theme } from '@mui/material';
 import { SxProps } from '@mui/system';
 import { truncateText } from 'bluesquare-components';
 
@@ -93,9 +93,14 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                         color="warning.main"
                         ml={0.5}
                         flexShrink={0}
-                        data-test={`column-warning-${secondaryText}`}
+                        role="img"
+                        aria-label={
+                            typeof warning === 'string'
+                                ? warning
+                                : undefined
+                        }
                     >
-                        <WarningAmberIcon fontSize="small" />
+                        <WarningAmberIcon fontSize="small" aria-hidden />
                     </Box>
                 </Tooltip>
             )}

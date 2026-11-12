@@ -28,10 +28,12 @@ vi.mock('Iaso/components/DownloadMenuButton', () => ({
     }),
     DownloadMenuButton: ({
         options,
+        disabled,
     }: {
         options: { key: string; url: string }[];
+        disabled?: boolean;
     }) => (
-        <ul data-testid="download-options">
+        <ul data-testid="download-options" data-disabled={String(disabled)}>
             {options.map(option => (
                 <li key={option.key} data-url={option.url}>
                     {option.key}
@@ -55,6 +57,8 @@ describe('FormsTableToolbar', () => {
             page: '2',
             accountId: '1',
             search: 'malaria',
+            showDeleted: '1',
+            onlyDeleted: '1',
         } as FormsParams;
 
         renderWithThemeAndIntlProvider(
@@ -63,6 +67,7 @@ describe('FormsTableToolbar', () => {
                 isLoading={false}
                 params={params}
                 columnsSelect={columnsSelect}
+                hasForms
             />,
         );
 
@@ -72,13 +77,65 @@ describe('FormsTableToolbar', () => {
         const csv = screen
             .getByTestId('download-options')
             .querySelector('[data-url*="csv=true"]');
-        expect(csv?.getAttribute('data-url')).toContain('order=-updated_at');
-        expect(csv?.getAttribute('data-url')).toContain(
+        const csvUrl = csv?.getAttribute('data-url') ?? '';
+        expect(csvUrl).toContain('order=-updated_at');
+        expect(csvUrl).toContain(
             'fields=projects%2Cname%2Cupdated_at%2Corg_unit_types',
         );
-        expect(csv?.getAttribute('data-url')).toContain('search=malaria');
-        expect(csv?.getAttribute('data-url')).not.toContain('page=');
-        expect(csv?.getAttribute('data-url')).not.toContain('created_at');
+        expect(csvUrl).toContain('search=malaria');
+        expect(csvUrl).toContain('show_deleted=1');
+        expect(csvUrl).toContain('only_deleted=1');
+        expect(csvUrl).not.toContain('page=');
+        expect(csvUrl).not.toContain('created_at');
+        expect(screen.getByTestId('download-options')).toHaveAttribute(
+            'data-disabled',
+            'false',
+        );
+    });
+
+    it('disables export while loading or when there are no forms', () => {
+        const { rerender } = renderWithThemeAndIntlProvider(
+            <FormsTableToolbar
+                count={0}
+                isLoading
+                params={{ pageSize: '10', page: '1' } as FormsParams}
+                columnsSelect={columnsSelect}
+                hasForms={false}
+            />,
+        );
+
+        expect(screen.getByTestId('download-options')).toHaveAttribute(
+            'data-disabled',
+            'true',
+        );
+
+        rerender(
+            <FormsTableToolbar
+                count={0}
+                isLoading={false}
+                params={{ pageSize: '10', page: '1' } as FormsParams}
+                columnsSelect={columnsSelect}
+                hasForms={false}
+            />,
+        );
+        expect(screen.getByTestId('download-options')).toHaveAttribute(
+            'data-disabled',
+            'true',
+        );
+
+        rerender(
+            <FormsTableToolbar
+                count={3}
+                isLoading={false}
+                params={{ pageSize: '10', page: '1' } as FormsParams}
+                columnsSelect={columnsSelect}
+                hasForms
+            />,
+        );
+        expect(screen.getByTestId('download-options')).toHaveAttribute(
+            'data-disabled',
+            'false',
+        );
     });
 
     it('can hide the columns select drawer', () => {

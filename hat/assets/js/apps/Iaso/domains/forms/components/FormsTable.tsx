@@ -76,6 +76,7 @@ export const FormsTable: FunctionComponent<Props> = ({
                 params={params}
                 columnsSelect={columnsSelect}
                 displayColumnsSelectDrawer={displayColumnsSelectDrawer}
+                hasForms={Boolean(forms?.forms?.length)}
             />
             <TableWithDeepLink
                 marginTop={false}

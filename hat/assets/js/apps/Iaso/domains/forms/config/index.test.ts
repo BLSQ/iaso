@@ -1,5 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PeriodTypeCell } from 'Iaso/components/Cells/PeriodTypeCell';
+import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { FormsParams } from '../types/forms';
 import { shouldShowDeletedColumn, useFormsTableColumns } from './index';
 
@@ -106,7 +108,7 @@ describe('useFormsTableColumns', () => {
         expect(mockGetOrgUnitTypeChips).toHaveBeenCalledWith(orgUnitTypes);
     });
 
-    it('exposes period_type and single_per_period as optional columns', () => {
+    it('uses PeriodTypeCell and YesNoCell for optional period columns', () => {
         const { result } = renderHook(() =>
             useFormsTableColumns({
                 orgUnitId: '',
@@ -120,7 +122,11 @@ describe('useFormsTableColumns', () => {
         const columnIds = result.current.map(col => col.id);
         expect(columnIds).toContain('period_type');
         expect(columnIds).toContain('single_per_period');
-        expect(result.current.find(col => col.id === 'period_type')?.Cell).toBeTruthy();
-        expect(result.current.find(col => col.id === 'single_per_period')?.Cell).toBeTruthy();
+        expect(result.current.find(col => col.id === 'period_type')?.Cell).toBe(
+            PeriodTypeCell,
+        );
+        expect(
+            result.current.find(col => col.id === 'single_per_period')?.Cell,
+        ).toBe(YesNoCell);
     });
 });

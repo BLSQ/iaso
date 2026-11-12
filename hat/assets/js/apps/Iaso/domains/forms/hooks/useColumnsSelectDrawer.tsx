@@ -5,11 +5,13 @@ import { Option } from '../../../components/tables/ColumnSelectDrawer';
 import { FormsParams } from '../types/forms';
 import { DEFAULT_VISIBLE_COLUMNS } from './useGetForms';
 
+const EMPTY_COLUMN_WARNINGS: Record<string, string | ReactNode> = {};
+
 export const useColumnsSelectDrawer = (
     columns: Column[],
     params: FormsParams,
     baseUrl: string,
-    warnings: Record<string, string | ReactNode> = {},
+    warnings: Record<string, string | ReactNode> = EMPTY_COLUMN_WARNINGS,
 ): {
     options: Option[];
     setOptions: (options: Option[]) => void;

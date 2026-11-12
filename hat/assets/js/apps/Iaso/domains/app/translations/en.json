@@ -6,6 +6,7 @@
     "blsq.label.clicktoOpenFileSelect": "Click to open file selection",
     "blsq.label.dropHere": "Drop files here",
     "blsq.label.Files": "Files",
+    "blsq.table.columnSelect.title": "Columns",
     "blsq.treeview.displayNew": "Show new organisation unit",
     "blsq.treeview.displayRejected": "Show rejected organisation unit",
     "blsq.treeview.displayTypes": "Show organisation unit types",

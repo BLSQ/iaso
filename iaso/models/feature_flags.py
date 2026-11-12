@@ -47,6 +47,10 @@ class FeatureFlag(models.Model):
     HOME_OFFLINE = "HOME_OFFLINE"
     MOBILE_STOCK = "MOBILE_STOCK"
     MOBILE_STOCK_HOME = "MOBILE_STOCK_HOME"
+    ENTITY = "ENTITY"
+    PLANNING = "PLANNING"
+    REPORTS = "REPORTS"
+    MOBILE_ORG_UNIT_REGISTRY = "MOBILE_ORG_UNIT_REGISTRY"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),

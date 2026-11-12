@@ -759,6 +759,20 @@ const MESSAGES = defineMessages({
             'Org units inside {name} were already assigned by its current assignee. Unassigning {name} removes those assignments.',
         id: 'iaso.plannings.label.clearAssignmentsBelowOnUnassign',
     },
+    publishedPlanningConfirmationTitle: {
+        defaultMessage: 'Assign org units in a published planning?',
+        id: 'iaso.plannings.label.publishedPlanningConfirmationTitle',
+    },
+    publishedPlanningConfirmationText: {
+        defaultMessage:
+            'This planning is published. New assignments are sent to the agents concerned at their next synchronisation and may change the work they planned on the field.',
+        id: 'iaso.plannings.label.publishedPlanningConfirmationText',
+    },
+    publishedPlanningConfirmationNote: {
+        defaultMessage:
+            'You will not be asked again until you leave this page.',
+        id: 'iaso.plannings.label.publishedPlanningConfirmationNote',
+    },
     mapHintNoMember: {
         defaultMessage:
             'This team has no member. Add members in the team hierarchy of the planning.',

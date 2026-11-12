@@ -57,7 +57,10 @@ export const FindOrgUnitTree: FC<Props> = ({
     // Expanded or collapsed by hand, against the default of the roots and the selected branch.
     const [toggledIds, setToggledIds] = useState<Set<number>>(new Set());
     // The planning root and level 1 show first.
-    const { orgUnits } = usePlanningOrgUnits(0, 2);
+    const { orgUnits, isLoading, isLoadingFullTree } = usePlanningOrgUnits(
+        0,
+        2,
+    );
 
     const expandedIds = useMemo(() => {
         if (!orgUnits) return new Set<number>();
@@ -103,7 +106,6 @@ export const FindOrgUnitTree: FC<Props> = ({
             setToggledIds(previous => toggleId(previous, orgUnitId)),
         [],
     );
-    const isLoadingFullTree = !orgUnits?.isFullTree;
 
     return (
         <>
@@ -131,7 +133,7 @@ export const FindOrgUnitTree: FC<Props> = ({
                 {formatMessage(MESSAGES.findOrgUnitCaption)}
             </Typography>
             <Box sx={styles.list} role="listbox">
-                {!orgUnits && <LoadingSpinner absolute fixed={false} />}
+                {isLoading && <LoadingSpinner absolute fixed={false} />}
                 {rows.slice(0, MAX_ROWS).map(row => (
                     <FindOrgUnitTreeRow
                         key={row.orgUnit.id}
@@ -142,6 +144,7 @@ export const FindOrgUnitTree: FC<Props> = ({
                                 : assigneeByOrgUnitId.get(row.orgUnit.id)
                         }
                         isSelected={row.orgUnit.id === selectedId}
+                        isLoadingChildren={isLoadingFullTree}
                         onSelect={onSelect}
                         onToggle={handleToggle}
                     />
@@ -158,7 +161,7 @@ export const FindOrgUnitTree: FC<Props> = ({
                         )}
                     </Typography>
                 )}
-                {orgUnits && rows.length === 0 && (
+                {!isLoading && rows.length === 0 && (
                     <Typography
                         variant="body2"
                         color="text.secondary"

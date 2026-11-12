@@ -65,17 +65,18 @@ const styles = {
 } satisfies SxStyles;
 
 type ExpandToggleProps = Pick<FindOrgUnitRow, 'isExpanded' | 'hasChildren'> & {
+    isLoadingChildren: boolean;
     onClick: (event: MouseEvent) => void;
 };
 
-// Children are unknown until the full tree loads: a spinner while it loads after expanding.
 const ExpandToggle: FC<ExpandToggleProps> = ({
     isExpanded,
     hasChildren,
+    isLoadingChildren,
     onClick,
 }) => {
     if (hasChildren === false) return <Box sx={styles.toggle} />;
-    if (isExpanded && hasChildren === undefined) {
+    if (isExpanded && hasChildren === undefined && isLoadingChildren) {
         return (
             <Box sx={styles.loading}>
                 <CircularProgress size={14} />
@@ -97,6 +98,7 @@ type Props = {
     row: FindOrgUnitRow;
     assignee?: Assignee;
     isSelected: boolean;
+    isLoadingChildren: boolean;
     onSelect: (orgUnitId: number) => void;
     onToggle: (orgUnitId: number) => void;
 };
@@ -105,6 +107,7 @@ export const FindOrgUnitTreeRow: FC<Props> = ({
     row: { orgUnit, depth, isExpanded, hasChildren },
     assignee,
     isSelected,
+    isLoadingChildren,
     onSelect,
     onToggle,
 }) => {
@@ -135,6 +138,7 @@ export const FindOrgUnitTreeRow: FC<Props> = ({
             <ExpandToggle
                 isExpanded={isExpanded}
                 hasChildren={hasChildren}
+                isLoadingChildren={isLoadingChildren}
                 onClick={handleToggle}
             />
             <Stack direction="row" alignItems="baseline" sx={styles.texts}>

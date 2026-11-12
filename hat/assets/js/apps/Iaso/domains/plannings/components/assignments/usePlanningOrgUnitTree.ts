@@ -12,14 +12,18 @@ import { getLevelTreeParams } from './mainPanel/utils';
 // Without level or depth, the API returns every level of the planning.
 export const usePlanningOrgUnitTree = (
     enabled: boolean,
-): LoadedOrgUnits | undefined => {
+): { orgUnits?: LoadedOrgUnits; isLoading: boolean } => {
     const { planning } = useAssignmentsContext();
-    const { data } = useApiMicroplanningPlanningsOrgUnitTreeList(
+    const { data, isLoading } = useApiMicroplanningPlanningsOrgUnitTreeList(
         planning.id,
         undefined,
         { query: { enabled } },
     );
-    return useMemo(() => data && indexTree(data as LevelOrgUnitNode[]), [data]);
+    const orgUnits = useMemo(
+        () => data && indexTree(data as LevelOrgUnitNode[]),
+        [data],
+    );
+    return { orgUnits, isLoading };
 };
 
 type PlanningOrgUnits = {
@@ -29,6 +33,8 @@ type PlanningOrgUnits = {
         isFullTree: boolean;
     };
     isFetching: boolean;
+    isLoading: boolean;
+    isLoadingFullTree: boolean;
 };
 
 // A partial tree paints first; the full tree then loads in the background and replaces it.
@@ -43,15 +49,17 @@ export const usePlanningOrgUnits = (
             getApiMicroplanningPlanningsOrgUnitTreeListQueryKey(planning.id),
         ),
     );
-    const { data: partialTree, isFetching } =
-        useApiMicroplanningPlanningsOrgUnitTreeList(
-            planning.id,
-            getLevelTreeParams(partialLevel, partialDepths),
-            { query: { enabled: !hasFullTree } },
-        );
-    const fullTree = usePlanningOrgUnitTree(
-        hasFullTree || Boolean(partialTree),
+    const {
+        data: partialTree,
+        isFetching,
+        isLoading,
+    } = useApiMicroplanningPlanningsOrgUnitTreeList(
+        planning.id,
+        getLevelTreeParams(partialLevel, partialDepths),
+        { query: { enabled: !hasFullTree } },
     );
+    const { orgUnits: fullTree, isLoading: isLoadingFull } =
+        usePlanningOrgUnitTree(hasFullTree || Boolean(partialTree));
     const orgUnits = useMemo(() => {
         if (fullTree) return { ...fullTree, rootLevel: 0, isFullTree: true };
         if (!partialTree) return undefined;
@@ -62,5 +70,10 @@ export const usePlanningOrgUnits = (
             isFullTree: false,
         };
     }, [fullTree, partialTree, partialDepths, partialLevel]);
-    return { orgUnits, isFetching: !fullTree && isFetching };
+    return {
+        orgUnits,
+        isFetching: !fullTree && isFetching,
+        isLoading,
+        isLoadingFullTree: isLoading || isLoadingFull,
+    };
 };

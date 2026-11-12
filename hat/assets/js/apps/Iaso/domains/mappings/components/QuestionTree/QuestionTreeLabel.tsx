@@ -48,8 +48,8 @@ export const QuestionTreeLabel: FunctionComponent<Props> = ({ node }) => {
     const { formatMessage } = useSafeIntl();
     if (node.children) {
         const progress = formatMessage(MESSAGES.mappedProgress, {
-            mapped: node.mappedCount,
-            total: node.questionsCount,
+            mapped: String(node.mappedCount),
+            total: String(node.questionsCount),
         });
         return (
             <Box sx={styles.root} title={`${node.label}\n${progress}`}>

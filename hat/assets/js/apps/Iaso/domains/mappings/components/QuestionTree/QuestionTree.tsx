@@ -208,8 +208,8 @@ export const QuestionTree: FunctionComponent<Props> = ({
                 {position !== -1 && (
                     <Typography variant="caption" sx={styles.position}>
                         {formatMessage(MESSAGES.questionPosition, {
-                            position: position + 1,
-                            total: selectableNodes.length,
+                            position: String(position + 1),
+                            total: String(selectableNodes.length),
                         })}
                     </Typography>
                 )}

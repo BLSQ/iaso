@@ -114,6 +114,7 @@ class Descriptor {
         return result;
     }
 
+    /** @returns {Record<string, Record<string, any>>} the questions by name */
     static indexQuestions(descriptor) {
         const acc = {};
         const descriptorCopy = { ...(descriptor ?? {}) };

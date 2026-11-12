@@ -5,6 +5,7 @@ import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
 import {
     commonStyles,
     ExternalLink,
+    IntlFormatMessage,
     LoadingSpinner,
     useRedirectToReplace,
     useSafeIntl,
@@ -64,7 +65,7 @@ const styles: SxStyles = {
     },
 };
 
-const iasoFieldOptions = formatMessage => [
+const iasoFieldOptions = (formatMessage: IntlFormatMessage) => [
     { value: VALUE_FROM_FORM, label: formatMessage(MESSAGES.useValueFromForm) },
     {
         value: ORG_UNIT_IASO_FIELD,
@@ -72,7 +73,7 @@ const iasoFieldOptions = formatMessage => [
     },
 ];
 
-const fieldTypeOptions = formatMessage => [
+const fieldTypeOptions = (formatMessage: IntlFormatMessage) => [
     { value: 'dataElement', label: formatMessage(MESSAGES.programDataElement) },
     {
         value: 'trackedEntityAttribute',
@@ -133,17 +134,12 @@ const MappingDetails = () => {
         ? indexedQuestions[params.questionName]
         : undefined;
 
-    const backParams = {};
-    if (currentFormVersion?.form_id) {
-        backParams.formId = currentFormVersion.form_id;
-    }
-
     const goBack = useGoBack(baseUrls.mappings);
 
     const applyUpdate = useApplyUpdate();
     const applyPartialUpdate = useApplyPartialUpdate();
 
-    const onQuestionSelected = node => {
+    const onQuestionSelected = (node: Record<string, any>) => {
         if (node && node.type === 'select all that apply') {
             return;
         }
@@ -161,7 +157,10 @@ const MappingDetails = () => {
 
     useEscapeKey(onClearSelection, Boolean(currentQuestion));
 
-    const onConfirmedQuestionMapping = (questionMapping, options) => {
+    const onConfirmedQuestionMapping = (
+        questionMapping: Record<string, any>,
+        options?: { onSuccess?: () => void },
+    ) => {
         applyPartialUpdate.mutate(
             {
                 mappingVersionId: currentMappingVersion.id,
@@ -209,9 +208,7 @@ const MappingDetails = () => {
                         : formatMessage(MESSAGES.loading)
                 }
                 displayBackButton
-                goBack={() => {
-                    goBack(backParams);
-                }}
+                goBack={goBack}
             />
             {isLoading && <LoadingSpinner />}
 
@@ -227,8 +224,8 @@ const MappingDetails = () => {
                         <Box sx={styles.progress}>
                             <Typography variant="body2" color="textSecondary">
                                 {formatMessage(MESSAGES.mappedProgress, {
-                                    mapped: progress.mapped,
-                                    total: progress.total,
+                                    mapped: String(progress.mapped),
+                                    total: String(progress.total),
                                 })}
                             </Typography>
                             <LinearProgress

@@ -2,6 +2,7 @@ import logging
 
 from collections.abc import Collection, Iterator
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any, Callable, Optional
 
 from iaso.models import FeatureFlag
@@ -10,6 +11,11 @@ from iaso.utils.iaso_api_client import IasoClient
 
 
 logger = logging.getLogger(__name__)
+
+
+class Pagination(Enum):
+    PAGE = "page"
+    CURSOR = "cursor"
 
 
 @dataclass
@@ -33,7 +39,8 @@ class ApiCall:
     default_params: dict = field(default_factory=dict)
     # The call is skipped when the app doesn't have this feature flag.
     required_feature_flag: Optional[str] = None
-    paginated: bool = False
+    # None when the endpoint isn't paginated.
+    pagination: Optional[Pagination] = None
     # The `limit` sent to a paginated endpoint (the server's default otherwise).
     page_size: Optional[int] = None
     # The share of the task's progress bar for this call, spread over its pages.
@@ -48,18 +55,32 @@ class ApiCall:
         """Perform the api call and retrieve a single or multiple pages."""
         params = {**self.default_params, "app_id": app_id}
 
-        if not self.paginated:
+        if self.pagination is None:
             yield Page(filename=f"{self.filename}.json", payload=client.get_json(self.path, params))
             return
 
         number = 1
+        cursor = None
+        first_page_totals = {}
         while True:
             page_params = {**params, "page": number}
             if self.page_size:
                 page_params["limit"] = self.page_size
+            if cursor:
+                page_params["cursor"] = cursor
             payload = client.get_json(self.path, page_params)
 
             is_dict = isinstance(payload, dict)
+            if is_dict and self.pagination == Pagination.CURSOR:
+                cursor = payload.get("next_cursor")
+                # For performance reasons, the server only counts the first page.
+                # Copy the totals to the next pages, where they are null.
+                if number == 1:
+                    first_page_totals = {key: payload.get(key) for key in ("count", "pages")}
+                for key, value in first_page_totals.items():
+                    if payload.get(key) is None:
+                        payload[key] = value
+
             if is_dict:
                 logger.info(f"\tTotal count: {payload.get('count')}, total pages: {payload.get('pages')}")
             yield Page(
@@ -113,7 +134,7 @@ API_CALLS = (
         path="/api/mobile/entitytypes/",
         filename="entitytypes",
         required_feature_flag=FeatureFlag.ENTITY,
-        paginated=True,
+        pagination=Pagination.PAGE,
     ),
     ApiCall(
         path="/api/mobile/reports/",
@@ -126,7 +147,7 @@ API_CALLS = (
         path="/api/mobile/orgunits/",
         filename="orgunits",
         default_params={"shapes": "0"},
-        paginated=True,
+        pagination=Pagination.PAGE,
         page_size=5000,
         sub_steps=20,
     ),
@@ -134,13 +155,13 @@ API_CALLS = (
         path="/api/mobile/entities/",
         filename="entities",
         required_feature_flag=FeatureFlag.ENTITY,
-        paginated=True,
+        pagination=Pagination.CURSOR,
         sub_steps=50,
     ),
     ApiCall(
         path="/api/mobile/entities/deleted/",
         filename="deletedentities",
         required_feature_flag=FeatureFlag.ENTITY,
-        paginated=True,
+        pagination=Pagination.CURSOR,
     ),
 )

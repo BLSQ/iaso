@@ -104,6 +104,22 @@ class FakeIasoServer:
 
         self.mock.add_callback(responses.GET, f"{SERVER}{path}", callback=callback)
 
+    def _cursor_paginated(self, path, pages):
+        """Cursor pagination as implemented on the mobile entity endpoints."""
+        count = sum(len(page) for page in pages)
+
+        def callback(request):
+            query = parse_qs(urlparse(request.url).query)
+            page = int(query["page"][0])
+            body = _page(pages[page - 1], page, len(pages), count)
+            if "cursor" in query:
+                assert query["cursor"] == [f"after-page-{page - 1}"], query
+                body.update(count=None, pages=None)
+            body["next_cursor"] = f"after-page-{page}" if body["has_next"] else None
+            return 200, {}, json.dumps(body)
+
+        self.mock.add_callback(responses.GET, f"{SERVER}{path}", callback=callback)
+
     def _file(self, url, body):
         self.mock.add(responses.GET, _url_pattern(url), body=body)
 
@@ -151,8 +167,8 @@ class FakeIasoServer:
         self._json("/api/mobile/plannings/", {"plannings": []})
         self._json("/api/mobile/storage/passwords/", {"results": []})
         self._json("/api/mobile/storage/blacklisted/", {"results": []})
-        self._paginated("/api/mobile/entities/", [[{"id": "e1"}], [{"id": "e2"}]])
-        self._paginated("/api/mobile/entities/deleted/", [[]])
+        self._cursor_paginated("/api/mobile/entities/", [[{"id": "e1"}], [{"id": "e2"}], [{"id": "e3"}]])
+        self._cursor_paginated("/api/mobile/entities/deleted/", [[]])
         self._paginated("/api/mobile/entitytypes/", [[{"id": 1}]])
         self._json(
             "/api/mobile/reports/",
@@ -260,6 +276,7 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
                 "orgunits-2.json",
                 "entities-1.json",
                 "entities-2.json",
+                "entities-3.json",
                 "deletedentities-1.json",
             },
         )
@@ -271,6 +288,32 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
         self.assertEqual(json.loads(archive.read("orgunits-1.json"))["results"], [{"id": 1}, {"id": 2}])
         self.assertEqual(json.loads(archive.read("orgunits-2.json"))["results"], [{"id": 3}])
         self.assertEqual(json.loads(archive.read("entities-2.json"))["results"], [{"id": "e2"}])
+
+    def test_entities_use_cursor_pagination(self):
+        server = FakeIasoServer()
+        self.run_export(server)
+        archive = self.open_export()
+
+        queries = [parse_qs(urlparse(c.request.url).query) for c in server.calls_to("/api/mobile/entities/")]
+        self.assertEqual([q.get("cursor") for q in queries], [None, ["after-page-1"], ["after-page-2"]])
+        self.assertEqual([q["page"] for q in queries], [["1"], ["2"], ["3"]])
+
+        # The totals of the first page are copied to the next ones.
+        for page in [1, 2, 3]:
+            entities = json.loads(archive.read(f"entities-{page}.json"))
+            self.assertEqual(
+                entities,
+                {
+                    "count": 3,
+                    "results": [{"id": f"e{page}"}],
+                    "has_next": page < 3,
+                    "has_previous": page > 1,
+                    "page": page,
+                    "pages": 3,
+                    "limit": 1,
+                    "next_cursor": f"after-page-{page}" if page < 3 else None,
+                },
+            )
 
     def test_query_params(self):
         server = FakeIasoServer()
@@ -410,6 +453,7 @@ class ExportMobileAppSetupProgressTest(ExportMobileAppSetupTestCase):
         messages = [message for _, message, _ in reported]
         self.assertIn("Fetching orgunits (page 1/2)", messages)
         self.assertIn("Fetching orgunits (page 2/2)", messages)
+        self.assertIn("Fetching entities (page 3/3)", messages)
         self.assertIn("Fetching forms", messages)
 
 

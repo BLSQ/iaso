@@ -122,6 +122,7 @@ const QuestionInfos: FunctionComponent<Props> = ({
                         items={choices.map(choice => ({
                             id: choice.name,
                             label: Descriptor.getHumanLabel(choice),
+                            title: choice.name,
                         }))}
                         maxVisible={MAX_VISIBLE_OPTIONS}
                     />

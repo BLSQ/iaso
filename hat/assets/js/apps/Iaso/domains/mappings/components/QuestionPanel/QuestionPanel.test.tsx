@@ -49,7 +49,9 @@ describe('MappingSummary', () => {
         expect(screen.getByText('deBelgium')).toBeInTheDocument();
         expect(screen.getByText('cocFemale')).toBeInTheDocument();
         expect(screen.getByText('Datasets (1)')).toBeInTheDocument();
-        expect(screen.getByText('Census Belgium')).toBeInTheDocument();
+        expect(
+            screen.getByTitle('Census Belgium - Yearly - dsBelgium'),
+        ).toHaveTextContent('Census Belgium');
     });
 
     it('falls back to the ids when the names are not stored', () => {
@@ -167,7 +169,12 @@ describe('MappingSummary', () => {
         expect(screen.getByText('Datasets (3)')).toBeInTheDocument();
         expect(screen.getByText('France')).toBeInTheDocument();
         expect(screen.queryByText('Luxembourg')).toBeNull();
-        fireEvent.click(screen.getByRole('button', { name: '+1' }));
+        // the "+1" chip is named after all the datasets
+        fireEvent.click(
+            screen.getByRole('button', {
+                name: 'Belgium, France, Luxembourg',
+            }),
+        );
         expect(screen.getByText('Luxembourg')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Show less' }));
         expect(screen.queryByText('Luxembourg')).toBeNull();
@@ -230,8 +237,8 @@ describe('QuestionInfos', () => {
             'Bind: required: yes',
             'Path: data / countries / q_france',
         ]);
-        expect(screen.getByText('Paris')).toBeInTheDocument();
-        expect(screen.getByText('Lyon')).toBeInTheDocument();
+        expect(screen.getByTitle('paris')).toHaveTextContent('Paris');
+        expect(screen.getByTitle('lyon')).toHaveTextContent('Lyon');
     });
 
     it('shows no option for a question without choices', () => {

@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { Dataset } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import {
     ChipList,
@@ -17,7 +18,7 @@ import {
 
 const MAX_VISIBLE_DATASETS = 2;
 
-type DataSet = { id: string; name?: string };
+type DataSet = { id: string; name?: string; periodType?: string };
 
 const getDataSetChips = (item: Record<string, any>): ChipListItem[] =>
     (item.dataSetElements ?? [])
@@ -26,6 +27,10 @@ const getDataSetChips = (item: Record<string, any>): ChipListItem[] =>
         .map((dataSet: DataSet) => ({
             id: dataSet.id,
             label: dataSet.name ?? dataSet.id,
+            title: [dataSet.name, dataSet.periodType, dataSet.id]
+                .filter(Boolean)
+                .join(' - '),
+            icon: <Dataset />,
         }));
 
 // AGGREGATE / EVENT mapping: { id, valueType, categoryOptionCombo, ... }

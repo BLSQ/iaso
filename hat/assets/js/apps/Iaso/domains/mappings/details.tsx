@@ -216,8 +216,8 @@ const MappingDetails = () => {
                 <Box
                     sx={{
                         ...commonStyles(theme).containerFullHeightNoTabPadded,
-                        // grey canvas, so the white cards stand out
-                        backgroundColor: 'grey.100',
+                        // page background, so the white cards stand out
+                        backgroundColor: theme.palette.primary.background,
                     }}
                 >
                     <Box sx={styles.actions}>

@@ -3,6 +3,7 @@ import {
     getAssignableOrgUnitIds,
     getOrgUnitIdsWithAssignmentsBelow,
     getTeamAreaOrgUnitIds,
+    getTeamIdsWithArea,
 } from './utils';
 
 const makeNode = (
@@ -76,5 +77,15 @@ describe('getOrgUnitIdsWithAssignmentsBelow', () => {
         expect(
             getOrgUnitIdsWithAssignmentsBelow(levelOrgUnits, assignments),
         ).toEqual(new Set([11]));
+    });
+});
+
+describe('getTeamIdsWithArea', () => {
+    it('returns the root team and the teams given org units', () => {
+        const assignments = [
+            makeAssignment(1, { team: 5 }),
+            makeAssignment(11, { user: 7 }),
+        ];
+        expect(getTeamIdsWithArea(4, assignments)).toEqual(new Set([4, 5]));
     });
 });

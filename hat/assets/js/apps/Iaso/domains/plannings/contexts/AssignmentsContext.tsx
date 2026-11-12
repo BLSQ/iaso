@@ -2,16 +2,13 @@ import React, {
     FC,
     ReactNode,
     createContext,
-    useCallback,
     useContext,
     useMemo,
-    useState,
 } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import { useTeamTree } from 'Iaso/domains/teams/components/teamTree/useTeamTree';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import {
-    AssigneePick,
     TeamMember,
     getCurrentAssignee,
     getTeamChain,
@@ -33,7 +30,6 @@ type AssignmentsContextValue = {
     selectedTeamMembers: TeamMember[];
     // The member that assign mode gives org units to.
     currentAssignee?: TeamMember;
-    pickAssignee: (memberKey: string) => void;
 };
 
 const AssignmentsContext = createContext<AssignmentsContextValue | undefined>(
@@ -61,7 +57,7 @@ export const AssignmentsProvider: FC<Props> = ({
     rootTeamId,
     children,
 }) => {
-    const { teamId } = useAssignmentsParams();
+    const { teamId, assignee } = useAssignmentsParams();
     const {
         tree,
         isLoading: isLoadingTree,
@@ -81,20 +77,9 @@ export const AssignmentsProvider: FC<Props> = ({
         [selectedTeam],
     );
 
-    const [assigneePick, setAssigneePick] = useState<AssigneePick>();
-    const pickAssignee = useCallback(
-        (memberKey: string) => {
-            if (selectedTeam) {
-                setAssigneePick({ teamId: selectedTeam.id, memberKey });
-            }
-        },
-        [selectedTeam],
-    );
     const currentAssignee = useMemo(
-        () =>
-            selectedTeam &&
-            getCurrentAssignee(selectedTeam, selectedTeamMembers, assigneePick),
-        [selectedTeam, selectedTeamMembers, assigneePick],
+        () => getCurrentAssignee(selectedTeamMembers, assignee),
+        [selectedTeamMembers, assignee],
     );
 
     const value = useMemo(
@@ -110,7 +95,6 @@ export const AssignmentsProvider: FC<Props> = ({
                 selectedLevel: teamChain.length - 1,
                 selectedTeamMembers,
                 currentAssignee,
-                pickAssignee,
             },
         [
             planning,
@@ -121,7 +105,6 @@ export const AssignmentsProvider: FC<Props> = ({
             selectedTeam,
             selectedTeamMembers,
             currentAssignee,
-            pickAssignee,
         ],
     );
 

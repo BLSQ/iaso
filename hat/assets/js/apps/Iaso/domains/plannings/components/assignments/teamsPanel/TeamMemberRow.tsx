@@ -1,7 +1,7 @@
-import React, { FC, MouseEvent, useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import PersonIcon from '@mui/icons-material/Person';
-import { Box, IconButton, Tooltip, alpha } from '@mui/material';
+import { Box, Tooltip, alpha } from '@mui/material';
 import { amber } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
@@ -31,8 +31,8 @@ const styles = {
     currentAssigneeName: {
         fontWeight: 500,
     },
-    openButton: {
-        p: 0.25,
+    disabledRow: {
+        opacity: 0.6,
     },
     scopeLine: {
         position: 'absolute',
@@ -79,56 +79,50 @@ type Props = {
     isAssignMode: boolean;
     isCurrentAssignee: boolean;
     onPickAssignee: (memberKey: string) => void;
+    isPickable: boolean;
+    onPickAssignee: (teamId: number, memberKey: string) => void;
 };
 
 export const TeamMemberRow: FC<Props> = ({
-    row: { key, depth, name, color, team },
+    row: { key, depth, name, color, team, parentTeam },
     onOpen,
     isAssignMode,
     isCurrentAssignee,
+    isPickable,
     onPickAssignee,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const caption = useTeamCaption(team);
+    const teamCaption = useTeamCaption(team);
     const handleOpen = useCallback(() => {
         if (team) onOpen(team.id);
     }, [onOpen, team]);
     const handlePick = useCallback(
-        () => onPickAssignee(key),
-        [onPickAssignee, key],
-    );
-    // In assign mode the row picks the assignee: only the chevron opens the sub-team.
-    const handleOpenButton = useCallback(
-        (event: MouseEvent) => {
-            event.stopPropagation();
-            handleOpen();
-        },
-        [handleOpen],
+        () => onPickAssignee(parentTeam.id, key),
+        [onPickAssignee, parentTeam.id, key],
     );
     const isPicked = isAssignMode && isCurrentAssignee;
-    const openTooltip = formatMessage(MESSAGES.openTeam, { name });
+    const isDisabled = isAssignMode && !isPickable;
+    const caption = isDisabled
+        ? formatMessage(MESSAGES.assignParentTeamFirst, {
+              team: parentTeam.name,
+          })
+        : teamCaption;
 
-    const openButton = isAssignMode ? (
-        <Tooltip title={openTooltip} placement="right">
-            <IconButton
-                size="small"
-                onClick={handleOpenButton}
-                aria-label={openTooltip}
-                sx={styles.openButton}
-            >
-                <ChevronRightIcon sx={styles.openIcon} />
-            </IconButton>
-        </Tooltip>
-    ) : (
-        <ChevronRightIcon sx={styles.openIcon} />
-    );
+    const getOnClick = () => {
+        if (isAssignMode) return isPickable ? handlePick : undefined;
+        return team && handleOpen;
+    };
 
     const row = (
         <TeamsPanelRowLayout
             paddingLeft={20 + depth * INDENT_PX}
             guideLevels={depth - 1}
-            onClick={isAssignMode ? handlePick : team && handleOpen}
-            sx={[styles.row, isPicked && styles.currentAssigneeRow]}
+            onClick={getOnClick()}
+            sx={[
+                styles.row,
+                isPicked && styles.currentAssigneeRow,
+                isDisabled && styles.disabledRow,
+            ]}
             leading={
                 <ColorBadge backgroundColor={color} sx={styles.colorBadge} />
             }
@@ -142,7 +136,10 @@ export const TeamMemberRow: FC<Props> = ({
             name={name}
             nameSx={isPicked ? styles.currentAssigneeName : undefined}
             caption={caption}
-            trailing={team && openButton}
+            trailing={
+                team &&
+                !isAssignMode && <ChevronRightIcon sx={styles.openIcon} />
+            }
         >
             <Box
                 sx={[
@@ -155,7 +152,10 @@ export const TeamMemberRow: FC<Props> = ({
     );
 
     return team && !isAssignMode ? (
-        <Tooltip title={openTooltip} placement="right">
+        <Tooltip
+            title={formatMessage(MESSAGES.openTeam, { name })}
+            placement="right"
+        >
             {row}
         </Tooltip>
     ) : (

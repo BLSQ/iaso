@@ -11,11 +11,6 @@ export type TeamMember = {
     userId?: number;
 };
 
-export type AssigneePick = {
-    teamId: number;
-    memberKey: string;
-};
-
 export const getTeamMembers = (team: TeamTreeNode): TeamMember[] => [
     ...team.children.map(child => ({
         key: teamKey(child.id),
@@ -31,15 +26,12 @@ export const getTeamMembers = (team: TeamTreeNode): TeamMember[] => [
     })),
 ];
 
-// The picked member only counts in the team it was picked in: other teams start with their first member.
+// Member keys are unique in the tree, so a key picked in another team falls back to the first member.
 export const getCurrentAssignee = (
-    team: TeamTreeNode,
     members: TeamMember[],
-    picked?: AssigneePick,
+    assigneeKey?: string,
 ): TeamMember | undefined =>
-    (picked?.teamId === team.id &&
-        members.find(member => member.key === picked.memberKey)) ||
-    members[0];
+    members.find(member => member.key === assigneeKey) ?? members[0];
 
 export const getTeamChain = (
     root: TeamTreeNode,

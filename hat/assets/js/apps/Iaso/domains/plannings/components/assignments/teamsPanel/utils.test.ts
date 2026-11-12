@@ -1,5 +1,5 @@
 import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
-import { flattenTeamsPanelRows } from './utils';
+import { flattenAssignPanelRows, flattenTeamsPanelRows } from './utils';
 
 const makeUser = (id: number): User => ({ id, username: `user${id}` }) as User;
 const makeTeam = (
@@ -66,6 +66,40 @@ describe('flattenTeamsPanelRows', () => {
             [1, false, true],
             [2, true, true],
             [4, false, true],
+        ]);
+    });
+});
+
+describe('flattenAssignPanelRows', () => {
+    it('lists the members of the root when it is the scope', () => {
+        expect(describeRows(flattenAssignPanelRows(root, [root]))).toEqual([
+            'team team-1 @0',
+            'member team-2 @1',
+            'member team-4 @1',
+        ]);
+    });
+
+    it('expands the picked team to show its members', () => {
+        expect(describeRows(flattenAssignPanelRows(root, [root], 4))).toEqual([
+            'team team-1 @0',
+            'member team-2 @1',
+            'member team-4 @1',
+            'member team-5 @2',
+        ]);
+    });
+
+    it('expands the chain down to the scope, with the members of each team', () => {
+        expect(
+            describeRows(
+                flattenAssignPanelRows(root, [root, teamA, usersTeam]),
+            ),
+        ).toEqual([
+            'team team-1 @0',
+            'member team-2 @1',
+            'member team-3 @2',
+            'member user-3-10 @3',
+            'member user-3-11 @3',
+            'member team-4 @1',
         ]);
     });
 });

@@ -30,25 +30,20 @@ describe('getCurrentAssignee', () => {
     const members = getTeamMembers(team);
 
     it('returns the first member when no member was picked', () => {
-        expect(getCurrentAssignee(team, members)?.name).toBe('Team 2');
+        expect(getCurrentAssignee(members)?.name).toBe('Team 2');
     });
 
-    it('returns the member picked in this team', () => {
-        const picked = { teamId: 1, memberKey: members[1].key };
-        expect(getCurrentAssignee(team, members, picked)?.name).toBe('Team 3');
+    it('returns the picked member', () => {
+        expect(getCurrentAssignee(members, members[1].key)?.name).toBe(
+            'Team 3',
+        );
     });
 
-    it('returns the first member when the pick was made in another team', () => {
-        const picked = { teamId: 2, memberKey: members[1].key };
-        expect(getCurrentAssignee(team, members, picked)?.name).toBe('Team 2');
-    });
-
-    it('returns the first member when the picked member left the team', () => {
-        const picked = { teamId: 1, memberKey: 'gone' };
-        expect(getCurrentAssignee(team, members, picked)?.name).toBe('Team 2');
+    it('returns the first member when the picked member is not in the team', () => {
+        expect(getCurrentAssignee(members, 'team-42')?.name).toBe('Team 2');
     });
 
     it('returns undefined when the team has no member', () => {
-        expect(getCurrentAssignee(makeNode(5), [])).toBeUndefined();
+        expect(getCurrentAssignee([])).toBeUndefined();
     });
 });

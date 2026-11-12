@@ -14,6 +14,16 @@ export const getTeamAreaOrgUnitIds = (
                   .map(assignment => assignment.org_unit),
           );
 
+// The root team's area is the target geography; sub-teams have an area once given org units.
+export const getTeamIdsWithArea = (
+    rootTeamId: number,
+    assignments: Assignment[],
+): Set<number> =>
+    new Set([
+        rootTeamId,
+        ...assignments.flatMap(({ team }) => (team ? [team] : [])),
+    ]);
+
 // A team's members can only be given the children of the org units the team was given.
 export const getAssignableOrgUnitIds = (
     levelOrgUnits: LevelOrgUnitNode[],

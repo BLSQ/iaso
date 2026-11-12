@@ -622,7 +622,7 @@ const MESSAGES = defineMessages({
     },
     teamsPanelAssignHelp: {
         defaultMessage:
-            'Select a member of {team}, then click org units on the map or in the list.',
+            'Pick who receives org units, then click them on the map or in the list. Picking a member of a sub-team shows the area of that sub-team.',
         id: 'iaso.plannings.label.teamsPanelAssignHelp',
     },
     teamsPanelAssignNote: {
@@ -739,6 +739,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Assign: click an org unit to assign it to {member}, click it again to unassign it. Only the org units inside the area of {team} can be assigned, the others are dimmed.',
         id: 'iaso.plannings.label.mapAssignHint',
+    },
+    assignParentTeamFirst: {
+        defaultMessage: 'Assign org units to {team} first',
+        id: 'iaso.plannings.label.assignParentTeamFirst',
     },
     assignTeamHasNoArea: {
         defaultMessage:

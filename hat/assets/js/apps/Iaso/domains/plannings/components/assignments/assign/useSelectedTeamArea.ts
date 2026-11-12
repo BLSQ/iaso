@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { usePlanningAssignments } from '../api/usePlanningAssignments';
-import { getTeamAreaOrgUnitIds } from './utils';
+import { getTeamAreaOrgUnitIds, getTeamIdsWithArea } from './utils';
 
 type SelectedTeamArea = {
     areaOrgUnitIds?: Set<number>;
@@ -22,4 +22,13 @@ export const useSelectedTeamArea = (): SelectedTeamArea => {
             hasArea: !areaOrgUnitIds || areaOrgUnitIds.size > 0,
         };
     }, [selectedTeam.id, selectedLevel, assignments]);
+};
+
+export const useTeamIdsWithArea = (): Set<number> => {
+    const { planning, tree } = useAssignmentsContext();
+    const { data: assignments } = usePlanningAssignments(planning.id);
+    return useMemo(
+        () => getTeamIdsWithArea(tree.id, assignments ?? []),
+        [tree.id, assignments],
+    );
 };

@@ -16,10 +16,13 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { useSelectedTeamArea } from '../assign/useSelectedTeamArea';
+import {
+    useSelectedTeamArea,
+    useTeamIdsWithArea,
+} from '../assign/useSelectedTeamArea';
 import { TeamMemberRow } from './TeamMemberRow';
 import { TeamNavRow } from './TeamNavRow';
-import { flattenTeamsPanelRows } from './utils';
+import { flattenAssignPanelRows, flattenTeamsPanelRows } from './utils';
 
 const styles = {
     panel: {
@@ -64,7 +67,7 @@ const styles = {
 
 export const TeamsPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { openTeam, mode } = useAssignmentsParams();
+    const { openTeam, pickAssignee, mode } = useAssignmentsParams();
     const isAssignMode = mode === 'assign';
     const {
         planning,
@@ -74,17 +77,23 @@ export const TeamsPanel: FC = () => {
         expandedTeamIds,
         toggleTeam,
         currentAssignee,
-        pickAssignee,
     } = useAssignmentsContext();
     const { hasArea } = useSelectedTeamArea();
-    const canPickAssignee = isAssignMode && hasArea;
+    const teamIdsWithArea = useTeamIdsWithArea();
     const targetGeographyName = planning.org_unit_details?.name;
     const [isOpen, setIsOpen] = useState(true);
     const toggleOpen = useCallback(() => setIsOpen(open => !open), []);
 
     const rows = useMemo(
-        () => flattenTeamsPanelRows(tree, teamChain, expandedTeamIds),
-        [tree, teamChain, expandedTeamIds],
+        () =>
+            isAssignMode
+                ? flattenAssignPanelRows(
+                      tree,
+                      teamChain,
+                      currentAssignee?.team?.id,
+                  )
+                : flattenTeamsPanelRows(tree, teamChain, expandedTeamIds),
+        [isAssignMode, tree, teamChain, currentAssignee, expandedTeamIds],
     );
 
     if (!isOpen) {
@@ -108,9 +117,7 @@ export const TeamsPanel: FC = () => {
                 parentTeam: teamChain.at(-2)?.name ?? '',
             });
         }
-        return formatMessage(MESSAGES.teamsPanelAssignHelp, {
-            team: selectedTeam.name,
-        });
+        return formatMessage(MESSAGES.teamsPanelAssignHelp);
     };
 
     const rootCaption =
@@ -151,8 +158,9 @@ export const TeamsPanel: FC = () => {
                             key={row.key}
                             row={row}
                             onOpen={openTeam}
-                            isAssignMode={canPickAssignee}
+                            isAssignMode={isAssignMode}
                             isCurrentAssignee={row.key === currentAssignee?.key}
+                            isPickable={teamIdsWithArea.has(row.parentTeam.id)}
                             onPickAssignee={pickAssignee}
                         />
                     ),

@@ -1,28 +1,21 @@
 import React, { SyntheticEvent, useCallback } from 'react';
-import { Box, Button, Grid, Tab, Tabs, Theme } from '@mui/material';
+import { Box, Grid, Tab, Tabs, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    ColumnWithAccessor,
     commonStyles,
     LoadingSpinner,
-    SortableTable,
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    useApiValidationWorkflowsRetrieve,
-    ValidationWorkflowRetrieve,
-} from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsRetrieve } from 'Iaso/api/validationWorkflows';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useSaveNodeOrder } from 'Iaso/domains/validationWorkflowsConfiguration/api/PostPutPatch';
-import { useWorkflowNodesColumns } from 'Iaso/domains/validationWorkflowsConfiguration/config';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { smallTabsOverrides } from 'Iaso/styles';
 import { SxStyles } from 'Iaso/types/general';
 import { MainWrapper } from '../../components/MainWrapper';
-import { AddNode } from './components/CreateEditNode/CreateEditNode';
+import { StepsEditor } from './components/StepsEditor/StepsEditor';
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import {
     getActiveTab,
@@ -30,7 +23,6 @@ import {
     useSelectWorkflowTab,
     WORKFLOW_TABS,
 } from './detailsTabs';
-import { useSortableTableState } from './hooks/useSortableTableState';
 import MESSAGES from './messages';
 
 const styles = {
@@ -48,17 +40,6 @@ const styles = {
 const useStyles = makeStyles((theme: Theme) => {
     return {
         ...commonStyles(theme),
-        count: {
-            height: theme.spacing(8),
-            display: 'flex',
-            justifyContent: 'flex-end',
-            position: 'absolute',
-            alignItems: 'center',
-            paddingRight: theme.spacing(2),
-            top: 0,
-            right: 0,
-        },
-        titleRow: { fontWeight: 'bold' },
         infoPaper: {
             width: '100%',
             position: 'relative',
@@ -83,27 +64,6 @@ export const ValidationWorkflowConfigurationDetail = () => {
     const { data: workflow, isFetching: isLoading } =
         useApiValidationWorkflowsRetrieve(params.slug);
 
-    const {
-        items,
-        handleSortChange,
-        handleResetOrder,
-        isOrderChanged,
-        setIsOrderChanged,
-    } = useSortableTableState<
-        NonNullable<ValidationWorkflowRetrieve['node_templates']>[number]
-    >(workflow?.node_templates ?? []);
-    const { mutateAsync: saveOrder } = useSaveNodeOrder(params.slug);
-    const saveItems = useCallback(() => {
-        const itemsForApi = items.map(item => ({
-            ...item,
-            roles_required: item.roles_required?.map(role => role.id),
-        }));
-        return saveOrder(itemsForApi).then(() => setIsOrderChanged(false));
-    }, [items, saveOrder, setIsOrderChanged]);
-    const columns = useWorkflowNodesColumns(
-        workflow?.slug,
-        workflow?.has_processes,
-    );
     const title = workflow?.name
         ? `${formatMessage(MESSAGES.configureInstancesValidation)}: ${workflow.name}`
         : formatMessage(MESSAGES.addInstancesValidationWorkflow);
@@ -147,61 +107,7 @@ export const ValidationWorkflowConfigurationDetail = () => {
                     </Box>
                 )}
                 {activeTab === 'steps' && (
-                    <WidgetPaper
-                        className={classes.infoPaper}
-                        title={formatMessage(MESSAGES.steps)}
-                    >
-                        <Box className={classes.count}>
-                            {`${(workflow?.node_templates ?? []).length} `}
-                            {formatMessage(MESSAGES.steps)}
-                        </Box>
-                        <SortableTable
-                            items={items}
-                            onChange={newItems =>
-                                handleSortChange(
-                                    newItems as NonNullable<
-                                        ValidationWorkflowRetrieve['node_templates']
-                                    >[number][],
-                                )
-                            }
-                            columns={columns as ColumnWithAccessor[]}
-                            disabled={workflow?.has_processes}
-                        />
-                        {!workflow?.has_processes && (
-                            <Box m={2} textAlign="right">
-                                <Box display="inline-block" mr={2}>
-                                    <Button
-                                        color="primary"
-                                        disabled={!isOrderChanged}
-                                        data-test="reset-follow-up-order"
-                                        onClick={handleResetOrder}
-                                        variant="contained"
-                                    >
-                                        {formatMessage(MESSAGES.resetOrder)}
-                                    </Button>
-                                </Box>
-
-                                <Box display="inline-block" mr={2}>
-                                    <Button
-                                        color="primary"
-                                        disabled={!isOrderChanged}
-                                        data-test="save-follow-up-order"
-                                        onClick={saveItems}
-                                        variant="contained"
-                                    >
-                                        {formatMessage(MESSAGES.saveOrder)}
-                                    </Button>
-                                </Box>
-
-                                <AddNode
-                                    workflowSlug={workflow?.slug ?? ''}
-                                    iconProps={{
-                                        disabled: !Boolean(workflow?.slug),
-                                    }}
-                                />
-                            </Box>
-                        )}
-                    </WidgetPaper>
+                    <StepsEditor workflow={workflow} isLoading={isLoading} />
                 )}
             </MainWrapper>
         </>

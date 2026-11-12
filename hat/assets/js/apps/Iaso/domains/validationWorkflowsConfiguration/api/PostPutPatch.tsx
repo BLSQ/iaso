@@ -68,3 +68,37 @@ export const useSaveNodeOrder = (
         invalidateQueryKey: [...(invalidateQueryKey ?? []), WF_BASE_QUERYKEY],
     });
 };
+
+type SaveStepsArgs = {
+    steps: Array<ValidationNodeTemplateUpdateBody & { slug: string }>;
+    // Bulk update rewrites the whole chain, so it is only used to reorder.
+    reorder: boolean;
+};
+
+const saveSteps =
+    (workflowSlug: string) =>
+    ({ steps, reorder }: SaveStepsArgs): Promise<unknown> => {
+        if (reorder) {
+            return putRequest(
+                `${API_URL}${workflowSlug}/node-templates/bulk/`,
+                steps,
+            );
+        }
+        return Promise.all(
+            steps.map(({ slug, ...body }) =>
+                putRequest(
+                    `${API_URL}${workflowSlug}/node-templates/${slug}/`,
+                    body,
+                ),
+            ),
+        );
+    };
+
+export const useSaveSteps = (workflowSlug: string) =>
+    useSnackMutation<unknown, unknown, SaveStepsArgs>({
+        mutationFn: saveSteps(workflowSlug),
+        invalidateQueryKey: [
+            ...getApiValidationWorkflowsRetrieveQueryKey(workflowSlug),
+            WF_BASE_QUERYKEY,
+        ],
+    });

@@ -105,6 +105,42 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
     },
+    validationSteps: {
+        id: 'iaso.workflows.validationSteps',
+        defaultMessage: 'Validation steps',
+    },
+    addStep: {
+        id: 'iaso.workflows.addStep',
+        defaultMessage: 'Add step',
+    },
+    stepName: {
+        id: 'iaso.workflows.stepName',
+        defaultMessage: 'Step name',
+    },
+    validatedByUserRole: {
+        id: 'iaso.workflows.validatedByUserRole',
+        defaultMessage: 'Validated by user role',
+    },
+    preview: {
+        id: 'iaso.workflows.preview',
+        defaultMessage: 'Preview',
+    },
+    previewSubtitle: {
+        id: 'iaso.workflows.previewSubtitle',
+        defaultMessage: 'How validators will see the chain',
+    },
+    noSteps: {
+        id: 'iaso.workflows.noSteps',
+        defaultMessage: 'No steps yet',
+    },
+    noRole: {
+        id: 'iaso.workflows.noRole',
+        defaultMessage: 'No role required',
+    },
+    duplicateStepName: {
+        id: 'iaso.workflows.duplicateStepName',
+        defaultMessage: 'Step names must be unique',
+    },
 });
 
 export default MESSAGES;

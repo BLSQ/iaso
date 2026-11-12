@@ -16,6 +16,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { useSelectedTeamArea } from '../assign/useSelectedTeamArea';
 import { TeamMemberRow } from './TeamMemberRow';
 import { TeamNavRow } from './TeamNavRow';
 import { flattenTeamsPanelRows } from './utils';
@@ -75,6 +76,8 @@ export const TeamsPanel: FC = () => {
         currentAssignee,
         pickAssignee,
     } = useAssignmentsContext();
+    const { hasArea } = useSelectedTeamArea();
+    const canPickAssignee = isAssignMode && hasArea;
     const targetGeographyName = planning.org_unit_details?.name;
     const [isOpen, setIsOpen] = useState(true);
     const toggleOpen = useCallback(() => setIsOpen(open => !open), []);
@@ -97,6 +100,19 @@ export const TeamsPanel: FC = () => {
         );
     }
 
+    const getHelp = () => {
+        if (!isAssignMode) return formatMessage(MESSAGES.teamsPanelExploreHelp);
+        if (!hasArea) {
+            return formatMessage(MESSAGES.assignTeamHasNoArea, {
+                team: selectedTeam.name,
+                parentTeam: teamChain.at(-2)?.name ?? '',
+            });
+        }
+        return formatMessage(MESSAGES.teamsPanelAssignHelp, {
+            team: selectedTeam.name,
+        });
+    };
+
     const rootCaption =
         targetGeographyName &&
         formatMessage(MESSAGES.targetGeographyCaption, {
@@ -111,11 +127,7 @@ export const TeamsPanel: FC = () => {
                         {formatMessage(USERS_MESSAGES.teams)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {isAssignMode
-                            ? formatMessage(MESSAGES.teamsPanelAssignHelp, {
-                                  team: selectedTeam.name,
-                              })
-                            : formatMessage(MESSAGES.teamsPanelExploreHelp)}
+                        {getHelp()}
                     </Typography>
                 </Box>
                 <Tooltip title={formatMessage(MESSAGES.hideTeams)}>
@@ -139,7 +151,7 @@ export const TeamsPanel: FC = () => {
                             key={row.key}
                             row={row}
                             onOpen={openTeam}
-                            isAssignMode={isAssignMode}
+                            isAssignMode={canPickAssignee}
                             isCurrentAssignee={row.key === currentAssignee?.key}
                             onPickAssignee={pickAssignee}
                         />

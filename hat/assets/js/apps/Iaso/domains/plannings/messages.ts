@@ -735,6 +735,30 @@ const MESSAGES = defineMessages({
             'Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.',
         id: 'iaso.plannings.label.mapExploreHintUsers',
     },
+    mapAssignHint: {
+        defaultMessage:
+            'Assign: click an org unit to assign it to {member}, click it again to unassign it. Only the org units inside the area of {team} can be assigned, the others are dimmed.',
+        id: 'iaso.plannings.label.mapAssignHint',
+    },
+    assignTeamHasNoArea: {
+        defaultMessage:
+            '{team} has no org unit to split yet. Open {parentTeam} and assign org units to {team} first.',
+        id: 'iaso.plannings.label.assignTeamHasNoArea',
+    },
+    clearAssignmentsBelowTitle: {
+        defaultMessage: 'Remove the assignments made inside {name}?',
+        id: 'iaso.plannings.label.clearAssignmentsBelowTitle',
+    },
+    clearAssignmentsBelowOnReassign: {
+        defaultMessage:
+            'Org units inside {name} were already assigned by its current assignee. Reassigning {name} removes those assignments.',
+        id: 'iaso.plannings.label.clearAssignmentsBelowOnReassign',
+    },
+    clearAssignmentsBelowOnUnassign: {
+        defaultMessage:
+            'Org units inside {name} were already assigned by its current assignee. Unassigning {name} removes those assignments.',
+        id: 'iaso.plannings.label.clearAssignmentsBelowOnUnassign',
+    },
     mapHintNoMember: {
         defaultMessage:
             'This team has no member. Add members in the team hierarchy of the planning.',

@@ -1,15 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
-import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { useUpdateAssignments } from '../api/useUpdateAssignments';
 import { getAssigneeRef, isAssignedTo } from '../api/utils';
-import { useLevelOrgUnits } from '../mainPanel/useLevelOrgUnits';
 import { useConfirmPublishedChange } from './PublishedPlanningConfirmation';
-import { useSelectedTeamArea } from './useSelectedTeamArea';
-import {
-    getAssignableOrgUnitIds,
-    getOrgUnitIdsWithAssignmentsBelow,
-} from './utils';
+import { useAssignableOrgUnits } from './useAssignableOrgUnits';
 
 export type PendingAssignmentChange = {
     orgUnitName: string;
@@ -27,36 +21,21 @@ type AssignOnClick = {
 const NO_ORG_UNIT = new Set<number>();
 
 export const useAssignOnClick = (): AssignOnClick => {
-    const { planning, selectedLevel, currentAssignee } =
-        useAssignmentsContext();
-    const { data: assignments } = usePlanningAssignments(planning.id);
-    const { parents } = useLevelOrgUnits(selectedLevel);
-    const { areaOrgUnitIds } = useSelectedTeamArea();
+    const { planning, currentAssignee } = useAssignmentsContext();
+    const {
+        assignments,
+        assignableOrgUnitIds: assignableByTeam,
+        orgUnitIdsWithAssignmentsBelow,
+        orgUnitNameById,
+    } = useAssignableOrgUnits();
     const updateAssignments = useUpdateAssignments(planning.id);
     const confirmPublishedChange = useConfirmPublishedChange();
     const [pendingChange, setPendingChange] =
         useState<PendingAssignmentChange>();
 
     const assignableOrgUnitIds = useMemo(
-        () =>
-            currentAssignee && parents
-                ? getAssignableOrgUnitIds(parents, areaOrgUnitIds)
-                : NO_ORG_UNIT,
-        [currentAssignee, parents, areaOrgUnitIds],
-    );
-    const orgUnitIdsWithAssignmentsBelow = useMemo(
-        () =>
-            getOrgUnitIdsWithAssignmentsBelow(parents ?? [], assignments ?? []),
-        [parents, assignments],
-    );
-    const orgUnitNameById = useMemo(
-        () =>
-            new Map(
-                (parents ?? [])
-                    .flatMap(parent => parent.children)
-                    .map(orgUnit => [orgUnit.id, orgUnit.name]),
-            ),
-        [parents],
+        () => (currentAssignee ? assignableByTeam : NO_ORG_UNIT),
+        [currentAssignee, assignableByTeam],
     );
 
     const toggleAssignment = useCallback(
@@ -65,7 +44,7 @@ export const useAssignOnClick = (): AssignOnClick => {
                 return;
             }
             const assignee = getAssigneeRef(currentAssignee);
-            const assignment = assignments?.find(
+            const assignment = assignments.find(
                 ({ org_unit }) => org_unit === orgUnitId,
             );
             const isUnassign = isAssignedTo(assignment, assignee);

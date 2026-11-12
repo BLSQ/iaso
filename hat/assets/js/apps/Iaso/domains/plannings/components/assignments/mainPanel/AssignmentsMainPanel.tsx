@@ -8,6 +8,8 @@ import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
 import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
+import { BulkAssignButton } from '../assign/BulkAssignButton';
+import { EmptyAreaButton } from '../assign/EmptyAreaButton';
 import { AssignmentsMap } from './AssignmentsMap';
 import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
 import { OrgUnitsTable } from './OrgUnitsTable';
@@ -35,7 +37,7 @@ const styles = {
 
 export const AssignmentsMainPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { view, updateParams } = useAssignmentsParams();
+    const { view, mode, updateParams } = useAssignmentsParams();
     const handleChangeView = useCallback(
         (_event: SyntheticEvent, newView: AssignmentsView) =>
             updateParams({ view: newView }),
@@ -74,6 +76,12 @@ export const AssignmentsMainPanel: FC = () => {
                     <OnlyUnassignedToggle />
                     <FindOrgUnitField />
                 </Stack>
+                {mode === 'assign' && (
+                    <Stack direction="row" alignItems="center" gap={0.5}>
+                        <BulkAssignButton />
+                        <EmptyAreaButton />
+                    </Stack>
+                )}
             </Stack>
             {view === 'map' && <AssignmentsMap />}
             {view === 'list' && <OrgUnitsTable />}

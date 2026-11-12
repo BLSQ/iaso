@@ -777,6 +777,88 @@ const MESSAGES = defineMessages({
             'You will not be asked again until you leave this page.',
         id: 'iaso.plannings.label.publishedPlanningConfirmationNote',
     },
+    orgUnitsAssigned: {
+        defaultMessage: 'Org units assigned',
+        id: 'iaso.plannings.label.orgUnitsAssigned',
+    },
+    removeMemberAssignments: {
+        defaultMessage: 'Remove the assignments of this member',
+        id: 'iaso.plannings.label.removeMemberAssignments',
+    },
+    removeAssignments: {
+        defaultMessage: 'Remove assignments',
+        id: 'iaso.plannings.label.removeAssignments',
+    },
+    removeMemberAssignmentsText: {
+        defaultMessage: 'Remove the {count} assignments of {member}?',
+        id: 'iaso.plannings.label.removeMemberAssignmentsText',
+    },
+    removeTeamAssignmentsBelowText: {
+        defaultMessage:
+            'Assignments made by {member} inside them are removed too.',
+        id: 'iaso.plannings.label.removeTeamAssignmentsBelowText',
+    },
+    deleteAreaAssignments: {
+        defaultMessage: 'Delete assignments of {team}',
+        id: 'iaso.plannings.label.deleteAreaAssignments',
+    },
+    deleteAreaAssignmentsText: {
+        defaultMessage:
+            'Delete the {count} assignments made inside the area of {team}, and the ones made inside them? The area itself stays assigned to {team}.',
+        id: 'iaso.plannings.label.deleteAreaAssignmentsText',
+    },
+    deleteAllAssignmentsText: {
+        defaultMessage:
+            'Delete all {count} assignments of this planning? This cannot be undone.',
+        id: 'iaso.plannings.label.deleteAllAssignmentsText',
+    },
+    bulkAssignTooltip: {
+        defaultMessage: 'Assign several org units to {member}',
+        id: 'iaso.plannings.label.bulkAssignTooltip',
+    },
+    bulkAssignTitle: {
+        defaultMessage: 'Assign org units of {team}',
+        id: 'iaso.plannings.label.bulkAssignTitle',
+    },
+    bulkAssignTo: {
+        defaultMessage: 'Assign to {member}',
+        id: 'iaso.plannings.label.bulkAssignTo',
+    },
+    filterByName: {
+        defaultMessage: 'Filter by name',
+        id: 'iaso.plannings.label.filterByName',
+    },
+    selectAll: {
+        defaultMessage: 'Select all',
+        id: 'iaso.plannings.label.selectAll',
+    },
+    selectUnassigned: {
+        defaultMessage: 'Select unassigned',
+        id: 'iaso.plannings.label.selectUnassigned',
+    },
+    unselectAll: {
+        defaultMessage: 'Unselect all',
+        id: 'iaso.plannings.label.unselectAll',
+    },
+    noOrgUnitMatchesFilter: {
+        defaultMessage: 'No org unit matches the filter',
+        id: 'iaso.plannings.label.noOrgUnitMatchesFilter',
+    },
+    bulkAssignSelected: {
+        defaultMessage:
+            '{count} selected. Org units already assigned to another member are reassigned.',
+        id: 'iaso.plannings.label.bulkAssignSelected',
+    },
+    bulkAssignUnassigns: {
+        defaultMessage:
+            '{count} unchecked org units of {member} are unassigned.',
+        id: 'iaso.plannings.label.bulkAssignUnassigns',
+    },
+    bulkAssignClearsBelow: {
+        defaultMessage:
+            '{count} of them have assignments made inside them, which are removed.',
+        id: 'iaso.plannings.label.bulkAssignClearsBelow',
+    },
     mapHintNoMember: {
         defaultMessage:
             'This team has no member. Add members in the team hierarchy of the planning.',

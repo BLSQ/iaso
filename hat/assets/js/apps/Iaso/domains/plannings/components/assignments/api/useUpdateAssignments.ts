@@ -23,7 +23,8 @@ type AssignmentChange = {
     assignee?: AssigneeRef;
 };
 
-type MutationVariables = AssignmentChange & {
+type MutationVariables = {
+    changes: AssignmentChange[];
     nextAssignments: Assignment[];
 };
 
@@ -33,7 +34,10 @@ type MutationContext = {
     previousData: CachedAssignments;
 };
 
-export type UpdateAssignments = (change: AssignmentChange) => void;
+// Several changes are sent one after the other, and shown together right away.
+export type UpdateAssignments = (
+    changes: AssignmentChange | AssignmentChange[],
+) => void;
 
 // Applied to the page right away, rolled back if the server refuses it.
 export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
@@ -49,16 +53,19 @@ export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
         MutationVariables,
         MutationContext
     >({
-        mutationFn: ({ orgUnitIds, assignee }: MutationVariables) =>
-            assignee
-                ? apiMicroplanningPlanningsAssignmentsAssignCreate(
-                      `${planningId}`,
-                      { org_unit_ids: orgUnitIds, ...assignee },
-                  )
-                : apiMicroplanningPlanningsAssignmentsUnassignCreate(
-                      `${planningId}`,
-                      { org_unit_ids: orgUnitIds },
-                  ),
+        mutationFn: async ({ changes }: MutationVariables) => {
+            for (const { orgUnitIds, assignee } of changes) {
+                await (assignee
+                    ? apiMicroplanningPlanningsAssignmentsAssignCreate(
+                          `${planningId}`,
+                          { org_unit_ids: orgUnitIds, ...assignee },
+                      )
+                    : apiMicroplanningPlanningsAssignmentsUnassignCreate(
+                          `${planningId}`,
+                          { org_unit_ids: orgUnitIds },
+                      ));
+            }
+        },
         showSuccessSnackBar: false,
         useApiErrorMessage: true,
         options: {
@@ -80,25 +87,28 @@ export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
     });
 
     return useCallback<UpdateAssignments>(
-        ({ orgUnitIds, assignee }) => {
-            const assignments = getAssignments(
+        changeOrChanges => {
+            let assignments = getAssignments(
                 queryClient.getQueryData<CachedAssignments>(queryKey),
             );
-            const changedOrgUnitIds = getChangedOrgUnitIds(
-                assignments,
-                orgUnitIds,
-                assignee,
-            );
-            if (!changedOrgUnitIds.length) return;
-            mutate({
-                orgUnitIds: changedOrgUnitIds,
-                assignee,
-                nextAssignments: applyAssignmentChange(
+            const changes: AssignmentChange[] = [];
+            [changeOrChanges].flat().forEach(({ orgUnitIds, assignee }) => {
+                const changedOrgUnitIds = getChangedOrgUnitIds(
+                    assignments,
+                    orgUnitIds,
+                    assignee,
+                );
+                if (!changedOrgUnitIds.length) return;
+                changes.push({ orgUnitIds: changedOrgUnitIds, assignee });
+                assignments = applyAssignmentChange(
                     assignments,
                     changedOrgUnitIds,
                     assignee,
-                ),
+                );
             });
+            if (changes.length) {
+                mutate({ changes, nextAssignments: assignments });
+            }
         },
         [queryClient, queryKey, mutate],
     );

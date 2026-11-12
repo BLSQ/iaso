@@ -106,7 +106,7 @@ export type Form = {
     org_unit_group_ids: number[];
     projects: Project[];
     project_ids: number[];
-    period_type: 'MONTH' | 'QUARTER' | 'SIX_MONTH' | 'YEAR';
+    period_type: 'MONTH' | 'QUARTER' | 'SIX_MONTH' | 'YEAR' | null;
     single_per_period: boolean;
     periods_before_allowed: number;
     periods_after_allowed: number;

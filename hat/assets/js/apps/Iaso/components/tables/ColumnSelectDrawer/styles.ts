@@ -1,51 +1,53 @@
-import { makeStyles } from '@mui/styles';
+import { Theme } from '@mui/material';
+import { SxStyles } from 'Iaso/types/general';
 
-export const useStyles = makeStyles(theme => ({
+export const styles = {
     root: {
         width: 400,
+        maxWidth: '90vw',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
         overflow: 'hidden',
     },
-    toolbar: {
-        ...theme.mixins.toolbar,
+    header: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
-        height: theme.spacing(8),
+        gap: 1,
+        px: 2,
+        py: 2,
+    },
+    content: {
+        flexGrow: 1,
+        overflow: 'auto',
+        px: 3,
+        py: 2,
     },
     search: {
-        marginLeft: theme.spacing(1),
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        width: '100%',
-    },
-    list: {
-        maxHeight: `calc(100vh - ${theme.spacing(8)})`,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-    },
-    listWithApply: {
-        maxHeight: `calc(100vh - ${theme.spacing(16)})`,
-        overflowY: 'auto',
-        overflowX: 'hidden',
+        mb: 2,
+        px: 1.5,
+        py: 0.5,
+        border: (theme: Theme) => `1px solid ${theme.palette.divider}`,
+        borderRadius: 1,
     },
     listItem: {
-        height: theme.spacing(6),
+        height: (theme: Theme) => theme.spacing(6),
+        px: 0,
     },
     switch: {
-        marginRight: theme.spacing(1),
-    },
-    placeholder: {
-        height: 15,
-        backgroundColor: theme.palette.lightGray.main,
-        borderRadius: 5,
-        marginRight: theme.spacing(1),
-        width: '50%',
+        marginRight: (theme: Theme) => theme.spacing(1),
     },
     input: {
         width: '100%',
         padding: 0,
     },
-}));
+    footer: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: 1,
+        px: 3,
+        py: 2,
+    },
+} satisfies SxStyles;

@@ -6,15 +6,18 @@ import {
     Setting,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PeriodTypeCell } from 'Iaso/components/Cells/PeriodTypeCell';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetOrgUnitTypeChips } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypeChips';
+import { useGetProjectChips } from '../../projects/hooks/useGetProjectChips';
 import { userHasAccessToModule } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { useDeleteForm } from '../hooks/useDeleteForm';
-import { useGetProjectChips } from '../hooks/useGetProjectChips';
 import MESSAGES from '../messages';
 import { Form, FormsParams } from '../types/forms';
 
@@ -140,6 +143,7 @@ export const useFormsTableColumns = ({
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
     const getProjectChips = useGetProjectChips();
+    const getOrgUnitTypeChips = useGetOrgUnitTypeChips();
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -179,10 +183,8 @@ export const useFormsTableColumns = ({
                 sortable: false,
                 accessor: 'org_unit_types',
                 id: 'org_unit_types',
-                Cell: settings =>
-                    settings.row.original.org_unit_types
-                        ?.map((o: { short_name: string }) => o.short_name)
-                        ?.join(', '),
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getOrgUnitTypeChips(original.org_unit_types),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitsGroups),
@@ -199,6 +201,18 @@ export const useFormsTableColumns = ({
                 id: 'instances_count',
                 accessor: 'instances_count',
                 Cell: settings => formatThousand(settings.value),
+            },
+            {
+                Header: formatMessage(MESSAGES.periodType),
+                id: 'period_type',
+                accessor: 'period_type',
+                Cell: PeriodTypeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.singlePerPeriod),
+                id: 'single_per_period',
+                accessor: 'single_per_period',
+                Cell: YesNoCell,
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -239,6 +253,7 @@ export const useFormsTableColumns = ({
         hasDhis2Module,
         deleteForm,
         getProjectChips,
+        getOrgUnitTypeChips,
     ]);
 };
 

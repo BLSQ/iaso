@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timezone as dt_timezone
+from datetime import UTC, datetime
 
 import rest_framework.status
 
@@ -429,7 +429,7 @@ class StockLedgerItemAPITestCase(APITestCase):
             value=10,
             impact=m.StockImpacts.ADD,
             created_by=cls.user_without_rights,
-            created_at=datetime(2025, 11, 5, 0, 0, 0, tzinfo=dt_timezone.utc),
+            created_at=datetime(2025, 11, 5, 0, 0, 0, tzinfo=UTC),
         )
 
     def test_not_authenticated_without_rights_list(self):

@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import uuid4
 
 from django.contrib.gis.db.models import PointField
@@ -23,15 +22,15 @@ class DevicePosition(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     @property
-    def latitude(self) -> Optional[float]:
+    def latitude(self) -> float | None:
         return self.location.y if self.location is not None else None
 
     @property
-    def longitude(self) -> Optional[float]:
+    def longitude(self) -> float | None:
         return self.location.x if self.location is not None else None
 
     @property
-    def altitude(self) -> Optional[float]:
+    def altitude(self) -> float | None:
         return self.location.z if self.location is not None else None
 
     def __str__(self) -> str:

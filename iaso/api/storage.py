@@ -586,7 +586,7 @@ def logs_per_device(request, storage_id: str, storage_type: str):
     if performed_at_str is not None:
         log_entries_queryset = log_entries_queryset.filter(
             performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d")
-            .replace(tzinfo=datetime.timezone.utc)
+            .replace(tzinfo=datetime.UTC)
             .date()
         )
 

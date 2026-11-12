@@ -4,7 +4,7 @@ import zipfile
 from unittest import mock
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from iaso.models import SUCCESS, Account, Project, Task
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
@@ -40,6 +40,7 @@ def _get_files_in_zipfile(zip_path, zip_name):
         return zip_ref.namelist()
 
 
+@override_settings(USE_S3=True, AWS_S3_REGION_NAME="eu-test-1", AWS_STORAGE_BUCKET_NAME="iaso-test")
 class ExportMobileAppSetupForUserTest(TestCase):
     fixtures = ["user.yaml"]
 

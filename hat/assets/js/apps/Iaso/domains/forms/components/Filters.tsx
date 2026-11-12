@@ -43,8 +43,6 @@ const Filters = ({ params }: Props) => {
     const redirectTo = useRedirectTo();
     const currentUser = useCurrentUser();
     const hasPlanningPermission = userHasPermission(PLANNING_READ, currentUser);
-    // Same query as PlanningsDropdown (deduped by react-query): used here
-    // only to label the active-filter chip.
     const { data: plannings } = useApiMicroplanningPlanningsDropdownList(
         undefined,
         {
@@ -65,8 +63,6 @@ const Filters = ({ params }: Props) => {
         });
     }, [redirectTo]);
 
-    // Adapter between url params (strings, `onlyDeleted: '1'`) and the
-    // generic filter values (`onlyDeleted: boolean`).
     const values: FilterValues = useMemo(
         () => ({
             search: params.search,
@@ -82,6 +78,7 @@ const Filters = ({ params }: Props) => {
         (next: FilterValues) => {
             redirectTo(baseUrl, {
                 ...params,
+                page: '1',
                 search: next.search || undefined,
                 projectsIds: next.projectsIds || undefined,
                 orgUnitTypeIds: next.orgUnitTypeIds || undefined,
@@ -132,8 +129,6 @@ const Filters = ({ params }: Props) => {
                         value={value}
                         keyValue="planning"
                         multi
-                        // the drawer already spaces fields: avoid
-                        // InputComponent's own margin-top doubling it
                         withMarginTop={false}
                     />
                 ),

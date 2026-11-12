@@ -97,6 +97,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.maxCardinality',
         defaultMessage: 'Max cardinality',
     },
+    addFormLabel: {
+        id: 'iaso.missions.label.addFormLabel',
+        defaultMessage: 'Add a form',
+    },
     addForm: {
         id: 'iaso.missions.label.addForm',
         defaultMessage: 'Select a form to add...',
@@ -108,6 +112,22 @@ const MESSAGES = defineMessages({
     max: {
         id: 'iaso.missions.label.max',
         defaultMessage: 'Max',
+    },
+    cardinality: {
+        id: 'iaso.missions.label.cardinality',
+        defaultMessage: 'Cardinality',
+    },
+    cardinalityRange: {
+        id: 'iaso.missions.label.cardinalityRange',
+        defaultMessage: 'min {min} · max {max}',
+    },
+    minPerOrgUnit: {
+        id: 'iaso.missions.label.minPerOrgUnit',
+        defaultMessage: 'Min / org unit',
+    },
+    maxPerOrgUnit: {
+        id: 'iaso.missions.label.maxPerOrgUnit',
+        defaultMessage: 'Max / org unit',
     },
     detailMissionLabel: {
         id: 'iaso.missions.label.detailMissionLabel',
@@ -124,10 +144,6 @@ const MESSAGES = defineMessages({
     missionDetailTitle: {
         defaultMessage: 'Mission details',
         id: 'iaso.missions.title.missionDetail',
-    },
-    infinity: {
-        defaultMessage: 'Infinity',
-        id: 'iaso.missions.infinity',
     },
     delete: {
         defaultMessage: 'Delete',
@@ -161,10 +177,93 @@ const MESSAGES = defineMessages({
         id: 'iaso.missions.label.formsCount',
         defaultMessage: '{count, plural, one {# form} other {# forms}}',
     },
-    formInfo: {
-        id: 'iaso.missions.label.formInfo',
+    formsOnAssignedOrgUnitInfo: {
+        id: 'iaso.missions.label.formsOnAssignedOrgUnitInfo',
         defaultMessage:
-            'Add one or more forms. Per form, set how many submissions each assigned unit must collect — min required, max allowed (leave max empty for no limit / ∞).',
+            'Per form, min is the number of submissions required on each assigned org unit, max the number allowed (empty = no limit).',
+    },
+    orgUnitsAgentCreates: {
+        id: 'iaso.missions.label.orgUnitsAgentCreates',
+        defaultMessage: 'Org units the agent creates',
+    },
+    orgUnitsAgentCreatesInfo: {
+        id: 'iaso.missions.label.orgUnitsAgentCreatesInfo',
+        defaultMessage:
+            'In each assigned org unit, the agent creates new org units of this type.',
+    },
+    orgUnitTypeToCreate: {
+        id: 'iaso.missions.label.orgUnitTypeToCreate',
+        defaultMessage: 'Org unit type to create',
+    },
+    minNewOrgUnits: {
+        id: 'iaso.missions.label.minNewOrgUnits',
+        defaultMessage: 'Min new org units per assigned org unit',
+    },
+    maxNewOrgUnits: {
+        id: 'iaso.missions.label.maxNewOrgUnits',
+        defaultMessage: 'Max new org units per assigned org unit',
+    },
+    formsOnCreatedOrgUnit: {
+        id: 'iaso.missions.label.formsOnCreatedOrgUnit',
+        defaultMessage: 'Forms submitted on each created org unit',
+    },
+    formsOnCreatedOrgUnitInfo: {
+        id: 'iaso.missions.label.formsOnCreatedOrgUnitInfo',
+        defaultMessage:
+            'Per form, min is the number of submissions required on each new org unit, max the number allowed (empty = no limit).',
+    },
+    entitiesAgentCreates: {
+        id: 'iaso.missions.label.entitiesAgentCreates',
+        defaultMessage: 'Entities the agent creates',
+    },
+    entitiesAgentCreatesInfo: {
+        id: 'iaso.missions.label.entitiesAgentCreatesInfo',
+        defaultMessage:
+            'In each assigned org unit, the agent registers new entities of this type.',
+    },
+    entityTypeToCreate: {
+        id: 'iaso.missions.label.entityTypeToCreate',
+        defaultMessage: 'Entity type to create',
+    },
+    minEntities: {
+        id: 'iaso.missions.label.minEntities',
+        defaultMessage: 'Min entities per assigned org unit',
+    },
+    maxEntities: {
+        id: 'iaso.missions.label.maxEntities',
+        defaultMessage: 'Max entities per assigned org unit',
+    },
+    formsOnCreatedEntity: {
+        id: 'iaso.missions.label.formsOnCreatedEntity',
+        defaultMessage: 'Forms submitted on each created entity',
+    },
+    formsOnCreatedEntityInfo: {
+        id: 'iaso.missions.label.formsOnCreatedEntityInfo',
+        defaultMessage:
+            'Per form, min is the number of submissions required on each entity, max the number allowed (empty = no limit).',
+    },
+    minPerEntity: {
+        id: 'iaso.missions.label.minPerEntity',
+        defaultMessage: 'Min / entity',
+    },
+    maxPerEntity: {
+        id: 'iaso.missions.label.maxPerEntity',
+        defaultMessage: 'Max / entity',
+    },
+    formFillingDescription: {
+        id: 'iaso.missions.label.formFillingDescription',
+        defaultMessage:
+            'Submit forms on the existing org units assigned to the agent.',
+    },
+    orgUnitAndFormDescription: {
+        id: 'iaso.missions.label.orgUnitAndFormDescription',
+        defaultMessage:
+            'Create new org units in the assigned area, then submit forms on each of them.',
+    },
+    entityAndFormDescription: {
+        id: 'iaso.missions.label.entityAndFormDescription',
+        defaultMessage:
+            'Register new entities (e.g. beneficiaries) in the assigned area, then submit forms on each of them.',
     },
 });
 

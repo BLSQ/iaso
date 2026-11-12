@@ -12,7 +12,7 @@ const logout = async (next?: string): Promise<void> => {
         : '/logout-iaso';
     const response = await iasoFetch(url, {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') ?? '' },
+        headers: { 'X-CSRFToken': window.CSRF_TOKEN },
     });
     // fetch already followed the server redirect: go where Django sent us
     window.location.href = response.url;

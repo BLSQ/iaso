@@ -42,6 +42,7 @@ declare global {
         SENTRY_INITIALIZED?: boolean;
         PRODUCT_FRUITS_WORKSPACE_CODE?: string;
         AVAILABLE_LANGUAGES?: string;
+        CSRF_TOKEN: string;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],

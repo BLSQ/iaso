@@ -4,15 +4,20 @@ from datetime import date, datetime, timezone
 
 import openpyxl
 
-from django.urls import reverse
+from rest_framework import status
 
 from iaso import models as m
-from iaso.test import TestCase
+from iaso.test import APITestCase
 from plugins.wfp.models import Beneficiary, Journey, Step, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 
 
-class BeneficiariesViewTestCase(TestCase):
+BENEFICIARIES_URL = "/api/wfp/beneficiaries/"
+CODA_EXPORT_URL = f"{BENEFICIARIES_URL}export/coda/"
+RAW_EXPORT_URL = f"{BENEFICIARIES_URL}export/raw/"
+
+
+class BeneficiariesTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="WFP")
@@ -54,77 +59,52 @@ class BeneficiariesViewTestCase(TestCase):
             entity=cls.other_entity, account=cls.other_account, birth_date=date(2023, 1, 1), gender="Male"
         )
 
-    def test_requires_login(self):
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        self.assertEqual(response.status_code, 302)
+    def _beneficiaries(self, params=None):
+        self.client.force_authenticate(self.user)
+        return self.assertJSONResponse(self.client.get(BENEFICIARIES_URL, params or {}), status.HTTP_200_OK)
 
-    def test_screen_and_exports_require_the_export_permission(self):
-        user = self.create_user_with_profile(username="no_permission", account=self.account)
-        self.client.force_login(user)
-        for url_name in ["wfp_beneficiaries", "wfp_beneficiaries_coda_export", "wfp_beneficiaries_raw_export"]:
-            self.assertEqual(self.client.get(reverse(url_name)).status_code, 403)
+    def test_requires_authentication(self):
+        for url in [BENEFICIARIES_URL, CODA_EXPORT_URL, RAW_EXPORT_URL]:
+            with self.subTest(url):
+                self.assertEqual(self.client.get(url).status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_list_is_limited_to_the_user_account(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual([b.id for b in response.context["page"]], [self.beneficiary.id])
-        self.assertContains(response, str(self.entity.uuid))
-        self.assertNotContains(response, str(self.other_entity.uuid))
+        data = self._beneficiaries()
+        self.assertEqual([b["id"] for b in data["results"]], [self.beneficiary.id])
+        self.assertEqual(data["results"][0]["uuid"], str(self.entity.uuid))
 
     def test_list_shows_visits_and_counts(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        beneficiary = response.context["page"][0]
-        self.assertEqual(beneficiary.journeys_count, 1)
-        self.assertEqual(beneficiary.visits_count, 1)
-        self.assertEqual(list(beneficiary.journeys[0].visit_set.all()), [self.visit])
-        self.assertContains(response, "lns: 14.0")
+        [beneficiary] = self._beneficiaries()["results"]
+        self.assertEqual((beneficiary["journeys_count"], beneficiary["visits_count"]), (1, 1))
+        [visit] = beneficiary["journeys"][0]["visits"]
+        self.assertEqual(visit["id"], self.visit.id)
+        self.assertEqual(visit["instance_id"], self.visit_instance.id)
+        self.assertEqual([(s["assistance_type"], s["quantity_given"]) for s in visit["steps"]], [("lns", 14.0)])
 
     def test_programme_filter_keeps_all_journeys_in_counts(self):
         Journey.objects.create(beneficiary=self.beneficiary, nutrition_programme="TSFP", programme_type="U5")
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"), {"programme": "BSFP"})
-        self.assertEqual([b.journeys_count for b in response.context["page"]], [2])
-        response = self.client.get(reverse("wfp_beneficiaries"), {"programme": "OTP"})
-        self.assertEqual(list(response.context["page"]), [])
-
-    def test_search_by_entity_id(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"), {"q": str(self.entity.id)})
-        self.assertEqual([b.id for b in response.context["page"]], [self.beneficiary.id])
+        data = self._beneficiaries({"programme": "BSFP"})
+        self.assertEqual([b["journeys_count"] for b in data["results"]], [2])
+        self.assertEqual(self._beneficiaries({"programme": "OTP"})["results"], [])
 
     def test_beneficiary_data_shows_reference_and_submissions(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiary_data", args=[self.entity.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Amina")
-        self.assertContains(response, "household/size")
-        self.assertContains(response, "Fatou")
-        self.assertEqual({s.id for s in response.context["submissions"]}, {self.reference.id, self.visit_instance.id})
-
-    def test_beneficiary_data_of_another_account_is_not_found(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiary_data", args=[self.other_entity.id]))
-        self.assertEqual(response.status_code, 404)
+        self.client.force_authenticate(self.user)
+        data = self.assertJSONResponse(
+            self.client.get(f"{BENEFICIARIES_URL}{self.entity.id}/data/"), status.HTTP_200_OK
+        )
+        self.assertIn({"key": "first_name", "value": "Amina"}, data["attributes"])
+        self.assertIn({"key": "household/size", "value": 5}, data["attributes"])
+        self.assertEqual({s["id"] for s in data["submissions"]}, {self.reference.id, self.visit_instance.id})
+        visit_submission = next(s for s in data["submissions"] if s["id"] == self.visit_instance.id)
+        self.assertIn({"key": "referrer_name", "value": "Fatou"}, visit_submission["rows"])
 
     def test_submission_fields(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_submission_fields", args=[self.visit_instance.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "referrer_name")
-        self.assertContains(response, "Fatou")
-
-    def test_submission_fields_of_another_account_is_not_found(self):
-        other_instance = m.Instance.objects.create(form=self.form, entity=self.other_entity, json={"secret": "x"})
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_submission_fields", args=[other_instance.id]))
-        self.assertEqual(response.status_code, 404)
-
-    def test_list_links_submissions_to_their_fields(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        self.assertContains(response, reverse("wfp_submission_fields", args=[self.visit_instance.id]))
+        self.client.force_authenticate(self.user)
+        data = self.assertJSONResponse(
+            self.client.get(f"{BENEFICIARIES_URL}submissions/{self.visit_instance.id}/fields/"), status.HTTP_200_OK
+        )
+        self.assertEqual(data["submission"]["id"], self.visit_instance.id)
+        self.assertIn({"key": "referrer_name", "value": "Fatou"}, data["rows"])
 
 
 class ExportTestData:
@@ -198,11 +178,11 @@ class ExportTestData:
         Beneficiary.objects.create(entity=cls.other_entity, account=cls.other_account, birth_date=date(2023, 1, 1))
 
 
-class CodaExportTestCase(ExportTestData, TestCase):
+class CodaExportTestCase(ExportTestData, APITestCase):
     def _export(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries_coda_export"))
-        self.assertEqual(response.status_code, 200)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(CODA_EXPORT_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         workbook = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         rows = list(workbook.active.iter_rows(values_only=True))
         headers = rows[1]
@@ -236,18 +216,18 @@ class CodaExportTestCase(ExportTestData, TestCase):
         # `fever` is not whitelisted in the PII configuration of the medical form
         self.assertIsNone(rows[0]["fever"])
 
-    def test_export_uses_the_filters_of_the_screen(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries_coda_export"), {"programme": "OTP"})
+    def test_export_uses_the_filters_of_the_list(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(CODA_EXPORT_URL, {"programme": "OTP"})
         workbook = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         self.assertEqual(len(list(workbook.active.iter_rows())), 2)  # the two header rows only
 
 
-class RawExportTestCase(ExportTestData, TestCase):
+class RawExportTestCase(ExportTestData, APITestCase):
     def _export(self, params=None):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries_raw_export"), params or {})
-        self.assertEqual(response.status_code, 200)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(RAW_EXPORT_URL, params or {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         workbook = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         sheets = {}
         for sheet in workbook.worksheets:
@@ -284,7 +264,7 @@ class RawExportTestCase(ExportTestData, TestCase):
         self.assertEqual(medical[0]["Passing_Urine"], "yes")
         self.assertNotIn("fever", medical[0])
 
-    def test_export_uses_the_filters_of_the_screen(self):
+    def test_export_uses_the_filters_of_the_list(self):
         sheets = self._export({"programme": "OTP"})
         self.assertEqual(sheets["beneficiaries"], [])
         self.assertEqual(sheets["forms"], [])
@@ -340,50 +320,24 @@ class OrgUnitScopeTestData(ExportTestData):
         )
 
 
-class OrgUnitScopeTestCase(OrgUnitScopeTestData, TestCase):
-    def _workbook(self, url_name, user, params=None):
-        self.client.force_login(user)
-        response = self.client.get(reverse(url_name), params or {})
-        self.assertEqual(response.status_code, 200)
+class OrgUnitScopeTestCase(OrgUnitScopeTestData, APITestCase):
+    def _workbook(self, url, user, params=None):
+        self.client.force_authenticate(user)
+        response = self.client.get(url, params or {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         return openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
 
     def _coda_facilities(self, user, params=None):
-        rows = list(self._workbook("wfp_beneficiaries_coda_export", user, params).active.iter_rows(values_only=True))
+        rows = list(self._workbook(CODA_EXPORT_URL, user, params).active.iter_rows(values_only=True))
         column = rows[1].index("health center name")
         return sorted(row[column] for row in rows[2:])
 
     def _raw_sheets(self, user, params=None):
         sheets = {}
-        for sheet in self._workbook("wfp_beneficiaries_raw_export", user, params).worksheets:
+        for sheet in self._workbook(RAW_EXPORT_URL, user, params).worksheets:
             rows = list(sheet.iter_rows(values_only=True))
             sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]] if rows else []
         return sheets
-
-    def test_screen_lists_the_groups_of_the_account(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        self.assertEqual(list(response.context["org_unit_groups"]), [self.group])
-        self.assertContains(response, "Friendship (South Sudan - 1)")
-
-    def test_screen_keeps_beneficiaries_with_a_visit_in_the_group(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        self.assertEqual(len(response.context["page"]), 2)
-
-        response = self.client.get(reverse("wfp_beneficiaries"), {"org_unit_group": self.group.id})
-        [beneficiary] = response.context["page"]
-        self.assertEqual(beneficiary.entity_id, self.entity.id)
-        self.assertEqual(beneficiary.journeys_count, 1)
-        self.assertEqual(beneficiary.visits_count, 1)
-        self.assertEqual([v.org_unit for v in beneficiary.journeys[0].visit_set.all()], [self.facility])
-
-    def test_group_of_another_account_matches_nothing(self):
-        data_source = m.DataSource.objects.create(name="Other")
-        version = m.SourceVersion.objects.create(data_source=data_source, number=1)
-        other_group = m.Group.objects.create(name="Other partner", source_version=version)
-        self.client.force_login(self.user)
-        response = self.client.get(reverse("wfp_beneficiaries"), {"org_unit_group": other_group.id})
-        self.assertEqual(list(response.context["page"]), [])
 
     def test_coda_export_keeps_the_visits_in_the_group(self):
         self.assertEqual(self._coda_facilities(self.user), ["Bentiu PHCC", "Rubkona PHCC", "Rubkona PHCC"])
@@ -407,25 +361,11 @@ class OrgUnitScopeTestCase(OrgUnitScopeTestData, TestCase):
         numbers = [row["number"] for row in sheets["visits"] if row["entity_id"] == self.entity.id]
         self.assertEqual(numbers, [1, 2, 3])
 
-    def test_restricted_user_only_sees_their_facilities(self):
-        self.client.force_login(self.partner)
-        response = self.client.get(reverse("wfp_beneficiaries"))
-        [beneficiary] = response.context["page"]
-        self.assertEqual(beneficiary.visits_count, 1)
+    def test_restricted_user_only_exports_their_facilities(self):
         self.assertEqual(self._coda_facilities(self.partner), ["Bentiu PHCC"])
         sheets = self._raw_sheets(self.partner)
         self.assertEqual([row["org_unit_name"] for row in sheets["visits"]], ["Bentiu PHCC"])
         self.assertNotIn(self.rubkona_instance.id, [row["instance_id"] for row in sheets["visit"]])
-
-    def test_restricted_user_cannot_open_other_beneficiaries_or_submissions(self):
-        self.client.force_login(self.partner)
-        response = self.client.get(reverse("wfp_beneficiary_data", args=[self.rubkona_entity.id]))
-        self.assertEqual(response.status_code, 404)
-        response = self.client.get(reverse("wfp_beneficiary_data", args=[self.entity.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertNotIn(self.rubkona_instance, response.context["submissions"])
-        response = self.client.get(reverse("wfp_submission_fields", args=[self.rubkona_instance.id]))
-        self.assertEqual(response.status_code, 404)
 
     def test_exports_have_the_groups_of_the_org_units(self):
         other_group = m.Group.objects.create(name="Bentiu county", source_version=self.group.source_version)
@@ -438,7 +378,7 @@ class OrgUnitScopeTestCase(OrgUnitScopeTestData, TestCase):
             "Rubkona PHCC": (None, None),
         }
 
-        rows = list(self._workbook("wfp_beneficiaries_coda_export", self.user).active.iter_rows(values_only=True))
+        rows = list(self._workbook(CODA_EXPORT_URL, self.user).active.iter_rows(values_only=True))
         headers = rows[1]
         self.assertEqual(
             headers[headers.index("health center name") + 1 : headers.index("health center name") + 3],

@@ -20,8 +20,8 @@ from django.db import connection
 from iaso.models import Form, Instance
 from iaso.utils.pii import filter_submission_json, get_allowed_fields, is_field_allowed
 
-from .coda_export import group_ids, group_names, org_unit_groups
 from ..models import Journey, Step, Visit
+from .coda_export import group_ids, group_names, org_unit_groups
 
 
 README = [

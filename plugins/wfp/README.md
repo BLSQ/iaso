@@ -48,5 +48,4 @@ The beneficiaries computed by the ETL are listed in the dashboard under **Entiti
 - JSON API: `/api/wfp/beneficiaries/` (list, `options/`), `/api/wfp/beneficiaries/export/coda/` and
   `/api/wfp/beneficiaries/export/raw/` (xlsx files, same query params as the list).
 
-The page is the React page of the plugin (`plugins/wfp/js`). The older HTML screen at `/wfp/beneficiaries/` is kept
-for debugging and needs the same permission.
+The page is the React page of the plugin (`plugins/wfp/js`).

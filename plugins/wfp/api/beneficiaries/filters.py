@@ -1,7 +1,7 @@
 """Ordering of the beneficiaries API.
 
-The filters themselves (`entity_type`, `programme`, `org_unit_group`, `q`) are shared with the screen and the
-exports, in `plugins.wfp.filters`.
+The filters themselves (`entity_type`, `programme`, `org_unit_group`, `q`) are shared with the exports, in
+`plugins.wfp.filters`.
 """
 
 from django.db.models import F
@@ -28,9 +28,5 @@ def ordering_from_param(order: str):
             continue
 
         expression = F(field_name)
-        ordering.append(
-            expression.desc(nulls_last=True)
-            if descending
-            else expression.asc(nulls_last=True)
-            )
+        ordering.append(expression.desc(nulls_last=True) if descending else expression.asc(nulls_last=True))
     return ordering + ["-id"]

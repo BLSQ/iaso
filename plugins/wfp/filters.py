@@ -1,7 +1,7 @@
-"""Filters of the beneficiaries screen, shared by the screen, its JSON API and the (background) exports.
+"""Filters of the beneficiaries page, shared by its JSON API and the exports.
 
 They take the user and a dict of filters rather than a request, so that a background export rebuilds exactly the
-selection the user made on the screen.
+selection the user made on the page.
 """
 
 from django.db.models import Count, Max, Prefetch, Q
@@ -15,7 +15,7 @@ FILTER_KEYS = ("entity_type", "programme", "org_unit_group", "q")
 
 
 def filters_from_params(params) -> dict[str, str]:
-    """The filters of the beneficiaries screen found in `params` (a QueryDict or a dict), as stripped strings."""
+    """The filters of the beneficiaries page found in `params` (a QueryDict or a dict), as stripped strings."""
     return {key: str(params.get(key) or "").strip() for key in FILTER_KEYS if params.get(key)}
 
 
@@ -41,7 +41,7 @@ def facility_scope(user, filters):
 
 
 def filtered_beneficiaries(account, filters, org_units=None):
-    """Beneficiaries of the account matching the filters of the beneficiaries screen (shared with its exports).
+    """Beneficiaries of the account matching the filters of the beneficiaries page (shared with its exports).
 
     With an org unit scope, only the beneficiaries with at least one visit in these org units are kept.
     """
@@ -58,7 +58,7 @@ def filtered_beneficiaries(account, filters, org_units=None):
 
     programme = filters.get("programme", "")
     if programme:
-        # Subquery rather than a join, so that the counts of the screen still cover all the journeys.
+        # Subquery rather than a join, so that the counts of the page still cover all the journeys.
         queryset = queryset.filter(
             id__in=Journey.objects.filter(nutrition_programme=programme).values("beneficiary_id")
         )

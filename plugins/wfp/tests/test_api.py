@@ -12,14 +12,14 @@ from iaso import models as m
 from iaso.test import APITestCase
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
-from plugins.wfp.tests.test_views import OrgUnitScopeTestData
+from plugins.wfp.tests.test_exports import OrgUnitScopeTestData
 
 
 BENEFICIARIES_URL = "/api/wfp/beneficiaries/"
 
 
 class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
-    """Same data as the screen: a beneficiary visiting Bentiu (in the partner group) and Rubkona, another only Rubkona.
+    """Same data as the export tests: a beneficiary visiting Bentiu (in the partner group) and Rubkona, another only Rubkona.
 
     Plus another account with its own project, pyramid, group and beneficiary, to check that its ids match nothing.
     """

@@ -1,4 +1,4 @@
-"""Beneficiary exports, built in the request and downloaded right away (HTML screen and dashboard page)."""
+"""Beneficiary exports of the dashboard page, built in the request and downloaded right away."""
 
 import tempfile
 
@@ -6,8 +6,8 @@ from django.utils import timezone
 
 from iaso.exports.cleaning_file_response import CleaningFileResponse
 
-from .coda_export import build_xlsx
 from ..filters import facility_scope, filtered_beneficiaries
+from .coda_export import build_xlsx
 from .raw_export import build_raw_xlsx
 
 

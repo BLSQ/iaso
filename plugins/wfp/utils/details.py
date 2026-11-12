@@ -1,4 +1,4 @@
-"""Details of a beneficiary and of a submission, shared by the API and the dashboard screens."""
+"""Details of a beneficiary and of a submission, returned by the beneficiaries API."""
 
 from django.shortcuts import get_object_or_404
 

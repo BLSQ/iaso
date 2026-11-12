@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     params: {} as Record<string, string>,
     query: {} as Record<string, unknown>,
     redirectToReplace: vi.fn(),
+    applyPartialUpdate: vi.fn(),
 }));
 
 vi.mock('bluesquare-components', async importOriginal => ({
@@ -26,7 +27,7 @@ vi.mock('./hooks', () => ({
     useGetMappingVersionDetail: () => mocks.query,
 }));
 vi.mock('./hooks/requests/useApplyPartialUpdate', () => ({
-    useApplyPartialUpdate: () => ({ mutate: vi.fn() }),
+    useApplyPartialUpdate: () => ({ mutate: mocks.applyPartialUpdate }),
 }));
 vi.mock('./hooks/requests/useApplyUpdate', () => ({
     useApplyUpdate: () => ({ mutate: vi.fn() }),
@@ -36,7 +37,18 @@ vi.mock('../../components/nav/TopBarComponent', () => ({
     default: ({ title }: { title: string }) => <h1>{title}</h1>,
 }));
 vi.mock('./components/Dhis2SearchComponent', () => ({
-    default: () => <div />,
+    default: ({
+        onChange,
+    }: {
+        onChange: (name: string, value: Record<string, any>) => void;
+    }) => (
+        <button
+            type="button"
+            onClick={() => onChange('de', { id: 'deFrance', name: 'France' })}
+        >
+            propose
+        </button>
+    ),
 }));
 vi.mock('./components/ImportMappings/MappingImportActions', () => ({
     MappingImportActions: () => <div />,
@@ -75,6 +87,7 @@ describe('MappingDetails', () => {
     beforeEach(() => {
         mocks.params = { accountId: '1', mappingVersionId: '5' };
         mocks.redirectToReplace.mockClear();
+        mocks.applyPartialUpdate.mockClear();
     });
 
     it('shows a spinner instead of the page on the first load', () => {
@@ -149,5 +162,23 @@ describe('MappingDetails', () => {
                 { mappingVersionId: '5' },
             );
         });
+    });
+
+    it('saves the confirmed mapping of the selected question', () => {
+        mocks.query = { isLoading: false, isFetching: false, data };
+        mocks.params = { ...mocks.params, questionName: 'france' };
+        renderWithThemeAndIntlProvider(<MappingDetails />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'propose' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+
+        expect(mocks.applyPartialUpdate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                mappingVersionId: 5,
+                questionName: 'france',
+            }),
+            // so the form clears its proposal once saved
+            { onSuccess: expect.any(Function) },
+        );
     });
 });

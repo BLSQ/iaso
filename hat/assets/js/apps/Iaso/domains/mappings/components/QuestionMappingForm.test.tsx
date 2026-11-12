@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from '../utils';
@@ -72,6 +72,11 @@ const renderForm = () => {
     return onConfirmedQuestionMapping;
 };
 
+// passed with each confirmed mapping, clears the proposal once saved
+const savedCallback = { onSuccess: expect.any(Function) };
+
+const proposedMapping = () => screen.queryByText('Proposed mapping');
+
 const chooseOption = (combobox: HTMLElement, option: string) => {
     fireEvent.mouseDown(combobox);
     fireEvent.click(within(screen.getByRole('listbox')).getByText(option));
@@ -110,16 +115,17 @@ describe('QuestionMappingForm for a tracker', () => {
         expect(iasoField).toHaveValue('Value from the form');
         chooseOption(iasoField, 'Org unit');
         fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-        expect(onConfirmed).toHaveBeenCalledWith([
-            { ...facility, iaso_field: ORG_UNIT_IASO_FIELD },
-        ]);
+        expect(onConfirmed).toHaveBeenCalledWith(
+            [{ ...facility, iaso_field: ORG_UNIT_IASO_FIELD }],
+            savedCallback,
+        );
     });
 
     it('takes the answer of an org unit element by default', () => {
         const onConfirmed = renderForm();
         fireEvent.click(screen.getByText('propose facility'));
         fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-        expect(onConfirmed).toHaveBeenCalledWith([facility]);
+        expect(onConfirmed).toHaveBeenCalledWith([facility], savedCallback);
     });
 
     it('does not offer the instance property for another value type', () => {
@@ -129,6 +135,18 @@ describe('QuestionMappingForm for a tracker', () => {
         fireEvent.click(screen.getByText('propose weight'));
         expect(screen.getAllByRole('combobox')).toHaveLength(1);
         fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
-        expect(onConfirmed).toHaveBeenCalledWith([weight]);
+        expect(onConfirmed).toHaveBeenCalledWith([weight], savedCallback);
+    });
+
+    it('clears the proposed mapping once the confirmed one is saved', () => {
+        const onConfirmed = renderForm();
+        fireEvent.click(screen.getByText('propose weight'));
+        fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+        expect(proposedMapping()).toBeInTheDocument();
+
+        act(() => onConfirmed.mock.calls[0][1].onSuccess());
+
+        expect(proposedMapping()).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull();
     });
 });

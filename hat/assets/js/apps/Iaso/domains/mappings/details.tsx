@@ -161,12 +161,15 @@ const MappingDetails = () => {
 
     useEscapeKey(onClearSelection, Boolean(currentQuestion));
 
-    const onConfirmedQuestionMapping = questionMapping => {
-        applyPartialUpdate.mutate({
-            mappingVersionId: currentMappingVersion.id,
-            questionName: Descriptor.getKey(currentQuestion),
-            mapping: questionMapping,
-        });
+    const onConfirmedQuestionMapping = (questionMapping, options) => {
+        applyPartialUpdate.mutate(
+            {
+                mappingVersionId: currentMappingVersion.id,
+                questionName: Descriptor.getKey(currentQuestion),
+                mapping: questionMapping,
+            },
+            options,
+        );
     };
 
     const onUnmapQuestionMapping = () => {

@@ -196,7 +196,10 @@ type Props = {
     question: Record<string, any>;
     mappingVersion: Record<string, any>;
     indexedQuestions: Record<string, any>;
-    onConfirmedQuestionMapping: (questionMapping: Record<string, any>) => void;
+    onConfirmedQuestionMapping: (
+        questionMapping: Record<string, any>,
+        options?: { onSuccess?: () => void },
+    ) => void;
     onUnmapQuestionMapping: () => void;
     onNeverMapQuestionMapping: () => void;
     fieldOptions?: any[];
@@ -470,6 +473,13 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
                                             mapping.mapping.mapping_type,
                                             iasoField,
                                         ),
+                                        // saved: it becomes the current mapping
+                                        {
+                                            onSuccess: () =>
+                                                setNewQuestionMapping(
+                                                    undefined,
+                                                ),
+                                        },
                                     )
                                 }
                             >

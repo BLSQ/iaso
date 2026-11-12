@@ -71,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     trackerEntityIdentifier: {
         id: 'iaso.mappings.trackerEntityIdentifier',
-        defaultMessage: 'Tracked entity identitifier',
+        defaultMessage: 'Tracked entity identifier',
     },
     currentMapping: {
         id: 'iaso.mappings.currentMapping',
@@ -152,10 +152,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.label.duplicateMappingAlert',
         defaultMessage: 'Duplicate mapping ! Will be used in both {duplicates}',
     },
-    proposedNewMapping: {
-        id: 'iaso.mappings.label.proposedNewMapping',
-        defaultMessage: 'Proposed new mapping',
-    },
     useValueFromForm: {
         id: 'iaso.mappings.label.useValueFromForm',
         defaultMessage: "Use the value from the form's answer",
@@ -167,6 +163,10 @@ const MESSAGES = defineMessages({
     trackedEntityAttribute: {
         id: 'iaso.mappings.label.trackedEntityAttribute',
         defaultMessage: 'Tracked Entity Attribute',
+    },
+    trackedEntityType: {
+        id: 'iaso.mappings.label.trackedEntityType',
+        defaultMessage: 'Tracked entity type',
     },
     programDataElement: {
         id: 'iaso.mappings.label.programDataElement',

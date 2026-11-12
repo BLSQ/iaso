@@ -359,7 +359,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         self.client.force_authenticate(self.yoda)
-        source_created_at = datetime.datetime(2025, 2, 3, tzinfo=datetime.timezone.utc)
+        source_created_at = datetime.datetime(2025, 2, 3, tzinfo=datetime.UTC)
 
         for i in range(3):
             entity = Entity.objects.create(entity_type=self.entity_type, account=self.yoda.iaso_profile.account)
@@ -390,7 +390,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(ctx.captured_queries), 5)
         self.assertIn(subquery_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
-    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.timezone.utc), tick=False)
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.UTC), tick=False)
     def test_list_entities_single_entity_type(self):
         """Test the 'entityTypeIds' parameter of /api/entities with a single entity type id.
 
@@ -1277,7 +1277,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
 
-    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.timezone.utc), tick=False)
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.UTC), tick=False)
     def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1325,7 +1325,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
-    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.timezone.utc), tick=False)
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.UTC), tick=False)
     def test_entities_empty_export(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/entities/?csv=true/")

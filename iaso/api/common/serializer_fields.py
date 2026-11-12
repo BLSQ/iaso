@@ -1,7 +1,7 @@
 import json
 import re
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytz
 
@@ -25,7 +25,7 @@ class TimestampField(serializers.Field):
         return value.timestamp()
 
     def to_internal_value(self, data: float):
-        return datetime.fromtimestamp(data, tz=timezone.utc)
+        return datetime.fromtimestamp(data, tz=UTC)
 
 
 class DateTimestampField(serializers.Field):
@@ -37,7 +37,7 @@ class DateTimestampField(serializers.Field):
         return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
 
     def to_internal_value(self, data: float):
-        return datetime.fromtimestamp(data, tz=timezone.utc).date()
+        return datetime.fromtimestamp(data, tz=UTC).date()
 
 
 @extend_schema_field(OpenApiTypes.NONE)

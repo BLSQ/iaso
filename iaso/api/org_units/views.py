@@ -4,7 +4,7 @@ import os
 import tempfile
 
 from copy import deepcopy
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from time import gmtime, strftime
 
 from django.conf import settings
@@ -803,7 +803,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
-                return datetime.strptime(date_str, date_input_format).replace(tzinfo=timezone.utc).date()
+                return datetime.strptime(date_str, date_input_format).replace(tzinfo=UTC).date()
             except (ValueError, TypeError):
                 pass
         return None
@@ -867,10 +867,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         closed_date = request.data.get("closed_date", None)
 
         if opening_date:
-            org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
+            org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").replace(tzinfo=UTC).date()
 
         if closed_date:
-            org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
+            org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").replace(tzinfo=UTC).date()
             if org_unit.opening_date > org_unit.closed_date:
                 errors.append(
                     {"errorKey": "closed_date", "errorMessage": _("Opening date must be anterior to closed date")}

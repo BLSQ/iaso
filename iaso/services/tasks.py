@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from logging import getLogger
-from typing import Optional, Union
+from typing import Optional
 
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -21,13 +21,13 @@ class TaskResultFile:
     """
 
     file: str
-    expires_at: Optional[datetime] = None
+    expires_at: datetime | None = None
 
     @property
     def expired(self) -> bool:
         return self.expires_at is not None and self.expires_at <= timezone.now()
 
-    def to_json(self) -> Union[str, dict]:
+    def to_json(self) -> str | dict:
         # For now, files that do not expire keep the original "file:..." format.
         if self.expires_at is None:
             return f"{FILE_PREFIX}{self.file}"
@@ -44,7 +44,7 @@ class TaskResultFile:
         return cls(file=data["file"], expires_at=cls._parse_expires_at(data.get("expires_at")))
 
     @staticmethod
-    def _parse_expires_at(raw_expires_at) -> Optional[datetime]:
+    def _parse_expires_at(raw_expires_at) -> datetime | None:
         if not raw_expires_at:
             return None
         try:

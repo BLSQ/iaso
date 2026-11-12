@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -40,7 +38,7 @@ class ListDeviceSerializer(ModelSerializer):
         read_only_fields = fields
 
     @extend_schema_field(NestedUserSerializer(allow_null=True))
-    def get_current_owner(self, obj: Device) -> Optional[dict]:
+    def get_current_owner(self, obj: Device) -> dict | None:
         if getattr(obj, "current_owner_id", None):
             return NestedUserSerializer(
                 instance={"id": obj.current_owner_id, "username": obj.current_owner_username}

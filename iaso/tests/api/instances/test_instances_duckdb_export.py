@@ -188,7 +188,7 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
         self.assertEqual(header, EXPECTED_HEADER)
         self.assertEqual([int(row[0]) for row in rows], self.instance_ids)
         answer_indexes = [header.index(name) for name in ANSWER_COLUMNS]
-        for row, expected in zip(rows, EXPECTED_CSV_ANSWERS):
+        for row, expected in zip(rows, EXPECTED_CSV_ANSWERS, strict=False):
             self.assertEqual([row[index] for index in answer_indexes], expected)
         self.assertEqual({row[header.index("not_answered")] for row in rows}, {""})
 
@@ -219,7 +219,7 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
         self.assertTrue(all(bold_header))
         self.assertEqual([row[0] for row in rows], self.instance_ids)
         answer_indexes = [header.index(name) for name in ANSWER_COLUMNS]
-        for row, expected in zip(rows, EXPECTED_XLSX_ANSWERS):
+        for row, expected in zip(rows, EXPECTED_XLSX_ANSWERS, strict=False):
             self.assertEqual([row[index] for index in answer_indexes], expected)
 
         # all the answers of "number" are numbers: number cells. "text" has a "007": text cells
@@ -325,7 +325,7 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
 
         # the answer columns come last, in the order of the jsonb keys: compared as a dict
         question_count = len(answers)
-        self.assertEqual(dict(zip(header[-question_count:], row[-question_count:])), answers)
+        self.assertEqual(dict(zip(header[-question_count:], row[-question_count:], strict=False)), answers)
 
     def test_form_without_version_and_submission(self):
         """no version and no submission: the answer columns are unknown"""
@@ -411,8 +411,8 @@ def xlsx_row_as_csv_row(xlsx_row: list, csv_row: list) -> tuple[list, list]:
     (4.5 in xlsx, 4.50 in csv), the rest as texts
     """
     xlsx_values, csv_values = [], []
-    for xlsx_value, csv_value in zip(xlsx_row, csv_row):
-        is_number = isinstance(xlsx_value, (int, float)) and not isinstance(xlsx_value, bool)
+    for xlsx_value, csv_value in zip(xlsx_row, csv_row, strict=False):
+        is_number = isinstance(xlsx_value, int | float) and not isinstance(xlsx_value, bool)
         xlsx_values.append(float(xlsx_value) if is_number else ("" if xlsx_value is None else xlsx_value))
         csv_values.append(float(csv_value) if is_number else csv_value)
     return xlsx_values, csv_values
@@ -617,7 +617,7 @@ class InstancesExportContentTestCase(BaseAPITransactionTestCase):
         )
         self.assertEqual(set(rows[1][: header.index("head_name")]), {None})
         self.assertEqual(len(rows[2:]), len(expected_rows))
-        for xlsx_row, expected_row in zip(rows[2:], expected_rows):
+        for xlsx_row, expected_row in zip(rows[2:], expected_rows, strict=False):
             self.assertEqual(*xlsx_row_as_csv_row(xlsx_row, expected_row))
 
         self.assertEqual(freeze_panes, "A2")

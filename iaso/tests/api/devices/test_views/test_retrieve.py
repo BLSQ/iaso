@@ -12,7 +12,7 @@ from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
 class DevicesAPITestCase(SwaggerTestCaseMixin, APITestCase):
-    DT = datetime.datetime(2025, 1, 3, 16, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2025, 1, 3, 16, 0, 0, 0, tzinfo=datetime.UTC)
 
     @property
     def url(self):

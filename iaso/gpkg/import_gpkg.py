@@ -2,7 +2,7 @@ import math
 import sqlite3
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import fiona  # type: ignore
 
@@ -114,7 +114,7 @@ def apply_date_field(field_name: str, props: dict[str, str], orgunit: OrgUnit, t
 
     if new_date:
         try:
-            setattr(orgunit, field_name, datetime.strptime(new_date, "%Y-%m-%d").replace(tzinfo=timezone.utc).date())
+            setattr(orgunit, field_name, datetime.strptime(new_date, "%Y-%m-%d").replace(tzinfo=UTC).date())
         except (ValueError, TypeError) as e:
             message = f"Error parsing {field_name} for {orgunit.name}: {e}"
             if task:

@@ -69,7 +69,7 @@ PERIOD_KEYS = {"value", "start", "end", "grace_period_days", "deadline", "is_cur
 
 
 def aware(*args) -> datetime.datetime:
-    return datetime.datetime(*args, tzinfo=datetime.timezone.utc)
+    return datetime.datetime(*args, tzinfo=datetime.UTC)
 
 
 class PromptnessStatsTestCase(APITestCase):

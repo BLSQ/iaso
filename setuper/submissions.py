@@ -2,7 +2,7 @@ import os
 import random
 import uuid
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 from dict2xml import dict2xml
 from fake import fake_person
@@ -72,7 +72,7 @@ def create_default_reference_submission(account_name, iaso_client, org_unit_id, 
 
 def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
     random_year = random.randint(1, 5)
-    random_date = (datetime.now(timezone.utc) - timedelta(days=(random_year * 365.25))).date()
+    random_date = (datetime.now(UTC) - timedelta(days=(random_year * 365.25))).date()
     beneficiary_name = generate_name(style="capital")
     registration_date = datetime.now(timezone(timedelta(hours=2))).isoformat()
     code = random.randint(1000000000, 9999999999)
@@ -91,7 +91,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
         name = beneficiary_name.split(" ")
         age_years = random.randint(10, 50)
         image = f"{int(random.randint(1, 5))}.jpg"
-        birth_date = (datetime.now(timezone.utc) - timedelta(days=(age_years * 365.25))).date()
+        birth_date = (datetime.now(UTC) - timedelta(days=(age_years * 365.25))).date()
         food_assistance = random.choice(["yes", "no"])
         assistance_type = None
         if food_assistance == "yes":
@@ -215,7 +215,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
 
 
 def rename_entity_submission_picture(path, picture, files, field, uuid):
-    current_datetime = int(datetime.now(timezone.utc).timestamp())
+    current_datetime = int(datetime.now(UTC).timestamp())
     old_name = f"{path}/{picture}"
     new_name = f"{path}/{current_datetime}_{uuid}_{picture}"
     os.rename(old_name, new_name)

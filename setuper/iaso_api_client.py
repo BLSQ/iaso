@@ -1,6 +1,6 @@
 import time
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import requests
 
@@ -19,14 +19,12 @@ class IasoClient:
         """Send an authenticated request to the server, logging it (url + params) when verbose is on."""
         full_url = self.server_url.rstrip("/") + "/" + url.lstrip("/")
         if self.verbose:
-            print(
-                f"[{datetime.now(timezone.utc).isoformat(timespec='milliseconds')}] {method} {full_url} params={params}"
-            )
+            print(f"[{datetime.now(UTC).isoformat(timespec='milliseconds')}] {method} {full_url} params={params}")
         start = time.monotonic()
         r = requests.request(method, full_url, params=params, headers=self.headers, **kwargs)
         if self.verbose:
             print(
-                f"[{datetime.now(timezone.utc).isoformat(timespec='milliseconds')}] <- {r.status_code} in {time.monotonic() - start:.2f}s"
+                f"[{datetime.now(UTC).isoformat(timespec='milliseconds')}] <- {r.status_code} in {time.monotonic() - start:.2f}s"
             )
         return r
 

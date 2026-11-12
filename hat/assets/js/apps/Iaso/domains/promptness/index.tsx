@@ -4,6 +4,7 @@ import { Box, Button, Divider, Paper, Typography } from '@mui/material';
 import {
     LoadingSpinner,
     makeRedirectionUrl,
+    TableToolbar,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Link as RouterLink } from 'react-router-dom';
@@ -95,19 +96,6 @@ const styles: SxStyles = {
         justifyContent: 'space-between',
         px: 2,
         py: 1.5,
-    },
-    tableContainer: {
-        position: 'relative',
-        px: 2,
-        pb: 1,
-    },
-    toolbar: {
-        position: 'absolute',
-        top: theme => theme.spacing(1),
-        left: theme => theme.spacing(2),
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
     },
 };
 
@@ -284,8 +272,9 @@ export const Promptness: FunctionComponent = () => {
                                 )}
                             </Box>
                             <Divider />
-                            <Box sx={styles.tableContainer}>
-                                <Box sx={styles.toolbar}>
+                            <TableToolbar
+                                count={stats?.count}
+                                download={
                                     <DownloadMenuButton
                                         buttonType="icon"
                                         options={[
@@ -299,29 +288,29 @@ export const Promptness: FunctionComponent = () => {
                                             !stats?.results?.length
                                         }
                                     />
-                                </Box>
-                                <TableWithDeepLink
-                                    data={stats?.results ?? []}
-                                    pages={stats?.pages ?? 1}
-                                    count={stats?.count ?? 0}
-                                    defaultSorted={[
-                                        {
-                                            id: defaultOrder.replace('-', ''),
-                                            desc: defaultOrder.startsWith('-'),
-                                        },
-                                    ]}
-                                    columns={columns}
-                                    baseUrl={baseUrl}
-                                    params={params}
-                                    extraProps={{
-                                        loading: isFetchingStats,
-                                        defaultPageSize: DEFAULT_PAGE_SIZE,
-                                    }}
-                                    elevation={0}
-                                    countOnTop
-                                    resetPageToOne={resetPageToOne}
-                                />
-                            </Box>
+                                }
+                            />
+                            <TableWithDeepLink
+                                data={stats?.results ?? []}
+                                pages={stats?.pages ?? 1}
+                                count={stats?.count ?? 0}
+                                defaultSorted={[
+                                    {
+                                        id: defaultOrder.replace('-', ''),
+                                        desc: defaultOrder.startsWith('-'),
+                                    },
+                                ]}
+                                columns={columns}
+                                baseUrl={baseUrl}
+                                params={params}
+                                extraProps={{
+                                    loading: isFetchingStats,
+                                    defaultPageSize: DEFAULT_PAGE_SIZE,
+                                }}
+                                elevation={0}
+                                showCount={false}
+                                resetPageToOne={resetPageToOne}
+                            />
                         </Paper>
                     </Box>
                 )}

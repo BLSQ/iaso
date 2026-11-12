@@ -209,7 +209,7 @@ class ExportMobileAppSetupTestCase(TestCase):
         self.uploaded.append({"source": file_name, "object_name": object_name})
         shutil.copy(file_name, os.path.join(self.out_dir, os.path.basename(object_name)))
 
-    def run_export(self, server):
+    def run_export(self, server, **kwargs):
         with server:
             export_mobile_app_setup_for_user(
                 user_id=self.user.id,
@@ -217,6 +217,7 @@ class ExportMobileAppSetupTestCase(TestCase):
                 password=PASSWORD,
                 task=self.task,
                 _immediate=True,
+                **kwargs,
             )
         self.task.refresh_from_db()
 
@@ -491,3 +492,40 @@ class ExportMobileAppSetupRetryTest(ExportMobileAppSetupTestCase):
         self.assertEqual(self.task.status, ERRORED)
         self.assertEqual(len(server.calls_to(REPORT_PATH)), 1 + iaso_api_client.RETRIES)
         self.upload_mock.assert_not_called()
+
+
+class ExportMobileAppSetupPayloadTransformersTest(ExportMobileAppSetupTestCase):
+    """The registered payload transformers get the export options and change the saved files."""
+
+    def setUp(self):
+        super().setUp()
+        self.transformed = []
+
+        def transform(filename, payload, options):
+            self.transformed.append((filename, options))
+            if filename == "entities" and options.get("mark"):
+                for entity in payload["results"]:
+                    entity["marked"] = True
+
+        patcher = mock.patch.object(export_module, "payload_transformers", [transform])
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_options_are_passed_to_the_transformers(self):
+        self.run_export(FakeIasoServer(), options={"mark": True})
+
+        self.assertEqual(self.task.status, SUCCESS, self.task.result)
+        self.assertIn(("entities", {"mark": True}), self.transformed)
+        archive = self.open_export()
+        # Every saved response goes through the transformers, except the app info.
+        responses_in_zip = [name for name in archive.namelist() if "/" not in name and name != "app.json"]
+        self.assertEqual(len(self.transformed), len(responses_in_zip))
+        self.assertEqual(json.loads(archive.read("entities-2.json"))["results"], [{"id": "e2", "marked": True}])
+
+    def test_without_options(self):
+        """Test that the tasks created before the options were added can be relaunched."""
+        self.run_export(FakeIasoServer())
+
+        self.assertEqual(self.task.status, SUCCESS, self.task.result)
+        self.assertIn(("entities", {}), self.transformed)
+        self.assertNotIn("marked", self.open_export().read("entities-1.json").decode())

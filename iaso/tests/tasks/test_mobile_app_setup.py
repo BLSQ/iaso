@@ -27,6 +27,7 @@ from iaso.tasks.mobile_app_setup.assets import (
     rewrite_manifest,
 )
 from iaso.tasks.mobile_app_setup.exporter import export_app_setup
+from iaso.tasks.mobile_app_setup.hooks import register_payload_transformer
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 from iaso.test import APITestCase
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
@@ -298,7 +299,7 @@ class StorageDownloadTest(SimpleTestCase):
 
 
 class ExportAppSetupTest(SimpleTestCase):
-    def export(self, client, api_calls, access_token="token", storage=None):
+    def export(self, client, api_calls, access_token="token", storage=None, **kwargs):
         buffer = io.BytesIO()
         archive = ZipArchive(buffer)
         export_app_setup(
@@ -309,6 +310,7 @@ class ExportAppSetupTest(SimpleTestCase):
             api_calls=api_calls,
             progress=mock.Mock(),
             access_token=access_token,
+            **kwargs,
         )
         archive.close()
         return zipfile.ZipFile(buffer)
@@ -377,6 +379,47 @@ class ExportAppSetupTest(SimpleTestCase):
         self.assertEqual(archive.read("files/f.xml"), b"f")
         self.assertEqual(archive.read("files/g.xml"), b"G")
         self.assertEqual(archive.read("files/h.xml"), b"h")
+
+    def test_transformers_change_the_responses_after_their_files(self):
+        client = FakeClient(
+            {
+                "/api/apps/current/": self.app_info(needs_authentication=False),
+                "/api/a/": {"file": "https://x/f.xml", "value": 1},
+            }
+        )
+
+        def asset_files(payload, app_id):
+            url, payload["file"] = payload["file"], "files/f.xml"
+            return [AssetFile(path="files/f.xml", url=url)]
+
+        def transform(filename, payload, options):
+            # After the files: their URLs are already rewritten.
+            self.assertEqual((filename, payload["file"]), ("a", "files/f.xml"))
+            payload["value"] = options["value"]
+
+        archive = self.export(
+            client,
+            [ApiCall(path="/api/a/", filename="a", asset_files=asset_files)],
+            storage=FakeStorage({"https://x/f.xml": b"f"}),
+            payload_transformers=[transform],
+            options={"value": 2},
+        )
+
+        self.assertEqual(json.loads(archive.read("a.json")), {"file": "files/f.xml", "value": 2})
+
+
+class PayloadTransformersTest(SimpleTestCase):
+    def test_register_payload_transformer_once(self):
+        transformers = []
+
+        def transform(filename, payload, options):
+            pass
+
+        with mock.patch("iaso.tasks.mobile_app_setup.hooks.payload_transformers", transformers):
+            register_payload_transformer(transform)
+            register_payload_transformer(transform)
+
+        self.assertEqual(transformers, [transform])
 
 
 class AssetFilesContractTest(APITestCase):

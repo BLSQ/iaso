@@ -1,0 +1,46 @@
+# Checks that every commit in a pull request carries a DCO sign-off
+# (a "Signed-off-by:" line matching the commit author's email).
+# Uses the `pull_request` trigger on purpose: it runs safely for PRs from forks,
+# with a read-only token and no access to repository secrets.
+name: DCO
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  dco:
+    name: DCO sign-off
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check Signed-off-by on every commit
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for c in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            author_email=$(git log -1 --format='%ae' "$c")
+            if ! git log -1 --format='%B' "$c" \
+                 | grep -i '^Signed-off-by:' \
+                 | grep -qiF "<${author_email}>"; then
+              echo "::error::Commit $(git log -1 --format='%h %s' "$c") has no Signed-off-by line for <${author_email}>"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo ""
+            echo "Some commits are not signed off. See CONTRIBUTING.md for how to fix this:"
+            echo "  git rebase --signoff ${BASE}"
+            echo "  git push --force-with-lease"
+            exit 1
+          fi
+          echo "All commits are signed off."

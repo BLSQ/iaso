@@ -10,7 +10,6 @@ import { FormsParams } from '../types/forms';
 export const DEFAULT_VISIBLE_COLUMNS = [
     'projects',
     'name',
-    'created_at',
     'updated_at',
     'org_unit_types',
 ];
@@ -50,8 +49,8 @@ const getForms = (params: FormsParams) => {
 };
 
 export const tableDefaults = {
-    order: 'name',
-    limit: 50,
+    order: '-updated_at',
+    limit: 10,
     page: 1,
 };
 

@@ -39,7 +39,4 @@ export const DEFAULT_ORDERS: Record<PromptnessStatus, string> = {
 };
 export const DEFAULT_PAGE_SIZE = 20;
 
-// The export_csv action of the API is not implemented yet (raises NotImplementedError)
-export const CSV_EXPORT_ENABLED = false;
-
 export const ORG_UNIT_FIELDS = 'id,name,parent,parent_id,org_unit_type_id';

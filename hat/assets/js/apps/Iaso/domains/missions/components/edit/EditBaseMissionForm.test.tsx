@@ -7,7 +7,7 @@ import { getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { EditBaseMissionForm } from './EditBaseMissionForm';
 
-const linkButtonMock = vi.fn();
+const goBack = vi.fn();
 const handleSubmit = vi.fn();
 
 const formikState = {
@@ -25,10 +25,6 @@ vi.mock('bluesquare-components', async () => {
             formatMessage: (message: any) =>
                 message.defaultMessage ?? message.id,
         }),
-        LinkButton: (props: any) => {
-            linkButtonMock(props);
-            return <a href={props.to}>{props.children}</a>;
-        },
     };
 });
 
@@ -78,18 +74,20 @@ vi.mock('Iaso/domains/missions/components/DetailsWrapper', () => ({
     ),
 }));
 
-const renderComponent = (redirectBackUrl = '/missions') => {
+const renderComponent = () => {
     const data =
-        getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock({
-            name: 'Mission',
-        }) as unknown as MissionFormRetrieve;
+        getApiMicroplanningMissionsRetrieveResponseMissionFormRetrieveTypedMock(
+            {
+                name: 'Mission',
+            },
+        ) as unknown as MissionFormRetrieve;
 
     renderWithThemeAndIntlProvider(
         <EditBaseMissionForm
             data={data}
             missionId={1}
             save={vi.fn()}
-            redirectBackUrl={redirectBackUrl}
+            goBack={goBack}
         />,
     );
 };
@@ -102,15 +100,12 @@ describe('EditBaseMissionForm unit tests', () => {
         formikState.isSubmitting = false;
     });
 
-    it('renders the cancel button with the correct to prop from redirectBackUrl', () => {
-        renderComponent('/missions');
+    it('clicking cancel calls goBack', () => {
+        renderComponent();
 
-        expect(linkButtonMock).toHaveBeenCalledWith(
-            expect.objectContaining({
-                to: '/missions',
-            }),
-        );
-        expect(screen.getByRole('link')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+        expect(goBack).toHaveBeenCalledTimes(1);
     });
 
     it('submit button is disabled when allowConfirm is false', () => {

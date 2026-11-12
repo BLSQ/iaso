@@ -14,7 +14,6 @@ import { MissionTypeCardsInput } from 'Iaso/domains/missions/components/MissionT
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import MESSAGES from '../messages';
-import { InfosTitle } from './details/InfosTitle';
 
 type CreateMissionFormProps = {
     formik: FormikProps<MissionCreateBody>;
@@ -43,7 +42,6 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
 
     return (
         <Box sx={{ p: 2 }}>
-            <InfosTitle />
             <Field
                 label={formatMessage(MESSAGES.name)}
                 name="name"
@@ -71,7 +69,9 @@ export const CreateMissionForm: FunctionComponent<CreateMissionFormProps> = ({
             )}
             {formik.values?.mission_type ===
                 MissionTypeDa2Enum.enum.FORM_FILLING && (
-                <MissionFormsBaseInput formik={formik} />
+                <MissionFormsBaseInput
+                    missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+                />
             )}
             {formik.values?.mission_type ===
                 MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM && (

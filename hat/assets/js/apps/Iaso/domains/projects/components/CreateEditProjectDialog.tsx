@@ -23,7 +23,7 @@ import { userHasPermission } from '../../users/utils';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';
 import { FeatureFlag } from '../types/featureFlag';
-import { Project } from '../types/project';
+import { Project, ProjectSavePayload } from '../types/project';
 import { ProjectFeatureFlags } from './ProjectFeatureFlags';
 import { ProjectInfos, ProjectForm } from './ProjectInfos';
 import { ProjectMobileReport } from './ProjectMobileReport';
@@ -32,7 +32,7 @@ type Tab = 'infos' | 'feature_flags' | 'mobile_report';
 
 type Props = {
     initialData?: Project;
-    saveProject: (s: Project) => Promise<any>;
+    saveProject: (s: ProjectSavePayload) => Promise<any>;
     closeDialog: () => void;
     isOpen: boolean;
     dialogType: string;
@@ -187,11 +187,11 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     );
 
     const onConfirm = () => {
-        const currentProject: Project = {
+        const currentProject: ProjectSavePayload = {
             id: initialData?.id,
             feature_flags: project.feature_flags.value ?? [],
             app_id: project.app_id.value || '',
-            name: project.name.value || '',
+            name: project.name.value,
             description: project.description.value || '',
             old_app_id: initialData?.app_id,
             color: project.color.value || defaultProjectColor,

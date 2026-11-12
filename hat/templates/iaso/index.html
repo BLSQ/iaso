@@ -1,8 +1,8 @@
-{% extends 'iaso/base.html' %} 
-{% load i18n %} 
-{% load render_bundle from webpack_loader %} 
-{% block extrajs %} 
-{% render_bundle 'common' %} {% render_bundle 'iaso' %} 
+{% extends 'iaso/base.html' %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+{% block extrajs %}
+{% render_bundle 'common' %} {% render_bundle 'iaso' %}
 {% endblock %} {% block body %}
 <section>
     {% block content %}
@@ -20,7 +20,8 @@
         const THEME = {{ theme| safe }};
         const DEFAULT_APP_ID = "{{DEFAULT_APP_ID}}";
         const DNS_DOMAIN = "{{DNS_DOMAIN}}";
-        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE, DEFAULT_APP_ID, DNS_DOMAIN );
+        window.CSRF_TOKEN = "{{ csrf_token }}";
+        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE, DEFAULT_APP_ID, DNS_DOMAIN);
     </script>
     {% endblock %}
 </section>

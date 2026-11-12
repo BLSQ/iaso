@@ -10,7 +10,7 @@ from rest_framework import filters
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import CharInFilter
-from iaso.models import Entity, Instance, OrgUnit
+from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 from iaso.utils.pii import (
@@ -23,8 +23,6 @@ from iaso.utils.pii import (
 
 def restricted_reference_forms(user) -> list:
     """Reference forms of entity types whose personal data (PII) is hidden from this user."""
-    from iaso.models import EntityType
-
     forms = restricted_forms_for_user(user)
     if not forms:
         return []

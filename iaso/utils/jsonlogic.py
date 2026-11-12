@@ -600,7 +600,7 @@ def jsonlogic_to_exists_q_clauses(
     field = params[field_position]
     value = params[0] if op == "in" else params[1]
     # This break flexibility, maybe we can two parameters "value_field_name" and "string_value_field_name"
-    value_field_name = "value" if float_try_parse(value) else "string_value"
+    value_field_name = "string_value" if isinstance(value, str) else "value"
     q = Q(
         Exists(
             queryset.filter(
@@ -689,14 +689,6 @@ def entities_jsonlogic_to_q(
 
 def matches_all(field_value, expected_list):
     return sorted(field_value.split()) == sorted(expected_list)
-
-
-def float_try_parse(value):
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
 
 
 def jsonlogic_variable_names(jsonlogic: Any) -> Iterator[str]:

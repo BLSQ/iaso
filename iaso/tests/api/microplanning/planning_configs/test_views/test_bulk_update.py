@@ -289,7 +289,7 @@ class PlanningConfigBulkUpdateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         ]
         self.assertValidBody(data)
 
-        with self.assertNumQueries(30):
+        with self.assertNumQueries(18):
             res = self.client.put(reverse("planning_configs-bulk-update"), data)
 
         self.assertJSONResponse(res, status.HTTP_204_NO_CONTENT)

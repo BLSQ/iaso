@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
 
+from iaso.models.common import CreatedAndUpdatedModel
 from iaso.models.team import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
@@ -13,7 +14,7 @@ class AssignmentQuerySet(models.QuerySet):
         )
 
 
-class Assignment(SoftDeletableModel):
+class Assignment(CreatedAndUpdatedModel, SoftDeletableModel):
     objects = AssignmentQuerySet.as_manager()
 
     class Meta:
@@ -35,5 +36,3 @@ class Assignment(SoftDeletableModel):
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="assignments_created"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)

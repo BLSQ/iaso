@@ -87,7 +87,9 @@ class EntityFilterSet(FilterSet):
         try:
             logic = json.loads(value)
             user = getattr(self.request, "user", None)
-            ensure_fields_allowed(jsonlogic_vars(logic), restricted_reference_forms(user), user)
+            json_logic = jsonlogic_vars(logic)
+            restricted_forms = restricted_reference_forms(user)
+            ensure_fields_allowed(json_logic, restricted_forms, user)
             q, _ = entities_jsonlogic_to_q(logic)
             return queryset.filter(q)
         except (ValueError, json.JSONDecodeError):

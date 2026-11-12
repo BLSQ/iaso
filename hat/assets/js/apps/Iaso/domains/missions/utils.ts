@@ -4,8 +4,7 @@ import {
     MissionOrgUnitTypeRetrieve,
     MissionTypeDa2Enum,
 } from 'Iaso/api/missions';
-
-export const LEFT_CELL_WIDTH = '200px';
+import { INFINITY_SYMBOL, MISSION_TYPE_OPTIONS } from './constants';
 
 export const isMissionFormRetrieve = (
     data: any,
@@ -24,3 +23,9 @@ export const isMissionOrgUnitTypeRetrieve = (
 ): data is MissionOrgUnitTypeRetrieve => {
     return data?.mission_type === MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM;
 };
+
+export const formatMaxCardinality = (value?: number | null): string =>
+    value?.toLocaleString() ?? INFINITY_SYMBOL;
+
+export const getMissionTypeOption = (missionType: MissionTypeDa2Enum) =>
+    MISSION_TYPE_OPTIONS.find(option => option.value === missionType);

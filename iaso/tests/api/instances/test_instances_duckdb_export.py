@@ -3,12 +3,12 @@ import datetime
 import io
 import json
 
+from datetime import UTC
 from pathlib import Path
 from unittest import mock
 from uuid import UUID
 
 import openpyxl
-import pytz
 
 from django.contrib.gis.geos import Point
 from jinja2 import Template
@@ -373,7 +373,7 @@ class InstancesExportSpecialValuesTestCase(BaseAPITransactionTestCase):
 
 
 SNAPSHOTS_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "snapshots"
-NOW = datetime.datetime(2026, 3, 4, 10, 11, 12, tzinfo=pytz.UTC)
+NOW = datetime.datetime(2026, 3, 4, 10, 11, 12, tzinfo=UTC)
 HOUSEHOLD_FORM_DESCRIPTOR = {
     "name": "data",
     "type": "survey",
@@ -491,8 +491,8 @@ class InstancesExportContentTestCase(BaseAPITransactionTestCase):
                 export_id="export_complete",
                 location=Point(4.69, 50.56, 160),
                 accuracy=4.5,
-                source_created_at=datetime.datetime(2026, 1, 15, 8, 30, tzinfo=pytz.UTC),
-                source_updated_at=datetime.datetime(2026, 1, 16, 9, 0, tzinfo=pytz.UTC),
+                source_created_at=datetime.datetime(2026, 1, 15, 8, 30, tzinfo=UTC),
+                source_updated_at=datetime.datetime(2026, 1, 16, 9, 0, tzinfo=UTC),
                 created_by=self.user,
                 entity=self.entities["active"],
                 correlation_id=1001,
@@ -522,7 +522,7 @@ class InstancesExportContentTestCase(BaseAPITransactionTestCase):
                 org_unit=self.org_units["Gembloux area"],
                 period="202602",
                 export_id="export_guest",
-                source_created_at=datetime.datetime(2026, 2, 1, 12, 0, tzinfo=pytz.UTC),
+                source_created_at=datetime.datetime(2026, 2, 1, 12, 0, tzinfo=UTC),
                 created_by=guest,
                 entity=self.entities["soft deleted"],
                 correlation_id=1003,

@@ -94,7 +94,8 @@ const MappingDetails = () => {
 
     const currentFormVersion = currentMappingVersionQuery?.data?.formVersion;
 
-    const fetching = currentMappingVersionQuery.isFetching;
+    // refetches after a save keep the page, only the first load blanks it
+    const { isLoading } = currentMappingVersionQuery;
 
     const indexedQuestions = currentFormVersion
         ? Descriptor.indexQuestions(currentFormVersion.descriptor)
@@ -213,7 +214,7 @@ const MappingDetails = () => {
                     goBack(backParams);
                 }}
             />
-            {fetching && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner />}
 
             {currentMappingVersion && (
                 <Box

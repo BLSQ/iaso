@@ -22,18 +22,26 @@ from iaso.api.common.views import NestedParentLookupMixin
 from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.api.microplanning.plannings_nested_assignments.filters import OrgUnitFilterSet, TeamFilterSet
 from iaso.api.microplanning.plannings_nested_assignments.pagination import PlanningNestedAssignmentPagination
+from iaso.api.microplanning.plannings_nested_assignments.serializers.bulk import (
+    AssignmentChangesSerializer,
+    AssignOrgUnitsSerializer,
+    UnassignOrgUnitsSerializer,
+)
 from iaso.api.microplanning.plannings_nested_assignments.serializers.org_units import AssignmentOrgUnitSerializer
 from iaso.api.microplanning.plannings_nested_assignments.serializers.teams import AssignmentTeamSerializer
 from iaso.models import Assignment, OrgUnit, Planning, PlanningConfig, Team
 from iaso.models.microplanning.assignments import AssignmentQuerySet
 from iaso.models.microplanning.plannings import PlanningQuerySet
 from iaso.models.team import TeamQuerySet
-from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION
+from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 
 
 if TYPE_CHECKING:
     from django_filters.filterset import BaseFilterSet
     from rest_framework.generics import BaseFilterProtocol
+
+
+WRITE_ACTIONS = ("assign", "unassign")
 
 
 @extend_schema(tags=["Assignments"])
@@ -54,11 +62,26 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             return ["id", "assigned", "total"]
         return None
 
+    def get_permissions(self):
+        if self.action in WRITE_ACTIONS:
+            return [IsAuthenticated(), HasPermission(CORE_PLANNING_WRITE_PERMISSION)()]
+        return super().get_permissions()
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        context = super().get_serializer_context()
+        if self.action in WRITE_ACTIONS:
+            context["planning"] = self.get_parent_instance()
+        return context
+
     def get_serializer_class(self):
         if self.action == "org_units":
             return AssignmentOrgUnitSerializer
         if self.action == "teams":
             return AssignmentTeamSerializer
+        if self.action == "assign":
+            return AssignOrgUnitsSerializer
+        if self.action == "unassign":
+            return UnassignOrgUnitsSerializer
         raise NotImplementedError(f"Serializer not implemented for action {self.action}")
 
     @property
@@ -187,3 +210,29 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        request=AssignOrgUnitsSerializer,
+        responses={200: AssignmentChangesSerializer},
+        description=(
+            "Assigns org units to a direct member of the team owning their parent. "
+            "Reassigned org units lose the assignments made below them."
+        ),
+    )
+    @action(detail=False, methods=["POST"])
+    def assign(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return self._change_assignments(request)
+
+    @extend_schema(
+        request=UnassignOrgUnitsSerializer,
+        responses={200: AssignmentChangesSerializer},
+        description="Removes the assignments of org units and the assignments made below them.",
+    )
+    @action(detail=False, methods=["POST"])
+    def unassign(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return self._change_assignments(request)
+
+    def _change_assignments(self, request: Request) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(AssignmentChangesSerializer(serializer.save()).data)

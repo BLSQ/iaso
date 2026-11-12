@@ -3,7 +3,7 @@ import { Assignment } from '../mainPanel/types';
 import {
     applyAssignmentChange,
     getAssigneeRef,
-    getAssignmentRequests,
+    getChangedOrgUnitIds,
 } from './utils';
 
 const teamA = { team: 1, user: null };
@@ -29,27 +29,15 @@ describe('getAssigneeRef', () => {
     });
 });
 
-describe('getAssignmentRequests', () => {
-    it('creates the assignment of an unassigned org unit', () => {
-        expect(getAssignmentRequests(assignments, [102], teamA)).toEqual([
-            { kind: 'create', orgUnitId: 102, assignee: teamA },
-        ]);
+describe('getChangedOrgUnitIds', () => {
+    it('keeps unassigned org units and org units assigned to someone else', () => {
+        expect(
+            getChangedOrgUnitIds(assignments, [100, 101, 102], teamA),
+        ).toEqual([101, 102]);
     });
 
-    it('updates the assignment of an org unit assigned to someone else', () => {
-        expect(getAssignmentRequests(assignments, [101], teamA)).toEqual([
-            { kind: 'update', assignmentId: 11, assignee: teamA },
-        ]);
-    });
-
-    it('skips org units already assigned to the assignee', () => {
-        expect(getAssignmentRequests(assignments, [100], teamA)).toEqual([]);
-    });
-
-    it('deletes the assignments of org units to unassign, skipping unassigned ones', () => {
-        expect(getAssignmentRequests(assignments, [100, 102])).toEqual([
-            { kind: 'delete', assignmentId: 10 },
-        ]);
+    it('keeps only assigned org units when unassigning', () => {
+        expect(getChangedOrgUnitIds(assignments, [100, 102])).toEqual([100]);
     });
 });
 

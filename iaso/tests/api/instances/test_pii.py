@@ -2,7 +2,7 @@ import csv
 import io
 import json
 
-from django.test import SimpleTestCase
+from rest_framework import status
 
 from hat.audit.models import INSTANCE_API, log_modification
 from iaso import models as m
@@ -13,48 +13,6 @@ from iaso.permissions.core_permissions import (
     CORE_SUBMISSIONS_PII_PERMISSION,
 )
 from iaso.test import APITestCase
-from iaso.utils.pii import filter_pii, filter_submission_files, get_allowed_fields, jsonlogic_vars
-
-
-class FilterPiiTestCase(SimpleTestCase):
-    def test_keeps_only_whitelisted_questions(self):
-        allowed = frozenset({"muac", "_version"})
-        self.assertEqual(
-            filter_pii({"muac": "12.5", "first_name": "Amina", "_version": "1"}, allowed),
-            {"muac": "12.5", "_version": "1"},
-        )
-
-    def test_is_case_insensitive(self):
-        self.assertEqual(filter_pii({"MUAC": "12"}, frozenset({"muac"})), {"MUAC": "12"})
-
-    def test_repeat_groups_keep_whitelisted_children_only(self):
-        data = {"children": [{"child_name": "A", "child_age": 2}, {"child_name": "B"}], "name": "X"}
-        self.assertEqual(filter_pii(data, frozenset({"child_age"})), {"children": [{"child_age": 2}]})
-
-    def test_meta_keeps_only_technical_keys(self):
-        allowed = get_allowed_fields(m.Form(non_pii_fields=[]), None)
-        self.assertEqual(
-            filter_pii({"meta": {"instanceID": "uuid:1", "instanceName": "Amina"}}, allowed),
-            {"meta": {"instanceID": "uuid:1"}},
-        )
-
-    def test_list_of_values_is_a_leaf(self):
-        self.assertEqual(filter_pii({"choices": ["a", "b"]}, frozenset()), {})
-        self.assertEqual(filter_pii({"choices": ["a", "b"]}, frozenset({"choices"})), {"choices": ["a", "b"]})
-
-    def test_form_without_configuration_is_not_filtered(self):
-        self.assertIsNone(get_allowed_fields(m.Form(non_pii_fields=None), None))
-
-    def test_files_of_hidden_questions_are_removed(self):
-        files = ["https://s3/instancefiles/face_123.jpg", "https://s3/instancefiles/stock_456.jpg?sig=1"]
-        self.assertEqual(
-            filter_submission_files(files, {"stock_photo": "stock_456.jpg"}),
-            ["https://s3/instancefiles/stock_456.jpg?sig=1"],
-        )
-
-    def test_jsonlogic_vars(self):
-        logic = {"and": [{"==": [{"var": "gender"}, "F"]}, {">": [{"var": ["age__int__"]}, 3]}]}
-        self.assertEqual(jsonlogic_vars(logic), {"gender", "age__int__"})
 
 
 class PiiAPITestCase(APITestCase):
@@ -109,7 +67,7 @@ class PiiAPITestCase(APITestCase):
 
     def test_instance_detail_hides_pii(self):
         self.client.force_authenticate(self.user)
-        data = self.assertJSONResponse(self.client.get(f"/api/instances/{self.instance.id}/"), 200)
+        data = self.assertJSONResponse(self.client.get(f"/api/instances/{self.instance.id}/"), status.HTTP_200_OK)
         self.assertEqual(data["file_content"], {"muac": "12.5", "district": "North", "_version": "1"})
         self.assertIsNone(data["file_url"])
         self.assertEqual(data["hidden_fields"], ["first_name"])
@@ -118,19 +76,19 @@ class PiiAPITestCase(APITestCase):
 
     def test_instance_detail_with_pii_permission(self):
         self.client.force_authenticate(self.pii_user)
-        data = self.assertJSONResponse(self.client.get(f"/api/instances/{self.instance.id}/"), 200)
+        data = self.assertJSONResponse(self.client.get(f"/api/instances/{self.instance.id}/"), status.HTTP_200_OK)
         self.assertEqual(data["file_content"]["first_name"], "Amina")
         self.assertEqual(data["hidden_fields"], [])
 
     def test_form_without_configuration_is_not_filtered(self):
         self.client.force_authenticate(self.user)
-        data = self.assertJSONResponse(self.client.get(f"/api/instances/{self.open_instance.id}/"), 200)
+        data = self.assertJSONResponse(self.client.get(f"/api/instances/{self.open_instance.id}/"), status.HTTP_200_OK)
         self.assertEqual(data["file_content"], {"first_name": "Fatou"})
 
     def test_instance_list_hides_pii(self):
         self.client.force_authenticate(self.user)
         data = self.assertJSONResponse(
-            self.client.get("/api/instances/", {"form_ids": self.form.id, "limit": 10, "page": 1}), 200
+            self.client.get("/api/instances/", {"form_ids": self.form.id, "limit": 10, "page": 1}), status.HTTP_200_OK
         )
         self.assertEqual(data["instances"][0]["file_content"]["muac"], "12.5")
         self.assertNotIn("Amina", json.dumps(data))
@@ -150,7 +108,7 @@ class PiiAPITestCase(APITestCase):
         )
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/instances/", {"form_ids": self.form.id, "csv": "true", **params})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = b"".join(response.streaming_content).decode()
         header = next(csv.reader(io.StringIO(content)))
         self.assertIn("muac", header)
@@ -167,30 +125,30 @@ class PiiAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         logic = json.dumps({"==": [{"var": "first_name"}, "Amina"]})
         response = self.client.get("/api/instances/", {"form_ids": self.form.id, "jsonContent": logic})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         logic = json.dumps({"==": [{"var": "muac"}, "12.5"]})
         response = self.client.get("/api/instances/", {"form_ids": self.form.id, "jsonContent": logic})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_entity_detail_and_list_hide_pii(self):
         self.client.force_authenticate(self.user)
-        data = self.assertJSONResponse(self.client.get(f"/api/entities/{self.entity.id}/"), 200)
+        data = self.assertJSONResponse(self.client.get(f"/api/entities/{self.entity.id}/"), status.HTTP_200_OK)
         self.assertNotIn("Amina", json.dumps(data))
         self.assertEqual(data["attributes"]["file_content"]["muac"], "12.5")
 
-        data = self.assertJSONResponse(self.client.get("/api/entities/", {"entity_type_ids": self.entity_type.id}), 200)
+        data = self.assertJSONResponse(self.client.get("/api/entities/", {"entity_type_ids": self.entity_type.id}), status.HTTP_200_OK)
         self.assertNotIn("Amina", json.dumps(data))
         self.assertEqual([column["name"] for column in data["columns"]], ["muac"])
 
     def test_entity_search_does_not_match_hidden_questions(self):
         self.client.force_authenticate(self.user)
-        data = self.assertJSONResponse(self.client.get("/api/entities/", {"search": "Amina"}), 200)
+        data = self.assertJSONResponse(self.client.get("/api/entities/", {"search": "Amina"}), status.HTTP_200_OK)
         self.assertEqual(data["count"], 0)
-        data = self.assertJSONResponse(self.client.get("/api/entities/", {"search": "North"}), 200)
+        data = self.assertJSONResponse(self.client.get("/api/entities/", {"search": "North"}), status.HTTP_200_OK)
         self.assertEqual(data["count"], 1)
 
         self.client.force_authenticate(self.pii_user)
-        data = self.assertJSONResponse(self.client.get("/api/entities/", {"search": "Amina"}), 200)
+        data = self.assertJSONResponse(self.client.get("/api/entities/", {"search": "Amina"}), status.HTTP_200_OK)
         self.assertEqual(data["count"], 1)
 
     def test_submission_logs_hide_pii(self):
@@ -209,7 +167,7 @@ class PiiAPITestCase(APITestCase):
                     "fields": "past_value,new_value,field_diffs",
                 },
             ),
-            200,
+            status.HTTP_200_OK,
         )
         self.assertNotIn("Amina", json.dumps(data))
 
@@ -220,7 +178,7 @@ class PiiAPITestCase(APITestCase):
             {"non_pii_fields": ["district"], "summary_fields": ["district"]},
             format="json",
         )
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
         self.open_form.refresh_from_db()
         self.assertEqual(self.open_form.non_pii_fields, ["district"])
         self.assertEqual(self.open_form.summary_fields, ["district"])

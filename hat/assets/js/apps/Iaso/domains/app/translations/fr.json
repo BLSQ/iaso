@@ -1683,6 +1683,7 @@
     "iaso.plannings.label.teamHierarchy": "Hiérarchie des équipes",
     "iaso.plannings.label.teamHierarchyInfos": "Construisez la hiérarchie sous l'équipe racine. Les modifications mettent à jour les niveaux automatiquement.",
     "iaso.plannings.label.teamsAndUsers": "Équipes et utilisateurs",
+    "iaso.plannings.label.teamsPanelAssignHelp": "Sélectionnez un membre de {team}, puis cliquez sur des unités d'organisation sur la carte ou dans la liste.",
     "iaso.plannings.label.teamsPanelAssignNote": "Cliquer sur une unité d'organisation déjà assignée au membre sélectionné la désassigne. Réassigner une unité d'organisation efface les assignations faites en dessous.",
     "iaso.plannings.label.teamsPanelExploreHelp": "Cliquez sur un membre pour l'ouvrir et voir comment sa zone est répartie. Passez en mode Assigner pour modifier les assignations.",
     "iaso.plannings.label.typeUnderOrgUnit": "{type} sous {orgUnit}",

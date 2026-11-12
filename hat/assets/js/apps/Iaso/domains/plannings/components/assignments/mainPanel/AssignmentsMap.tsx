@@ -10,6 +10,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
+import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import {
     ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS,
     AssignableOrgUnitsLayer,
@@ -74,7 +75,7 @@ export const AssignmentsMap: FC = () => {
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const { data: assignments } = useAssignments(`${planning.id}`);
+    const { data: assignments } = usePlanningAssignments(planning.id);
     const colorByOrgUnitId = useMemo(
         () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
         [tree, assignments],

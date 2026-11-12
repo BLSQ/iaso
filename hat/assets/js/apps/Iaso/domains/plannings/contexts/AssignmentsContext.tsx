@@ -2,13 +2,21 @@ import React, {
     FC,
     ReactNode,
     createContext,
+    useCallback,
     useContext,
     useMemo,
+    useState,
 } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import { useTeamTree } from 'Iaso/domains/teams/components/teamTree/useTeamTree';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
-import { getTeamChain } from '../components/assignments/utils';
+import {
+    AssigneePick,
+    TeamMember,
+    getCurrentAssignee,
+    getTeamChain,
+    getTeamMembers,
+} from '../components/assignments/utils';
 import { useAssignmentsParams } from '../hooks/useAssignmentsParams';
 import { Planning } from '../types';
 
@@ -22,6 +30,10 @@ type AssignmentsContextValue = {
     selectedTeam: TeamTreeNode;
     // A team works on the level of its depth: level 0 is the target geography of the root team.
     selectedLevel: number;
+    selectedTeamMembers: TeamMember[];
+    // The member that assign mode gives org units to.
+    currentAssignee?: TeamMember;
+    pickAssignee: (memberKey: string) => void;
 };
 
 const AssignmentsContext = createContext<AssignmentsContextValue | undefined>(
@@ -63,19 +75,54 @@ export const AssignmentsProvider: FC<Props> = ({
         const chain = teamId ? getTeamChain(tree, Number(teamId)) : [];
         return chain.length ? chain : [tree];
     }, [tree, teamId]);
+    const selectedTeam = teamChain.at(-1);
+    const selectedTeamMembers = useMemo(
+        () => (selectedTeam ? getTeamMembers(selectedTeam) : []),
+        [selectedTeam],
+    );
+
+    const [assigneePick, setAssigneePick] = useState<AssigneePick>();
+    const pickAssignee = useCallback(
+        (memberKey: string) => {
+            if (selectedTeam) {
+                setAssigneePick({ teamId: selectedTeam.id, memberKey });
+            }
+        },
+        [selectedTeam],
+    );
+    const currentAssignee = useMemo(
+        () =>
+            selectedTeam &&
+            getCurrentAssignee(selectedTeam, selectedTeamMembers, assigneePick),
+        [selectedTeam, selectedTeamMembers, assigneePick],
+    );
 
     const value = useMemo(
         () =>
-            tree && {
+            tree &&
+            selectedTeam && {
                 planning,
                 tree,
                 expandedTeamIds,
                 toggleTeam,
                 teamChain,
-                selectedTeam: teamChain[teamChain.length - 1],
+                selectedTeam,
                 selectedLevel: teamChain.length - 1,
+                selectedTeamMembers,
+                currentAssignee,
+                pickAssignee,
             },
-        [planning, tree, expandedTeamIds, toggleTeam, teamChain],
+        [
+            planning,
+            tree,
+            expandedTeamIds,
+            toggleTeam,
+            teamChain,
+            selectedTeam,
+            selectedTeamMembers,
+            currentAssignee,
+            pickAssignee,
+        ],
     );
 
     if (isLoadingTree) return <LoadingSpinner />;

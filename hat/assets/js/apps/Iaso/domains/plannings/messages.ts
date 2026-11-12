@@ -620,6 +620,11 @@ const MESSAGES = defineMessages({
             'Click a member to open it and see how its area is split. Switch to Assign to change assignments.',
         id: 'iaso.plannings.label.teamsPanelExploreHelp',
     },
+    teamsPanelAssignHelp: {
+        defaultMessage:
+            'Select a member of {team}, then click org units on the map or in the list.',
+        id: 'iaso.plannings.label.teamsPanelAssignHelp',
+    },
     teamsPanelAssignNote: {
         defaultMessage:
             'Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.',

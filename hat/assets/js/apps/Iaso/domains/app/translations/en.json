@@ -1684,6 +1684,7 @@
     "iaso.plannings.label.teamHierarchy": "Team hierarchy",
     "iaso.plannings.label.teamHierarchyInfos": "Build the hierarchy below the root team. Changes update the levels automatically.",
     "iaso.plannings.label.teamsAndUsers": "Teams and users",
+    "iaso.plannings.label.teamsPanelAssignHelp": "Select a member of {team}, then click org units on the map or in the list.",
     "iaso.plannings.label.teamsPanelAssignNote": "Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.",
     "iaso.plannings.label.teamsPanelExploreHelp": "Click a member to open it and see how its area is split. Switch to Assign to change assignments.",
     "iaso.plannings.label.typeUnderOrgUnit": "{type} under {orgUnit}",

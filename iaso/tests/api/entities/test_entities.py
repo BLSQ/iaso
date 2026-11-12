@@ -4,9 +4,8 @@ import io
 import json
 import uuid
 
-from datetime import timedelta
+from datetime import UTC, timedelta
 
-import pytz
 import time_machine
 
 from django.core.files import File
@@ -743,9 +742,9 @@ class WebEntityAPITestCase(EntityAPITestCase):
         """
         self.client.force_authenticate(self.yoda)
 
-        date1 = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
-        date2 = datetime.datetime(2024, 9, 13, 0, 0, 5, tzinfo=pytz.UTC)
-        date3 = datetime.datetime(2024, 9, 14, 0, 0, 5, tzinfo=pytz.UTC)
+        date1 = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=UTC)
+        date2 = datetime.datetime(2024, 9, 13, 0, 0, 5, tzinfo=UTC)
+        date3 = datetime.datetime(2024, 9, 14, 0, 0, 5, tzinfo=UTC)
         date1_str = date1.strftime("%Y-%m-%d")
         date2_str = date2.strftime("%Y-%m-%d")
         date3_str = date3.strftime("%Y-%m-%d")
@@ -1079,10 +1078,10 @@ class WebEntityAPITestCase(EntityAPITestCase):
     def test_list_entities_filter_by_date_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
 
-        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=UTC)
         source_date_attr_str = source_date_attr.strftime("%Y-%m-%d")
 
-        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=UTC)
         source_date_str = source_date.strftime("%Y-%m-%d")
 
         entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)

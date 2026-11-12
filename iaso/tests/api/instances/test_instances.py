@@ -5,12 +5,11 @@ import json
 import typing
 import zipfile
 
+from datetime import UTC
 from decimal import Decimal
 from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
-
-import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
@@ -46,7 +45,7 @@ from iaso.test import TestCase
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
-MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
+MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=UTC)
 
 
 class InstancesAPITestCase(TaskAPITestCase):
@@ -131,9 +130,9 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
         cls.form_5 = m.Form.objects.create(name="Form five", period_type=m.MONTH, single_per_period=True)
-        date1 = datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)
-        date2 = datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=pytz.UTC)
-        date3 = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.UTC)
+        date1 = datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=UTC)
+        date2 = datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=UTC)
+        date3 = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=UTC)
 
         with patch("django.utils.timezone.now", lambda: date1):
             cls.instance_1 = cls.create_form_instance(
@@ -244,7 +243,7 @@ class InstancesAPITestCase(TaskAPITestCase):
                 created_by=cls.yoda,
                 source_created_at=date3,
             )
-        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=pytz.UTC)):
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=UTC)):
             cls.instance_5.save()
             cls.instance_6.save()
 
@@ -2456,7 +2455,7 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_instances_filter_from_date_to_date(self):
         # Create new instance with source_created_at None
         # It will be in the results because it falls back to created_at
-        d = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.utc)
+        d = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=UTC)
         with patch("django.utils.timezone.now", lambda: d):
             another_instance = self.create_form_instance(
                 form=self.form_1,

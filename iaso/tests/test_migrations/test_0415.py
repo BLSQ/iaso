@@ -1,10 +1,10 @@
 from iaso.test import IasoMigratorTestCase
 
 
-class Test0414DirectMigration(IasoMigratorTestCase):
+class Test0415DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0414_add_mobile_stock_home_feature_flag")
     migrate_to = ("iaso", "0415_remove_device_imei_remove_device_projects_and_more")
-    num_queries = 36
+    num_queries = 33
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")

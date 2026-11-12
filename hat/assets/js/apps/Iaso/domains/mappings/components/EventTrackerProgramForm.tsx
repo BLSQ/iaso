@@ -27,9 +27,24 @@ const styles: SxStyles = {
     },
 };
 
+type TrackedEntityAttribute = { id: string; name: string };
+
+type Program = {
+    id: string;
+    name: string;
+    trackedEntityType?: {
+        id: string;
+        trackedEntityTypeAttributes: {
+            trackedEntityAttribute: TrackedEntityAttribute;
+        }[];
+    };
+};
+
+type RelationshipType = { id: string; name: string };
+
 type Props = {
     dataSourceId: number;
-    repeatGroupMapping: any;
+    repeatGroupMapping?: Record<string, any>[];
     onConfirmedQuestionMapping: (questionMapping: Record<string, any>) => void;
 };
 
@@ -39,17 +54,30 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
     onConfirmedQuestionMapping,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [program, setProgram] = React.useState('');
-    const [trackedEntityAttributes, setTrackedEntityAttributes] =
-        React.useState([]);
+    const [program, setProgram] = React.useState<Program | null>(null);
     const [trackedEntityIdentifier, setTrackedEntityIdentifier] =
-        React.useState(null);
-    const [relationshipType, setRelationshipType] = React.useState(null);
-    const [proposedNewMapping, setProposedNewMapping] = React.useState(null);
-    const trackedEntityAttributeOptions = trackedEntityAttributes.map(a => ({
-        value: a.id,
-        label: a.name,
+        React.useState<string | null>(null);
+    const [relationshipType, setRelationshipType] =
+        React.useState<RelationshipType | null>(null);
+    const trackedEntityAttributeOptions = (
+        program?.trackedEntityType?.trackedEntityTypeAttributes ?? []
+    ).map(({ trackedEntityAttribute }) => ({
+        value: trackedEntityAttribute.id,
+        label: trackedEntityAttribute.name,
     }));
+    // built from the 3 choices, whatever order they are made in
+    const proposedNewMapping =
+        program && trackedEntityIdentifier && relationshipType
+            ? {
+                  type: 'repeat',
+                  program_id: program.id,
+                  program_name: program.name,
+                  tracked_entity_type: program.trackedEntityType?.id,
+                  tracked_entity_identifier: trackedEntityIdentifier,
+                  relationship_type: relationshipType.id,
+                  relationship_type_name: relationshipType.name,
+              }
+            : undefined;
     return (
         <>
             <MappingCard title={formatMessage(MESSAGES.currentMapping)}>
@@ -65,21 +93,15 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
                         fields="id,name,trackedEntityType[id,name,trackedEntityTypeAttributes[trackedEntityAttribute[id,name]],"
                         label={formatMessage(MESSAGES.program)}
                         dataSourceId={dataSourceId}
-                        onChange={(name, val) => {
-                            setProgram(val);
-
-                            setTrackedEntityAttributes(
-                                val
-                                    ? val.trackedEntityType.trackedEntityTypeAttributes.map(
-                                          teat => teat.trackedEntityAttribute,
-                                      )
-                                    : [],
-                            );
+                        onChange={(_name: string, value: Program | null) => {
+                            setProgram(value);
+                            // the identifier is an attribute of the program
+                            setTrackedEntityIdentifier(null);
                         }}
                     />
                     <InputComponent
                         keyValue="trackedEntityIdentifier"
-                        onChange={(key, value) => {
+                        onChange={(_key: string, value: string | null) => {
                             setTrackedEntityIdentifier(value);
                         }}
                         value={trackedEntityIdentifier}
@@ -93,19 +115,11 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.relationshipType)}
                         dataSourceId={dataSourceId}
                         value={relationshipType}
-                        onChange={(name, val) => {
-                            setRelationshipType(val);
-                            setProposedNewMapping({
-                                type: 'repeat',
-                                program_id: program.id,
-                                program_name: program.name,
-                                tracked_entity_type:
-                                    program.trackedEntityType.id,
-                                tracked_entity_identifier:
-                                    trackedEntityIdentifier,
-                                relationship_type: val.id,
-                                relationship_type_name: val.name,
-                            });
+                        onChange={(
+                            _name: string,
+                            value: RelationshipType | null,
+                        ) => {
+                            setRelationshipType(value);
                         }}
                     />
                 </Box>
@@ -123,13 +137,6 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
                             <Button
                                 color="primary"
                                 variant="contained"
-                                disabled={
-                                    !(
-                                        trackedEntityIdentifier &&
-                                        relationshipType &&
-                                        program
-                                    )
-                                }
                                 onClick={() => {
                                     onConfirmedQuestionMapping([
                                         proposedNewMapping,

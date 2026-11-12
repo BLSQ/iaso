@@ -4,6 +4,7 @@ import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { useUpdateAssignments } from '../api/useUpdateAssignments';
 import { getAssigneeRef, isAssignedTo } from '../api/utils';
 import { useLevelOrgUnits } from '../mainPanel/useLevelOrgUnits';
+import { useConfirmPublishedChange } from './PublishedPlanningConfirmation';
 import { useSelectedTeamArea } from './useSelectedTeamArea';
 import {
     getAssignableOrgUnitIds,
@@ -32,6 +33,7 @@ export const useAssignOnClick = (): AssignOnClick => {
     const { parents } = useLevelOrgUnits(selectedLevel);
     const { areaOrgUnitIds } = useSelectedTeamArea();
     const updateAssignments = useUpdateAssignments(planning.id);
+    const confirmPublishedChange = useConfirmPublishedChange();
     const [pendingChange, setPendingChange] =
         useState<PendingAssignmentChange>();
 
@@ -68,10 +70,12 @@ export const useAssignOnClick = (): AssignOnClick => {
             );
             const isUnassign = isAssignedTo(assignment, assignee);
             const apply = () =>
-                updateAssignments({
-                    orgUnitIds: [orgUnitId],
-                    assignee: isUnassign ? undefined : assignee,
-                });
+                confirmPublishedChange(() =>
+                    updateAssignments({
+                        orgUnitIds: [orgUnitId],
+                        assignee: isUnassign ? undefined : assignee,
+                    }),
+                );
             if (orgUnitIdsWithAssignmentsBelow.has(orgUnitId)) {
                 setPendingChange({
                     orgUnitName: orgUnitNameById.get(orgUnitId) ?? '',
@@ -89,6 +93,7 @@ export const useAssignOnClick = (): AssignOnClick => {
             orgUnitIdsWithAssignmentsBelow,
             orgUnitNameById,
             updateAssignments,
+            confirmPublishedChange,
         ],
     );
     const cancelPendingChange = useCallback(

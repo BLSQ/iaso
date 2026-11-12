@@ -2,9 +2,8 @@ import { useCallback, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import {
     PaginatedAssignmentOrgUnitListOutput,
-    apiMicroplanningAssignmentsCreate,
-    apiMicroplanningAssignmentsDestroy,
-    apiMicroplanningAssignmentsPartialUpdate,
+    apiMicroplanningPlanningsAssignmentsAssignCreate,
+    apiMicroplanningPlanningsAssignmentsUnassignCreate,
 } from 'Iaso/api/assignments';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { Assignment } from '../mainPanel/types';
@@ -14,13 +13,17 @@ import {
 } from './usePlanningAssignments';
 import {
     AssigneeRef,
-    AssignmentRequest,
     applyAssignmentChange,
-    getAssignmentRequests,
+    getChangedOrgUnitIds,
 } from './utils';
 
-type MutationVariables = {
-    requests: AssignmentRequest[];
+type AssignmentChange = {
+    orgUnitIds: number[];
+    // Without an assignee, the org units are unassigned.
+    assignee?: AssigneeRef;
+};
+
+type MutationVariables = AssignmentChange & {
     nextAssignments: Assignment[];
 };
 
@@ -30,32 +33,7 @@ type MutationContext = {
     previousData: CachedAssignments;
 };
 
-export type UpdateAssignments = (change: {
-    orgUnitIds: number[];
-    // Without an assignee, the org units are unassigned.
-    assignee?: AssigneeRef;
-}) => void;
-
-// Temporary: one request per org unit on the generic assignment endpoints, until the planning assignment endpoints exist.
-const sendRequest = (planningId: number, request: AssignmentRequest) => {
-    switch (request.kind) {
-        case 'create':
-            return apiMicroplanningAssignmentsCreate({
-                planning: planningId,
-                org_unit: request.orgUnitId,
-                ...request.assignee,
-            });
-        case 'update':
-            return apiMicroplanningAssignmentsPartialUpdate(
-                request.assignmentId,
-                request.assignee,
-            );
-        case 'delete':
-            return apiMicroplanningAssignmentsDestroy(request.assignmentId);
-        default:
-            throw new Error('Unknown assignment request');
-    }
-};
+export type UpdateAssignments = (change: AssignmentChange) => void;
 
 // Applied to the page right away, rolled back if the server refuses it.
 export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
@@ -71,11 +49,18 @@ export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
         MutationVariables,
         MutationContext
     >({
-        mutationFn: ({ requests }: MutationVariables) =>
-            Promise.all(
-                requests.map(request => sendRequest(planningId, request)),
-            ),
+        mutationFn: ({ orgUnitIds, assignee }: MutationVariables) =>
+            assignee
+                ? apiMicroplanningPlanningsAssignmentsAssignCreate(
+                      `${planningId}`,
+                      { org_unit_ids: orgUnitIds, ...assignee },
+                  )
+                : apiMicroplanningPlanningsAssignmentsUnassignCreate(
+                      `${planningId}`,
+                      { org_unit_ids: orgUnitIds },
+                  ),
         showSuccessSnackBar: false,
+        useApiErrorMessage: true,
         options: {
             onMutate: async ({ nextAssignments }) => {
                 await queryClient.cancelQueries(queryKey);
@@ -99,17 +84,18 @@ export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
             const assignments = getAssignments(
                 queryClient.getQueryData<CachedAssignments>(queryKey),
             );
-            const requests = getAssignmentRequests(
+            const changedOrgUnitIds = getChangedOrgUnitIds(
                 assignments,
                 orgUnitIds,
                 assignee,
             );
-            if (!requests.length) return;
+            if (!changedOrgUnitIds.length) return;
             mutate({
-                requests,
+                orgUnitIds: changedOrgUnitIds,
+                assignee,
                 nextAssignments: applyAssignmentChange(
                     assignments,
-                    orgUnitIds,
+                    changedOrgUnitIds,
                     assignee,
                 ),
             });

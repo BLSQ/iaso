@@ -3,11 +3,6 @@ import { TeamMember } from '../utils';
 
 export type AssigneeRef = Pick<Assignment, 'team' | 'user'>;
 
-export type AssignmentRequest =
-    | { kind: 'create'; orgUnitId: number; assignee: AssigneeRef }
-    | { kind: 'update'; assignmentId: number; assignee: AssigneeRef }
-    | { kind: 'delete'; assignmentId: number };
-
 export const getAssigneeRef = (member: TeamMember): AssigneeRef =>
     member.team
         ? { team: member.team.id, user: null }
@@ -20,28 +15,24 @@ export const isAssignedTo = (
     assignment?.team === assignee.team && assignment?.user === assignee.user;
 
 // Without an assignee, the org units are unassigned.
-export const getAssignmentRequests = (
+export const getChangedOrgUnitIds = (
     assignments: Assignment[],
     orgUnitIds: number[],
     assignee?: AssigneeRef,
-): AssignmentRequest[] => {
+): number[] => {
     const assignmentByOrgUnitId = new Map(
         assignments.map(assignment => [assignment.org_unit, assignment]),
     );
-    return orgUnitIds.flatMap((orgUnitId): AssignmentRequest[] => {
+    return orgUnitIds.filter(orgUnitId => {
         const assignment = assignmentByOrgUnitId.get(orgUnitId);
-        if (!assignee) {
-            return assignment
-                ? [{ kind: 'delete', assignmentId: assignment.id }]
-                : [];
-        }
-        if (!assignment) return [{ kind: 'create', orgUnitId, assignee }];
-        if (isAssignedTo(assignment, assignee)) return [];
-        return [{ kind: 'update', assignmentId: assignment.id, assignee }];
+        return assignee
+            ? !isAssignedTo(assignment, assignee)
+            : Boolean(assignment);
     });
 };
 
 // Shown until the server answers: new assignments get a temporary negative id.
+// The assignments the server clears below reassigned org units disappear when it answers.
 export const applyAssignmentChange = (
     assignments: Assignment[],
     orgUnitIds: number[],

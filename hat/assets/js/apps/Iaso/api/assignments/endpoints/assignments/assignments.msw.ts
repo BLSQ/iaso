@@ -12,9 +12,19 @@ import type { RequestHandlerOptions } from 'msw';
 
 import { Type8edEnum } from '../../models';
 import type {
+    AssignmentChanges,
     PaginatedAssignmentOrgUnitList,
     PaginatedAssignmentTeamList,
 } from '../../models';
+
+export const getApiMicroplanningPlanningsAssignmentsAssignCreateResponseMock = (
+    overrideResponse: Partial<Extract<AssignmentChanges, object>> = {},
+): AssignmentChanges => ({
+    created: faker.number.int(),
+    updated: faker.number.int(),
+    deleted: faker.number.int(),
+    ...overrideResponse,
+});
 
 export const getApiMicroplanningPlanningsAssignmentsOrgUnitsListResponseMock = (
     overrideResponse: Partial<
@@ -81,6 +91,47 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListResponseMock = (
     ...overrideResponse,
 });
 
+export const getApiMicroplanningPlanningsAssignmentsUnassignCreateResponseMock =
+    (
+        overrideResponse: Partial<Extract<AssignmentChanges, object>> = {},
+    ): AssignmentChanges => ({
+        created: faker.number.int(),
+        updated: faker.number.int(),
+        deleted: faker.number.int(),
+        ...overrideResponse,
+    });
+
+export const getApiMicroplanningPlanningsAssignmentsAssignCreateMockHandler = (
+    overrideResponse?:
+        | AssignmentChanges
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0],
+          ) => Promise<AssignmentChanges> | AssignmentChanges),
+    options?: RequestHandlerOptions,
+) => {
+    return http.post(
+        '*/api/microplanning/plannings/:parentLookupPk/assignments/assign/',
+        async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiMicroplanningPlanningsAssignmentsAssignCreateResponseMock(),
+                { status: 200 },
+            );
+        },
+        options,
+    );
+};
+
 export const getApiMicroplanningPlanningsAssignmentsOrgUnitsListMockHandler = (
     overrideResponse?:
         | PaginatedAssignmentOrgUnitList
@@ -146,7 +197,41 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListMockHandler = (
         options,
     );
 };
+
+export const getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler =
+    (
+        overrideResponse?:
+            | AssignmentChanges
+            | ((
+                  info: Parameters<Parameters<typeof http.post>[1]>[0],
+              ) => Promise<AssignmentChanges> | AssignmentChanges),
+        options?: RequestHandlerOptions,
+    ) => {
+        return http.post(
+            '*/api/microplanning/plannings/:parentLookupPk/assignments/unassign/',
+            async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+                await delay(
+                    (() =>
+                        process.env?.MSW_DELAY
+                            ? parseInt(process.env.MSW_DELAY)
+                            : 0)(),
+                );
+
+                return HttpResponse.json(
+                    overrideResponse !== undefined
+                        ? typeof overrideResponse === 'function'
+                            ? await overrideResponse(info)
+                            : overrideResponse
+                        : getApiMicroplanningPlanningsAssignmentsUnassignCreateResponseMock(),
+                    { status: 200 },
+                );
+            },
+            options,
+        );
+    };
 export const getAssignmentsMock = () => [
+    getApiMicroplanningPlanningsAssignmentsAssignCreateMockHandler(),
     getApiMicroplanningPlanningsAssignmentsOrgUnitsListMockHandler(),
     getApiMicroplanningPlanningsAssignmentsTeamsListMockHandler(),
+    getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler(),
 ];

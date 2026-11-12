@@ -32,13 +32,13 @@ export const MissionEdit: FunctionComponent = () => {
     const { data, isLoading } = useApiMicroplanningMissionsRetrieve(missionId);
 
     const redirectTo = useRedirectTo();
-    const goBack = useGoBack(`/${baseUrls.missionsDetails}/id/${missionId}/`);
-    const redirectBackUrl: string = `/${baseUrls.missionsDetails}/id/${missionId}/`;
+    const detailsUrl = `${baseUrls.missionsDetails}/id/${missionId}/`;
+    const goBack = useGoBack(detailsUrl);
 
     const { mutateAsync: save } = useApiMicroplanningMissionsUpdate({
         mutation: {
             onSuccess: (_variables, _data) => {
-                redirectTo(redirectBackUrl);
+                redirectTo(`/${detailsUrl}`);
             },
             meta: {
                 ignoreErrorCodes: [400],

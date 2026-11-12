@@ -11,6 +11,8 @@ from django.core import serializers
 from django.db import models
 
 from hat.audit.modifications import get_values_serializer
+from iaso.models import Instance
+from iaso.utils.pii import filter_serialized_instance_values
 
 
 logger = logging.getLogger(__name__)
@@ -101,9 +103,6 @@ class Modification(models.Model):
 
         `user=None` means no filtering, for internal uses.
         """
-        from iaso.models import Instance
-        from iaso.utils.pii import filter_serialized_instance_values
-
         if user is None or not isinstance(self.content_object, Instance):
             return self.past_value, self.new_value
         form = self.content_object.form

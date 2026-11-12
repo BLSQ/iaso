@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { History } from '@mui/icons-material';
 import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
 
@@ -97,9 +97,13 @@ const MappingDetails = () => {
     // refetches after a save keep the page, only the first load blanks it
     const { isLoading } = currentMappingVersionQuery;
 
-    const indexedQuestions = currentFormVersion
-        ? Descriptor.indexQuestions(currentFormVersion.descriptor)
-        : {};
+    const indexedQuestions = useMemo(
+        () =>
+            currentFormVersion
+                ? Descriptor.indexQuestions(currentFormVersion.descriptor)
+                : {},
+        [currentFormVersion],
+    );
 
     const mappableQuestions = useMemo(
         () => getMappableQuestions(currentFormVersion?.descriptor),
@@ -124,17 +128,11 @@ const MappingDetails = () => {
         [questionTree],
     );
 
-    const [currentQuestion, setCurrentQuestion] = useState(
-        indexedQuestions[params.questionName],
-    );
+    // the URL holds the selection, so Back/Forward and URL edits follow it
+    const currentQuestion = params.questionName
+        ? indexedQuestions[params.questionName]
+        : undefined;
 
-    if (
-        currentFormVersion &&
-        params.questionName &&
-        currentQuestion == undefined
-    ) {
-        setCurrentQuestion(indexedQuestions[params.questionName]);
-    }
     const backParams = {};
     if (currentFormVersion?.form_id) {
         backParams.formId = currentFormVersion.form_id;
@@ -149,7 +147,6 @@ const MappingDetails = () => {
         if (node && node.type === 'select all that apply') {
             return;
         }
-        setCurrentQuestion(node);
         redirectToReplace(baseUrls.mappingDetail, {
             mappingVersionId: currentMappingVersion.id,
             questionName: Descriptor.getKey(node),
@@ -160,7 +157,6 @@ const MappingDetails = () => {
         redirectToReplace(baseUrls.mappingDetail, {
             mappingVersionId: params.mappingVersionId,
         });
-        setCurrentQuestion(undefined);
     }, [redirectToReplace, params.mappingVersionId]);
 
     useEscapeKey(onClearSelection, Boolean(currentQuestion));

@@ -1,19 +1,23 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithThemeAndIntlProvider } from '../../../../tests/helpers';
 import MappingDetails from './details';
 
+// jsdom has no scrollIntoView, used by the question tree
+Element.prototype.scrollIntoView = vi.fn();
+
 const mocks = vi.hoisted(() => ({
     params: {} as Record<string, string>,
     query: {} as Record<string, unknown>,
+    redirectToReplace: vi.fn(),
 }));
 
 vi.mock('bluesquare-components', async importOriginal => ({
     ...(await importOriginal<typeof import('bluesquare-components')>()),
     LoadingSpinner: () => <div role="status">loading</div>,
     useGoBack: () => vi.fn(),
-    useRedirectToReplace: () => vi.fn(),
+    useRedirectToReplace: () => mocks.redirectToReplace,
 }));
 vi.mock('../../routing/hooks/useParamsObject', () => ({
     useParamsObject: () => mocks.params,
@@ -61,11 +65,16 @@ const data = {
 };
 
 const spinner = () => screen.queryByRole('status');
+const generalPanel = () => screen.queryByText('General informations');
+// the Name field of the question panel
+const selectedQuestionName = () =>
+    screen.queryByRole('group', { name: 'Name' })?.children[1].textContent;
 const pageTitle = () => screen.getByRole('heading', { level: 1 });
 
 describe('MappingDetails', () => {
     beforeEach(() => {
         mocks.params = { accountId: '1', mappingVersionId: '5' };
+        mocks.redirectToReplace.mockClear();
     });
 
     it('shows a spinner instead of the page on the first load', () => {
@@ -83,5 +92,62 @@ describe('MappingDetails', () => {
         expect(spinner()).not.toBeInTheDocument();
         expect(pageTitle()).toHaveTextContent('Census');
         expect(screen.getByText('Belgique')).toBeInTheDocument();
+    });
+
+    describe('selected question', () => {
+        beforeEach(() => {
+            mocks.query = { isLoading: false, isFetching: false, data };
+        });
+
+        it('follows the question of the URL, also on Back/Forward', () => {
+            mocks.params = { ...mocks.params, questionName: 'france' };
+            const { rerender } = renderWithThemeAndIntlProvider(
+                <MappingDetails />,
+            );
+            expect(selectedQuestionName()).toBe('france');
+
+            // Back to the URL without question
+            mocks.params = { accountId: '1', mappingVersionId: '5' };
+            rerender(<MappingDetails />);
+            expect(selectedQuestionName()).toBeUndefined();
+            expect(generalPanel()).toBeInTheDocument();
+
+            // Forward to another question
+            mocks.params = { ...mocks.params, questionName: 'belgium' };
+            rerender(<MappingDetails />);
+            expect(selectedQuestionName()).toBe('belgium');
+            expect(generalPanel()).not.toBeInTheDocument();
+        });
+
+        it('shows the general information for an unknown question', () => {
+            mocks.params = { ...mocks.params, questionName: 'spain' };
+            renderWithThemeAndIntlProvider(<MappingDetails />);
+
+            expect(selectedQuestionName()).toBeUndefined();
+            expect(generalPanel()).toBeInTheDocument();
+        });
+
+        it('puts the clicked question in the URL', () => {
+            renderWithThemeAndIntlProvider(<MappingDetails />);
+
+            fireEvent.click(screen.getByText('France'));
+
+            expect(mocks.redirectToReplace).toHaveBeenCalledWith(
+                'forms/mapping',
+                { mappingVersionId: 5, questionName: 'france' },
+            );
+        });
+
+        it('removes the question from the URL on Esc', () => {
+            mocks.params = { ...mocks.params, questionName: 'france' };
+            renderWithThemeAndIntlProvider(<MappingDetails />);
+
+            fireEvent.keyDown(window, { key: 'Escape' });
+
+            expect(mocks.redirectToReplace).toHaveBeenCalledWith(
+                'forms/mapping',
+                { mappingVersionId: '5' },
+            );
+        });
     });
 });

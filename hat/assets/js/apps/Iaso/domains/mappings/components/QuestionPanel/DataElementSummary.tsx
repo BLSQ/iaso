@@ -1,9 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Dataset } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import {
+    ChipList,
+    ChipListItem,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import MESSAGES from '../../messages';
-import { ChipItem, ChipsRow } from './ChipsRow';
 import { LabeledValue } from './LabeledValue';
 import {
     emptyValue,
@@ -14,19 +17,15 @@ import {
 
 const MAX_VISIBLE_DATASETS = 2;
 
-type DataSet = { id: string; name?: string; periodType?: string };
+type DataSet = { id: string; name?: string };
 
-const getDataSetChips = (item: Record<string, any>): ChipItem[] =>
+const getDataSetChips = (item: Record<string, any>): ChipListItem[] =>
     (item.dataSetElements ?? [])
         .map((element: { dataSet?: DataSet }) => element.dataSet)
         .filter(Boolean)
         .map((dataSet: DataSet) => ({
-            key: dataSet.id,
+            id: dataSet.id,
             label: dataSet.name ?? dataSet.id,
-            title: [dataSet.name, dataSet.periodType, dataSet.id]
-                .filter(Boolean)
-                .join(' - '),
-            icon: <Dataset />,
         }));
 
 // AGGREGATE / EVENT mapping: { id, valueType, categoryOptionCombo, ... }
@@ -73,7 +72,14 @@ export const DataElementSummary: FunctionComponent<SummaryItemProps> = ({
                         ? `${formatMessage(MESSAGES.datasets)} (${dataSets.length})`
                         : formatMessage(MESSAGES.datasets)}
                 </Typography>
-                <ChipsRow items={dataSets} maxVisible={MAX_VISIBLE_DATASETS} />
+                {dataSets.length > 0 ? (
+                    <ChipList
+                        items={dataSets}
+                        maxVisible={MAX_VISIBLE_DATASETS}
+                    />
+                ) : (
+                    <Typography>{textPlaceholder}</Typography>
+                )}
             </Box>
         </Box>
     );

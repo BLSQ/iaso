@@ -1,13 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { ArrowBack } from '@mui/icons-material';
 import { Box, Chip, IconButton, Tooltip, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { ChipList, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../types/general';
 import { QUESTION_STATUS_MESSAGES } from '../config';
 import Descriptor from '../descriptor';
 import MESSAGES from '../messages';
 import { QuestionStatus } from '../types';
-import { ChipsRow } from './QuestionPanel/ChipsRow';
 import { LabeledValue } from './QuestionPanel/LabeledValue';
 import { MappingCard } from './QuestionPanel/MappingCard';
 import { QuestionStatusIcon } from './QuestionStatusIcon';
@@ -117,15 +116,18 @@ const QuestionInfos: FunctionComponent<Props> = ({
                 <Typography variant="caption" color="textSecondary">
                     {formatMessage(MESSAGES.questionOptions)}
                 </Typography>
-                <ChipsRow
-                    key={question.name}
-                    items={choices.map(choice => ({
-                        key: choice.name,
-                        label: Descriptor.getHumanLabel(choice),
-                        title: choice.name,
-                    }))}
-                    maxVisible={MAX_VISIBLE_OPTIONS}
-                />
+                {choices.length > 0 ? (
+                    <ChipList
+                        key={question.name}
+                        items={choices.map(choice => ({
+                            id: choice.name,
+                            label: Descriptor.getHumanLabel(choice),
+                        }))}
+                        maxVisible={MAX_VISIBLE_OPTIONS}
+                    />
+                ) : (
+                    <Typography>{textPlaceholder}</Typography>
+                )}
             </Box>
         </MappingCard>
     );

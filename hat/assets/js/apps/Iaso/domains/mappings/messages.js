@@ -531,10 +531,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.panel.repeatGroup',
         defaultMessage: 'Repeat group: {program}',
     },
-    showLess: {
-        id: 'iaso.mappings.panel.showLess',
-        defaultMessage: 'Show less',
-    },
     nextUnmapped: {
         id: 'iaso.mappings.panel.nextUnmapped',
         defaultMessage: 'Next not mapped question',

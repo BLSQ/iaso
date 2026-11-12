@@ -1226,7 +1226,6 @@
     "iaso.mappings.panel.path": "Path",
     "iaso.mappings.panel.proposedMapping": "Proposed mapping",
     "iaso.mappings.panel.repeatGroup": "Repeat group: {program}",
-    "iaso.mappings.panel.showLess": "Show less",
     "iaso.mappings.panel.valueType": "Value type",
     "iaso.mappings.removeMapping": "Remove mapping",
     "iaso.mappings.startTypingDataset": "Start typing to search by dataset name in dhis2",

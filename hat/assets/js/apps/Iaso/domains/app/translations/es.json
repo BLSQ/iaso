@@ -1021,7 +1021,6 @@
     "iaso.mappings.panel.path": "Ruta",
     "iaso.mappings.panel.proposedMapping": "Mapeo propuesto",
     "iaso.mappings.panel.repeatGroup": "Grupo repetido: {program}",
-    "iaso.mappings.panel.showLess": "Ver menos",
     "iaso.mappings.panel.valueType": "Tipo de valor",
     "iaso.mappings.removeMapping": "Eliminar mapeo",
     "iaso.mappings.status.mapped": "Mapeada",

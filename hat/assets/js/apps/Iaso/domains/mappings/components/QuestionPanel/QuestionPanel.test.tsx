@@ -50,9 +50,6 @@ describe('MappingSummary', () => {
         expect(screen.getByText('cocFemale')).toBeInTheDocument();
         expect(screen.getByText('Datasets (1)')).toBeInTheDocument();
         expect(screen.getByText('Census Belgium')).toBeInTheDocument();
-        expect(
-            screen.getByTitle('Census Belgium - Yearly - dsBelgium'),
-        ).toBeInTheDocument();
     });
 
     it('falls back to the ids when the names are not stored', () => {
@@ -233,8 +230,8 @@ describe('QuestionInfos', () => {
             'Bind: required: yes',
             'Path: data / countries / q_france',
         ]);
-        expect(screen.getByTitle('paris')).toHaveTextContent('Paris');
-        expect(screen.getByTitle('lyon')).toHaveTextContent('Lyon');
+        expect(screen.getByText('Paris')).toBeInTheDocument();
+        expect(screen.getByText('Lyon')).toBeInTheDocument();
     });
 
     it('shows no option for a question without choices', () => {

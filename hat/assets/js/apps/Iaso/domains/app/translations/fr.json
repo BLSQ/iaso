@@ -1227,7 +1227,6 @@
     "iaso.mappings.panel.path": "Chemin",
     "iaso.mappings.panel.proposedMapping": "Correspondance proposée",
     "iaso.mappings.panel.repeatGroup": "Groupe répété : {program}",
-    "iaso.mappings.panel.showLess": "Voir moins",
     "iaso.mappings.panel.valueType": "Type de valeur",
     "iaso.mappings.removeMapping": "Retirer correspondance",
     "iaso.mappings.startTypingDataset": "Commencez à taper pour chercher via le nom du dataset dans dhis2",

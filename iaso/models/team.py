@@ -93,7 +93,7 @@ class Team(CreatedAndUpdatedModel, SoftDeletableModel):
     manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="managed_teams")
     parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
     path = PathField(unique=True)
-    type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
+    type = models.CharField(choices=TeamType, max_length=100, null=True, blank=True)
     color = ColorField(default=COLOR_CHOICES[0][0])
 
     created_by = models.ForeignKey(

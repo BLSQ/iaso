@@ -27,6 +27,7 @@ from ..utils.expressions import ArraySubquery
 from ..utils.gis import simplify_geom
 from ..utils.models.common import get_creator_name
 from ..utils.models.soft_deletable import SoftDeletableModel
+from ..utils.pii import filter_instance_payload
 from .missions import MissionArtefact
 from .project import Project
 
@@ -658,7 +659,6 @@ class OrgUnit(MissionArtefact, TreeModel):
 
     def get_reference_instances_details_for_api(self, user) -> list:
         """`user`: personal data (PII) is filtered out of the submissions according to this user's permissions."""
-        from iaso.utils.pii import filter_instance_payload
 
         return [
             filter_instance_payload(instance.as_full_model(), instance.form, user)

@@ -3,12 +3,11 @@ import datetime
 import time_machine
 
 from django.test import SimpleTestCase
-from django.utils import timezone
 
 from iaso.services.tasks import TaskResultFile
 
 
-EXPIRES_AT = datetime.datetime(2023, 12, 27, 15, 0, 0, 0, tzinfo=timezone.utc)
+EXPIRES_AT = datetime.datetime(2023, 12, 27, 15, 0, 0, 0, tzinfo=datetime.UTC)
 
 
 class TaskResultFileTestCase(SimpleTestCase):

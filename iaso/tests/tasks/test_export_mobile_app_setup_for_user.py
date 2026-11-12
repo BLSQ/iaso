@@ -213,7 +213,7 @@ class ExportMobileAppSetupTestCase(TestCase):
         self.uploaded.append({"source": file_name, "object_name": object_name})
         shutil.copy(file_name, os.path.join(self.out_dir, os.path.basename(object_name)))
 
-    def run_export(self, server):
+    def run_export(self, server, **kwargs):
         with server:
             export_mobile_app_setup_for_user(
                 user_id=self.user.id,
@@ -221,6 +221,7 @@ class ExportMobileAppSetupTestCase(TestCase):
                 password=PASSWORD,
                 task=self.task,
                 _immediate=True,
+                **kwargs,
             )
         self.task.refresh_from_db()
 
@@ -519,3 +520,53 @@ class ExportMobileAppSetupRetryTest(ExportMobileAppSetupTestCase):
         self.assertEqual(self.task.status, ERRORED)
         self.assertEqual(len(server.calls_to(REPORT_PATH)), 1 + iaso_api_client.RETRIES)
         self.upload_mock.assert_not_called()
+
+
+class ExportMobileAppSetupPayloadTransformersTest(ExportMobileAppSetupTestCase):
+    def setUp(self):
+        super().setUp()
+        self.factory_calls = []
+        self.transformed = []
+
+        def make_transformer(project, options):
+            self.factory_calls.append((project, options))
+            if not options.get("mark"):
+                return None
+
+            def transform(filename, payload):
+                self.transformed.append(filename)
+                if filename == "entities":
+                    for entity in payload["results"]:
+                        entity["marked"] = True
+
+            return transform
+
+        patcher = mock.patch("iaso.tasks.mobile_app_setup.hooks.payload_transformer_factories", [make_transformer])
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_factories_get_the_project_and_options_once_per_export(self):
+        self.run_export(FakeIasoServer(), options={"mark": True})
+
+        self.assertEqual(self.task.status, SUCCESS, self.task.result)
+        self.assertEqual(self.factory_calls, [(self.project, {"mark": True})])
+        archive = self.open_export()
+        # Every saved response goes through the transformers, except the app info.
+        responses_in_zip = [name for name in archive.namelist() if "/" not in name and name != "app.json"]
+        self.assertEqual(len(self.transformed), len(responses_in_zip))
+        self.assertEqual(json.loads(archive.read("entities-2.json"))["results"], [{"id": "e2", "marked": True}])
+
+    def test_factory_returning_none_leaves_the_export_unchanged(self):
+        self.run_export(FakeIasoServer(), options={"mark": False})
+
+        self.assertEqual(self.task.status, SUCCESS, self.task.result)
+        self.assertEqual(self.transformed, [])
+        self.assertNotIn("marked", self.open_export().read("entities-1.json").decode())
+
+    def test_without_options(self):
+        """Test that the tasks created before the options were added can be relaunched."""
+        self.run_export(FakeIasoServer())
+
+        self.assertEqual(self.task.status, SUCCESS, self.task.result)
+        self.assertEqual(self.factory_calls, [(self.project, {})])
+        self.assertNotIn("marked", self.open_export().read("entities-1.json").decode())

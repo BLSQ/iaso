@@ -13,6 +13,8 @@ class ExportMobileSetupSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=True)
     project_id = serializers.IntegerField(required=True)
     password = serializers.CharField(required=True)
+    # Forwarded to the task as is. Used by plugins (trypelim).
+    options = serializers.DictField(required=False, default=dict)
 
     def validate_password(self, password):
         validate_password(password)
@@ -34,6 +36,7 @@ class ExportMobileSetupViewSet(viewsets.ViewSet):
         user_id = request.data.get("user_id", None)
         project_id = request.data.get("project_id", None)
         password = request.data.get("password", None)
+        options = serializer.validated_data["options"]
 
         current_user = self.request.user
 
@@ -41,6 +44,7 @@ class ExportMobileSetupViewSet(viewsets.ViewSet):
             user_id=user_id,
             project_id=project_id,
             password=password,
+            options=options,
             user=current_user,
         )
 

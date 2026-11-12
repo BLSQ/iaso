@@ -1,6 +1,6 @@
 import React, { ReactElement, useCallback } from 'react';
 import { ChipList, ChipListItem, textPlaceholder } from 'bluesquare-components';
-import { Project } from 'Iaso/domains/projects/types/project';
+import { Project } from '../types/project';
 
 /** Subset of Project needed to render chips — any payload with these fields works. */
 export type ProjectChipSource = Pick<Project, 'id' | 'name'> &

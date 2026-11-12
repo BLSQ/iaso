@@ -8,6 +8,12 @@ export type TeamMember = {
     color: string;
     // Only sub-teams can be opened; users have none.
     team?: TeamTreeNode;
+    userId?: number;
+};
+
+export type AssigneePick = {
+    teamId: number;
+    memberKey: string;
 };
 
 export const getTeamMembers = (team: TeamTreeNode): TeamMember[] => [
@@ -21,8 +27,19 @@ export const getTeamMembers = (team: TeamTreeNode): TeamMember[] => [
         key: userKey(team.id, user.id),
         name: getDisplayName(user),
         color: user.color,
+        userId: user.id,
     })),
 ];
+
+// The picked member only counts in the team it was picked in: other teams start with their first member.
+export const getCurrentAssignee = (
+    team: TeamTreeNode,
+    members: TeamMember[],
+    picked?: AssigneePick,
+): TeamMember | undefined =>
+    (picked?.teamId === team.id &&
+        members.find(member => member.key === picked.memberKey)) ||
+    members[0];
 
 export const getTeamChain = (
     root: TeamTreeNode,

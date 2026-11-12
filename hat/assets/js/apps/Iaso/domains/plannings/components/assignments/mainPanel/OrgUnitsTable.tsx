@@ -22,8 +22,8 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
-import { useAssignments } from './useAssignments';
 import { useLevelOrgUnits } from './useLevelOrgUnits';
 import {
     getAssigneeByOrgUnitId,
@@ -74,8 +74,8 @@ export const OrgUnitsTable: FC = () => {
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const { data: assignments } = useAssignments(`${planning.id}`);
-    const levelRows = useMemo(
+    const { data: assignments } = usePlanningAssignments(planning.id);
+    const rows = useMemo(
         () =>
             getLevelOrgUnitRows({
                 parents: parents ?? [],

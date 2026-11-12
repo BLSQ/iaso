@@ -63,9 +63,18 @@ const styles = {
 
 export const TeamsPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { openTeam } = useAssignmentsParams();
-    const { planning, tree, teamChain, expandedTeamIds, toggleTeam } =
-        useAssignmentsContext();
+    const { openTeam, mode } = useAssignmentsParams();
+    const isAssignMode = mode === 'assign';
+    const {
+        planning,
+        tree,
+        teamChain,
+        selectedTeam,
+        expandedTeamIds,
+        toggleTeam,
+        currentAssignee,
+        pickAssignee,
+    } = useAssignmentsContext();
     const targetGeographyName = planning.org_unit_details?.name;
     const [isOpen, setIsOpen] = useState(true);
     const toggleOpen = useCallback(() => setIsOpen(open => !open), []);
@@ -102,7 +111,11 @@ export const TeamsPanel: FC = () => {
                         {formatMessage(USERS_MESSAGES.teams)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {formatMessage(MESSAGES.teamsPanelExploreHelp)}
+                        {isAssignMode
+                            ? formatMessage(MESSAGES.teamsPanelAssignHelp, {
+                                  team: selectedTeam.name,
+                              })
+                            : formatMessage(MESSAGES.teamsPanelExploreHelp)}
                     </Typography>
                 </Box>
                 <Tooltip title={formatMessage(MESSAGES.hideTeams)}>
@@ -126,6 +139,9 @@ export const TeamsPanel: FC = () => {
                             key={row.key}
                             row={row}
                             onOpen={openTeam}
+                            isAssignMode={isAssignMode}
+                            isCurrentAssignee={row.key === currentAssignee?.key}
+                            onPickAssignee={pickAssignee}
                         />
                     ),
                 )}

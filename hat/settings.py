@@ -74,32 +74,13 @@ ENCRYPTED_TEXT_FIELD_KEY = env.str("ENCRYPTED_TEXT_FIELD_KEY", default=None)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
-USE_S3 = env.bool("USE_S3", default=False)
 # MCP is a core app (iaso.mcp), not a plugin. Off unless MCP_ENABLED=true.
 # DEBUG must not turn it on: DEBUG is sometimes enabled in production to
 # collect SQL, and local runs should opt in explicitly (compose and
 # .env.example set MCP_ENABLED=true). Tests opt in so `manage test` still
 # mounts /mcp.
 MCP_ENABLED = env.bool("MCP_ENABLED", default=IN_TESTS)
-USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
-# Storage provider configuration
-STORAGE_PROVIDER = env.str("STORAGE_PROVIDER", default="local")  # local, s3, azure
-if USE_S3:
-    STORAGE_PROVIDER = "s3"
-elif USE_AZURE_STORAGE:
-    STORAGE_PROVIDER = "azure"
 
-# Specifying the `STATIC_URL` means that the assets are available at that URL
-#
-# Currently WFP is deploying this way, where the assets are put on a
-# S3 in a seperate process, and a CDN (Cloudfront) is in front of
-# it. So we parse out the hostname, and then set that as the
-# CDN_URL, so that Django knows where to fetch them from.
-static_url = env.str("STATIC_URL", default=None)
-if static_url:
-    CDN_URL = urlparse(static_url).hostname
-else:
-    CDN_URL = None
 
 # deployment info for /health/
 DEPLOYED_BY = env.str("DEPLOYED_BY", default="unknown")
@@ -152,8 +133,6 @@ ALLOWED_HOSTS = ["*"]
 # Tell django to view requests as secure(ssl) that have this header set
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
-
-AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME", default="")
 
 # Default site for django contrib site framework
 SITE_ID = 1
@@ -572,14 +551,49 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
-AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")
-AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID", default=None)
-AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY", default=None)
-AWS_PUBLIC_STORAGE_BUCKET_NAME = env.str("AWS_PUBLIC_STORAGE_BUCKET_NAME", default=None)
+#######################
+# Storage configuration
+#######################
+# default values for storages, which can be overridden if S3 or Azure storage is used
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# Specifying the `STATIC_URL` means that the assets are available at that URL
+#
+# Currently WFP is deploying this way, where the assets are put on a
+# S3 in a seperate process, and a CDN (Cloudfront) is in front of
+# it. So we parse out the hostname, and then set that as the
+# CDN_URL, so that Django knows where to fetch them from.
+static_url = env.str("STATIC_URL", default=None)
+if static_url:
+    CDN_URL = urlparse(static_url).hostname
+else:
+    CDN_URL = None
+
+USE_S3 = env.bool("USE_S3", default=False)
+USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
+
 
 MEDIA_URL_PREFIX = "/media/"
 if USE_S3:
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    }
+
     # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
+    AWS_ACCESS_KEY_ID = env.str("AWS_ACCESS_KEY_ID", default=None)
+    AWS_SECRET_ACCESS_KEY = env.str("AWS_SECRET_ACCESS_KEY", default=None)
+    AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="eu-central-1")
+    AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME", default="")  # standard s3 bucket
+    AWS_PUBLIC_STORAGE_BUCKET_NAME = env.str(
+        "AWS_PUBLIC_STORAGE_BUCKET_NAME", default=None
+    )  # for polio public files - should be in polio settings instead
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
     AWS_IS_GZIPPED = True
     AWS_S3_FILE_OVERWRITE = False
@@ -587,7 +601,6 @@ if USE_S3:
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_S3_HOST = f"s3.{AWS_S3_REGION_NAME}.amazonaws.com"
     AWS_DEFAULT_ACL = None
-    S3_ENDPOINT_URL = env.str("AWS_S3_ENDPOINT_URL", default=None)
 
     # s3 static settings
     if CDN_URL:
@@ -595,12 +608,15 @@ if USE_S3:
         STATIC_URL = f"//{CDN_URL}/static/"
     else:
         STATIC_LOCATION = "iasostatics"
-        STATICFILES_STORAGE = "iaso.storage.StaticStorage"
         STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{STATIC_LOCATION}/"
+        STORAGES["staticfiles"] = {
+            "BACKEND": "iaso.storage.StaticStorage",
+        }
 
     # subdirectories will depend on field
     MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
 
+    S3_ENDPOINT_URL = env.str("AWS_S3_ENDPOINT_URL", default=None)
     if S3_ENDPOINT_URL:
         AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
         STATIC_LOCATION = "iasostatics"
@@ -611,7 +627,6 @@ if USE_S3:
         print(" STATIC_URL", STATIC_URL)
         print(" MEDIA_URL", MEDIA_URL)
 
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 elif USE_AZURE_STORAGE:
     # Azure Blob Storage Configuration
     #
@@ -632,7 +647,12 @@ elif USE_AZURE_STORAGE:
     # - With custom domain: https://yourdomain.com/static/ and https://yourdomain.com/media/
     # - Without custom domain: https://account.blob.core.windows.net/iaso/static/ and https://account.blob.core.windows.net/iaso/media/
     # - With CDN: Uses STATIC_URL environment variable
-
+    STORAGES["default"] = {
+        "BACKEND": "iaso.storage.AzureMediaStorage",
+    }
+    STORAGES["staticfiles"] = {
+        "BACKEND": "iaso.storage.AzureStaticStorage",
+    }
     AZURE_STORAGE_ACCOUNT_NAME = env.str("AZURE_STORAGE_ACCOUNT_NAME", default=None)
     AZURE_STORAGE_ACCOUNT_KEY = env.str("AZURE_STORAGE_ACCOUNT_KEY", default=None)
     AZURE_CONTAINER_NAME = env.str("AZURE_CONTAINER_NAME", default="iaso")
@@ -658,9 +678,6 @@ elif USE_AZURE_STORAGE:
         STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/static/"
         MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/media/"
 
-    # Storage backends
-    STATICFILES_STORAGE = "iaso.storage.AzureStaticStorage"
-    DEFAULT_FILE_STORAGE = "iaso.storage.AzureMediaStorage"
 else:
     SERVER_URL = env.str("SERVER_URL", default="")
     MEDIA_URL = SERVER_URL + MEDIA_URL_PREFIX

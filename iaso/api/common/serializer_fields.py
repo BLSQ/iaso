@@ -6,8 +6,6 @@ from collections.abc import Sequence
 from datetime import UTC, date, datetime
 from typing import Any
 
-import pytz
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import QuerySet
@@ -39,7 +37,7 @@ class DateTimestampField(serializers.Field):
     Use only for mobile APIs"""
 
     def to_representation(self, value: date):
-        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
+        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=UTC).timestamp()
 
     def to_internal_value(self, data: float):
         return datetime.fromtimestamp(data, tz=UTC).date()

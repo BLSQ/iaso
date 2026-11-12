@@ -6,8 +6,6 @@ from datetime import datetime
 from io import StringIO
 from unittest import mock
 
-import pytz
-
 from django.http import StreamingHttpResponse
 from rest_framework import status
 
@@ -27,7 +25,7 @@ from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION
 from iaso.test import APITestCase
 
 
-MOCK_DATE = datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
+MOCK_DATE = datetime(2020, 2, 2, 2, 2, 2, tzinfo=dt.UTC)
 
 
 class StorageAPITestCase(APITestCase):
@@ -857,7 +855,7 @@ class StorageAPITestCase(APITestCase):
             "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
         }
 
-        with mock.patch("django.utils.timezone.now", wraps=lambda: datetime(2022, 10, 26, 2, 2, 2, tzinfo=pytz.utc)):
+        with mock.patch("django.utils.timezone.now", wraps=lambda: datetime(2022, 10, 26, 2, 2, 2, tzinfo=dt.UTC)):
             response = self.client.post("/api/storages/blacklisted/", post_body, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

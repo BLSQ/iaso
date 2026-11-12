@@ -9,6 +9,8 @@ import {
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
+import { errorSnackBar } from 'Iaso/constants/snackBars';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
@@ -83,12 +85,16 @@ export const FindOrgUnitField: FC = () => {
                     tree,
                     teamIdByOrgUnitId,
                 );
-            if (located) {
-                updateParams({
-                    teamId: `${located.teamId}`,
-                    focusOrgUnitId: `${located.shownOrgUnitId}`,
-                });
+            if (!located) {
+                openSnackBar(
+                    errorSnackBar(undefined, MESSAGES.findOrgUnitError),
+                );
+                return;
             }
+            updateParams({
+                teamId: `${located.teamId}`,
+                focusOrgUnitId: `${located.shownOrgUnitId}`,
+            });
             setIsDialogOpen(false);
         },
         [orgUnits, tree, teamIdByOrgUnitId, updateParams],

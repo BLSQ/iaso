@@ -2320,5 +2320,6 @@
     "iaso.plannings.label.noOrgUnitMatchesSearch": "No org unit matches your search.",
     "iaso.plannings.label.searchByName": "Search by name",
     "iaso.plannings.label.show": "Show",
-    "iaso.plannings.label.clearFoundOrgUnit": "Clear the found org unit"
+    "iaso.plannings.label.clearFoundOrgUnit": "Clear the found org unit",
+    "iaso.plannings.label.findOrgUnitError": "Could not locate this org unit in the planning teams."
 }

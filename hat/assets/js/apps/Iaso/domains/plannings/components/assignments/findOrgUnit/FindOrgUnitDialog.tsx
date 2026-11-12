@@ -29,6 +29,7 @@ export const FindOrgUnitDialog: FC<Props> = ({
             cancelMessage={MESSAGES.cancel}
             allowConfirm={Boolean(selectedId)}
             onConfirm={handleConfirm}
+            closeOnConfirm={false}
             onCancel={onClose}
             onClose={onClose}
             closeDialog={onClose}

@@ -2318,5 +2318,6 @@
     "iaso.plannings.label.noOrgUnitMatchesSearch": "Aucune unité d'organisation ne correspond à votre recherche.",
     "iaso.plannings.label.searchByName": "Rechercher par nom",
     "iaso.plannings.label.show": "Afficher",
-    "iaso.plannings.label.clearFoundOrgUnit": "Effacer l'unité d'organisation trouvée"
+    "iaso.plannings.label.clearFoundOrgUnit": "Effacer l'unité d'organisation trouvée",
+    "iaso.plannings.label.findOrgUnitError": "Impossible de localiser cette unité d'organisation dans les équipes de la planification."
 }

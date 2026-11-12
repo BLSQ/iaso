@@ -1,6 +1,6 @@
 import re
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from django.contrib.gis.db.models import MultiPolygonField, PointField
 from django.contrib.gis.geos import GEOSGeometry
@@ -247,18 +247,14 @@ def build_org_units_queryset(queryset, params, profile):
     if path_depth is not None:
         queryset = queryset.filter(path__depth=path_depth)
     if open_date is not None:
-        date = datetime.strptime(open_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
+        date = datetime.strptime(open_date, "%d-%m-%Y").replace(tzinfo=UTC).date()
         queryset = queryset.filter(Q(opening_date__isnull=True) | Q(opening_date__lte=date)).filter(
             Q(closed_date__isnull=True) | Q(closed_date__gt=date)
         )
     if opening_date:
-        queryset = queryset.filter(
-            opening_date=datetime.strptime(opening_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
-        )
+        queryset = queryset.filter(opening_date=datetime.strptime(opening_date, "%d-%m-%Y").replace(tzinfo=UTC).date())
     if closed_date:
-        queryset = queryset.filter(
-            closed_date=datetime.strptime(closed_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
-        )
+        queryset = queryset.filter(closed_date=datetime.strptime(closed_date, "%d-%m-%Y").replace(tzinfo=UTC).date())
     if not direct_children:
         queryset = queryset.exclude(pk=org_unit_parent_id)
 

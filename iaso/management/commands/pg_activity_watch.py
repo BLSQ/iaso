@@ -128,7 +128,7 @@ class Command(BaseCommand):
         full timestamp (with date) once it's no longer today."""
         if since is None:
             return ""
-        now = datetime.datetime.now(since.tzinfo or datetime.timezone.utc)
+        now = datetime.datetime.now(since.tzinfo or datetime.UTC)
         if since.date() == now.date():
             return since.strftime("%H:%M:%S")
         return since.strftime("%m-%d %H:%M:%S")

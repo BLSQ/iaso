@@ -1,7 +1,7 @@
 import random
 import uuid
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from submissions import (
     APP_VERSION,
@@ -78,7 +78,7 @@ def setup_instances(account_name, iaso_client):
             the_uuid = str(uuid.uuid4())
             file_name = f"example_{the_uuid}.xml"
             local_path = f"generated/{file_name}"
-            current_datetime = int(datetime.now(timezone.utc).timestamp())
+            current_datetime = int(datetime.now(UTC).timestamp())
 
             instance_body = [
                 {
@@ -98,8 +98,8 @@ def setup_instances(account_name, iaso_client):
             iaso_client.post(f"/api/instances/?app_id={account_name}&app_version={APP_VERSION}", json=instance_body)
 
             bool_choice = random.choice(["yes", "no"])
-            current_datetime = datetime.now(timezone.utc)
-            date_rdv = datetime.now(timezone.utc) - timedelta(days=random.randint(4, 100))
+            current_datetime = datetime.now(UTC)
+            date_rdv = datetime.now(UTC) - timedelta(days=random.randint(4, 100))
             estimated_pop_village = int(random.randint(50, 100))
 
             instance_json = {

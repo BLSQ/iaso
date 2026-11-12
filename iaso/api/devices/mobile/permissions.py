@@ -1,5 +1,3 @@
-from typing import Optional
-
 from rest_framework import permissions
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -9,7 +7,7 @@ from iaso.models import Project
 
 
 class ProjectAuthenticationEnforcedPermission(permissions.BasePermission):
-    def __init__(self, project: Optional[Project] = None, *args, **kwargs):
+    def __init__(self, project: Project | None = None, *args, **kwargs):
         self.project = project
         super().__init__(*args, **kwargs)
 

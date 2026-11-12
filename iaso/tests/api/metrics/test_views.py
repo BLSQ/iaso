@@ -9,6 +9,7 @@ from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.models.task import Task
+from iaso.models.workspace import Workspace
 from iaso.permissions.core_permissions import CORE_METRIC_TYPES_PERMISSION, CORE_ORG_UNITS_PERMISSION
 from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.test import APITestCase
@@ -908,7 +909,8 @@ class MetricValueAPITestCase(APITestCase):
             category="Composite",
             origin=MetricType.MetricTypeOrigin.CUSTOM,
         )
-        CompositeLayer.objects.create(account=self.account, name="Composite Layer", metric_type=composite_metric_type)
+        workspace = Workspace.objects.create(account=self.account, name="Workspace")
+        CompositeLayer.objects.create(workspace=workspace, name="Composite Layer", metric_type=composite_metric_type)
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}csv_template/")

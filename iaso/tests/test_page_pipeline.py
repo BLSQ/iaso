@@ -251,18 +251,13 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertNotIn("already running", response.content.decode())
         launch.assert_not_called()
 
-    def test_user_from_another_account_can_launch(self):
+    def test_user_from_another_account_cannot_launch(self):
         page = self._page(slug="foreign-page", needs_authentication=False)
         self.client.force_login(self.other_user)
-        task = Mock(id=11, status=QUEUED)
-        with (
-            patch("iaso.utils.page_pipeline.fetch_current_pipeline_version", return_value=VERSION_ID),
-            patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline", return_value=task) as launch,
-        ):
+        with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
             response = self.client.post(f"/pages/{page.slug}/launch-pipeline/")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
-        self.assertEqual(launch.call_args.kwargs["user"], self.other_user)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        launch.assert_not_called()
 
     def test_messages_follow_page_language(self):
         self.user.iaso_profile.language = "en"

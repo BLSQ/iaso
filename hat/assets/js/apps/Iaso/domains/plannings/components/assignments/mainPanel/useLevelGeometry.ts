@@ -8,7 +8,7 @@ import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { MapPresence, OrgUnitFeatureProperties } from './types';
 import { getLevelTreeParams } from './utils';
 
-type OrgUnitFeatureCollection = FeatureCollection<
+export type OrgUnitFeatureCollection = FeatureCollection<
     Geometry,
     OrgUnitFeatureProperties
 >;

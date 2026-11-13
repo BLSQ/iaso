@@ -34,6 +34,7 @@ import { getCurrentPeriodString } from '../../periods/utils';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { userHasAccessToModule } from '../../users/utils';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
+import { useGetPromptnessDefaultParentId } from '../hooks/useGetPromptnessDefaultParentId';
 import MESSAGES from '../messages';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
@@ -75,9 +76,11 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const hasDhis2Module = userHasAccessToModule(
-        'DHIS2_MAPPING',
-        useCurrentUser(),
+    const currentUser = useCurrentUser();
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
+    // Promptness is only computed for forms which have a period type
+    const defaultPromptnessParentId = useGetPromptnessDefaultParentId(
+        Boolean(currentForm.period_type.value),
     );
 
     const setPeriodType = (value: string | null) => {
@@ -511,6 +514,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                             period: getCurrentPeriodString(
                                                 currentForm.period_type.value,
                                             ),
+                                            parentId: defaultPromptnessParentId,
                                         },
                                     )}
                                 >

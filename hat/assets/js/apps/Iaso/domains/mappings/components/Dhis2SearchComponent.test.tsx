@@ -31,18 +31,20 @@ const server = setupServer();
 const respondWith = (response: () => Response) =>
     server.use(http.get(DATA_ELEMENTS_URL, response));
 
+const searchOn = (dataSourceId: number) => (
+    <MemoryRouter>
+        <Dhis2Search
+            dataSourceId={dataSourceId}
+            resourceName="dataElements"
+            label="Search data element"
+            name="dataElement"
+            onChange={vi.fn()}
+        />
+    </MemoryRouter>
+);
+
 const renderSearch = () =>
-    renderWithThemeAndIntlProvider(
-        <MemoryRouter>
-            <Dhis2Search
-                dataSourceId={DATA_SOURCE_ID}
-                resourceName="dataElements"
-                label="Search data element"
-                name="dataElement"
-                onChange={vi.fn()}
-            />
-        </MemoryRouter>,
-    );
+    renderWithThemeAndIntlProvider(searchOn(DATA_SOURCE_ID));
 
 const typeInSearch = (text: string) =>
     fireEvent.change(screen.getByRole('combobox'), {
@@ -80,7 +82,7 @@ describe('Dhis2Search', () => {
             ),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', {
+            await screen.findByRole('link', {
                 name: MESSAGES.checkDataSource.defaultMessage,
             }),
         ).toHaveAttribute('href', SOURCE_DETAILS_HREF);
@@ -161,5 +163,43 @@ describe('Dhis2Search', () => {
                 screen.queryByText(MESSAGES.dhis2Unavailable.defaultMessage),
             ).not.toBeInTheDocument(),
         );
+    });
+
+    it('searches the new data source and forgets the previous error when the data source changes', async () => {
+        const OTHER_SOURCE_ID = 43;
+        respondWith(() =>
+            HttpResponse.json(
+                { error: 'DHIS2 is not available', code: 'dhis2_unavailable' },
+                { status: 409 },
+            ),
+        );
+        server.use(
+            http.get(
+                `*/api/datasources/${OTHER_SOURCE_ID}/dataElements.json`,
+                () =>
+                    HttpResponse.json(
+                        {
+                            error: 'DHIS2 credentials are not valid',
+                            code: 'dhis2_invalid_credentials',
+                        },
+                        { status: 409 },
+                    ),
+            ),
+        );
+        const { rerender } = renderSearch();
+        typeInSearch('malaria');
+        await screen.findByText(MESSAGES.dhis2Unavailable.defaultMessage);
+
+        rerender(searchOn(OTHER_SOURCE_ID));
+
+        expect(
+            screen.queryByText(MESSAGES.dhis2Unavailable.defaultMessage),
+        ).not.toBeInTheDocument();
+        typeInSearch('malaria cases');
+        expect(
+            await screen.findByText(
+                MESSAGES.dhis2InvalidCredentials.defaultMessage,
+            ),
+        ).toBeInTheDocument();
     });
 });

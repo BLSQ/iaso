@@ -64,21 +64,44 @@ const Dhis2Search = props => {
         setInputValue(event.target.value);
     };
 
+    // the throttled fetch is created once: it reads the current props from
+    // this ref, else it keeps searching the data source of the first render
+    const latestProps = React.useRef({
+        fetchData,
+        filter,
+        pageSize,
+        resourceName,
+        dataSourceId,
+        fields,
+        mapOptions,
+    });
+    latestProps.current = {
+        fetchData,
+        filter,
+        pageSize,
+        resourceName,
+        dataSourceId,
+        fields,
+        mapOptions,
+    };
+
     const fetchMemo = React.useMemo(
         () =>
             throttle(input => {
-                fetchData(
-                    input.input,
-                    filter,
-                    pageSize,
-                    resourceName,
-                    dataSourceId,
-                    fields,
-                )
+                const current = latestProps.current;
+                current
+                    .fetchData(
+                        input.input,
+                        current.filter,
+                        current.pageSize,
+                        current.resourceName,
+                        current.dataSourceId,
+                        current.fields,
+                    )
                     .then(f => {
-                        const union = f.flatMap(r => r[resourceName]);
-                        const finalOptions = mapOptions
-                            ? mapOptions(union, input.input)
+                        const union = f.flatMap(r => r[current.resourceName]);
+                        const finalOptions = current.mapOptions
+                            ? current.mapOptions(union, input.input)
                             : union;
                         setErrorCode(undefined);
                         setOptions(finalOptions);
@@ -92,10 +115,12 @@ const Dhis2Search = props => {
                         );
                     });
             }, 200),
-        // I guess we only want to run this once, so eslint disable is fine
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
+    React.useEffect(() => {
+        setErrorCode(undefined);
+        setOptions([]);
+    }, [dataSourceId]);
     React.useEffect(() => {
         setInputValue(defaultValue);
     }, [setInputValue, defaultValue]);

@@ -5,13 +5,23 @@ selection the user made on the page.
 """
 
 from django.db.models import Count, Max, Prefetch, Q
+from django.db.models.fields.json import KeyTextTransform
+from django.utils.dateparse import parse_date
 
 from iaso.models import Group, OrgUnit
 
 from .models import Beneficiary, Journey, Visit
 
 
-FILTER_KEYS = ("entity_type", "programme", "org_unit_group", "q")
+FILTER_KEYS = (
+    "entity_type",
+    "programme",
+    "org_unit_group",
+    "facility",
+    "q",
+    "visit_date_after",
+    "visit_date_before",
+)
 
 
 def filters_from_params(params) -> dict[str, str]:
@@ -29,14 +39,20 @@ def restricted_org_units(user):
 def facility_scope(user, filters):
     """Org units whose visits are shown and exported, None for all of them.
 
-    The selected org unit group (e.g. the facilities of one cooperating partner), intersected with the org units of
-    the user when they are restricted.
+    The selected cooperation partner (`org_unit_group`) and integrated nutrition facility (`facility`), intersected
+    with each other and with the org units of the user when they are restricted.
     """
     org_units = restricted_org_units(user)
+
     group_id = filters.get("org_unit_group", "")
     if group_id.isdigit():
         in_group = OrgUnit.objects.filter(groups__in=Group.objects.filter_for_user(user).filter(id=group_id))
         org_units = in_group if org_units is None else in_group.filter(id__in=org_units.values("id"))
+
+    facility_id = filters.get("facility", "")
+    if facility_id.isdigit():
+        facility = OrgUnit.objects.filter_for_user(user).filter(id=facility_id)
+        org_units = facility if org_units is None else facility.filter(id__in=org_units.values("id"))
     return org_units
 
 
@@ -45,7 +61,11 @@ def filtered_beneficiaries(account, filters, org_units=None):
 
     With an org unit scope, only the beneficiaries with at least one visit in these org units are kept.
     """
-    queryset = Beneficiary.objects.filter(entity__account=account).select_related("entity__entity_type")
+    queryset = (
+        Beneficiary.objects.filter(entity__account=account)
+        .select_related("entity__entity_type")
+        .annotate(progress_id=KeyTextTransform("progress_id", "entity__attributes__json"))
+    )
 
     if org_units is not None:
         queryset = queryset.filter(
@@ -64,10 +84,22 @@ def filtered_beneficiaries(account, filters, org_units=None):
         )
 
     search = filters.get("q", "")
-    if search.isdigit():
-        queryset = queryset.filter(entity_id=search)
-    elif search:
-        queryset = queryset.filter(entity__uuid__startswith=search)
+    if search:
+        criteria = Q(progress_id__istartswith=search)
+        criteria |= Q(entity_id=search) if search.isdigit() else Q(entity__uuid__startswith=search)
+        queryset = queryset.filter(criteria)
+
+    after = parse_date(filters.get("visit_date_after", "") or "")
+    before = parse_date(filters.get("visit_date_before", "") or "")
+    if after or before:
+        visits = Visit.objects.filter(journey__exit_type__isnull=True)
+        if org_units is not None:
+            visits = visits.filter(org_unit_id__in=org_units.values("id"))
+        if after:
+            visits = visits.filter(date__date__gte=after)
+        if before:
+            visits = visits.filter(date__date__lte=before)
+        queryset = queryset.filter(id__in=visits.values("journey__beneficiary_id"))
     return queryset
 
 

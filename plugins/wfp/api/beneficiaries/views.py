@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import HasPermission, Paginator
-from iaso.models import EntityType, Group
+from iaso.models import EntityType, Group, OrgUnit
 from plugins.wfp.api.beneficiaries.filters import ordering_from_param
 from plugins.wfp.api.beneficiaries.serializers import (
     BeneficiaryDetailsSerializer,
@@ -37,8 +37,10 @@ class BeneficiaryPaginator(Paginator):
 class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """Beneficiaries computed by the ETL for the account of the user, with their journeys and visits.
 
-    Filters: `entity_type`, `programme`, `org_unit_group` (only the visits made in the org units of the group) and `q`
-    (entity id or start of the UUID). Users restricted to some org units only see the visits made there.
+    Filters: `entity_type`, `programme`, `org_unit_group` (the cooperation partner: only the visits made in the org
+    units of its group), `facility` (one integrated nutrition facility of that group), `q` (entity id, start of the
+    UUID or start of the progress id) and `visit_date_after` / `visit_date_before` (beneficiaries visited in the
+    period for a journey they didn't exit yet). Users restricted to some org units only see the visits made there.
     `order` sorts the beneficiaries and `visits_order` (`date`, `-date`, `number` or `-number`) the visits of each
     journey, by date by default.
     The `export/coda/` and `export/raw/` actions download the xlsx exports of the same selection.
@@ -48,7 +50,7 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     pagination_class = BeneficiaryPaginator
 
     def _org_units(self):
-        """Org units the visits are restricted to (the group filter and the restrictions of the user), if any."""
+        """Org units the visits are restricted to (the partner and facility filters and the user's restrictions)."""
         if not hasattr(self, "_facility_scope"):
             self._facility_scope = facility_scope(self.request.user, filters_from_params(self.request.query_params))
         return self._facility_scope
@@ -95,6 +97,20 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 ],
             }
         )
+
+    @action(detail=False, methods=["get"])
+    def facilities(self, request):
+        group_id = str(request.query_params.get("org_unit_group") or "").strip()
+        if not group_id.isdigit():
+            return Response({"facilities": []})
+
+        org_units = (
+            OrgUnit.objects.filter_for_user(request.user)
+            .filter(groups__in=Group.objects.filter_for_user(request.user).filter(id=group_id))
+            .order_by("name", "id")
+            .distinct()
+        )
+        return Response({"facilities": [{"value": org_unit.id, "label": org_unit.name} for org_unit in org_units]})
 
     @action(detail=False, methods=["get"], url_path="export/coda")
     def export_coda(self, request):

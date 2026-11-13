@@ -11,7 +11,7 @@ export const menu: MenuItem[] = [
         key: 'entities',
         subMenu: [
             {
-                label: MESSAGES.entities,
+                label: MESSAGES.beneficiaryExport,
                 key: 'wfp-beneficiaries',
                 permissions: wfpBeneficiariesPath.permissions,
                 icon: props => <AssignmentIndIcon {...props} />,

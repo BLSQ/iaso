@@ -36,7 +36,7 @@ export const Beneficiaries: FunctionComponent = () => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.entities)}
+                title={formatMessage(MESSAGES.beneficiaryExport)}
                 displayBackButton={false}
             />
             <MainWrapper sx={styles.root}>

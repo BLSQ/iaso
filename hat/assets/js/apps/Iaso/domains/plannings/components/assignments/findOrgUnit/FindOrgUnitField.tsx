@@ -15,7 +15,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { useAssignments } from '../mainPanel/useAssignments';
+import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { getTeamIdByOrgUnitId } from '../mainPanel/utils';
 import { usePlanningOrgUnits } from '../usePlanningOrgUnitTree';
 import { FindOrgUnitDialog } from './FindOrgUnitDialog';
@@ -63,7 +63,7 @@ export const FindOrgUnitField: FC = () => {
     const { focusOrgUnitId, updateParams } = useAssignmentsParams();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { planning, tree } = useAssignmentsContext();
-    const { data: assignments } = useAssignments(`${planning.id}`);
+    const { data: assignments } = usePlanningAssignments(planning.id);
     // Same org units as the dialog, which can only pick loaded ones.
     const { orgUnits } = usePlanningOrgUnits(0, 2);
     const focusedOrgUnit = focusOrgUnitId

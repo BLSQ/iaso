@@ -1,4 +1,4 @@
-import React, { FC, useMemo, useRef } from 'react';
+import React, { FC, useCallback, useMemo, useRef } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FeatureCollection } from 'geojson';
@@ -10,16 +10,19 @@ import { SxStyles } from 'Iaso/types/general';
 import { defaultCenter } from 'Iaso/utils/map/mapUtils';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
+import { usePlanningAssignments } from '../api/usePlanningAssignments';
+import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDialog';
+import { useAssignOnClick } from '../assign/useAssignOnClick';
+import { useSelectedTeamArea } from '../assign/useSelectedTeamArea';
 import {
     ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS,
     AssignableOrgUnitsLayer,
 } from './AssignableOrgUnitsLayer';
+import { ClickableOrgUnits } from './ClickableOrgUnits';
 import { MapHint } from './MapHint';
 import { MapLegend } from './MapLegend';
-import { OpenTeamOnClick } from './OpenTeamOnClick';
 import { OrgUnitHover } from './OrgUnitHover';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
-import { useAssignments } from './useAssignments';
 import { OrgUnitFeatureCollection, useLevelGeometry } from './useLevelGeometry';
 import {
     countOrgUnitsOffMap,
@@ -57,6 +60,16 @@ const findFeature = (
               .flatMap(collection => collection?.features ?? [])
               .find(feature => feature.id === orgUnitId);
 
+const filterFeatures = <T extends FeatureCollection>(
+    collection: T,
+    ids: Set<number>,
+): T => ({
+    ...collection,
+    features: collection.features.filter(feature =>
+        ids.has(Number(feature.id)),
+    ),
+});
+
 const INITIAL_VIEW_STATE = {
     longitude: defaultCenter.lng,
     latitude: defaultCenter.lat,
@@ -70,11 +83,19 @@ export const AssignmentsMap: FC = () => {
     const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
     const { area, members, membersPresence, isFetching } =
         useLevelGeometry(selectedLevel);
-    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const { openTeam, onlyUnassigned, focusOrgUnitId, mode } =
+        useAssignmentsParams();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const { data: assignments } = useAssignments(`${planning.id}`);
+    const isAssignMode = mode === 'assign';
+    const { data: assignments } = usePlanningAssignments(planning.id);
+    const {
+        assignableOrgUnitIds,
+        toggleAssignment,
+        pendingChange,
+        cancelPendingChange,
+    } = useAssignOnClick();
     const colorByOrgUnitId = useMemo(
         () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
         [tree, assignments],
@@ -88,14 +109,36 @@ export const AssignmentsMap: FC = () => {
         () => findFeature([members, area], focusedOrgUnitId),
         [members, area, focusedOrgUnitId],
     );
-    const areaBounds = useMemo(() => area && getGeoJsonBounds(area), [area]);
+    const orgUnitIdsOpeningTeam = useMemo(
+        () => new Set(teamIdByOrgUnitId.keys()),
+        [teamIdByOrgUnitId],
+    );
+    const openTeamOfOrgUnit = useCallback(
+        (orgUnitId: number) => {
+            const teamId = teamIdByOrgUnitId.get(orgUnitId);
+            if (teamId) openTeam(teamId);
+        },
+        [teamIdByOrgUnitId, openTeam],
+    );
+    const { areaOrgUnitIds } = useSelectedTeamArea();
+    // Assign mode frames the selected team's own area: the org units its members can be given.
+    const shownArea = useMemo(
+        () =>
+            isAssignMode && area && areaOrgUnitIds?.size
+                ? filterFeatures(area, areaOrgUnitIds)
+                : area,
+        [isAssignMode, area, areaOrgUnitIds],
+    );
+    const areaBounds = useMemo(
+        () => shownArea && getGeoJsonBounds(shownArea),
+        [shownArea],
+    );
     const fitBounds = useMemo(
         () => (focusedFeature ? getGeoJsonBounds(focusedFeature) : areaBounds),
         [focusedFeature, areaBounds],
     );
-    const fitKey = focusedFeature
-        ? `${selectedTeam.id}-${focusedFeature.id}`
-        : selectedTeam.id;
+    const viewKey = `${selectedTeam.id}-${mode}`;
+    const fitKey = focusedFeature ? `${viewKey}-${focusedFeature.id}` : viewKey;
 
     // Created once the first area is known, then kept and refitted when selecting other teams.
     const isMapCreated = useRef(false);
@@ -125,18 +168,29 @@ export const AssignmentsMap: FC = () => {
                             showPoints={showPoints}
                             dimAssigned={onlyUnassigned}
                             focusedOrgUnitId={focusedOrgUnitId}
+                            undimmedOrgUnitIds={
+                                isAssignMode ? assignableOrgUnitIds : undefined
+                            }
                         />
                         <ScopeAreaLayer
-                            geoJson={area ?? EMPTY_FEATURE_COLLECTION}
+                            geoJson={shownArea ?? EMPTY_FEATURE_COLLECTION}
                             focusedOrgUnitId={focusedOrgUnitId}
                         />
                         <OrgUnitHover
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
                         />
-                        <OpenTeamOnClick
+                        <ClickableOrgUnits
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
-                            teamIdByOrgUnitId={teamIdByOrgUnitId}
-                            onOpenTeam={openTeam}
+                            clickableOrgUnitIds={
+                                isAssignMode
+                                    ? assignableOrgUnitIds
+                                    : orgUnitIdsOpeningTeam
+                            }
+                            onClick={
+                                isAssignMode
+                                    ? toggleAssignment
+                                    : openTeamOfOrgUnit
+                            }
                         />
                     </BaseMap>
                     <MapHint />
@@ -148,6 +202,10 @@ export const AssignmentsMap: FC = () => {
                     />
                 </Box>
             )}
+            <ClearAssignmentsBelowDialog
+                pendingChange={pendingChange}
+                onClose={cancelPendingChange}
+            />
         </Box>
     );
 };

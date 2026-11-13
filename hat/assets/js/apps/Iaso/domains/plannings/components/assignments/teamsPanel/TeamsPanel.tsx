@@ -16,9 +16,17 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { TeamMemberRow } from './TeamMemberRow';
+import { DeleteAssignmentsDialog } from '../assign/DeleteAssignmentsDialog';
+import { useMemberAssignments } from '../assign/useMemberAssignments';
+import {
+    useNoAreaMessage,
+    useTeamIdsWithArea,
+} from '../assign/useSelectedTeamArea';
+import { AssignMemberRow } from './AssignMemberRow';
+import { ExploreMemberRow } from './ExploreMemberRow';
 import { TeamNavRow } from './TeamNavRow';
-import { flattenTeamsPanelRows } from './utils';
+import { TeamMemberRowData } from './types';
+import { flattenAssignPanelRows, flattenTeamsPanelRows } from './utils';
 
 const styles = {
     panel: {
@@ -63,16 +71,40 @@ const styles = {
 
 export const TeamsPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { openTeam } = useAssignmentsParams();
-    const { planning, tree, teamChain, expandedTeamIds, toggleTeam } =
-        useAssignmentsContext();
+    const { openTeam, pickAssignee, mode } = useAssignmentsParams();
+    const isAssignMode = mode === 'assign';
+    const {
+        planning,
+        tree,
+        teamChain,
+        selectedTeam,
+        expandedTeamIds,
+        toggleTeam,
+        currentAssignee,
+    } = useAssignmentsContext();
+    const noAreaMessage = useNoAreaMessage();
+    const teamIdsWithArea = useTeamIdsWithArea();
+    const {
+        getAssignedCount,
+        requestRemoval,
+        removalText,
+        confirmRemoval,
+        cancelRemoval,
+    } = useMemberAssignments();
     const targetGeographyName = planning.org_unit_details?.name;
     const [isOpen, setIsOpen] = useState(true);
     const toggleOpen = useCallback(() => setIsOpen(open => !open), []);
 
     const rows = useMemo(
-        () => flattenTeamsPanelRows(tree, teamChain, expandedTeamIds),
-        [tree, teamChain, expandedTeamIds],
+        () =>
+            isAssignMode
+                ? flattenAssignPanelRows(
+                      tree,
+                      teamChain,
+                      currentAssignee?.team?.id,
+                  )
+                : flattenTeamsPanelRows(tree, teamChain, expandedTeamIds),
+        [isAssignMode, tree, teamChain, currentAssignee, expandedTeamIds],
     );
 
     if (!isOpen) {
@@ -88,6 +120,35 @@ export const TeamsPanel: FC = () => {
         );
     }
 
+    const getHelp = () => {
+        if (!isAssignMode) return formatMessage(MESSAGES.teamsPanelExploreHelp);
+        return noAreaMessage ?? formatMessage(MESSAGES.teamsPanelAssignHelp);
+    };
+
+    const renderMemberRow = (row: TeamMemberRowData) =>
+        isAssignMode ? (
+            <AssignMemberRow
+                key={row.key}
+                row={row}
+                assignedCount={getAssignedCount(row)}
+                isCurrentAssignee={row.key === currentAssignee?.key}
+                isPickable={teamIdsWithArea.has(row.parentTeam.id)}
+                onPick={pickAssignee}
+                onRemove={
+                    row.parentTeam.id === selectedTeam.id
+                        ? requestRemoval
+                        : undefined
+                }
+            />
+        ) : (
+            <ExploreMemberRow
+                key={row.key}
+                row={row}
+                assignedCount={getAssignedCount(row)}
+                onOpen={openTeam}
+            />
+        );
+
     const rootCaption =
         targetGeographyName &&
         formatMessage(MESSAGES.targetGeographyCaption, {
@@ -102,7 +163,7 @@ export const TeamsPanel: FC = () => {
                         {formatMessage(USERS_MESSAGES.teams)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {formatMessage(MESSAGES.teamsPanelExploreHelp)}
+                        {getHelp()}
                     </Typography>
                 </Box>
                 <Tooltip title={formatMessage(MESSAGES.hideTeams)}>
@@ -122,11 +183,7 @@ export const TeamsPanel: FC = () => {
                             onToggle={toggleTeam}
                         />
                     ) : (
-                        <TeamMemberRow
-                            key={row.key}
-                            row={row}
-                            onOpen={openTeam}
-                        />
+                        renderMemberRow(row)
                     ),
                 )}
             </Stack>
@@ -138,6 +195,13 @@ export const TeamsPanel: FC = () => {
             >
                 {formatMessage(MESSAGES.teamsPanelAssignNote)}
             </Typography>
+            <DeleteAssignmentsDialog
+                open={Boolean(removalText)}
+                title={formatMessage(MESSAGES.removeAssignments)}
+                text={removalText ?? ''}
+                onConfirm={confirmRemoval}
+                onClose={cancelRemoval}
+            />
         </Paper>
     );
 };

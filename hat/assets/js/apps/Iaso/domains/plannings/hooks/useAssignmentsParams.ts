@@ -11,6 +11,7 @@ type UseAssignmentsParams = Omit<AssignmentsParams, 'onlyUnassigned'> & {
     updateParams: (changes: Partial<AssignmentsParams>) => void;
     openTeam: (teamId: number) => void;
     toggleOnlyUnassigned: () => void;
+    pickAssignee: (teamId: number, memberKey: string) => void;
 };
 
 export const useAssignmentsParams = (): UseAssignmentsParams => {
@@ -35,6 +36,11 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
             }),
         [onlyUnassigned, updateParams],
     );
+    const pickAssignee = useCallback(
+        (teamId: number, memberKey: string) =>
+            updateParams({ teamId: `${teamId}`, assignee: memberKey }),
+        [updateParams],
+    );
     return {
         planningId: params.planningId,
         teamId: params.teamId,
@@ -43,7 +49,9 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
         view: (params.view as AssignmentsView) ?? 'map',
         onlyUnassigned,
         updateParams,
+        assignee: params.assignee,
         openTeam,
         toggleOnlyUnassigned,
+        pickAssignee,
     };
 };

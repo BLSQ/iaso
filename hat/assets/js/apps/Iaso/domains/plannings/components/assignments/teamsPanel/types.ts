@@ -14,6 +14,7 @@ export type TeamNavRowData = {
 export type TeamMemberRowData = TeamMember & {
     kind: 'member';
     depth: number;
+    parentTeam: TeamTreeNode;
 };
 
 export type TeamsPanelRow = TeamNavRowData | TeamMemberRowData;

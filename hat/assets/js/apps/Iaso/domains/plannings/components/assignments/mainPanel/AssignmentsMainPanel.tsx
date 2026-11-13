@@ -7,6 +7,8 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
+import { BulkAssignButton } from '../assign/BulkAssignButton';
+import { EmptyAreaButton } from '../assign/EmptyAreaButton';
 import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
 import { AssignmentsMap } from './AssignmentsMap';
 import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
@@ -35,7 +37,7 @@ const styles = {
 
 export const AssignmentsMainPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { view, updateParams } = useAssignmentsParams();
+    const { view, mode, updateParams } = useAssignmentsParams();
     const handleChangeView = useCallback(
         (_event: SyntheticEvent, newView: AssignmentsView) =>
             updateParams({ view: newView }),
@@ -48,7 +50,6 @@ export const AssignmentsMainPanel: FC = () => {
                 direction="row"
                 alignItems="center"
                 justifyContent="space-between"
-                gap={1}
                 sx={styles.header}
             >
                 <Tabs value={view} onChange={handleChangeView}>
@@ -71,6 +72,12 @@ export const AssignmentsMainPanel: FC = () => {
                     gap={1}
                     sx={styles.filters}
                 >
+                    {mode === 'assign' && (
+                        <>
+                            <BulkAssignButton />
+                            <EmptyAreaButton />
+                        </>
+                    )}
                     <OnlyUnassignedToggle />
                     <FindOrgUnitField />
                 </Stack>

@@ -620,6 +620,11 @@ const MESSAGES = defineMessages({
             'Click a member to open it and see how its area is split. Switch to Assign to change assignments.',
         id: 'iaso.plannings.label.teamsPanelExploreHelp',
     },
+    teamsPanelAssignHelp: {
+        defaultMessage:
+            'Pick who receives org units, then click them on the map or in the list. Picking a member of a sub-team shows the area of that sub-team.',
+        id: 'iaso.plannings.label.teamsPanelAssignHelp',
+    },
     teamsPanelAssignNote: {
         defaultMessage:
             'Clicking an org unit already assigned to the selected member unassigns it. Reassigning an org unit clears the assignments made below it.',
@@ -729,6 +734,130 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.',
         id: 'iaso.plannings.label.mapExploreHintUsers',
+    },
+    mapAssignHint: {
+        defaultMessage:
+            'Assign: click an org unit to assign it to {member}, click it again to unassign it. Only the org units inside the area of {team} can be assigned, the others are dimmed.',
+        id: 'iaso.plannings.label.mapAssignHint',
+    },
+    assignParentTeamFirst: {
+        defaultMessage: 'Assign org units to {team} first',
+        id: 'iaso.plannings.label.assignParentTeamFirst',
+    },
+    assignTeamHasNoArea: {
+        defaultMessage:
+            '{team} has no org unit to split yet. Open {parentTeam} and assign org units to {team} first.',
+        id: 'iaso.plannings.label.assignTeamHasNoArea',
+    },
+    clearAssignmentsBelowTitle: {
+        defaultMessage: 'Remove the assignments made inside {name}?',
+        id: 'iaso.plannings.label.clearAssignmentsBelowTitle',
+    },
+    clearAssignmentsBelowOnReassign: {
+        defaultMessage:
+            'Org units inside {name} were already assigned by its current assignee. Reassigning {name} removes those assignments.',
+        id: 'iaso.plannings.label.clearAssignmentsBelowOnReassign',
+    },
+    clearAssignmentsBelowOnUnassign: {
+        defaultMessage:
+            'Org units inside {name} were already assigned by its current assignee. Unassigning {name} removes those assignments.',
+        id: 'iaso.plannings.label.clearAssignmentsBelowOnUnassign',
+    },
+    publishedPlanningConfirmationTitle: {
+        defaultMessage: 'Assign org units in a published planning?',
+        id: 'iaso.plannings.label.publishedPlanningConfirmationTitle',
+    },
+    publishedPlanningConfirmationText: {
+        defaultMessage:
+            'This planning is published. New assignments are sent to the agents concerned at their next synchronisation and may change the work they planned on the field.',
+        id: 'iaso.plannings.label.publishedPlanningConfirmationText',
+    },
+    publishedPlanningConfirmationNote: {
+        defaultMessage:
+            'You will not be asked again until you leave this page.',
+        id: 'iaso.plannings.label.publishedPlanningConfirmationNote',
+    },
+    orgUnitsAssigned: {
+        defaultMessage: 'Org units assigned',
+        id: 'iaso.plannings.label.orgUnitsAssigned',
+    },
+    removeMemberAssignments: {
+        defaultMessage: 'Remove the assignments of this member',
+        id: 'iaso.plannings.label.removeMemberAssignments',
+    },
+    removeAssignments: {
+        defaultMessage: 'Remove assignments',
+        id: 'iaso.plannings.label.removeAssignments',
+    },
+    removeMemberAssignmentsText: {
+        defaultMessage: 'Remove the {count} assignments of {member}?',
+        id: 'iaso.plannings.label.removeMemberAssignmentsText',
+    },
+    removeTeamAssignmentsBelowText: {
+        defaultMessage:
+            'Assignments made by {member} inside them are removed too.',
+        id: 'iaso.plannings.label.removeTeamAssignmentsBelowText',
+    },
+    deleteAreaAssignments: {
+        defaultMessage: 'Delete assignments of {team}',
+        id: 'iaso.plannings.label.deleteAreaAssignments',
+    },
+    deleteAreaAssignmentsText: {
+        defaultMessage:
+            'Delete the {count} assignments made inside the area of {team}, and the ones made inside them? The area itself stays assigned to {team}.',
+        id: 'iaso.plannings.label.deleteAreaAssignmentsText',
+    },
+    deleteAllAssignmentsText: {
+        defaultMessage:
+            'Delete all {count} assignments of this planning? This cannot be undone.',
+        id: 'iaso.plannings.label.deleteAllAssignmentsText',
+    },
+    bulkAssignTooltip: {
+        defaultMessage: 'Assign several org units to {member}',
+        id: 'iaso.plannings.label.bulkAssignTooltip',
+    },
+    bulkAssignTitle: {
+        defaultMessage: 'Assign org units of {team}',
+        id: 'iaso.plannings.label.bulkAssignTitle',
+    },
+    bulkAssignTo: {
+        defaultMessage: 'Assign to {member}',
+        id: 'iaso.plannings.label.bulkAssignTo',
+    },
+    filterByName: {
+        defaultMessage: 'Filter by name',
+        id: 'iaso.plannings.label.filterByName',
+    },
+    selectAll: {
+        defaultMessage: 'Select all',
+        id: 'iaso.plannings.label.selectAll',
+    },
+    selectUnassigned: {
+        defaultMessage: 'Select unassigned',
+        id: 'iaso.plannings.label.selectUnassigned',
+    },
+    unselectAll: {
+        defaultMessage: 'Unselect all',
+        id: 'iaso.plannings.label.unselectAll',
+    },
+    noOrgUnitMatchesFilter: {
+        defaultMessage: 'No org unit matches the filter',
+        id: 'iaso.plannings.label.noOrgUnitMatchesFilter',
+    },
+    bulkAssignSelected: {
+        defaultMessage:
+            '{count} selected. Org units already assigned to another member are reassigned.',
+        id: 'iaso.plannings.label.bulkAssignSelected',
+    },
+    bulkAssignUnassigns: {
+        defaultMessage:
+            '{count} unchecked org units of {member} are unassigned.',
+        id: 'iaso.plannings.label.bulkAssignUnassigns',
+    },
+    bulkAssignClearsBelow: {
+        defaultMessage:
+            '{count} of them have assignments made inside them, which are removed.',
+        id: 'iaso.plannings.label.bulkAssignClearsBelow',
     },
     mapHintNoMember: {
         defaultMessage:

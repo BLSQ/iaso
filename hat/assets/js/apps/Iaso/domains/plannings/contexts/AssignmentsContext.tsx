@@ -8,7 +8,12 @@ import React, {
 import { LoadingSpinner } from 'bluesquare-components';
 import { useTeamTree } from 'Iaso/domains/teams/components/teamTree/useTeamTree';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
-import { getTeamChain } from '../components/assignments/utils';
+import {
+    TeamMember,
+    getCurrentAssignee,
+    getTeamChain,
+    getTeamMembers,
+} from '../components/assignments/utils';
 import { useAssignmentsParams } from '../hooks/useAssignmentsParams';
 import { Planning } from '../types';
 
@@ -22,6 +27,9 @@ type AssignmentsContextValue = {
     selectedTeam: TeamTreeNode;
     // A team works on the level of its depth: level 0 is the target geography of the root team.
     selectedLevel: number;
+    selectedTeamMembers: TeamMember[];
+    // The member that assign mode gives org units to.
+    currentAssignee?: TeamMember;
 };
 
 const AssignmentsContext = createContext<AssignmentsContextValue | undefined>(
@@ -49,7 +57,7 @@ export const AssignmentsProvider: FC<Props> = ({
     rootTeamId,
     children,
 }) => {
-    const { teamId } = useAssignmentsParams();
+    const { teamId, assignee } = useAssignmentsParams();
     const {
         tree,
         isLoading: isLoadingTree,
@@ -63,19 +71,41 @@ export const AssignmentsProvider: FC<Props> = ({
         const chain = teamId ? getTeamChain(tree, Number(teamId)) : [];
         return chain.length ? chain : [tree];
     }, [tree, teamId]);
+    const selectedTeam = teamChain.at(-1);
+    const selectedTeamMembers = useMemo(
+        () => (selectedTeam ? getTeamMembers(selectedTeam) : []),
+        [selectedTeam],
+    );
+
+    const currentAssignee = useMemo(
+        () => getCurrentAssignee(selectedTeamMembers, assignee),
+        [selectedTeamMembers, assignee],
+    );
 
     const value = useMemo(
         () =>
-            tree && {
+            tree &&
+            selectedTeam && {
                 planning,
                 tree,
                 expandedTeamIds,
                 toggleTeam,
                 teamChain,
-                selectedTeam: teamChain[teamChain.length - 1],
+                selectedTeam,
                 selectedLevel: teamChain.length - 1,
+                selectedTeamMembers,
+                currentAssignee,
             },
-        [planning, tree, expandedTeamIds, toggleTeam, teamChain],
+        [
+            planning,
+            tree,
+            expandedTeamIds,
+            toggleTeam,
+            teamChain,
+            selectedTeam,
+            selectedTeamMembers,
+            currentAssignee,
+        ],
     );
 
     if (isLoadingTree) return <LoadingSpinner />;

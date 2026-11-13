@@ -1,5 +1,5 @@
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
-import { getTeamChain } from './utils';
+import { getCurrentAssignee, getTeamChain, getTeamMembers } from './utils';
 
 const makeNode = (id: number, children: TeamTreeNode[] = []): TeamTreeNode =>
     ({
@@ -22,5 +22,28 @@ describe('getTeamChain', () => {
 
     it('returns an empty chain when the team is not in the tree', () => {
         expect(getTeamChain(tree, 42)).toEqual([]);
+    });
+});
+
+describe('getCurrentAssignee', () => {
+    const team = makeNode(1, [makeNode(2), makeNode(3)]);
+    const members = getTeamMembers(team);
+
+    it('returns the first member when no member was picked', () => {
+        expect(getCurrentAssignee(members)?.name).toBe('Team 2');
+    });
+
+    it('returns the picked member', () => {
+        expect(getCurrentAssignee(members, members[1].key)?.name).toBe(
+            'Team 3',
+        );
+    });
+
+    it('returns the first member when the picked member is not in the team', () => {
+        expect(getCurrentAssignee(members, 'team-42')?.name).toBe('Team 2');
+    });
+
+    it('returns undefined when the team has no member', () => {
+        expect(getCurrentAssignee([])).toBeUndefined();
     });
 });

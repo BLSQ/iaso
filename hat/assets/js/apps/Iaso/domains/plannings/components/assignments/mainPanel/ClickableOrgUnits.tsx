@@ -4,36 +4,34 @@ import { useMap } from 'react-map-gl/maplibre';
 
 type Props = {
     layerIds: string[];
-    teamIdByOrgUnitId: Map<number, number>;
-    onOpenTeam: (teamId: number) => void;
+    clickableOrgUnitIds: Set<number>;
+    onClick: (orgUnitId: number) => void;
 };
 
-// Org units assigned to a sub-team open it on click, and show a pointer to say so.
-export const OpenTeamOnClick: FC<Props> = ({
+// Shows a pointer over the org units that react to a click.
+export const ClickableOrgUnits: FC<Props> = ({
     layerIds,
-    teamIdByOrgUnitId,
-    onOpenTeam,
+    clickableOrgUnitIds,
+    onClick,
 }) => {
     const { current: mapRef } = useMap();
 
     useEffect(() => {
         const map = mapRef?.getMap();
         if (!map) return undefined;
-        const getTeamId = (event: MapLayerMouseEvent) => {
+        const getClickableId = (event: MapLayerMouseEvent) => {
             const orgUnitId = event.features?.[0]?.properties.id;
-            return orgUnitId === undefined
-                ? undefined
-                : teamIdByOrgUnitId.get(orgUnitId);
+            return clickableOrgUnitIds.has(orgUnitId) ? orgUnitId : undefined;
         };
         const setCursor = (cursor: string) => {
             map.getCanvas().style.cursor = cursor;
         };
         const handleMove = (event: MapLayerMouseEvent) =>
-            setCursor(getTeamId(event) ? 'pointer' : '');
+            setCursor(getClickableId(event) === undefined ? '' : 'pointer');
         const handleLeave = () => setCursor('');
         const handleClick = (event: MapLayerMouseEvent) => {
-            const teamId = getTeamId(event);
-            if (teamId) onOpenTeam(teamId);
+            const orgUnitId = getClickableId(event);
+            if (orgUnitId !== undefined) onClick(orgUnitId);
         };
         const subscriptions = [
             map.on('mousemove', layerIds, handleMove),
@@ -44,7 +42,7 @@ export const OpenTeamOnClick: FC<Props> = ({
             subscriptions.forEach(subscription => subscription.unsubscribe());
             handleLeave();
         };
-    }, [mapRef, layerIds, teamIdByOrgUnitId, onOpenTeam]);
+    }, [mapRef, layerIds, clickableOrgUnitIds, onClick]);
 
     return null;
 };

@@ -8,6 +8,7 @@ export type TeamMember = {
     color: string;
     // Only sub-teams can be opened; users have none.
     team?: TeamTreeNode;
+    userId?: number;
 };
 
 export const getTeamMembers = (team: TeamTreeNode): TeamMember[] => [
@@ -21,8 +22,16 @@ export const getTeamMembers = (team: TeamTreeNode): TeamMember[] => [
         key: userKey(team.id, user.id),
         name: getDisplayName(user),
         color: user.color,
+        userId: user.id,
     })),
 ];
+
+// Member keys are unique in the tree, so a key picked in another team falls back to the first member.
+export const getCurrentAssignee = (
+    members: TeamMember[],
+    assigneeKey?: string,
+): TeamMember | undefined =>
+    members.find(member => member.key === assigneeKey) ?? members[0];
 
 export const getTeamChain = (
     root: TeamTreeNode,

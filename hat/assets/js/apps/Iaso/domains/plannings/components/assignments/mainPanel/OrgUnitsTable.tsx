@@ -17,19 +17,11 @@ import {
     Typography,
 } from '@mui/material';
 import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
-import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
-import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
-import { useAssignments } from './useAssignments';
-import { useLevelOrgUnits } from './useLevelOrgUnits';
-import {
-    getAssigneeByOrgUnitId,
-    getLevelOrgUnitRows,
-    getTeamIdByOrgUnitId,
-} from './utils';
+import { useLevelOrgUnitRows } from './useLevelOrgUnitRows';
 
 const styles = {
     container: {
@@ -67,27 +59,11 @@ const DEFAULT_ROWS_PER_PAGE = 20;
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { planning, tree, selectedTeam, selectedLevel } =
-        useAssignmentsContext();
-    const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
+    const { rows: levelRows, isFetching } = useLevelOrgUnitRows();
     const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const { data: assignments } = useAssignments(`${planning.id}`);
-    const levelRows = useMemo(
-        () =>
-            getLevelOrgUnitRows({
-                parents: parents ?? [],
-                assigneeByOrgUnitId: getAssigneeByOrgUnitId(
-                    tree,
-                    assignments ?? [],
-                ),
-                teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
-                showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
-            }),
-        [parents, selectedTeam.type, tree, assignments],
-    );
     const rows = useMemo(
         () =>
             onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,

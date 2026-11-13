@@ -45,7 +45,10 @@ type RelationshipType = { id: string; name: string };
 type Props = {
     dataSourceId: number;
     repeatGroupMapping?: Record<string, any>[];
-    onConfirmedQuestionMapping: (questionMapping: Record<string, any>) => void;
+    onConfirmedQuestionMapping: (
+        questionMapping: Record<string, any>[],
+        options?: { onSuccess?: () => void },
+    ) => void;
 };
 
 const EventTrackerProgramForm: FunctionComponent<Props> = ({
@@ -59,6 +62,14 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
         React.useState<string | null>(null);
     const [relationshipType, setRelationshipType] =
         React.useState<RelationshipType | null>(null);
+    // remounts the fields: the DHIS2 searches keep their own input
+    const [fieldsKey, setFieldsKey] = React.useState(0);
+    const handleSaved = () => {
+        setProgram(null);
+        setTrackedEntityIdentifier(null);
+        setRelationshipType(null);
+        setFieldsKey(key => key + 1);
+    };
     const trackedEntityAttributeOptions = (
         program?.trackedEntityType?.trackedEntityTypeAttributes ?? []
     ).map(({ trackedEntityAttribute }) => ({
@@ -87,7 +98,7 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
                 />
             </MappingCard>
             <MappingCard title={formatMessage(MESSAGES.changeMappingTitle)}>
-                <Box sx={styles.fields}>
+                <Box sx={styles.fields} key={fieldsKey}>
                     <Dhis2Search
                         resourceName="programs"
                         fields="id,name,trackedEntityType[id,name,trackedEntityTypeAttributes[trackedEntityAttribute[id,name]],"
@@ -138,9 +149,11 @@ const EventTrackerProgramForm: FunctionComponent<Props> = ({
                                 color="primary"
                                 variant="contained"
                                 onClick={() => {
-                                    onConfirmedQuestionMapping([
-                                        proposedNewMapping,
-                                    ]);
+                                    onConfirmedQuestionMapping(
+                                        [proposedNewMapping],
+                                        // saved: it becomes the current mapping
+                                        { onSuccess: handleSaved },
+                                    );
                                 }}
                             >
                                 {formatMessage(MESSAGES.confirm)}

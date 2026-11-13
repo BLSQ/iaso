@@ -535,6 +535,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.panel.nextUnmapped',
         defaultMessage: 'Next not mapped question',
     },
+    dhis2NoCredentials: {
+        id: 'iaso.mappings.dhis2NoCredentials',
+        defaultMessage:
+            'Search unavailable: no DHIS2 credentials are configured on this data source.',
+    },
+    dhis2InvalidCredentials: {
+        id: 'iaso.mappings.dhis2InvalidCredentials',
+        defaultMessage:
+            'Search unavailable: DHIS2 rejected the credentials of this data source.',
+    },
+    dhis2Unavailable: {
+        id: 'iaso.mappings.dhis2Unavailable',
+        defaultMessage:
+            'Search unavailable: DHIS2 could not be reached. Try again later or check its URL.',
+    },
+    checkDataSource: {
+        id: 'iaso.mappings.checkDataSource',
+        defaultMessage: 'Check the data source',
+    },
 });
 
 export default MESSAGES;

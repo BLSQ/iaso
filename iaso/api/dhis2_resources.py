@@ -1,11 +1,31 @@
+import logging
+
 from time import process_time
 
+import requests
+
 from dhis2 import Api
+from dhis2.exceptions import RequestException as Dhis2RequestException
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.models import DataSource
+
+
+logger = logging.getLogger(__name__)
+
+DHIS2_TIMEOUT_SECONDS = 30
+
+
+class Dhis2ErrorCode:
+    NO_CREDENTIALS = "dhis2_no_credentials"
+    INVALID_CREDENTIALS = "dhis2_invalid_credentials"
+    UNAVAILABLE = "dhis2_unavailable"
+
+
+def _dhis2_error_response(code: str, message: str) -> Response:
+    return Response({"error": message, "code": code}, status=status.HTTP_409_CONFLICT)
 
 
 @extend_schema(tags=["DHIS2", "Data sources"])
@@ -31,7 +51,7 @@ class Dhis2ViewSet(viewsets.ViewSet):
             return Response({"error": "Data source not available"}, status=status.HTTP_404_NOT_FOUND)
 
         if data_source.credentials is None:
-            return Response({"error": "No credentials configured"}, status=status.HTTP_401_UNAUTHORIZED)
+            return _dhis2_error_response(Dhis2ErrorCode.NO_CREDENTIALS, "No credentials configured")
 
         credentials = data_source.credentials
 
@@ -42,7 +62,19 @@ class Dhis2ViewSet(viewsets.ViewSet):
             "pageSize": request.GET.get("pageSize", 50),
             "filter": request.GET.get("filter", None),
         }
-        resp = api.get(self.resource, params=params).json()
+        try:
+            resp = api.get(self.resource, params=params, timeout=DHIS2_TIMEOUT_SECONDS).json()
+        except Dhis2RequestException as err:
+            logger.warning("DHIS2 %s call failed for data source %s: %s", self.resource, data_source.id, err.code)
+            if err.code in (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN):
+                return _dhis2_error_response(Dhis2ErrorCode.INVALID_CREDENTIALS, "DHIS2 credentials are not valid")
+            return _dhis2_error_response(Dhis2ErrorCode.UNAVAILABLE, "DHIS2 is not available")
+        except requests.RequestException as err:
+            # connection error, timeout, or a non-JSON answer (e.g. a proxy error page)
+            logger.warning(
+                "DHIS2 %s call failed for data source %s: %s", self.resource, data_source.id, type(err).__name__
+            )
+            return _dhis2_error_response(Dhis2ErrorCode.UNAVAILABLE, "DHIS2 is not available")
         t1_stop = process_time()
 
         if "pager" in resp:

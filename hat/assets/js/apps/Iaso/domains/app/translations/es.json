@@ -1403,5 +1403,9 @@
     "iaso.workInProgress.description": "El equipo está colocando los últimos ladrillos de esta página. Tómese un café, pronto estará lista.",
     "iaso.workInProgress.goBack": "Volver",
     "iaso.workInProgress.plannedRelease": "Lanzamiento previsto: {release}",
-    "iaso.workInProgress.title": "Esta página todavía está en construcción"
+    "iaso.workInProgress.title": "Esta página todavía está en construcción",
+    "iaso.mappings.checkDataSource": "Verificar la fuente de datos",
+    "iaso.mappings.dhis2InvalidCredentials": "Búsqueda no disponible: DHIS2 rechazó las credenciales de esta fuente de datos.",
+    "iaso.mappings.dhis2NoCredentials": "Búsqueda no disponible: no hay credenciales DHIS2 configuradas en esta fuente de datos.",
+    "iaso.mappings.dhis2Unavailable": "Búsqueda no disponible: no se pudo conectar a DHIS2. Inténtelo más tarde o verifique su dirección."
 }

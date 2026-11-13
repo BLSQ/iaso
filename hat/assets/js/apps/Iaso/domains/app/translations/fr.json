@@ -2412,5 +2412,9 @@
     "iaso.plannings.label.searchByName": "Rechercher par nom",
     "iaso.plannings.label.show": "Afficher",
     "iaso.plannings.label.clearFoundOrgUnit": "Effacer l'unité d'organisation trouvée",
-    "iaso.plannings.label.findOrgUnitError": "Impossible de localiser cette unité d'organisation dans les équipes de la planification."
+    "iaso.plannings.label.findOrgUnitError": "Impossible de localiser cette unité d'organisation dans les équipes de la planification.",
+    "iaso.mappings.checkDataSource": "Vérifier la source de données",
+    "iaso.mappings.dhis2InvalidCredentials": "Recherche indisponible : DHIS2 a refusé les identifiants de cette source de données.",
+    "iaso.mappings.dhis2NoCredentials": "Recherche indisponible : aucun identifiant DHIS2 n'est configuré sur cette source de données.",
+    "iaso.mappings.dhis2Unavailable": "Recherche indisponible : impossible de joindre DHIS2. Réessayez plus tard ou vérifiez son adresse."
 }

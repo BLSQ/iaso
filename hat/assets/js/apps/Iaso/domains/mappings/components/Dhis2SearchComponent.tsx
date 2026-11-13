@@ -4,6 +4,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
 import throttle from 'lodash/throttle';
+import {
+    DHIS2_UNAVAILABLE,
+    Dhis2SearchError,
+    Dhis2SearchErrorMessage,
+    fetchDhis2Resource,
+} from './Dhis2SearchError';
 
 const fetchFrom = (
     input,
@@ -14,21 +20,21 @@ const fetchFrom = (
     fields,
 ) =>
     Promise.all([
-        fetch(
+        fetchDhis2Resource(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${input}&fields=${
                 fields || 'id,name'
             }&pageSize=${pageSize || 10}`,
-        ).then(resp => resp.json()),
-        fetch(
+        ),
+        fetchDhis2Resource(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=code:ilike:${input}&fields=${
                 fields || 'id,name'
             }&pageSize=${pageSize || 10}`,
-        ).then(resp => resp.json()),
-        fetch(
+        ),
+        fetchDhis2Resource(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=id:eq:${input}&fields=${
                 fields || 'id,name'
             }&pageSize=${pageSize || 10}`,
-        ).then(resp => resp.json()),
+        ),
     ]);
 const Dhis2Search = props => {
     const {
@@ -51,34 +57,70 @@ const Dhis2Search = props => {
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
 
     const [options, setOptions] = React.useState([]);
+    const [errorCode, setErrorCode] = React.useState<string | undefined>();
     // TODO confirm this is dead code
     // const [_selectedOption, setSelectedOption] = React.useState([]);
     const handleChange = event => {
         setInputValue(event.target.value);
     };
 
+    // the throttled fetch is created once: it reads the current props from
+    // this ref, else it keeps searching the data source of the first render
+    const latestProps = React.useRef({
+        fetchData,
+        filter,
+        pageSize,
+        resourceName,
+        dataSourceId,
+        fields,
+        mapOptions,
+    });
+    latestProps.current = {
+        fetchData,
+        filter,
+        pageSize,
+        resourceName,
+        dataSourceId,
+        fields,
+        mapOptions,
+    };
+
     const fetchMemo = React.useMemo(
         () =>
             throttle(input => {
-                fetchData(
-                    input.input,
-                    filter,
-                    pageSize,
-                    resourceName,
-                    dataSourceId,
-                    fields,
-                ).then(f => {
-                    const union = f.flatMap(r => r[resourceName]);
-                    const finalOptions = mapOptions
-                        ? mapOptions(union, input.input)
-                        : union;
-                    setOptions(finalOptions);
-                });
+                const current = latestProps.current;
+                current
+                    .fetchData(
+                        input.input,
+                        current.filter,
+                        current.pageSize,
+                        current.resourceName,
+                        current.dataSourceId,
+                        current.fields,
+                    )
+                    .then(f => {
+                        const union = f.flatMap(r => r[current.resourceName]);
+                        const finalOptions = current.mapOptions
+                            ? current.mapOptions(union, input.input)
+                            : union;
+                        setErrorCode(undefined);
+                        setOptions(finalOptions);
+                    })
+                    .catch(error => {
+                        setOptions([]);
+                        setErrorCode(
+                            error instanceof Dhis2SearchError
+                                ? error.code
+                                : DHIS2_UNAVAILABLE,
+                        );
+                    });
             }, 200),
-        // I guess we only want to run this once, so eslint disable is fine
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [],
     );
+    React.useEffect(() => {
+        setErrorCode(undefined);
+        setOptions([]);
+    }, [dataSourceId]);
     React.useEffect(() => {
         setInputValue(defaultValue);
     }, [setInputValue, defaultValue]);
@@ -135,6 +177,15 @@ const Dhis2Search = props => {
                     onChange={handleChange}
                     value={inputValue}
                     variant="outlined"
+                    error={Boolean(errorCode)}
+                    helperText={
+                        errorCode && (
+                            <Dhis2SearchErrorMessage
+                                code={errorCode}
+                                dataSourceId={dataSourceId}
+                            />
+                        )
+                    }
                 />
             )}
             renderOption={(props, option) => (

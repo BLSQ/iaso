@@ -12,6 +12,7 @@ import {
     BeneficiaryOptions,
     ExportKind,
     BeneficiaryDetails,
+    FacilityOptions,
     SubmissionFields,
 } from './types';
 
@@ -48,6 +49,18 @@ export const useGetBeneficiaryOptions =
             queryFn: () => getRequest(`${beneficiariesUrl}options/`),
             options: { staleTime: Infinity },
         });
+
+export const useGetFacilityOptions = (
+    orgUnitGroup?: string,
+): UseQueryResult<FacilityOptions> =>
+    useSnackQuery({
+        queryKey: ['wfpBeneficiaryFacilities', orgUnitGroup],
+        queryFn: () =>
+            getRequest(
+                `${beneficiariesUrl}facilities/?org_unit_group=${orgUnitGroup}`,
+            ),
+        options: { enabled: Boolean(orgUnitGroup), staleTime: Infinity },
+    });
 
 export const exportUrl = (kind: ExportKind, filters: Filters): string => {
     const queryString = new URLSearchParams(

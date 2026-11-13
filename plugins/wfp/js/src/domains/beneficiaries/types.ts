@@ -39,6 +39,7 @@ export type Journey = {
 export type Beneficiary = {
     id: number;
     entity_id: number;
+    progress_id: string | null;
     uuid: string;
     entity_type_id: number;
     entity_type_name: string;

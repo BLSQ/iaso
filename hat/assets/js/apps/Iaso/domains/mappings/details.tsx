@@ -143,6 +143,9 @@ const MappingDetails = () => {
         if (node && node.type === 'select all that apply') {
             return;
         }
+        if (!currentMappingVersion) {
+            return;
+        }
         redirectToReplace(baseUrls.mappingDetail, {
             mappingVersionId: currentMappingVersion.id,
             questionName: Descriptor.getKey(node),
@@ -161,6 +164,9 @@ const MappingDetails = () => {
         questionMapping: Record<string, any>,
         options?: { onSuccess?: () => void },
     ) => {
+        if (!currentMappingVersion) {
+            return;
+        }
         applyPartialUpdate.mutate(
             {
                 mappingVersionId: currentMappingVersion.id,
@@ -172,6 +178,9 @@ const MappingDetails = () => {
     };
 
     const onUnmapQuestionMapping = () => {
+        if (!currentMappingVersion) {
+            return;
+        }
         applyPartialUpdate.mutate({
             mappingVersionId: currentMappingVersion.id,
             questionName: Descriptor.getKey(currentQuestion),
@@ -182,6 +191,9 @@ const MappingDetails = () => {
     };
 
     const onNeverMapQuestionMapping = () => {
+        if (!currentMappingVersion) {
+            return;
+        }
         applyPartialUpdate.mutate({
             mappingVersionId: currentMappingVersion.id,
             questionName: Descriptor.getKey(currentQuestion),
@@ -282,7 +294,7 @@ const MappingDetails = () => {
                                         }
                                     />
                                 )}
-                            {currentQuestion && (
+                            {currentQuestion && currentMappingVersion && (
                                 <>
                                     <QuestionInfos
                                         question={currentQuestion}
@@ -295,9 +307,11 @@ const MappingDetails = () => {
                                             ],
                                         )}
                                         groupLabel={Descriptor.getHumanLabel(
-                                            indexedQuestions[
-                                                currentQuestion.parentName
-                                            ],
+                                            currentQuestion.parentName
+                                                ? indexedQuestions[
+                                                      currentQuestion.parentName
+                                                  ]
+                                                : undefined,
                                         )}
                                         onClose={onClearSelection}
                                     />

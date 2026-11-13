@@ -80,29 +80,32 @@ class Descriptor {
     static getHumanLabel(
         node: DescriptorNode | undefined,
         language = 'French',
-    ): string | undefined {
+    ): string {
         if (node === undefined) {
-            return undefined;
+            return '';
         }
         return (
             node.title ||
             this.getLabel(node, language) ||
             node.hint ||
-            node.name
+            node.name ||
+            ''
         );
     }
 
     static withinRepeatGroup(
         node: DescriptorNode,
         indexedQuestions: IndexedQuestions,
-    ): string | null | undefined {
+    ): string | null {
         if (node.path === undefined) {
             return null;
         }
-        return node.path.find(
-            questionName =>
-                indexedQuestions[questionName] &&
-                indexedQuestions[questionName].type === 'repeat',
+        return (
+            node.path.find(
+                questionName =>
+                    indexedQuestions[questionName] &&
+                    indexedQuestions[questionName].type === 'repeat',
+            ) ?? null
         );
     }
 
@@ -128,8 +131,8 @@ class Descriptor {
         }
     }
 
-    static getKey(node: DescriptorNode): string {
-        return node.uuid || node.name || '';
+    static getKey(node?: DescriptorNode | null): string {
+        return node?.uuid || node?.name || '';
     }
 
     static getNodeName(node: DescriptorNode, parent?: DescriptorNode): string {

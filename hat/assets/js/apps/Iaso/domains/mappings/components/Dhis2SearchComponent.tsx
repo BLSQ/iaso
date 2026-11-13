@@ -128,6 +128,7 @@ const Dhis2Search = props => {
     React.useEffect(() => {
         let active = true;
         if (inputValue === '') {
+            setErrorCode(undefined);
             setOptions([]);
             return undefined;
         }

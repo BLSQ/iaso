@@ -176,6 +176,26 @@ describe('Dhis2Search', () => {
         );
     });
 
+    it('clears the message when the search is emptied', async () => {
+        respondWith(() =>
+            HttpResponse.json(
+                { error: 'DHIS2 is not available', code: 'dhis2_unavailable' },
+                { status: 409 },
+            ),
+        );
+        renderSearch();
+        typeInSearch('malaria');
+        await screen.findByText(MESSAGES.dhis2Unavailable.defaultMessage);
+
+        typeInSearch('');
+
+        await waitFor(() =>
+            expect(
+                screen.queryByText(MESSAGES.dhis2Unavailable.defaultMessage),
+            ).not.toBeInTheDocument(),
+        );
+    });
+
     it('searches the new data source and forgets the previous error when the data source changes', async () => {
         const OTHER_SOURCE_ID = 43;
         respondWith(() =>

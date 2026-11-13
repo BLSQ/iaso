@@ -23,11 +23,7 @@ import { useLevelOrgUnitRows } from '../mainPanel/useLevelOrgUnitRows';
 import { TeamMember } from '../utils';
 import { useAssignableOrgUnits } from './useAssignableOrgUnits';
 import { useChangeAssignments } from './useChangeAssignments';
-import {
-    countClearedByReassign,
-    filterByName,
-    getOrgUnitIdsAssignedTo,
-} from './utils';
+import { filterByName, getOrgUnitIdsAssignedTo } from './utils';
 
 const styles = {
     assignee: {
@@ -160,24 +156,13 @@ export const BulkAssignDialog: FC<Props> = ({ assignee, onClose }) => {
         );
     }, [visibleRows]);
 
-    const clearedCount = useMemo(
-        () =>
-            countClearedByReassign(
-                [...selectedIds],
-                assignments,
-                assigneeRef,
-                orgUnitIdsWithAssignmentsBelow,
-            ) +
-            uncheckedOwnIds.filter(id => orgUnitIdsWithAssignmentsBelow.has(id))
-                .length,
-        [
-            selectedIds,
-            uncheckedOwnIds,
-            assignments,
-            assigneeRef,
-            orgUnitIdsWithAssignmentsBelow,
-        ],
-    );
+    // Changing an org unit's assignee clears the assignments made inside it.
+    const clearedCount = useMemo(() => {
+        const newlyAssignedIds = [...selectedIds].filter(id => !ownIds.has(id));
+        return [...newlyAssignedIds, ...uncheckedOwnIds].filter(id =>
+            orgUnitIdsWithAssignmentsBelow.has(id),
+        ).length;
+    }, [selectedIds, ownIds, uncheckedOwnIds, orgUnitIdsWithAssignmentsBelow]);
 
     const handleConfirm = useCallback(() => {
         const changes = [

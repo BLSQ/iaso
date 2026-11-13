@@ -87,20 +87,3 @@ export const filterByName = <T extends { name: string }>(
         ? items.filter(item => item.name.toLowerCase().includes(query))
         : items;
 };
-
-// Reassigning an org unit clears the assignments made inside it; assigning it to its current assignee changes nothing.
-export const countClearedByReassign = (
-    orgUnitIds: number[],
-    assignments: Assignment[],
-    assignee: AssigneeRef,
-    orgUnitIdsWithAssignmentsBelow: Set<number>,
-): number => {
-    const assignmentByOrgUnitId = new Map(
-        assignments.map(assignment => [assignment.org_unit, assignment]),
-    );
-    return orgUnitIds.filter(
-        orgUnitId =>
-            orgUnitIdsWithAssignmentsBelow.has(orgUnitId) &&
-            !isAssignedTo(assignmentByOrgUnitId.get(orgUnitId), assignee),
-    ).length;
-};

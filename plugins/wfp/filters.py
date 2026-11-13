@@ -6,13 +6,14 @@ selection the user made on the page.
 
 from django.db.models import Count, Max, Prefetch, Q
 from django.db.models.fields.json import KeyTextTransform
+from django.utils.dateparse import parse_date
 
 from iaso.models import Group, OrgUnit
 
 from .models import Beneficiary, Journey, Visit
 
 
-FILTER_KEYS = ("entity_type", "programme", "org_unit_group", "q")
+FILTER_KEYS = ("entity_type", "programme", "org_unit_group", "q", "visit_date_after", "visit_date_before")
 
 
 def filters_from_params(params) -> dict[str, str]:
@@ -73,6 +74,18 @@ def filtered_beneficiaries(account, filters, org_units=None):
         criteria = Q(progress_id__istartswith=search)
         criteria |= Q(entity_id=search) if search.isdigit() else Q(entity__uuid__startswith=search)
         queryset = queryset.filter(criteria)
+
+    after = parse_date(filters.get("visit_date_after", "") or "")
+    before = parse_date(filters.get("visit_date_before", "") or "")
+    if after or before:
+        visits = Visit.objects.filter(journey__exit_type__isnull=True)
+        if org_units is not None:
+            visits = visits.filter(org_unit_id__in=org_units.values("id"))
+        if after:
+            visits = visits.filter(date__date__gte=after)
+        if before:
+            visits = visits.filter(date__date__lte=before)
+        queryset = queryset.filter(id__in=visits.values("journey__beneficiary_id"))
     return queryset
 
 

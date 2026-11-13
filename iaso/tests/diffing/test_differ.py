@@ -8,7 +8,7 @@ from iaso.diffing import Differ
 from iaso.tests.diffing.utils import PyramidBaseTest
 
 
-DT = datetime.datetime(2024, 11, 28, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+DT = datetime.datetime(2024, 11, 28, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
 
 @time_machine.travel(DT, tick=False)

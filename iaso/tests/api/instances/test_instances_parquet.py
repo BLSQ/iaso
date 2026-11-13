@@ -2,13 +2,13 @@ import datetime
 import os
 import tempfile
 
+from datetime import UTC
 from unittest import mock
 from unittest.mock import patch
 from urllib.parse import quote
 from uuid import uuid4
 
 import duckdb
-import pytz
 
 from django.contrib.gis.geos import Point
 from django.core.files import File
@@ -26,7 +26,7 @@ from iaso.permissions.core_permissions import (
 )
 
 
-MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
+MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=UTC)
 
 from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
 
@@ -109,9 +109,9 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
         cls.form_5 = m.Form.objects.create(name="Form five", period_type=m.MONTH, single_per_period=True)
-        date1 = datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)
-        date2 = datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=pytz.UTC)
-        date3 = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.UTC)
+        date1 = datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=UTC)
+        date2 = datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=UTC)
+        date3 = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=UTC)
 
         with patch("django.utils.timezone.now", lambda: date1):
             cls.instance_1 = cls.create_form_instance(
@@ -252,7 +252,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 created_by=cls.yoda,
                 source_created_at=date3,
             )
-        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=pytz.UTC)):
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=UTC)):
             cls.instance_5.save()
             cls.instance_6.save()
 

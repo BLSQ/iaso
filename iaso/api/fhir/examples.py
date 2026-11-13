@@ -5,8 +5,6 @@ This file contains example code showing how to use the FHIR Location API
 both as a client and for testing purposes.
 """
 
-from typing import Optional
-
 import requests
 
 
@@ -256,7 +254,7 @@ def extract_location_hierarchy(bundle: dict) -> list[dict]:
     return locations
 
 
-def print_location_tree(locations: list[dict], parent_id: Optional[str] = None, indent: int = 0):
+def print_location_tree(locations: list[dict], parent_id: str | None = None, indent: int = 0):
     """
     Print locations in a tree structure
 

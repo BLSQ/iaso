@@ -1,7 +1,7 @@
 import random
 import uuid
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from names_generator import generate_name
 from submissions import (
@@ -60,7 +60,7 @@ def create_submission_with_picture(account_name, iaso_client):
             "fields": "id,longitude,latitude,altitude,org_unit_type_name",
         },
     )["orgunits"]
-    current_datetime = int(datetime.now(timezone.utc).timestamp())
+    current_datetime = int(datetime.now(UTC).timestamp())
 
     # Creating submissions with picture by org unit for first 10 Health facilities and setting up reference instance
     for orgunit in orgunits:

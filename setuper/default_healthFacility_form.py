@@ -1,7 +1,7 @@
 import random
 import uuid
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from names_generator import generate_name
 from submissions import (
@@ -66,7 +66,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
         the_uuid = str(uuid.uuid4())
         file_name = f"example_{the_uuid}.xml"
         local_path = f"generated/{file_name}"
-        current_datetime = int(datetime.now(timezone.utc).timestamp())
+        current_datetime = int(datetime.now(UTC).timestamp())
 
         instance_body = [
             {

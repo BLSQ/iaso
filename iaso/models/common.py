@@ -64,7 +64,7 @@ class ValidationWorkflowArtefactQuerySet(models.QuerySet):
 
 class ValidationWorkflowArtefact(models.Model):
     general_validation_status = models.CharField(
-        choices=ValidationWorkflowArtefactStatus.choices, blank=True, default="", max_length=20
+        choices=ValidationWorkflowArtefactStatus, blank=True, default="", max_length=20
     )
 
     class Meta:

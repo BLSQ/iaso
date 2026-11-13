@@ -35,7 +35,7 @@ from iaso.models import (
 logger = logging.getLogger(__name__)
 import os
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from iaso.dhis2.datavalue_exporter import AggregateHandler, DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
@@ -75,9 +75,7 @@ def dump_attributes(obj):
 class DataValueExporterTests(TestCase):
     def build_instance(self, form):
         instance = Instance()
-        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
-            tzinfo=timezone.utc
-        )
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(tzinfo=UTC)
         instance.org_unit = self.org_unit
         if form == self.form:
             instance.period = "201801"
@@ -92,9 +90,7 @@ class DataValueExporterTests(TestCase):
         instance.save()
         # force to past creation date
         # looks the first save don't take it
-        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(
-            tzinfo=timezone.utc
-        )
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p").replace(tzinfo=UTC)
         instance.save()
         return instance
 

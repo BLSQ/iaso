@@ -8,7 +8,7 @@ from iaso.test import IasoMigratorTestCase
 class Test0388DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0388_project_description")
     migrate_to = ("iaso", "0389_alter_account_modules")
-    num_queries = 15
+    num_queries = 12
 
     def prepare(self):
         AccountFeatureFlag = self.old_state.apps.get_model("iaso", "AccountFeatureFlag")
@@ -59,7 +59,7 @@ class Test0388DirectMigration(IasoMigratorTestCase):
 
 @skip("skipping because this migration was successfully applied on prod - keeping it for future reference")
 class Test0388ReverseMigration(IasoMigratorTestCase):
-    num_queries = 17
+    num_queries = 14
 
     migrate_to = ("iaso", "0388_project_description")
     migrate_from = ("iaso", "0389_alter_account_modules")

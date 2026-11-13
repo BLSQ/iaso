@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Optional
 
 from django.core.paginator import Paginator as DjangoPaginator
 
@@ -21,7 +20,7 @@ class CountedDjangoPaginator(DjangoPaginator):
 class PromptnessStatsPagination(Paginator):
     page_size = 20
 
-    def paginate_queryset(self, queryset, request, view=None, count: Optional[int] = None):
+    def paginate_queryset(self, queryset, request, view=None, count: int | None = None):
         """`count`: number of rows of `queryset`, when it is cheaper to count them on another queryset.
 
         Counting the rows annotated with their counts would compute the targets and their join with the rows only to

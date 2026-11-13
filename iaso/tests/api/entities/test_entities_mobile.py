@@ -510,7 +510,7 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
         """Building a serializer (its fields) costs far more than serializing an instance: it must not be built
         again for every entity of the page."""
         m.FormVersion.objects.create(form=self.form_1, version_id="1")
-        created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+        created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.UTC)
         for name in ("Belgium", "France", "Luxembourg"):
             registration = self.create_instance_for_serialization(None, {"_version": "1"}, created_at)
             entity = m.Entity.objects.create(
@@ -539,7 +539,7 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
         self.maxDiff = None
         version_1 = m.FormVersion.objects.create(form=self.form_1, version_id="1")
         version_2 = m.FormVersion.objects.create(form=self.form_1, version_id="2")
-        created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+        created_at = datetime.datetime(2026, 1, 1, tzinfo=datetime.UTC)
 
         registration_belgium = self.create_instance_for_serialization(None, {"_version": "1"}, created_at)
         belgium = m.Entity.objects.create(

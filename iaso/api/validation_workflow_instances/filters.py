@@ -1,5 +1,3 @@
-from typing import Optional
-
 import django_filters
 
 from django.db.models import QuerySet
@@ -27,7 +25,7 @@ class ValidationWorkflowInstancesListFilters(FilterSet):
         fields = []
 
     @staticmethod
-    def filter_org_unit_ids(queryset: QuerySet, _: str, value: Optional[list[int]]) -> QuerySet:
+    def filter_org_unit_ids(queryset: QuerySet, _: str, value: list[int] | None) -> QuerySet:
         if value is None:
             return queryset
         org_units = OrgUnit.objects.hierarchy(OrgUnit.objects.filter(id__in=value))

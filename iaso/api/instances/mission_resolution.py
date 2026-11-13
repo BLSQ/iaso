@@ -1,14 +1,12 @@
 import logging
 
-from typing import Optional
-
 from iaso.models import Mission, Planning, Project
 
 
 logger = logging.getLogger(__name__)
 
 
-def resolve_planning(planning_id, project: Project) -> Optional[Planning]:
+def resolve_planning(planning_id, project: Project) -> Planning | None:
     if planning_id is None:
         return None
 
@@ -19,7 +17,7 @@ def resolve_planning(planning_id, project: Project) -> Optional[Planning]:
     return planning
 
 
-def resolve_mission(mission_id, project: Project) -> Optional[Mission]:
+def resolve_mission(mission_id, project: Project) -> Mission | None:
     if mission_id is None:
         return None
 

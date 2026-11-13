@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Q
@@ -54,8 +52,8 @@ class ValidationWorkflowEngine:
         node: ValidationNodeTemplate,
         instance: ValidationWorkflowArtefact,
         user,
-        start: Optional[bool] = False,
-        resubmit: Optional[bool] = False,
+        start: bool | None = False,
+        resubmit: bool | None = False,
     ):
         if start:
             ValidationNode.objects.bulk_create(
@@ -79,8 +77,8 @@ class ValidationWorkflowEngine:
         user,
         artifact: ValidationWorkflowArtefact,
         workflow: ValidationWorkflow,
-        approved: Optional[bool] = False,
-        comment: Optional[str] = "",
+        approved: bool | None = False,
+        comment: str | None = "",
     ):
         # this function will need to be adapted in case of more complex graph, there the assumption is made that it's linear
         # it will also need to be optimized
@@ -144,11 +142,11 @@ class ValidationWorkflowEngine:
         validation_node: ValidationNode,
         user,
         artifact: ValidationWorkflowArtefact,
-        approved: Optional[bool] = False,
-        comment: Optional[str] = "",
-        skipped: Optional[bool] = False,
-        skipped_from_parent: Optional[ValidationNodeTemplate] = None,
-        update_artifact: Optional[bool] = True,
+        approved: bool | None = False,
+        comment: str | None = "",
+        skipped: bool | None = False,
+        skipped_from_parent: ValidationNodeTemplate | None = None,
+        update_artifact: bool | None = True,
     ):
         if not skipped:
             ValidationWorkflowEngine._check_permissions_for_node(validation_node, user)

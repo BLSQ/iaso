@@ -1,6 +1,6 @@
 import io
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest import mock
 
 import openpyxl
@@ -42,7 +42,7 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
             beneficiary=Beneficiary.objects.get(entity=cls.other_entity), nutrition_programme="TSFP"
         )
         Visit.objects.create(
-            journey=other_journey, date=datetime(2026, 5, 2, tzinfo=timezone.utc), number=1, org_unit=other_facility
+            journey=other_journey, date=datetime(2026, 5, 2, tzinfo=UTC), number=1, org_unit=other_facility
         )
         cls.other_instance = m.Instance.objects.create(
             form=cls.visit_form, entity=cls.other_entity, org_unit=other_facility, json={"muac": "11.0"}
@@ -105,7 +105,7 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
         # the browsable API (opened in a browser) builds the queryset of the view to render its filter form
         self.client.force_authenticate(self.user)
         response = self.client.get(
-            BENEFICIARIES_URL, {"order": "-journeys_count", "page": 1, "limit": 50}, HTTP_ACCEPT="text/html"
+            BENEFICIARIES_URL, {"order": "-journeys_count", "page": 1, "limit": 50}, headers={"accept": "text/html"}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

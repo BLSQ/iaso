@@ -3,13 +3,13 @@ from __future__ import annotations
 import operator
 
 from functools import reduce
+from typing import Self
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.db.models import F
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField
-from typing_extensions import Self
 
 from iaso.models import Account, Project
 from iaso.models.common import CreatedAndUpdatedModel
@@ -46,7 +46,7 @@ class TeamQuerySet(models.QuerySet):
         elif isinstance(teams, models.QuerySet):
             team_qs = teams
             query = models.Q(path__descendants=ArraySubquery(team_qs.values("path")))
-        elif isinstance(teams, (list,)):
+        elif isinstance(teams, list):
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in teams])
         else:
             raise NotImplementedError
@@ -93,7 +93,7 @@ class Team(CreatedAndUpdatedModel, SoftDeletableModel):
     manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="managed_teams")
     parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
     path = PathField(unique=True)
-    type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
+    type = models.CharField(choices=TeamType, max_length=100, null=True, blank=True)
     color = ColorField(default=COLOR_CHOICES[0][0])
 
     created_by = models.ForeignKey(

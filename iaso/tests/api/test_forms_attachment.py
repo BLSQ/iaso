@@ -48,7 +48,7 @@ enketo_test_settings = {
 @override_settings(ENKETO=enketo_test_settings)
 class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
-    DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.UTC)
     PATH_TO_FIXTURES = "iaso/tests/fixtures/form_attachments/"
     maxDiff = None
 

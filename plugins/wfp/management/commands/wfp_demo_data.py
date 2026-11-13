@@ -11,7 +11,7 @@ import os
 import random
 import uuid
 
-from datetime import datetime, time, timedelta, timezone
+from datetime import UTC, datetime, time, timedelta
 from xml.sax.saxutils import escape
 
 from dateutil.relativedelta import relativedelta
@@ -78,7 +78,7 @@ def _attach_xml_file(instance):
 
 
 def _at_noon(day):
-    return datetime.combine(day, time(12, 0), tzinfo=timezone.utc)
+    return datetime.combine(day, time(12, 0), tzinfo=UTC)
 
 
 class Command(BaseCommand):
@@ -138,7 +138,7 @@ class Command(BaseCommand):
             raise CommandError("Entity types bangladesh_under5 / bangladesh_pbwg already exist in another account")
 
         self.random = random.Random(options["seed"])
-        self.today = datetime.now(tz=timezone.utc).date()
+        self.today = datetime.now(tz=UTC).date()
 
         with transaction.atomic():
             account, project, infs = self._create_account()
@@ -158,7 +158,7 @@ class Command(BaseCommand):
     def _add_to_existing(self, options):
         account = m.Account.objects.get(name=ACCOUNT_NAME)
         self.random = random.Random()
-        self.today = datetime.now(tz=timezone.utc).date()
+        self.today = datetime.now(tz=UTC).date()
         # the defaults of --children / --women are for a new account, add a few only
         children = options["children"] if options["children"] != 150 else 3
         women = options["women"] if options["women"] != 80 else 2
@@ -388,7 +388,7 @@ class Command(BaseCommand):
         )
         _attach_xml_file(instance)
         # created_at is the server reception time (the "data synchronisation date")
-        synced_at = min(_at_noon(visit_date + timedelta(days=sync_delay)), datetime.now(timezone.utc))
+        synced_at = min(_at_noon(visit_date + timedelta(days=sync_delay)), datetime.now(UTC))
         m.Instance.objects.filter(id=instance.id).update(created_at=synced_at)
         return instance
 

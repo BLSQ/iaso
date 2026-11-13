@@ -1,7 +1,6 @@
 import copy
 
 from dataclasses import dataclass
-from typing import Optional
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -31,9 +30,7 @@ def get_unique_username(username: str, account_name: str) -> str:
 
 
 class TenantUserManager(models.Manager):
-    def create_user_or_tenant_user(
-        self, data: UserCreationData
-    ) -> tuple[Optional[User], Optional[User], Optional[User]]:
+    def create_user_or_tenant_user(self, data: UserCreationData) -> tuple[User | None, User | None, User | None]:
         """
         Creates a user or a tenant user.
 
@@ -140,7 +137,7 @@ class TenantUser(models.Model):
         return f"{self.main_user} -- {self.account_user} ({account_name})"
 
     @property
-    def account(self) -> Optional[Account]:
+    def account(self) -> Account | None:
         try:
             return self.account_user.iaso_profile.account
         except User.iaso_profile.RelatedObjectDoesNotExist:

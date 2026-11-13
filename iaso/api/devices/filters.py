@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import django_filters
 
@@ -31,7 +31,7 @@ class DeviceFilter(django_filters.FilterSet):
             self.form.fields["team"].queryset = Team.objects.filter_for_user(user=user).prefetch_related("users")
 
     @staticmethod
-    def team_search(queryset: DeviceQuerySet, _: str, value: Optional[Team]) -> DeviceQuerySet:
+    def team_search(queryset: DeviceQuerySet, _: str, value: Team | None) -> DeviceQuerySet:
         if not value:
             return queryset
 

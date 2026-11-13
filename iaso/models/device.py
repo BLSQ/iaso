@@ -1,11 +1,12 @@
 import datetime
 
+from typing import Self
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Count, OuterRef, Q
 from django.db.models.expressions import Subquery
-from typing_extensions import Self
 
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.models.device_log import DeviceLog
@@ -25,7 +26,7 @@ class DeviceQuerySet(models.QuerySet):
     def with_current_owner(self) -> Self:
         subquery = (
             DeviceOwnership.objects.filter(device_id=OuterRef("pk"))
-            .filter(Q(end__gte=datetime.datetime.now(datetime.timezone.utc)) | Q(end__isnull=True))
+            .filter(Q(end__gte=datetime.datetime.now(datetime.UTC)) | Q(end__isnull=True))
             .select_related("user")
             .order_by("-start")
         )[:1]

@@ -148,7 +148,7 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
             )
 
             # get all validation nodes waiting for user action aka nodes in unknown status and created after last new version
-            fallback_date = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+            fallback_date = datetime.datetime(1970, 1, 1, tzinfo=datetime.UTC)
 
             cutoff = Coalesce(
                 latest_new_version_create_at_query,

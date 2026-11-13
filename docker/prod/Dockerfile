@@ -38,7 +38,7 @@ WORKDIR /opt/app
 
 # ── Stage 2: Python dependency builder ────────────────────────────────────────
 # Only the resulting /.venv is carried forward.
-FROM python:3.9-bookworm AS pybuilder
+FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim AS pybuilder
 
 # Set working directory
 WORKDIR /opt/app
@@ -51,9 +51,6 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 # Install python dependencies + gunicorn
 COPY ../../pyproject.toml ./
 COPY ../../uv.lock ./
-
-# install pinned uv version
-COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
 
 # Use python from the system, not from uv
 # https://docs.astral.sh/uv/reference/environment/#uv_python_preference
@@ -71,7 +68,7 @@ RUN find ./.venv -type d -name "__pycache__" -exec rm -rf {} + && \
 
 # ── Stage 3: Production image ─────────────────────────────────────────────────
 # Slim image with runtime-only libraries.
-FROM python:3.9-slim-bookworm AS prod
+FROM python:3.12-slim-bookworm AS prod
 
 # Create non-root user early so COPY --chown can use it (avoids chown layer duplication)
 RUN groupadd --gid 1001 appuser && \
@@ -98,7 +95,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
 WORKDIR /opt/app
 
 # remove pip
-RUN python -m pip uninstall --yes pip && rm -rf /usr/local/lib/python3.9/ensurepip
+RUN python -m pip uninstall --yes pip && rm -rf /usr/local/lib/python3.12/ensurepip
 
 # Copy the virtualenv from builder
 COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv

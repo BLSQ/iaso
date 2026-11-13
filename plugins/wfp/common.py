@@ -18,7 +18,7 @@ Usage:
 import logging
 import traceback
 
-from datetime import date, datetime, time, timedelta, timezone as dt_timezone
+from datetime import UTC, date, datetime, time, timedelta
 from functools import reduce
 from operator import or_
 
@@ -404,10 +404,10 @@ def extract_form_visit_date(submission):
     """
     raw = (submission.get("json") or {}).get("visit_date")
     try:
-        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
+        visit_day = datetime.strptime(str(raw)[:10], "%Y-%m-%d").replace(tzinfo=UTC).date()
     except (ValueError, TypeError):
         return extract_visit_date(submission)
-    return datetime.combine(visit_day, time(12, 0), tzinfo=dt_timezone.utc)
+    return datetime.combine(visit_day, time(12, 0), tzinfo=UTC)
 
 
 def extract_muac(data):
@@ -445,7 +445,7 @@ def calculate_birth_date(data):
     actual = data.get("actual_birthday__date__")
     if actual not in (None, ""):
         try:
-            return datetime.strptime(actual[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
+            return datetime.strptime(actual[:10], "%Y-%m-%d").replace(tzinfo=UTC).date()
         except (ValueError, TypeError):
             pass
 
@@ -458,7 +458,7 @@ def calculate_birth_date(data):
 
     try:
         beneficiary_age = int(age)
-        registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
+        registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").replace(tzinfo=UTC).date()
         if age_entry == "years":
             return registered_at - relativedelta(years=beneficiary_age)
         if age_entry == "months":
@@ -743,7 +743,7 @@ def _format_date(dt):
     """Format a datetime/date as a ``YYYY-MM-DD`` string, or *None*."""
     if dt is None:
         return None
-    if isinstance(dt, (datetime, date)):
+    if isinstance(dt, datetime | date):
         return dt.strftime("%Y-%m-%d")
     return str(dt)[:10]
 
@@ -1266,9 +1266,7 @@ class ETL:
             return None
 
         try:
-            next_visit_date = (
-                datetime.strptime(next_visit_date_str[:10], "%Y-%m-%d").replace(tzinfo=dt_timezone.utc).date()
-            )
+            next_visit_date = datetime.strptime(next_visit_date_str[:10], "%Y-%m-%d").replace(tzinfo=UTC).date()
         except (ValueError, TypeError):
             return None
 

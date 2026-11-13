@@ -32,7 +32,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
             f"{BASE_URL}?app_id={APP_ID}",
             {"zip_file": SimpleUploadedFile(file_name, b"Some file content")},
             format="multipart",
-            HTTP_USER_AGENT="my_user_agent",
+            headers={"user-agent": "my_user_agent"},
         )
         self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 
@@ -57,7 +57,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
             f"{BASE_URL}?app_id={APP_ID}",
             {"zip_file": SimpleUploadedFile("file.zip", b"Some file content")},
             format="multipart",
-            HTTP_USER_AGENT="my_user_agent",
+            headers={"user-agent": "my_user_agent"},
         )
         self.assertJSONResponse(response, status.HTTP_204_NO_CONTENT)
 

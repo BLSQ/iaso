@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from django.core.management.base import BaseCommand
 
@@ -17,7 +17,7 @@ import iaso.models as m
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        date_limite = datetime(2024, 6, 1, tzinfo=timezone.utc)
+        date_limite = datetime(2024, 6, 1, tzinfo=UTC)
 
         for form in m.Form.objects.all():
             form_has_select_multiple = False
@@ -34,6 +34,6 @@ class Command(BaseCommand):
                 if count > 0:
                     print("form", form.name, form.form_id, "instances count", count, "since", date_limite)
 
-                    for instance in query_set.all().iterator():
+                    for instance in query_set.all().iterator(chunk_size=100):
                         instance.json = None
                         instance.get_and_save_json_of_xml()

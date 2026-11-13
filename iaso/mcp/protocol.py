@@ -7,7 +7,6 @@ import enum
 import inspect
 import json
 import logging
-import sys
 import types
 import typing
 
@@ -57,9 +56,9 @@ def _should_redact_key(key: str) -> bool:
 def _redact_value(value: Any) -> str:
     if isinstance(value, str):
         return f"[redacted {len(value)} chars]"
-    if isinstance(value, (bytes, bytearray)):
+    if isinstance(value, bytes | bytearray):
         return f"[redacted {len(value)} bytes]"
-    if isinstance(value, (list, dict)):
+    if isinstance(value, list | dict):
         return "[redacted]"
     return "[redacted]"
 
@@ -78,7 +77,7 @@ def _sanitize_value(value: Any) -> Any:
         return [_sanitize_value(item) for item in value[:_MAX_STORED_LIST]]
     if isinstance(value, str) and len(value) > _MAX_STORED_STRING:
         return f"{value[:_MAX_STORED_STRING]}… [truncated {len(value)} chars]"
-    if isinstance(value, (bytes, bytearray)):
+    if isinstance(value, bytes | bytearray):
         return f"[binary {len(value)} bytes]"
     return value
 
@@ -127,20 +126,7 @@ class _BitOrToUnion(ast.NodeTransformer):
 
 
 def _type_hints(func):
-    if sys.version_info >= (3, 10):
-        return typing.get_type_hints(func)
-    module = sys.modules.get(func.__module__)
-    globalns = dict(getattr(module, "__dict__", {}))
-    globalns.setdefault("Union", typing.Union)
-    hints = {}
-    for name, value in func.__annotations__.items():
-        if not isinstance(value, str):
-            hints[name] = value
-            continue
-        tree = _BitOrToUnion().visit(ast.parse(value, mode="eval"))
-        ast.fix_missing_locations(tree)
-        hints[name] = eval(compile(tree, "<annotation>", "eval"), globalns)
-    return hints
+    return typing.get_type_hints(func)
 
 
 def _base_type(annotation):
@@ -242,7 +228,7 @@ def _coerce_scalar(value: Any, annotation: Any) -> Any:
             except ValueError:
                 return value
     if base is float and not isinstance(value, bool):
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             return float(value)
         if isinstance(value, str):
             try:

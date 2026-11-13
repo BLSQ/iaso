@@ -69,7 +69,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
         )
-        change_request1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        change_request1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
         change_request1.save()
 
         change_request2 = m.OrgUnitChangeRequest.objects.create(
@@ -78,7 +78,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             created_by=self.user,
         )
-        change_request2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        change_request2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
         change_request2.save()
 
         response = self.client.get(

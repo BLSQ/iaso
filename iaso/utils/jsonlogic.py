@@ -3,8 +3,8 @@
 import operator
 import re
 
-from collections.abc import Iterator
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Iterator
+from typing import Any
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression
@@ -30,7 +30,7 @@ EXTENDED_OPERATOR_LOOKUPS = {
 JSON_ANNOTATED_FIELD_ALIAS = "json_annotated_field"
 
 
-def _extract_unary_var(operand: Any) -> Optional[str]:
+def _extract_unary_var(operand: Any) -> str | None:
     """Return the field name when operand is a bare JsonLogic var (query-builder is_empty / is_not_empty)."""
     if isinstance(operand, dict) and set(operand.keys()) == {"var"}:
         return operand["var"]
@@ -217,7 +217,7 @@ def jsonlogic_to_q(
     value = params[0] if op == "in" else params[1]
 
     extract = ""
-    if isinstance(value, (int, float)) and field_prefix:
+    if isinstance(value, int | float) and field_prefix:
         # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
@@ -529,7 +529,7 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str, index
 
     # Handle numeric type casting for JSON fields
     extract = ""
-    if isinstance(value, (int, float)) and field_prefix:
+    if isinstance(value, int | float) and field_prefix:
         # Since JSON fields store everything as strings, we need to cast back to numeric
         extract = "__forcefloat"
 
@@ -622,7 +622,7 @@ def entities_jsonlogic_to_q(
     jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
-) -> tuple[Union[None, Exists, Q, NegatedExpression], int]:
+) -> tuple[None | Exists | Q | NegatedExpression, int]:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on
     the submitted values of their instances.
     It also converts a JsonLogic query to a Django Q object.

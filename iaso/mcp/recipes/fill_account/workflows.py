@@ -298,7 +298,7 @@ def ensure_workflows(
                 )
                 continue
             condition = followup.get("condition")
-            if not isinstance(condition, (dict, list, bool)):
+            if not isinstance(condition, dict | list | bool):
                 condition = parse_condition(condition)
             try:
                 _write(

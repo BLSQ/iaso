@@ -14,7 +14,7 @@ from iaso.test import TestCase
 
 
 class EnketoUtilsTests(TestCase):
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.UTC)
 
     @classmethod
     def setUpTestData(cls):
@@ -48,7 +48,7 @@ class EnketoUtilsTests(TestCase):
 
         # Checking ENKETO_SIGNED
         enketo_signed_param = query_params[ENKETO_SIGNED][0]
-        signer = TimestampSigner(self.secret)
+        signer = TimestampSigner(key=self.secret)
         decoded_path = signer.unsign(enketo_signed_param)
         self.assertEqual(self.path, decoded_path)
 

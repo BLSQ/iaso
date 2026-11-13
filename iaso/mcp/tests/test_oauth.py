@@ -159,10 +159,7 @@ class McpEndpointAuthTest(TestCase):
     def test_mcp_ping_with_bearer(self):
         body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "ping"})
         response = self.client.post(
-            "/mcp",
-            data=body,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token.token}",
+            "/mcp", data=body, content_type="application/json", headers={"authorization": f"Bearer {self.token.token}"}
         )
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()["result"], {})
@@ -177,10 +174,7 @@ class McpEndpointAuthTest(TestCase):
             }
         )
         response = self.client.post(
-            "/mcp",
-            data=body,
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token.token}",
+            "/mcp", data=body, content_type="application/json", headers={"authorization": f"Bearer {self.token.token}"}
         )
         self.assertEqual(response.status_code, 200, response.content)
         payload = json.loads(response.json()["result"]["content"][0]["text"])
@@ -211,18 +205,18 @@ class McpEndpointAuthTest(TestCase):
         self.assertEqual(response.json()["account_name"], "MCP")
 
     def test_get_mcp_json_for_clients(self):
-        response = self.client.get("/mcp", HTTP_ACCEPT="application/json")
+        response = self.client.get("/mcp", headers={"accept": "application/json"})
         self.assertEqual(response.status_code, 200)
         body = response.json()
         self.assertEqual(body["server_name"], "IASO")
         self.assertTrue(any(tool["name"] == "iaso_whoami" for tool in body["tools"]))
 
-        slash = self.client.get("/mcp/", HTTP_ACCEPT="application/json, text/event-stream")
+        slash = self.client.get("/mcp/", headers={"accept": "application/json, text/event-stream"})
         self.assertEqual(slash.status_code, 200)
         self.assertEqual(slash.json()["server_name"], "IASO")
 
     def test_get_mcp_html_for_browsers(self):
-        response = self.client.get("/mcp", HTTP_ACCEPT="text/html,application/xhtml+xml")
+        response = self.client.get("/mcp", headers={"accept": "text/html,application/xhtml+xml"})
         self.assertIn(response.status_code, {200, 302})
         if response.status_code == 302:
             self.assertIn("/mcp/app/", response["Location"])

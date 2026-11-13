@@ -55,6 +55,7 @@ export type Filters = {
     entity_type?: string;
     programme?: string;
     org_unit_group?: string;
+    facility?: string;
     q?: string;
     visit_date_after?: string;
     visit_date_before?: string;
@@ -71,6 +72,10 @@ export type BeneficiaryOptions = {
     entity_types: DropdownOptions<number>[];
     programmes: DropdownOptions<string>[];
     org_unit_groups: DropdownOptions<number>[];
+};
+
+export type FacilityOptions = {
+    facilities: DropdownOptions<number>[];
 };
 
 export type ExportKind = 'coda' | 'raw';

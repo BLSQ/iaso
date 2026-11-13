@@ -1,5 +1,3 @@
-import csv
-import io
 import json
 
 from rest_framework import status
@@ -109,11 +107,10 @@ class PiiAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/instances/", {"form_ids": self.form.id, "csv": "true", **params})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        content = b"".join(response.streaming_content).decode()
-        header = next(csv.reader(io.StringIO(content)))
+        header, *rows = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
         self.assertIn("muac", header)
         self.assertNotIn("first_name", header)
-        self.assertNotIn("Amina", content)
+        self.assertFalse(any("Amina" in cell for row in rows for cell in row))
 
     def test_csv_export_hides_pii_columns(self):
         self._assert_csv_export_hides_pii_columns({})
@@ -136,7 +133,9 @@ class PiiAPITestCase(APITestCase):
         self.assertNotIn("Amina", json.dumps(data))
         self.assertEqual(data["attributes"]["file_content"]["muac"], "12.5")
 
-        data = self.assertJSONResponse(self.client.get("/api/entities/", {"entity_type_ids": self.entity_type.id}), status.HTTP_200_OK)
+        data = self.assertJSONResponse(
+            self.client.get("/api/entities/", {"entity_type_ids": self.entity_type.id}), status.HTTP_200_OK
+        )
         self.assertNotIn("Amina", json.dumps(data))
         self.assertEqual([column["name"] for column in data["columns"]], ["muac"])
 

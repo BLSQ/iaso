@@ -82,6 +82,10 @@ describe('Descriptor.getLabel / getHumanLabel', () => {
             }),
         ).toBe('Title');
     });
+
+    it('returns an empty string when the node is missing', () => {
+        expect(Descriptor.getHumanLabel(undefined)).toBe('');
+    });
 });
 
 describe('Descriptor.isGroup', () => {
@@ -163,9 +167,7 @@ describe('Descriptor.withinRepeatGroup', () => {
         expect(Descriptor.withinRepeatGroup(indexed.age, indexed)).toBe(
             'household',
         );
-        expect(
-            Descriptor.withinRepeatGroup(indexed.q1, indexed),
-        ).toBeUndefined();
+        expect(Descriptor.withinRepeatGroup(indexed.q1, indexed)).toBeNull();
     });
 });
 

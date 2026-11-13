@@ -284,7 +284,9 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
         return results;
     };
 
-    const repeatGroupMapping = mapping.question_mappings[withinRepeatGroup];
+    const repeatGroupMapping = withinRepeatGroup
+        ? mapping.question_mappings[withinRepeatGroup]
+        : undefined;
 
     const programId = repeatGroupMapping
         ? repeatGroupMapping?.[0].program_id

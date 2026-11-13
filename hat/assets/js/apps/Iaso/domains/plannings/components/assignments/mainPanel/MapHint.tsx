@@ -8,7 +8,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { useSelectedTeamArea } from '../assign/useSelectedTeamArea';
+import { useNoAreaMessage } from '../assign/useSelectedTeamArea';
 
 // Placed right of the map's zoom controls.
 const styles = {
@@ -48,10 +48,10 @@ const styles = {
 
 export const MapHint: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { selectedTeam, teamChain, selectedTeamMembers, currentAssignee } =
+    const { selectedTeam, selectedTeamMembers, currentAssignee } =
         useAssignmentsContext();
     const { mode } = useAssignmentsParams();
-    const { hasArea } = useSelectedTeamArea();
+    const noAreaMessage = useNoAreaMessage();
     const [isOpen, setIsOpen] = useState(true);
     const toggle = useCallback(() => setIsOpen(previous => !previous), []);
 
@@ -74,16 +74,13 @@ export const MapHint: FC = () => {
             return formatMessage(MESSAGES.mapHintNoMember);
         }
         if (mode === 'assign') {
-            if (!hasArea) {
-                return formatMessage(MESSAGES.assignTeamHasNoArea, {
+            return (
+                noAreaMessage ??
+                formatMessage(MESSAGES.mapAssignHint, {
+                    member: currentAssignee?.name ?? '',
                     team: selectedTeam.name,
-                    parentTeam: teamChain.at(-2)?.name ?? '',
-                });
-            }
-            return formatMessage(MESSAGES.mapAssignHint, {
-                member: currentAssignee?.name ?? '',
-                team: selectedTeam.name,
-            });
+                })
+            );
         }
         return formatMessage(
             selectedTeam.type === TeamType.enum.TEAM_OF_USERS

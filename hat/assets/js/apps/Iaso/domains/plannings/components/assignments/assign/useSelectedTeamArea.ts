@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
+import MESSAGES from '../../../messages';
 import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { getTeamAreaOrgUnitIds, getTeamIdsWithArea } from './utils';
 
@@ -22,6 +24,18 @@ export const useSelectedTeamArea = (): SelectedTeamArea => {
             hasArea: !areaOrgUnitIds || areaOrgUnitIds.size > 0,
         };
     }, [selectedTeam.id, selectedLevel, assignments]);
+};
+
+// Undefined when the selected team has an area its members can be given.
+export const useNoAreaMessage = (): string | undefined => {
+    const { formatMessage } = useSafeIntl();
+    const { selectedTeam, teamChain } = useAssignmentsContext();
+    const { hasArea } = useSelectedTeamArea();
+    if (hasArea) return undefined;
+    return formatMessage(MESSAGES.assignTeamHasNoArea, {
+        team: selectedTeam.name,
+        parentTeam: teamChain.at(-2)?.name ?? '',
+    });
 };
 
 export const useTeamIdsWithArea = (): Set<number> => {

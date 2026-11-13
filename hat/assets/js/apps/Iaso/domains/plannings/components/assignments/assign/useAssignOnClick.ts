@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
-import { useUpdateAssignments } from '../api/useUpdateAssignments';
 import { getAssigneeRef, isAssignedTo } from '../api/utils';
-import { useConfirmPublishedChange } from './PublishedPlanningConfirmation';
 import { useAssignableOrgUnits } from './useAssignableOrgUnits';
+import { useChangeAssignments } from './useChangeAssignments';
 
 export type PendingAssignmentChange = {
     orgUnitName: string;
@@ -21,15 +20,14 @@ type AssignOnClick = {
 const NO_ORG_UNIT = new Set<number>();
 
 export const useAssignOnClick = (): AssignOnClick => {
-    const { planning, currentAssignee } = useAssignmentsContext();
+    const { currentAssignee } = useAssignmentsContext();
     const {
         assignments,
         assignableOrgUnitIds: assignableByTeam,
         orgUnitIdsWithAssignmentsBelow,
         orgUnitNameById,
     } = useAssignableOrgUnits();
-    const updateAssignments = useUpdateAssignments(planning.id);
-    const confirmPublishedChange = useConfirmPublishedChange();
+    const changeAssignments = useChangeAssignments();
     const [pendingChange, setPendingChange] =
         useState<PendingAssignmentChange>();
 
@@ -49,12 +47,10 @@ export const useAssignOnClick = (): AssignOnClick => {
             );
             const isUnassign = isAssignedTo(assignment, assignee);
             const apply = () =>
-                confirmPublishedChange(() =>
-                    updateAssignments({
-                        orgUnitIds: [orgUnitId],
-                        assignee: isUnassign ? undefined : assignee,
-                    }),
-                );
+                changeAssignments({
+                    orgUnitIds: [orgUnitId],
+                    assignee: isUnassign ? undefined : assignee,
+                });
             if (orgUnitIdsWithAssignmentsBelow.has(orgUnitId)) {
                 setPendingChange({
                     orgUnitName: orgUnitNameById.get(orgUnitId) ?? '',
@@ -71,8 +67,7 @@ export const useAssignOnClick = (): AssignOnClick => {
             assignments,
             orgUnitIdsWithAssignmentsBelow,
             orgUnitNameById,
-            updateAssignments,
-            confirmPublishedChange,
+            changeAssignments,
         ],
     );
     const cancelPendingChange = useCallback(

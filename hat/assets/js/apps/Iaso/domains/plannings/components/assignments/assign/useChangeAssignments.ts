@@ -1,16 +1,18 @@
 import { useCallback } from 'react';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
-import { useUpdateAssignments } from '../api/useUpdateAssignments';
+import {
+    UpdateAssignments,
+    useUpdateAssignments,
+} from '../api/useUpdateAssignments';
 import { useConfirmPublishedChange } from './PublishedPlanningConfirmation';
 
-// The server also removes the assignments made inside the org units.
-export const useUnassignOrgUnits = (): ((orgUnitIds: number[]) => void) => {
+// Asks for confirmation first when the planning is published.
+export const useChangeAssignments = (): UpdateAssignments => {
     const { planning } = useAssignmentsContext();
     const updateAssignments = useUpdateAssignments(planning.id);
     const confirmPublishedChange = useConfirmPublishedChange();
     return useCallback(
-        orgUnitIds =>
-            confirmPublishedChange(() => updateAssignments({ orgUnitIds })),
+        changes => confirmPublishedChange(() => updateAssignments(changes)),
         [confirmPublishedChange, updateAssignments],
     );
 };

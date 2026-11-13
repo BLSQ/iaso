@@ -5,7 +5,7 @@ import MESSAGES from '../../../messages';
 import { getAssigneeRef, isAssignedTo } from '../api/utils';
 import { TeamMemberRowData } from '../teamsPanel/types';
 import { useAssignableOrgUnits } from './useAssignableOrgUnits';
-import { useUnassignOrgUnits } from './useUnassignOrgUnits';
+import { useChangeAssignments } from './useChangeAssignments';
 import { getOrgUnitIdsAssignedTo } from './utils';
 
 type PendingRemoval = {
@@ -26,7 +26,7 @@ export const useMemberAssignments = (): MemberAssignments => {
     const { formatMessage } = useSafeIntl();
     const { selectedTeam, selectedTeamMembers } = useAssignmentsContext();
     const { assignments, assignableOrgUnitIds } = useAssignableOrgUnits();
-    const unassignOrgUnits = useUnassignOrgUnits();
+    const changeAssignments = useChangeAssignments();
     const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval>();
 
     // Exact for the selected team's members; other members count all their assignments of the planning.
@@ -78,9 +78,11 @@ export const useMemberAssignments = (): MemberAssignments => {
     );
     const cancelRemoval = useCallback(() => setPendingRemoval(undefined), []);
     const confirmRemoval = useCallback(() => {
-        if (pendingRemoval) unassignOrgUnits(pendingRemoval.orgUnitIds);
+        if (pendingRemoval) {
+            changeAssignments({ orgUnitIds: pendingRemoval.orgUnitIds });
+        }
         setPendingRemoval(undefined);
-    }, [pendingRemoval, unassignOrgUnits]);
+    }, [pendingRemoval, changeAssignments]);
 
     return {
         getAssignedCount,

@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timedelta, timezone
 
 from fake import fake_person
+from planning_assignments import PEOPLE, client_request, distinct_colors, fetch_palette, setup_planning_assignments
 
 
 NEW = "new"
@@ -21,7 +22,11 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     permissions_codes = [x["codename"] for x in iaso_client.get("/api/permissions/")["permissions"]]
 
-    for user_index in range(1, 40):
+    user_count = 39
+    # The planning assignments demo users take the first palette colors.
+    user_colors = distinct_colors(fetch_palette(client_request(iaso_client)), user_count, start=len(PEOPLE))
+
+    for user_index, color in enumerate(user_colors, start=1):
         person = fake_person()
 
         first_name = person["firstname"]
@@ -39,6 +44,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "language": "",
             "home_page": "",
             "dhis2_id": "",
+            "color": color,
             "user_roles": [],
             "user_roles_permissions": [],
             "user_permissions": permissions_codes,
@@ -135,7 +141,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     )["orgunits"]
 
     # Get the users from the team
-    team_users = team["users"]
+    team_users = [user["id"] for user in iaso_client.get(f"/api/teams/{team['id']}/")["users"]]
 
     print(f"Found {len(team_users)} users in team {team['name']} but assign only {len(team_users[:3])}")
 
@@ -227,6 +233,8 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     print(
         f"\tCreated {len(health_facitities)} assignments across {len(active_sub_teams)} sub-teams ({teams_of_users[4]['name']} and {teams_of_users[5]['name']} left without assignments)"
     )
+
+    setup_planning_assignments(account_name, iaso_client, project_id)
 
     print("-- Micro-planning setup complete.")
 

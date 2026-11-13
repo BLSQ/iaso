@@ -32,7 +32,7 @@ those credentials right away to set up the account:
     cd setuper
     python3 setuper.py --local
 
-This can be combined with the other flags (`-n`, `-a`, `--create_main_org_unit`, `--create_demo_form`, ...).
+This can be combined with the other flags (`-n`, `-a`, `--create_main_org_unit`, `--create_demo_form`, `--dev_features`, ...).
 Steps 1-6 below and `credentials.py` are not needed in this mode.
 
 ### Manual setup
@@ -110,3 +110,9 @@ Steps 1-6 below and `credentials.py` are not needed in this mode.
         You will need to add param `--create_main_org_unit`:
 
                     python3 setuper.py --create_main_org_unit
+
+    - If you want to see the pages still in development (`SHOW_DEV_FEATURES` account feature flag),
+
+        You will need to add param `--dev_features`:
+
+                    python3 setuper.py --dev_features

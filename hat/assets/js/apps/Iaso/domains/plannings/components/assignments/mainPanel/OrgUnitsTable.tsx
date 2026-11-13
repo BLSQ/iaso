@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import React, {
+    FC,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import {
     Box,
     Table,
@@ -63,9 +70,12 @@ export const OrgUnitsTable: FC = () => {
     const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
     const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
-    const { openTeam } = useAssignmentsParams();
+    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const focusedOrgUnitId = focusOrgUnitId
+        ? Number(focusOrgUnitId)
+        : undefined;
     const { data: assignments } = useAssignments(`${planning.id}`);
-    const rows = useMemo(
+    const levelRows = useMemo(
         () =>
             getLevelOrgUnitRows({
                 parents: parents ?? [],
@@ -78,9 +88,25 @@ export const OrgUnitsTable: FC = () => {
             }),
         [parents, selectedTeam.type, tree, assignments],
     );
+    const rows = useMemo(
+        () =>
+            onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
+        [levelRows, onlyUnassigned],
+    );
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
+    useEffect(() => setPage(0), [onlyUnassigned]);
+    // Once per found org unit, when its rows are there: paging stays free afterwards.
+    const shownFocusId = useRef<number>();
+    useEffect(() => {
+        if (!focusedOrgUnitId || shownFocusId.current === focusedOrgUnitId)
+            return;
+        const index = rows.findIndex(row => row.id === focusedOrgUnitId);
+        if (index === -1) return;
+        shownFocusId.current = focusedOrgUnitId;
+        setPage(Math.floor(index / rowsPerPage));
+    }, [focusedOrgUnitId, rows, rowsPerPage]);
     // Selecting a team on another level can leave fewer pages than the current one.
     const lastPage = Math.max(0, Math.ceil(rows.length / rowsPerPage) - 1);
     const currentPage = Math.min(page, lastPage);
@@ -142,6 +168,7 @@ export const OrgUnitsTable: FC = () => {
                             <OrgUnitTableRow
                                 key={row.id}
                                 row={row}
+                                isFocused={row.id === focusedOrgUnitId}
                                 onOpenTeam={openTeam}
                             />
                         ))}
@@ -153,7 +180,9 @@ export const OrgUnitsTable: FC = () => {
                                         color="text.secondary"
                                     >
                                         {formatMessage(
-                                            MESSAGES.noOrgUnitsToAssign,
+                                            levelRows.length
+                                                ? MESSAGES.allOrgUnitsAssigned
+                                                : MESSAGES.noOrgUnitsToAssign,
                                         )}
                                     </Typography>
                                 </TableCell>

@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { History } from '@mui/icons-material';
-import { Grid, Box, Typography, useTheme } from '@mui/material';
+import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
 
 import {
     commonStyles,
     ExternalLink,
+    IntlFormatMessage,
     LoadingSpinner,
     useRedirectToReplace,
     useSafeIntl,
@@ -19,25 +20,43 @@ import GeneraMappingInfo from './components/GeneraMappingInfo';
 import { MappingImportActions } from './components/ImportMappings/MappingImportActions';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
-import RecursiveTreeView from './components/RecursiveTreeView';
+import { QuestionTree } from './components/QuestionTree/QuestionTree';
 import Descriptor from './descriptor';
-import {
-    useApplyPartialUpdate,
-    useApplyUpdate,
-    useGetMappingVersionDetail,
-} from './hooks';
+import { useGetMappingVersionDetail } from './hooks';
+import { useApplyPartialUpdate } from './hooks/requests/useApplyPartialUpdate';
+import { useApplyUpdate } from './hooks/requests/useApplyUpdate';
+import { useEscapeKey } from './hooks/useEscapeKey';
 import { getMappableQuestions } from './importMappings';
 import MESSAGES from './messages';
+import {
+    buildQuestionTree,
+    countByStatus,
+    getFirstUnmappedNode,
+    getMappingProgress,
+    getQuestionStatus,
+} from './questionTree';
+import { ORG_UNIT_IASO_FIELD, VALUE_FROM_FORM } from './utils';
 
 const baseUrl = baseUrls.mappingDetail;
 
 const styles: SxStyles = {
     actions: {
         display: 'flex',
-        justifyContent: 'flex-end',
+        flexWrap: 'wrap',
         alignItems: 'center',
         gap: 2,
         mb: 2,
+    },
+    progress: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        flex: '1 1 auto',
+    },
+    progressBar: {
+        width: 220,
+        height: 5,
+        borderRadius: 1,
     },
     linkWithIcon: {
         display: 'flex',
@@ -46,15 +65,15 @@ const styles: SxStyles = {
     },
 };
 
-const iasoFieldOptions = formatMessage => [
-    { value: undefined, label: formatMessage(MESSAGES.useValueFromForm) },
+const iasoFieldOptions = (formatMessage: IntlFormatMessage) => [
+    { value: VALUE_FROM_FORM, label: formatMessage(MESSAGES.useValueFromForm) },
     {
-        value: 'instance.org_unit.source_ref',
+        value: ORG_UNIT_IASO_FIELD,
         label: formatMessage(MESSAGES.instanceOrgUnit),
     },
 ];
 
-const fieldTypeOptions = formatMessage => [
+const fieldTypeOptions = (formatMessage: IntlFormatMessage) => [
     { value: 'dataElement', label: formatMessage(MESSAGES.programDataElement) },
     {
         value: 'trackedEntityAttribute',
@@ -76,55 +95,80 @@ const MappingDetails = () => {
 
     const currentFormVersion = currentMappingVersionQuery?.data?.formVersion;
 
-    const fetching = currentMappingVersionQuery.isFetching;
+    // refetches after a save keep the page, only the first load blanks it
+    const { isLoading } = currentMappingVersionQuery;
 
-    const indexedQuestions = currentFormVersion
-        ? Descriptor.indexQuestions(currentFormVersion.descriptor)
-        : {};
+    const indexedQuestions = useMemo(
+        () =>
+            currentFormVersion
+                ? Descriptor.indexQuestions(currentFormVersion.descriptor)
+                : {},
+        [currentFormVersion],
+    );
 
     const mappableQuestions = useMemo(
         () => getMappableQuestions(currentFormVersion?.descriptor),
         [currentFormVersion],
     );
 
-    const [currentQuestion, setCurrentQuestion] = useState(
-        indexedQuestions[params.questionName],
+    const questionTree = useMemo(
+        () =>
+            buildQuestionTree(
+                currentFormVersion?.descriptor,
+                currentMappingVersion?.question_mappings ?? {},
+            ),
+        [currentFormVersion, currentMappingVersion],
+    );
+    const statusCounts = useMemo(
+        () => countByStatus(questionTree),
+        [questionTree],
+    );
+    const progress = getMappingProgress(statusCounts);
+    const firstUnmappedQuestion = useMemo(
+        () => getFirstUnmappedNode(questionTree)?.question,
+        [questionTree],
     );
 
-    if (
-        currentFormVersion &&
-        params.questionName &&
-        currentQuestion == undefined
-    ) {
-        setCurrentQuestion(indexedQuestions[params.questionName]);
-    }
-    const backParams = {};
-    if (currentFormVersion?.form_id) {
-        backParams.formId = currentFormVersion.form_id;
-    }
+    // the URL holds the selection, so Back/Forward and URL edits follow it
+    const currentQuestion = params.questionName
+        ? indexedQuestions[params.questionName]
+        : undefined;
 
     const goBack = useGoBack(baseUrls.mappings);
 
     const applyUpdate = useApplyUpdate();
     const applyPartialUpdate = useApplyPartialUpdate();
 
-    const onQuestionSelected = node => {
+    const onQuestionSelected = (node: Record<string, any>) => {
         if (node && node.type === 'select all that apply') {
             return;
         }
-        setCurrentQuestion(node);
         redirectToReplace(baseUrls.mappingDetail, {
             mappingVersionId: currentMappingVersion.id,
             questionName: Descriptor.getKey(node),
         });
     };
 
-    const onConfirmedQuestionMapping = questionMapping => {
-        applyPartialUpdate.mutate({
-            mappingVersionId: currentMappingVersion.id,
-            questionName: Descriptor.getKey(currentQuestion),
-            mapping: questionMapping,
+    const onClearSelection = useCallback(() => {
+        redirectToReplace(baseUrls.mappingDetail, {
+            mappingVersionId: params.mappingVersionId,
         });
+    }, [redirectToReplace, params.mappingVersionId]);
+
+    useEscapeKey(onClearSelection, Boolean(currentQuestion));
+
+    const onConfirmedQuestionMapping = (
+        questionMapping: Record<string, any>,
+        options?: { onSuccess?: () => void },
+    ) => {
+        applyPartialUpdate.mutate(
+            {
+                mappingVersionId: currentMappingVersion.id,
+                questionName: Descriptor.getKey(currentQuestion),
+                mapping: questionMapping,
+            },
+            options,
+        );
     };
 
     const onUnmapQuestionMapping = () => {
@@ -164,15 +208,32 @@ const MappingDetails = () => {
                         : formatMessage(MESSAGES.loading)
                 }
                 displayBackButton
-                goBack={() => {
-                    goBack(backParams);
-                }}
+                goBack={goBack}
             />
-            {fetching && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner />}
 
             {currentMappingVersion && (
-                <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                <Box
+                    sx={{
+                        ...commonStyles(theme).containerFullHeightNoTabPadded,
+                        // page background, so the white cards stand out
+                        backgroundColor: theme.palette.primary.background,
+                    }}
+                >
                     <Box sx={styles.actions}>
+                        <Box sx={styles.progress}>
+                            <Typography variant="body2" color="textSecondary">
+                                {formatMessage(MESSAGES.mappedProgress, {
+                                    mapped: String(progress.mapped),
+                                    total: String(progress.total),
+                                })}
+                            </Typography>
+                            <LinearProgress
+                                variant="determinate"
+                                value={progress.percent}
+                                sx={styles.progressBar}
+                            />
+                        </Box>
                         <ExternalLink
                             url={`/${baseUrls.apiLogs}/?objectId=${currentMappingVersion.id}&contentType=iaso.mappingversion&fields=field_diffs`}
                         >
@@ -190,17 +251,19 @@ const MappingDetails = () => {
                     </Box>
                     <Grid container spacing={4}>
                         {currentFormVersion && currentMappingVersion && (
-                            <Grid item xs={4} md={3}>
-                                <RecursiveTreeView
-                                    formVersion={currentFormVersion}
-                                    mappingVersion={currentMappingVersion}
-                                    // TODO confirm this prop can safely be deleted
-                                    // currentQuestion={currentQuestion}
-                                    onQuestionSelected={onQuestionSelected}
+                            <Grid item xs={12} md={5} lg={4}>
+                                <QuestionTree
+                                    nodes={questionTree}
+                                    selectedKey={
+                                        currentQuestion
+                                            ? Descriptor.getKey(currentQuestion)
+                                            : undefined
+                                    }
+                                    onSelect={onQuestionSelected}
                                 />
                             </Grid>
                         )}
-                        <Grid item xs={8} md={9}>
+                        <Grid item xs={12} md={7} lg={8}>
                             {currentQuestion == null &&
                                 currentMappingVersion && (
                                     <GeneraMappingInfo
@@ -208,12 +271,36 @@ const MappingDetails = () => {
                                         currentMappingVersion={
                                             currentMappingVersion
                                         }
+                                        statusCounts={statusCounts}
+                                        onNextUnmapped={
+                                            firstUnmappedQuestion
+                                                ? () =>
+                                                      onQuestionSelected(
+                                                          firstUnmappedQuestion,
+                                                      )
+                                                : undefined
+                                        }
                                     />
                                 )}
                             {currentQuestion && (
                                 <>
-                                    <QuestionInfos question={currentQuestion} />
-                                    <br />
+                                    <QuestionInfos
+                                        question={currentQuestion}
+                                        status={getQuestionStatus(
+                                            currentMappingVersion
+                                                .question_mappings[
+                                                Descriptor.getKey(
+                                                    currentQuestion,
+                                                )
+                                            ],
+                                        )}
+                                        groupLabel={Descriptor.getHumanLabel(
+                                            indexedQuestions[
+                                                currentQuestion.parentName
+                                            ],
+                                        )}
+                                        onClose={onClearSelection}
+                                    />
                                     {isDataElementMappable && (
                                         <QuestionMappingForm
                                             key={currentQuestion.name}

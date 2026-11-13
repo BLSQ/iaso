@@ -66,6 +66,16 @@ export const getLevelTreeParams = (
     max_depth: level + depthsCount,
 });
 
+// The planning root is level 0: each level is one step deeper in the tree.
+export const getOrgUnitsOfLevel = (
+    roots: LevelOrgUnitNode[],
+    level: number,
+): LevelOrgUnitNode[] =>
+    Array.from({ length: level }).reduce<LevelOrgUnitNode[]>(
+        orgUnits => orgUnits.flatMap(orgUnit => orgUnit.children),
+        roots,
+    );
+
 type LevelOrgUnitRowsParams = {
     parents: LevelOrgUnitNode[];
     assigneeByOrgUnitId: Map<number, Assignee>;

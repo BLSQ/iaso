@@ -22,8 +22,10 @@ import {
     useNoAreaMessage,
     useTeamIdsWithArea,
 } from '../assign/useSelectedTeamArea';
-import { TeamMemberRow } from './TeamMemberRow';
+import { AssignMemberRow } from './AssignMemberRow';
+import { ExploreMemberRow } from './ExploreMemberRow';
 import { TeamNavRow } from './TeamNavRow';
+import { TeamMemberRowData } from './types';
 import { flattenAssignPanelRows, flattenTeamsPanelRows } from './utils';
 
 const styles = {
@@ -123,6 +125,30 @@ export const TeamsPanel: FC = () => {
         return noAreaMessage ?? formatMessage(MESSAGES.teamsPanelAssignHelp);
     };
 
+    const renderMemberRow = (row: TeamMemberRowData) =>
+        isAssignMode ? (
+            <AssignMemberRow
+                key={row.key}
+                row={row}
+                assignedCount={getAssignedCount(row)}
+                isCurrentAssignee={row.key === currentAssignee?.key}
+                isPickable={teamIdsWithArea.has(row.parentTeam.id)}
+                onPick={pickAssignee}
+                onRemove={
+                    row.parentTeam.id === selectedTeam.id
+                        ? requestRemoval
+                        : undefined
+                }
+            />
+        ) : (
+            <ExploreMemberRow
+                key={row.key}
+                row={row}
+                assignedCount={getAssignedCount(row)}
+                onOpen={openTeam}
+            />
+        );
+
     const rootCaption =
         targetGeographyName &&
         formatMessage(MESSAGES.targetGeographyCaption, {
@@ -157,21 +183,7 @@ export const TeamsPanel: FC = () => {
                             onToggle={toggleTeam}
                         />
                     ) : (
-                        <TeamMemberRow
-                            key={row.key}
-                            row={row}
-                            onOpen={openTeam}
-                            isAssignMode={isAssignMode}
-                            isCurrentAssignee={row.key === currentAssignee?.key}
-                            isPickable={teamIdsWithArea.has(row.parentTeam.id)}
-                            onPickAssignee={pickAssignee}
-                            assignedCount={getAssignedCount(row)}
-                            onRemoveAssignments={
-                                row.parentTeam.id === selectedTeam.id
-                                    ? requestRemoval
-                                    : undefined
-                            }
-                        />
+                        renderMemberRow(row)
                     ),
                 )}
             </Stack>

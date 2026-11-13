@@ -128,6 +128,13 @@ class CommaSeparatedMultipleChoiceField(serializers.MultipleChoiceField):
         return split_comma_separated_string_from_query_params(dictionary, self.field_name)
 
 
+class CommaSeparatedListField(serializers.ListField):
+    """List given as a single query param, separated by ',' (e.g. `?ids=1,2,3`)"""
+
+    def get_value(self, dictionary):
+        return split_comma_separated_string_from_query_params(dictionary, self.field_name)
+
+
 class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):
     """
     This field purpose is to make the classic PrimaryKeyRelatedField work with multipart/form-data in case of many=True

@@ -24,9 +24,20 @@ vi.mock('Iaso/utils/usersUtils', () => ({
 
 const DATA_SOURCE_ID = 42;
 const DATA_ELEMENTS_URL = `*/api/datasources/${DATA_SOURCE_ID}/dataElements.json`;
-const SOURCE_DETAILS_HREF = `/settings/source/details/sourceId/${DATA_SOURCE_ID}`;
+const DATA_SOURCE_NAME = 'Belgium DHIS2';
+const SOURCES_LIST_HREF = '/settings/sources/list/name/Belgium%20DHIS2';
 
-const server = setupServer();
+const server = setupServer(
+    http.get('*/api/datasources/:id/', ({ params }) =>
+        HttpResponse.json({
+            id: Number(params.id),
+            name:
+                Number(params.id) === DATA_SOURCE_ID
+                    ? DATA_SOURCE_NAME
+                    : 'France DHIS2',
+        }),
+    ),
+);
 
 const respondWith = (response: () => Response) =>
     server.use(http.get(DATA_ELEMENTS_URL, response));
@@ -85,7 +96,7 @@ describe('Dhis2Search', () => {
             await screen.findByRole('link', {
                 name: MESSAGES.checkDataSource.defaultMessage,
             }),
-        ).toHaveAttribute('href', SOURCE_DETAILS_HREF);
+        ).toHaveAttribute('href', SOURCES_LIST_HREF);
     });
 
     it('explains no credentials are configured', async () => {

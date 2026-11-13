@@ -4,6 +4,7 @@ import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import { SOURCES, SOURCE_WRITE } from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetDataSource } from '../../dataSources/hooks/useGetDataSource';
 import { userHasOneOfPermissions } from '../../users/utils';
 import MESSAGES from '../messages';
 
@@ -48,6 +49,10 @@ export const Dhis2SearchErrorMessage: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
     const canSeeSource = userHasOneOfPermissions([SOURCES, SOURCE_WRITE], user);
+    // the sources list (filtered on the name) has the "test connection" action
+    const { data: dataSource } = useGetDataSource(
+        canSeeSource ? `${dataSourceId}` : undefined,
+    );
     return (
         <>
             <span>
@@ -55,12 +60,12 @@ export const Dhis2SearchErrorMessage: FunctionComponent<Props> = ({
                     ERROR_MESSAGES[code] ?? MESSAGES.dhis2Unavailable,
                 )}
             </span>
-            {canSeeSource && (
+            {dataSource && (
                 <>
                     {' '}
                     <LinkTo
                         condition
-                        url={`/${baseUrls.sourceDetails}/sourceId/${dataSourceId}`}
+                        url={`/${baseUrls.sources}/name/${encodeURIComponent(dataSource.name)}`}
                         text={formatMessage(MESSAGES.checkDataSource)}
                         target="_blank"
                     />

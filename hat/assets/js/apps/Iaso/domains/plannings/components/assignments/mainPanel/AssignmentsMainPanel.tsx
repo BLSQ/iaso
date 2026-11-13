@@ -7,9 +7,9 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
-import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
 import { BulkAssignButton } from '../assign/BulkAssignButton';
 import { EmptyAreaButton } from '../assign/EmptyAreaButton';
+import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
 import { AssignmentsMap } from './AssignmentsMap';
 import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
 import { OrgUnitsTable } from './OrgUnitsTable';
@@ -50,7 +50,6 @@ export const AssignmentsMainPanel: FC = () => {
                 direction="row"
                 alignItems="center"
                 justifyContent="space-between"
-                gap={1}
                 sx={styles.header}
             >
                 <Tabs value={view} onChange={handleChangeView}>
@@ -73,15 +72,15 @@ export const AssignmentsMainPanel: FC = () => {
                     gap={1}
                     sx={styles.filters}
                 >
+                    {mode === 'assign' && (
+                        <>
+                            <BulkAssignButton />
+                            <EmptyAreaButton />
+                        </>
+                    )}
                     <OnlyUnassignedToggle />
                     <FindOrgUnitField />
                 </Stack>
-                {mode === 'assign' && (
-                    <Stack direction="row" alignItems="center" gap={0.5}>
-                        <BulkAssignButton />
-                        <EmptyAreaButton />
-                    </Stack>
-                )}
             </Stack>
             {view === 'map' && <AssignmentsMap />}
             {view === 'list' && <OrgUnitsTable />}

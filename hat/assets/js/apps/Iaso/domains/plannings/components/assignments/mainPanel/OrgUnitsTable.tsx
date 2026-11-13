@@ -59,27 +59,11 @@ const DEFAULT_ROWS_PER_PAGE = 20;
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { planning, tree, selectedTeam, selectedLevel } =
-        useAssignmentsContext();
-    const { rows, isFetching } = useLevelOrgUnitRows();
+    const { rows: levelRows, isFetching } = useLevelOrgUnitRows();
     const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const { data: assignments } = usePlanningAssignments(planning.id);
-    const rows = useMemo(
-        () =>
-            getLevelOrgUnitRows({
-                parents: parents ?? [],
-                assigneeByOrgUnitId: getAssigneeByOrgUnitId(
-                    tree,
-                    assignments ?? [],
-                ),
-                teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
-                showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
-            }),
-        [parents, selectedTeam.type, tree, assignments],
-    );
     const rows = useMemo(
         () =>
             onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,

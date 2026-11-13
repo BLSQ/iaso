@@ -545,6 +545,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/import_export_dhis2_mappings.html"/>
     </url>
     <url>
+        <loc>Nonepages/users/how_to/map_a_form_to_dhis2.html</loc>
+        <lastmod>2026-11-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/map_a_form_to_dhis2.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/map_a_form_to_dhis2.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/map_a_form_to_dhis2.html"/>
+    </url>
+    <url>
         <loc>Nonepages/users/how_to/setup_an_empty_iaso_account.html</loc>
         <lastmod>2026-11-13</lastmod>
         <changefreq>daily</changefreq>
@@ -1161,6 +1169,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/import_export_dhis2_mappings.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/users/how_to/map_a_form_to_dhis2.html</loc>
+        <lastmod>2026-11-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/map_a_form_to_dhis2.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/map_a_form_to_dhis2.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/map_a_form_to_dhis2.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/users/how_to/setup_an_empty_iaso_account.html</loc>
         <lastmod>2026-11-13</lastmod>
         <changefreq>daily</changefreq>
@@ -1775,6 +1791,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/import_export_dhis2_mappings.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/import_export_dhis2_mappings.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/import_export_dhis2_mappings.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/users/how_to/map_a_form_to_dhis2.html</loc>
+        <lastmod>2026-11-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/map_a_form_to_dhis2.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/map_a_form_to_dhis2.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/map_a_form_to_dhis2.html"/>
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/setup_an_empty_iaso_account.html</loc>

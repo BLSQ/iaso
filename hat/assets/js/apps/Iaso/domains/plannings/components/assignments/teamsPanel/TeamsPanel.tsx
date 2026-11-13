@@ -85,7 +85,7 @@ export const TeamsPanel: FC = () => {
     const {
         getAssignedCount,
         requestRemoval,
-        pendingRemoval,
+        removalText,
         confirmRemoval,
         cancelRemoval,
     } = useMemberAssignments();
@@ -184,9 +184,9 @@ export const TeamsPanel: FC = () => {
                 {formatMessage(MESSAGES.teamsPanelAssignNote)}
             </Typography>
             <DeleteAssignmentsDialog
-                open={Boolean(pendingRemoval)}
-                title={pendingRemoval?.title ?? ''}
-                text={pendingRemoval?.text ?? ''}
+                open={Boolean(removalText)}
+                title={formatMessage(MESSAGES.removeAssignments)}
+                text={removalText ?? ''}
                 onConfirm={confirmRemoval}
                 onClose={cancelRemoval}
             />

@@ -23,7 +23,6 @@ import { MapHint } from './MapHint';
 import { MapLegend } from './MapLegend';
 import { OrgUnitHover } from './OrgUnitHover';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
-import { useAssignments } from './useAssignments';
 import { OrgUnitFeatureCollection, useLevelGeometry } from './useLevelGeometry';
 import {
     countOrgUnitsOffMap,
@@ -48,6 +47,19 @@ const EMPTY_FEATURE_COLLECTION: FeatureCollection = {
     features: [],
 };
 
+// Close enough to see the org unit among its neighbours.
+const FOCUS_MAX_ZOOM = 12;
+
+const findFeature = (
+    collections: (OrgUnitFeatureCollection | undefined)[],
+    orgUnitId?: number,
+) =>
+    orgUnitId === undefined
+        ? undefined
+        : collections
+              .flatMap(collection => collection?.features ?? [])
+              .find(feature => feature.id === orgUnitId);
+
 const filterFeatures = <T extends FeatureCollection>(
     collection: T,
     ids: Set<number>,
@@ -71,7 +83,8 @@ export const AssignmentsMap: FC = () => {
     const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
     const { area, members, membersPresence, isFetching } =
         useLevelGeometry(selectedLevel);
-    const { openTeam, onlyUnassigned, focusOrgUnitId, mode } = useAssignmentsParams();
+    const { openTeam, onlyUnassigned, focusOrgUnitId, mode } =
+        useAssignmentsParams();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
@@ -107,14 +120,6 @@ export const AssignmentsMap: FC = () => {
         },
         [teamIdByOrgUnitId, openTeam],
     );
-    const areaBounds = useMemo(() => area && getGeoJsonBounds(area), [area]);
-    const fitBounds = useMemo(
-        () => (focusedFeature ? getGeoJsonBounds(focusedFeature) : areaBounds),
-        [focusedFeature, areaBounds],
-    );
-    const fitKey = focusedFeature
-        ? `${selectedTeam.id}-${focusedFeature.id}`
-        : selectedTeam.id;
     const { areaOrgUnitIds } = useSelectedTeamArea();
     // Assign mode frames the selected team's own area: the org units its members can be given.
     const shownArea = useMemo(
@@ -128,6 +133,12 @@ export const AssignmentsMap: FC = () => {
         () => shownArea && getGeoJsonBounds(shownArea),
         [shownArea],
     );
+    const fitBounds = useMemo(
+        () => (focusedFeature ? getGeoJsonBounds(focusedFeature) : areaBounds),
+        [focusedFeature, areaBounds],
+    );
+    const viewKey = `${selectedTeam.id}-${mode}`;
+    const fitKey = focusedFeature ? `${viewKey}-${focusedFeature.id}` : viewKey;
 
     // Created once the first area is known, then kept and refitted when selecting other teams.
     const isMapCreated = useRef(false);
@@ -144,7 +155,7 @@ export const AssignmentsMap: FC = () => {
                     >
                         <FitBoundsOnChange
                             bounds={fitBounds}
-                            fitKey={`${selectedTeam.id}-${mode}`}
+                            fitKey={fitKey}
                             maxZoom={
                                 focusedFeature ? FOCUS_MAX_ZOOM : undefined
                             }

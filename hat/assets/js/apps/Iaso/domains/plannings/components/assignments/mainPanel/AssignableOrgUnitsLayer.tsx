@@ -61,12 +61,25 @@ export const FOCUS_LINE_PAINT: LineLayerSpecification['paint'] = {
 };
 
 const getIsDimmed = (
+    colorByOrgUnitId: ExpressionSpecification,
+    dimAssigned: boolean,
     undimmedOrgUnitIds?: Set<number>,
-): ExpressionSpecification | false =>
-    Boolean(undimmedOrgUnitIds) && [
-        '!',
-        ['in', ['get', 'id'], ['literal', [...(undimmedOrgUnitIds ?? [])]]],
+): ExpressionSpecification | false => {
+    const isAssigned: ExpressionSpecification = [
+        'has',
+        orgUnitIdKey,
+        colorByOrgUnitId,
     ];
+    const isOutsideUndimmed: ExpressionSpecification | undefined =
+        undimmedOrgUnitIds && [
+            '!',
+            ['in', ['get', 'id'], ['literal', [...undimmedOrgUnitIds]]],
+        ];
+    if (dimAssigned && isOutsideUndimmed)
+        return ['any', isAssigned, isOutsideUndimmed];
+    if (dimAssigned) return isAssigned;
+    return isOutsideUndimmed ?? false;
+};
 
 type Props = {
     geoJson: FeatureCollection;
@@ -92,17 +105,18 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         () => ['literal', Object.fromEntries(colorByOrgUnitId)],
         [colorByOrgUnitId],
     );
-    const isDimmed = useMemo(
-        () => getIsDimmed(undimmedOrgUnitIds),
-        [undimmedOrgUnitIds],
-    );
     const fillColor = useMemo(
         () => getFillColor(colorByOrgUnitIdLiteral, getUnassignedColor(theme)),
         [colorByOrgUnitIdLiteral, theme],
     );
-    const isDimmed: ExpressionSpecification | boolean = useMemo(
-        () => dimAssigned && ['has', orgUnitIdKey, colorByOrgUnitIdLiteral],
-        [colorByOrgUnitIdLiteral, dimAssigned],
+    const isDimmed = useMemo(
+        () =>
+            getIsDimmed(
+                colorByOrgUnitIdLiteral,
+                dimAssigned,
+                undimmedOrgUnitIds,
+            ),
+        [colorByOrgUnitIdLiteral, dimAssigned, undimmedOrgUnitIds],
     );
     const isFocused = useMemo(
         () => getIsFocused(focusedOrgUnitId),

@@ -177,11 +177,11 @@ class _Writer:
                 self.sheet.write_datetime(self.row, column, value.replace(tzinfo=None), self.formats["datetime"])
             elif isinstance(value, datetime.date):
                 self.sheet.write_datetime(self.row, column, value, self.formats["date"])
-            elif isinstance(value, (dict, list)):
+            elif isinstance(value, dict | list):
                 self.sheet.write_string(self.row, column, json.dumps(value, ensure_ascii=False))
             elif isinstance(value, bool):
                 self.sheet.write_boolean(self.row, column, value)
-            elif isinstance(value, (int, float)):
+            elif isinstance(value, int | float):
                 self.sheet.write_number(self.row, column, value)
             else:
                 self.sheet.write_string(self.row, column, str(value))

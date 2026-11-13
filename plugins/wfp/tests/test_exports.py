@@ -1,6 +1,6 @@
 import io
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import openpyxl
 
@@ -46,7 +46,7 @@ class BeneficiariesTestCase(APITestCase):
         )
         cls.visit = Visit.objects.create(
             journey=cls.journey,
-            date=datetime(2026, 5, 1, 12, tzinfo=timezone.utc),
+            date=datetime(2026, 5, 1, 12, tzinfo=UTC),
             muac_size="13.1",
             instance_id=cls.visit_instance.id,
         )
@@ -131,7 +131,7 @@ class ExportTestData:
         cls.facility = m.OrgUnit.objects.create(name="Bentiu PHCC", parent=state)
 
         cls.entity = m.Entity.objects.create(entity_type=entity_type, account=cls.account)
-        day = datetime(2026, 5, 1, 9, tzinfo=timezone.utc)
+        day = datetime(2026, 5, 1, 9, tzinfo=UTC)
         reference = m.Instance.objects.create(
             form=cls.reference_form,
             entity=cls.entity,
@@ -186,7 +186,7 @@ class CodaExportTestCase(ExportTestData, APITestCase):
         workbook = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         rows = list(workbook.active.iter_rows(values_only=True))
         headers = rows[1]
-        return [dict(zip(headers, row)) for row in rows[2:]], rows[0]
+        return [dict(zip(headers, row, strict=False)) for row in rows[2:]], rows[0]
 
     def test_one_row_per_visit_of_the_account(self):
         rows, steps = self._export()
@@ -232,7 +232,7 @@ class RawExportTestCase(ExportTestData, APITestCase):
         sheets = {}
         for sheet in workbook.worksheets:
             rows = list(sheet.iter_rows(values_only=True))
-            sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]] if rows else []
+            sheets[sheet.title] = [dict(zip(rows[0], row, strict=False)) for row in rows[1:]] if rows else []
         return sheets
 
     def test_sheets(self):
@@ -287,7 +287,7 @@ class OrgUnitScopeTestData(ExportTestData):
         cls.group = m.Group.objects.create(name="Friendship", source_version=version)
         cls.group.org_units.set([cls.facility])
 
-        day = datetime(2026, 5, 15, 10, tzinfo=timezone.utc)
+        day = datetime(2026, 5, 15, 10, tzinfo=UTC)
         journey = Journey.objects.get(beneficiary__entity=cls.entity)
         cls.rubkona_instance = m.Instance.objects.create(
             form=cls.visit_form,
@@ -336,7 +336,7 @@ class OrgUnitScopeTestCase(OrgUnitScopeTestData, APITestCase):
         sheets = {}
         for sheet in self._workbook(RAW_EXPORT_URL, user, params).worksheets:
             rows = list(sheet.iter_rows(values_only=True))
-            sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]] if rows else []
+            sheets[sheet.title] = [dict(zip(rows[0], row, strict=False)) for row in rows[1:]] if rows else []
         return sheets
 
     def test_coda_export_keeps_the_visits_in_the_group(self):
@@ -355,7 +355,7 @@ class OrgUnitScopeTestCase(OrgUnitScopeTestData, APITestCase):
         # a visit numbered after the others but dated before them
         journey = Journey.objects.get(beneficiary__entity=self.entity)
         Visit.objects.create(
-            journey=journey, date=datetime(2026, 4, 1, 10, tzinfo=timezone.utc), number=3, org_unit=self.facility
+            journey=journey, date=datetime(2026, 4, 1, 10, tzinfo=UTC), number=3, org_unit=self.facility
         )
         sheets = self._raw_sheets(self.user)
         numbers = [row["number"] for row in sheets["visits"] if row["entity_id"] == self.entity.id]
@@ -385,7 +385,7 @@ class OrgUnitScopeTestCase(OrgUnitScopeTestData, APITestCase):
             ("health center group name", "health center group id"),
         )
         for row in rows[2:]:
-            row = dict(zip(headers, row))
+            row = dict(zip(headers, row, strict=False))
             group_id, group_name = expected[row["health center name"]]
             self.assertEqual((row["health center group id"], row["health center group name"]), (group_id, group_name))
 

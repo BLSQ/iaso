@@ -14,11 +14,11 @@ def flatten_json(data, prefix=""):
     rows = []
     if isinstance(data, dict):
         for key, value in data.items():
-            rows.extend(flatten_json(value, f"{prefix}{key}/" if isinstance(value, (dict, list)) else f"{prefix}{key}"))
+            rows.extend(flatten_json(value, f"{prefix}{key}/" if isinstance(value, dict | list) else f"{prefix}{key}"))
     elif isinstance(data, list):
         for index, value in enumerate(data):
             rows.extend(
-                flatten_json(value, f"{prefix}{index}/" if isinstance(value, (dict, list)) else f"{prefix}{index}")
+                flatten_json(value, f"{prefix}{index}/" if isinstance(value, dict | list) else f"{prefix}{index}")
             )
     else:
         rows.append((prefix, data))

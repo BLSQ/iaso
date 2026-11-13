@@ -1,5 +1,4 @@
 from logging import getLogger
-from typing import Optional
 
 from django.db import models
 from django.db.models import Exists, F, Func, OuterRef, QuerySet
@@ -17,7 +16,7 @@ logger = getLogger(__name__)
 
 
 def build_submissions_queryset(
-    qs: QuerySet[m.Instance], form_id: str, allowed_fields: Optional[frozenset[str]] = None
+    qs: QuerySet[m.Instance], form_id: str, allowed_fields: frozenset[str] | None = None
 ) -> QuerySet[m.Instance]:
     """`allowed_fields`: when set, only these questions are exported (see `iaso.utils.pii.get_allowed_fields`)."""
     form = m.Form.objects.get(pk=form_id)

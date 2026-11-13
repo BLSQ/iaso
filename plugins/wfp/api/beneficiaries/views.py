@@ -37,9 +37,10 @@ class BeneficiaryPaginator(Paginator):
 class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """Beneficiaries computed by the ETL for the account of the user, with their journeys and visits.
 
-    Filters: `entity_type`, `programme`, `org_unit_group` (only the visits made in the org units of the group) and `q`
-    (entity id, start of the UUID or start of the progress id). Users restricted to some org units only see the
-    visits made there.
+    Filters: `entity_type`, `programme`, `org_unit_group` (only the visits made in the org units of the group), `q`
+    (entity id, start of the UUID or start of the progress id) and `visit_date_after` / `visit_date_before`
+    (beneficiaries visited in the period for a journey they didn't exit yet). Users restricted to some org units
+    only see the visits made there.
     `order` sorts the beneficiaries and `visits_order` (`date`, `-date`, `number` or `-number`) the visits of each
     journey, by date by default.
     The `export/coda/` and `export/raw/` actions download the xlsx exports of the same selection.

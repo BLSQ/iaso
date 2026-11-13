@@ -75,13 +75,11 @@ from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.models.instances import resolve_status_form_ids
 from iaso.models.missions import Mission, MissionType
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_STORAGE_PERMISSION
-from iaso.utils.date_and_time import timestamp_to_datetime
-from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
+from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link
 from iaso.utils.pii import (
     ensure_fields_allowed,
     filter_entity_payload,
     filter_instance_payload,
-    filter_pii,
     filter_submission_files,
     filter_submission_json,
     get_allowed_fields,

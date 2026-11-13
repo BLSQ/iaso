@@ -11,6 +11,7 @@ from unittest import mock
 from django.conf import settings
 from django.core.files.storage import storages
 from django.db import connection
+from django.db.models.fields.files import FieldFile
 from django.test.utils import CaptureQueriesContext
 
 
@@ -77,6 +78,8 @@ class QueryProfiler:
         self._storage_stacks: dict[str, list] = {}
         self._storage_names: dict[str, list] = {}
         self._storage_patches = None
+        # (name, call site frames) of every model file opened, see `files_opened()`
+        self._file_opens: list[tuple[str, tuple]] = []
         self._started_at = None
         self.elapsed: typing.Optional[float] = None
 
@@ -120,6 +123,19 @@ class QueryProfiler:
 
         return wrapper
 
+    def _traced_file_open(self, original):
+        profiler = self
+
+        def wrapper(field_file, *args, **kwargs):
+            frames = [
+                f for f in traceback.extract_stack()[:-1] if _is_project_frame(f.filename, ("iaso", "hat", "plugins"))
+            ]
+            chain = tuple((f.filename, f.lineno, f.name) for f in reversed(frames[-3:]))
+            profiler._file_opens.append((field_file.name, chain))
+            return original(field_file, *args, **kwargs)
+
+        return wrapper
+
     def __enter__(self):
         self._capture = CaptureQueriesContext(connection)
         self._capture.__enter__()
@@ -136,6 +152,11 @@ class QueryProfiler:
                         storage_class, method_name, self._timed_storage_method(storage_class, method_name)
                     )
                 )
+        # A model file's `open()`: the first one reads it through the storage (`_open`), a later one reopens the file
+        # object Django kept - the storage isn't asked again, but an S3 file is downloaded again.
+        self._storage_patches.enter_context(
+            mock.patch.object(FieldFile, "open", self._traced_file_open(FieldFile.open))
+        )
         self._started_at = time.perf_counter()
         return self
 
@@ -184,6 +205,36 @@ class QueryProfiler:
         `suffix` keeps only the names ending with it (or with one of them), e.g. ".webp" for the attachments."""
         return [name for name in self._storage_names.get(method_name, []) if name and name.endswith(suffix)]
 
+    def files_opened(self, suffix: typing.Union[str, tuple[str, ...]] = "") -> list:
+        """The names of the model files opened (`FieldFile.open()`), in call order. Unlike `storage_names("_open")`,
+        it also has the reopenings of a file already read in the block, which the storage doesn't see as Django keeps
+        the file object - but an S3 storage downloads the file again. `suffix` as in `storage_names()`."""
+        return [name for name, _ in self._file_opens if name and name.endswith(suffix)]
+
+    def file_open_call_sites(self, name: str) -> Counter:
+        """The chains of (filename, lineno, name) project frames opening this file, innermost first."""
+        return Counter(chain for opened, chain in self._file_opens if opened == name)
+
+    def assertFilesOpened(self, expected: typing.Sequence[str]) -> None:
+        """
+        Assert that exactly these model files were opened, each as many times as listed (in any order): a file read
+        twice - even if the storage only saw it once - or not read any more fails. The message gives the call sites
+        of every file opened.
+        """
+        actual = Counter(self.files_opened())
+        if actual != Counter(expected):
+            sites = [
+                f"  {name}: {count}x, from "
+                + "; ".join(
+                    " < ".join(self._frame_label(*frame) for frame in chain) or "(no project frame)"
+                    for chain in self.file_open_call_sites(name)
+                )
+                for name, count in actual.items()
+            ]
+            raise AssertionError(
+                f"Files opened: expected {sorted(expected)}, got {sorted(actual.elements())}\n" + "\n".join(sites)
+            )
+
     def _frame_label(self, filename: str, lineno: int, name: str) -> str:
         path = self._relpath(filename) or filename.rpartition("site-packages/")[2]
         return f"{path}:{lineno} in {name}"
@@ -213,6 +264,10 @@ class QueryProfiler:
             for frames, sites_count in self.storage_call_sites(method_name).most_common():
                 labels = " < ".join(self._frame_label(*frame) for frame in frames)
                 lines.append(f"      {sites_count}x {labels or '(no project frame)'}")
+        if self._file_opens:
+            lines.append(f"  model files opened: {len(self._file_opens)} (reopenings included)")
+            for name, count in Counter(self.files_opened()).most_common():
+                lines.append(f"    {count}x {name}")
         lines.append(f"  python (rest): {fmt(breakdown['python'])}")
 
         # What the round trips to S3 and RDS would add on a deployed server

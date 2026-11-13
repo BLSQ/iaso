@@ -182,6 +182,12 @@ ENKETO = {
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
 
+# odk_cli (https://github.com/BLSQ/odk_cli) native binary: fills and edits submissions server-side as ODK Collect would
+# (`iaso.odk.instance_editor`)
+ODK_CLI_PATH = env.str("ODK_CLI_PATH", default="/usr/local/bin/odk_cli")
+# local copies of the forms' files odk_cli reads (XForms, CSV attachments), kept between requests (`iaso.odk.form_files`)
+ODK_CLI_CACHE_DIR = env.str("ODK_CLI_CACHE_DIR", default=os.path.join(tempfile.gettempdir(), "odk_cli_cache"))
+
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
 LOGGING: dict[str, Any] = {

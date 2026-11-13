@@ -5,6 +5,7 @@ selection the user made on the page.
 """
 
 from django.db.models import Count, Max, Prefetch, Q
+from django.db.models.fields.json import KeyTextTransform
 
 from iaso.models import Group, OrgUnit
 
@@ -45,7 +46,11 @@ def filtered_beneficiaries(account, filters, org_units=None):
 
     With an org unit scope, only the beneficiaries with at least one visit in these org units are kept.
     """
-    queryset = Beneficiary.objects.filter(entity__account=account).select_related("entity__entity_type")
+    queryset = (
+        Beneficiary.objects.filter(entity__account=account)
+        .select_related("entity__entity_type")
+        .annotate(progress_id=KeyTextTransform("progress_id", "entity__attributes__json"))
+    )
 
     if org_units is not None:
         queryset = queryset.filter(
@@ -64,10 +69,10 @@ def filtered_beneficiaries(account, filters, org_units=None):
         )
 
     search = filters.get("q", "")
-    if search.isdigit():
-        queryset = queryset.filter(entity_id=search)
-    elif search:
-        queryset = queryset.filter(entity__uuid__startswith=search)
+    if search:
+        criteria = Q(progress_id__istartswith=search)
+        criteria |= Q(entity_id=search) if search.isdigit() else Q(entity__uuid__startswith=search)
+        queryset = queryset.filter(criteria)
     return queryset
 
 

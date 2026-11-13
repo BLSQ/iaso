@@ -49,6 +49,9 @@
     "iaso.wfp.beneficiaries.seeEntity": "Entity in IASO",
     "iaso.wfp.beneficiaries.syncedDate": "synced: {date}",
     "iaso.wfp.beneficiaries.updatedDate": "updated: {date}",
+    "iaso.wfp.beneficiaries.visitDateFrom": "Visited from",
+    "iaso.wfp.beneficiaries.visitDateTo": "Visited until",
+    "iaso.wfp.beneficiaries.visitDateTooltip": "Only the beneficiaries visited in this period for an ongoing journey (not exited yet)",
     "iaso.wfp.beneficiaries.visits": "Visits",
     "iaso.wfp.beneficiaries.whz": "WHZ"
 }

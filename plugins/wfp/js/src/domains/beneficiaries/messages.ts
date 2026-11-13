@@ -34,6 +34,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.progressId',
         defaultMessage: 'Progress id',
     },
+    visitDateFrom: {
+        id: 'iaso.wfp.beneficiaries.visitDateFrom',
+        defaultMessage: 'Visited from',
+    },
+    visitDateTo: {
+        id: 'iaso.wfp.beneficiaries.visitDateTo',
+        defaultMessage: 'Visited until',
+    },
+    visitDateTooltip: {
+        id: 'iaso.wfp.beneficiaries.visitDateTooltip',
+        defaultMessage:
+            'Only the beneficiaries visited in this period for an ongoing journey (not exited yet)',
+    },
     uuid: {
         id: 'iaso.label.uuid',
         defaultMessage: 'UUID',

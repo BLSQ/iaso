@@ -14,6 +14,7 @@ export const RouteConfigs: Record<string, RouteConfig> = {
             'entity_type',
             'programme',
             'org_unit_group',
+            'facility',
             'q',
             'visit_date_after',
             'visit_date_before',

@@ -1346,6 +1346,10 @@ msgid "Soumissions"
 msgstr "Soumissions"
 
 #: iaso/permissions/core_permissions.py
+msgid "View personal data (PII) in submissions"
+msgstr "Consulter les données personnelles (PII) dans les soumissions"
+
+#: iaso/permissions/core_permissions.py
 msgid "Editer soumissions"
 msgstr "Editer soumissions"
 

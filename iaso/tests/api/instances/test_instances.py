@@ -1072,9 +1072,14 @@ class InstancesAPITestCase(TaskAPITestCase):
                 ]
             }
         )
-        # 6, not 7: org_unit__org_unit_type is now select_related, saving the per-instance
-        # lazy-load query for org_unit_type.
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
+            # 1. RETRIEVE USER ACCOUNT
+            # 2. CHECK USER PERMISSIONS
+            # 3. SELECT INSTANCES FILTERED BY JSON CONTENT
+            # 4. SELECT RELATED FORM INFORMATION
+            # 5. SELECT RELATED ORG UNIT
+            # 6. SELECT RELATED ORG UNIT TYPE
+            # 7. CHECK FILTERED QUESTIONS FOR HIDDEN PERSONAL DATA (PII)
             response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, status.HTTP_200_OK)
         response_json = response.json()

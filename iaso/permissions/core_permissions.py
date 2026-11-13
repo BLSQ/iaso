@@ -313,6 +313,12 @@ CORE_SUBMISSIONS_PERMISSION = CorePermission(
     ui_type_in_category="read",
     ui_order_in_category=1,
 )
+CORE_SUBMISSIONS_PII_PERMISSION = CorePermission(
+    codename="iaso_submissions_pii",
+    label=_("View personal data (PII) in submissions"),
+    module=MODULE_DATA_COLLECTION,
+    ui_group=PERMISSION_GROUP_FORMS,
+)
 CORE_SUBMISSIONS_UPDATE_PERMISSION = CorePermission(
     codename="iaso_update_submission",
     label=_("Editer soumissions"),

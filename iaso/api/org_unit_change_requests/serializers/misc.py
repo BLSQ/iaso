@@ -12,6 +12,7 @@ from iaso.api.common import TimestampField
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
 from iaso.utils import geojson_queryset
+from iaso.utils.pii import filter_submission_json
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
@@ -62,6 +63,12 @@ class InstanceForChangeRequestSerializer(serializers.ModelSerializer):
             "form_name",
             "values",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        data["values"] = filter_submission_json(data.get("values"), instance.form, request.user if request else None)
+        return data
 
 
 class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):

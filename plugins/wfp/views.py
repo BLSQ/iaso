@@ -1,7 +1,7 @@
 import io
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.management import call_command
 from django.http import HttpResponse
 from django.shortcuts import get_list_or_404, get_object_or_404
@@ -9,9 +9,11 @@ from django.template import loader
 from django.utils import timezone
 
 from iaso.models import Entity, EntityType
+from iaso.utils.pii import filter_submission_json
 
 from .common import ETL
 from .models import Beneficiary, Journey, Visit
+from .permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 
 
 @login_required
@@ -19,11 +21,14 @@ def debug(request, id):
     entity = get_object_or_404(Entity.objects.filter_for_user(request.user), id=id)
 
     beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
-    beneficiary_info = entity.attributes.json
+    beneficiary_info = filter_submission_json(entity.attributes.json, entity.attributes.form, request.user)
 
     template = loader.get_template("debug.html")
     context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}
     return HttpResponse(template.render(context, request))
+
+
+export_permission_required = permission_required(WFP_BENEFICIARY_EXPORT_PERMISSION.full_name(), raise_exception=True)
 
 
 @login_required

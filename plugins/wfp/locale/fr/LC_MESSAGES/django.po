@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-14 16:37+0000\n"
+"POT-Creation-Date: 2026-11-06 10:34+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -237,3 +237,7 @@ msgstr "Aucun"
 #: plugins/wfp/models.py
 msgid "More"
 msgstr "Plus"
+
+#: plugins/wfp/permissions.py
+msgid "Export WFP beneficiaries"
+msgstr "Exporter les bénéficiaires du PAM"

@@ -11,7 +11,7 @@ import os
 import random
 import uuid
 
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from xml.sax.saxutils import escape
 
 from dateutil.relativedelta import relativedelta
@@ -138,7 +138,7 @@ class Command(BaseCommand):
             raise CommandError("Entity types bangladesh_under5 / bangladesh_pbwg already exist in another account")
 
         self.random = random.Random(options["seed"])
-        self.today = date.today()
+        self.today = datetime.now(tz=timezone.utc).date()
 
         with transaction.atomic():
             account, project, infs = self._create_account()
@@ -158,7 +158,7 @@ class Command(BaseCommand):
     def _add_to_existing(self, options):
         account = m.Account.objects.get(name=ACCOUNT_NAME)
         self.random = random.Random()
-        self.today = date.today()
+        self.today = datetime.now(tz=timezone.utc).date()
         # the defaults of --children / --women are for a new account, add a few only
         children = options["children"] if options["children"] != 150 else 3
         women = options["women"] if options["women"] != 80 else 2

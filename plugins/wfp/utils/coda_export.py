@@ -51,11 +51,11 @@ def org_unit_groups(org_unit_ids, user) -> dict[int, list[Group]]:
     return groups
 
 
-def group_names(groups: list[Group]) -> typing.Optional[str]:
+def group_names(groups: list[Group]) -> str | None:
     return ", ".join(f"{group.name} ({group.source_version.data_source.name})" for group in groups) or None
 
 
-def group_ids(groups: list[Group]) -> typing.Optional[str]:
+def group_ids(groups: list[Group]) -> str | None:
     return ", ".join(str(group.id) for group in groups) or None
 
 
@@ -67,15 +67,15 @@ class VisitContext:
     journey: Journey
     visit: Visit
     cycle_number: int
-    previous_visit: typing.Optional[Visit]
+    previous_visit: Visit | None
     is_last_visit: bool
     answers: list[dict]  # filtered answers of the visit's submissions, anchor first
-    anchor: typing.Optional[Instance]
-    assistance_instance: typing.Optional[Instance]
+    anchor: Instance | None
+    assistance_instance: Instance | None
     org_units: dict[int, OrgUnit]
-    reference_org_unit: typing.Optional[OrgUnit]
+    reference_org_unit: OrgUnit | None
     groups: dict[int, list[Group]]  # groups of the org units of the visits
-    _normalized: typing.Optional[list[dict]] = field(default=None)
+    _normalized: list[dict] | None = field(default=None)
 
     def answer(self, *candidates: str):
         """First non-empty answer to one of the candidate questions, across the submissions of the visit."""
@@ -89,7 +89,7 @@ class VisitContext:
                     return value
         return None
 
-    def ancestor(self, org_unit: typing.Optional[OrgUnit], level: int) -> typing.Optional[str]:
+    def ancestor(self, org_unit: OrgUnit | None, level: int) -> str | None:
         """Name of the ancestor of `org_unit` at `level` of the pyramid (0 = root, i.e. the country)."""
         if org_unit is None or not org_unit.path:
             return None
@@ -117,7 +117,7 @@ def _age(ctx: VisitContext):
     return months if ctx.journey.programme_type != "PLW" else months // 12
 
 
-def _yes_no(value: typing.Optional[bool]):
+def _yes_no(value: bool | None):
     if value is None:
         return None
     return "yes" if value else "no"
@@ -412,7 +412,7 @@ def iter_rows(beneficiaries, user, org_units=None) -> typing.Iterator[list]:
 def _cell(value):
     if isinstance(value, datetime.datetime):
         return value.replace(tzinfo=None)
-    if isinstance(value, (dict, list)):
+    if isinstance(value, dict | list):
         return str(value)
     return value
 

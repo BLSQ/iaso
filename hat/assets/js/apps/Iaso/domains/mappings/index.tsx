@@ -16,8 +16,9 @@ import TopBar from '../../components/nav/TopBarComponent';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 import { Filters } from './components/Filter';
 import { mappingsTableColumns } from './config';
-import { useGetMappingVersions } from './hooks.js';
+import { useGetMappingVersions } from './hooks';
 import MESSAGES from './messages';
+import { DHIS2Params } from './types';
 
 const baseUrl = baseUrls.mappings;
 
@@ -28,7 +29,7 @@ const useStyles = makeStyles(theme => ({
 const Mappings = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const params = useParamsObject(baseUrl);
+    const params = useParamsObject(baseUrl) as unknown as DHIS2Params;
     const mappingVersionsResults = useGetMappingVersions(params);
     const redirectToReplace = useRedirectToReplace();
     const count = mappingVersionsResults?.data?.count ?? 0;

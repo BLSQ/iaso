@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -11,13 +11,46 @@ import {
     fetchDhis2Resource,
 } from './Dhis2SearchError';
 
+type Option = {
+    displayName?: string;
+    name?: string;
+    [key: string]: any;
+};
+
+type Props = {
+    dataSourceId: number | string;
+    resourceName: string;
+    fields?: string;
+    style?: React.CSSProperties;
+    name?: string;
+    label?: ReactNode;
+    // callers often ignore name/resourceName; keep loose for compatibility
+    onChange: (name: any, value: any, resourceName?: any) => void;
+    filter?: string;
+    pageSize?: number;
+    defaultValue?: string;
+    mapOptions?: (options: any, input?: string) => any;
+    fetchFromPromise?: (
+        input: any,
+        filter: any,
+        pageSize: any,
+        resourceName: any,
+        dataSourceId: any,
+        fields: any,
+    ) => Promise<any[]>;
+    disabled?: boolean;
+    placeholder?: string;
+    // accepted by some call sites; Autocomplete uses defaultValue today
+    value?: any;
+};
+
 const fetchFrom = (
-    input,
-    filter,
-    pageSize,
-    resourceName,
-    dataSourceId,
-    fields,
+    input: string,
+    filter: string | undefined,
+    pageSize: number | undefined,
+    resourceName: string,
+    dataSourceId: number | string,
+    fields: string | undefined,
 ) =>
     Promise.all([
         fetchDhis2Resource(
@@ -36,7 +69,8 @@ const fetchFrom = (
             }&pageSize=${pageSize || 10}`,
         ),
     ]);
-const Dhis2Search = props => {
+
+const Dhis2Search: FunctionComponent<Props> = props => {
     const {
         dataSourceId,
         resourceName,
@@ -56,11 +90,11 @@ const Dhis2Search = props => {
     const fetchData = fetchFromPromise || fetchFrom;
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
 
-    const [options, setOptions] = React.useState([]);
+    const [options, setOptions] = React.useState<Option[]>([]);
     const [errorCode, setErrorCode] = React.useState<string | undefined>();
     // TODO confirm this is dead code
     // const [_selectedOption, setSelectedOption] = React.useState([]);
-    const handleChange = event => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
     };
 
@@ -87,34 +121,43 @@ const Dhis2Search = props => {
 
     const fetchMemo = React.useMemo(
         () =>
-            throttle(input => {
-                const current = latestProps.current;
-                current
-                    .fetchData(
-                        input.input,
-                        current.filter,
-                        current.pageSize,
-                        current.resourceName,
-                        current.dataSourceId,
-                        current.fields,
-                    )
-                    .then(f => {
-                        const union = f.flatMap(r => r[current.resourceName]);
-                        const finalOptions = current.mapOptions
-                            ? current.mapOptions(union, input.input)
-                            : union;
-                        setErrorCode(undefined);
-                        setOptions(finalOptions);
-                    })
-                    .catch(error => {
-                        setOptions([]);
-                        setErrorCode(
-                            error instanceof Dhis2SearchError
-                                ? error.code
-                                : DHIS2_UNAVAILABLE,
-                        );
-                    });
-            }, 200),
+            throttle(
+                (
+                    input: { input: string },
+                    // Call sites may pass a callback; options are still set below.
+                    _callback?: (results: any) => void,
+                ) => {
+                    const current = latestProps.current;
+                    current
+                        .fetchData(
+                            input.input,
+                            current.filter,
+                            current.pageSize,
+                            current.resourceName,
+                            current.dataSourceId,
+                            current.fields,
+                        )
+                        .then((f: any[]) => {
+                            const union = f.flatMap(
+                                (r: any) => r[current.resourceName],
+                            );
+                            const finalOptions = current.mapOptions
+                                ? current.mapOptions(union, input.input)
+                                : union;
+                            setErrorCode(undefined);
+                            setOptions(finalOptions);
+                        })
+                        .catch((error: unknown) => {
+                            setOptions([]);
+                            setErrorCode(
+                                error instanceof Dhis2SearchError
+                                    ? error.code
+                                    : DHIS2_UNAVAILABLE,
+                            );
+                        });
+                },
+                200,
+            ),
         [],
     );
     React.useEffect(() => {
@@ -122,7 +165,7 @@ const Dhis2Search = props => {
         setOptions([]);
     }, [dataSourceId]);
     React.useEffect(() => {
-        setInputValue(defaultValue);
+        setInputValue(defaultValue as string);
     }, [setInputValue, defaultValue]);
 
     React.useEffect(() => {
@@ -132,7 +175,7 @@ const Dhis2Search = props => {
             return undefined;
         }
 
-        fetchMemo({ input: inputValue }, results => {
+        fetchMemo({ input: inputValue }, (results: any) => {
             if (active) {
                 setOptions(results || []);
             }
@@ -143,7 +186,10 @@ const Dhis2Search = props => {
         };
     }, [inputValue, fetchMemo]);
 
-    const onSearchChange = (evt, value) => {
+    const onSearchChange = (
+        _evt: React.SyntheticEvent,
+        value: string | Option | null,
+    ) => {
         onChange(name, value, resourceName);
         // TODO confirm this is dead code
         // setSelectedOption(value);
@@ -152,10 +198,10 @@ const Dhis2Search = props => {
     return (
         <Autocomplete
             style={style}
-            getOptionLabel={option =>
+            getOptionLabel={(option: string | Option) =>
                 typeof option === 'string'
                     ? option
-                    : option.displayName || option.name
+                    : option.displayName || option.name || ''
             }
             filterOptions={x => x}
             options={options}
@@ -182,16 +228,17 @@ const Dhis2Search = props => {
                         errorCode && (
                             <Dhis2SearchErrorMessage
                                 code={errorCode}
-                                dataSourceId={dataSourceId}
+                                dataSourceId={Number(dataSourceId)}
                             />
                         )
                     }
                 />
             )}
-            renderOption={(props, option) => (
-                <li {...props} name={name}>
-                    {option.displayName || option.name}
-                </li>
+            renderOption={(
+                liProps: React.HTMLAttributes<HTMLLIElement>,
+                option: Option,
+            ) => (
+                <li {...liProps}>{option.displayName || option.name}</li>
             )}
         />
     );

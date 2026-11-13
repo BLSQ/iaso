@@ -73,7 +73,7 @@ export const SourceCard: FunctionComponent<Props> = ({
             </Box>
             <Typography variant="body2" color="textSecondary">
                 {formatMessage(MESSAGES.importMappingsCount, {
-                    count: source.mappingsCount,
+                    count: `${source.mappingsCount}`,
                 })}
             </Typography>
             <Chip
@@ -81,8 +81,8 @@ export const SourceCard: FunctionComponent<Props> = ({
                 variant="outlined"
                 color={isGoodMatch ? 'success' : 'warning'}
                 label={formatMessage(MESSAGES.importMatchCount, {
-                    matching: source.matchingCount,
-                    total: source.mappingsCount,
+                    matching: `${source.matchingCount}`,
+                    total: `${source.mappingsCount}`,
                 })}
             />
         </Box>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
@@ -7,26 +7,39 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
-import { useDataSources, useCreateMappingMutation } from '../hooks.js';
+import InputComponent from '../../../components/forms/InputComponent';
+import {
+    CreateMappingPayload,
+    useCreateMappingMutation,
+    useDataSources,
+} from '../hooks';
 import MESSAGES from '../messages';
 import Dhis2Search from './Dhis2SearchComponent';
 import IasoSearchComponent from './IasoSearchComponent';
 import { mappingTypeOptions } from './MappingTypeOptions';
 
-const CreateMappingVersionDialogComponent = () => {
+type DataSourceOption = {
+    id: number;
+    name: string;
+};
+
+const CreateMappingVersionDialogComponent: FunctionComponent = () => {
     const createMappingRequest = useCreateMappingMutation();
     const dataSourcesRequest = useDataSources();
     const { formatMessage } = useSafeIntl();
     const [mappingType, setMappingType] = React.useState('AGGREGATE');
-    const [source, setSource] = React.useState(0);
-    const [formVersion, setFormVersion] = React.useState(0);
-    const [dataset, setDataset] = React.useState(0);
+    const [source, setSource] = React.useState<number | string>(0);
+    const [formVersion, setFormVersion] = React.useState<number | null>(0);
+    // starts as 0; after DHIS2 search it becomes the selected option object
+    const [dataset, setDataset] = React.useState<any>(0);
 
-    const onConfirm = closeDialog => {
-        const payload = {
-            form_version: { id: formVersion },
-            mapping: { type: mappingType, datasource: { id: source } },
+    const onConfirm = (closeDialog: () => void) => {
+        const payload: CreateMappingPayload = {
+            form_version: { id: formVersion as number },
+            mapping: {
+                type: mappingType,
+                datasource: { id: source as number },
+            },
         };
         if (mappingType === 'AGGREGATE') {
             payload.dataset = dataset;
@@ -34,8 +47,10 @@ const CreateMappingVersionDialogComponent = () => {
             payload.program = dataset;
         }
 
-        createMappingRequest.mutate(payload).then(() => {
-            closeDialog();
+        createMappingRequest.mutate(payload, {
+            onSuccess: () => {
+                closeDialog();
+            },
         });
     };
     const onClosed = () => {
@@ -60,7 +75,9 @@ const CreateMappingVersionDialogComponent = () => {
             <Grid container spacing={1} direction="column">
                 <InputComponent
                     keyValue="mapping_type"
-                    onChange={(key, value) => setMappingType(value)}
+                    onChange={(_key: string, value: string) =>
+                        setMappingType(value)
+                    }
                     value={mappingType}
                     type="select"
                     options={mappingTypeOptions}
@@ -78,7 +95,9 @@ const CreateMappingVersionDialogComponent = () => {
                                 setSource(event.target.value);
                             }}
                         >
-                            {dataSourcesRequest.data.map(s => (
+                            {(
+                                dataSourcesRequest.data as DataSourceOption[]
+                            ).map((s: DataSourceOption) => (
                                 <MenuItem key={s.id} value={s.id}>
                                     {s.name}
                                 </MenuItem>
@@ -95,8 +114,8 @@ const CreateMappingVersionDialogComponent = () => {
                         placeholder={formatMessage(
                             MESSAGES.startTypingFormVersion,
                         )}
-                        mapOptions={options =>
-                            options.map(o => ({
+                        mapOptions={(options: any[]) =>
+                            options.map((o: any) => ({
                                 name: [
                                     o.form_name,
                                     o.version_id,
@@ -109,7 +128,7 @@ const CreateMappingVersionDialogComponent = () => {
                                 id: o.id,
                             }))
                         }
-                        onChange={(name, val) => {
+                        onChange={(_name: string, val: any) => {
                             setFormVersion(val.id);
                         }}
                     />
@@ -130,16 +149,16 @@ const CreateMappingVersionDialogComponent = () => {
                                 ? formatMessage(MESSAGES.dataset)
                                 : formatMessage(MESSAGES.program)
                         }
-                        mapOptions={options => {
+                        mapOptions={(options: any[]) => {
                             return options
-                                .filter(o => o !== undefined)
-                                .map(o => ({
+                                .filter((o: any) => o !== undefined)
+                                .map((o: any) => ({
                                     name: `${o.name} (${o.periodType} ${o.id})`,
                                     id: o.id,
                                 }));
                         }}
                         dataSourceId={source}
-                        onChange={(name, val) => {
+                        onChange={(_name: string, val: any) => {
                             setDataset(val);
                         }}
                     />

@@ -8,16 +8,10 @@ import { useAssignableOrgUnits } from './useAssignableOrgUnits';
 import { useChangeAssignments } from './useChangeAssignments';
 import { getOrgUnitIdsAssignedTo } from './utils';
 
-type PendingRemoval = {
-    title: string;
-    text: string;
-    orgUnitIds: number[];
-};
-
 type MemberAssignments = {
     getAssignedCount: (row: TeamMemberRowData) => number;
     requestRemoval: (memberKey: string) => void;
-    pendingRemoval?: PendingRemoval;
+    removalText?: string;
     confirmRemoval: () => void;
     cancelRemoval: () => void;
 };
@@ -27,7 +21,7 @@ export const useMemberAssignments = (): MemberAssignments => {
     const { selectedTeam, selectedTeamMembers } = useAssignmentsContext();
     const { assignments, assignableOrgUnitIds } = useAssignableOrgUnits();
     const changeAssignments = useChangeAssignments();
-    const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval>();
+    const [removedMemberKey, setRemovedMemberKey] = useState<string>();
 
     // Exact for the selected team's members; other members count all their assignments of the planning.
     const getAssignedCount = useCallback(
@@ -46,48 +40,46 @@ export const useMemberAssignments = (): MemberAssignments => {
         [assignments, assignableOrgUnitIds, selectedTeam.id],
     );
 
-    const memberByKey = useMemo(
-        () => new Map(selectedTeamMembers.map(member => [member.key, member])),
-        [selectedTeamMembers],
+    const removedMember = selectedTeamMembers.find(
+        member => member.key === removedMemberKey,
     );
-    const requestRemoval = useCallback(
-        (memberKey: string) => {
-            const member = memberByKey.get(memberKey);
-            if (!member) return;
-            const orgUnitIds = getOrgUnitIdsAssignedTo(
-                assignments,
-                getAssigneeRef(member),
-                assignableOrgUnitIds,
-            );
-            const text = formatMessage(MESSAGES.removeMemberAssignmentsText, {
-                count: `${orgUnitIds.length}`,
-                member: member.name,
-            });
-            setPendingRemoval({
-                title: formatMessage(MESSAGES.removeAssignments),
-                text: member.team
-                    ? `${text} ${formatMessage(
-                          MESSAGES.removeTeamAssignmentsBelowText,
-                          { member: member.name },
-                      )}`
-                    : text,
-                orgUnitIds,
-            });
-        },
-        [memberByKey, assignments, assignableOrgUnitIds, formatMessage],
+    const removedOrgUnitIds = useMemo(
+        () =>
+            removedMember
+                ? getOrgUnitIdsAssignedTo(
+                      assignments,
+                      getAssigneeRef(removedMember),
+                      assignableOrgUnitIds,
+                  )
+                : [],
+        [removedMember, assignments, assignableOrgUnitIds],
     );
-    const cancelRemoval = useCallback(() => setPendingRemoval(undefined), []);
+    const removalText = useMemo(() => {
+        if (!removedMember) return undefined;
+        const text = formatMessage(MESSAGES.removeMemberAssignmentsText, {
+            count: `${removedOrgUnitIds.length}`,
+            member: removedMember.name,
+        });
+        return removedMember.team
+            ? `${text} ${formatMessage(
+                  MESSAGES.removeTeamAssignmentsBelowText,
+                  {
+                      member: removedMember.name,
+                  },
+              )}`
+            : text;
+    }, [removedMember, removedOrgUnitIds, formatMessage]);
+
+    const cancelRemoval = useCallback(() => setRemovedMemberKey(undefined), []);
     const confirmRemoval = useCallback(() => {
-        if (pendingRemoval) {
-            changeAssignments({ orgUnitIds: pendingRemoval.orgUnitIds });
-        }
-        setPendingRemoval(undefined);
-    }, [pendingRemoval, changeAssignments]);
+        changeAssignments({ orgUnitIds: removedOrgUnitIds });
+        setRemovedMemberKey(undefined);
+    }, [removedOrgUnitIds, changeAssignments]);
 
     return {
         getAssignedCount,
-        requestRemoval,
-        pendingRemoval,
+        requestRemoval: setRemovedMemberKey,
+        removalText,
         confirmRemoval,
         cancelRemoval,
     };

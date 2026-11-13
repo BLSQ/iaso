@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import { SOURCES, SOURCE_WRITE } from '../../../utils/permissions';
@@ -13,7 +13,7 @@ export const DHIS2_NO_CREDENTIALS = 'dhis2_no_credentials';
 export const DHIS2_INVALID_CREDENTIALS = 'dhis2_invalid_credentials';
 export const DHIS2_UNAVAILABLE = 'dhis2_unavailable';
 
-const ERROR_MESSAGES = {
+const ERROR_MESSAGES: Record<string, IntlMessage> = {
     [DHIS2_NO_CREDENTIALS]: MESSAGES.dhis2NoCredentials,
     [DHIS2_INVALID_CREDENTIALS]: MESSAGES.dhis2InvalidCredentials,
     [DHIS2_UNAVAILABLE]: MESSAGES.dhis2Unavailable,

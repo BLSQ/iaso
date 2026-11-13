@@ -12,22 +12,13 @@ import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/h
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
+import { DHIS2Params } from '../types';
 import { mappingTypeOptions } from './MappingTypeOptions';
 
 const useStyles = makeStyles(() => ({}));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    formId?: string;
-    mappingType?: string;
-    projectsIds?: string;
-};
-
 type Props = {
-    params: Params;
+    params: DHIS2Params;
 };
 
 const Filters: FunctionComponent<Props> = ({ params }) => {

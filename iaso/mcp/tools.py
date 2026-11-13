@@ -29,6 +29,7 @@ from iaso.mcp.raw import (
     preview_raw,
 )
 from iaso.mcp.reattach import apply_plan, plan_reattach, summarize_plan
+from iaso.mcp.recipes import planning_assignments
 from iaso.mcp.recipes.fill_account.apply import connection_prompt, current_account
 from iaso.mcp.serialize import (
     clamp_limit,
@@ -54,7 +55,7 @@ MCP_INSTRUCTIONS = (
     "iaso_raw is an in-process /api/ call (GET/POST/PATCH/PUT/DELETE). "
     "Writes need confirm=true "
     "(iaso_raw, apply_reattach_instances, apply_create_pyramid, "
-    "apply_fill_account). " + mcp_auth_instructions()
+    "apply_fill_account, apply_planning_assignments_demo). " + mcp_auth_instructions()
 )
 
 
@@ -474,3 +475,45 @@ def apply_fill_account(
     except (ValueError, FileNotFoundError, OSError, IasoError) as exc:
         return {"applied": False, "ok": False, "error": str(exc)}
     return {"applied": True, **slim_fill_result(result)}
+
+
+def _planning_demo_target(prefix: str | None, project_id: int | None) -> tuple[str, int | None]:
+    account = current_account(get_client())
+    default_prefix = "".join(char for char in (account.get("account_name") or "demo").lower() if char.isalnum())
+    projects = account.get("projects") or []
+    return prefix or default_prefix, project_id or (projects[0]["id"] if projects else None)
+
+
+@tool()
+def preview_planning_assignments_demo(prefix: str | None = None, project_id: int | None = None) -> dict[str, Any]:
+    """Dry-run demo users, teams and plannings for the planning assignments screen. Does not write to IASO."""
+    try:
+        prefix, project_id = _planning_demo_target(prefix, project_id)
+        summary = planning_assignments.preview(get_client().transport.request, prefix)
+    except (ValueError, IasoError) as exc:
+        return {"ok": False, "error": str(exc)}
+    return {"prefix": prefix, "project_id": project_id, **summary}
+
+
+@tool()
+def apply_planning_assignments_demo(
+    confirm: bool = False,
+    prefix: str | None = None,
+    project_id: int | None = None,
+) -> dict[str, Any]:
+    """Create demo users (unique colors), a team tree and two partly assigned plannings. Needs confirm=true."""
+    if not confirm:
+        return {
+            "applied": False,
+            "reason": "confirm=false; nothing was written. Call again with confirm=true after preview.",
+            "identity": _write_target(),
+            **preview_planning_assignments_demo(prefix, project_id),
+        }
+    try:
+        prefix, project_id = _planning_demo_target(prefix, project_id)
+        if project_id is None:
+            return {"applied": False, "ok": False, "error": "The account has no project."}
+        result = planning_assignments.run(get_client().transport.request, prefix=prefix, project_id=project_id)
+    except (ValueError, IasoError) as exc:
+        return {"applied": False, "ok": False, "error": str(exc)}
+    return {"applied": True, "prefix": prefix, "project_id": project_id, **result}

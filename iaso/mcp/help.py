@@ -11,8 +11,8 @@ from iaso.mcp.catalog import CATALOG_DOCS, fetch_design_system_doc
 _LOCAL_BLURBS: dict[str, str] = {
     "tools": ("Typed MCP tools, pagination (max 50), iaso_raw, and confirm=true writes."),
     "recipes": (
-        "Case recipes: remapping rejected-OU instances and creating a pyramid "
-        "from Excel. Preview, then apply with confirm=true."
+        "Case recipes: remapping rejected-OU instances, creating a pyramid "
+        "from Excel and seeding planning assignments demo data. Preview, then apply with confirm=true."
     ),
     "fill-account": (
         "Account-setup Excel loop: download template, user fills yellow cells, "
@@ -56,6 +56,7 @@ apply tool unless the user explicitly confirms that target. Preview first:
 - `preview_reattach_instances` / `apply_reattach_instances`
 - `preview_create_pyramid` / `apply_create_pyramid`
 - `preview_fill_account` / `apply_fill_account`
+- `preview_planning_assignments_demo` / `apply_planning_assignments_demo`
 
 Product meaning comes from design-system topics (`claude`, `index`, `forms`, …), not from this page.
 """,
@@ -76,6 +77,15 @@ source), wait for the user to confirm that target, then **apply** with
 - Omit `xlsx_path` to use the packaged Demo Republic sample (`Org_Units.xlsx`).
 - `preview_create_pyramid` — planned org unit types and VALID org units.
 - `apply_create_pyramid(confirm=true)` with the same file.
+
+**Planning assignments demo data**
+- Needs an org unit pyramid in the account default version (e.g. after `apply_create_pyramid`).
+- Roots the plannings at the first org unit with several children, over up to 3 levels.
+- Creates 24 users with unique colors (`<prefix>.<key>`, password = username), an 11-team tree,
+  a draft planning partly assigned at every level and a published one.
+- `preview_planning_assignments_demo(prefix?, project_id?)` — planned root, levels, users, teams.
+  Prefix defaults to the account name, project to the first project of the account.
+- `apply_planning_assignments_demo(confirm=true)` with the same arguments.
 
 For filling a whole demo account from Excel, use topic `fill-account`.
 For what an org unit or instance *is*, use topics `orgunits` / `forms` (iaso-design-system).

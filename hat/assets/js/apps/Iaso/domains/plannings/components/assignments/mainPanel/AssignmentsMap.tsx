@@ -20,7 +20,7 @@ import { OpenTeamOnClick } from './OpenTeamOnClick';
 import { OrgUnitHover } from './OrgUnitHover';
 import { ScopeAreaLayer } from './ScopeAreaLayer';
 import { useAssignments } from './useAssignments';
-import { useLevelGeometry } from './useLevelGeometry';
+import { OrgUnitFeatureCollection, useLevelGeometry } from './useLevelGeometry';
 import {
     countOrgUnitsOffMap,
     getAssigneeColorByOrgUnitId,
@@ -44,6 +44,19 @@ const EMPTY_FEATURE_COLLECTION: FeatureCollection = {
     features: [],
 };
 
+// Close enough to see the org unit among its neighbours.
+const FOCUS_MAX_ZOOM = 12;
+
+const findFeature = (
+    collections: (OrgUnitFeatureCollection | undefined)[],
+    orgUnitId?: number,
+) =>
+    orgUnitId === undefined
+        ? undefined
+        : collections
+              .flatMap(collection => collection?.features ?? [])
+              .find(feature => feature.id === orgUnitId);
+
 const INITIAL_VIEW_STATE = {
     longitude: defaultCenter.lng,
     latitude: defaultCenter.lat,
@@ -52,12 +65,15 @@ const INITIAL_VIEW_STATE = {
 
 // The selected team's level is outlined, its members' level is filled with their assignee's color.
 export const AssignmentsMap: FC = () => {
-    const { planning, tree, levelTree, selectedTeam, selectedLevel } =
+    const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
     const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
-    const area = useLevelGeometry(selectedLevel);
-    const members = useLevelGeometry(selectedLevel + 1);
-    const { openTeam } = useAssignmentsParams();
+    const { area, members, membersPresence, isFetching } =
+        useLevelGeometry(selectedLevel);
+    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const focusedOrgUnitId = focusOrgUnitId
+        ? Number(focusOrgUnitId)
+        : undefined;
     const { data: assignments } = useAssignments(`${planning.id}`);
     const colorByOrgUnitId = useMemo(
         () => getAssigneeColorByOrgUnitId(tree, assignments ?? []),
@@ -67,20 +83,27 @@ export const AssignmentsMap: FC = () => {
         () => getTeamIdByOrgUnitId(assignments ?? []),
         [assignments],
     );
-    const areaBounds = useMemo(
-        () => area.geoJson && getGeoJsonBounds(area.geoJson),
-        [area.geoJson],
+    // The found org unit once its team's geometry is loaded, the team's area otherwise.
+    const focusedFeature = useMemo(
+        () => findFeature([members, area], focusedOrgUnitId),
+        [members, area, focusedOrgUnitId],
     );
+    const areaBounds = useMemo(() => area && getGeoJsonBounds(area), [area]);
+    const fitBounds = useMemo(
+        () => (focusedFeature ? getGeoJsonBounds(focusedFeature) : areaBounds),
+        [focusedFeature, areaBounds],
+    );
+    const fitKey = focusedFeature
+        ? `${selectedTeam.id}-${focusedFeature.id}`
+        : selectedTeam.id;
 
     // Created once the first area is known, then kept and refitted when selecting other teams.
     const isMapCreated = useRef(false);
-    if (area.geoJson) isMapCreated.current = true;
+    if (area) isMapCreated.current = true;
 
     return (
         <Box sx={styles.container}>
-            {(area.isFetching || members.isFetching) && (
-                <LoadingSpinner absolute fixed={false} />
-            )}
+            {isFetching && <LoadingSpinner absolute fixed={false} />}
             {isMapCreated.current && (
                 <Box sx={styles.map}>
                     <BaseMap
@@ -88,19 +111,24 @@ export const AssignmentsMap: FC = () => {
                         bounds={areaBounds}
                     >
                         <FitBoundsOnChange
-                            bounds={areaBounds}
-                            fitKey={selectedTeam.id}
+                            bounds={fitBounds}
+                            fitKey={fitKey}
+                            maxZoom={
+                                focusedFeature ? FOCUS_MAX_ZOOM : undefined
+                            }
+                            fitInitialKey={Boolean(focusedFeature)}
                         />
                         {/* Always mounted, in this order, so the area border stays above the org units. */}
                         <AssignableOrgUnitsLayer
-                            geoJson={
-                                members.geoJson ?? EMPTY_FEATURE_COLLECTION
-                            }
+                            geoJson={members ?? EMPTY_FEATURE_COLLECTION}
                             colorByOrgUnitId={colorByOrgUnitId}
                             showPoints={showPoints}
+                            dimAssigned={onlyUnassigned}
+                            focusedOrgUnitId={focusedOrgUnitId}
                         />
                         <ScopeAreaLayer
-                            geoJson={area.geoJson ?? EMPTY_FEATURE_COLLECTION}
+                            geoJson={area ?? EMPTY_FEATURE_COLLECTION}
+                            focusedOrgUnitId={focusedOrgUnitId}
                         />
                         <OrgUnitHover
                             layerIds={ASSIGNABLE_ORG_UNITS_HOVER_LAYER_IDS}
@@ -114,8 +142,7 @@ export const AssignmentsMap: FC = () => {
                     <MapHint />
                     <MapLegend
                         offMapCount={countOrgUnitsOffMap(
-                            levelTree,
-                            selectedLevel + 1,
+                            membersPresence,
                             showPoints,
                         )}
                     />

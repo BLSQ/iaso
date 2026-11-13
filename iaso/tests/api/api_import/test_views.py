@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.http import HttpResponse
 from rest_framework import status
@@ -33,32 +33,32 @@ class APIImportViewSetTest(SwaggerTestCaseMixin, APITestCase):
         apiimport = APIImport.objects.create(
             app_id=self.project1.app_id, json_body={}, has_problem=True, user=user, import_type="orgUnit"
         )
-        apiimport.created_at = datetime(2026, 4, 7)
+        apiimport.created_at = datetime(2026, 4, 7, tzinfo=timezone.utc)
         apiimport.save()
         apiimport = APIImport.objects.create(
             app_id=self.project1.app_id, json_body={}, has_problem=False, import_type="instance"
         )
-        apiimport.created_at = datetime(2026, 4, 8)
+        apiimport.created_at = datetime(2026, 4, 8, tzinfo=timezone.utc)
         apiimport.save()
         apiimport = APIImport.objects.create(
             app_id=self.project1.app_id, json_body={}, has_problem=False, import_type="bulk"
         )
-        apiimport.created_at = datetime(2026, 4, 9)
+        apiimport.created_at = datetime(2026, 4, 9, tzinfo=timezone.utc)
         apiimport.save()
         apiimport = APIImport.objects.create(
             app_id=self.project2.app_id, json_body={}, has_problem=False, user=user, import_type="bulk"
         )
-        apiimport.created_at = datetime(2026, 4, 10)
+        apiimport.created_at = datetime(2026, 4, 10, tzinfo=timezone.utc)
         apiimport.save()
         apiimport = APIImport.objects.create(
             app_id=self.project2.app_id, json_body={}, has_problem=False, import_type="orgUnit"
         )
-        apiimport.created_at = datetime(2026, 4, 11)
+        apiimport.created_at = datetime(2026, 4, 11, tzinfo=timezone.utc)
         apiimport.save()
         apiimport = APIImport.objects.create(
             app_id=self.project2.app_id, json_body={}, has_problem=False, import_type="instance"
         )
-        apiimport.created_at = datetime(2026, 4, 12)
+        apiimport.created_at = datetime(2026, 4, 12, tzinfo=timezone.utc)
         apiimport.save()
 
     def test_assertValidSchema(self):

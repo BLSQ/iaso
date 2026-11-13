@@ -16,7 +16,6 @@ import time
 import zipfile
 
 from copy import copy
-from datetime import datetime
 from traceback import format_exc
 
 from django.core.files import File
@@ -62,7 +61,7 @@ def log_progress(task: Task, progress: int, message: str) -> None:
     throttle=Throttle(),
 )
 def process_mobile_bulk_upload(api_import_id, project_id, task=None):
-    start_date = datetime.now()
+    start_date = timezone.now()
     start_time = time.time()
     the_task: Task = task
     the_task.report_progress_and_stop_if_killed(

@@ -1,6 +1,14 @@
 import React, { FC, useCallback } from 'react';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
-import { Box, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import {
+    Box,
+    TableCell,
+    TableRow,
+    Tooltip,
+    Typography,
+    alpha,
+} from '@mui/material';
+import { amber } from '@mui/material/colors';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';
@@ -11,6 +19,10 @@ import { OrgUnitRow } from './types';
 const styles = {
     openable: {
         cursor: 'pointer',
+    },
+    focused: {
+        bgcolor: alpha(amber[600], 0.18),
+        '&.MuiTableRow-hover:hover': { bgcolor: alpha(amber[600], 0.26) },
     },
     name: {
         display: 'flex',
@@ -31,10 +43,12 @@ const styles = {
 
 type Props = {
     row: OrgUnitRow;
+    // Found with "Find an org unit".
+    isFocused: boolean;
     onOpenTeam: (teamId: number) => void;
 };
 
-export const OrgUnitTableRow: FC<Props> = ({ row, onOpenTeam }) => {
+export const OrgUnitTableRow: FC<Props> = ({ row, isFocused, onOpenTeam }) => {
     const { formatMessage } = useSafeIntl();
     const { teamId } = row;
     const handleClick = useCallback(() => {
@@ -44,7 +58,10 @@ export const OrgUnitTableRow: FC<Props> = ({ row, onOpenTeam }) => {
         <TableRow
             hover
             onClick={teamId ? handleClick : undefined}
-            sx={teamId ? styles.openable : undefined}
+            sx={[
+                Boolean(teamId) && styles.openable,
+                isFocused && styles.focused,
+            ]}
         >
             <TableCell>
                 <Box sx={styles.name}>
@@ -56,13 +73,12 @@ export const OrgUnitTableRow: FC<Props> = ({ row, onOpenTeam }) => {
                     )}
                 </Box>
                 <Typography variant="caption" color="text.secondary">
-                    {/*todo : bug here ? org_unit_type_name does not exist */}
-                    {row.org_unit_type_name ?? textPlaceholder}
+                    {row.org_unit_type?.name ?? textPlaceholder}
                 </Typography>
             </TableCell>
             <TableCell>
                 <Typography variant="body2" sx={styles.secondary}>
-                    {row.parentName ?? textPlaceholder}
+                    {row.parentName}
                 </Typography>
             </TableCell>
             <TableCell>

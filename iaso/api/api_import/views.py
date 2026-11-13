@@ -1,9 +1,8 @@
 import csv
 
-from datetime import datetime
-
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
@@ -84,7 +83,7 @@ class APIImportViewSet(viewsets.GenericViewSet, ListModelMixin):
     @extend_schema(responses={200: OpenApiTypes.BINARY})
     @action(detail=False, methods=["get"], renderer_classes=[CSVRenderer])
     def export_to_csv(self, request):
-        filename = "{}--{}".format("api_imports", datetime.now().strftime("%Y-%m-%d"))
+        filename = "{}--{}".format("api_imports", timezone.now().strftime("%Y-%m-%d"))
 
         filtered_request = APIImportFilterSet(request.GET, queryset=self.get_queryset()).qs
 

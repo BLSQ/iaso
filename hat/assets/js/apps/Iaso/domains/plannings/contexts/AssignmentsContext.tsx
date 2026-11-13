@@ -6,10 +6,6 @@ import React, {
     useMemo,
 } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
-import {
-    PlanningLevelTreeNode,
-    useApiMicroplanningPlanningsOrgunitsLevelTreeList,
-} from 'Iaso/api/plannings';
 import { useTeamTree } from 'Iaso/domains/teams/components/teamTree/useTeamTree';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { getTeamChain } from '../components/assignments/utils';
@@ -21,8 +17,6 @@ type AssignmentsContextValue = {
     tree: TeamTreeNode;
     expandedTeamIds: Set<number>;
     toggleTeam: (teamId: number) => void;
-    // Org units of every planning level, each pointing to its closest ancestor in the level above.
-    levelTree: PlanningLevelTreeNode[];
     // From the root team down to the selected team.
     teamChain: TeamTreeNode[];
     selectedTeam: TeamTreeNode;
@@ -62,8 +56,6 @@ export const AssignmentsProvider: FC<Props> = ({
         expandedTeamIds,
         toggleTeam,
     } = useTeamTree(rootTeamId);
-    const { data: levelTree, isLoading: isLoadingLevelTree } =
-        useApiMicroplanningPlanningsOrgunitsLevelTreeList(`${planning.id}`);
 
     // Falls back to the root team when the team of the url is not in the hierarchy.
     const teamChain = useMemo(() => {
@@ -74,21 +66,19 @@ export const AssignmentsProvider: FC<Props> = ({
 
     const value = useMemo(
         () =>
-            tree &&
-            levelTree && {
+            tree && {
                 planning,
                 tree,
                 expandedTeamIds,
                 toggleTeam,
-                levelTree,
                 teamChain,
                 selectedTeam: teamChain[teamChain.length - 1],
                 selectedLevel: teamChain.length - 1,
             },
-        [planning, tree, expandedTeamIds, toggleTeam, levelTree, teamChain],
+        [planning, tree, expandedTeamIds, toggleTeam, teamChain],
     );
 
-    if (isLoadingTree || isLoadingLevelTree) return <LoadingSpinner />;
+    if (isLoadingTree) return <LoadingSpinner />;
     if (!value) return null;
     return (
         <AssignmentsContext.Provider value={value}>

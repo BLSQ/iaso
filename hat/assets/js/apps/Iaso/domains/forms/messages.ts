@@ -94,6 +94,14 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS2 mappings',
     },
+    formAI: {
+        id: 'iaso.formAI.title',
+        defaultMessage: 'Form AI',
+    },
+    openInFormAI: {
+        id: 'iaso.forms.openInFormAI',
+        defaultMessage: 'Open in Form AI',
+    },
     deleteFormTitle: {
         id: 'iaso.forms.dialog.deleteFormTitle',
         defaultMessage: 'Are you sure you want to delete this form?',
@@ -759,6 +767,10 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
     instances_count: {
         id: 'iaso.forms.instances_count',
         defaultMessage: 'Number of submissions',
+    },
+    instancesCountColumnWarning: {
+        id: 'iaso.forms.instancesCountColumnWarning',
+        defaultMessage: 'Including this column can make the API call very slow',
     },
     projectsInfo: {
         id: 'iaso.forms.projectsInfo',

@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Min, Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -19,11 +19,13 @@ from iaso.models.microplanning.plannings import PlanningQuerySet
 
 from ..common.filters import PublishingStatusFilterBackend
 from .serializers.audit import AuditPlanningSerializer
+from .serializers.levels_org_unit_count import LevelOrgUnitCountRequestSerializer, LevelOrgUnitCountResponseSerializer
 from .serializers.misc import PlanningReadSerializer, PlanningWriteSerializer
 from .serializers.org_unit_tree import OrgUnitBuildTreeSerializer, OrgUnitTreeSerializer
 from .serializers.org_unit_tree_geom import OrgUnitBuildTreeWithGeomSerializer, OrgUnitTreeWithGeomSerializer
 from .serializers.planning_config.bulk import NestedPlanningConfigBulkSerializer
 from .serializers.planning_config.list import NestedPlanningConfigListSerializer
+from .utils import PlanningOrgUnitTreeQuerySetBuilder
 
 
 if TYPE_CHECKING:
@@ -86,6 +88,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return PlanningDropdownFilterSet
         if self.action == "org_unit_tree":
             return PlanningOrgUnitTreeFilterSet
+        if self.action == "org_unit_tree_with_geom":
+            return PlanningOrgUnitTreeWithGeomFilterSet
         return None
 
     @property
@@ -100,6 +104,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
             return None
         if self.action == "org_unit_tree_with_geom":
             return None
+        if self.action == "levels_org_unit_count":
+            return None
         return Paginator
 
     @property
@@ -109,7 +115,9 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         return False
 
     @property
-    def filter_backends(self) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol]]:
+    def filter_backends(
+        self,
+    ) -> Sequence[type[filters.BaseFilterBackend] | type[BaseFilterProtocol]]:
         if self.action == "dropdown":
             return [filters.OrderingFilter, DjangoFilterBackend]
         if self.action == "missions":
@@ -119,6 +127,8 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         if self.action in ["org_unit_tree", "org_unit_tree_with_geom"]:
             # only used to document level/max_depth in the schema, the action applies the filterset itself
             return [DjangoFilterBackend]
+        if self.action == "levels_org_unit_count":
+            return []
         return [
             filters.OrderingFilter,
             DjangoFilterBackend,
@@ -154,7 +164,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         user = typing.cast(User, self.request.user)
         qs = self.queryset.filter_for_user(user)
 
-        if self.action not in ["list", "dropdown", "destroy", "retrieve", "configs", "missions"]:
+        if self.action not in ["destroy", "levels_org_unit_count"] and self.request.method != "GET":
             qs = qs.exclude(deprecated=True)
 
         if self.action == "dropdown":
@@ -198,6 +208,24 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
                 pk=self.kwargs["pk"],
             )
             return planning.missions.all()
+
+        if self.action == "levels_org_unit_count":
+            qs = qs.select_related("org_unit").only("id", "org_unit", "org_unit__id", "org_unit__path")
+
+            if not self.request.data:
+                # optimization as if we have a body, we don't need to prefetch those - less queries, database happy
+
+                qs = qs.prefetch_related(
+                    Prefetch(
+                        "configs",
+                        queryset=PlanningConfig.objects.prefetch_related(
+                            "org_unit_types",
+                            "org_unit_groups",
+                        ),
+                    )
+                )
+
+            return qs
 
         if self.action in ["org_unit_tree", "org_unit_tree_with_geom"]:
             qs = (
@@ -290,19 +318,18 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
     @staticmethod
     def _build_org_unit_tree(org_units: OrgUnitQuerySet, serializer: type[serializers.BaseSerializer]) -> list[dict]:
-        # associate each node with its data
-        if not org_units:
+        # Serialized at once: a serializer per org unit rebuilds its fields every time, which is many times slower.
+        serialized = serializer(org_units, many=True).data
+        if not serialized:
             return []
 
-        min_depth = org_units.aggregate(min_depth=Min("path__depth"))["min_depth"]
-
-        nodes = {org_unit.pk: {**serializer(org_unit).data, "children": []} for org_unit in org_units}
+        min_depth = min(item["depth"] for item in serialized)
+        nodes = {item["id"]: {**item, "children": []} for item in serialized}
 
         roots = []
 
-        for org_unit in org_units:
-            node = nodes[org_unit.pk]
-            parent = nodes.get(org_unit.parent_id)
+        for node in nodes.values():
+            parent = nodes.get(node["parent"])
 
             if parent is not None:
                 parent["children"].append(node)
@@ -359,3 +386,65 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
         data = self._build_org_unit_tree(filterset.qs, OrgUnitBuildTreeWithGeomSerializer)
         return Response(data)
+
+    @extend_schema(
+        request=LevelOrgUnitCountRequestSerializer(many=True),
+        responses={200: LevelOrgUnitCountResponseSerializer(many=True)},
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[AuthenticationEnforcedPermission, HasPermission(CORE_PLANNING_READ_PERMISSION)],
+        url_path="levels/org-unit-count",
+    )
+    def levels_org_unit_count(self, request: Request, pk: int | None = None, *args: Any, **kwargs: Any) -> Response:
+        # TODO : once DRF supports QUERY HTTP method, switch to it.
+
+        qs = self.get_queryset()
+        planning = get_object_or_404(qs, pk=pk)
+
+        request_serializer = LevelOrgUnitCountRequestSerializer(
+            data=request.data, many=True, context=self.get_serializer_context()
+        )
+        request_serializer.is_valid(raise_exception=True)
+
+        request_data = request_serializer.validated_data
+
+        # if the data passed is empty , we use the actual configs from the planning
+        # otherwise we pass the data from serializer
+
+        org_units_queryset = OrgUnit.objects.filter_for_user(request.user).filter(
+            validation_status=OrgUnit.VALIDATION_VALID
+        )
+
+        root = planning.org_unit
+        root_level = len(str(root.path).split("."))
+
+        if not request_data:
+            configs = planning.configs.all()
+            processed_levels = {root_level + config.level - 1 for config in configs}
+        else:
+            configs = request_serializer.validated_data
+            processed_levels = {root_level + x["level"] - 1 for x in request_data}
+
+        qs = OrgUnit.objects.none()
+        if processed_levels:
+            qs = (
+                PlanningOrgUnitTreeQuerySetBuilder()
+                .build_queryset(
+                    queryset=org_units_queryset,
+                    root=root,
+                    processed_levels=processed_levels,
+                    configs=configs,
+                    max_depth=(max(processed_levels) + root_level) if processed_levels else 0,
+                )
+                .only("pk", "depth")
+                .values("depth")
+                .annotate(count=Count("pk"))
+                .order_by("depth")
+            )
+
+        response_serializer = LevelOrgUnitCountResponseSerializer(
+            qs, many=True, context={**self.get_serializer_context(), "root_level": root_level}
+        )
+        return Response(response_serializer.data)

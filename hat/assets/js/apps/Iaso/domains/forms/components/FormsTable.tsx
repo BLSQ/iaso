@@ -1,22 +1,15 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Paper } from '@mui/material';
-import {
-    DownloadMenuButton,
-    useDownloadOption,
-} from 'Iaso/components/DownloadMenuButton';
+import { Paper } from '@mui/material';
+import { getOrderArray, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
-import { cleanupParams } from 'Iaso/utils/requests';
-import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
 import { useFormsTableColumns } from '../config';
 import { useColumnsSelectDrawer } from '../hooks/useColumnsSelectDrawer';
-import {
-    DEFAULT_VISIBLE_COLUMNS,
-    tableDefaults,
-    useGetForms,
-} from '../hooks/useGetForms';
+import { tableDefaults, useGetForms } from '../hooks/useGetForms';
+import MESSAGES from '../messages';
 import { FormsParams } from '../types/forms';
+import { FormsTableToolbar } from './FormsTableToolbar';
 
 type Props = {
     baseUrl: string;
@@ -26,21 +19,12 @@ type Props = {
     displayColumnsSelectDrawer?: boolean;
 };
 
-const downloadBaseUrl = '/api/forms';
 const styles = {
     root: {
         marginTop: 2,
-        position: 'relative',
-    },
-    toolbar: {
-        position: 'absolute',
-        top: theme => theme.spacing(1),
-        left: theme => theme.spacing(2),
-        display: 'flex',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
     },
 } satisfies SxStyles;
+
 export const FormsTable: FunctionComponent<Props> = ({
     baseUrl,
     params,
@@ -48,9 +32,9 @@ export const FormsTable: FunctionComponent<Props> = ({
     tableDefaults: tableDefaultsProp,
     displayColumnsSelectDrawer = true,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const apiParams = usePrefixedParams(paramsPrefix, params) as FormsParams;
 
-    const downloadOption = useDownloadOption();
     const { data: forms, isFetching: isLoadingForms } = useGetForms(
         apiParams,
         tableDefaultsProp
@@ -67,70 +51,46 @@ export const FormsTable: FunctionComponent<Props> = ({
         count: forms?.count ?? 0,
     });
 
-    const {
-        options,
-        setOptions,
-        visibleColumns,
-        handleApplyOptions,
-        isDisabled,
-    } = useColumnsSelectDrawer(columns, params, baseUrl);
-    const downloadQueryString = useMemo(() => {
-        // the export isn't paginated: only the filters, the order and the
-        // visible columns are sent
-        const {
-            pageSize: _pageSize,
-            page: _page,
-            accountId: _accountId,
-            isSearchActive: _isSearchActive,
-            showDeleted,
-            onlyDeleted,
-            ...filterParams
-        } = params as FormsParams & Record<string, string | undefined>;
-        return new URLSearchParams(
-            cleanupParams({
-                ...filterParams,
-                order: params.order ?? tableDefaults.order,
-                show_deleted: showDeleted,
-                only_deleted: onlyDeleted,
-                fields: params.fields ?? DEFAULT_VISIBLE_COLUMNS.join(','),
-            }),
-        ).toString();
-    }, [params]);
-    const csvUrl = `${downloadBaseUrl}/?${downloadQueryString}&csv=true`;
-    const xlsxUrl = `${downloadBaseUrl}/?${downloadQueryString}&xlsx=true`;
+    const columnWarnings = useMemo(
+        () => ({
+            instances_count: formatMessage(
+                MESSAGES.instancesCountColumnWarning,
+            ),
+        }),
+        [formatMessage],
+    );
+
+    const { visibleColumns, ...columnsSelect } = useColumnsSelectDrawer(
+        columns,
+        params,
+        baseUrl,
+        columnWarnings,
+    );
     const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
+
     return (
         <Paper sx={styles.root}>
-            <Box sx={styles.toolbar}>
-                {displayColumnsSelectDrawer && (
-                    <ColumnsSelectDrawer
-                        options={options}
-                        setOptions={setOptions}
-                        handleApplyOptions={handleApplyOptions}
-                        minColumns={2}
-                        disabled={isLoadingForms}
-                        isDisabled={isDisabled}
-                        buttonType="icon"
-                    />
-                )}
-                <DownloadMenuButton
-                    buttonType="icon"
-                    options={[
-                        downloadOption('csv', csvUrl),
-                        downloadOption('xlsx', xlsxUrl),
-                    ]}
-                    disabled={isLoadingForms || !forms?.forms?.length}
-                />
-            </Box>
+            <FormsTableToolbar
+                count={forms?.count}
+                isLoading={isLoadingForms}
+                params={params}
+                columnsSelect={columnsSelect}
+                displayColumnsSelectDrawer={displayColumnsSelectDrawer}
+                hasForms={Boolean(forms?.forms?.length)}
+            />
             <TableWithDeepLink
+                marginTop={false}
                 elevation={0}
                 baseUrl={baseUrl}
-                defaultSorted={[{ id: 'name', desc: false }]}
+                defaultSorted={getOrderArray(
+                    tableDefaultsProp?.order ?? tableDefaults.order,
+                )}
                 columns={visibleColumns}
                 params={params}
                 paramsPrefix={paramsPrefix}
                 data={forms?.forms ?? []}
                 count={forms?.count}
+                showCount={false}
                 pages={forms?.pages ?? 0}
                 extraProps={{
                     loading: isLoadingForms,

@@ -4,7 +4,7 @@ import os
 import tempfile
 
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 from time import gmtime, strftime
 from typing import Union
 
@@ -804,7 +804,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
-                return datetime.strptime(date, date_input_format).date()
+                return datetime.strptime(date, date_input_format).replace(tzinfo=timezone.utc).date()
             except (ValueError, TypeError):
                 pass
         return None
@@ -868,10 +868,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         closed_date = request.data.get("closed_date", None)
 
         if opening_date:
-            org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").date()
+            org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
 
         if closed_date:
-            org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").date()
+            org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").replace(tzinfo=timezone.utc).date()
             if org_unit.opening_date > org_unit.closed_date:
                 errors.append(
                     {"errorKey": "closed_date", "errorMessage": _("Opening date must be anterior to closed date")}

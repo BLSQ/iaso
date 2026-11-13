@@ -1,4 +1,3 @@
-import json
 import logging
 import ntpath
 import os
@@ -7,7 +6,7 @@ import tempfile
 from collections import defaultdict
 from copy import copy
 from time import gmtime, strftime
-from typing import Annotated, Any, Optional, Union
+from typing import Annotated, Any, Optional
 
 import pandas as pd
 
@@ -15,7 +14,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Case, Count, Exists, F, OuterRef, Prefetch, Q, QuerySet, TextField, Value, When
+from django.db.models import Case, Count, Exists, F, OuterRef, Q, QuerySet, TextField, Value, When
 from django.db.models.functions import Cast, Concat, JSONObject, Replace
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
@@ -28,9 +27,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from typing_extensions import TypedDict
 
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
-from hat.common.utils import queryset_iterator
 from iaso.api import common
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
@@ -335,6 +333,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 sub_columns.append(label)
                 columns.append({"title": title, "width": 50})
         else:
+            first_instance = queryset.first()
+            if first_instance is None:
+                raise serializers.ValidationError(
+                    {"error": "The form has no version and no submission matches the filters: no columns to export"}
+                )
             file_content_template = filter_submission_json(
                 queryset.first().as_dict()["file_content"],  # type: ignore
                 form,
@@ -347,133 +350,8 @@ class InstancesViewSet(viewsets.ViewSet):
         return columns, sub_columns, file_content_template
 
     def list_file_export(self, filters: dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
-        """WIP: Helper function to divide the huge list method"""
-        filename = "instances"
-
-        form = get_form_from_instance_filters(filters)
-
-        if form:
-            filename = f"{filename}-{form.id}"
-        else:
-            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
-
-        columns, sub_columns, file_content_template = self._file_export_columns(form, queryset, self.request.user)
-        allowed_fields = get_allowed_fields(form, self.request.user)
-
-        filename = "{}-{}".format(filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
-
-        def get_row(instance, **kwargs):
-            created_at_timestamp = instance.source_created_at_with_fallback.timestamp()
-            updated_at_timestamp = instance.source_updated_at_with_fallback.timestamp()
-            org_unit = instance.org_unit
-            file_content = instance.get_and_save_json_of_xml()
-            if allowed_fields is not None and file_content:
-                file_content = filter_pii(file_content, allowed_fields)
-
-            instance_values = [
-                instance.id,
-                str(instance.id in self.reference_instances),
-                file_content.get("_version") if file_content else None,
-                instance.export_id,
-                instance.location.y if instance.location else None,
-                instance.location.x if instance.location else None,
-                instance.location.z if instance.location else None,
-                instance.accuracy,
-                instance.period,
-                timestamp_to_datetime(created_at_timestamp),
-                timestamp_to_datetime(instance.created_at.timestamp()),
-                timestamp_to_datetime(updated_at_timestamp),
-                get_creator_name(instance.created_by) if instance.created_by else None,
-                instance.created_by_id,
-                instance.status,
-                # Special format for UUID to stay consistent with other UUIDs coming from file_content_template
-                f"uuid:{instance.entity.uuid}" if instance.entity else None,
-                instance.entity_id,
-                instance.org_unit.name,
-                instance.org_unit.id,
-                instance.org_unit.source_ref,
-                instance.org_unit.code,
-                instance.org_unit.validation_status,
-                instance.form.validation_workflow.name if instance.form and instance.form.validation_workflow else None,
-                instance.general_validation_status,
-            ]
-
-            parent = org_unit.parent
-            for i in range(4):
-                if parent:
-                    instance_values.append(parent.name)
-                    parent = parent.parent
-                else:
-                    instance_values.append("")
-            if instance.form.correlatable:
-                instance_values.append(instance.correlation_id)
-
-            for k in file_content_template:
-                v = file_content.get(k, None)
-                if type(v) is list:
-                    instance_values.append(json.dumps(v))
-                else:
-                    instance_values.append(v)
-            return instance_values
-
-        response: Union[HttpResponse, StreamingHttpResponse]
-
-        queryset = queryset.prefetch_related("created_by", "entity", "form_version__form")
-        queryset = queryset.prefetch_related(
-            Prefetch("org_unit", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"))
-        )
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                "org_unit__parent",
-                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
-            )
-        )
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                "org_unit__parent__parent",
-                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
-            )
-        )
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                "org_unit__parent__parent__parent",
-                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
-            )
-        )
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                "org_unit__parent__parent__parent__parent",
-                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
-            )
-        )
-
-        self.reference_instances = set(
-            OrgUnit.objects.filter(reference_instances__form=form).values_list("reference_instances__id", flat=True)
-        )
-
-        if file_format == FileFormatEnum.XLSX:
-            filename = filename + ".xlsx"
-            response = HttpResponse(
-                generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns),
-                content_type=CONTENT_TYPE_XLSX,
-            )
-        elif file_format == FileFormatEnum.CSV:
-            filename = filename + ".csv"
-            response = StreamingHttpResponse(
-                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
-            )
-        else:
-            raise ValueError(f"Unknown file format requested: {file_format}")
-
-        response["Content-Disposition"] = f"attachment; filename={filename}"
-        return response
-
-    def list_file_export_duckdb(
-        self, filters: dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum
-    ):
-        """Same content as list_file_export, but the rows are computed by postgres and written by duckdb"""
-        # TODO once the legacy csv/xlsx exports (list_file_export, engine=legacy) are removed: also handle the
-        #  parquet export (anwser_with_parquet_file) here, all the duckdb exports in one place
+        """csv/xlsx export: the rows are computed by postgres and written by duckdb"""
+        # TODO also handle the parquet export (anwser_with_parquet_file) here, all the duckdb exports in one place
         form = get_form_from_instance_filters(filters)
         if not form:
             return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
@@ -568,7 +446,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # given at all (requested_fields_set is None) -- which is the case for every real
         # csv/xlsx/parquet/asSmallDict request today, since none of those pass `fields=`. So this
         # gating alone preserves full eager-loading for those branches with no special-casing:
-        # neither get_row() (csv/xlsx, below), build_submissions_queryset() (parquet), nor
+        # neither build_submissions_tabular_queryset() (csv/xlsx), build_submissions_queryset() (parquet), nor
         # as_small_dict() ever read org_unit_type/project in the first place -- verified by running
         # the full csv/xlsx/parquet test suites with this exact gating (identical results, no
         # special-case needed for those formats).
@@ -673,10 +551,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 }
             )
 
-        # This is a CSV/XLSX file export, done by duckdb unless the legacy (python, much slower) one is requested
-        if request.GET.get("engine") == "legacy":
-            return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
-        return self.list_file_export_duckdb(filters=filters, queryset=queryset, file_format=file_format_export)
+        return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 
     def anwser_with_parquet_file(self, request, filters, queryset):
         # validate no unsupported/extra params is passed

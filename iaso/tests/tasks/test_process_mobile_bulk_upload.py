@@ -106,7 +106,7 @@ def create_entity_with_registration(
         account=m.Account.objects.first(),
     )
     if deleted:
-        entity.deleted_at = datetime.datetime.now(pytz.UTC)
+        entity.deleted_at = timezone.now()
 
     with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_instance_file:
         instance = m.Instance.objects.create(
@@ -515,7 +515,7 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         serie_id = "ad893d6d-355f-4ffe-a575-cea6bbe5914f"
         self.assertEqual(m.Device.objects.count(), 1)
-        device = m.Device.objects.get(imei=serie_id)
+        device = m.Device.objects.get(installation_id=serie_id)
 
         for instance_uuid in (DISASI_MAKULO_CATT, PATRICE_AKAMBU_CATT):
             catt_instance = m.Instance.objects.get(uuid=instance_uuid)

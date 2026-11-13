@@ -1,7 +1,7 @@
 import json
 import random
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fake import fake_person
 
@@ -113,7 +113,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     )["orgunits"][0]
 
     team = teams[0]
-    current_date = datetime.now()
+    current_date = datetime.now(timezone.utc)
 
     health_facitities = iaso_client.get(
         "/api/orgunits/",

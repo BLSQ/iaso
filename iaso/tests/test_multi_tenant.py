@@ -203,8 +203,8 @@ class MultiTenantTestCase(APITestCase):
         content = json.loads(response.content)
 
         # uploading the xml file should have associated the device id with the project
-        self.assertEqual(len(content["devices"]), 1)
-        self.assertEqual(content["devices"][0]["imei"], "358544083104930")
+        self.assertEqual(len(content["results"]), 1)
+        self.assertEqual(content["results"][0]["installation_id"], "358544083104930")
 
         response = raccoon_client.get("/api/devices/", accept="application/json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -212,7 +212,7 @@ class MultiTenantTestCase(APITestCase):
         content = json.loads(response.content)
 
         # uploading the xml file should have associated the device id with the project
-        self.assertEqual(len(content["devices"]), 0)
+        self.assertEqual(len(content["results"]), 0)
 
         # taking the opportunity to test if the filter on hasInstances is working in the search
         response = yoda_client.get(

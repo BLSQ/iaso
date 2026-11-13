@@ -18,6 +18,7 @@ import {
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionDetail } from 'Iaso/domains/missions/details';
 import MESSAGES from 'Iaso/domains/missions/messages';
+import { formatMaxCardinality } from 'Iaso/domains/missions/utils';
 import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,
@@ -232,14 +233,10 @@ describe('Mission detail integration test', () => {
         expect(screen.getByText('Org unit + Form')).toBeInTheDocument();
         expect(screen.getByText(data.org_unit_type.name)).toBeInTheDocument();
         expect(
-            screen.getByText(data.min_cardinality.toLocaleString()),
+            screen.getByText(
+                `min ${data.min_cardinality.toLocaleString()} · max ${formatMaxCardinality(data.max_cardinality)}`,
+            ),
         ).toBeInTheDocument();
-        if (data?.max_cardinality) {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(
-                screen.getByText(data.max_cardinality.toLocaleString()),
-            ).toBeInTheDocument();
-        }
 
         data?.forms?.forEach(
             ({ form_name, min_cardinality, max_cardinality }) => {
@@ -292,14 +289,10 @@ describe('Mission detail integration test', () => {
         expect(screen.getByText('Entity + Form')).toBeInTheDocument();
         expect(screen.getByText(data.entity_type.name)).toBeInTheDocument();
         expect(
-            screen.getByText(data.min_cardinality.toLocaleString()),
+            screen.getByText(
+                `min ${data.min_cardinality.toLocaleString()} · max ${formatMaxCardinality(data.max_cardinality)}`,
+            ),
         ).toBeInTheDocument();
-        if (data?.max_cardinality) {
-            // eslint-disable-next-line vitest/no-conditional-expect
-            expect(
-                screen.getByText(data.max_cardinality.toLocaleString()),
-            ).toBeInTheDocument();
-        }
 
         data?.forms?.forEach(
             ({ form_name, min_cardinality, max_cardinality }) => {

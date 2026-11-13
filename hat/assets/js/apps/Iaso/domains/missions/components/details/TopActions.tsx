@@ -1,4 +1,5 @@
 import React from 'react';
+import EditIcon from '@mui/icons-material/Edit';
 import { Box, useTheme, useMediaQuery } from '@mui/material';
 import { LinkButton, useRedirectTo } from 'bluesquare-components';
 import { useSafeIntl } from 'bluesquare-components';
@@ -63,10 +64,11 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
                 <Box sx={{ ml: 2, display: 'inline-block' }}>
                     <LinkButton
                         to={`/${baseUrls.missionsEdit}/id/${missionId}/`}
-                        variant="outlined"
+                        variant="contained"
                         color="primary"
                         size={isMobile ? 'small' : 'medium'}
                     >
+                        <EditIcon fontSize="small" sx={{ mr: 1 }} />
                         {formatMessage(MESSAGES.edit)}
                     </LinkButton>
                 </Box>

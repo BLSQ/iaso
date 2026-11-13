@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import React, {
+    FC,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import {
     Box,
     Table,
@@ -9,7 +16,7 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import { Pagination, useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
@@ -17,6 +24,7 @@ import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
 import { useAssignments } from './useAssignments';
+import { useLevelOrgUnits } from './useLevelOrgUnits';
 import {
     getAssigneeByOrgUnitId,
     getLevelOrgUnitRows,
@@ -25,6 +33,7 @@ import {
 
 const styles = {
     container: {
+        position: 'relative',
         flex: 1,
         minHeight: 0,
         display: 'flex',
@@ -58,15 +67,18 @@ const DEFAULT_ROWS_PER_PAGE = 20;
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { planning, tree, levelTree, selectedTeam, selectedLevel } =
+    const { planning, tree, selectedTeam, selectedLevel } =
         useAssignmentsContext();
-    const { openTeam } = useAssignmentsParams();
+    const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
+    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const focusedOrgUnitId = focusOrgUnitId
+        ? Number(focusOrgUnitId)
+        : undefined;
     const { data: assignments } = useAssignments(`${planning.id}`);
-    const rows = useMemo(
+    const levelRows = useMemo(
         () =>
             getLevelOrgUnitRows({
-                levelTree,
-                level: selectedLevel + 1,
+                parents: parents ?? [],
                 assigneeByOrgUnitId: getAssigneeByOrgUnitId(
                     tree,
                     assignments ?? [],
@@ -74,11 +86,27 @@ export const OrgUnitsTable: FC = () => {
                 teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
                 showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
             }),
-        [levelTree, selectedLevel, selectedTeam.type, tree, assignments],
+        [parents, selectedTeam.type, tree, assignments],
+    );
+    const rows = useMemo(
+        () =>
+            onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
+        [levelRows, onlyUnassigned],
     );
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
+    useEffect(() => setPage(0), [onlyUnassigned]);
+    // Once per found org unit, when its rows are there: paging stays free afterwards.
+    const shownFocusId = useRef<number>();
+    useEffect(() => {
+        if (!focusedOrgUnitId || shownFocusId.current === focusedOrgUnitId)
+            return;
+        const index = rows.findIndex(row => row.id === focusedOrgUnitId);
+        if (index === -1) return;
+        shownFocusId.current = focusedOrgUnitId;
+        setPage(Math.floor(index / rowsPerPage));
+    }, [focusedOrgUnitId, rows, rowsPerPage]);
     // Selecting a team on another level can leave fewer pages than the current one.
     const lastPage = Math.max(0, Math.ceil(rows.length / rowsPerPage) - 1);
     const currentPage = Math.min(page, lastPage);
@@ -101,6 +129,7 @@ export const OrgUnitsTable: FC = () => {
 
     return (
         <Box sx={styles.container}>
+            {isFetching && <LoadingSpinner absolute fixed={false} />}
             <TableContainer sx={styles.tableContainer}>
                 <Table stickyHeader sx={styles.table}>
                     <TableHead>
@@ -139,10 +168,11 @@ export const OrgUnitsTable: FC = () => {
                             <OrgUnitTableRow
                                 key={row.id}
                                 row={row}
+                                isFocused={row.id === focusedOrgUnitId}
                                 onOpenTeam={openTeam}
                             />
                         ))}
-                        {rows.length === 0 && (
+                        {rows.length === 0 && !isFetching && (
                             <TableRow>
                                 <TableCell colSpan={4}>
                                     <Typography
@@ -150,7 +180,9 @@ export const OrgUnitsTable: FC = () => {
                                         color="text.secondary"
                                     >
                                         {formatMessage(
-                                            MESSAGES.noOrgUnitsToAssign,
+                                            levelRows.length
+                                                ? MESSAGES.allOrgUnitsAssigned
+                                                : MESSAGES.noOrgUnitsToAssign,
                                         )}
                                     </Typography>
                                 </TableCell>

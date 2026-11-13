@@ -7,6 +7,7 @@ from decimal import Decimal
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.utils import timezone
 from rest_framework import status
 
 from hat.audit import models as audit_models
@@ -846,7 +847,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.get("Content-Disposition"),
-            "attachment; filename=review-change-proposals--" + datetime.datetime.now().strftime("%Y-%m-%d") + ".csv",
+            "attachment; filename=review-change-proposals--" + timezone.now().strftime("%Y-%m-%d") + ".csv",
         )
 
         response_csv = response.getvalue().decode("utf-8")

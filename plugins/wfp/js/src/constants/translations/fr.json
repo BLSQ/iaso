@@ -49,6 +49,9 @@
     "iaso.wfp.beneficiaries.seeEntity": "L'entité dans IASO",
     "iaso.wfp.beneficiaries.syncedDate": "synchronisée : {date}",
     "iaso.wfp.beneficiaries.updatedDate": "mise à jour : {date}",
+    "iaso.wfp.beneficiaries.visitDateFrom": "Visité depuis",
+    "iaso.wfp.beneficiaries.visitDateTo": "Visité jusqu'au",
+    "iaso.wfp.beneficiaries.visitDateTooltip": "Seulement les bénéficiaires visités dans cette période pour un parcours en cours (pas encore terminé)",
     "iaso.wfp.beneficiaries.visits": "Visites",
     "iaso.wfp.beneficiaries.whz": "P/T"
 }

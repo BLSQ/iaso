@@ -9,6 +9,7 @@ from django.db.models import F
 
 ORDERS = {
     "entity_id": "entity_id",
+    "progress_id": "progress_id",
     "birth_date": "birth_date",
     "gender": "gender",
     "journeys_count": "journeys_count",

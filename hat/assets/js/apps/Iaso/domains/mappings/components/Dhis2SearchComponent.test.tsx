@@ -24,6 +24,7 @@ vi.mock('Iaso/utils/usersUtils', () => ({
 
 const DATA_SOURCE_ID = 42;
 const DATA_ELEMENTS_URL = `*/api/datasources/${DATA_SOURCE_ID}/dataElements.json`;
+const OTHER_SOURCE_ID = 43;
 const DATA_SOURCE_NAME = 'Belgium DHIS2';
 const SOURCES_LIST_HREF = '/settings/sources/list/name/Belgium%20DHIS2';
 
@@ -39,7 +40,7 @@ const server = setupServer(
     ),
 );
 
-const respondWith = (response: () => Response) =>
+const respondWith = (response: () => Response | Promise<Response>) =>
     server.use(http.get(DATA_ELEMENTS_URL, response));
 
 const searchOn = (dataSourceId: number) => (
@@ -53,6 +54,33 @@ const searchOn = (dataSourceId: number) => (
         />
     </MemoryRouter>
 );
+
+// DHIS2 answers "unavailable" only once the test calls the returned function
+const respondUnavailableLater = () => {
+    let answer: () => void = () => {};
+    const answered = new Promise<void>(resolve => {
+        answer = resolve;
+    });
+    let requested = false;
+    respondWith(async () => {
+        requested = true;
+        await answered;
+        return HttpResponse.json(
+            { error: 'DHIS2 is not available', code: 'dhis2_unavailable' },
+            { status: 409 },
+        );
+    });
+    return {
+        waitForRequest: () => waitFor(() => expect(requested).toBe(true)),
+        answer: () => answer(),
+    };
+};
+
+const answerLate = async (answer: () => void) => {
+    answer();
+    // let the late response go through fetch and the component's handlers
+    await new Promise(resolve => setTimeout(resolve, 100));
+};
 
 const renderSearch = () =>
     renderWithThemeAndIntlProvider(searchOn(DATA_SOURCE_ID));
@@ -196,8 +224,37 @@ describe('Dhis2Search', () => {
         );
     });
 
+    it('ignores a late answer of the previous data source', async () => {
+        const dhis2 = respondUnavailableLater();
+        const { rerender } = renderSearch();
+        typeInSearch('malaria');
+        await dhis2.waitForRequest();
+
+        rerender(searchOn(OTHER_SOURCE_ID));
+
+        await answerLate(dhis2.answer);
+
+        expect(
+            screen.queryByText(MESSAGES.dhis2Unavailable.defaultMessage),
+        ).not.toBeInTheDocument();
+    });
+
+    it('ignores a late answer to a search that was emptied', async () => {
+        const dhis2 = respondUnavailableLater();
+        renderSearch();
+        typeInSearch('malaria');
+        await dhis2.waitForRequest();
+
+        typeInSearch('');
+
+        await answerLate(dhis2.answer);
+
+        expect(
+            screen.queryByText(MESSAGES.dhis2Unavailable.defaultMessage),
+        ).not.toBeInTheDocument();
+    });
+
     it('searches the new data source and forgets the previous error when the data source changes', async () => {
-        const OTHER_SOURCE_ID = 43;
         respondWith(() =>
             HttpResponse.json(
                 { error: 'DHIS2 is not available', code: 'dhis2_unavailable' },

@@ -85,13 +85,20 @@ const Dhis2Search = props => {
         mapOptions,
     };
 
+    // a response is applied only if no search, clear, data source change or
+    // unmount happened since its request was sent
+    const lastRequestId = React.useRef(0);
+
     const fetchMemo = React.useMemo(
         () =>
             throttle(input => {
                 const current = latestProps.current;
+                lastRequestId.current += 1;
+                const requestId = lastRequestId.current;
+                const isStale = () => requestId !== lastRequestId.current;
                 current
                     .fetchData(
-                        input.input,
+                        input,
                         current.filter,
                         current.pageSize,
                         current.resourceName,
@@ -99,14 +106,16 @@ const Dhis2Search = props => {
                         current.fields,
                     )
                     .then(f => {
+                        if (isStale()) return;
                         const union = f.flatMap(r => r[current.resourceName]);
                         const finalOptions = current.mapOptions
-                            ? current.mapOptions(union, input.input)
+                            ? current.mapOptions(union, input)
                             : union;
                         setErrorCode(undefined);
                         setOptions(finalOptions);
                     })
                     .catch(error => {
+                        if (isStale()) return;
                         setOptions([]);
                         setErrorCode(
                             error instanceof Dhis2SearchError
@@ -117,32 +126,30 @@ const Dhis2Search = props => {
             }, 200),
         [],
     );
+    const cancelPendingSearch = React.useCallback(() => {
+        fetchMemo.cancel();
+        lastRequestId.current += 1;
+    }, [fetchMemo]);
+    React.useEffect(() => cancelPendingSearch, [cancelPendingSearch]);
+
     React.useEffect(() => {
+        cancelPendingSearch();
         setErrorCode(undefined);
         setOptions([]);
-    }, [dataSourceId]);
+    }, [dataSourceId, cancelPendingSearch]);
     React.useEffect(() => {
         setInputValue(defaultValue);
     }, [setInputValue, defaultValue]);
 
     React.useEffect(() => {
-        let active = true;
         if (inputValue === '') {
+            cancelPendingSearch();
             setErrorCode(undefined);
             setOptions([]);
-            return undefined;
+            return;
         }
-
-        fetchMemo({ input: inputValue }, results => {
-            if (active) {
-                setOptions(results || []);
-            }
-        });
-
-        return () => {
-            active = false;
-        };
-    }, [inputValue, fetchMemo]);
+        fetchMemo(inputValue);
+    }, [inputValue, fetchMemo, cancelPendingSearch]);
 
     const onSearchChange = (evt, value) => {
         onChange(name, value, resourceName);

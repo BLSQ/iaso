@@ -8,6 +8,7 @@ import Descriptor from '../descriptor';
 import { getMappingLabel } from '../importMappings';
 import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
+import { MappingVersionRow, QuestionMapping } from '../types';
 import { buildQuestionMapping, isOrgUnitTarget } from '../utils';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { fetchDhis2Resource } from './Dhis2SearchError';
@@ -40,20 +41,43 @@ const styles: SxStyles = {
     },
 };
 
-const Dhis2ProgramTrackedEntityAttributeSearch = ({
-    questionMapping,
-    mapping,
-    onChange,
-    question,
-    programId,
-}) => {
+type Props = {
+    mapping: MappingVersionRow;
+    question: Record<string, any>;
+    mappingVersion: MappingVersionRow;
+    indexedQuestions: Record<string, any>;
+    onConfirmedQuestionMapping: (
+        questionMapping: QuestionMapping,
+        options?: { onSuccess?: () => void },
+    ) => void;
+    // parent ignores the arg; kept optional so existing call sites type-check
+    onUnmapQuestionMapping: (questionMapping?: QuestionMapping) => void;
+    onNeverMapQuestionMapping: (questionMapping?: QuestionMapping) => void;
+    fieldOptions?: any[];
+    fieldTypeOptions?: any[];
+};
+
+type Dhis2ProgramSearchProps = {
+    questionMapping: QuestionMapping;
+    mapping: MappingVersionRow;
+    onChange: (name: string, value: any) => void;
+    question: Record<string, any>;
+    programId: string;
+};
+
+const Dhis2ProgramTrackedEntityAttributeSearch: FunctionComponent<
+    Dhis2ProgramSearchProps
+> = ({ questionMapping, mapping, onChange, question, programId }) => {
     const { formatMessage } = useSafeIntl();
-    const mapToTrackedEntityTypeAttributes = (options, input) => {
+    const mapToTrackedEntityTypeAttributes = (
+        options: any[],
+        input?: string,
+    ) => {
         const token = input ? input.toLowerCase() : '';
-        const results = [];
-        options.forEach(program => {
+        const results: any[] = [];
+        options.forEach((program: any) => {
             program.programTrackedEntityAttributes.forEach(
-                trackedEntityTypeAttributeRaw => {
+                (trackedEntityTypeAttributeRaw: any) => {
                     const trackeEntityAttribute =
                         trackedEntityTypeAttributeRaw.trackedEntityAttribute;
                     if (
@@ -87,12 +111,12 @@ const Dhis2ProgramTrackedEntityAttributeSearch = ({
             fields="programTrackedEntityAttributes[name,code,trackedEntityAttribute[id,generated,name,code,valueType,optionSet[id,name,code,options[id,code,name]]]]"
             mapOptions={mapToTrackedEntityTypeAttributes}
             fetchFromPromise={(
-                input,
-                filter,
-                pageSize,
-                resourceName,
-                dataSourceId,
-                fields,
+                _input: any,
+                _filter: any,
+                _pageSize: any,
+                _resourceName: any,
+                dataSourceId: any,
+                fields: any,
             ) =>
                 Promise.all([
                     fetchDhis2Resource(
@@ -104,21 +128,17 @@ const Dhis2ProgramTrackedEntityAttributeSearch = ({
     );
 };
 
-const Dhis2ProgramDataElementSearch = ({
-    questionMapping,
-    mapping,
-    onChange,
-    question,
-    programId,
-}) => {
+const Dhis2ProgramDataElementSearch: FunctionComponent<
+    Dhis2ProgramSearchProps
+> = ({ questionMapping, mapping, onChange, question, programId }) => {
     const { formatMessage } = useSafeIntl();
-    const mapToMappingProgramElements = (options, input) => {
+    const mapToMappingProgramElements = (options: any[], input?: string) => {
         const token = input ? input.toLowerCase() : '';
-        const results = [];
-        options.forEach(program => {
-            program.programStages.forEach(programStage => {
+        const results: any[] = [];
+        options.forEach((program: any) => {
+            program.programStages.forEach((programStage: any) => {
                 programStage.programStageDataElements.forEach(
-                    programStageElement => {
+                    (programStageElement: any) => {
                         const { dataElement } = programStageElement;
                         if (
                             dataElement.name.toLowerCase().includes(token) ||
@@ -126,7 +146,7 @@ const Dhis2ProgramDataElementSearch = ({
                                 dataElement.code.toLowerCase().includes(token))
                         ) {
                             dataElement.categoryCombo.categoryOptionCombos.forEach(
-                                coc => {
+                                (coc: any) => {
                                     if (
                                         mapping.mapping.mapping_type ===
                                         'EVENT_TRACKER'
@@ -176,12 +196,12 @@ const Dhis2ProgramDataElementSearch = ({
             fields="id,name,programStages[id,name,programStageDataElements[compulsory,code,dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
             mapOptions={mapToMappingProgramElements}
             fetchFromPromise={(
-                input,
-                filter,
-                pageSize,
-                resourceName,
-                dataSourceId,
-                fields,
+                _input: any,
+                _filter: any,
+                _pageSize: any,
+                _resourceName: any,
+                dataSourceId: any,
+                fields: any,
             ) =>
                 Promise.all([
                     fetchDhis2Resource(
@@ -191,20 +211,6 @@ const Dhis2ProgramDataElementSearch = ({
             }
         />
     );
-};
-type Props = {
-    mapping: Record<string, any>;
-    question: Record<string, any>;
-    mappingVersion: Record<string, any>;
-    indexedQuestions: Record<string, any>;
-    onConfirmedQuestionMapping: (
-        questionMapping: Record<string, any>,
-        options?: { onSuccess?: () => void },
-    ) => void;
-    onUnmapQuestionMapping: () => void;
-    onNeverMapQuestionMapping: () => void;
-    fieldOptions?: any[];
-    fieldTypeOptions?: any[];
 };
 
 const QuestionMappingForm: FunctionComponent<Props> = ({
@@ -218,9 +224,11 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
     fieldOptions = [], // should be ordered so state is initalized with 1st element
     fieldTypeOptions = [], // should be ordered so state is initalized with 1st element
 }) => {
-    const questionMapping =
+    const questionMapping: QuestionMapping =
         mapping.question_mappings[Descriptor.getKey(question)] || {};
-    const [newQuestionMapping, setNewQuestionMapping] = React.useState();
+    const [newQuestionMapping, setNewQuestionMapping] = React.useState<
+        Record<string, any> | undefined
+    >();
     // the Select takes and returns the option value, not the option
     const [iasoField, setIasoField] = React.useState(fieldOptions[0]?.value);
     const [fieldType, setFieldType] = React.useState(
@@ -236,7 +244,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
         indexedQuestions,
     );
 
-    const onChange = (name, value) => {
+    const onChange = (_name: string, value: any) => {
         const val = value;
         if (withinRepeatGroup) {
             val.parent = withinRepeatGroup;
@@ -244,32 +252,34 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
         setNewQuestionMapping(val);
     };
 
-    const mapToMapping = options => {
-        const results = [];
+    const mapToMapping = (options: any[]) => {
+        const results: any[] = [];
 
         options
-            .filter(de =>
+            .filter((de: any) =>
                 mappingVersion.mapping.mapping_type === 'AGGREGATE'
                     ? de.domainType !== 'TRACKER'
                     : de.domainType !== 'AGGREGATE',
             )
-            .forEach(dataElement => {
-                dataElement.categoryCombo.categoryOptionCombos.forEach(coc => {
-                    results.push({
-                        id: dataElement.id,
-                        name: dataElement.name,
-                        displayName:
-                            dataElement.categoryCombo.name === 'default'
-                                ? dataElement.name
-                                : `${dataElement.name} - ${coc.name}`,
-                        valueType: dataElement.valueType,
-                        domainType: dataElement.domainType,
-                        categoryOptionCombo: coc.id,
-                        categoryOptionComboName: coc.name,
-                        optionSet: dataElement.optionSet,
-                        dataSetElements: dataElement.dataSetElements,
-                    });
-                });
+            .forEach((dataElement: any) => {
+                dataElement.categoryCombo.categoryOptionCombos.forEach(
+                    (coc: any) => {
+                        results.push({
+                            id: dataElement.id,
+                            name: dataElement.name,
+                            displayName:
+                                dataElement.categoryCombo.name === 'default'
+                                    ? dataElement.name
+                                    : `${dataElement.name} - ${coc.name}`,
+                            valueType: dataElement.valueType,
+                            domainType: dataElement.domainType,
+                            categoryOptionCombo: coc.id,
+                            categoryOptionComboName: coc.name,
+                            optionSet: dataElement.optionSet,
+                            dataSetElements: dataElement.dataSetElements,
+                        });
+                    },
+                );
             });
         return results;
     };

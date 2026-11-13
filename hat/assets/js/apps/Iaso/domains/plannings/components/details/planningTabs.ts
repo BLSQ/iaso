@@ -1,13 +1,11 @@
 import { useCallback } from 'react';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import TuneIcon from '@mui/icons-material/Tune';
-import {
-    IntlMessage,
-    useRedirectToReplace,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IntlMessage, useRedirectToReplace } from 'bluesquare-components';
+
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { FormatMessage } from 'Iaso/types/general';
 import { PlanningFormik } from '../../hooks/usePlanningForm';
 import MESSAGES from '../../messages';
 
@@ -60,8 +58,6 @@ export const useSelectPlanningTab = (): ((tab: TabKey) => void) => {
         [redirectToReplace, params],
     );
 };
-
-type FormatMessage = ReturnType<typeof useSafeIntl>['formatMessage'];
 
 export const getFieldsToFix = (
     { fields }: PlanningTab,

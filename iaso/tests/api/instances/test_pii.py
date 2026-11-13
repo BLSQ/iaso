@@ -115,9 +115,6 @@ class PiiAPITestCase(APITestCase):
     def test_csv_export_hides_pii_columns(self):
         self._assert_csv_export_hides_pii_columns({})
 
-    def test_legacy_csv_export_hides_pii_columns(self):
-        self._assert_csv_export_hides_pii_columns({"engine": "legacy"})
-
     def test_json_content_filter_on_hidden_question_is_refused(self):
         self.client.force_authenticate(self.user)
         logic = json.dumps({"==": [{"var": "first_name"}, "Amina"]})

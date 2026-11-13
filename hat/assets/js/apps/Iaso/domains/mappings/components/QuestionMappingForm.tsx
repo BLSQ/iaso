@@ -276,7 +276,7 @@ const QuestionMappingForm: FunctionComponent<Props> = ({
     const repeatGroupMapping = mapping.question_mappings[withinRepeatGroup];
 
     const programId = repeatGroupMapping
-        ? repeatGroupMapping[0].program_id
+        ? repeatGroupMapping?.[0].program_id
         : mapping.derivate_settings.program_id;
 
     if (question.type === 'repeat') {

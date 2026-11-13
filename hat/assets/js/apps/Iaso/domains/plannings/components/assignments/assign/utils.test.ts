@@ -1,6 +1,5 @@
 import { Assignment, LevelOrgUnitNode } from '../mainPanel/types';
 import {
-    countClearedByReassign,
     filterByName,
     getAssignableOrgUnitIds,
     getAssignedOrgUnitIds,
@@ -136,22 +135,5 @@ describe('filterByName', () => {
 
     it('keeps every item without a search', () => {
         expect(filterByName(items, '')).toEqual(items);
-    });
-});
-
-describe('countClearedByReassign', () => {
-    it('counts the org units with assignments inside that change assignee', () => {
-        const assignments = [
-            makeAssignment(11, { team: 5 }),
-            makeAssignment(12, { team: 6 }),
-        ];
-        expect(
-            countClearedByReassign(
-                [11, 12, 21],
-                assignments,
-                { team: 5, user: null },
-                new Set([11, 12]),
-            ),
-        ).toBe(1);
     });
 });

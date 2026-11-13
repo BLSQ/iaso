@@ -211,7 +211,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     annotation_name = f"assignment_username_{'desc' if is_desc else 'asc'}"
 
                     subquery = Subquery(
-                        Assignment.objects.filter(org_unit=OuterRef("pk"), deleted_at__isnull=True)
+                        Assignment.objects.filter(org_unit=OuterRef("pk"))
                         .order_by(order_field.replace("assignment__", ""))
                         .values("user__username")[:1]
                     )

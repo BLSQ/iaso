@@ -47,8 +47,7 @@ class MobilePlanningViewSet(CustomPaginationListModelMixin, GenericViewSet):
             .prefetch_related(
                 Prefetch(
                     lookup="assignment_set",
-                    queryset=Assignment.objects.filter(deleted_at=None)
-                    .filter(user=user)
+                    queryset=Assignment.objects.filter(user=user)
                     .select_related("org_unit", "org_unit__org_unit_type")
                     .prefetch_related("org_unit__org_unit_type__form_set"),
                 ),
@@ -95,8 +94,7 @@ class MobilePlanningV2ViewSet(CustomPaginationListModelMixin, GenericViewSet):
             .prefetch_related(
                 Prefetch(
                     lookup="assignment_set",
-                    queryset=Assignment.objects.filter(deleted_at=None)
-                    .filter(user=user)
+                    queryset=Assignment.objects.filter(user=user)
                     .select_related("org_unit", "org_unit__org_unit_type")
                     .prefetch_related("org_unit__org_unit_type__form_set", "org_unit__org_unit_type__sub_unit_types"),
                 ),

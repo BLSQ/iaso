@@ -24,11 +24,15 @@ const MESSAGES = defineMessages({
     },
     search: {
         id: 'iaso.wfp.beneficiaries.search',
-        defaultMessage: 'Entity id or UUID',
+        defaultMessage: 'Entity id, UUID or progress id',
     },
     entityId: {
         id: 'iaso.wfp.beneficiaries.entityId',
         defaultMessage: 'Entity id',
+    },
+    progressId: {
+        id: 'iaso.wfp.beneficiaries.progressId',
+        defaultMessage: 'Progress id',
     },
     uuid: {
         id: 'iaso.label.uuid',

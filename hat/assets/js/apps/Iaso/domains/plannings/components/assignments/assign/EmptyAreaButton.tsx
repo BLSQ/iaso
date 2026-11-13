@@ -6,7 +6,7 @@ import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';
 import { DeleteAssignmentsDialog } from './DeleteAssignmentsDialog';
 import { useAssignableOrgUnits } from './useAssignableOrgUnits';
-import { useUnassignOrgUnits } from './useUnassignOrgUnits';
+import { useChangeAssignments } from './useChangeAssignments';
 import { getAssignedOrgUnitIds } from './utils';
 
 // Removes what the selected team's members were given, and the assignments made inside it.
@@ -14,7 +14,7 @@ export const EmptyAreaButton: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { selectedTeam, selectedLevel } = useAssignmentsContext();
     const { assignments, assignableOrgUnitIds } = useAssignableOrgUnits();
-    const unassignOrgUnits = useUnassignOrgUnits();
+    const changeAssignments = useChangeAssignments();
     const [isOpen, setIsOpen] = useState(false);
 
     const orgUnitIds = useMemo(
@@ -27,9 +27,9 @@ export const EmptyAreaButton: FC = () => {
     const open = useCallback(() => setIsOpen(true), []);
     const close = useCallback(() => setIsOpen(false), []);
     const confirm = useCallback(() => {
-        unassignOrgUnits(orgUnitIds);
+        changeAssignments({ orgUnitIds });
         setIsOpen(false);
-    }, [unassignOrgUnits, orgUnitIds]);
+    }, [changeAssignments, orgUnitIds]);
 
     const tooltip = isRootTeam
         ? formatMessage(MESSAGES.deleteAllAssignments)

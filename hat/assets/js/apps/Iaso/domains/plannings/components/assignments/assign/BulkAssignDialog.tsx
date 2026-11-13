@@ -16,14 +16,13 @@ import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';
-import { useUpdateAssignments } from '../api/useUpdateAssignments';
 import { AssigneeRef } from '../api/utils';
 import { AssigneeCell } from '../mainPanel/AssigneeCell';
 import { OrgUnitRow } from '../mainPanel/types';
 import { useLevelOrgUnitRows } from '../mainPanel/useLevelOrgUnitRows';
 import { TeamMember } from '../utils';
-import { useConfirmPublishedChange } from './PublishedPlanningConfirmation';
 import { useAssignableOrgUnits } from './useAssignableOrgUnits';
+import { useChangeAssignments } from './useChangeAssignments';
 import {
     countClearedByReassign,
     filterByName,
@@ -93,15 +92,14 @@ export const BulkAssignDialog: FC<Props> = ({
     onClose,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { planning, selectedTeam } = useAssignmentsContext();
+    const { selectedTeam } = useAssignmentsContext();
     const { rows: levelRows } = useLevelOrgUnitRows();
     const {
         assignments,
         assignableOrgUnitIds,
         orgUnitIdsWithAssignmentsBelow,
     } = useAssignableOrgUnits();
-    const updateAssignments = useUpdateAssignments(planning.id);
-    const confirmPublishedChange = useConfirmPublishedChange();
+    const changeAssignments = useChangeAssignments();
 
     const rows = useMemo(
         () => levelRows.filter(row => assignableOrgUnitIds.has(row.id)),
@@ -190,16 +188,9 @@ export const BulkAssignDialog: FC<Props> = ({
             { orgUnitIds: [...selectedIds], assignee: assigneeRef },
             { orgUnitIds: uncheckedOwnIds },
         ];
-        confirmPublishedChange(() => updateAssignments(changes));
+        changeAssignments(changes);
         onClose();
-    }, [
-        selectedIds,
-        uncheckedOwnIds,
-        confirmPublishedChange,
-        updateAssignments,
-        assigneeRef,
-        onClose,
-    ]);
+    }, [selectedIds, uncheckedOwnIds, changeAssignments, assigneeRef, onClose]);
 
     return (
         <ConfirmCancelModal

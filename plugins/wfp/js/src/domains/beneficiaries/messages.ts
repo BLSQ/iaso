@@ -13,6 +13,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.programme',
         defaultMessage: 'Programme',
     },
+    cooperationPartner: {
+        id: 'iaso.wfp.beneficiaries.cooperationPartner',
+        defaultMessage: 'Cooperation partner',
+    },
+    cooperationPartnerTooltip: {
+        id: 'iaso.wfp.beneficiaries.cooperationPartnerTooltip',
+        defaultMessage:
+            'Only the visits made in the facilities of this cooperation partner',
+    },
     integratedNutritionFacility: {
         id: 'iaso.wfp.beneficiaries.integratedNutritionFacility',
         defaultMessage: 'Integrated nutrition facility',
@@ -20,7 +29,11 @@ const MESSAGES = defineMessages({
     integratedNutritionFacilityTooltip: {
         id: 'iaso.wfp.beneficiaries.integratedNutritionFacilityTooltip',
         defaultMessage:
-            'Only the visits made in the integrated nutrition facilities of this group',
+            'One facility of the selected cooperation partner — pick a partner first',
+    },
+    beneficiaryExport: {
+        id: 'iaso.wfp.beneficiaries.beneficiaryExport',
+        defaultMessage: 'Beneficiary Export',
     },
     search: {
         id: 'iaso.wfp.beneficiaries.search',

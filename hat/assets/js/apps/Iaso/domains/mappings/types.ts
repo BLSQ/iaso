@@ -71,7 +71,43 @@ export type ImportSource = {
     questionMappings: QuestionMappings;
 };
 
+// useApplyUpdate: PATCH of mapping version settings, e.g. event_date_source
+export type ApplyUpdateVariables = {
+    mappingVersionId: number;
+    payload: Record<string, unknown>;
+};
+
+// useApplyPartialUpdate: the mapping of one question, or an unmap / never map action
+export type ApplyPartialUpdateVariables = {
+    mappingVersionId: number;
+    questionName: string;
+    mapping: QuestionMapping;
+};
+
 export type BulkUpdateVariables = {
     mappingVersionId: number;
     questionMappings: Record<string, unknown>;
+};
+
+export enum QuestionStatus {
+    MAPPED = 'mapped',
+    UNMAPPED = 'unmapped',
+    NEVER = 'never',
+}
+
+export type QuestionTreeNode = {
+    key: string;
+    name: string;
+    label: string;
+    type: string;
+    // the descriptor node
+    question: Record<string, any>;
+    selectable: boolean;
+    status: QuestionStatus;
+    // label of the DHIS2 target when mapped
+    target?: string;
+    // questions (leaves) below a group and how many of them are mapped
+    mappedCount: number;
+    questionsCount: number;
+    children?: QuestionTreeNode[];
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { QuestionStatus } from './types';

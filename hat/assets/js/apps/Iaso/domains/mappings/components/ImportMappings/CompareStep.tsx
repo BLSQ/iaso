@@ -155,7 +155,7 @@ export const CompareStep: FunctionComponent<Props> = ({
                         key={kind}
                         value={kind}
                         label={formatMessage(BUCKET_MESSAGES[kind], {
-                            count: counts[kind],
+                            count: `${counts[kind]}`,
                         })}
                         data-test={`import-bucket-${kind}`}
                     />
@@ -296,9 +296,9 @@ export const CompareStep: FunctionComponent<Props> = ({
             </TableContainer>
             <Typography variant="body2" sx={styles.summary}>
                 {formatMessage(MESSAGES.importSummary, {
-                    added: plan.added,
-                    overwritten: plan.overwritten,
-                    ignored: plan.dropped + plan.skipped,
+                    added: `${plan.added}`,
+                    overwritten: `${plan.overwritten}`,
+                    ignored: `${plan.dropped + plan.skipped}`,
                 })}
             </Typography>
         </Box>

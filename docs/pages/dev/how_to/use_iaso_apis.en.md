@@ -29,3 +29,5 @@ j = r.json()
 ```
 
 Most endpoints of Iaso provide exports to csv through the mechanisms provided by the Django Rest Framework (by adding ``format=csv`` to the url) and some of them provide exports to xlsx (``xlsx=true``) and geopackage (``gpkg=true``) formats.
+
+To extract all the submissions of a form or a whole pyramid (for Superset, OpenHEXA, a notebook...), use the parquet exports, see [Export data as parquet](../../users/how_to/export_data_as_parquet.md).

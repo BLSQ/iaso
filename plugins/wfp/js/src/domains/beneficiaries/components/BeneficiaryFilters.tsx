@@ -2,6 +2,7 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import { Box, Grid, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
@@ -39,7 +40,7 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
                 <InputComponent
                     keyValue="q"
                     onChange={handleChange}
@@ -51,7 +52,7 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={3}>
                 <InputComponent
                     type="select"
                     keyValue="entity_type"
@@ -62,7 +63,7 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     loading={isFetching}
                 />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} sm={6} md={3}>
                 <InputComponent
                     type="select"
                     keyValue="programme"
@@ -73,7 +74,7 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     loading={isFetching}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
                 <Box display="flex" alignItems="center" mt={2}>
                     <Box flexGrow={1}>
                         <InputComponent
@@ -95,7 +96,33 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     </Tooltip>
                 </Box>
             </Grid>
-            <Grid container item xs={12} md={2} justifyContent="flex-end">
+            <Grid item xs={12} md={6}>
+                <Box display="flex" alignItems="center" mt={2}>
+                    <Box flexGrow={1}>
+                        <DatesRange
+                            marginTop={0}
+                            xs={12}
+                            sm={6}
+                            md={6}
+                            lg={6}
+                            keyDateFrom="visit_date_after"
+                            keyDateTo="visit_date_before"
+                            onChangeDate={handleChange}
+                            dateFrom={filters.visit_date_after}
+                            dateTo={filters.visit_date_before}
+                            labelFrom={MESSAGES.visitDateFrom}
+                            labelTo={MESSAGES.visitDateTo}
+                        />
+                    </Box>
+                    <Tooltip
+                        title={formatMessage(MESSAGES.visitDateTooltip)}
+                        placement="top"
+                    >
+                        <InfoIcon color="primary" sx={{ ml: 1 }} />
+                    </Tooltip>
+                </Box>
+            </Grid>
+            <Grid container item xs={12} md={6} justifyContent="flex-end">
                 <Box mt={isLargeLayout ? 2 : 0}>
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}

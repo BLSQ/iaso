@@ -18,6 +18,12 @@ export const useColumns = (
                 accessor: 'entity_id',
             },
             {
+                Header: formatMessage(MESSAGES.progressId),
+                id: 'progress_id',
+                accessor: 'progress_id',
+                Cell: ({ value }) => value ?? '--',
+            },
+            {
                 Header: formatMessage(MESSAGES.uuid),
                 id: 'uuid',
                 accessor: 'uuid',

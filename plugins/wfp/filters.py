@@ -13,7 +13,15 @@ from iaso.models import Group, OrgUnit
 from .models import Beneficiary, Journey, Visit
 
 
-FILTER_KEYS = ("entity_type", "programme", "org_unit_group", "q", "visit_date_after", "visit_date_before")
+FILTER_KEYS = (
+    "entity_type",
+    "programme",
+    "org_unit_group",
+    "facility",
+    "q",
+    "visit_date_after",
+    "visit_date_before",
+)
 
 
 def filters_from_params(params) -> dict[str, str]:
@@ -31,14 +39,20 @@ def restricted_org_units(user):
 def facility_scope(user, filters):
     """Org units whose visits are shown and exported, None for all of them.
 
-    The selected org unit group (e.g. the facilities of one cooperating partner), intersected with the org units of
-    the user when they are restricted.
+    The selected cooperation partner (`org_unit_group`) and integrated nutrition facility (`facility`), intersected
+    with each other and with the org units of the user when they are restricted.
     """
     org_units = restricted_org_units(user)
+
     group_id = filters.get("org_unit_group", "")
     if group_id.isdigit():
         in_group = OrgUnit.objects.filter(groups__in=Group.objects.filter_for_user(user).filter(id=group_id))
         org_units = in_group if org_units is None else in_group.filter(id__in=org_units.values("id"))
+
+    facility_id = filters.get("facility", "")
+    if facility_id.isdigit():
+        facility = OrgUnit.objects.filter_for_user(user).filter(id=facility_id)
+        org_units = facility if org_units is None else facility.filter(id__in=org_units.values("id"))
     return org_units
 
 

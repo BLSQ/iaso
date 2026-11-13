@@ -19,7 +19,7 @@ import MESSAGES from '../../../messages';
 import { DeleteAssignmentsDialog } from '../assign/DeleteAssignmentsDialog';
 import { useMemberAssignments } from '../assign/useMemberAssignments';
 import {
-    useSelectedTeamArea,
+    useNoAreaMessage,
     useTeamIdsWithArea,
 } from '../assign/useSelectedTeamArea';
 import { TeamMemberRow } from './TeamMemberRow';
@@ -80,7 +80,7 @@ export const TeamsPanel: FC = () => {
         toggleTeam,
         currentAssignee,
     } = useAssignmentsContext();
-    const { hasArea } = useSelectedTeamArea();
+    const noAreaMessage = useNoAreaMessage();
     const teamIdsWithArea = useTeamIdsWithArea();
     const {
         getAssignedCount,
@@ -120,13 +120,7 @@ export const TeamsPanel: FC = () => {
 
     const getHelp = () => {
         if (!isAssignMode) return formatMessage(MESSAGES.teamsPanelExploreHelp);
-        if (!hasArea) {
-            return formatMessage(MESSAGES.assignTeamHasNoArea, {
-                team: selectedTeam.name,
-                parentTeam: teamChain.at(-2)?.name ?? '',
-            });
-        }
-        return formatMessage(MESSAGES.teamsPanelAssignHelp);
+        return noAreaMessage ?? formatMessage(MESSAGES.teamsPanelAssignHelp);
     };
 
     const rootCaption =

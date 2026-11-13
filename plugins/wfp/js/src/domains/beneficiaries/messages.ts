@@ -13,14 +13,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.programme',
         defaultMessage: 'Programme',
     },
-    orgUnitGroup: {
-        id: 'iaso.wfp.beneficiaries.orgUnitGroup',
-        defaultMessage: 'Org unit group',
+    integratedNutritionFacility: {
+        id: 'iaso.wfp.beneficiaries.integratedNutritionFacility',
+        defaultMessage: 'Integrated nutrition facility',
     },
-    orgUnitGroupTooltip: {
-        id: 'iaso.wfp.beneficiaries.orgUnitGroupTooltip',
+    integratedNutritionFacilityTooltip: {
+        id: 'iaso.wfp.beneficiaries.integratedNutritionFacilityTooltip',
         defaultMessage:
-            'Only the visits made in the org units of this group (e.g. the facilities of a partner)',
+            'Only the visits made in the integrated nutrition facilities of this group',
     },
     search: {
         id: 'iaso.wfp.beneficiaries.search',

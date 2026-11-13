@@ -2414,5 +2414,9 @@
     "iaso.plannings.label.searchByName": "Search by name",
     "iaso.plannings.label.show": "Show",
     "iaso.plannings.label.clearFoundOrgUnit": "Clear the found org unit",
-    "iaso.plannings.label.findOrgUnitError": "Could not locate this org unit in the planning teams."
+    "iaso.plannings.label.findOrgUnitError": "Could not locate this org unit in the planning teams.",
+    "iaso.mappings.checkDataSource": "Check the data source",
+    "iaso.mappings.dhis2InvalidCredentials": "Search unavailable: DHIS2 rejected the credentials of this data source.",
+    "iaso.mappings.dhis2NoCredentials": "Search unavailable: no DHIS2 credentials are configured on this data source.",
+    "iaso.mappings.dhis2Unavailable": "Search unavailable: DHIS2 could not be reached. Try again later or check its URL."
 }

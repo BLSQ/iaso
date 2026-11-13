@@ -4,6 +4,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
 import throttle from 'lodash/throttle';
+import {
+    DHIS2_UNAVAILABLE,
+    Dhis2SearchError,
+    Dhis2SearchErrorMessage,
+    fetchDhis2Resource,
+} from './Dhis2SearchError';
 
 const fetchFrom = (
     input,
@@ -14,21 +20,21 @@ const fetchFrom = (
     fields,
 ) =>
     Promise.all([
-        fetch(
+        fetchDhis2Resource(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${input}&fields=${
                 fields || 'id,name'
             }&pageSize=${pageSize || 10}`,
-        ).then(resp => resp.json()),
-        fetch(
+        ),
+        fetchDhis2Resource(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=code:ilike:${input}&fields=${
                 fields || 'id,name'
             }&pageSize=${pageSize || 10}`,
-        ).then(resp => resp.json()),
-        fetch(
+        ),
+        fetchDhis2Resource(
             `/api/datasources/${dataSourceId}/${resourceName}.json?filter=id:eq:${input}&fields=${
                 fields || 'id,name'
             }&pageSize=${pageSize || 10}`,
-        ).then(resp => resp.json()),
+        ),
     ]);
 const Dhis2Search = props => {
     const {
@@ -51,6 +57,7 @@ const Dhis2Search = props => {
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
 
     const [options, setOptions] = React.useState([]);
+    const [errorCode, setErrorCode] = React.useState<string | undefined>();
     // TODO confirm this is dead code
     // const [_selectedOption, setSelectedOption] = React.useState([]);
     const handleChange = event => {
@@ -67,13 +74,23 @@ const Dhis2Search = props => {
                     resourceName,
                     dataSourceId,
                     fields,
-                ).then(f => {
-                    const union = f.flatMap(r => r[resourceName]);
-                    const finalOptions = mapOptions
-                        ? mapOptions(union, input.input)
-                        : union;
-                    setOptions(finalOptions);
-                });
+                )
+                    .then(f => {
+                        const union = f.flatMap(r => r[resourceName]);
+                        const finalOptions = mapOptions
+                            ? mapOptions(union, input.input)
+                            : union;
+                        setErrorCode(undefined);
+                        setOptions(finalOptions);
+                    })
+                    .catch(error => {
+                        setOptions([]);
+                        setErrorCode(
+                            error instanceof Dhis2SearchError
+                                ? error.code
+                                : DHIS2_UNAVAILABLE,
+                        );
+                    });
             }, 200),
         // I guess we only want to run this once, so eslint disable is fine
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,6 +152,15 @@ const Dhis2Search = props => {
                     onChange={handleChange}
                     value={inputValue}
                     variant="outlined"
+                    error={Boolean(errorCode)}
+                    helperText={
+                        errorCode && (
+                            <Dhis2SearchErrorMessage
+                                code={errorCode}
+                                dataSourceId={dataSourceId}
+                            />
+                        )
+                    }
                 />
             )}
             renderOption={(props, option) => (

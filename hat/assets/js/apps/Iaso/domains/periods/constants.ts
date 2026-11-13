@@ -21,17 +21,30 @@ export const PERIOD_TYPES = [
     PERIOD_TYPE_WEEK,
 ];
 
-export const periodTypeOptions = [
-    PERIOD_TYPE_DAY,
-    PERIOD_TYPE_MONTH,
-    PERIOD_TYPE_QUARTER,
-    PERIOD_TYPE_QUARTER_NOV,
-    PERIOD_TYPE_YEAR,
-    PERIOD_TYPE_FINANCIAL_NOV,
-    PERIOD_TYPE_WEEK,
-].map(periodType => ({
+const PERIOD_TYPE_MESSAGES = {
+    [PERIOD_TYPE_DAY]: MESSAGES.day,
+    [PERIOD_TYPE_MONTH]: MESSAGES.month,
+    [PERIOD_TYPE_QUARTER]: MESSAGES.quarter,
+    [PERIOD_TYPE_QUARTER_NOV]: MESSAGES.quarter_nov,
+    [PERIOD_TYPE_YEAR]: MESSAGES.year,
+    [PERIOD_TYPE_FINANCIAL_NOV]: MESSAGES.financial_nov,
+    [PERIOD_TYPE_WEEK]: MESSAGES.week,
+    [PERIOD_TYPE_SIX_MONTH]: MESSAGES.six_month,
+} as const;
+
+export const periodTypeOptions = (
+    [
+        PERIOD_TYPE_DAY,
+        PERIOD_TYPE_MONTH,
+        PERIOD_TYPE_QUARTER,
+        PERIOD_TYPE_QUARTER_NOV,
+        PERIOD_TYPE_YEAR,
+        PERIOD_TYPE_FINANCIAL_NOV,
+        PERIOD_TYPE_WEEK,
+    ] as const
+).map(periodType => ({
     value: periodType,
-    label: MESSAGES[periodType.toLowerCase()],
+    label: PERIOD_TYPE_MESSAGES[periodType],
 }));
 export const periodTypeOptionsWithNoPeriod = [
     {

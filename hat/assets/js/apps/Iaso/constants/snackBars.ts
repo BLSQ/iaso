@@ -1,3 +1,5 @@
+import { IntlMessage } from 'bluesquare-components';
+
 export const formSuccessFullMessageKey = 'successful';
 export const formErrorMessageKey = 'error';
 export const formWarningMessageKey = 'warning';
@@ -6,7 +8,7 @@ export const reloadPageMessageKey = 'reloadPage';
 
 export const succesfullSnackBar = (
     messageKey = formSuccessFullMessageKey,
-    messageObject,
+    messageObject?: IntlMessage | null,
 ) => ({
     messageKey,
     messageObject,
@@ -21,6 +23,12 @@ export const successfullSnackBarWithButtons = ({
     persist,
     buttonMessageKey,
     buttonAction,
+}: {
+    messageKey?: string;
+    messageObject?: IntlMessage | null;
+    persist?: boolean;
+    buttonMessageKey?: string;
+    buttonAction?: () => void;
 }) => ({
     messageKey,
     messageObject,
@@ -34,8 +42,8 @@ export const successfullSnackBarWithButtons = ({
 
 export const errorSnackBar = (
     messageKey = formErrorMessageKey,
-    messageObject,
-    errorLog,
+    messageObject?: IntlMessage | null,
+    errorLog?: unknown,
 ) => ({
     messageKey,
     messageObject,
@@ -49,8 +57,8 @@ export const errorSnackBar = (
 
 export const warningSnackBar = (
     messageKey = formWarningMessageKey,
-    messageObject,
-    id,
+    messageObject?: IntlMessage | null,
+    id?: string,
 ) => ({
     messageKey,
     messageObject,
@@ -74,5 +82,7 @@ export const reloadPageSnackBar = (
         persist: true,
     },
     buttonMessageKey,
-    buttonAction: () => window.location.reload(true),
+    // forceGet arg is legacy; kept for same call shape
+    buttonAction: () =>
+        (window.location.reload as (forceGet?: boolean) => void)(true),
 });

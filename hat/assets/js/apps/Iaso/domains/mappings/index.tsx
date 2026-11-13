@@ -16,7 +16,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 import { Filters } from './components/Filter';
 import { mappingsTableColumns } from './config';
-import { useGetMappingVersions } from './hooks.js';
+import { useGetMappingVersions } from './hooks';
 import MESSAGES from './messages';
 import { DHIS2Params } from './types';
 

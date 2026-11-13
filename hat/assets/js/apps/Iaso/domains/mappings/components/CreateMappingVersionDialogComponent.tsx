@@ -8,18 +8,15 @@ import {
 } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useCreateMappingMutation, useDataSources } from '../hooks.js';
+import {
+    CreateMappingPayload,
+    useCreateMappingMutation,
+    useDataSources,
+} from '../hooks';
 import MESSAGES from '../messages';
 import Dhis2Search from './Dhis2SearchComponent';
 import IasoSearchComponent from './IasoSearchComponent';
 import { mappingTypeOptions } from './MappingTypeOptions';
-
-type CreateMappingPayload = {
-    form_version: { id: number };
-    mapping: { type: string; datasource: { id: number } };
-    dataset?: any;
-    program?: any;
-};
 
 type DataSourceOption = {
     id: number;
@@ -50,9 +47,7 @@ const CreateMappingVersionDialogComponent: FunctionComponent = () => {
             payload.program = dataset;
         }
 
-        // hooks.js leaves Variables as void; cast keeps the existing call working.
-        // Prefer mutate + onSuccess over mutate().then() (mutate returns void).
-        createMappingRequest.mutate(payload as any, {
+        createMappingRequest.mutate(payload, {
             onSuccess: () => {
                 closeDialog();
             },

@@ -16,7 +16,7 @@ import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';
-import { AssigneeRef } from '../api/utils';
+import { getAssigneeRef } from '../api/utils';
 import { AssigneeCell } from '../mainPanel/AssigneeCell';
 import { OrgUnitRow } from '../mainPanel/types';
 import { useLevelOrgUnitRows } from '../mainPanel/useLevelOrgUnitRows';
@@ -80,18 +80,14 @@ const getIds = (rows: OrgUnitRow[]): number[] => rows.map(row => row.id);
 
 type Props = {
     assignee: TeamMember;
-    assigneeRef: AssigneeRef;
     onClose: () => void;
 };
 
 // Checked org units end up assigned to the member: its own and the unassigned ones start checked.
 // Selecting with a filter only affects the rows shown.
-export const BulkAssignDialog: FC<Props> = ({
-    assignee,
-    assigneeRef,
-    onClose,
-}) => {
+export const BulkAssignDialog: FC<Props> = ({ assignee, onClose }) => {
     const { formatMessage } = useSafeIntl();
+    const assigneeRef = useMemo(() => getAssigneeRef(assignee), [assignee]);
     const { selectedTeam } = useAssignmentsContext();
     const { rows: levelRows } = useLevelOrgUnitRows();
     const {

@@ -82,14 +82,14 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                             keyValue="org_unit_group"
                             onChange={handleChange}
                             value={filters.org_unit_group}
-                            label={MESSAGES.orgUnitGroup}
+                            label={MESSAGES.integratedNutritionFacility}
                             options={orgUnitGroups}
                             loading={isFetching}
                             withMarginTop={false}
                         />
                     </Box>
                     <Tooltip
-                        title={formatMessage(MESSAGES.orgUnitGroupTooltip)}
+                        title={formatMessage(MESSAGES.integratedNutritionFacilityTooltip)}
                         placement="top"
                     >
                         <InfoIcon color="primary" sx={{ ml: 1 }} />

@@ -4,11 +4,13 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { AssignmentsMode, AssignmentsParams, AssignmentsView } from '../types';
 
-type UseAssignmentsParams = AssignmentsParams & {
+type UseAssignmentsParams = Omit<AssignmentsParams, 'onlyUnassigned'> & {
     mode: AssignmentsMode;
     view: AssignmentsView;
+    onlyUnassigned: boolean;
     updateParams: (changes: Partial<AssignmentsParams>) => void;
     openTeam: (teamId: number) => void;
+    toggleOnlyUnassigned: () => void;
 };
 
 export const useAssignmentsParams = (): UseAssignmentsParams => {
@@ -19,16 +21,29 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
             redirectToReplace(baseUrls.assignments, { ...params, ...changes }),
         [params, redirectToReplace],
     );
+    // The found org unit belongs to the team it was found in.
     const openTeam = useCallback(
-        (teamId: number) => updateParams({ teamId: `${teamId}` }),
+        (teamId: number) =>
+            updateParams({ teamId: `${teamId}`, focusOrgUnitId: undefined }),
         [updateParams],
+    );
+    const onlyUnassigned = params.onlyUnassigned === 'true';
+    const toggleOnlyUnassigned = useCallback(
+        () =>
+            updateParams({
+                onlyUnassigned: onlyUnassigned ? undefined : 'true',
+            }),
+        [onlyUnassigned, updateParams],
     );
     return {
         planningId: params.planningId,
         teamId: params.teamId,
+        focusOrgUnitId: params.focusOrgUnitId,
         mode: (params.mode as AssignmentsMode) ?? 'explore',
         view: (params.view as AssignmentsView) ?? 'map',
+        onlyUnassigned,
         updateParams,
         openTeam,
+        toggleOnlyUnassigned,
     };
 };

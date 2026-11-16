@@ -235,17 +235,10 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         #    |- children_2_1
 
         # create assignments
-        Assignment.objects.create(planning=cls.planning, team=cls.team, org_unit=cls.children_1)
-        cls.assignment = Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_2)
-        cls.assignment_2 = Assignment.objects.create(
-            planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_2_1
-        )
-        cls.assignment_3 = Assignment.objects.create(
-            planning=cls.planning, team=cls.team_2_1_1, org_unit=cls.children_2_1_1
-        )
-        cls.assignment_4 = Assignment.objects.create(
-            planning=cls.planning, team=cls.team_2_1_2, org_unit=cls.children_2_1_2
-        )
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_1)
+        Assignment.objects.create(planning=cls.planning, team=cls.team, org_unit=cls.children_1_2)
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_1_1)
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1_1, org_unit=cls.children_1_1_1)
 
     def assertValidResponse(self, response: Any, expected_length: int):
         self.assertValidListData(
@@ -322,6 +315,7 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
             res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 4)
+        self.assertValidResponse(res_data, 6)
 
     def test_ordering_is_assigned(self):
         self.client.force_authenticate(self.superuser)

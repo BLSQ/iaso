@@ -32,6 +32,28 @@ const survey = {
     ],
 };
 
+// "age" is asked in two groups; "district" sits directly under the survey
+const surveyWithSharedName = {
+    name: 'survey',
+    type: 'survey',
+    children: [
+        { name: 'district', type: 'text', label: 'District' },
+        {
+            name: 'household',
+            type: 'repeat',
+            children: [
+                { name: 'age', type: 'integer' },
+                { name: 'sex', type: 'select one' },
+            ],
+        },
+        {
+            name: 'members',
+            type: 'group',
+            children: [{ name: 'age', type: 'integer' }],
+        },
+    ],
+};
+
 describe('Descriptor.hasChildren', () => {
     it('is true for groups with children', () => {
         expect(
@@ -66,6 +88,14 @@ describe('Descriptor.getLabel / getHumanLabel', () => {
         ).toBe('Hello');
     });
 
+    it('uses the French label by default', () => {
+        expect(
+            Descriptor.getLabel({
+                label: { French: 'Bonjour', English: 'Hello' },
+            }),
+        ).toBe('Bonjour');
+    });
+
     it('falls back through title, label, hint, name', () => {
         expect(Descriptor.getHumanLabel({ name: 'q1' })).toBe('q1');
         expect(Descriptor.getHumanLabel({ name: 'q1', hint: 'hint' })).toBe(
@@ -74,6 +104,13 @@ describe('Descriptor.getLabel / getHumanLabel', () => {
         expect(Descriptor.getHumanLabel({ name: 'q1', label: 'Label' })).toBe(
             'Label',
         );
+        expect(
+            Descriptor.getHumanLabel({
+                name: 'q1',
+                label: 'Label',
+                hint: 'hint',
+            }),
+        ).toBe('Label');
         expect(
             Descriptor.getHumanLabel({
                 name: 'q1',
@@ -155,6 +192,12 @@ describe('Descriptor.indexQuestions', () => {
         expect(indexed.age.path).toEqual(['survey', 'household', 'age']);
         expect(indexed.services__water.uuid).toBe('services__water');
     });
+
+    it('suffixes a question name already used in another group with 1', () => {
+        const indexed = Descriptor.indexQuestions(surveyWithSharedName);
+        expect(indexed.age.path).toEqual(['survey', 'household', 'age']);
+        expect(indexed.age1.path).toEqual(['survey', 'members', 'age']);
+    });
 });
 
 describe('Descriptor.withinRepeatGroup', () => {
@@ -186,8 +229,37 @@ describe('Descriptor.getCoverage', () => {
             survey,
             true,
         );
-        expect(total).toBeGreaterThan(0);
-        expect(mapped).toBe(2);
-        expect(mapped).toBeLessThanOrEqual(total);
+        // age, sex, services__water, services__power, q1
+        expect([mapped, total]).toEqual([2, 5]);
+    });
+
+    it('counts questions directly under the survey on the top node', () => {
+        const indexed = Descriptor.indexQuestions(surveyWithSharedName);
+        const mappingVersion = {
+            question_mappings: {
+                district: { id: 'deDistrict' },
+                sex: { id: 'deSex' },
+            },
+        };
+        // district, household/age, household/sex, members/age
+        expect(
+            Descriptor.getCoverage(
+                indexed,
+                mappingVersion,
+                surveyWithSharedName,
+                true,
+            ),
+        ).toEqual([2, 4]);
+    });
+
+    it('counts only the questions of the group, not same-named ones elsewhere', () => {
+        const indexed = Descriptor.indexQuestions(surveyWithSharedName);
+        const mappingVersion = {
+            question_mappings: { sex: { id: 'deSex' } },
+        };
+        // household/age and household/sex, not members/age
+        expect(
+            Descriptor.getCoverage(indexed, mappingVersion, indexed.household),
+        ).toEqual([1, 2]);
     });
 });

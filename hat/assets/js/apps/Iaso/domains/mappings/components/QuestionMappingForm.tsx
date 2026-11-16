@@ -10,6 +10,7 @@ import MESSAGES from '../messages';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import { buildQuestionMapping, isOrgUnitTarget } from '../utils';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
+import { fetchDhis2Resource } from './Dhis2SearchError';
 import { DuplicateHint } from './DuplicateHint';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
 import { MappingCard } from './QuestionPanel/MappingCard';
@@ -94,9 +95,9 @@ const Dhis2ProgramTrackedEntityAttributeSearch = ({
                 fields,
             ) =>
                 Promise.all([
-                    fetch(
+                    fetchDhis2Resource(
                         `/api/datasources/${dataSourceId}/programs.json?filter=id:eq:${programId}&fields=${fields}`,
-                    ).then(resp => resp.json()),
+                    ),
                 ])
             }
         />
@@ -183,9 +184,9 @@ const Dhis2ProgramDataElementSearch = ({
                 fields,
             ) =>
                 Promise.all([
-                    fetch(
+                    fetchDhis2Resource(
                         `/api/datasources/${dataSourceId}/programs.json?filter=id:eq:${programId}&fields=${fields}`,
-                    ).then(resp => resp.json()),
+                    ),
                 ])
             }
         />

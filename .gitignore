@@ -225,3 +225,6 @@ openapi.json
 
 .schemathesis/
 schemathesis-report/
+
+# incremental tsc cache written by ts-incremental.mjs
+type-check.tsbuildinfo

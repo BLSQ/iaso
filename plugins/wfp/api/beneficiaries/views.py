@@ -1,6 +1,7 @@
 """JSON API of the beneficiaries page of the dashboard (Entities > WFP beneficiaries) and of its xlsx exports."""
 
-from rest_framework import mixins, permissions, viewsets
+from django.utils import timezone
+from rest_framework import mixins, permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -22,12 +23,32 @@ from plugins.wfp.filters import (
 from plugins.wfp.models import NUTRITION_PROGRAMMES
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 from plugins.wfp.utils.details import beneficiary_details, submission_details
-from plugins.wfp.utils.exports import KIND_CODA, KIND_RAW, export_response
+from plugins.wfp.utils.exports import KIND_CODA, KIND_ELIGIBLE, KIND_RAW, export_response
 
 
 class HasProfile(permissions.BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, "iaso_profile")
+
+
+class EligibleExportParamsSerializer(serializers.Serializer):
+    """The period of the eligible beneficiaries export, by default from the 26th of last month to the 25th (or today).
+
+    No date can be in the future.
+    """
+
+    start_date = serializers.DateField(required=False)
+    end_date = serializers.DateField(required=False)
+
+    def validate(self, attrs):
+        start_date, end_date = attrs.get("start_date"), attrs.get("end_date")
+        today = timezone.localdate()
+        for key in ("start_date", "end_date"):
+            if attrs.get(key) and attrs[key] > today:
+                raise serializers.ValidationError({key: "The date cannot be in the future"})
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError({"end_date": "The end date must be after the start date"})
+        return attrs
 
 
 class BeneficiaryPaginator(Paginator):
@@ -41,7 +62,7 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     (entity id or start of the UUID). Users restricted to some org units only see the visits made there.
     `order` sorts the beneficiaries and `visits_order` (`date`, `-date`, `number` or `-number`) the visits of each
     journey, by date by default.
-    The `export/coda/` and `export/raw/` actions download the xlsx exports of the same selection.
+    The `export/coda/`, `export/raw/` and `export/eligible/` actions download the xlsx exports of the same selection.
     """
 
     permission_classes = [permissions.IsAuthenticated, HasProfile, HasPermission(WFP_BENEFICIARY_EXPORT_PERMISSION)]  # type: ignore
@@ -105,6 +126,20 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def export_raw(self, request):
         """The ETL tables and the submissions of the selection, one sheet per form."""
         return export_response(request.user, KIND_RAW, filters_from_params(request.query_params))
+
+    @action(detail=False, methods=["get"], url_path="export/eligible")
+    def export_eligible(self, request):
+        """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
+
+        One sheet per programme. The entity type must be selected, as the columns depend on it. The period is given by
+        `start_date` and `end_date` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
+        """
+        filters = filters_from_params(request.query_params)
+        if not filters.get("entity_type", "").isdigit():
+            raise serializers.ValidationError({"entity_type": "An entity type must be selected"})
+        period = EligibleExportParamsSerializer(data=request.query_params)
+        period.is_valid(raise_exception=True)
+        return export_response(request.user, KIND_ELIGIBLE, filters, **period.validated_data)
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
     def data(self, request, entity_id):

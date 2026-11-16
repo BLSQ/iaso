@@ -64,6 +64,38 @@ describe('mappings hooks', () => {
         expect(url).toContain('form_id=42');
     });
 
+    it('useGetMappingVersions keeps the previous page while the next one loads', async () => {
+        const firstPage = { count: 30, pages: 2, mapping_versions: [] };
+        mocks.getRequest
+            .mockResolvedValueOnce(firstPage)
+            .mockReturnValueOnce(new Promise(() => {}));
+        const { result, rerender } = renderHook(
+            ({ page }) => useGetMappingVersions({ page }),
+            {
+                wrapper: createWrapper(new QueryClient()),
+                initialProps: { page: 1 },
+            },
+        );
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+        rerender({ page: 2 });
+
+        await waitFor(() => expect(mocks.getRequest).toHaveBeenCalledTimes(2));
+        expect(result.current.isPreviousData).toBe(true);
+        expect(result.current.data).toEqual(firstPage);
+    });
+
+    it('useGetMappingVersions result stays fresh after loading', async () => {
+        mocks.getRequest.mockResolvedValue({ count: 0, pages: 1 });
+        const { result } = renderHook(
+            () => useGetMappingVersions({ page: 1 }),
+            { wrapper: createWrapper(new QueryClient()) },
+        );
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.isStale).toBe(false);
+    });
+
     it('useDataSources returns sources from the datasources endpoint', async () => {
         mocks.getRequest.mockResolvedValue({
             sources: [{ id: 1, name: 'DHIS2' }],
@@ -102,6 +134,18 @@ describe('mappings hooks', () => {
             2,
             '/api/formversions/99.json?fields=:all',
         );
+    });
+
+    it('useGetMappingVersionDetail result stays fresh after loading', async () => {
+        mocks.getRequest
+            .mockResolvedValueOnce({ id: 7, form_version: { id: 99 } })
+            .mockResolvedValueOnce({ id: 99 });
+        const { result } = renderHook(() => useGetMappingVersionDetail(7), {
+            wrapper: createWrapper(new QueryClient()),
+        });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.isStale).toBe(false);
     });
 
     it('useCreateMappingMutation posts then redirects to the detail page', async () => {

@@ -261,7 +261,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
             res = self.client.put(self.get_url(), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
-                res_data[0], "id", f'Invalid pk "{self.planning_config_other_account.pk}" - object does not exist.'
+                res_data["0"], "id", f'Invalid pk "{self.planning_config_other_account.pk}" - object does not exist.'
             )
 
         with self.subTest("org_unit_types other account"):
@@ -276,7 +276,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertValidBody(data)
             res = self.client.put(self.get_url(), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(res_data[0], "org_unit_types")
+            self.assertHasError(res_data["0"], "org_unit_types")
 
         with self.subTest("org_unit_groups other account"):
             data = [
@@ -290,7 +290,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertValidBody(data)
             res = self.client.put(self.get_url(), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(res_data[0], "org_unit_groups")
+            self.assertHasError(res_data["0"], "org_unit_groups")
 
         with self.subTest("level"):
             for level in [-1, 0]:
@@ -305,7 +305,7 @@ class NestedPlanningConfigBulkAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 # self.assertValidBody(data) # will fail obviously
                 res = self.client.put(self.get_url(), data=data)
                 res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-                self.assertHasError(res_data[0], "level")
+                self.assertHasError(res_data["0"], "level")
 
     def test_unique_ids(self):
         self.client.force_authenticate(self.superuser)

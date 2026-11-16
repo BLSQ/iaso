@@ -7,6 +7,7 @@ type Props = {
     open: boolean;
     title: string;
     text: string;
+    details?: string;
     onConfirm: () => void;
     onClose: () => void;
 };
@@ -15,6 +16,7 @@ export const DeleteAssignmentsDialog: FC<Props> = ({
     open,
     title,
     text,
+    details,
     onConfirm,
     onClose,
 }) => (
@@ -31,5 +33,6 @@ export const DeleteAssignmentsDialog: FC<Props> = ({
         confirmMessage={MESSAGES.delete}
     >
         <Typography>{text}</Typography>
+        {details && <Typography>{details}</Typography>}
     </ConfirmCancelModal>
 );

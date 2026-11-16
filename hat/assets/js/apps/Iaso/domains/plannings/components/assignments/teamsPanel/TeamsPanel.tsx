@@ -88,6 +88,7 @@ export const TeamsPanel: FC = () => {
         getAssignedCount,
         requestRemoval,
         removalText,
+        removalDetails,
         confirmRemoval,
         cancelRemoval,
     } = useMemberAssignments();
@@ -199,6 +200,7 @@ export const TeamsPanel: FC = () => {
                 open={Boolean(removalText)}
                 title={formatMessage(MESSAGES.removeAssignments)}
                 text={removalText ?? ''}
+                details={removalDetails}
                 onConfirm={confirmRemoval}
                 onClose={cancelRemoval}
             />

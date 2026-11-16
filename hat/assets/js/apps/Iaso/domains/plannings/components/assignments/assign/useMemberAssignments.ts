@@ -12,6 +12,7 @@ type MemberAssignments = {
     getAssignedCount: (row: TeamMemberRowData) => number;
     requestRemoval: (memberKey: string) => void;
     removalText?: string;
+    removalDetails?: string;
     confirmRemoval: () => void;
     cancelRemoval: () => void;
 };
@@ -54,21 +55,17 @@ export const useMemberAssignments = (): MemberAssignments => {
                 : [],
         [removedMember, assignments, assignableOrgUnitIds],
     );
-    const removalText = useMemo(() => {
-        if (!removedMember) return undefined;
-        const text = formatMessage(MESSAGES.removeMemberAssignmentsText, {
-            count: `${removedOrgUnitIds.length}`,
-            member: removedMember.name,
-        });
-        return removedMember.team
-            ? `${text} ${formatMessage(
-                  MESSAGES.removeTeamAssignmentsBelowText,
-                  {
-                      member: removedMember.name,
-                  },
-              )}`
-            : text;
-    }, [removedMember, removedOrgUnitIds, formatMessage]);
+    const removalText = removedMember
+        ? formatMessage(MESSAGES.removeMemberAssignmentsText, {
+              count: `${removedOrgUnitIds.length}`,
+              member: removedMember.name,
+          })
+        : undefined;
+    const removalDetails = removedMember?.team
+        ? formatMessage(MESSAGES.removeTeamAssignmentsBelowText, {
+              member: removedMember.name,
+          })
+        : undefined;
 
     const cancelRemoval = useCallback(() => setRemovedMemberKey(undefined), []);
     const confirmRemoval = useCallback(() => {
@@ -80,6 +77,7 @@ export const useMemberAssignments = (): MemberAssignments => {
         getAssignedCount,
         requestRemoval: setRemovedMemberKey,
         removalText,
+        removalDetails,
         confirmRemoval,
         cancelRemoval,
     };

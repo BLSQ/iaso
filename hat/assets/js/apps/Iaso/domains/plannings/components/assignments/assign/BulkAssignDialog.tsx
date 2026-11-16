@@ -243,16 +243,22 @@ export const BulkAssignDialog: FC<Props> = ({ assignee, onClose }) => {
                 {formatMessage(MESSAGES.bulkAssignSelected, {
                     count: `${selectedIds.size}`,
                 })}
-                {uncheckedOwnIds.length > 0 &&
-                    ` ${formatMessage(MESSAGES.bulkAssignUnassigns, {
+            </Typography>
+            {uncheckedOwnIds.length > 0 && (
+                <Typography variant="body2">
+                    {formatMessage(MESSAGES.bulkAssignUnassigns, {
                         count: `${uncheckedOwnIds.length}`,
                         member: assignee.name,
-                    })}`}
-                {clearedCount > 0 &&
-                    ` ${formatMessage(MESSAGES.bulkAssignClearsBelow, {
+                    })}
+                </Typography>
+            )}
+            {clearedCount > 0 && (
+                <Typography variant="body2">
+                    {formatMessage(MESSAGES.bulkAssignClearsBelow, {
                         count: `${clearedCount}`,
-                    })}`}
-            </Typography>
+                    })}
+                </Typography>
+            )}
         </ConfirmCancelModal>
     );
 };

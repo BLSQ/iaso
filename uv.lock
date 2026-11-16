@@ -1303,15 +1303,15 @@ wheels = [
 
 [[package]]
 name = "drf-excel"
-version = "2.5.3"
+version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "djangorestframework" },
     { name = "openpyxl" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/57/3bc9d43dd6a792319943a78c79038338506590107b8ffcbe54c2e15fe99b/drf_excel-2.5.3.tar.gz", hash = "sha256:cac688c4b7581d7cfde1e6dfa88bcbc649939e4277a052877109d40934692202", size = 45139, upload-time = "2025-03-07T09:18:07.176Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/65/5867e155780b0a6928a961ca5931dbac9ce9a4c105aefe1d0a5e975ef98f/drf_excel-2.6.0.tar.gz", hash = "sha256:ea9b36f9d01a50981b4c821366847c243073dd004ebd20f62a7ddbc659791b39", size = 55546, upload-time = "2026-08-06T11:04:07.646Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/2c/94ce25e3bf42db0d8fcd494f3aa2e9c90ba9fc811351e2d352c656ffcaee/drf_excel-2.5.3-py3-none-any.whl", hash = "sha256:3c1e3a0f925394eec348a0d133288ab9cb4e7e676d2dbbc1f3a9c038167543e6", size = 15039, upload-time = "2025-03-07T09:18:05.839Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/a4/edc327efb441d8690198391acd190d8ac22458eae35d1fd68afe4297e987/drf_excel-2.6.0-py3-none-any.whl", hash = "sha256:609a2c882a2ec393357b5a0bf3f6bc0d6b6622f0f0baab09b77152c37e0f5f71", size = 15639, upload-time = "2026-08-06T11:04:06.351Z" },
 ]
 
 [[package]]
@@ -2044,9 +2044,9 @@ requires-dist = [
     { name = "djangorestframework", specifier = "==3.18.3" },
     { name = "djangorestframework-api-key", specifier = "==3.1.0" },
     { name = "djangorestframework-csv", specifier = "==3.0.2" },
-    { name = "djangorestframework-gis", specifier = ">=1.3.0" },
+    { name = "djangorestframework-gis", specifier = "==1.3.0" },
     { name = "djangorestframework-simplejwt", specifier = "==5.5.1" },
-    { name = "drf-excel", specifier = "==2.5.3" },
+    { name = "drf-excel", specifier = "==2.6.0" },
     { name = "drf-extensions", specifier = "==0.8.0" },
     { name = "drf-spectacular", extras = ["sidecar"], specifier = "==0.29.0" },
     { name = "duckdb", specifier = "==1.4.4" },

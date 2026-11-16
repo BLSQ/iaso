@@ -864,6 +864,11 @@ const MESSAGES = defineMessages({
             'This team has no member. Add members in the team hierarchy of the planning.',
         id: 'iaso.plannings.label.mapHintNoMember',
     },
+    mapHintPickMember: {
+        defaultMessage:
+            'Pick a member in the teams panel to assign org units to it.',
+        id: 'iaso.plannings.label.mapHintPickMember',
+    },
     showHelp: {
         defaultMessage: 'Show help',
         id: 'iaso.plannings.label.showHelp',

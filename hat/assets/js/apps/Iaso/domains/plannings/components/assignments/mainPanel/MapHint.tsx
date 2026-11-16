@@ -72,13 +72,14 @@ export const MapHint: FC = () => {
             return formatMessage(MESSAGES.mapHintNoMember);
         }
         if (isAssignMode) {
-            return (
-                noAreaMessage ??
-                formatMessage(MESSAGES.mapAssignHint, {
-                    member: currentAssignee?.name ?? '',
-                    team: selectedTeam.name,
-                })
-            );
+            if (noAreaMessage) return noAreaMessage;
+            if (!currentAssignee) {
+                return formatMessage(MESSAGES.mapHintPickMember);
+            }
+            return formatMessage(MESSAGES.mapAssignHint, {
+                member: currentAssignee.name,
+                team: selectedTeam.name,
+            });
         }
         return formatMessage(
             selectedTeam.type === TeamType.enum.TEAM_OF_USERS

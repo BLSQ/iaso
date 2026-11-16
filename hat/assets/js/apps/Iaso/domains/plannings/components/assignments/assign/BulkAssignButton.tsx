@@ -19,7 +19,7 @@ export const BulkAssignButton: FC = () => {
         ? formatMessage(MESSAGES.bulkAssignTooltip, {
               member: currentAssignee.name,
           })
-        : formatMessage(MESSAGES.mapHintNoMember);
+        : formatMessage(MESSAGES.mapHintPickMember);
     return (
         <>
             <Tooltip title={tooltip}>

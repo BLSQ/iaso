@@ -2392,6 +2392,7 @@
     "iaso.plannings.label.bulkAssignUnassigns": "{count} unchecked org units of {member} are unassigned.",
     "iaso.plannings.label.bulkAssignClearsBelow": "{count} of them have assignments made inside them, which are removed.",
     "iaso.plannings.label.mapHintNoMember": "This team has no member. Add members in the team hierarchy of the planning.",
+    "iaso.plannings.label.mapHintPickMember": "Pick a member in the teams panel to assign org units to it.",
     "iaso.plannings.label.showHelp": "Show help",
     "iaso.plannings.label.hideHelp": "Hide help",
     "iaso.plannings.label.legend": "Legend",

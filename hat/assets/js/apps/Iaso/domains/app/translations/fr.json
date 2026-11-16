@@ -2390,6 +2390,7 @@
     "iaso.plannings.label.bulkAssignUnassigns": "{count} unités d'organisation décochées de {member} sont désassignées.",
     "iaso.plannings.label.bulkAssignClearsBelow": "{count} d'entre elles contiennent des assignations, qui sont supprimées.",
     "iaso.plannings.label.mapHintNoMember": "Cette équipe n'a aucun membre. Ajoutez des membres dans la hiérarchie d'équipes du planning.",
+    "iaso.plannings.label.mapHintPickMember": "Choisissez un membre dans le panneau des équipes pour lui assigner des unités d'organisation.",
     "iaso.plannings.label.showHelp": "Afficher l'aide",
     "iaso.plannings.label.hideHelp": "Masquer l'aide",
     "iaso.plannings.label.legend": "Légende",

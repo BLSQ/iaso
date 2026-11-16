@@ -165,10 +165,10 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             {
-                "forms": [
-                    {"form": [f'Invalid pk "{self.form_1.pk}" - object does not exist.']},
-                    {"form": [f'Invalid pk "{self.form_2.pk}" - object does not exist.']},
-                ]
+                "forms": {
+                    "0": {"form": [f'Invalid pk "{self.form_1.pk}" - object does not exist.']},
+                    "1": {"form": [f'Invalid pk "{self.form_2.pk}" - object does not exist.']},
+                }
             },
         )
 
@@ -192,10 +192,10 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             {
-                "forms": [
-                    {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
-                    {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
-                ]
+                "forms": {
+                    "0": {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
+                    "1": {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
+                }
             },
         )
 
@@ -238,10 +238,10 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             {
-                "forms": [
-                    {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
-                    {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
-                ]
+                "forms": {
+                    "0": {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
+                    "1": {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]},
+                }
             },
         )
 
@@ -286,10 +286,10 @@ class MissionOrgUnitTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             {
-                "forms": [
-                    {"min_cardinality": ["This field is required."]},
-                    {"min_cardinality": ["This field is required."]},
-                ]
+                "forms": {
+                    "0": {"min_cardinality": ["This field is required."]},
+                    "1": {"min_cardinality": ["This field is required."]},
+                }
             },
         )
 

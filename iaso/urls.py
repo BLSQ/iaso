@@ -165,7 +165,7 @@ router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, b
 router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunitstree")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
-router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
+router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypesv2")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"potential_payments", PotentialPaymentsViewSet, basename="potential_payments")
@@ -221,7 +221,7 @@ router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importg
 router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
 router.register(r"tasks/create/instancebulkgpspush", InstanceBulkGpsPushViewSet, basename="instancebulkgpspush")
 router.register(
-    r"tasks/create/instancereferencebulklink", InstanceReferenceBulkLinkViewSet, basename="instancebulkgpspush"
+    r"tasks/create/instancereferencebulklink", InstanceReferenceBulkLinkViewSet, basename="instancebulklink"
 )
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
@@ -229,7 +229,7 @@ router.register(r"entities", EntityViewSet, basename="entity")
 router.register(r"mobile/entities/deleted", MobileEntityDeletedViewSet, basename="entitiesdeleted")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
-router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
+router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="mobile_entitytype")
 router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")
 router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
@@ -264,7 +264,7 @@ router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflo
 router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowchanges")
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
-router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
+router.register(r"mobile/reports", MobileReportsViewSet, basename="mobile_report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
 router.register(r"userlogs", ProfileLogsViewSet, basename="userlogs")
 

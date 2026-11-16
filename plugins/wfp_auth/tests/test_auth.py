@@ -5,6 +5,7 @@ import jwt
 from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 from django.urls import reverse
+from rest_framework import status
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -42,7 +43,7 @@ class WFPAuthTestCase(APITestCase):
                     "token": "f4k3-t0k3n",
                 },
             )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(m.User.objects.count(), 1)
         new_user = m.User.objects.get(email="john@doe.com")
@@ -85,7 +86,7 @@ class WFPAuthTestCase(APITestCase):
                     "token": "f4k3-t0k3n",
                 },
             )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Users.
         self.assertEqual(m.User.objects.count(), 3)
@@ -133,8 +134,8 @@ class WFPAuthTestCase(APITestCase):
                     "token": "f4k3-t0k3n",
                 },
             )
-        self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json()["details"], "Username already exists for this account.")
+        response_data = self.assertJSONResponse(response, status.HTTP_409_CONFLICT)
+        self.assertEqual(response_data["details"], "Username already exists for this account.")
 
     @patch("requests.get")
     def test_multi_tenant_token(self, mock_get):
@@ -173,13 +174,13 @@ class WFPAuthTestCase(APITestCase):
                 format="json",
                 data={"token": "f4k3-t0k3n"},
             )
-        self.assertEqual(response.status_code, 200)
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
         # Extract the JWT token and decode it to check which user it belongs to.
-        access_token = response.json()["access"]
+        access_token = response_data["access"]
         payload = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
         token_user_id = payload["user_id"]
-        self.assertEqual(token_user_id, tenant_user.id)  # It should be the tenant user.
+        self.assertEqual(token_user_id, str(tenant_user.id))  # It should be the tenant user.
 
     def test_web_callback_cancelled_login_does_not_crash(self):
         """Cancelling WFP login must redirect, not 500, even when SSO_PROVIDERS is empty.
@@ -187,10 +188,10 @@ class WFPAuthTestCase(APITestCase):
         WFP is not in SSO_PROVIDERS; allauth still reverses socialaccount_login_cancelled.
         """
         response = self.client.get("/wfp_auth/wfp/login/callback/?error=access_denied")
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
         self.assertEqual(response.url, reverse("socialaccount_login_cancelled"))
 
     def test_web_callback_error_page_renders_without_crashing(self):
         """A generic WFP SSO error on the web callback must render a page, not 500."""
         response = self.client.get("/wfp_auth/wfp/login/callback/?error=server_error")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -152,18 +152,36 @@ class EntityTypeAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_entity_type(self):
+        entity_type = EntityType.objects.create(
+            name="Entity Type",
+            code="entity_type",
+            reference_form=self.form_1,
+            account=self.star_wars,
+            is_active=True,
+            fields_list_view=["field1", "field2"],
+            fields_detail_info_view=["field3", "field4"],
+            fields_duplicate_search=["field5", "field6"],
+            prevent_add_if_duplicate_found=True,
+        )
+
         self.client.force_authenticate(self.yoda)
-
-        payload = {
-            "name": "New Entity Type",
-            "reference_form": self.form_1.id,
-        }
-
-        self.client.post("/api/entitytypes/", data=payload, format="json")
-
         response = self.client.get("/api/entitytypes/", format="json")
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 1)
+        result = response_data[0]
+        self.assertEqual(result["id"], entity_type.id)
+        self.assertEqual(result["name"], entity_type.name)
+        self.assertEqual(result["code"], entity_type.code)
+        self.assertEqual(result["reference_form"], entity_type.reference_form.id)
+        self.assertEqual(result["account"], entity_type.account.id)
+        self.assertEqual(result["entities_count"], 0)
+        self.assertEqual(result["fields_list_view"], entity_type.fields_list_view)
+        self.assertEqual(result["fields_detail_info_view"], entity_type.fields_detail_info_view)
+        self.assertEqual(result["fields_duplicate_search"], entity_type.fields_duplicate_search)
+        self.assertEqual(result["prevent_add_if_duplicate_found"], entity_type.prevent_add_if_duplicate_found)
+        self.assertIsNotNone(result["created_at"])
+        self.assertIsNotNone(result["updated_at"])
 
     def test_update_entity_type(self):
         self.client.force_authenticate(self.yoda)

@@ -28,6 +28,7 @@ type AssignmentsContextValue = {
     // A team works on the level of its depth: level 0 is the target geography of the root team.
     selectedLevel: number;
     selectedTeamMembers: TeamMember[];
+    isAssignMode: boolean;
     // The member that assign mode gives org units to.
     currentAssignee?: TeamMember;
 };
@@ -57,7 +58,8 @@ export const AssignmentsProvider: FC<Props> = ({
     rootTeamId,
     children,
 }) => {
-    const { teamId, assignee } = useAssignmentsParams();
+    const { teamId, assignee, mode } = useAssignmentsParams();
+    const isAssignMode = mode === 'assign';
     const {
         tree,
         isLoading: isLoadingTree,
@@ -94,6 +96,7 @@ export const AssignmentsProvider: FC<Props> = ({
                 selectedTeam,
                 selectedLevel: teamChain.length - 1,
                 selectedTeamMembers,
+                isAssignMode,
                 currentAssignee,
             },
         [
@@ -104,6 +107,7 @@ export const AssignmentsProvider: FC<Props> = ({
             teamChain,
             selectedTeam,
             selectedTeamMembers,
+            isAssignMode,
             currentAssignee,
         ],
     );

@@ -18,9 +18,13 @@ import {
 } from '@mui/material';
 import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDialog';
+import { useAssignOnClick } from '../assign/useAssignOnClick';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
+import { OrgUnitRow } from './types';
 import { useLevelOrgUnitRows } from './useLevelOrgUnitRows';
 
 const styles = {
@@ -61,9 +65,28 @@ export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { rows: levelRows, isFetching } = useLevelOrgUnitRows();
     const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const { isAssignMode } = useAssignmentsContext();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
+    const {
+        assignableOrgUnitIds,
+        toggleAssignment,
+        pendingChange,
+        cancelPendingChange,
+    } = useAssignOnClick();
+    const isRowClickable = (row: OrgUnitRow) =>
+        isAssignMode ? assignableOrgUnitIds.has(row.id) : Boolean(row.teamId);
+    const handleRowClick = useCallback(
+        (row: OrgUnitRow) => {
+            if (isAssignMode) {
+                toggleAssignment(row.id);
+            } else if (row.teamId) {
+                openTeam(row.teamId);
+            }
+        },
+        [isAssignMode, toggleAssignment, openTeam],
+    );
     const rows = useMemo(
         () =>
             onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
@@ -145,7 +168,8 @@ export const OrgUnitsTable: FC = () => {
                                 key={row.id}
                                 row={row}
                                 isFocused={row.id === focusedOrgUnitId}
-                                onOpenTeam={openTeam}
+                                isClickable={isRowClickable(row)}
+                                onClick={handleRowClick}
                             />
                         ))}
                         {rows.length === 0 && !isFetching && (
@@ -178,6 +202,10 @@ export const OrgUnitsTable: FC = () => {
                     selectCount={0}
                 />
             </Box>
+            <ClearAssignmentsBelowDialog
+                pendingChange={pendingChange}
+                onClose={cancelPendingChange}
+            />
         </Box>
     );
 };

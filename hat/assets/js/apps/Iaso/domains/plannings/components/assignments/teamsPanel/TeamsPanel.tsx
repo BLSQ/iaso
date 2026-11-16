@@ -71,8 +71,7 @@ const styles = {
 
 export const TeamsPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { openTeam, pickAssignee, mode } = useAssignmentsParams();
-    const isAssignMode = mode === 'assign';
+    const { openTeam, pickAssignee } = useAssignmentsParams();
     const {
         planning,
         tree,
@@ -80,6 +79,7 @@ export const TeamsPanel: FC = () => {
         selectedTeam,
         expandedTeamIds,
         toggleTeam,
+        isAssignMode,
         currentAssignee,
     } = useAssignmentsContext();
     const noAreaMessage = useNoAreaMessage();

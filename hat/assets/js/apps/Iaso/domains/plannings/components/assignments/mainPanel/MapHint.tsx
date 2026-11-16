@@ -6,7 +6,6 @@ import { useSafeIntl } from 'bluesquare-components';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
-import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { useNoAreaMessage } from '../assign/useSelectedTeamArea';
 
@@ -48,9 +47,8 @@ const styles = {
 
 export const MapHint: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { selectedTeam, selectedTeamMembers, currentAssignee } =
+    const { selectedTeam, selectedTeamMembers, currentAssignee, isAssignMode } =
         useAssignmentsContext();
-    const { mode } = useAssignmentsParams();
     const noAreaMessage = useNoAreaMessage();
     const [isOpen, setIsOpen] = useState(true);
     const toggle = useCallback(() => setIsOpen(previous => !previous), []);
@@ -73,7 +71,7 @@ export const MapHint: FC = () => {
         if (!selectedTeamMembers.length) {
             return formatMessage(MESSAGES.mapHintNoMember);
         }
-        if (mode === 'assign') {
+        if (isAssignMode) {
             return (
                 noAreaMessage ??
                 formatMessage(MESSAGES.mapAssignHint, {

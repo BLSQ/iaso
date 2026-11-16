@@ -3,7 +3,6 @@ import { Stack } from '@mui/material';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
-import { useAssignmentsParams } from '../../hooks/useAssignmentsParams';
 import { PublishedPlanningConfirmationProvider } from './assign/PublishedPlanningConfirmation';
 import { AssignmentsBreadcrumbs } from './AssignmentsBreadcrumbs';
 import { AssignmentsMainPanel } from './mainPanel/AssignmentsMainPanel';
@@ -25,8 +24,7 @@ const styles = {
 } satisfies SxStyles;
 
 export const AssignmentsContent: FC = () => {
-    const { mode } = useAssignmentsParams();
-    const { planning } = useAssignmentsContext();
+    const { planning, isAssignMode } = useAssignmentsContext();
     return (
         <PublishedPlanningConfirmationProvider>
             <GreyPageWrapper
@@ -35,7 +33,7 @@ export const AssignmentsContent: FC = () => {
                 fillHeight
             >
                 <Stack gap={2} sx={styles.fill}>
-                    {mode === 'assign' && planning.status === 'published' && (
+                    {isAssignMode && planning.status === 'published' && (
                         <PublishedPlanningWarning />
                     )}
                     <Stack

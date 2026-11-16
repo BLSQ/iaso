@@ -78,7 +78,7 @@ const INITIAL_VIEW_STATE = {
 
 // The selected team's level is outlined, its members' level is filled with their assignee's color.
 export const AssignmentsMap: FC = () => {
-    const { planning, tree, selectedTeam, selectedLevel } =
+    const { planning, tree, selectedTeam, selectedLevel, isAssignMode } =
         useAssignmentsContext();
     const showPoints = selectedTeam.type === TeamType.enum.TEAM_OF_USERS;
     const { area, members, membersPresence, isFetching } =
@@ -88,7 +88,6 @@ export const AssignmentsMap: FC = () => {
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const isAssignMode = mode === 'assign';
     const { data: assignments } = usePlanningAssignments(planning.id);
     const {
         assignableOrgUnitIds,

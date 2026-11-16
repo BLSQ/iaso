@@ -4,6 +4,7 @@ import MapIcon from '@mui/icons-material/Map';
 import { Paper, Stack, Tab, Tabs } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
@@ -37,7 +38,8 @@ const styles = {
 
 export const AssignmentsMainPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { view, mode, updateParams } = useAssignmentsParams();
+    const { view, updateParams } = useAssignmentsParams();
+    const { isAssignMode } = useAssignmentsContext();
     const handleChangeView = useCallback(
         (_event: SyntheticEvent, newView: AssignmentsView) =>
             updateParams({ view: newView }),
@@ -72,7 +74,7 @@ export const AssignmentsMainPanel: FC = () => {
                     gap={1}
                     sx={styles.filters}
                 >
-                    {mode === 'assign' && (
+                    {isAssignMode && (
                         <>
                             <BulkAssignButton />
                             <EmptyAreaButton />

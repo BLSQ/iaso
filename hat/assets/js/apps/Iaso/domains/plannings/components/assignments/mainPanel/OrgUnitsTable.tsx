@@ -7,6 +7,7 @@ import React, {
     useState,
 } from 'react';
 import Box from '@mui/material/Box/Box';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
 import Table from '@mui/material/Table/Table';
 import TableBody from '@mui/material/TableBody/TableBody';
 import TableCell from '@mui/material/TableCell/TableCell';
@@ -21,7 +22,9 @@ import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDialog';
 import { useAssignOnClick } from '../assign/useAssignOnClick';
+import { useListSelection } from '../assign/useListSelection';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
+import { SelectionBar } from './SelectionBar';
 import { OrgUnitRow } from './types';
 import { useLevelOrgUnitRows } from './useLevelOrgUnitRows';
 
@@ -42,6 +45,9 @@ const styles = {
     table: {
         '& .MuiTableCell-root:first-of-type': { pl: 4 },
         '& .MuiTableCell-root:last-of-type': { pr: 4 },
+    },
+    checkboxCell: {
+        width: 0,
     },
     headerCell: {
         fontWeight: 500,
@@ -90,6 +96,7 @@ export const OrgUnitsTable: FC = () => {
             onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
         [levelRows, onlyUnassigned],
     );
+    const selection = useListSelection(rows);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
@@ -111,6 +118,21 @@ export const OrgUnitsTable: FC = () => {
         currentPage * rowsPerPage,
         (currentPage + 1) * rowsPerPage,
     );
+    const selectablePageRows = pageRows.filter(selection.isSelectable);
+    const selectedOnPageCount = selectablePageRows.filter(row =>
+        selection.selectedIds.has(row.id),
+    ).length;
+    const isPageSelected =
+        selectablePageRows.length > 0 &&
+        selectedOnPageCount === selectablePageRows.length;
+    const { select, unselect } = selection;
+    const togglePage = useCallback(
+        () =>
+            isPageSelected
+                ? unselect(selectablePageRows)
+                : select(selectablePageRows),
+        [isPageSelected, select, unselect, selectablePageRows],
+    );
 
     // The pagination counts pages from 1.
     const handleTableParamsChange = useCallback(
@@ -127,10 +149,36 @@ export const OrgUnitsTable: FC = () => {
     return (
         <Box sx={styles.container}>
             {isFetching && <LoadingSpinner absolute fixed={false} />}
+            {isAssignMode && <SelectionBar selection={selection} />}
             <TableContainer sx={styles.tableContainer}>
                 <Table stickyHeader sx={styles.table}>
                     <TableHead>
                         <TableRow>
+                            {isAssignMode && (
+                                <TableCell
+                                    padding="checkbox"
+                                    sx={{
+                                        ...styles.headerCell,
+                                        ...styles.checkboxCell,
+                                    }}
+                                >
+                                    <Checkbox
+                                        size="small"
+                                        checked={isPageSelected}
+                                        indeterminate={
+                                            selectedOnPageCount > 0 &&
+                                            !isPageSelected
+                                        }
+                                        disabled={!selectablePageRows.length}
+                                        onChange={togglePage}
+                                        inputProps={{
+                                            'aria-label': formatMessage(
+                                                MESSAGES.selectAll,
+                                            ),
+                                        }}
+                                    />
+                                </TableCell>
+                            )}
                             <TableCell
                                 sx={{
                                     ...styles.headerCell,
@@ -168,11 +216,24 @@ export const OrgUnitsTable: FC = () => {
                                 isFocused={row.id === focusedOrgUnitId}
                                 isClickable={isRowClickable(row)}
                                 onClick={handleRowClick}
+                                selection={
+                                    isAssignMode
+                                        ? {
+                                              isSelectable:
+                                                  selection.isSelectable(row),
+                                              isSelected:
+                                                  selection.selectedIds.has(
+                                                      row.id,
+                                                  ),
+                                              onToggle: selection.toggle,
+                                          }
+                                        : undefined
+                                }
                             />
                         ))}
                         {rows.length === 0 && !isFetching && (
                             <TableRow>
-                                <TableCell colSpan={4}>
+                                <TableCell colSpan={isAssignMode ? 5 : 4}>
                                     <Typography
                                         variant="body2"
                                         color="text.secondary"

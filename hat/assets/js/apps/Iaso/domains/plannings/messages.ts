@@ -840,6 +840,27 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Unselect all',
         id: 'iaso.label.unSelectAll',
     },
+    selectedOrgUnitsCount: {
+        defaultMessage: '{count} org units selected',
+        id: 'iaso.plannings.label.selectedOrgUnitsCount',
+    },
+    noOrgUnitSelected: {
+        defaultMessage: 'No org unit selected',
+        id: 'iaso.plannings.label.noOrgUnitSelected',
+    },
+    unassignSelected: {
+        defaultMessage: 'Unassign selected',
+        id: 'iaso.plannings.label.unassignSelected',
+    },
+    clearSelectionAssignmentsBelowTitle: {
+        defaultMessage: 'Remove the assignments made inside?',
+        id: 'iaso.plannings.label.clearSelectionAssignmentsBelowTitle',
+    },
+    clearSelectionAssignmentsBelowText: {
+        defaultMessage:
+            '{count} of the selected org units contain assignments made by their current assignee. Those assignments are removed.',
+        id: 'iaso.plannings.label.clearSelectionAssignmentsBelowText',
+    },
     noOrgUnitMatchesFilter: {
         defaultMessage: 'No org unit matches the filter',
         id: 'iaso.plannings.label.noOrgUnitMatchesFilter',

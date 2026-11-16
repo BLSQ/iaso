@@ -1,5 +1,8 @@
 import { IntlMessage } from 'bluesquare-components';
 
+// A snack bar can receive a descriptor, or a string already produced by formatMessage.
+type SnackBarMessage = string | IntlMessage | null;
+
 export const formSuccessFullMessageKey = 'successful';
 export const formErrorMessageKey = 'error';
 export const formWarningMessageKey = 'warning';
@@ -8,7 +11,7 @@ export const reloadPageMessageKey = 'reloadPage';
 
 export const succesfullSnackBar = (
     messageKey = formSuccessFullMessageKey,
-    messageObject?: IntlMessage | null,
+    messageObject?: SnackBarMessage,
 ) => ({
     messageKey,
     messageObject,
@@ -25,7 +28,7 @@ export const successfullSnackBarWithButtons = ({
     buttonAction,
 }: {
     messageKey?: string;
-    messageObject?: IntlMessage | null;
+    messageObject?: SnackBarMessage;
     persist?: boolean;
     buttonMessageKey?: string;
     buttonAction?: () => void;
@@ -42,7 +45,7 @@ export const successfullSnackBarWithButtons = ({
 
 export const errorSnackBar = (
     messageKey = formErrorMessageKey,
-    messageObject?: IntlMessage | null,
+    messageObject?: SnackBarMessage,
     errorLog?: unknown,
 ) => ({
     messageKey,
@@ -57,7 +60,7 @@ export const errorSnackBar = (
 
 export const warningSnackBar = (
     messageKey = formWarningMessageKey,
-    messageObject?: IntlMessage | null,
+    messageObject?: SnackBarMessage,
     id?: string,
 ) => ({
     messageKey,

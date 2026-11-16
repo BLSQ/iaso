@@ -192,7 +192,7 @@ class AssignmentViewSet(PlanningOrgUnitChildrenQuerysetMixin, AuditMixin, ModelV
         assignment_ids = list(assignments.values_list("id", flat=True))
         with transaction.atomic():
             deleted_count = assignments.update(deleted_at=timezone.now())
-            updated_assignments = Assignment.objects.in_bulk(assignment_ids)
+            updated_assignments = Assignment.objects_include_deleted.in_bulk(assignment_ids)
             audit_list = []
 
             # Create audit entries for each deleted assignment

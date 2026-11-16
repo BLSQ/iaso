@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0415_remove_device_imei_remove_device_projects_and_more"),
+        ("iaso", "0416_alter_corepermissionsupport_options_and_more"),
     ]
 
     operations = [

@@ -20,7 +20,7 @@ def create_first_snt_workspaces(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0416_workspace"),
+        ("iaso", "0417_workspace"),
     ]
 
     operations = [

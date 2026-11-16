@@ -1,9 +1,9 @@
 from iaso.test import IasoMigratorTestCase
 
 
-class Test0415CreateFirstSntWorkspaces(IasoMigratorTestCase):
-    migrate_from = ("iaso", "0416_workspace")
-    migrate_to = ("iaso", "0417_create_first_snt_workspaces")
+class Test0418CreateFirstSntWorkspaces(IasoMigratorTestCase):
+    migrate_from = ("iaso", "0417_workspace")
+    migrate_to = ("iaso", "0418_create_first_snt_workspaces")
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")

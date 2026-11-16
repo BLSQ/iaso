@@ -1179,7 +1179,9 @@ class ETL:
         visits = []
         steps = []
 
-        for visit_num, visit_subs in enumerate(visit_groups):
+        # Bangladesh numbers visits from 1, the other countries from 0.
+        first_visit_number = 1 if self._is_bangladesh() else 0
+        for visit_num, visit_subs in enumerate(visit_groups, start=first_visit_number):
             visit_result = self._process_visit(visit_subs, journey, visit_num)
             if visit_result is None:
                 continue

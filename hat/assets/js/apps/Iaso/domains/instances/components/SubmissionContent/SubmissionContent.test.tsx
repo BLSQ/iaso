@@ -191,4 +191,50 @@ describe('SubmissionContent', () => {
         await user.click(twoColumns);
         expect(twoColumns).toHaveAttribute('aria-pressed', 'true');
     });
+
+    it('shows only the summary fields until all questions are requested', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <SubmissionContent
+                formDescriptor={formDescriptor}
+                instanceData={instanceData}
+                summaryFields={['NAME']}
+            />,
+        );
+        expect(screen.getByText('Name')).toBeInTheDocument();
+        expect(screen.queryByText('Age')).not.toBeInTheDocument();
+
+        await user.click(
+            screen.getByLabelText('Show all questions and their identifiers'),
+        );
+        expect(screen.getByText('Age')).toBeInTheDocument();
+    });
+
+    it('searches all the questions, not only the summary fields', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <SubmissionContent
+                formDescriptor={formDescriptor}
+                instanceData={instanceData}
+                summaryFields={['name']}
+            />,
+        );
+        await user.type(screen.getByPlaceholderText('Search'), 'Age');
+        expect(screen.getByText('Age')).toBeInTheDocument();
+    });
+
+    it('never shows the questions hidden as personal data', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <SubmissionContent
+                formDescriptor={formDescriptor}
+                instanceData={instanceData}
+                hiddenFields={['name']}
+            />,
+        );
+        expect(screen.queryByText('Name')).not.toBeInTheDocument();
+        expect(screen.getByText('Age')).toBeInTheDocument();
+        await user.click(screen.getByLabelText('Show question IDs'));
+        expect(screen.queryByText('Name')).not.toBeInTheDocument();
+    });
 });

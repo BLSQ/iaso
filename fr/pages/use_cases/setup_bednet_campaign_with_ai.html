@@ -1546,7 +1546,7 @@ décisions de la campagne sont déjà prises.</p>
 <tr>
 <td><strong>Tableaux de bord web</strong></td>
 <td>équipe de coordination</td>
-<td>avancement de la campagne par région, district ou formation sanitaire ; présence et fiche de paiement des travailleurs</td>
+<td>avancement de la campagne par région, district ou formation sanitaire, avec une carte des ménages ; présence et fiche de paiement des travailleurs ; stock par zone</td>
 </tr>
 <tr>
 <td><strong>Rapports mobiles</strong></td>
@@ -1623,8 +1623,8 @@ donnez à l'étape 3.</p>
 <p>Téléchargez le kit dans la langue dans laquelle l'assistant doit travailler, et
 décompressez-le sur votre ordinateur :</p>
 <ul>
-<li><strong><a href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup-fr.zip">Kit de campagne en français</a></strong> (zip, 5,9 Mo)</li>
-<li><strong><a href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup.zip">Kit de campagne en anglais</a></strong> (zip, 5,5 Mo)</li>
+<li><strong><a href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup-fr.zip">Kit de campagne en français</a></strong> (zip, 6,1 Mo)</li>
+<li><strong><a href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup.zip">Kit de campagne en anglais</a></strong> (zip, 5,6 Mo)</li>
 </ul>
 <p>Les deux kits contiennent les mêmes formulaires, avec des libellés en français et en anglais.</p>
 <h3 id="etape-3-donner-au-kit-lacces-a-votre-compte-iaso">Étape 3 : Donner au kit l'accès à votre compte IASO<a class="headerlink" href="#etape-3-donner-au-kit-lacces-a-votre-compte-iaso" title="Permanent link">#</a></h3>
@@ -1653,33 +1653,71 @@ modifications plus tard (voir l'étape 7).</p>
 <li>Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip, ainsi que
    votre fichier Excel ou GeoPackage si vous en avez un. (Avec Claude Code, ouvrez-le plutôt
    dans le dossier du kit.)</li>
-<li>Envoyez ce message, complété avec l'origine de vos données géographiques :</li>
+<li>Copiez tel quel l'un de ces messages, selon l'origine de vos données géographiques.</li>
 </ol>
+<p><strong>Une démo, pour essayer le kit</strong> (pyramide de démonstration du kit et réponses d'exemple) :</p>
 <blockquote>
 <p>Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
-Décompresse-le, lis <code>SKILL.md</code>, <code>reference/pitfalls.md</code> et <code>reference/architecture.md</code>,
-puis suis <code>SKILL.md</code> étape par étape pour me guider dans la construction des outils de ma
-campagne. Utilise uniquement les scripts du kit, aucun connecteur IASO. Commence par
-vérifier l'accès et faire une sauvegarde de mon compte. Mes données géographiques viennent
-de : [mon DHIS2, déjà configuré sur la source de données / le fichier Excel joint / le
-GeoPackage joint / une pyramide de démonstration / elles sont déjà dans IASO]. Pose-moi
-ensuite les questions de la campagne un thème à la fois. Montre-moi les QR codes dès que
-les projets existent. Demande ma confirmation avant chaque étape qui modifie IASO. Ne
-t'arrête pas avant la liste de contrôle finale, et dis-moi à la fin ce que tu as créé et ce
-que je dois tester sur un téléphone.</p>
+Décompresse-le si besoin, lis <code>SKILL.md</code> et suis-le étape par étape pour me guider. N'utilise
+que les scripts du kit, aucun connecteur IASO. C'est une démo : utilise la pyramide de
+démonstration du kit et propose des réponses fictives pour tout, dans un seul récapitulatif
+(mode démo). Demande-moi confirmation avant chaque étape qui écrit dans IASO, et ne t'arrête
+qu'après la liste du § 12c.</p>
 </blockquote>
+<p><strong>Vos données géographiques dans un fichier Excel</strong> (joint à la conversation) :</p>
+<blockquote>
+<p>Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
+Décompresse-le si besoin, lis <code>SKILL.md</code> et suis-le étape par étape pour me guider. N'utilise
+que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont dans le fichier
+Excel joint. Pose-moi les questions de la campagne une section à la fois. Demande-moi
+confirmation avant chaque étape qui écrit dans IASO, et ne t'arrête qu'après la liste du § 12c.</p>
+</blockquote>
+<p><strong>Vos données géographiques dans DHIS2</strong> (déjà configuré sur la source de données dans IASO) :</p>
+<blockquote>
+<p>Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
+Décompresse-le si besoin, lis <code>SKILL.md</code> et suis-le étape par étape pour me guider. N'utilise
+que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation viennent de notre
+DHIS2, déjà configuré sur la source de données IASO. Pose-moi les questions de la campagne une
+section à la fois. Demande-moi confirmation avant chaque étape qui écrit dans IASO, et ne
+t'arrête qu'après la liste du § 12c.</p>
+</blockquote>
+<p><strong>Vos données géographiques déjà dans IASO</strong> :</p>
+<blockquote>
+<p>Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
+Décompresse-le si besoin, lis <code>SKILL.md</code> et suis-le étape par étape pour me guider. N'utilise
+que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont déjà dans IASO.
+Pose-moi les questions de la campagne une section à la fois. Demande-moi confirmation avant
+chaque étape qui écrit dans IASO, et ne t'arrête qu'après la liste du § 12c.</p>
+</blockquote>
+<p>En cas de doute, commencez par la démo : elle construit tout sur des lieux fictifs, et vous
+voyez le résultat avant de préparer vos propres données. Avec un fichier GeoPackage, utilisez
+le message Excel en écrivant « GeoPackage » au lieu d'« Excel ».</p>
 <p>L'assistant travaille dans son propre espace : demandez-lui de vous donner en téléchargement
 les fichiers qu'il produit (QR codes, mots de passe des utilisateurs, sauvegarde).</p>
 <div class="admonition tip">
 <p class="admonition-title">L'assistant n'arrive pas à joindre IASO ?</p>
 <p>Les scripts du kit doivent accéder à app.openiaso.com par internet. Si l'assistant
-indique que son code ne peut pas se connecter, vérifiez dans ses paramètres que
-l'exécution de code a le droit d'accéder à internet (ou à cette adresse), puis
-demandez-lui de réessayer.</p>
+signale « Name or service not known » ou indique que son code ne peut pas se connecter,
+son code n'a pas le droit de joindre cette adresse :</p>
+<ul>
+<li><strong>Claude, abonnement personnel</strong> : dans <strong>Paramètres &gt; Capacités</strong>, autorisez
+  l'exécution de code à accéder au réseau et ajoutez exactement <code>app.openiaso.com</code>
+  (<code>openiaso.com</code> seul ne suffit pas).</li>
+<li><strong>Claude, abonnement Team ou Enterprise</strong> : seul un propriétaire de votre organisation
+  Claude peut le faire, dans <strong>Paramètres de l'organisation &gt; Capacités</strong>. Vous pouvez lui
+  envoyer ce message : <em>« Bonjour, j'utilise Claude pour configurer une campagne dans
+  IASO. Peux-tu ajouter exactement app.openiaso.com aux domaines que l'exécution de code
+  de Claude peut joindre (Paramètres de l'organisation &gt; Capacités) ? Sans cela, Claude
+  ne peut pas joindre notre serveur IASO. Merci ! »</em></li>
+<li><strong>ChatGPT</strong> et les autres assistants : vérifiez dans leurs paramètres que l'exécution
+  de code peut accéder à internet, ou à cette adresse.</li>
+</ul>
+<p>Demandez-lui ensuite de réessayer.</p>
 </div>
 <h3 id="etape-5-repondre-aux-questions-de-lassistant">Étape 5 : Répondre aux questions de l'assistant<a class="headerlink" href="#etape-5-repondre-aux-questions-de-lassistant" title="Permanent link">#</a></h3>
-<p>L'assistant pose ses questions un thème à la fois. Plus vous avez déjà pris de décisions,
-plus la configuration est rapide :</p>
+<p>L'assistant pose ses questions un thème à la fois (en démo, il propose toutes les réponses
+d'un coup, dans un seul récapitulatif à valider). Plus vous avez déjà pris de décisions, plus
+la configuration est rapide :</p>
 <table>
 <thead>
 <tr>
@@ -1706,7 +1744,7 @@ plus la configuration est rapide :</p>
 </tr>
 <tr>
 <td>Rapports</td>
-<td>quels tableaux de bord et rapports mobiles, et qui peut ouvrir chacun</td>
+<td>quels tableaux de bord et rapports mobiles, la carte des ménages et ses noms de lieux, et qui peut ouvrir chaque page</td>
 <td>la liste des personnes qui suivent la campagne</td>
 </tr>
 <tr>
@@ -1733,13 +1771,48 @@ par les vôtres.</p>
 <p>L'assistant construit ensuite la campagne étape par étape, en demandant votre accord à
 chaque fois : données géographiques, projets, formulaires, registres, stock,
 utilisateurs, tableaux de bord et rapports mobiles.</p>
+<p>Vous pouvez installer l'application IASO dès que l'assistant montre les QR codes, mais le
+téléphone montre peu de choses tant que le reste n'existe pas :</p>
+<table>
+<thead>
+<tr>
+<th>Après</th>
+<th>Sur le téléphone</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>les projets</td>
+<td>l'application se configure avec le QR code du projet, mais ne montre encore rien</td>
+</tr>
+<tr>
+<td>les formulaires et les utilisateurs</td>
+<td>un agent se connecte, synchronise et voit les formulaires</td>
+</tr>
+<tr>
+<td>les registres et leurs suivis</td>
+<td>les ménages et les travailleurs peuvent être enregistrés et retrouvés</td>
+</tr>
+<tr>
+<td>le stock</td>
+<td>les formulaires de stock ; les soldes apparaissent après une première réception</td>
+</tr>
+<tr>
+<td>les rapports mobiles</td>
+<td>le rapport s'ouvre depuis l'application</td>
+</tr>
+</tbody>
+</table>
+<p>Le premier test utile sur un téléphone se fait donc une fois les utilisateurs créés, aux deux
+tiers environ de la séance.</p>
 <h3 id="etape-6-tester-sur-un-telephone">Étape 6 : Tester sur un téléphone<a class="headerlink" href="#etape-6-tester-sur-un-telephone" title="Permanent link">#</a></h3>
 <ol>
 <li><strong>Installez l'application IASO</strong> sur un téléphone Android depuis
    <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=fr">Google Play</a>
    (ou scannez le QR code du Play Store que l'assistant vous donne).</li>
 <li><strong>Choisissez l'utilisateur de test</strong> : un utilisateur de test créé par l'assistant, ou
-   votre propre utilisateur. Dans les deux cas, cet utilisateur doit avoir les projets
+   votre propre utilisateur (l'assistant propose de vous ajouter aux projets de la
+   campagne). Dans les deux cas, cet utilisateur doit avoir les projets
    que vous voulez tester : dans IASO, allez dans <strong>Admin &gt; Utilisateurs</strong>, modifiez
    l'utilisateur et, dans <strong>Projets</strong>, sélectionnez les projets à tester. Pour essayer les
    différents projets et passer de l'un à l'autre, sélectionnez-les tous.</li>
@@ -1755,7 +1828,16 @@ utilisateurs, tableaux de bord et rapports mobiles.</p>
 <li>Ouvrez les rapports mobiles, avec réseau puis en mode avion.</li>
 </ol>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-home.jpg" data-desc-position="bottom"><img alt="L'accueil d'un projet sur le téléphone" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-home.jpg" width="220"></a>
-<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-report.jpg" data-desc-position="bottom"><img alt="Le rapport d'avancement dans l'application" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-report.jpg" width="220"></a></p>
+<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-report.jpg" data-desc-position="bottom"><img alt="Le rapport d'avancement dans l'application" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-report.jpg" width="220"></a>
+<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg" data-desc-position="bottom"><img alt="La carte des ménages dans le rapport d'avancement" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg" width="220"></a></p>
+<div class="admonition note">
+<p class="admonition-title">Où sont les formulaires de stock ?</p>
+<p>Sur les serveurs qui ont l'écran d'accueil du stock, le projet Stock s'ouvre sur les
+magasins et leurs formulaires. Sinon, l'assistant ajoute un onglet <strong>Collecte de données</strong>
+au projet Stock : ouvrez-le, choisissez le magasin, et les formulaires de stock sont
+listés. Sans cet onglet, les formulaires de stock sont sous <strong>Entités &gt; Mise à jour des
+stocks</strong>, puis le magasin, puis <strong>Editer</strong> à côté de son nom.</p>
+</div>
 <p>Avant de former les équipes de terrain, demandez à l'assistant de supprimer les données et
 les utilisateurs de test.</p>
 <h3 id="etape-7-apres-la-configuration">Étape 7 : Après la configuration<a class="headerlink" href="#etape-7-apres-la-configuration" title="Permanent link">#</a></h3>
@@ -1766,7 +1848,10 @@ les utilisateurs de test.</p>
   sur les téléphones doivent être modifiés avec précaution : le kit explique à l'assistant
   comment faire.</li>
 <li>Suivez la campagne dans les tableaux de bord web (menu <strong>Pages</strong> dans IASO) et dans les
-  rapports mobiles.</li>
+  rapports mobiles. Le tableau de bord de la campagne et le rapport d'avancement montrent les
+  ménages sur une carte (fond de carte du serveur de tuiles de Bluesquare, tiré
+  d'OpenStreetMap) : dans le tableau de bord, cliquez sur une ligne du tableau pour zoomer sur
+  ce lieu.</li>
 </ul>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg" data-desc-position="bottom"><img alt="Le tableau de bord de la campagne" class="doc-shot" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg"></a></p>
 <h2 id="en-savoir-plus">En savoir plus<a class="headerlink" href="#en-savoir-plus" title="Permanent link">#</a></h2>

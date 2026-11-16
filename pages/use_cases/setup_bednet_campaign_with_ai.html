@@ -1543,7 +1543,7 @@ especially if most of the campaign decisions are already made.</p>
 <tr>
 <td><strong>Web dashboards</strong></td>
 <td>coordination team</td>
-<td>campaign progress by region, district or health facility; worker attendance and payment sheet</td>
+<td>campaign progress by region, district or health facility, with a map of the households; worker attendance and payment sheet; stock by area</td>
 </tr>
 <tr>
 <td><strong>Mobile reports</strong></td>
@@ -1617,8 +1617,8 @@ with the kit's own scripts and the access key you give it in step 3.</p>
 <p>Download the kit in the language you want the assistant to work in, and unzip it on your
 computer:</p>
 <ul>
-<li><strong><a href="setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup.zip">Campaign kit in English</a></strong> (zip, 5.5 MB)</li>
-<li><strong><a href="setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup-fr.zip">Campaign kit in French</a></strong> (zip, 5.9 MB)</li>
+<li><strong><a href="setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup.zip">Campaign kit in English</a></strong> (zip, 5.6 MB)</li>
+<li><strong><a href="setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup-fr.zip">Campaign kit in French</a></strong> (zip, 6.1 MB)</li>
 </ul>
 <p>Both kits contain the same forms, with English and French labels.</p>
 <h3 id="step-3-give-the-kit-access-to-your-iaso-account">Step 3: Give the kit access to your IASO account<a class="headerlink" href="#step-3-give-the-kit-access-to-your-iaso-account" title="Permanent link">#</a></h3>
@@ -1644,30 +1644,68 @@ need it to come back to the assistant and make changes later (see step 7).</p>
 <ol>
 <li>Start a new conversation in Claude or ChatGPT and attach the zip, plus your Excel or
    GeoPackage file if you have one. (With Claude Code, open it in the kit folder instead.)</li>
-<li>Send this message, completed with where your geographic data comes from:</li>
+<li>Copy one of these messages as it is, depending on where your geographic data comes from.</li>
 </ol>
+<p><strong>A demo, to try the kit</strong> (the kit's demo pyramid and example answers):</p>
 <blockquote>
-<p>Here is a kit to set up a bed net distribution campaign in IASO. Unzip it, read
-<code>SKILL.md</code>, <code>reference/pitfalls.md</code> and <code>reference/architecture.md</code>, then follow <code>SKILL.md</code>
-step by step to guide me through building the tools of my campaign. Use only the kit's
-scripts, no IASO connector. Start by checking access and making a backup of my account.
-My geographic data comes from: [my DHIS2, already set up on the data source / the attached
-Excel file / the attached GeoPackage / a demo pyramid / it is already in IASO]. Then ask
-me the campaign questions one topic at a time. Show me the QR codes as soon as the projects
-exist. Ask for my confirmation before each step that changes IASO. Don't stop before the
-final checklist, and tell me at the end what you created and what I must test on a phone.</p>
+<p>Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
+connector. This is a demo: use the kit's demo pyramid and propose placeholder answers for
+everything in one summary (demo mode). Confirm with me before each step that writes to
+IASO, and do not stop before the checklist of § 12c.</p>
 </blockquote>
+<p><strong>Your geographic data in an Excel file</strong> (attached to the conversation):</p>
+<blockquote>
+<p>Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
+connector. My org units are in the attached Excel file. Ask me the campaign questions one
+section at a time. Confirm with me before each step that writes to IASO, and do not stop
+before the checklist of § 12c.</p>
+</blockquote>
+<p><strong>Your geographic data in DHIS2</strong> (already set up on the data source in IASO):</p>
+<blockquote>
+<p>Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
+connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
+the campaign questions one section at a time. Confirm with me before each step that writes
+to IASO, and do not stop before the checklist of § 12c.</p>
+</blockquote>
+<p><strong>Your geographic data already in IASO</strong>:</p>
+<blockquote>
+<p>Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
+connector. My org units are already in IASO. Ask me the campaign questions one section at a
+time. Confirm with me before each step that writes to IASO, and do not stop before the
+checklist of § 12c.</p>
+</blockquote>
+<p>If you are unsure, start with the demo: it builds everything on fictitious places, and you see
+the result before preparing your own data. With a GeoPackage file, use the Excel message and
+say "GeoPackage" instead of "Excel".</p>
 <p>The assistant works in its own space: ask it to give you as downloads the files it produces
 (QR codes, user passwords, backup).</p>
 <div class="admonition tip">
 <p class="admonition-title">The assistant can't reach IASO?</p>
 <p>The kit's scripts need to reach app.openiaso.com over the internet. If the assistant
-says its code can't connect, check in its settings that code execution is allowed to
-access the internet (or this address), then ask it to try again.</p>
+reports "Name or service not known" or says its code can't connect, its code is not
+allowed to reach that address:</p>
+<ul>
+<li><strong>Claude, personal plan</strong>: in <strong>Settings &gt; Capabilities</strong>, allow code execution to
+  access the network and add exactly <code>app.openiaso.com</code> (<code>openiaso.com</code> alone is not
+  enough).</li>
+<li><strong>Claude, Team or Enterprise plan</strong>: only an owner of your Claude organisation can do
+  it, in <strong>Organization settings &gt; Capabilities</strong>. You can send them this message:
+  <em>"Hello, I use Claude to set up a campaign in IASO. Could you add exactly
+  app.openiaso.com to the domains Claude's code execution may reach (Organization
+  settings &gt; Capabilities)? Without it, Claude cannot reach our IASO server. Thank you!"</em></li>
+<li><strong>ChatGPT</strong> and other assistants: check in their settings that code execution can
+  access the internet, or this address.</li>
+</ul>
+<p>Then ask the assistant to try again.</p>
 </div>
 <h3 id="step-5-answer-the-assistants-questions">Step 5: Answer the assistant's questions<a class="headerlink" href="#step-5-answer-the-assistants-questions" title="Permanent link">#</a></h3>
-<p>The assistant asks its questions one topic at a time. The more of these decisions you have
-already made, the quicker the configuration:</p>
+<p>The assistant asks its questions one topic at a time (in a demo, it proposes all the answers
+at once, in one summary to approve). The more of these decisions you have already made, the
+quicker the configuration:</p>
 <table>
 <thead>
 <tr>
@@ -1694,7 +1732,7 @@ already made, the quicker the configuration:</p>
 </tr>
 <tr>
 <td>Reports</td>
-<td>which dashboards and mobile reports, and who can open each one</td>
+<td>which dashboards and mobile reports, the map of households and its place names, and who can open each page</td>
 <td>the list of people who follow the campaign</td>
 </tr>
 <tr>
@@ -1719,13 +1757,47 @@ demo data (demo pyramid, example districts, stores and agents) that you replace 
 your own.</p>
 <p>Then the assistant builds the campaign step by step, asking for your go-ahead each time:
 geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.</p>
+<p>You can install the IASO app as soon as the assistant shows the QR codes, but the phone shows
+little until the rest exists:</p>
+<table>
+<thead>
+<tr>
+<th>After</th>
+<th>On the phone</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the projects</td>
+<td>the app can be set up with the project's QR code, but shows nothing yet</td>
+</tr>
+<tr>
+<td>the forms and the users</td>
+<td>an agent logs in, synchronises and sees the forms</td>
+</tr>
+<tr>
+<td>the registries and their follow-ups</td>
+<td>households and workers can be registered and found again</td>
+</tr>
+<tr>
+<td>the stock</td>
+<td>the stock forms; balances appear after a first receipt</td>
+</tr>
+<tr>
+<td>the mobile reports</td>
+<td>the report opens from the app</td>
+</tr>
+</tbody>
+</table>
+<p>The first useful test on a phone is therefore once the users exist, about two thirds into the
+session.</p>
 <h3 id="step-6-test-on-a-phone">Step 6: Test on a phone<a class="headerlink" href="#step-6-test-on-a-phone" title="Permanent link">#</a></h3>
 <ol>
 <li><strong>Install the IASO app</strong> on an Android phone from
    <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">Google Play</a>
    (or scan the Play Store QR code the assistant gives you).</li>
 <li><strong>Choose the user to test with</strong>: a test user created by the assistant, or your own
-   user. Either way, this user must have the projects you want to test: in IASO, go to
+   user (the assistant offers to add you to the campaign projects). Either way, this user must have the projects you want to test: in IASO, go to
    <strong>Admin &gt; Users</strong>, edit the user and, in <strong>Projects</strong>, select the projects to test. To try
    the different projects and switch from one to another, select all of them.</li>
 <li><strong>Find the QR codes</strong> in IASO: open the menu and go to <strong>Admin &gt; Projects</strong>. Each mobile
@@ -1738,7 +1810,15 @@ geographic data, projects, forms, registries, stock, users, dashboards and mobil
 <li>Open the mobile reports, with network and then in airplane mode.</li>
 </ol>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/phone-home.jpg" data-desc-position="bottom"><img alt="A project home screen on the phone" src="setup_bednet_campaign_with_ai_attachments/phone-home.jpg" width="220"></a>
-<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/phone-report.jpg" data-desc-position="bottom"><img alt="The progress report in the app" src="setup_bednet_campaign_with_ai_attachments/phone-report.jpg" width="220"></a></p>
+<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/phone-report.jpg" data-desc-position="bottom"><img alt="The progress report in the app" src="setup_bednet_campaign_with_ai_attachments/phone-report.jpg" width="220"></a>
+<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg" data-desc-position="bottom"><img alt="The map of households in the progress report" src="setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg" width="220"></a></p>
+<div class="admonition note">
+<p class="admonition-title">Where are the stock forms?</p>
+<p>On servers that have the stock home screen, the Stock project opens on the stores and their
+forms. Otherwise, the assistant adds a <strong>Data collection</strong> tab to the Stock project: open
+it, choose the store, and the stock forms are listed. Without that tab, the stock forms
+are under <strong>Entities &gt; Update stocks</strong>, then the store, then <strong>Edit</strong> next to its name.</p>
+</div>
 <p>Before training the field teams, ask the assistant to delete the test data and the test
 users.</p>
 <h3 id="step-7-after-the-setup">Step 7: After the setup<a class="headerlink" href="#step-7-after-the-setup" title="Permanent link">#</a></h3>
@@ -1747,7 +1827,10 @@ users.</p>
   simply ask the assistant: come back to it with the kit, which still contains your access
   key. Forms already used on phones must be changed with
   care: the kit tells the assistant how.</li>
-<li>Follow the campaign in the web dashboards (<strong>Pages</strong> menu in IASO) and in the mobile reports.</li>
+<li>Follow the campaign in the web dashboards (<strong>Pages</strong> menu in IASO) and in the mobile reports.
+  The campaign dashboard and the progress report show the households on a map (base map from
+  Bluesquare's tile server, from OpenStreetMap): in the dashboard, click a row of the table to
+  zoom on that place.</li>
 </ul>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg" data-desc-position="bottom"><img alt="The campaign dashboard" class="doc-shot" src="setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg"></a></p>
 <h2 id="learn-more">Learn more<a class="headerlink" href="#learn-more" title="Permanent link">#</a></h2>

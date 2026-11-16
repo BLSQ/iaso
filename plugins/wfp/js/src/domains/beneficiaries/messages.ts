@@ -13,14 +13,27 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.programme',
         defaultMessage: 'Programme',
     },
-    orgUnitGroup: {
-        id: 'iaso.wfp.beneficiaries.orgUnitGroup',
-        defaultMessage: 'Org unit group',
+    cooperationPartner: {
+        id: 'iaso.wfp.beneficiaries.cooperationPartner',
+        defaultMessage: 'Cooperation partner',
     },
-    orgUnitGroupTooltip: {
-        id: 'iaso.wfp.beneficiaries.orgUnitGroupTooltip',
+    cooperationPartnerTooltip: {
+        id: 'iaso.wfp.beneficiaries.cooperationPartnerTooltip',
         defaultMessage:
-            'Only the visits made in the org units of this group (e.g. the facilities of a partner)',
+            'Only the visits made in the facilities of this cooperation partner',
+    },
+    integratedNutritionFacility: {
+        id: 'iaso.wfp.beneficiaries.integratedNutritionFacility',
+        defaultMessage: 'Integrated nutrition facility',
+    },
+    integratedNutritionFacilityTooltip: {
+        id: 'iaso.wfp.beneficiaries.integratedNutritionFacilityTooltip',
+        defaultMessage:
+            'One facility of the selected cooperation partner — pick a partner first',
+    },
+    beneficiaryExport: {
+        id: 'iaso.wfp.beneficiaries.beneficiaryExport',
+        defaultMessage: 'Beneficiary Export',
     },
     eligibilityStartDate: {
         id: 'iaso.wfp.beneficiaries.eligibilityStartDate',
@@ -37,11 +50,28 @@ const MESSAGES = defineMessages({
     },
     search: {
         id: 'iaso.wfp.beneficiaries.search',
-        defaultMessage: 'Entity id or UUID',
+        defaultMessage: 'Entity id, UUID or progress id',
     },
     entityId: {
         id: 'iaso.wfp.beneficiaries.entityId',
         defaultMessage: 'Entity id',
+    },
+    progressId: {
+        id: 'iaso.wfp.beneficiaries.progressId',
+        defaultMessage: 'Progress id',
+    },
+    visitDateFrom: {
+        id: 'iaso.wfp.beneficiaries.visitDateFrom',
+        defaultMessage: 'Visited from',
+    },
+    visitDateTo: {
+        id: 'iaso.wfp.beneficiaries.visitDateTo',
+        defaultMessage: 'Visited until',
+    },
+    visitDateTooltip: {
+        id: 'iaso.wfp.beneficiaries.visitDateTooltip',
+        defaultMessage:
+            'Only the beneficiaries visited in this period for an ongoing journey (not exited yet)',
     },
     uuid: {
         id: 'iaso.label.uuid',
@@ -143,33 +173,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.coda',
         defaultMessage: 'CODA 2.0',
     },
-    exportCodaTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportCodaTooltip',
-        defaultMessage:
-            'One row per visit of the beneficiaries matching the filters',
-    },
     rawData: {
         id: 'iaso.wfp.beneficiaries.rawData',
         defaultMessage: 'raw data',
     },
-    exportRawTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportRawTooltip',
-        defaultMessage:
-            'The ETL tables and the submissions (one sheet per form) of the beneficiaries matching the filters',
-    },
     eligibleBeneficiaries: {
         id: 'iaso.wfp.beneficiaries.eligibleBeneficiaries',
         defaultMessage: 'eligible beneficiaries',
-    },
-    exportEligibleTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportEligibleTooltip',
-        defaultMessage:
-            'One sheet per programme (and physiology status for women) with the beneficiaries having an ongoing journey, found normal at their last visit during the period',
-    },
-    exportEligibleDisabledTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportEligibleDisabledTooltip',
-        defaultMessage:
-            'Select an entity type to export the eligible beneficiaries',
     },
     beneficiaryData: {
         id: 'iaso.wfp.beneficiaries.beneficiaryData',

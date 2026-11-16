@@ -26,12 +26,6 @@ export const Exports: FunctionComponent<Props> = ({
                 key: 'eligible',
                 extension: 'xlsx',
                 label: formatMessage(MESSAGES.eligibleBeneficiaries),
-                disabled: !filters.entity_type,
-                tooltip: formatMessage(
-                    filters.entity_type
-                        ? MESSAGES.exportEligibleTooltip
-                        : MESSAGES.exportEligibleDisabledTooltip,
-                ),
                 url: exportUrl('eligible', filters),
                 icon: <ExcellSvg />,
             },
@@ -39,7 +33,6 @@ export const Exports: FunctionComponent<Props> = ({
                 key: 'raw',
                 extension: 'xlsx',
                 label: formatMessage(MESSAGES.rawData),
-                tooltip: formatMessage(MESSAGES.exportRawTooltip),
                 url: exportUrl('raw', filters),
                 icon: <ExcellSvg />,
             },
@@ -47,7 +40,6 @@ export const Exports: FunctionComponent<Props> = ({
                 key: 'coda',
                 extension: 'xlsx',
                 label: formatMessage(MESSAGES.coda),
-                tooltip: formatMessage(MESSAGES.exportCodaTooltip),
                 url: exportUrl('coda', filters),
                 icon: <ExcellSvg />,
             },

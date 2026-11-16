@@ -111,3 +111,13 @@ export type QuestionTreeNode = {
     questionsCount: number;
     children?: QuestionTreeNode[];
 };
+
+export type DHIS2Params = {
+    page: number;
+    page_size: number;
+    search: string;
+    status: QuestionStatus;
+    form_version_id: string;
+    program_id: string;
+    dataset_id: string;
+};

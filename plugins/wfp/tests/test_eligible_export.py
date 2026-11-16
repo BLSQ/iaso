@@ -11,7 +11,7 @@ from iaso import models as m
 from iaso.test import APITestCase
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
-from plugins.wfp.utils.eligible_export import current_period
+from plugins.wfp.utils.eligible_export import PBWG, U5, _sheet_name, current_period
 
 
 ELIGIBLE_EXPORT_URL = "/api/wfp/beneficiaries/export/eligible/"
@@ -28,6 +28,23 @@ class CurrentPeriodTestCase(APITestCase):
         self.assertEqual(current_period(date(2026, 1, 31)), (date(2025, 12, 26), date(2026, 1, 25)))
 
 
+class SheetNameTestCase(APITestCase):
+    def test_programme_postfixed_with_the_entity_type_and_the_physiology_status(self):
+        taken = set()
+        self.assertEqual(_sheet_name("BSFP", "Child Under 5", U5, "", taken), "BSFP Child Under 5")
+        self.assertEqual(_sheet_name("BSFP", "PBWG", PBWG, "pregnant", taken), "BSFP PBWG Pregnant")
+        self.assertEqual(_sheet_name("BSFP", "PBWG", PBWG, "", taken), "BSFP PBWG Unknown status")
+
+    def test_names_are_short_and_unique(self):
+        taken = set()
+        long_type = "Pregnant and breastfeeding women and girls"
+        first = _sheet_name("TSFP", long_type, PBWG, "pregnant", taken)
+        second = _sheet_name("TSFP", long_type, PBWG, "breastfeeding", taken)
+        self.assertEqual(first, "TSFP Pregnant and breastfeeding")
+        self.assertEqual(second, "TSFP Pregnant and breastfeedi 2")
+        self.assertTrue(all(len(name) <= 31 for name in (first, second)))
+
+
 @mock.patch("plugins.wfp.utils.eligible_export.timezone.localdate", lambda: TODAY)
 class EligibleExportTestCase(APITestCase):
     @classmethod
@@ -39,7 +56,9 @@ class EligibleExportTestCase(APITestCase):
         cls.child_form = m.Form.objects.create(name="Child registration", form_id="child_registration")
         cls.woman_form = m.Form.objects.create(name="PBWG registration", form_id="pbwg_registration")
         cls.visit_form = m.Form.objects.create(name="Visit", form_id="visit")
-        cls.children = m.EntityType.objects.create(name="U5", reference_form=cls.child_form, account=cls.account)
+        cls.children = m.EntityType.objects.create(
+            name="Child Under 5", reference_form=cls.child_form, account=cls.account
+        )
         cls.women = m.EntityType.objects.create(name="PBWG", reference_form=cls.woman_form, account=cls.account)
         camp = m.OrgUnit.objects.create(name="Camp 1E")
         cls.inf = m.OrgUnit.objects.create(name="INF Kutupalong A", parent=camp)
@@ -82,9 +101,9 @@ class EligibleExportTestCase(APITestCase):
             physiology_status=physiology_status,
         )
 
-    def _export(self, params):
+    def _export(self, params=None):
         self.client.force_authenticate(self.user)
-        response = self.client.get(ELIGIBLE_EXPORT_URL, params)
+        response = self.client.get(ELIGIBLE_EXPORT_URL, params or {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         workbook = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
         sheets = {}
@@ -93,9 +112,25 @@ class EligibleExportTestCase(APITestCase):
             sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]]
         return sheets
 
-    def test_requires_an_entity_type(self):
-        self.client.force_authenticate(self.user)
-        self.assertEqual(self.client.get(ELIGIBLE_EXPORT_URL).status_code, status.HTTP_400_BAD_REQUEST)
+    def test_without_entity_type_children_and_women_are_exported(self):
+        child = self._child()
+        self._visit(child, date(2026, 11, 5), whz_color="Green")
+        woman = self._woman("pregnant")
+        self._visit(woman, date(2026, 11, 2), muac_size="24.1")
+
+        sheets = self._export()
+        # the programme has both kinds of beneficiaries: one sheet per kind, as their columns differ
+        self.assertEqual(sorted(sheets), ["BSFP Child Under 5", "BSFP PBWG Pregnant"])
+        [child_row] = sheets["BSFP Child Under 5"]
+        self.assertEqual(child_row["Entity ID"], child.beneficiary.entity_id)
+        self.assertIn("Date of Birth", child_row)
+        [woman_row] = sheets["BSFP PBWG Pregnant"]
+        self.assertEqual(woman_row["Entity ID"], woman.beneficiary.entity_id)
+        self.assertIn("Expected Date of Delivery (EDD)", woman_row)
+
+        # with an entity type, only its beneficiaries
+        self.assertEqual(sorted(self._export({"entity_type": self.children.id})), ["BSFP Child Under 5"])
+        self.assertEqual(sorted(self._export({"entity_type": self.women.id})), ["BSFP PBWG Pregnant"])
 
     def test_children_with_an_ongoing_journey_found_green(self):
         journey = self._child()
@@ -104,7 +139,7 @@ class EligibleExportTestCase(APITestCase):
         self._visit(
             journey, date(2026, 11, 5), synced=_at(date(2026, 11, 6)), whz_color="Green", json={"case_id": "OTHER"}
         )
-        [row] = self._export({"entity_type": self.children.id})["BSFP"]
+        [row] = self._export({"entity_type": self.children.id})["BSFP Child Under 5"]
         self.assertEqual(row["Progress ID"], "123456")
         self.assertEqual(row["Entity ID"], journey.beneficiary.entity_id)
         self.assertEqual(row["UUID"], str(journey.beneficiary.entity.uuid))
@@ -132,8 +167,8 @@ class EligibleExportTestCase(APITestCase):
         self._visit(self._child(), date(2026, 11, 5), whz_color="Green")
         self._visit(self._child(nutrition_programme="NSEP"), date(2026, 11, 5), muac_size="13.0")
         sheets = self._export({"entity_type": self.children.id})
-        self.assertEqual(sorted(sheets), ["BSFP", "NSEP"])
-        self.assertEqual(sheets["NSEP"][0]["Nutritional Status"], "Normal")
+        self.assertEqual(sorted(sheets), ["BSFP Child Under 5", "NSEP Child Under 5"])
+        self.assertEqual(sheets["NSEP Child Under 5"][0]["Nutritional Status"], "Normal")
 
     def test_women_visited_during_the_period_one_sheet_per_physiology_status(self):
         pregnant = self._woman("pregnant")
@@ -151,15 +186,15 @@ class EligibleExportTestCase(APITestCase):
         self._visit(thin, date(2026, 11, 2), muac_size="22.0")
 
         sheets = self._export({"entity_type": self.women.id})
-        self.assertEqual(sorted(sheets), ["BSFP Breastfeeding", "BSFP Pregnant"])
-        [pregnant_row] = sheets["BSFP Pregnant"]
+        self.assertEqual(sorted(sheets), ["BSFP PBWG Breastfeeding", "BSFP PBWG Pregnant"])
+        [pregnant_row] = sheets["BSFP PBWG Pregnant"]
         self.assertEqual(pregnant_row["UUID"], str(pregnant.beneficiary.entity.uuid))
         self.assertEqual(pregnant_row["Case ID"], "CASE-2")
         self.assertEqual(pregnant_row["FCN"], "FCN2")
         self.assertEqual(pregnant_row["Age (years)"], 30)
         self.assertEqual(pregnant_row["Expected Date of Delivery (EDD)"].date(), date(2027, 1, 15))
         self.assertNotIn("Child Birth Date", pregnant_row)
-        [breastfeeding_row] = sheets["BSFP Breastfeeding"]
+        [breastfeeding_row] = sheets["BSFP PBWG Breastfeeding"]
         self.assertEqual(breastfeeding_row["UUID"], str(breastfeeding.beneficiary.entity.uuid))
         self.assertEqual(breastfeeding_row["Child Birth Date"].date(), date(2026, 8, 1))
         self.assertNotIn("Expected Date of Delivery (EDD)", breastfeeding_row)
@@ -170,7 +205,7 @@ class EligibleExportTestCase(APITestCase):
         self._visit(green, date(2026, 11, 2), muac_size="22.2", json={"_status": "green"})
         yellow = self._woman("pregnant")
         self._visit(yellow, date(2026, 11, 2), muac_size="23.5", json={"_status": "yellow"})
-        [row] = self._export({"entity_type": self.women.id})["BSFP Pregnant"]
+        [row] = self._export({"entity_type": self.women.id})["BSFP PBWG Pregnant"]
         self.assertEqual(row["UUID"], str(green.beneficiary.entity.uuid))
         self.assertEqual(row["Nutritional Status"], "Green")
 
@@ -193,11 +228,11 @@ class EligibleExportTestCase(APITestCase):
             },
         )
         sheets = self._export({"entity_type": self.women.id})
-        self.assertEqual(sorted(sheets), ["BSFP Breastfeeding", "BSFP Pregnant"])
-        [pregnant_row] = sheets["BSFP Pregnant"]
+        self.assertEqual(sorted(sheets), ["BSFP PBWG Breastfeeding", "BSFP PBWG Pregnant"])
+        [pregnant_row] = sheets["BSFP PBWG Pregnant"]
         # the EDD is only asked at the first visit
         self.assertEqual(pregnant_row["Expected Date of Delivery (EDD)"].date(), date(2027, 6, 22))
-        [mother_row] = sheets["BSFP Breastfeeding"]
+        [mother_row] = sheets["BSFP PBWG Breastfeeding"]
         self.assertEqual(mother_row["Child Birth Date"].date(), date(2026, 9, 26))
 
     def test_period_given_by_start_and_end_dates(self):
@@ -209,11 +244,11 @@ class EligibleExportTestCase(APITestCase):
         self._visit(november, date(2026, 11, 5), whz_color="Green")
 
         params = {"entity_type": self.children.id, "start_date": "2026-09-01", "end_date": "2026-09-30"}
-        [row] = self._export(params)["BSFP"]
+        [row] = self._export(params)["BSFP Child Under 5"]
         self.assertEqual(row["UUID"], str(september.beneficiary.entity.uuid))
         self.assertEqual(row["Actual Visit Date"].date(), date(2026, 9, 10))
         # by default, the current period
-        [row] = self._export({"entity_type": self.children.id})["BSFP"]
+        [row] = self._export({"entity_type": self.children.id})["BSFP Child Under 5"]
         self.assertEqual(row["UUID"], str(november.beneficiary.entity.uuid))
 
     def test_the_last_visit_of_the_period_is_exported(self):
@@ -221,7 +256,7 @@ class EligibleExportTestCase(APITestCase):
         self._visit(journey, date(2026, 9, 10), whz_color="Green")
         self._visit(journey, date(2026, 10, 10), whz_color="Yellow")
         params = {"entity_type": self.children.id, "start_date": "2026-09-01", "end_date": "2026-09-30"}
-        self.assertEqual(len(self._export(params)["BSFP"]), 1)
+        self.assertEqual(len(self._export(params)["BSFP Child Under 5"]), 1)
         params["end_date"] = "2026-10-31"
         self.assertEqual(self._export(params), {"Eligible beneficiaries": []})
 
@@ -245,5 +280,5 @@ class EligibleExportTestCase(APITestCase):
         journey = self._child()
         self._visit(journey, date(2026, 11, 5), whz_color="Green")
         self._visit(journey, date(2026, 11, 20), synced=_at(date(2026, 11, 5)), whz_color="Yellow")
-        [row] = self._export({"entity_type": self.children.id})["BSFP"]
+        [row] = self._export({"entity_type": self.children.id})["BSFP Child Under 5"]
         self.assertEqual(row["Actual Visit Date"].date(), date(2026, 11, 5))

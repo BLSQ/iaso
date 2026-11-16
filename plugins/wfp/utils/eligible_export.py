@@ -234,7 +234,7 @@ def iter_rows(
     for batch_start in range(0, len(ids), BATCH_SIZE):
         batch = list(
             Beneficiary.objects.filter(id__in=ids[batch_start : batch_start + BATCH_SIZE])
-            .select_related("entity__attributes__form")
+            .select_related("entity__attributes__form", "entity__entity_type")
             .prefetch_related(
                 Prefetch(
                     "journey_set",
@@ -306,13 +306,19 @@ def _cell(value):
     return value
 
 
-def _sheet_name(programme: str, kind: str, physiology_status: str, kinds_of_programme: set[str]) -> str:
-    parts = [programme]
-    if len(kinds_of_programme) > 1:
-        parts.append(kind)
+def _sheet_name(programme: str, entity_type: str, kind: str, physiology_status: str, taken: set[str]) -> str:
+    """The programme, postfixed with the entity type and, for women, the physiology status (e.g. "BSFP PBWG Pregnant")."""
+    parts = [programme, entity_type]
     if kind == PBWG:
         parts.append(PHYSIOLOGY_STATUS_LABELS.get(physiology_status, "Unknown status"))
-    return re.sub(r"[\[\]:*?/\\]", "-", " ".join(parts))[:31]
+    name = re.sub(r"[\[\]:*?/\\]", "-", " ".join(part for part in parts if part))[:31]
+    # Excel limits the names to 31 characters and needs them unique (ignoring the case)
+    unique, number = name, 1
+    while unique.lower() in taken:
+        number += 1
+        unique = f"{name[: 31 - len(str(number)) - 1]} {number}"
+    taken.add(unique.lower())
+    return unique
 
 
 def build_eligible_xlsx(
@@ -324,12 +330,15 @@ def build_eligible_xlsx(
     end_date: typing.Optional[datetime.date] = None,
     today: typing.Optional[datetime.date] = None,
 ) -> None:
-    """Write the export as an Excel file at `path`: one sheet per programme (and physiology status for women)."""
-    sheets: dict[tuple[str, str, str], list[list]] = {}
+    """Write the export as an Excel file at `path`: one sheet per programme and entity type (and physiology status for
+    women)."""
+    sheets: dict[tuple[str, str, str, str], list[list]] = {}
     for programme, kind, row in iter_rows(beneficiaries, user, org_units, start_date, end_date, today):
+        entity_type = row.beneficiary.entity.entity_type.name if row.beneficiary.entity.entity_type else ""
         physiology_status = (row.physiology_status() or "") if kind == PBWG else ""
         columns = sheet_columns(kind, physiology_status)
-        sheets.setdefault((programme, kind, physiology_status), []).append([_cell(value(row)) for _, value in columns])
+        key = (programme, entity_type, kind, physiology_status)
+        sheets.setdefault(key, []).append([_cell(value(row)) for _, value in columns])
 
     workbook = xlsxwriter.Workbook(path)
     header_format = workbook.add_format({"bold": True, "bg_color": "#D9E1F2", "border": 1, "text_wrap": True})
@@ -338,11 +347,9 @@ def build_eligible_xlsx(
 
     if not sheets:
         workbook.add_worksheet("Eligible beneficiaries").write(0, 0, "No eligible beneficiaries")
-    kinds_by_programme: dict[str, set[str]] = {}
-    for programme, kind, _ in sheets:
-        kinds_by_programme.setdefault(programme, set()).add(kind)
-    for (programme, kind, physiology_status), rows in sorted(sheets.items()):
-        sheet = workbook.add_worksheet(_sheet_name(programme, kind, physiology_status, kinds_by_programme[programme]))
+    taken: set[str] = set()
+    for (programme, entity_type, kind, physiology_status), rows in sorted(sheets.items()):
+        sheet = workbook.add_worksheet(_sheet_name(programme, entity_type, kind, physiology_status, taken))
         columns = sheet_columns(kind, physiology_status)
         sheet.set_column(0, len(columns) - 1, 20)
         sheet.freeze_panes(1, 0)

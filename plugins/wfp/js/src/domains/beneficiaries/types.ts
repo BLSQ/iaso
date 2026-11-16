@@ -39,6 +39,7 @@ export type Journey = {
 export type Beneficiary = {
     id: number;
     entity_id: number;
+    progress_id: string | null;
     uuid: string;
     entity_type_id: number;
     entity_type_name: string;
@@ -54,10 +55,10 @@ export type Filters = {
     entity_type?: string;
     programme?: string;
     org_unit_group?: string;
+    facility?: string;
     q?: string;
-    // period of the eligible beneficiaries export, in the format of the url params (DD-MM-YYYY)
-    start_date?: string;
-    end_date?: string;
+    visit_date_after?: string;
+    visit_date_before?: string;
 };
 
 export type Params = Filters & {
@@ -74,6 +75,10 @@ export type BeneficiaryOptions = {
 };
 
 export type ExportKind = 'coda' | 'raw' | 'eligible';
+
+export type FacilityOptions = {
+    facilities: DropdownOptions<number>[];
+};
 
 // A field of a submission: its path in the JSON (e.g. "household/size") and its value
 export type SubmissionRow = {

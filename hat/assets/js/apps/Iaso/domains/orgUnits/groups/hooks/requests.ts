@@ -10,8 +10,8 @@ import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
 
 import MESSAGES from '../messages';
 
-export const useGetGroups = params => {
-    const newParams = {
+export const useGetGroups = (params: Record<string, any>) => {
+    const newParams: Record<string, any> = {
         limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
@@ -42,8 +42,8 @@ export const useGetGroups = params => {
 };
 
 export const useSaveGroups = () =>
-    useSnackMutation(
-        body =>
+    useSnackMutation<any, any, any>(
+        (body: { id?: number | string }) =>
             body.id
                 ? patchRequest(`/api/groups/${body.id}/`, body)
                 : postRequest('/api/groups/', body),
@@ -52,7 +52,13 @@ export const useSaveGroups = () =>
         ['groups'],
     );
 
-export const useDeleteGroups = ({ params, count }) => {
+export const useDeleteGroups = ({
+    params,
+    count,
+}: {
+    params: any;
+    count: number;
+}) => {
     const onSuccess = useDeleteTableRow({
         count,
         params,
@@ -61,8 +67,9 @@ export const useDeleteGroups = ({ params, count }) => {
         invalidateQueries: ['groups'],
         baseUrl: baseUrls.groups,
     });
-    return useSnackMutation({
-        mutationFn: body => deleteRequest(`/api/groups/${body.id}/`),
+    return useSnackMutation<any, any, { id: number | string }>({
+        mutationFn: (body: { id: number | string }) =>
+            deleteRequest(`/api/groups/${body.id}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         options: {

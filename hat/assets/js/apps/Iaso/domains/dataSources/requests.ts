@@ -1,18 +1,21 @@
-import React from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import {
-    getRequest,
-    iasoFetch,
-    postRequest,
-    putRequest,
-} from 'Iaso/libs/Api.ts';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
+import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../utils/usersUtils';
 import MESSAGES from './messages';
+
+type SourceVersionRow = {
+    id: string;
+    data_source: any;
+    data_source_name: string;
+    is_default: boolean;
+    number: number;
+};
 
 /**
  *
@@ -29,14 +32,19 @@ import MESSAGES from './messages';
  * @returns {Object} request's response
  */
 
-export const sendDhisOuImporterRequest = async requestBody =>
-    postRequest('/api/dhis2ouimporter/', requestBody);
+export const sendDhisOuImporterRequest = async (
+    requestBody: Record<string, any>,
+) => postRequest('/api/dhis2ouimporter/', requestBody);
 
-export const postGeoPkg = async request => {
+export const postGeoPkg = async (request: Record<string, any>) => {
     const file = { file: request.file };
     const body = { ...request };
     delete body.file;
-    return postRequest('/api/tasks/create/importgpkg/', body, file);
+    return postRequest(
+        '/api/tasks/create/importgpkg/',
+        body,
+        file as Record<string, Blob | Blob[]>,
+    );
 };
 
 const getOrgUnitTypes = async () => {
@@ -45,8 +53,8 @@ const getOrgUnitTypes = async () => {
 
 export const useOrgUnitTypes = () => {
     return useSnackQuery(['orgUnitTypes'], getOrgUnitTypes, undefined, {
-        select: data =>
-            data.orgUnitTypes.map(orgUnitType => ({
+        select: (data: any) =>
+            data.orgUnitTypes.map((orgUnitType: any) => ({
                 value: orgUnitType.id,
                 label: orgUnitType.name,
             })),
@@ -59,7 +67,7 @@ const getDataSourceVersions = async () => {
 
 // Func to compare version to  order them
 // string.localeCompare allow us to have case-insensitive sorting and to take accents into account
-const compareVersions = (a, b) => {
+const compareVersions = (a: SourceVersionRow, b: SourceVersionRow) => {
     const comparison = a.data_source_name.localeCompare(
         b.data_source_name,
         undefined,
@@ -85,9 +93,9 @@ export const useDataSourceVersions = (enabled = true) => {
         queryFn: getDataSourceVersions,
         options: {
             enabled,
-            select: data => {
+            select: (data: any) => {
                 return data.versions
-                    .map(version => {
+                    .map((version: any) => {
                         return {
                             id: version.id.toString(),
                             data_source: version.data_source,
@@ -123,7 +131,7 @@ export const useSourceVersionDropDown = () => {
         },
     );
 };
-const adaptForApi = data => {
+const adaptForApi = (data: Record<string, any>) => {
     const adaptedData = { ...data };
     if (data.ref_status === 'all') {
         adaptedData.ref_status = '';
@@ -134,12 +142,12 @@ const adaptForApi = data => {
     return adaptedData;
 };
 
-export const postToDHIS2 = async data => {
+export const postToDHIS2 = async (data: Record<string, any>) => {
     const adaptedData = adaptForApi(data);
     return postRequest('/api/sourceversions/export_dhis2/', adaptedData);
 };
 
-export const convertExportDataToURL = data => {
+export const convertExportDataToURL = (data: Record<string, any>) => {
     const up = new URLSearchParams();
 
     Object.entries(data).forEach(([k, v]) => {
@@ -153,7 +161,7 @@ export const convertExportDataToURL = data => {
     return `/api/sourceversions/diff.csv/?${up.toString()}`;
 };
 
-export const csvPreview = async data => {
+export const csvPreview = async (data: Record<string, any>) => {
     const adaptedData = adaptForApi(data);
     const url = convertExportDataToURL(adaptedData);
     const requestSettings = {
@@ -163,7 +171,7 @@ export const csvPreview = async data => {
     // using iasoFetch, so I can convert response to text i.o. json
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
-        .catch(error => {
+        .catch((error: any) => {
             openSnackBar(
                 errorSnackBar(
                     'iaso.snackBar.generateCSVError',
@@ -175,7 +183,7 @@ export const csvPreview = async data => {
         });
 };
 
-export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
+export const updateDefaultDataSource = ([accountId, defaultVersionId]: any[]) =>
     putRequest(`/api/accounts/${accountId}/set-default-version/`, {
         default_version: defaultVersionId,
     });
@@ -187,29 +195,41 @@ export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
  * Mark errors in form.
  * @param {func} setFieldErrors
  */
-export const useSaveDataSource = setFieldErrors => {
-    const [isSaving, setIsSaving] = React.useState(false);
+export const useSaveDataSource = (
+    setFieldErrors: (errorKey: string, errorMessages: any) => void,
+) => {
+    const [isSaving, setIsSaving] = useState(false);
     const currentUser = useCurrentUser();
     const queryClient = useQueryClient();
 
-    const { mutateAsync: saveMutation } = useSnackMutation(
-        campaignData =>
+    const { mutateAsync: saveMutation } = useSnackMutation<
+        any,
+        any,
+        Record<string, any>
+    >(
+        (campaignData: Record<string, any>) =>
             putRequest(`/api/datasources/${campaignData.id}/`, campaignData),
         undefined,
         snackBarMessages.updateDataSourceError,
     );
-    const { mutateAsync: createMutation } = useSnackMutation(
-        campaignData => postRequest('/api/datasources/', campaignData),
+    const { mutateAsync: createMutation } = useSnackMutation<
+        any,
+        any,
+        Record<string, any>
+    >(
+        (campaignData: Record<string, any>) =>
+            postRequest('/api/datasources/', campaignData),
         undefined,
         snackBarMessages.createDataSourceError,
     );
-    const saveDefaultDataSourceMutation = useSnackMutation(
+    const saveDefaultDataSourceMutation = useSnackMutation<any, any, any[]>(
         updateDefaultDataSource,
-        false,
+        // false suppresses the success snack bar
+        false as any,
         snackBarMessages.updateDefaultSourceError,
     );
 
-    const saveDataSource = async form => {
+    const saveDataSource = async (form: Record<string, any>) => {
         setIsSaving(true);
 
         const { is_default_source, ...campaignData } = getValues(form);
@@ -223,7 +243,7 @@ export const useSaveDataSource = setFieldErrors => {
                 await createMutation(campaignData);
             }
             queryClient.invalidateQueries('sources');
-        } catch (error) {
+        } catch (error: any) {
             // Update error on forms
             if (error.status === 400) {
                 Object.entries(error.details).forEach(
@@ -237,7 +257,7 @@ export const useSaveDataSource = setFieldErrors => {
 
         if (is_default_source && form.default_version_id.value) {
             await saveDefaultDataSourceMutation.mutateAsync([
-                currentUser.account.id,
+                currentUser.account!.id,
                 form.default_version_id.value,
             ]);
             queryClient.invalidateQueries('currentUser');
@@ -247,9 +267,11 @@ export const useSaveDataSource = setFieldErrors => {
     return { saveDataSource, isSaving };
 };
 
-export const useCheckDhis2Mutation = setFieldErrors =>
+export const useCheckDhis2Mutation = (
+    setFieldErrors: (errorKey: string, errorMessages: any) => void,
+) =>
     useMutation(
-        form =>
+        (form: any) =>
             postRequest(`/api/datasources/check_dhis2/`, {
                 data_source: form.id.value,
                 dhis2_url: form.credentials.value.dhis_url,
@@ -266,7 +288,7 @@ export const useCheckDhis2Mutation = setFieldErrors =>
                     'credentials_dhis2_password',
                 ].forEach(key => setFieldErrors(key, []));
             },
-            onError: error => {
+            onError: (error: any) => {
                 if (error.status === 400)
                     Object.entries(error.details).forEach(
                         ([errorKey, errorMessages]) => {
@@ -285,16 +307,16 @@ export const useCheckDhis2Mutation = setFieldErrors =>
         },
     );
 
-export const useDataSourceForVersion = sourceVersion =>
+export const useDataSourceForVersion = (sourceVersion: any) =>
     useSnackQuery(
         ['dataSources'],
         () => getRequest('/api/datasources/'),
         snackBarMessages.fetchSourcesError,
         {
-            select: data => {
+            select: (data: any) => {
                 if (sourceVersion) {
                     const source = data.sources.find(
-                        s => s.id === sourceVersion.data_source,
+                        (s: any) => s.id === sourceVersion.data_source,
                     );
                     return source;
                 }
@@ -309,8 +331,8 @@ export const useDataSourceAsDropDown = () =>
         () => getRequest('/api/datasources/'),
         snackBarMessages.fetchSourcesError,
         {
-            select: data =>
-                data?.sources.map(datasource => ({
+            select: (data: any) =>
+                data?.sources.map((datasource: any) => ({
                     label: datasource.name,
                     value: datasource.id,
                 })) ?? [],
@@ -319,13 +341,13 @@ export const useDataSourceAsDropDown = () =>
     );
 
 export const useCopyDataSourceVersion = () => {
-    return useSnackMutation(
+    return useSnackMutation<any, any, Record<string, any>>(
         ({
             dataSourceId,
             dataSourceVersionNumber,
             destinationSourceId,
             destinationVersionNumber,
-        }) => {
+        }: Record<string, any>) => {
             return postRequest('/api/copyversion/', {
                 source_source_id: dataSourceId,
                 source_version_number: dataSourceVersionNumber,
@@ -339,7 +361,7 @@ export const useCopyDataSourceVersion = () => {
         'dataSources',
     );
 };
-const saveSourceVersion = newSourceVersion => {
+const saveSourceVersion = (newSourceVersion: Record<string, any>) => {
     const url = '/api/sourceversions/';
     return postRequest(url, {
         description: newSourceVersion.description,
@@ -348,7 +370,7 @@ const saveSourceVersion = newSourceVersion => {
 };
 
 export const useCreateSourceVersion = () => {
-    return useSnackMutation({
+    return useSnackMutation<any, any, Record<string, any>>({
         mutationFn: saveSourceVersion,
         snackErrorMsg: MESSAGES.newEmptyVersionError,
         snackSuccessMessage: MESSAGES.newEmptyVersionSavedSuccess,
@@ -361,7 +383,7 @@ const updateSourceVersion = async ({
     description,
     dataSourceId,
     sourceVersionNumber,
-}) => {
+}: Record<string, any>) => {
     return putRequest(`/api/sourceversions/${sourceVersionId}/`, {
         id: sourceVersionId,
         description,
@@ -371,8 +393,13 @@ const updateSourceVersion = async ({
 };
 
 export const usePutSourceVersion = () => {
-    return useSnackMutation(
-        ({ sourceVersionId, description, dataSourceId, sourceVersionNumber }) =>
+    return useSnackMutation<any, any, Record<string, any>>(
+        ({
+            sourceVersionId,
+            description,
+            dataSourceId,
+            sourceVersionNumber,
+        }: Record<string, any>) =>
             updateSourceVersion({
                 sourceVersionId,
                 description,

@@ -1,8 +1,8 @@
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-export const useGetPages = options => {
-    const params = {
+export const useGetPages = (options: Record<string, any>) => {
+    const params: Record<string, any> = {
         limit: options.pageSize,
         page: options.page,
         needs_authentication: options.needs_authentication,
@@ -17,7 +17,7 @@ export const useGetPages = options => {
         params.search = options.search;
     }
 
-    const getURL = urlParams => {
+    const getURL = (urlParams: Record<string, any>) => {
         const filteredParams = Object.entries(urlParams).filter(
             ([_key, value]) => value !== undefined,
         );

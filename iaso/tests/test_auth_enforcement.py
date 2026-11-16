@@ -98,6 +98,7 @@ CONVERTER_SAMPLES = {
     "task_name": "export_task",
     "user_name": "my_user_name",
     "key": "1",  # used by captchas URLs
+    "drf_format_suffix": "json",  # only needed so that the DRF path converter lookup doesn't fail, API root is covered by /api/
 }
 
 DEFAULT_SAMPLE = "1"

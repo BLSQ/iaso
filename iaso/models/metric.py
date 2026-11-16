@@ -41,6 +41,10 @@ class MetricType(models.Model):
         ]
 
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)
+    # Without a workspace, the layer is shared by every workspace of the account (e.g. OpenHEXA imports).
+    workspace = models.ForeignKey(
+        "iaso.Workspace", null=True, blank=True, on_delete=models.CASCADE, related_name="metric_types"
+    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
     description = models.TextField(blank=True)

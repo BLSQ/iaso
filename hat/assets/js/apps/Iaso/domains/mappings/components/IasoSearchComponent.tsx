@@ -5,7 +5,26 @@ import TextField from '@mui/material/TextField';
 
 import throttle from 'lodash/throttle';
 
-const IasoSearchComponent = props => {
+type Props = {
+    resourceName: string;
+    collectionName?: string;
+    fields?: string;
+    style?: React.CSSProperties;
+    name?: string;
+    label: string;
+    // callers pass selected option objects (e.g. { id, name }), not only strings
+    onChange: (name: any, value: any, resourceName?: any) => void;
+    defaultValue?: string;
+    mapOptions?: (options: any) => any;
+    placeholder?: string;
+};
+
+type Option = {
+    displayName: string;
+    name: string;
+};
+
+const IasoSearchComponent = (props: Props) => {
     const {
         resourceName,
         collectionName,
@@ -23,14 +42,18 @@ const IasoSearchComponent = props => {
     const [options, setOptions] = React.useState([]);
     // TODO confirm it is dead code
     // const [selectedOption, setSelectedOption] = React.useState([]);
-    const handleChange = event => {
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(event.target.value);
     };
 
     const fetchMemo = React.useMemo(
         () =>
             throttle(
-                input =>
+                (
+                    input: { input: string },
+                    // Call sites may pass a callback; options are still set below.
+                    _callback?: (results: any) => void,
+                ) =>
                     fetch(
                         `/api/${resourceName}.json?search_name=${input.input}${
                             fields ? `&fields=${fields}` : ''
@@ -49,7 +72,7 @@ const IasoSearchComponent = props => {
         [collectionName, fields, mapOptions, resourceName],
     );
     React.useEffect(() => {
-        setInputValue(defaultValue);
+        setInputValue(defaultValue as string);
     }, [setInputValue, defaultValue]);
 
     React.useEffect(() => {
@@ -59,7 +82,7 @@ const IasoSearchComponent = props => {
             return undefined;
         }
 
-        fetchMemo({ input: inputValue }, results => {
+        fetchMemo({ input: inputValue }, (results: any) => {
             if (active) {
                 setOptions(results || []);
             }
@@ -70,8 +93,11 @@ const IasoSearchComponent = props => {
         };
     }, [inputValue, fetchMemo]);
 
-    const onSearchChange = (evt, value) => {
-        onChange(name, value, resourceName);
+    const onSearchChange = (
+        _evt: React.SyntheticEvent,
+        value: string | Option | null,
+    ) => {
+        onChange(name, value as string, resourceName);
         // TODO confirm this is dead code
         // setSelectedOption(value);
     };
@@ -79,7 +105,7 @@ const IasoSearchComponent = props => {
     return (
         <Autocomplete
             style={style}
-            getOptionLabel={option =>
+            getOptionLabel={(option: string | Option) =>
                 typeof option === 'string'
                     ? option
                     : option.displayName || option.name
@@ -104,11 +130,10 @@ const IasoSearchComponent = props => {
                     placeholder={placeholder}
                 />
             )}
-            renderOption={(props, option) => (
-                <li {...props} name={name}>
-                    {option.displayName || option.name}
-                </li>
-            )}
+            renderOption={(
+                props: React.HTMLAttributes<HTMLLIElement>,
+                option: Option,
+            ) => <li {...props}>{option.displayName || option.name}</li>}
         />
     );
 };

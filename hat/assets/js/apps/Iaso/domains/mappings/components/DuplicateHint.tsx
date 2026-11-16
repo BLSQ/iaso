@@ -17,7 +17,7 @@ export const DuplicateHint: FunctionComponent<Props> = ({
     if (!mapping.id) {
         return null;
     }
-    const duplicates = [];
+    const duplicates: string[] = [];
     Object.keys(mappingVersion.question_mappings).forEach(questionName => {
         const qmap = mappingVersion.question_mappings[questionName];
         if (!Array.isArray(qmap)) {

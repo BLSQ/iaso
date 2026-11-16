@@ -1,6 +1,7 @@
 """Ordering of the beneficiaries API.
 
-The filters themselves (`entity_type`, `programme`, `org_unit_group`, `q`) are shared with the exports, in
+The filters themselves (`entity_type`, `programme`, `org_unit_group`, `q`, `visit_date_after`,
+`visit_date_before`) are shared with the exports, in
 `plugins.wfp.filters`.
 """
 
@@ -9,6 +10,7 @@ from django.db.models import F
 
 ORDERS = {
     "entity_id": "entity_id",
+    "progress_id": "progress_id",
     "birth_date": "birth_date",
     "gender": "gender",
     "journeys_count": "journeys_count",

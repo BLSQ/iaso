@@ -28,15 +28,26 @@ export const Beneficiaries: FunctionComponent = () => {
             entity_type: params.entity_type,
             programme: params.programme,
             org_unit_group: params.org_unit_group,
+            facility: params.facility,
             q: params.q,
+            visit_date_after: params.visit_date_after,
+            visit_date_before: params.visit_date_before,
         }),
-        [params.entity_type, params.programme, params.org_unit_group, params.q],
+        [
+            params.entity_type,
+            params.programme,
+            params.org_unit_group,
+            params.facility,
+            params.q,
+            params.visit_date_after,
+            params.visit_date_before,
+        ],
     );
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.entities)}
+                title={formatMessage(MESSAGES.beneficiaryExport)}
                 displayBackButton={false}
             />
             <MainWrapper sx={styles.root}>

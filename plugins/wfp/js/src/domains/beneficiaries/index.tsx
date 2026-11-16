@@ -30,17 +30,28 @@ export const Beneficiaries: FunctionComponent = () => {
             org_unit_group: params.org_unit_group,
             facility: params.facility,
             q: params.q,
+<<<<<<< HEAD
             visit_date_after: params.visit_date_after,
             visit_date_before: params.visit_date_before,
+=======
+            start_date: params.start_date,
+            end_date: params.end_date,
+>>>>>>> 7ba6fb92bb (Integate filter for start and end date and get eligible beneficiary export in the selected period)
         }),
         [
             params.entity_type,
             params.programme,
             params.org_unit_group,
+<<<<<<< HEAD
             params.facility,
             params.q,
             params.visit_date_after,
             params.visit_date_before,
+=======
+            params.q,
+            params.start_date,
+            params.end_date,
+>>>>>>> 7ba6fb92bb (Integate filter for start and end date and get eligible beneficiary export in the selected period)
         ],
     );
 

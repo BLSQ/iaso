@@ -13,22 +13,52 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.programme',
         defaultMessage: 'Programme',
     },
-    orgUnitGroup: {
-        id: 'iaso.wfp.beneficiaries.orgUnitGroup',
-        defaultMessage: 'Org unit group',
+    cooperationPartner: {
+        id: 'iaso.wfp.beneficiaries.cooperationPartner',
+        defaultMessage: 'Cooperation partner',
     },
-    orgUnitGroupTooltip: {
-        id: 'iaso.wfp.beneficiaries.orgUnitGroupTooltip',
+    cooperationPartnerTooltip: {
+        id: 'iaso.wfp.beneficiaries.cooperationPartnerTooltip',
         defaultMessage:
-            'Only the visits made in the org units of this group (e.g. the facilities of a partner)',
+            'Only the visits made in the facilities of this cooperation partner',
+    },
+    integratedNutritionFacility: {
+        id: 'iaso.wfp.beneficiaries.integratedNutritionFacility',
+        defaultMessage: 'Integrated nutrition facility',
+    },
+    integratedNutritionFacilityTooltip: {
+        id: 'iaso.wfp.beneficiaries.integratedNutritionFacilityTooltip',
+        defaultMessage:
+            'One facility of the selected cooperation partner — pick a partner first',
+    },
+    beneficiaryExport: {
+        id: 'iaso.wfp.beneficiaries.beneficiaryExport',
+        defaultMessage: 'Beneficiary Export',
     },
     search: {
         id: 'iaso.wfp.beneficiaries.search',
-        defaultMessage: 'Entity id or UUID',
+        defaultMessage: 'Entity id, UUID or progress id',
     },
     entityId: {
         id: 'iaso.wfp.beneficiaries.entityId',
         defaultMessage: 'Entity id',
+    },
+    progressId: {
+        id: 'iaso.wfp.beneficiaries.progressId',
+        defaultMessage: 'Progress id',
+    },
+    visitDateFrom: {
+        id: 'iaso.wfp.beneficiaries.visitDateFrom',
+        defaultMessage: 'Visited from',
+    },
+    visitDateTo: {
+        id: 'iaso.wfp.beneficiaries.visitDateTo',
+        defaultMessage: 'Visited until',
+    },
+    visitDateTooltip: {
+        id: 'iaso.wfp.beneficiaries.visitDateTooltip',
+        defaultMessage:
+            'Only the beneficiaries visited in this period for an ongoing journey (not exited yet)',
     },
     uuid: {
         id: 'iaso.label.uuid',

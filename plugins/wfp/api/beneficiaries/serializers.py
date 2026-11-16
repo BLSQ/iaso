@@ -55,6 +55,7 @@ class JourneySerializer(serializers.ModelSerializer):
 class BeneficiarySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     entity_id = serializers.IntegerField()
+    progress_id = serializers.CharField(allow_null=True, default=None)
     uuid = serializers.UUIDField(source="entity.uuid")
     entity_type_id = serializers.IntegerField(source="entity.entity_type_id")
     entity_type_name = serializers.CharField(source="entity.entity_type.name")

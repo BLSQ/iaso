@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import Count, F, IntegerField, OuterRef, Prefetch, Q, Subquery, Value
+from django.db.models.aggregates import Max
 from django.db.models.functions import Coalesce
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -51,7 +52,7 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
     @property
     def ordering_fields(self) -> Sequence[str] | None:
         if self.action == "teams":
-            return ["id", "assigned", "total"]
+            return ["id", "assigned", "total", "team_depth"]
         return None
 
     def get_serializer_class(self):
@@ -94,8 +95,10 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
                         ),
                     )
                 )
-                .select_related("org_unit")
-                .only("id", "org_unit", "org_unit__id", "org_unit__path")
+                .select_related("org_unit", "team")
+                .only(
+                    "id", "org_unit", "org_unit__id", "org_unit__path", "team", "team__id", "team__path", "team__parent"
+                )
             )
         return qs
 
@@ -119,7 +122,9 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             org_units_queryset = OrgUnit.objects.filter_for_user(user)
             processed_levels = {root_level + config.level - 1 for config in configs}
 
-            total_query = (
+            base_team_qs = Team.objects.hierarchy(parent.team).filter_for_user(user).exclude(pk=parent.org_unit.pk)
+
+            total_per_level_query = (
                 PlanningOrgUnitTreeQuerySetBuilder()
                 .build_queryset(
                     queryset=org_units_queryset,
@@ -130,14 +135,34 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
                 .filter(depth=OuterRef("team_depth") + root_level)
                 .order_by()
                 .values("depth")
-                .annotate(count=Count("pk"))
+                .annotate(count=Count("pk", distinct=True))
                 .values("count")[:1]
+            )
+            total_query = (
+                PlanningOrgUnitTreeQuerySetBuilder()
+                .build_queryset(
+                    queryset=org_units_queryset,
+                    root=root,
+                    processed_levels=processed_levels,
+                    configs=configs,
+                )
+                # we estimate that the user has correctly configured its teams to match ou levels
+                .filter(
+                    depth__gte=OuterRef("team_depth") + root_level,
+                    depth__lte=base_team_qs.values("path__depth").aggregate(
+                        max_depth=Max("path__depth", default=Value(0))
+                    )["max_depth"]
+                    + root_level,
+                )
+                .order_by()
+                .values(total_group=Value(1))
+                .annotate(total=Count("pk", distinct=True))
+                .values("total")[:1]
             )
 
             return (
-                Team.objects.filter_for_user(user)
-                .annotate(
-                    assigned=Count(
+                base_team_qs.annotate(
+                    assigned_for_level=Count(
                         "assignment",
                         filter=Q(assignment__planning=parent),
                     ),
@@ -150,11 +175,25 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
                     team_depth=F("path__depth"),
                 )
                 .annotate(
+                    assigned=Coalesce(
+                        Subquery(
+                            base_team_qs.filter(path__depth__gte=OuterRef("team_depth"), assignment__planning=parent)
+                            .annotate(assigned=Count("assignment", distinct=True))
+                            .values("assigned")[:1]
+                        ),
+                        Value(0),
+                        output_field=IntegerField(),
+                    ),
+                    total_for_level=Coalesce(
+                        Subquery(total_per_level_query, output_field=IntegerField()),
+                        Value(0),
+                        output_field=IntegerField(),
+                    ),
                     total=Coalesce(
                         Subquery(total_query, output_field=IntegerField()), Value(0), output_field=IntegerField()
-                    )
+                    ),
                 )
-                .only("id", "type")
+                .only("id", "type", "path")
             )
 
         return Assignment.objects.none()

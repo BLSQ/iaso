@@ -454,31 +454,33 @@ class NestedPlanningAssignmentOrgUnitAPITestCase(SwaggerTestCaseMixin, APITestCa
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 0)
 
-    def test_filter_parent_org_unit(self):
+    def test_filter_parent_org_units(self):
         self.client.force_authenticate(self.superuser)
         res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidResponse(res_data, 3)
 
         with self.subTest("org unit out of account"):
-            data = {"parent_org_unit": self.ou_root_other_account.pk}
+            data = {"parent_org_units": [self.ou_root_other_account.pk]}
             res = self.client.get(self.get_url(), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
-                res_data, "parent_org_unit", "Select a valid choice. That choice is not one of the available choices."
+                res_data,
+                "parent_org_units",
+                f"Select a valid choice. {self.ou_root_other_account.pk} is not one of the available choices.",
             )
 
         with self.subTest("org unit does not exist"):
             pk = OrgUnit.objects.order_by("-id").first().pk + 1
-            data = {"parent_org_unit": pk}
+            data = {"parent_org_units": [pk]}
             res = self.client.get(self.get_url(), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertHasError(
-                res_data, "parent_org_unit", "Select a valid choice. That choice is not one of the available choices."
+                res_data, "parent_org_units", f"Select a valid choice. {pk} is not one of the available choices."
             )
 
         with self.subTest("filter"):
-            data = {"parent_org_unit": self.children_1.pk}
+            data = {"parent_org_units": [self.children_1.pk]}
             res = self.client.get(self.get_url(), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidResponse(res_data, 1)

@@ -7,6 +7,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from iaso.models import Assignment, Group, OrgUnit, OrgUnitType, Planning, PlanningConfig, Team
+from iaso.models.team import TeamType
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -45,8 +46,17 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         )
 
         # create teams
+        cls.root_team = Team.objects.create(
+            name="Root Team", project=cls.project, manager=cls.superuser, type=TeamType.TEAM_OF_TEAMS
+        )
         cls.team = Team.objects.create(name="Test Team", project=cls.project, manager=cls.superuser)
-        cls.team_2 = Team.objects.create(name="Test Team 2", project=cls.project, manager=cls.superuser)
+        cls.team_2 = Team.objects.create(
+            name="Test Team 2",
+            project=cls.project,
+            manager=cls.superuser,
+            parent=cls.root_team,
+            type=TeamType.TEAM_OF_TEAMS,
+        )
 
         cls.team_1_1 = Team.objects.create(
             name="Test Team 1.1", project=cls.project, manager=cls.superuser, parent=cls.team
@@ -60,6 +70,9 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         )
         cls.team_2_1_1 = Team.objects.create(
             name="Test Team 2.1.1", project=cls.project, manager=cls.superuser, parent=cls.team_2_1
+        )
+        cls.team_2_1_2 = Team.objects.create(
+            name="Test Team 2.1.2", project=cls.project, manager=cls.superuser, parent=cls.team_2_1
         )
 
         cls.team_other_account = Team.objects.create(
@@ -198,7 +211,7 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
 
         # create planning
         cls.planning = Planning.objects.create(
-            name="planning", project=cls.project, team=cls.team, org_unit=cls.ou_root
+            name="planning", project=cls.project, team=cls.root_team, org_unit=cls.ou_root
         )
 
         cls.planning_other_account = Planning.objects.create(
@@ -218,13 +231,13 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
 
         # resulting tree
         # root
-        # |- chidlren_2
+        # |- children_2
+        #    |- children_2_1
 
         # create assignments
-        Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_1)
         Assignment.objects.create(planning=cls.planning, team=cls.team, org_unit=cls.children_1)
-        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_1_1)
-        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1_1, org_unit=cls.children_1_1_1)
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_2)
+        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_2_1)
 
     def assertValidResponse(self, response: Any, expected_length: int):
         self.assertValidListData(
@@ -236,6 +249,12 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         if not planning_pk:
             planning_pk = self.planning.pk
         return reverse("planning-nested-assignments-teams", kwargs={"parent_lookup_pk": planning_pk})
+
+    def get_team_ids(self, expected_length: int, **params: Any) -> list[int]:
+        res = self.client.get(self.get_url(), data=params)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, expected_length)
+        return [team["team_id"] for team in res_data["results"]]
 
     def test_permissions(self):
         res = self.client.get(self.get_url())
@@ -283,29 +302,241 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
 
     def test_num_queries(self):
         self.client.force_authenticate(self.superuser)
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(8):
             # 1. SELECT PLANNING
             # 2. PREFETCH CONFIG
             # 3. PREFETCH OUT FROM CONFIG
             # 4. PREFETCH OUG FROM CONFIG
             # 5. ORG UNIT QUERYSET (TREE BUILDER)
-            # 6. PAGINATION
-            # 7. SELECT DATA
+            # 6. MAX DEPTH TEAM
+            # 7. PAGINATION
+            # 8. SELECT DATA
             res = self.client.get(self.get_url())
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidResponse(res_data, 3)
+        self.assertValidResponse(res_data, 4)
 
     def test_ordering_is_assigned(self):
-        pass
+        self.client.force_authenticate(self.superuser)
+
+        team_ids = self.get_team_ids(4, order="assigned")
+
+        # Unassigned teams first, assigned teams last.
+        self.assertCountEqual(
+            team_ids[:2],
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
+        self.assertCountEqual(
+            team_ids[2:],
+            [self.team_2.pk, self.team_2_1.pk],
+        )
+
+        # Reverse ordering.
+        team_ids = self.get_team_ids(4, order="-assigned")
+
+        self.assertCountEqual(
+            team_ids[:2],
+            [self.team_2.pk, self.team_2_1.pk],
+        )
+        self.assertCountEqual(
+            team_ids[2:],
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
 
     def test_ordering_total(self):
-        pass
+        self.client.force_authenticate(self.superuser)
 
-    def test_filters_teams(self):
-        pass
+        team_ids = self.get_team_ids(4, order="total")
+
+        # Totals: 0, 0, 2, 3.
+        self.assertCountEqual(
+            team_ids[:2],
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
+        self.assertEqual(team_ids[2:], [self.team_2_1.pk, self.team_2.pk])
+
+        team_ids = self.get_team_ids(4, order="-total")
+
+        self.assertEqual(team_ids[:2], [self.team_2.pk, self.team_2_1.pk])
+        self.assertCountEqual(
+            team_ids[2:],
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
+
+    def test_ordering_depth(self):
+        self.client.force_authenticate(self.superuser)
+
+        team_ids = self.get_team_ids(4, order="team_depth")
+
+        self.assertEqual(
+            team_ids[:2],
+            [self.team_2.pk, self.team_2_1.pk],
+        )
+        self.assertCountEqual(
+            team_ids[2:],
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
+
+        team_ids = self.get_team_ids(4, order="-team_depth")
+
+        self.assertCountEqual(
+            team_ids[:2],
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
+        self.assertEqual(
+            team_ids[2:],
+            [self.team_2_1.pk, self.team_2.pk],
+        )
 
     def test_filters_is_assigned(self):
-        pass
+        self.client.force_authenticate(self.superuser)
+
+        # assert count is 4 without parameter
+        self.get_team_ids(4)
+
+        team_ids = self.get_team_ids(2, is_assigned="true")
+
+        self.assertCountEqual(
+            team_ids,
+            [self.team_2.pk, self.team_2_1.pk],
+        )
+
+        team_ids = self.get_team_ids(2, is_assigned="false")
+
+        self.assertCountEqual(
+            team_ids,
+            [self.team_2_1_1.pk, self.team_2_1_2.pk],
+        )
+
+    def test_filters_teams(self):
+        self.client.force_authenticate(self.superuser)
+        with self.subTest("team out of account"):
+            data = {"teams": self.team_other_account.pk}
+            res = self.client.get(self.get_url(), data=data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data, 0)
+
+        with self.subTest("team does not exist"):
+            pk = Team.objects.order_by("-pk").first().pk + 1
+            data = {"teams": pk}
+            res = self.client.get(self.get_url(), data=data)
+            res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+            self.assertValidResponse(res_data, 0)
+
+        with self.subTest("team filter"):
+            data = {"teams": ",".join([str(self.team_2.pk), str(self.team_2_1.pk)])}
+            team_ids = self.get_team_ids(2, **data)
+            self.assertCountEqual(team_ids, [self.team_2.pk, self.team_2_1.pk])
+
+    def test_does_not_include_team_out_of_tree(self):
+        self.client.force_authenticate(self.superuser)
+        team_ids = self.get_team_ids(4)
+        self.assertNotIn(self.team.pk, team_ids)
+
+    def test_does_not_include_soft_deleted_team(self):
+        self.team_2_1.delete()
+        self.assertSoftDeleted(self.team_2_1)
+
+        self.client.force_authenticate(self.superuser)
+        data = {"order": "team_depth"}
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 4)
+
+        self.assertEqual(
+            res_data["results"],
+            [
+                {
+                    "team_id": self.team_2.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 1,
+                    "assigned": 1,
+                    "total": 3,
+                    "area_org_unit_ids": [self.children_2.pk],
+                    "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
+                    "depth": 2,
+                },
+                {
+                    "team_id": self.team_2_1.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 2,
+                    "assigned": 1,
+                    "total": 2,
+                    "area_org_unit_ids": [self.children_2_1.pk],
+                    "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
+                    "depth": 3,
+                },
+                {
+                    "team_id": self.team_2_1_1.pk,
+                    "assigned_for_level": 0,
+                    "total_for_level": 0,
+                    "assigned": 0,
+                    "total": 0,
+                    "area_org_unit_ids": [],
+                    "type": None,
+                    "depth": 4,
+                },
+                {
+                    "team_id": self.team_2_1_2.pk,
+                    "assigned_for_level": 0,
+                    "total_for_level": 0,
+                    "assigned": 0,
+                    "total": 0,
+                    "area_org_unit_ids": [],
+                    "type": None,
+                    "depth": 4,
+                },
+            ],
+        )
 
     def test_happy_path(self):
-        pass
+        self.client.force_authenticate(self.superuser)
+        data = {"order": "team_depth"}
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 4)
+
+        self.assertEqual(
+            res_data["results"],
+            [
+                {
+                    "team_id": self.team_2.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 1,
+                    "assigned": 1,
+                    "total": 3,
+                    "area_org_unit_ids": [self.children_2.pk],
+                    "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
+                    "depth": 2,
+                },
+                {
+                    "team_id": self.team_2_1.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 2,
+                    "assigned": 1,
+                    "total": 2,
+                    "area_org_unit_ids": [self.children_2_1.pk],
+                    "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
+                    "depth": 3,
+                },
+                {
+                    "team_id": self.team_2_1_1.pk,
+                    "assigned_for_level": 0,
+                    "total_for_level": 0,
+                    "assigned": 0,
+                    "total": 0,
+                    "area_org_unit_ids": [],
+                    "type": None,
+                    "depth": 4,
+                },
+                {
+                    "team_id": self.team_2_1_2.pk,
+                    "assigned_for_level": 0,
+                    "total_for_level": 0,
+                    "assigned": 0,
+                    "total": 0,
+                    "area_org_unit_ids": [],
+                    "type": None,
+                    "depth": 4,
+                },
+            ],
+        )

@@ -12,7 +12,9 @@ class OrgUnitFilterSet(django_filters.FilterSet):
     teams = NumberInFilter(field_name="team__id")
     users = NumberInFilter(field_name="user__id")
     org_units = NumberInFilter(field_name="org_unit__id")
-    parent_org_unit = django_filters.ModelChoiceFilter(method="filter_parent_org_unit", queryset=OrgUnit.objects.none())
+    parent_org_units = django_filters.ModelMultipleChoiceFilter(
+        method="filter_parent_org_unit", queryset=OrgUnit.objects.none()
+    )
 
     class Meta:
         model = Assignment
@@ -22,14 +24,14 @@ class OrgUnitFilterSet(django_filters.FilterSet):
         super().__init__(*args, **kwargs)
         user = self.request.user
         if user:
-            self.form.fields["parent_org_unit"].queryset = OrgUnit.objects.filter_for_user(user)
+            self.form.fields["parent_org_units"].queryset = OrgUnit.objects.filter_for_user(user)
 
     @staticmethod
     def filter_parent_org_unit(queryset, name, value: OrgUnit | None) -> AssignmentQuerySet:
         if not value:
             return queryset
 
-        return queryset.filter(org_unit__parent=value)
+        return queryset.filter(org_unit__parent__in=value)
 
 
 class TeamFilterSet(django_filters.FilterSet):

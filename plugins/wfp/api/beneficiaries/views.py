@@ -185,12 +185,15 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def export_eligible(self, request):
         """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
 
-        One sheet per programme (and per physiology status for women): without an entity type, the children and the
-        women are both exported, in separate sheets as their columns differ. The period is given by `visit_date_after`
-        and `visit_date_before` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
+        One sheet per programme. The entity type must be selected, as the columns depend on it. The period is given by
+        `start_date` and `end_date` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
         """
-        period = self._period(EligibleExportParamsSerializer)
-        return export_response(request.user, KIND_ELIGIBLE, filters_from_params(request.query_params), **period)
+        filters = filters_from_params(request.query_params)
+        if not filters.get("entity_type", "").isdigit():
+            raise serializers.ValidationError({"entity_type": "An entity type must be selected"})
+        period = EligibleExportParamsSerializer(data=request.query_params)
+        period.is_valid(raise_exception=True)
+        return export_response(request.user, KIND_ELIGIBLE, filters, **period.validated_data)
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
     def data(self, request, entity_id):

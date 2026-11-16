@@ -15,6 +15,7 @@ import { BulkAssignButton } from '../assign/BulkAssignButton';
 import { EmptyAreaButton } from '../assign/EmptyAreaButton';
 import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
 import { AssignmentsMap } from './AssignmentsMap';
+import { OnlyAssignableToggle } from './OnlyAssignableToggle';
 import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
 import { OrgUnitsTable } from './OrgUnitsTable';
 
@@ -82,6 +83,9 @@ export const AssignmentsMainPanel: FC = () => {
                             <BulkAssignButton />
                             <EmptyAreaButton />
                         </>
+                    )}
+                    {isAssignMode && view === 'list' && (
+                        <OnlyAssignableToggle />
                     )}
                     <OnlyUnassignedToggle />
                     <FindOrgUnitField />

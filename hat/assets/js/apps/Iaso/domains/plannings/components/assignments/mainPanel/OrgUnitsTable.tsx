@@ -21,6 +21,7 @@ import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDialog';
+import { useAssignableOrgUnits } from '../assign/useAssignableOrgUnits';
 import { useAssignOnClick } from '../assign/useAssignOnClick';
 import { useListSelection } from '../assign/useListSelection';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
@@ -64,11 +65,19 @@ const styles = {
 
 const DEFAULT_ROWS_PER_PAGE = 20;
 
+const getEmptyMessage = (hasLevelRows: boolean, isOnlyAssignable: boolean) => {
+    if (!hasLevelRows) return MESSAGES.noOrgUnitsToAssign;
+    return isOnlyAssignable
+        ? MESSAGES.noOrgUnitMatchesFilter
+        : MESSAGES.allOrgUnitsAssigned;
+};
+
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { rows: levelRows, isFetching } = useLevelOrgUnitRows();
-    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const { openTeam, onlyUnassigned, onlyAssignable, focusOrgUnitId } =
+        useAssignmentsParams();
     const { isAssignMode } = useAssignmentsContext();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
@@ -91,16 +100,22 @@ export const OrgUnitsTable: FC = () => {
         },
         [isAssignMode, toggleAssignment, openTeam],
     );
+    const { assignableOrgUnitIds: assignableByTeam } = useAssignableOrgUnits();
+    const isOnlyAssignable = isAssignMode && onlyAssignable;
     const rows = useMemo(
         () =>
-            onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
-        [levelRows, onlyUnassigned],
+            levelRows.filter(
+                row =>
+                    (!onlyUnassigned || !row.assignee) &&
+                    (!isOnlyAssignable || assignableByTeam.has(row.id)),
+            ),
+        [levelRows, onlyUnassigned, isOnlyAssignable, assignableByTeam],
     );
     const selection = useListSelection(rows);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
-    useEffect(() => setPage(0), [onlyUnassigned]);
+    useEffect(() => setPage(0), [onlyUnassigned, isOnlyAssignable]);
     // Once per found org unit, when its rows are there: paging stays free afterwards.
     const shownFocusId = useRef<number>();
     useEffect(() => {
@@ -239,9 +254,10 @@ export const OrgUnitsTable: FC = () => {
                                         color="text.secondary"
                                     >
                                         {formatMessage(
-                                            levelRows.length
-                                                ? MESSAGES.allOrgUnitsAssigned
-                                                : MESSAGES.noOrgUnitsToAssign,
+                                            getEmptyMessage(
+                                                levelRows.length > 0,
+                                                isOnlyAssignable,
+                                            ),
                                         )}
                                     </Typography>
                                 </TableCell>

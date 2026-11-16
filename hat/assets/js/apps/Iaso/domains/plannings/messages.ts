@@ -686,6 +686,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Show all org units',
         id: 'iaso.plannings.label.showAllOrgUnits',
     },
+    showOnlyAssignableOrgUnits: {
+        defaultMessage: 'Show only org units that can be assigned',
+        id: 'iaso.plannings.label.showOnlyAssignableOrgUnits',
+    },
     findOrgUnit: {
         defaultMessage: 'Find an org unit',
         id: 'iaso.plannings.label.findOrgUnit',

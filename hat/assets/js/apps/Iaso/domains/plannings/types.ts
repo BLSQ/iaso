@@ -150,6 +150,8 @@ export type AssignmentsParams = {
     mode?: AssignmentsMode;
     view?: AssignmentsView;
     onlyUnassigned?: 'true';
+    // Only in Assign mode, on the list.
+    onlyAssignable?: 'true';
     focusOrgUnitId?: string;
     // Key of the member of the selected team that assign mode gives org units to.
     assignee?: string;

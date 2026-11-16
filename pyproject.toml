@@ -50,7 +50,7 @@ dependencies = [
     "djangorestframework-simplejwt==5.5.1", # https://github.com/jazzband/djangorestframework-simplejwt/tags
     "drf-excel==2.6.0",  # https://github.com/django-commons/drf-excel/releases
     "drf-extensions==0.8.0", # https://github.com/chibisov/drf-extensions
-    "drf-spectacular[sidecar]==0.29.0", # https://github.com/tfranzel/drf-spectacular
+    "drf-spectacular[sidecar]==0.30.0", # https://github.com/tfranzel/drf-spectacular
     "duckdb==1.4.4", # https://duckdb.org/docs/stable/clients/python/overview
     "environs==14.4.0", # https://github.com/sloria/environs/tags
     "fiona==1.10.1", # https://github.com/Toblerity/Fiona/tags

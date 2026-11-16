@@ -29,8 +29,17 @@ export const Beneficiaries: FunctionComponent = () => {
             programme: params.programme,
             org_unit_group: params.org_unit_group,
             q: params.q,
+            start_date: params.start_date,
+            end_date: params.end_date,
         }),
-        [params.entity_type, params.programme, params.org_unit_group, params.q],
+        [
+            params.entity_type,
+            params.programme,
+            params.org_unit_group,
+            params.q,
+            params.start_date,
+            params.end_date,
+        ],
     );
 
     return (

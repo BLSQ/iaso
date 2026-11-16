@@ -2,6 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { PaginatedResponse } from 'Iaso/domains/app/types';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { getApiParamDateString } from 'Iaso/utils/dates';
 import { formatParams } from 'Iaso/utils/requests';
 import {
     Params,
@@ -38,9 +39,15 @@ export const useGetBeneficiaryOptions =
         });
 
 export const exportUrl = (kind: ExportKind, filters: Filters): string => {
-    const queryString = new URLSearchParams(
-        formatParams({ ...filters }),
-    ).toString();
+    const { start_date, end_date, ...others } = filters;
+    const params = {
+        ...others,
+        ...(kind === 'eligible' && {
+            start_date: getApiParamDateString(start_date) ?? undefined,
+            end_date: getApiParamDateString(end_date) ?? undefined,
+        }),
+    };
+    const queryString = new URLSearchParams(formatParams(params)).toString();
     return `${beneficiariesUrl}export/${kind}/${queryString ? `?${queryString}` : ''}`;
 };
 

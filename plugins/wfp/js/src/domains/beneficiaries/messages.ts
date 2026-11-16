@@ -22,6 +22,19 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Only the visits made in the org units of this group (e.g. the facilities of a partner)',
     },
+    eligibilityStartDate: {
+        id: 'iaso.wfp.beneficiaries.eligibilityStartDate',
+        defaultMessage: 'Eligibility start date',
+    },
+    eligibilityEndDate: {
+        id: 'iaso.wfp.beneficiaries.eligibilityEndDate',
+        defaultMessage: 'Eligibility end date',
+    },
+    eligibilityPeriodTooltip: {
+        id: 'iaso.wfp.beneficiaries.eligibilityPeriodTooltip',
+        defaultMessage:
+            'Period of the eligible beneficiaries export (the list is not filtered). By default, from the 26th of last month to the 25th of this month',
+    },
     search: {
         id: 'iaso.wfp.beneficiaries.search',
         defaultMessage: 'Entity id or UUID',
@@ -126,23 +139,37 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.no',
         defaultMessage: 'No',
     },
-    exportCoda: {
-        id: 'iaso.wfp.beneficiaries.exportCoda',
-        defaultMessage: 'Export CODA 2.0',
+    coda: {
+        id: 'iaso.wfp.beneficiaries.coda',
+        defaultMessage: 'CODA 2.0',
     },
     exportCodaTooltip: {
         id: 'iaso.wfp.beneficiaries.exportCodaTooltip',
         defaultMessage:
             'One row per visit of the beneficiaries matching the filters',
     },
-    exportRaw: {
-        id: 'iaso.wfp.beneficiaries.exportRaw',
-        defaultMessage: 'Export raw data',
+    rawData: {
+        id: 'iaso.wfp.beneficiaries.rawData',
+        defaultMessage: 'raw data',
     },
     exportRawTooltip: {
         id: 'iaso.wfp.beneficiaries.exportRawTooltip',
         defaultMessage:
             'The ETL tables and the submissions (one sheet per form) of the beneficiaries matching the filters',
+    },
+    eligibleBeneficiaries: {
+        id: 'iaso.wfp.beneficiaries.eligibleBeneficiaries',
+        defaultMessage: 'eligible beneficiaries',
+    },
+    exportEligibleTooltip: {
+        id: 'iaso.wfp.beneficiaries.exportEligibleTooltip',
+        defaultMessage:
+            'One sheet per programme (and physiology status for women) with the beneficiaries having an ongoing journey, found normal at their last visit during the period',
+    },
+    exportEligibleDisabledTooltip: {
+        id: 'iaso.wfp.beneficiaries.exportEligibleDisabledTooltip',
+        defaultMessage:
+            'Select an entity type to export the eligible beneficiaries',
     },
     beneficiaryData: {
         id: 'iaso.wfp.beneficiaries.beneficiaryData',

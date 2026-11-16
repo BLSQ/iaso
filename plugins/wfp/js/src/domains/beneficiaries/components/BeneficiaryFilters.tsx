@@ -2,6 +2,7 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
 import { Box, Grid, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
@@ -51,7 +52,7 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} md={3}>
                 <InputComponent
                     type="select"
                     keyValue="entity_type"
@@ -62,7 +63,7 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     loading={isFetching}
                 />
             </Grid>
-            <Grid item xs={12} md={2}>
+            <Grid item xs={12} md={3}>
                 <InputComponent
                     type="select"
                     keyValue="programme"
@@ -95,7 +96,33 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                     </Tooltip>
                 </Box>
             </Grid>
-            <Grid container item xs={12} md={2} justifyContent="flex-end">
+            <Grid item xs={12} md={6}>
+                <Box display="flex" alignItems="center">
+                    <Box flexGrow={1}>
+                        <DatesRange
+                            xs={12}
+                            sm={6}
+                            md={6}
+                            lg={6}
+                            keyDateFrom="start_date"
+                            keyDateTo="end_date"
+                            disableFuture
+                            onChangeDate={handleChange}
+                            dateFrom={filters.start_date}
+                            dateTo={filters.end_date}
+                            labelFrom={MESSAGES.eligibilityStartDate}
+                            labelTo={MESSAGES.eligibilityEndDate}
+                        />
+                    </Box>
+                    <Tooltip
+                        title={formatMessage(MESSAGES.eligibilityPeriodTooltip)}
+                        placement="top"
+                    >
+                        <InfoIcon color="primary" sx={{ ml: 1 }} />
+                    </Tooltip>
+                </Box>
+            </Grid>
+            <Grid container item xs={12} md={6} justifyContent="flex-end">
                 <Box mt={isLargeLayout ? 2 : 0}>
                     <SearchButton
                         disabled={textSearchError || !filtersUpdated}

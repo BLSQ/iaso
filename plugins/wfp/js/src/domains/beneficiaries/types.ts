@@ -55,6 +55,9 @@ export type Filters = {
     programme?: string;
     org_unit_group?: string;
     q?: string;
+    // period of the eligible beneficiaries export, in the format of the url params (DD-MM-YYYY)
+    start_date?: string;
+    end_date?: string;
 };
 
 export type Params = Filters & {
@@ -70,7 +73,7 @@ export type BeneficiaryOptions = {
     org_unit_groups: DropdownOptions<number>[];
 };
 
-export type ExportKind = 'coda' | 'raw';
+export type ExportKind = 'coda' | 'raw' | 'eligible';
 
 // A field of a submission: its path in the JSON (e.g. "household/size") and its value
 export type SubmissionRow = {

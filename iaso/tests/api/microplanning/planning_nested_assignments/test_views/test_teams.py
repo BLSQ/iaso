@@ -236,8 +236,16 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
 
         # create assignments
         Assignment.objects.create(planning=cls.planning, team=cls.team, org_unit=cls.children_1)
-        Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_2)
-        Assignment.objects.create(planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_2_1)
+        cls.assignment = Assignment.objects.create(planning=cls.planning, team=cls.team_2, org_unit=cls.children_2)
+        cls.assignment_2 = Assignment.objects.create(
+            planning=cls.planning, team=cls.team_2_1, org_unit=cls.children_2_1
+        )
+        cls.assignment_3 = Assignment.objects.create(
+            planning=cls.planning, team=cls.team_2_1_1, org_unit=cls.children_2_1_1
+        )
+        cls.assignment_4 = Assignment.objects.create(
+            planning=cls.planning, team=cls.team_2_1_2, org_unit=cls.children_2_1_2
+        )
 
     def assertValidResponse(self, response: Any, expected_length: int):
         self.assertValidListData(
@@ -393,19 +401,9 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         # assert count is 4 without parameter
         self.get_team_ids(4)
 
-        team_ids = self.get_team_ids(2, is_assigned="true")
+        self.get_team_ids(4, is_assigned="true")
 
-        self.assertCountEqual(
-            team_ids,
-            [self.team_2.pk, self.team_2_1.pk],
-        )
-
-        team_ids = self.get_team_ids(2, is_assigned="false")
-
-        self.assertCountEqual(
-            team_ids,
-            [self.team_2_1_1.pk, self.team_2_1_2.pk],
-        )
+        self.get_team_ids(0, is_assigned="false")
 
     def test_filters_teams(self):
         self.client.force_authenticate(self.superuser)
@@ -440,7 +438,8 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
         data = {"order": "team_depth"}
         res = self.client.get(self.get_url(), data=data)
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
-        self.assertValidResponse(res_data, 4)
+
+        self.assertValidResponse(res_data, 3)
 
         self.assertEqual(
             res_data["results"],
@@ -449,39 +448,29 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
                     "team_id": self.team_2.pk,
                     "assigned_for_level": 1,
                     "total_for_level": 1,
-                    "assigned": 1,
+                    "assigned": 3,
                     "total": 3,
                     "area_org_unit_ids": [self.children_2.pk],
                     "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
                     "depth": 2,
                 },
                 {
-                    "team_id": self.team_2_1.pk,
-                    "assigned_for_level": 1,
-                    "total_for_level": 2,
-                    "assigned": 1,
-                    "total": 2,
-                    "area_org_unit_ids": [self.children_2_1.pk],
-                    "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
-                    "depth": 3,
-                },
-                {
                     "team_id": self.team_2_1_1.pk,
-                    "assigned_for_level": 0,
+                    "assigned_for_level": 1,
                     "total_for_level": 0,
-                    "assigned": 0,
+                    "assigned": 1,
                     "total": 0,
-                    "area_org_unit_ids": [],
+                    "area_org_unit_ids": [self.children_2_1_1.pk],
                     "type": None,
                     "depth": 4,
                 },
                 {
                     "team_id": self.team_2_1_2.pk,
-                    "assigned_for_level": 0,
+                    "assigned_for_level": 1,
                     "total_for_level": 0,
-                    "assigned": 0,
+                    "assigned": 1,
                     "total": 0,
-                    "area_org_unit_ids": [],
+                    "area_org_unit_ids": [self.children_2_1_2.pk],
                     "type": None,
                     "depth": 4,
                 },
@@ -502,7 +491,7 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
                     "team_id": self.team_2.pk,
                     "assigned_for_level": 1,
                     "total_for_level": 1,
-                    "assigned": 1,
+                    "assigned": 4,
                     "total": 3,
                     "area_org_unit_ids": [self.children_2.pk],
                     "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
@@ -512,7 +501,7 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
                     "team_id": self.team_2_1.pk,
                     "assigned_for_level": 1,
                     "total_for_level": 2,
-                    "assigned": 1,
+                    "assigned": 3,
                     "total": 2,
                     "area_org_unit_ids": [self.children_2_1.pk],
                     "type": {"label": TeamType.TEAM_OF_TEAMS.label, "value": TeamType.TEAM_OF_TEAMS.value},
@@ -520,23 +509,97 @@ class NestedPlanningAssignmentTeamAPITestCase(SwaggerTestCaseMixin, APITestCase)
                 },
                 {
                     "team_id": self.team_2_1_1.pk,
-                    "assigned_for_level": 0,
+                    "assigned_for_level": 1,
                     "total_for_level": 0,
-                    "assigned": 0,
+                    "assigned": 1,
                     "total": 0,
-                    "area_org_unit_ids": [],
+                    "area_org_unit_ids": [self.children_2_1_1.pk],
                     "type": None,
                     "depth": 4,
                 },
                 {
                     "team_id": self.team_2_1_2.pk,
-                    "assigned_for_level": 0,
+                    "assigned_for_level": 1,
                     "total_for_level": 0,
-                    "assigned": 0,
+                    "assigned": 1,
                     "total": 0,
-                    "area_org_unit_ids": [],
+                    "area_org_unit_ids": [self.children_2_1_2.pk],
                     "type": None,
                     "depth": 4,
+                },
+            ],
+        )
+
+    maxDiff = None
+
+    def test_soft_deleted_assignments_are_not_taken_into_account(self):
+        self.client.force_authenticate(self.superuser)
+        data = {"order": "team_depth"}
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 4)
+
+        self.assertEqual(
+            [
+                {
+                    k: v
+                    for k, v in x.items()
+                    if k in ["team_id", "assigned", "total", "assigned_for_level", "total_for_level"]
+                }
+                for x in res_data["results"]
+            ],
+            [
+                {"team_id": self.team_2.pk, "assigned_for_level": 1, "total_for_level": 1, "assigned": 4, "total": 3},
+                {"team_id": self.team_2_1.pk, "assigned_for_level": 1, "total_for_level": 2, "assigned": 3, "total": 2},
+                {
+                    "team_id": self.team_2_1_1.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 0,
+                    "assigned": 1,
+                    "total": 0,
+                },
+                {
+                    "team_id": self.team_2_1_2.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 0,
+                    "assigned": 1,
+                    "total": 0,
+                },
+            ],
+        )
+
+        self.assignment_2.delete()
+        self.assertSoftDeleted(self.assignment_2)
+
+        res = self.client.get(self.get_url(), data=data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data, 4)
+
+        self.assertEqual(
+            [
+                {
+                    k: v
+                    for k, v in x.items()
+                    if k in ["team_id", "assigned", "total", "assigned_for_level", "total_for_level"]
+                }
+                for x in res_data["results"]
+            ],
+            [
+                {"team_id": self.team_2.pk, "assigned_for_level": 1, "total_for_level": 1, "assigned": 3, "total": 3},
+                {"team_id": self.team_2_1.pk, "assigned_for_level": 0, "total_for_level": 2, "assigned": 2, "total": 2},
+                {
+                    "team_id": self.team_2_1_1.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 0,
+                    "assigned": 1,
+                    "total": 0,
+                },
+                {
+                    "team_id": self.team_2_1_2.pk,
+                    "assigned_for_level": 1,
+                    "total_for_level": 0,
+                    "assigned": 1,
+                    "total": 0,
                 },
             ],
         )

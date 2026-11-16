@@ -122,7 +122,7 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             org_units_queryset = OrgUnit.objects.filter_for_user(user)
             processed_levels = {root_level + config.level - 1 for config in configs}
 
-            base_team_qs = Team.objects.hierarchy(parent.team).filter_for_user(user).exclude(pk=parent.org_unit.pk)
+            base_team_qs = Team.objects.hierarchy(parent.team).filter_for_user(user).exclude(pk=parent.team.pk)
 
             total_per_level_query = (
                 PlanningOrgUnitTreeQuerySetBuilder()
@@ -162,9 +162,10 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
 
             return (
                 base_team_qs.annotate(
+                    team_id=F("pk"),  # just to use it in subquery and avoid mistakes with outerref("pk")
                     assigned_for_level=Count(
                         "assignment",
-                        filter=Q(assignment__planning=parent),
+                        filter=Q(assignment__planning=parent, assignment__deleted_at__isnull=True),
                     ),
                     area_org_unit_ids=ArraySubquery(
                         Assignment.objects.filter(
@@ -177,9 +178,11 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
                 .annotate(
                     assigned=Coalesce(
                         Subquery(
-                            base_team_qs.filter(path__depth__gte=OuterRef("team_depth"), assignment__planning=parent)
-                            .annotate(assigned=Count("assignment", distinct=True))
-                            .values("assigned")[:1]
+                            Assignment.objects.filter(planning=parent, team__in=base_team_qs)
+                            .filter(Q(team__path__depth__gt=OuterRef("team_depth")) | Q(team__id=OuterRef("team_id")))
+                            .values("planning")
+                            .annotate(count=Count("pk", distinct=True))
+                            .values("count")[:1]
                         ),
                         Value(0),
                         output_field=IntegerField(),

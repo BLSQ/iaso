@@ -14,6 +14,7 @@ import MESSAGES from '../../messages';
 
 const styles = {
     row: {
+        position: 'relative',
         display: 'flex',
         alignItems: 'flex-start',
         gap: 2,
@@ -22,6 +23,10 @@ const styles = {
         border: theme => `1px solid ${theme.palette.divider}`,
         borderRadius: 1,
         backgroundColor: 'background.paper',
+    },
+    rowDragging: {
+        zIndex: 1,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
     handle: {
         display: 'flex',
@@ -106,15 +111,10 @@ export const StepRow: FC<Props> = ({
     return (
         <Box
             ref={setNodeRef}
-            sx={styles.row}
+            sx={[styles.row, isDragging && styles.rowDragging]}
             style={{
                 transform: CSS.Transform.toString(transform),
                 transition,
-                position: 'relative',
-                zIndex: isDragging ? 1 : undefined,
-                boxShadow: isDragging
-                    ? '0 4px 12px rgba(0, 0, 0, 0.15)'
-                    : undefined,
             }}
             data-test={`step-row-${step.slug}`}
         >

@@ -13,6 +13,7 @@ from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
 from iaso.utils.legend import ORDINAL_MAX_ITEMS, build_auto_legend_config, resolve_auto_legend_type
 from iaso.utils.org_units import get_valid_org_units_with_geography
+from iaso.utils.workspace import find_active_workspace
 
 
 class MetricTypeSerializer(serializers.ModelSerializer):
@@ -103,8 +104,18 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
         fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
 
     def create(self, validated_data):
-        account = self.context["request"].user.iaso_profile.account
-        return super().create({**validated_data, "account": account, "is_complete": False})
+        request = self.context["request"]
+        origin = validated_data.get("origin", MetricType.MetricTypeOrigin.OPENHEXA)
+        # OpenHEXA layers are shared by every workspace of the account.
+        workspace = None if origin == MetricType.MetricTypeOrigin.OPENHEXA else find_active_workspace(request)
+        return super().create(
+            {
+                **validated_data,
+                "account": request.user.iaso_profile.account,
+                "workspace": workspace,
+                "is_complete": False,
+            }
+        )
 
     def validate_code(self, value):
         if any(char.isspace() for char in value):

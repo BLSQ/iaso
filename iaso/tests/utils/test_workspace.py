@@ -4,7 +4,7 @@ from django.test import RequestFactory
 
 from iaso.models import Account, Workspace
 from iaso.test import TestCase
-from iaso.utils.workspace import get_active_workspace
+from iaso.utils.workspace import find_active_workspace, get_active_workspace
 
 
 class GetActiveWorkspaceTestCase(TestCase):
@@ -48,3 +48,23 @@ class GetActiveWorkspaceTestCase(TestCase):
     def test_raises_404_for_user_without_profile(self):
         with self.assertRaises(Http404):
             get_active_workspace(self.build_request(AnonymousUser()))
+
+
+class FindActiveWorkspaceTestCase(TestCase):
+    def build_request(self, user):
+        request = RequestFactory().get("/")
+        request.user = user
+        return request
+
+    def test_returns_the_workspace_of_the_user_account(self):
+        account = Account.objects.create(name="Account")
+        workspace = Workspace.objects.create(account=account, name="Workspace")
+        user = self.create_user_with_profile(username="user", account=account)
+
+        self.assertEqual(find_active_workspace(self.build_request(user)), workspace)
+
+    def test_returns_none_when_account_has_no_workspace(self):
+        account = Account.objects.create(name="No workspace")
+        user = self.create_user_with_profile(username="lonely", account=account)
+
+        self.assertIsNone(find_active_workspace(self.build_request(user)))

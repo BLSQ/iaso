@@ -104,6 +104,42 @@ class MetricTypeAPITestCase(APITestCase):
             },
         )
 
+    def _post_metric_type(self, code, origin):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            self.BASE_URL,
+            {
+                "code": code,
+                "name": code,
+                "category": "Category",
+                "origin": origin,
+                "legend_config": {"domain": [1.0, 2.0], "range": ["#A2CAEA", "#ACDF9B", "#F2B16E"]},
+                "legend_type": MetricType.LegendType.THRESHOLD.value,
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        return MetricType.objects.get(code=code)
+
+    def test_metric_type_post_custom_layer_belongs_to_the_active_workspace(self):
+        workspace = Workspace.objects.create(account=self.account, name="Workspace")
+
+        metric_type = self._post_metric_type("custom", MetricType.MetricTypeOrigin.CUSTOM.value)
+
+        self.assertEqual(metric_type.workspace, workspace)
+
+    def test_metric_type_post_openhexa_layer_stays_at_account_level(self):
+        Workspace.objects.create(account=self.account, name="Workspace")
+
+        metric_type = self._post_metric_type("openhexa", MetricType.MetricTypeOrigin.OPENHEXA.value)
+
+        self.assertIsNone(metric_type.workspace)
+
+    def test_metric_type_post_custom_layer_stays_at_account_level_without_workspace(self):
+        metric_type = self._post_metric_type("custom", MetricType.MetricTypeOrigin.CUSTOM.value)
+
+        self.assertIsNone(metric_type.workspace)
+
     def test_metric_type_post_creates_an_incomplete_shell(self):
         """A fresh POST is the wizard creating its shell before the user has finished the
         form, so it starts out `is_complete=False`, but still appears in the grouped list

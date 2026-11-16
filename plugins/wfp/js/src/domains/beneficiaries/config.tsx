@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Box, Chip } from '@mui/material';
-import { Column, useSafeIntl } from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { ChipList, Column, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { Actions, ActionsProps } from './components/Actions';
 import MESSAGES from './messages';
@@ -44,8 +44,16 @@ export const useColumns = (
                 id: 'entity_type_name',
                 accessor: 'entity_type_name',
                 sortable: false,
-                Cell: ({ value }) => (
-                    <Chip size="small" color="primary" label={value} />
+                Cell: ({ row: { original } }) => (
+                    <ChipList
+                        items={[
+                            {
+                                id: original.entity_type_id,
+                                label: original.entity_type_name,
+                                color: 'primary',
+                            },
+                        ]}
+                    />
                 ),
             },
             {

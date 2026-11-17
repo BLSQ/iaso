@@ -10,7 +10,12 @@ from polymorphic.models import PolymorphicModel
 
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.models.querysets import RelatedPolymorphicQuerySet
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableQuerySet,
+    IncludeDeletedSoftDeletableQuerySet,
+    OnlyDeletedSoftDeletableQuerySet,
+    SoftDeletableModel,
+)
 
 
 if TYPE_CHECKING:
@@ -32,17 +37,29 @@ class MissionQuerySet(RelatedPolymorphicQuerySet):
         return self.filter(account=account)
 
 
-class MissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
+class DefaultMissionQuerySet(MissionQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedMissionQuerySet(MissionQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedMissionQuerySet(MissionQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
+class MissionManager(PolymorphicManager.from_queryset(DefaultMissionQuerySet)):
     def get_queryset(self):
         return super().get_queryset().filter(deleted_at__isnull=True)
 
 
-class IncludeDeletedMissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
+class IncludeDeletedMissionManager(PolymorphicManager.from_queryset(IncludeDeletedMissionQuerySet)):
     def get_queryset(self):
         return super().get_queryset()
 
 
-class OnlyDeletedMissionManager(PolymorphicManager.from_queryset(MissionQuerySet)):
+class OnlyDeletedMissionManager(PolymorphicManager.from_queryset(OnlyDeletedMissionQuerySet)):
     def get_queryset(self):
         return super().get_queryset().filter(deleted_at__isnull=False)
 

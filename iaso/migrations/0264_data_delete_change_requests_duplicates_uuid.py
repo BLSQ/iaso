@@ -30,7 +30,7 @@ def migrate_data_forward(apps, schema_editor):
             # Keep the most recent change request.
             change_request_to_keep = change_requests_with_same_uuid[0]
         # Delete duplicates.
-        OrgUnitChangeRequest.objects.filter(uuid=uuid).exclude(pk=change_request_to_keep.pk).delete()
+        OrgUnitChangeRequest.objects.filter(uuid=uuid).exclude(pk=change_request_to_keep.pk).delete_hard()
 
 
 class Migration(migrations.Migration):

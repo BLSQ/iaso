@@ -158,5 +158,5 @@ class Command(BaseCommand):
         Instance.objects.filter(entity__in=entities_to_delete).update(entity=first_instance.entity)
         # Need to set foreign key relation to NULL to avoid ProtectedError
         entities_to_delete.update(attributes_id=None)
-        entities_to_delete.delete()
+        entities_to_delete.delete_hard()
         to_delete.delete()

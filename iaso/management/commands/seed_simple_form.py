@@ -21,8 +21,8 @@ class Command(BaseCommand):
 
         Instance.objects.filter(name="Test form 1 (ssf)").delete()
         Instance.objects.filter(name="Test form 2 (ssf)").delete()
-        Form.objects.filter(name="Test form 1 (ssf)").delete()
-        Form.objects.filter(name="Test form 2 (ssf)").delete()
+        Form.objects.filter(name="Test form 1 (ssf)").delete_hard()
+        Form.objects.filter(name="Test form 2 (ssf)").delete_hard()
         Device.objects.filter(installation_id="ssf123456").delete()
         OrgUnit.objects.filter(name="Test org unit (ssf)").delete()
         OrgUnitType.objects.filter(name="Test org unit type (ssf)").delete()

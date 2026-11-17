@@ -23,11 +23,11 @@ class Command(BaseCommand):
             help="Don't actually delete any data",
         )
 
-    def delete_resources(self, description, query, options):
+    def delete_resources(self, description, query, options, delete_hard=False):
         if options["dry-run"]:
             self.stdout.write(f"{description} {query.count()}")
         else:
-            self.stdout.write(f"{description} {query.delete()}")
+            self.stdout.write(f"{description} {query.delete() if not delete_hard else query.delete_hard()}")
 
     def handle(self, *args, **options):
         account_id = options.get("account_id")
@@ -77,11 +77,7 @@ class Command(BaseCommand):
             self.stdout.write("DONE.")
 
             self.stdout.write("Deleting entities...")
-            self.delete_resources(
-                "\tEntities",
-                entities_to_delete,
-                options,
-            )
+            self.delete_resources("\tEntities", entities_to_delete, options, delete_hard=True)
             self.stdout.write("DONE.")
 
             self.stdout.write("Deleting storages...")

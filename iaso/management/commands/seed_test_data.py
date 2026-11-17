@@ -364,9 +364,9 @@ class Command(BaseCommand):
                     planning=None
                 )
             )
-            print(Planning.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
+            print(Planning.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete_hard())
             print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).update(entity=None))
-            print(Entity.objects.filter(account=account).delete())
+            print(Entity.objects.filter(account=account).delete_hard())
             print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
 
             print("********* Importing orgunits")

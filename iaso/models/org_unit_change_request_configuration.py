@@ -6,23 +6,48 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
+from typing_extensions import Self
 
 from iaso.models.entity import UserNotAuthError
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
     IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
     OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
     SoftDeletableModel,
 )
 
 
 class OrgUnitChangeRequestConfigurationQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]) -> Self:
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
-        profile = user.iaso_profile
-        return self.filter(project__account=profile.account)
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+
+        return self.filter(project__account=account)
+
+
+class DefaultOrgUnitChangeRequestConfigurationQuerySet(
+    OrgUnitChangeRequestConfigurationQuerySet, DefaultSoftDeletableQuerySet
+):
+    pass
+
+
+class IncludeDeletedOrgUnitChangeRequestConfigurationQuerySet(
+    OrgUnitChangeRequestConfigurationQuerySet, IncludeDeletedSoftDeletableQuerySet
+):
+    pass
+
+
+class OnlyDeletedOrgUnitChangeRequestConfigurationQuerySet(
+    OrgUnitChangeRequestConfigurationQuerySet, OnlyDeletedSoftDeletableQuerySet
+):
+    pass
 
 
 class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
@@ -41,6 +66,14 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
 
         CREATION = "creation", _("Creation")
         EDITION = "edition", _("Edition")
+
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultOrgUnitChangeRequestConfigurationQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(
+        OnlyDeletedOrgUnitChangeRequestConfigurationQuerySet
+    )()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
+        IncludeDeletedOrgUnitChangeRequestConfigurationQuerySet
+    )()
 
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
     org_unit_type = models.ForeignKey("OrgUnitType", on_delete=models.PROTECT)
@@ -80,13 +113,6 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         on_delete=models.SET_NULL,
         related_name="org_unit_change_request_configurations_updated_set",
     )
-
-    # Managers
-    objects = DefaultSoftDeletableManager.from_queryset(OrgUnitChangeRequestConfigurationQuerySet)()
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OrgUnitChangeRequestConfigurationQuerySet)()
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
-        OrgUnitChangeRequestConfigurationQuerySet
-    )()
 
     LIST_OF_POSSIBLE_EDITABLE_FIELDS = [
         "name",

@@ -1,10 +1,8 @@
-import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { PaginatedResponse } from 'Iaso/domains/app/types';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getApiParamDateString } from 'Iaso/utils/dates';
-import { apiDateFormat, dateFormat } from 'Iaso/utils/dates';
 import { formatParams } from 'Iaso/utils/requests';
 import {
     Params,

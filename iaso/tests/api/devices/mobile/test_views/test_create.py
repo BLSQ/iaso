@@ -136,6 +136,7 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         log = m.DeviceLog.objects.get(device__installation_id="test")
         self.assertEqual(list(log.projects.all()), [self.project_2])
+        self.assertEqual(self.user, log.user)
 
     def test_create_for_project_with_different_projects(self):
         self.client.force_authenticate(user=self.user)
@@ -153,6 +154,7 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         log = m.DeviceLog.objects.get(device__installation_id="test")
         self.assertEqual(list(log.projects.all()), [self.project_2])
+        self.assertEqual(self.user, log.user)
 
     def test_create_for_project_with_data(self):
         self.client.force_authenticate(user=self.user)
@@ -172,6 +174,7 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(["id"], list(response.json()))
         self.assertEqual(log.id, response.json()["id"])
         self.assertEqual(log.data, {"foo": "bar"})
+        self.assertEqual(self.user, log.user)
 
     def test_create_for_project_with_authentication_in_wrong_account_and_authenticated(self):
         self.client.force_authenticate(user=self.user)

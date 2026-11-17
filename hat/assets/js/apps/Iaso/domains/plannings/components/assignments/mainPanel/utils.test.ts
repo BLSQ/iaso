@@ -1,9 +1,10 @@
 import { TeamTreeNode, User } from 'Iaso/domains/teams/types/team';
-import { Assignment, LevelOrgUnitNode } from './types';
+import { Assignment, LevelOrgUnitNode, OrgUnitRow } from './types';
 import {
     countOrgUnitsOffMap,
     getAssigneeByOrgUnitId,
     getAssigneeColorByOrgUnitId,
+    getAssignmentProgress,
     getLevelOrgUnitRows,
     getLevelTreeParams,
     getOrgUnitsOfLevel,
@@ -207,5 +208,33 @@ describe('getOrgUnitsOfLevel', () => {
 
     it('returns no org units below the deepest level', () => {
         expect(getOrgUnitsOfLevel(roots, 3)).toEqual([]);
+    });
+});
+
+describe('getAssignmentProgress', () => {
+    const makeRow = (id: number, isAssigned: boolean) =>
+        ({
+            id,
+            assignee: isAssigned ? { name: 'jdoe', color: '#user' } : undefined,
+        }) as unknown as OrgUnitRow;
+
+    it('counts only the assignable rows, and how many of them are assigned', () => {
+        const rows = [
+            makeRow(1, true),
+            makeRow(2, false),
+            makeRow(3, true),
+            makeRow(4, true),
+        ];
+        expect(getAssignmentProgress(rows, new Set([1, 2, 3]))).toEqual({
+            assigned: 2,
+            total: 3,
+        });
+    });
+
+    it('is empty when no row is assignable', () => {
+        expect(getAssignmentProgress([makeRow(1, true)], new Set())).toEqual({
+            assigned: 0,
+            total: 0,
+        });
     });
 });

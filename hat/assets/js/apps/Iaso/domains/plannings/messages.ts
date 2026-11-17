@@ -666,6 +666,11 @@ const MESSAGES = defineMessages({
         defaultMessage: '{assigned} of {total} assigned',
         id: 'iaso.plannings.label.belowAssigned',
     },
+    assignmentProgressHelp: {
+        defaultMessage:
+            'Org units in the area of {team} that are assigned to its members',
+        id: 'iaso.plannings.label.assignmentProgressHelp',
+    },
     notOnMap: {
         defaultMessage: 'No shape or point: not shown on the map',
         id: 'iaso.plannings.label.notOnMap',

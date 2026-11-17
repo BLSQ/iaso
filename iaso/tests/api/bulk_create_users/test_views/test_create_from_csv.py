@@ -1,4 +1,5 @@
 import csv
+import datetime
 import io
 
 from unittest import mock
@@ -69,6 +70,29 @@ class BulkCreateFromCsvTestCase(BulkCreateAPITestCase, APITestCase):
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
+
+    def test_reimport_users_export(self):
+        """A users export can be re-imported: its extra `user_profile_id` and `last_login_at` columns are ignored."""
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+        user = self.create_user_with_profile(
+            username="jdupont", email="jean.dupont@example.com", account=self.yoda.iaso_profile.account
+        )
+        user.iaso_profile.org_units.set([self.org_unit1])
+        User.objects.filter(pk=user.pk).update(
+            last_login=datetime.datetime(2026, 11, 16, 9, 30, 15, tzinfo=datetime.timezone.utc)
+        )
+        export = self.client.get("/api/profiles/export-csv/", {"search": "jdupont"})
+        exported_file = SimpleUploadedFile("users.csv", b"".join(export.streaming_content), content_type="text/csv")
+        user.delete()  # usernames are unique: free it for the re-import
+
+        response = self.client.post(f"{BASE_URL}", {"file": exported_file}, format="multipart")
+
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        reimported = User.objects.get(username="jdupont")
+        self.assertEqual(reimported.email, "jean.dupont@example.com")
+        self.assertQuerySetEqual(reimported.iaso_profile.org_units.all(), [self.org_unit1])
+        self.assertIsNone(reimported.last_login, "last_login_at is export-only and must not be imported")
 
     def test_file_from_sample_does_not_trigger_invalid_file_type(self):
         self.client.force_authenticate(self.yoda)

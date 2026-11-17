@@ -31,6 +31,6 @@ jobs:
     secrets: inherit
 
   tests:
-    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@IA-5602_run-ci-nightly
+    uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
     with:
       iaso_branch: ${{ github.head_ref || github.ref_name }}

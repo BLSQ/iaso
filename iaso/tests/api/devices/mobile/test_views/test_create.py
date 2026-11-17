@@ -68,6 +68,8 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidBodyData(body)
         response = self.client.post(f"""{self.url}?app_id={self.project_1.app_id}""", data=body)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        log = m.DeviceLog.objects.get(device__installation_id="test")
+        self.assertIsNone(log.user, "anonymous sync must not store a user")
 
     def test_create_for_project_with_authentication(self):
         body = {
@@ -119,6 +121,29 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(m.Device.objects.filter(installation_id="test").count(), 1)
         self.assertEqual(m.DeviceLog.objects.filter(device__installation_id="test").count(), 2)
+        self.assertEqual(1, m.DeviceOwnership.objects.filter(device__installation_id="test").count())
+        # DeviceLog.user used to be a OneToOneField: a user could only sync once
+        self.assertEqual(
+            [self.user, self.user],
+            [log.user for log in m.DeviceLog.objects.filter(device__installation_id="test").order_by("id")],
+        )
+
+    def test_create_with_same_installation_id_in_other_account(self):
+        other_account_device = m.Device.objects.create(installation_id="test", account=self.project_3.account)
+        self.client.force_authenticate(user=self.user)
+        body = {
+            "device": "test",
+            "data": None,
+            "app_id": "app_id",
+            "app_version": "300500101",
+            "projects": [],
+        }
+        response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        device = m.DeviceLog.objects.get(id=response.json()["id"]).device
+        self.assertNotEqual(other_account_device, device)
+        self.assertEqual(self.project_2.account, device.account)
+        self.assertEqual(2, m.Device.objects.filter(installation_id="test").count())
 
     def test_create_for_project_with_same_project(self):
         self.client.force_authenticate(user=self.user)

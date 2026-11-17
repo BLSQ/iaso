@@ -4,6 +4,7 @@ from django.conf import settings
 
 from .config import load_config
 
+
 _loaders = {}
 
 
@@ -56,7 +57,5 @@ def get_as_tags(bundle_name, extension=None, config="DEFAULT", suffix="", attrs=
 
 
 def get_static(asset_name, config="DEFAULT"):
-    return "{0}{1}".format(
-        get_loader(config).get_assets().get("publicPath", getattr(settings, "STATIC_URL")),
-        asset_name,
-    )
+    public_path = get_loader(config).get_assets().get("publicPath", settings.STATIC_URL)
+    return f"{public_path}{asset_name}"

@@ -2,6 +2,7 @@ import re
 
 from django.conf import settings
 
+
 __all__ = ("load_config",)
 
 DEFAULT_CONFIG = {

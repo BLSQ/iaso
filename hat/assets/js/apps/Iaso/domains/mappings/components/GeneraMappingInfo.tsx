@@ -9,7 +9,11 @@ import { UseMutationResult } from 'react-query';
 import InputComponent from '../../../components/forms/InputComponent';
 import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
-import { ApplyUpdateVariables, QuestionStatus } from '../types';
+import {
+    ApplyUpdateVariables,
+    MappingVersionRow,
+    QuestionStatus,
+} from '../types';
 import { LabeledValue } from './QuestionPanel/LabeledValue';
 import { MappingCard } from './QuestionPanel/MappingCard';
 
@@ -58,7 +62,7 @@ const evenDateOptions = [
     },
 ];
 
-function toGeneralFields(currentMappingVersion) {
+function toGeneralFields(currentMappingVersion: MappingVersionRow) {
     const fields = [];
 
     if (currentMappingVersion.mapping.mapping_type) {
@@ -111,7 +115,7 @@ function toGeneralFields(currentMappingVersion) {
 
 type Props = {
     // from the untyped /api/mappingversions/ serializer
-    currentMappingVersion: Record<string, any>;
+    currentMappingVersion: MappingVersionRow;
     applyUpdate: UseMutationResult<unknown, unknown, ApplyUpdateVariables>;
     statusCounts: Record<QuestionStatus, number>;
     // undefined when every question is mapped

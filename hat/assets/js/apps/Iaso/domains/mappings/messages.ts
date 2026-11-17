@@ -554,6 +554,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.checkDataSource',
         defaultMessage: 'Check the data source',
     },
+    // used by useCreateMappingMutation (same copy as snackBars.fetchMappingsError)
+    fetchMappingsError: {
+        id: 'iaso.snackBar.fetchMappingsError',
+        defaultMessage: 'An error occurred while fetching mappings',
+    },
 });
 
 export default MESSAGES;

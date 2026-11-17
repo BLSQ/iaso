@@ -74,7 +74,14 @@ describe('data source requests', () => {
     });
 
     it('posts the DHIS2 org unit importer body', async () => {
-        const body = { source_id: 1, dhis_name: 'DHIS' };
+        const body = {
+            source_id: 1,
+            source_version_number: 2,
+            description: 'Import from DHIS2',
+            force: false,
+            validate_status: true,
+            continue_on_error: false,
+        };
         await sendDhisOuImporterRequest(body);
         expect(mockPostRequest).toHaveBeenCalledWith(
             '/api/dhis2ouimporter/',
@@ -84,10 +91,10 @@ describe('data source requests', () => {
 
     it('sends a geopackage file separately from the task body', async () => {
         const file = new Blob(['gpkg']);
-        await postGeoPkg({ file, name: 'pyramid' });
+        await postGeoPkg({ file, data_source: 1, description: 'pyramid' });
         expect(mockPostRequest).toHaveBeenCalledWith(
             '/api/tasks/create/importgpkg/',
-            { name: 'pyramid' },
+            { data_source: 1, description: 'pyramid' },
             { file },
         );
     });

@@ -142,6 +142,9 @@ NEW_GUIDE_LINES_FORMS = [
 
 ACCOUNT_WITH_GUIDELINE = "South Sudan"
 
+# Mapping of raw WHZ color values from forms to their standard full-word form
+WHZ_COLOR_MAP = {"Y": "Yellow", "R": "Red", "G": "Green", "green": "Green", "yellow": "Yellow", "red": "Red"}
+
 # ---------------------------------------------------------------------------
 # Field extraction helpers
 # ---------------------------------------------------------------------------
@@ -428,7 +431,7 @@ def extract_visit_entry_point(submission):
 def extract_whz_color(data):
     """Extract WHZ color from form data and normalize to full word."""
     raw = _first_of(data, "_Xwhz_color", "_Xfinal_color_result", "_status")
-    return {"Y": "Yellow", "R": "Red", "G": "Green", "green": "Green", "yellow": "Yellow", "red": "Red"}.get(raw, raw)
+    return WHZ_COLOR_MAP.get(raw, raw)
 
 
 def is_oedema_visit(data):

@@ -537,6 +537,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation.html"/>
     </url>
     <url>
+        <loc>Nonepages/users/how_to/export_data_as_parquet.html</loc>
+        <lastmod>2026-11-17</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/export_data_as_parquet.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/export_data_as_parquet.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/export_data_as_parquet.html"/>
+    </url>
+    <url>
         <loc>Nonepages/users/how_to/import_export_dhis2_mappings.html</loc>
         <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
@@ -1161,6 +1169,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/edit_documentation.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/users/how_to/export_data_as_parquet.html</loc>
+        <lastmod>2026-11-17</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/export_data_as_parquet.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/export_data_as_parquet.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/export_data_as_parquet.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/users/how_to/import_export_dhis2_mappings.html</loc>
         <lastmod>2026-11-17</lastmod>
         <changefreq>daily</changefreq>
@@ -1783,6 +1799,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/edit_documentation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/edit_documentation.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/users/how_to/export_data_as_parquet.html</loc>
+        <lastmod>2026-11-17</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/users/how_to/export_data_as_parquet.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/export_data_as_parquet.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/export_data_as_parquet.html"/>
     </url>
     <url>
         <loc>Nonees/pages/users/how_to/import_export_dhis2_mappings.html</loc>

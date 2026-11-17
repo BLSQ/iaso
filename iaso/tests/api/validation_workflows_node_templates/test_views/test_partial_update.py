@@ -51,6 +51,12 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             can_skip_previous_nodes=True,
         )
 
+        # A step before it: the first step can't skip previous steps
+        self.previous_node = ValidationNodeTemplate.objects.create(
+            name="Previous node", workflow=self.validation_workflow
+        )
+        self.node.previous_node_templates.add(self.previous_node)
+
     def test_check_validation_workflow_parent_slug_access(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.patch(
@@ -200,7 +206,7 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             res = self.client.patch(
                 reverse(
                     "validation_node_templates-detail",

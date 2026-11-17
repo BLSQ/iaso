@@ -37,6 +37,7 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
     class Meta:
         model = ValidationWorkflow
         fields = [
+            "id",
             "slug",
             "name",
             "description",

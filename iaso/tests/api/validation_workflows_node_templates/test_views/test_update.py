@@ -35,6 +35,12 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
         # create some nodes
         self.node = ValidationNodeTemplate.objects.create(name="First node", workflow=self.validation_workflow)
 
+        # A step before it: the first step can't skip previous steps
+        self.previous_node = ValidationNodeTemplate.objects.create(
+            name="Previous node", workflow=self.validation_workflow
+        )
+        self.node.previous_node_templates.add(self.previous_node)
+
         self.other_validation_workflow = ValidationWorkflow.objects.create(
             name="Random other name 2",
             description="Random description",
@@ -182,7 +188,7 @@ class ValidationNodeTemplateAPIUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-detail",

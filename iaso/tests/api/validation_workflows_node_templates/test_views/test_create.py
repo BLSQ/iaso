@@ -105,7 +105,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_first(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -125,7 +125,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_last(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -144,7 +144,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
     def test_num_queries_insert_between(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(18):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -229,7 +229,8 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(second_created_node.workflow, self.validation_workflow)
             self.assertEqual(second_created_node.name, "Random starting node")
             self.assertEqual(second_created_node.description, "Random description")
-            self.assertTrue(second_created_node.can_skip_previous_nodes)
+            # The first step has no previous step to skip
+            self.assertFalse(second_created_node.can_skip_previous_nodes)
             self.assertFalse(second_created_node.previous_node_templates.exists())
             self.assertEqual(
                 list(second_created_node.next_node_templates.values_list("pk", flat=True)), [self.first_node.pk]
@@ -294,7 +295,8 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
             self.assertEqual(second_created_node.workflow, self.validation_workflow)
             self.assertEqual(second_created_node.name, "Random starting node")
             self.assertEqual(second_created_node.description, "Random description")
-            self.assertTrue(second_created_node.can_skip_previous_nodes)
+            # The first step has no previous step to skip
+            self.assertFalse(second_created_node.can_skip_previous_nodes)
             self.assertFalse(second_created_node.previous_node_templates.exists())
             self.assertEqual(
                 list(second_created_node.next_node_templates.values_list("pk", flat=True)), [self.first_node.pk]

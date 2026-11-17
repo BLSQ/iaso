@@ -47,6 +47,10 @@ class ValidationNodeTemplateBulkUpdateListSerializer(BulkUpdateListSerializer):
         if prev_links:
             through.objects.bulk_create(prev_links, batch_size=100, ignore_conflicts=True)
 
+        if ordered_instances:
+            ordered_instances[0].workflow.clear_skip_on_starting_nodes()
+            ordered_instances[0].can_skip_previous_nodes = False
+
         return ordered_instances
 
     def validate(self, attrs):

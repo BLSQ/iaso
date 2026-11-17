@@ -73,6 +73,15 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     def get_starting_node(self):
         return self.node_templates.get(previous_node_templates__isnull=True)
 
+    def clear_skip_on_starting_nodes(self):
+        """
+        The first step has no previous step to skip: `can_skip_previous_nodes` is reset on it.
+        To call each time the chain of steps or the steps themselves change (create, update, move, reorder, delete).
+        """
+        self.node_templates.filter(previous_node_templates__isnull=True, can_skip_previous_nodes=True).update(
+            can_skip_previous_nodes=False
+        )
+
     @transaction.atomic
     def delete_node_template(self, node):
         previous_nodes = list(node.previous_node_templates.values_list("pk", flat=True))
@@ -102,6 +111,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             through_table.objects.filter(q_delete).delete()
 
         node.delete()
+        self.clear_skip_on_starting_nodes()
 
     @transaction.atomic
     def insert_node_template(self, node, position=PositionChoices.last, parent_node_templates=None):
@@ -159,6 +169,8 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
                 ],
                 ignore_conflicts=True,
             )
+
+        self.clear_skip_on_starting_nodes()
 
     @transaction.atomic
     def move_node_template(self, node, position=None, parent_node_templates=None):
@@ -231,6 +243,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             ],
             ignore_conflicts=True,
         )
+        self.clear_skip_on_starting_nodes()
 
     def dump_nodes(self):
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):

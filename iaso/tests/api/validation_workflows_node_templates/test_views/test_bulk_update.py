@@ -396,7 +396,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(16):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-bulk",

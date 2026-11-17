@@ -42,3 +42,8 @@ class ValidationNodeTemplateUpdateSerializer(ModelSerializer):
                 ),
             )
         )
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        instance.workflow.clear_skip_on_starting_nodes()
+        return instance

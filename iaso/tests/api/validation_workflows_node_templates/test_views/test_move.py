@@ -187,7 +187,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         self.validation_workflow.refresh_from_db()
         self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(11):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-move",

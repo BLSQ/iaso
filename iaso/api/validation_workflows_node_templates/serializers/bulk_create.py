@@ -68,6 +68,10 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
         if next_links:
             ValidationNodeTemplate.next_node_templates.through.objects.bulk_create(next_links, ignore_conflicts=True)
 
+        if instances:
+            instances[0].workflow.clear_skip_on_starting_nodes()
+            instances[0].can_skip_previous_nodes = False
+
         return instances
 
 

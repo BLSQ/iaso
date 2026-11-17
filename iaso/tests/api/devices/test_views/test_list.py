@@ -124,12 +124,12 @@ class DevicesAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res = self.client.get(self.url, data={"synced": False})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 1)
-        self.assertEqual("device1", res_data["results"][0]["installation_id"])
+        self.assertEqual("device2", res_data["results"][0]["installation_id"])
 
         res = self.client.get(self.url, data={"synced": True})
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
         self.assertValidData(res_data, 1)
-        self.assertEqual("device2", res_data["results"][0]["installation_id"])
+        self.assertEqual("device1", res_data["results"][0]["installation_id"])
 
     def test_search_filter(self):
         self.client.force_authenticate(self.user_with_perm)

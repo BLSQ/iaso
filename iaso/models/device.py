@@ -48,7 +48,7 @@ class DeviceQuerySet(models.QuerySet):
 
 
 class Device(CreatedAndUpdatedModel):
-    installation_id = models.CharField(max_length=250, unique=True)
+    installation_id = models.CharField(max_length=250)
     account = models.ForeignKey("Account", on_delete=models.CASCADE, null=True, related_name="devices")
     test_device = models.BooleanField(default=False)
     projects = models.ManyToManyField("Project", related_name="devices", blank=True)

@@ -18,11 +18,12 @@ class GetOrCreateDeviceField(serializers.SlugRelatedField):
         queryset = self.get_queryset()
         lookup = {self.slug_field: data, "account": project.account}
         # Not get_or_create: installation_id isn't unique and prod has duplicates, reuse the oldest one.
-        device = queryset.filter(**lookup).order_by("id").first()
-        created = device is None
-        if created:
-            device = queryset.create(**lookup)
-        if created and user.is_authenticated:
+        existing_device = queryset.filter(**lookup).order_by("id").first()
+        if existing_device:
+            return existing_device
+
+        device = queryset.create(**lookup)
+        if user.is_authenticated:
             device.projects.set([project])
             DeviceOwnership.objects.create(
                 device=device,

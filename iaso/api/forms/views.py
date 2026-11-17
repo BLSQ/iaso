@@ -83,6 +83,15 @@ class FormsViewSet(ModelViewSet):
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)
 
+        # Comma separated validation workflow ids. Non numeric values are ignored.
+        validation_workflow_ids = self.request.query_params.get("validationWorkflowIds")
+        if validation_workflow_ids:
+            queryset = queryset.filter(
+                validation_workflow_id__in=[
+                    workflow_id for workflow_id in validation_workflow_ids.split(",") if workflow_id.strip().isdigit()
+                ]
+            )
+
         mission_ids = self.request.query_params.get("mission", None)
         if mission_ids:
             queryset = queryset.filter(mission_forms__id__in=mission_ids.split(","))

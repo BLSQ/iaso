@@ -3,6 +3,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.test import APITestCase, SwaggerTestCaseMixin
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
@@ -145,6 +146,24 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(self.project_2.account, device.account)
         self.assertEqual(2, m.Device.objects.filter(installation_id="test").count())
 
+    def test_create_with_duplicate_installation_id_in_same_account(self):
+        # duplicates exist in prod (the unique constraint was dropped for them)
+        oldest_device = m.Device.objects.create(installation_id="test", account=self.project_2.account)
+        m.Device.objects.create(installation_id="test", account=self.project_2.account)
+        self.client.force_authenticate(user=self.user)
+        body = {
+            "device": "test",
+            "data": None,
+            "app_id": "app_id",
+            "app_version": "300500101",
+            "projects": [],
+        }
+        response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(2, m.Device.objects.filter(installation_id="test").count(), "no third device created")
+        log = m.DeviceLog.objects.get(device__installation_id="test")
+        self.assertEqual(oldest_device, log.device, "log must go to the oldest duplicate")
+
     def test_create_for_project_with_same_project(self):
         self.client.force_authenticate(user=self.user)
         body = {
@@ -213,6 +232,38 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertValidBodyData(body)
         response = self.client.post(f"""{self.url}?app_id={self.project_3.app_id}""", data=body)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_query_counts_new_device(self):
+        self.client.force_authenticate(user=self.user)
+        body = {"device": "test", "data": None, "app_id": "app_id", "app_version": "300500101", "projects": ["p2"]}
+        with QueryProfiler() as profiler:
+            response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        with profiler.report_on_failure("device_sync_new_device_queries.md"):
+            # project from app_id + projects field (2), device lookup + insert, device.projects.set(), ownership, log
+            profiler.assertLessEqualQueryCount(
+                {
+                    "iaso_project": 4,
+                    "iaso_device": 2,
+                    "iaso_device_projects": 1,
+                    "iaso_deviceownership": 1,
+                    "iaso_devicelog": 1,
+                    "iaso_devicelog_projects": 1,
+                }
+            )
+
+    def test_create_query_counts_existing_device(self):
+        m.Device.objects.create(installation_id="test", account=self.project_2.account)
+        self.client.force_authenticate(user=self.user)
+        body = {"device": "test", "data": None, "app_id": "app_id", "app_version": "300500101", "projects": ["p2"]}
+        with QueryProfiler() as profiler:
+            response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        with profiler.report_on_failure("device_sync_existing_device_queries.md"):
+            # project from app_id + projects field, a single device lookup, log insert + its projects
+            profiler.assertLessEqualQueryCount(
+                {"iaso_project": 3, "iaso_device": 1, "iaso_devicelog": 1, "iaso_devicelog_projects": 1}
+            )
 
     def assertValidBodyData(self, data):
         self.assertResponseCompliantToSwagger(data, "DeviceLogCreateRequest")

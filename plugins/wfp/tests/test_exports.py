@@ -351,6 +351,23 @@ class OrgUnitScopeTestCase(OrgUnitScopeTestData, APITestCase):
         self.assertEqual(len(sheets["steps"]), 1)
         self.assertEqual([row["org_unit_name"] for row in sheets["visit"]], ["Bentiu PHCC"])
 
+    def test_coda_export_keeps_the_visits_of_the_facility(self):
+        params = {"org_unit_group": self.group.id, "facility": self.facility.id}
+        self.assertEqual(self._coda_facilities(self.user, params), ["Bentiu PHCC"])
+        self.assertEqual(self._coda_facilities(self.user, {"facility": self.other_facility.id}), ["Rubkona PHCC"] * 2)
+        # a facility outside the selected partner: nothing
+        params = {"org_unit_group": self.group.id, "facility": self.other_facility.id}
+        self.assertEqual(self._coda_facilities(self.user, params), [])
+
+    def test_raw_export_keeps_the_visits_and_submissions_of_the_facility(self):
+        sheets = self._raw_sheets(self.user, {"facility": self.other_facility.id})
+        self.assertEqual(
+            sorted(row["entity_id"] for row in sheets["beneficiaries"]),
+            sorted([self.entity.id, self.rubkona_entity.id]),
+        )
+        self.assertEqual([row["org_unit_name"] for row in sheets["visits"]], ["Rubkona PHCC"] * 2)
+        self.assertEqual([row["instance_id"] for row in sheets["visit"]], [self.rubkona_instance.id])
+
     def test_raw_export_orders_the_visits_by_number(self):
         # a visit numbered after the others but dated before them
         journey = Journey.objects.get(beneficiary__entity=self.entity)

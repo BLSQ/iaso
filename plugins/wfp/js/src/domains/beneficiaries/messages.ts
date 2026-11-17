@@ -35,19 +35,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.beneficiaryExport',
         defaultMessage: 'Beneficiary Export',
     },
-    eligibilityStartDate: {
-        id: 'iaso.wfp.beneficiaries.eligibilityStartDate',
-        defaultMessage: 'Eligibility start date',
-    },
-    eligibilityEndDate: {
-        id: 'iaso.wfp.beneficiaries.eligibilityEndDate',
-        defaultMessage: 'Eligibility end date',
-    },
-    eligibilityPeriodTooltip: {
-        id: 'iaso.wfp.beneficiaries.eligibilityPeriodTooltip',
-        defaultMessage:
-            'Period of the eligible beneficiaries export (the list is not filtered). By default, from the 26th of last month to the 25th of this month',
-    },
     search: {
         id: 'iaso.wfp.beneficiaries.search',
         defaultMessage: 'Entity id, UUID or progress id',

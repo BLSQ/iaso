@@ -117,6 +117,7 @@ nav: # nav configures the side bar menu - this is the ONLY place the nav tree is
      - ./pages/users/reference/user_guide.md
      - ./pages/users/reference/iaso_mobile.md
      - ./pages/users/reference/geopackage_format.md
+     - ./pages/users/how_to/export_data_as_parquet.md
      - Advanced configuration:
        - IASO and DHIS2:
          - ./pages/users/how_to/setup_dhis2_login_in_iaso.md

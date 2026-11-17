@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
+import * as esbuild from 'esbuild';
 import { defineConfig, type Plugin } from 'vite';
 
 import {
@@ -32,6 +33,50 @@ const devOrigin =
 
 const outDir = process.env.VITE_OUT_DIR || path.resolve(hatDir, 'assets/frontend');
 const liveComponents = process.env.LIVE_COMPONENTS === 'true';
+const bluesquareComponentsLiveSrc = /bluesquare-components\/src\//;
+
+/** Pre-compile bluesquare-components source when LIVE_COMPONENTS aliases to ../src. */
+const bluesquareLiveSrcPlugin = (): Plugin => ({
+    name: 'iaso:bluesquare-live-src',
+    enforce: 'pre',
+    async transform(code, id) {
+        if (process.env.LIVE_COMPONENTS !== 'true') {
+            return;
+        }
+        const filePath = id.split('?')[0];
+        if (!bluesquareComponentsLiveSrc.test(filePath)) {
+            return;
+        }
+        const ext = path.extname(filePath);
+        const loader: esbuild.Loader | undefined =
+            ext === '.tsx' || ext === '.jsx'
+                ? 'tsx'
+                : ext === '.ts'
+                  ? 'ts'
+                  : ext === '.js'
+                    ? 'jsx'
+                    : undefined;
+        if (!loader) {
+            return;
+        }
+        const result = await esbuild.transform(code, {
+            loader,
+            format: 'esm',
+            sourcemap: true,
+            jsx: 'transform',
+            jsxFactory: 'React.createElement',
+            jsxFragment: 'React.Fragment',
+            target: 'esnext',
+            tsconfigRaw: {
+                compilerOptions: { jsx: 'react' },
+            },
+        });
+        return {
+            code: result.code,
+            map: result.map,
+        };
+    },
+});
 const usePolling = process.env.VITE_POLL === 'true';
 const devStatsFile = 'bundle-stats.json';
 const prodStatsFile = 'bundle-stats-prod.json';
@@ -251,8 +296,12 @@ export default defineConfig(({ mode, command }) => {
             ),
         },
         plugins: [
+            ...(liveComponents ? [bluesquareLiveSrcPlugin()] : []),
             react({
                 jsxRuntime: 'classic',
+                ...(liveComponents && {
+                    exclude: [/node_modules/, bluesquareComponentsLiveSrc],
+                }),
                 // Django serves HTML from another origin/port than the Vite dev server.
                 ...(command === 'serve' && {
                     reactRefreshHost: devOrigin.replace(/\/$/, ''),

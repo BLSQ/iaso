@@ -4,10 +4,11 @@ import django_filters
 
 from django import forms
 from django.db.models import F, Q
+from django.utils.functional import cached_property
 
-from iaso.models import OrgUnit
-from plugins.wfp.models import NUTRITION_PROGRAMMES, Beneficiary, Journey
-from plugins.wfp.utils.beneficiaries import partner_org_units, visit_scope, visits_in
+from iaso.models import Group, OrgUnit
+from plugins.wfp.models import NUTRITION_PROGRAMMES, Beneficiary, Journey, Visit
+from plugins.wfp.utils.beneficiaries import restricted_org_units
 
 
 class IdFilter(django_filters.NumberFilter):
@@ -20,15 +21,16 @@ class IdFilter(django_filters.NumberFilter):
         super().__init__(*args, **kwargs)
 
 
+def partner_org_units(user, group_id):
+    """Org units of a cooperation partner (an org unit group the user can see)."""
+    return OrgUnit.objects.filter(groups__in=Group.objects.filter_for_user(user).filter(id=group_id))
+
+
 class BeneficiaryFilter(django_filters.FilterSet):
     """Beneficiaries of the page, restricted to the visits of `org_units` (the partner, facility and user scope).
 
     `visit_date_after` / `visit_date_before` keep the beneficiaries visited in the period (in the scope) for a journey
     they didn't exit yet.
-
-    This filterset is meant to be used only in `BeneficiaryViewSet`: when filtering, the visit scope is handed to
-    the view (`set_visit_scope`), reached through `request.parser_context["view"]`, as its counts,
-    journeys and exports are restricted to the same visits.
     """
 
     entity_type = IdFilter(field_name="entity__entity_type_id")

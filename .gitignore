@@ -140,6 +140,9 @@ lintErrors.html
 extracted_translation.json
 
 hat/assets/frontend/
+# Module Federation tooling cache (if @module-federation/* is used again)
+.mf/
+
 docker/DHIS2_home/
 
 # Auto-generated files

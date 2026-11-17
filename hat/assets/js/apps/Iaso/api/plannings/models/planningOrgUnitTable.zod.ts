@@ -7,6 +7,8 @@
  */
 import * as zod from 'zod';
 
+export const planningOrgUnitTableOrgUnitTypeOneNameMax = 255;
+
 export const planningOrgUnitTableAssignmentOneTeamOneNameMax = 100;
 
 export const planningOrgUnitTableAssignmentOneTeamOneColorMax = 7;
@@ -28,7 +30,7 @@ export const PlanningOrgUnitTable = zod
         name: zod.string(),
         org_unit_type: zod.strictObject({
             id: zod.int(),
-            name: zod.string(),
+            name: zod.string().max(planningOrgUnitTableOrgUnitTypeOneNameMax),
         }),
         assignment: zod.strictObject({
             id: zod.int(),

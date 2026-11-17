@@ -84,9 +84,9 @@ def export_mobile_app_setup_for_user(
 
     s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name, password)
 
-    the_task.report_success_with_result(
+    the_task.report_success_with_file(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
-        result_data="file:" + s3_object_name,
+        file_name=s3_object_name,
     )
     return the_task
 

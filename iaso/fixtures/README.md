@@ -8,6 +8,9 @@ See the Django documentation for more information:
 
 We use these files in the automated unit test !
 
+The `seed_data/` folder holds the forms, mappings and sample files used by the dev seeding
+management commands (`seed_test_data`, `create_form`) and by the `tree_importer` example in the main README.
+
     
 (this readme assume ./m is your manage.py)
 

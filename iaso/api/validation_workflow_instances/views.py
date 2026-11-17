@@ -15,7 +15,6 @@ from django.db.models import (
     Window,
 )
 from django.db.models.functions import Coalesce, Lag
-from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework.filters import OrderingFilter
@@ -149,7 +148,7 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
             )
 
             # get all validation nodes waiting for user action aka nodes in unknown status and created after last new version
-            fallback_date = timezone.make_aware(datetime.datetime(1970, 1, 1))
+            fallback_date = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
             cutoff = Coalesce(
                 latest_new_version_create_at_query,

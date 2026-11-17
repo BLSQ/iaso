@@ -1,12 +1,11 @@
 import time
 
-from datetime import datetime
-
 import requests
 
 from django.contrib.auth.models import User
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, SUCCESS
@@ -82,7 +81,7 @@ def launch_external_task(dataset_config):
         name=dataset_config["task_name"],
         status=RUNNING,
         external=True,
-        started_at=datetime.now(),
+        started_at=timezone.now(),
         should_be_killed=False,
     )
     status = ExternalTaskModelViewSet.launch_task(slug=dataset_config["config"], task_id=task.pk)

@@ -318,6 +318,19 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
         ],
     },
+    promptness: {
+        url: 'forms/stats/promptness',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'formId',
+            'period',
+            'parentId',
+            'orgUnitId',
+            'orgUnitTypeIds',
+            'status',
+        ],
+    },
     modules: {
         url: 'settings/modules',
         params: ['accountId', 'search'],
@@ -545,7 +558,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     assignments: {
         url: 'planning/assignments',
-        params: ['accountId', 'planningId', 'teamId', 'mode', 'view'],
+        params: [
+            'accountId',
+            'planningId',
+            'teamId',
+            'mode',
+            'view',
+            'onlyUnassigned',
+            'focusOrgUnitId',
+        ],
     },
     teams: {
         url: 'settings/users/teams',
@@ -789,6 +810,7 @@ type IasoBaseUrls = {
     algos: string;
     completeness: string;
     completenessStats: string;
+    promptness: string;
     modules: string;
     users: string;
     userDetails: string;

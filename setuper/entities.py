@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 
 from submissions import (
@@ -73,7 +73,7 @@ def create_forms_and_entities(iaso_client):
 
 def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
     reference_form = entity_type["reference_form"]
-    current_datetime = int(datetime.now().timestamp())
+    current_datetime = int(datetime.now(timezone.utc).timestamp())
     the_uuid = str(uuid.uuid4())
     entity_uuid = str(uuid.uuid4())
     file_name = f"example_{the_uuid}.xml"
@@ -120,7 +120,7 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
 def create_child_entities(account_name, iaso_client, orgunit, entity_type):
     reference_form = entity_type["reference_form"]
     followup_form = entity_type["followup_form"]
-    current_datetime = int(datetime.now().timestamp())
+    current_datetime = int(datetime.now(timezone.utc).timestamp())
 
     the_uuid = str(uuid.uuid4())
     entity_uuid = str(uuid.uuid4())
@@ -169,8 +169,8 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
         file_name = f"example_{the_uuid}.xml"
 
         local_path = f"generated/{file_name}"
-        current_datetime = int(datetime.now().timestamp())
-        created_at = datetime.now() - timedelta(days=4)
+        current_datetime = int(datetime.now(timezone.utc).timestamp())
+        created_at = datetime.now(timezone.utc) - timedelta(days=4)
         created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
 
         iaso_client.post(

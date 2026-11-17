@@ -534,7 +534,7 @@ class EnketoAPITestCase(APITestCase):
             self.assertAlmostEqual(instance.location.z, 123.56201171875)  # altitude
             self.assertAlmostEqual(float(instance.accuracy), 49.312, places=2)
             self.assertIsNotNone(instance.device)
-            self.assertEqual(instance.device.imei, "358544083104930")
+            self.assertEqual(instance.device.installation_id, "358544083104930")
 
     def test_submission_creates_attachment_instance_files(self):
         """Extra files posted alongside the xml_submission_file should become InstanceFile rows.

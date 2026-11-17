@@ -2,7 +2,7 @@ import json
 import logging
 import time
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from dhis2 import Api
@@ -133,9 +133,13 @@ def orgunit_from_row(
     # Add opening date and closing date on org_unit while importing from dhis2
     row_keys = row.keys()
     if "openingDate" in row_keys:
-        org_unit.opening_date = datetime.strptime(row["openingDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
+        org_unit.opening_date = (
+            datetime.strptime(row["openingDate"], "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc).date()
+        )
     if "closedDate" in row_keys:
-        org_unit.closed_date = datetime.strptime(row["closedDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
+        org_unit.closed_date = (
+            datetime.strptime(row["closedDate"], "%Y-%m-%dT%H:%M:%S.%f").replace(tzinfo=timezone.utc).date()
+        )
     if "code" in row_keys:
         org_unit.code = row["code"].strip()
 

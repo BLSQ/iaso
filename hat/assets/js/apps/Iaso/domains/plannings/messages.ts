@@ -504,10 +504,10 @@ const MESSAGES = defineMessages({
             'Build the hierarchy below the root team. Changes update the levels automatically.',
         id: 'iaso.plannings.label.teamHierarchyInfos',
     },
-    selectProjectToPickRootTeam: {
+    selectProjectFirst: {
         defaultMessage:
-            'Select a project in the Info tab to choose a root team.',
-        id: 'iaso.plannings.label.selectProjectToPickRootTeam',
+            'Select a project in the Info tab to choose a target geography and a root team.',
+        id: 'iaso.plannings.label.selectProjectFirst',
     },
     selectRootTeamFirst: {
         defaultMessage: 'Select a root team to build its hierarchy.',
@@ -668,6 +668,57 @@ const MESSAGES = defineMessages({
     noOrgUnitsToAssign: {
         defaultMessage: 'No org units to assign on this level',
         id: 'iaso.plannings.label.noOrgUnitsToAssign',
+    },
+    allOrgUnitsAssigned: {
+        defaultMessage: 'All org units are assigned.',
+        id: 'iaso.plannings.label.allOrgUnitsAssigned',
+    },
+    showOnlyUnassignedOrgUnits: {
+        defaultMessage: 'Show only unassigned org units',
+        id: 'iaso.plannings.label.showOnlyUnassignedOrgUnits',
+    },
+    showAllOrgUnits: {
+        defaultMessage: 'Show all org units',
+        id: 'iaso.plannings.label.showAllOrgUnits',
+    },
+    findOrgUnit: {
+        defaultMessage: 'Find an org unit',
+        id: 'iaso.plannings.label.findOrgUnit',
+    },
+    findOrgUnitCaption: {
+        defaultMessage:
+            'Only the org unit levels used by this planning are listed. Showing an org unit opens the team that assigns it.',
+        id: 'iaso.plannings.label.findOrgUnitCaption',
+    },
+    findOrgUnitTooManyRows: {
+        defaultMessage:
+            'Only the first {count} org units are listed. Refine your search to see the others.',
+        id: 'iaso.plannings.label.findOrgUnitTooManyRows',
+    },
+    loadingAllOrgUnits: {
+        defaultMessage:
+            'Loading all org units: the results are not complete yet.',
+        id: 'iaso.plannings.label.loadingAllOrgUnits',
+    },
+    noOrgUnitMatchesSearch: {
+        defaultMessage: 'No org unit matches your search.',
+        id: 'iaso.plannings.label.noOrgUnitMatchesSearch',
+    },
+    searchByName: {
+        defaultMessage: 'Search by name',
+        id: 'iaso.plannings.label.searchByName',
+    },
+    show: {
+        defaultMessage: 'Show',
+        id: 'iaso.plannings.label.show',
+    },
+    clearFoundOrgUnit: {
+        defaultMessage: 'Clear the found org unit',
+        id: 'iaso.plannings.label.clearFoundOrgUnit',
+    },
+    findOrgUnitError: {
+        defaultMessage: 'Could not locate this org unit in the planning teams.',
+        id: 'iaso.plannings.label.findOrgUnitError',
     },
     mapExploreHintTeams: {
         defaultMessage:

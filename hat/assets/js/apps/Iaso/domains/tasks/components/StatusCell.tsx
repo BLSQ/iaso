@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Chip } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from 'Iaso/domains/tasks/messages';
 import { Task } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
@@ -10,13 +10,12 @@ export type Props = {
 };
 
 export const getTranslatedStatusMessage = (
-    formatMessage: (record: Record<string, string>) => string,
+    formatMessage: IntlFormatMessage,
     status: string,
 ): string => {
     // Return untranslated status if not translation available
-    return MESSAGES[status.toLowerCase()]
-        ? formatMessage(MESSAGES[status.toLowerCase()])
-        : status;
+    const message = MESSAGES[status.toLowerCase() as keyof typeof MESSAGES];
+    return message ? formatMessage(message) : status;
 };
 
 export const getStatusColor = (

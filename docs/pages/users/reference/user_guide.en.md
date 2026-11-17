@@ -256,7 +256,7 @@ style="width:1.56771in;height:1.65794in" />
 
 **Export a submission**
 
-The export function allows you to export the form to DHIS2. Beforehand, it needs to have been mapped using the [DHIS2 mapping](./iaso_web/DHIS2) functionality. 
+The export function allows you to export the form to DHIS2. Beforehand, it needs to have been mapped using the [DHIS2 mapping](../how_to/map_a_form_to_dhis2.md) functionality. 
 
 **Edit the submission via Enketo**
 
@@ -325,28 +325,13 @@ In the Form view you can see details of:
 
 -   Date of last modification
 
-Click "Create" and a window will open allowing you to
-map each questionnaire of the xls forms to the correspondent DHIS2 data
-element<img src="./user_guide_attachments/image93.png"
-style="width:2.03704in;height:1.83333in" /><img src="./user_guide_attachments/image98.png"
-style="width:2.05729in;height:1.8085in" />
-
-The mapping process consists of selecting a question on the left and
-deciding whether it should be mapped to DHIS2 or not.
-
-Some questions may not need to be mapped like notes, metadata etc. in
-such a case click on never map.
-
-If the question is to be mapped, search for the correspondence DE in the
-box by using the name, code or ID and then confirm.
-
-Once confirmed, the question will turn to green and be counted.
+Click "Create" to map a form version, or open an existing mapping. Each question of the form is
+then linked to a DHIS2 data element, or marked as never mapped (notes, metadata...). The questions
+are listed in a tree with their status, a search and filters; see
+[Map a form to DHIS2](../how_to/map_a_form_to_dhis2.md).
 
 To reuse the mappings of another form version or of an export file, see
 [Import and export DHIS2 mappings](../how_to/import_export_dhis2_mappings.md).
-
-<img src="./user_guide_attachments/image115.png"
-style="width:7.03646in;height:3.20249in" />
 
 ### Completeness
 
@@ -577,6 +562,58 @@ edit the data source, check up on the files’ version history or compare
 data sources and export them to DHIS2.
 
 <img src="./user_guide_attachments/image52.png" style="width:6.5in;height:1.86111in" />
+
+#### Import a pyramid into a data source
+
+You can import your geographic pyramid (organisation units) into a data source from DHIS2 or
+from a GeoPackage file. Each import creates a new **version** of the data source.
+
+**Connect the data source to DHIS2** (only for a DHIS2 import):
+
+1. Go to **Admin > Data Sources > Data Sources list** and click the **edit** icon of your
+   data source.
+2. Fill in the **DHIS2 name**, **DHIS2 url**, **DHIS2 login** and **DHIS2 password**.
+   Ideally, use a dedicated DHIS2 user that can only read.
+3. Click **Test settings**. The message **Connection to server ok** must appear. If it
+   doesn't, check the URL, login and password.
+4. Click **Save**.
+
+**From DHIS2** (after connecting the data source to DHIS2, see above):
+
+1. On the **Data Sources list**, click **Versions** on your data source, then
+   **New version from DHIS2**.
+2. Click **Launch and show task**. IASO opens the task so you can follow the import. You can
+   close the page and come back later in **Admin > Tasks**.
+3. When the task is finished, make the new version the default one: edit the data source
+   again and choose the new version number under **Default version** (your account starts
+   with an empty version 1), then **Save**.
+4. Switch the imported org units to **Valid**: units imported this way arrive with the status
+   *New*, and IASO only uses *Valid* units in the apps.
+    - Go to **Org Units**. In the filters, change the status from *Valid* to *New*, then
+      click **Search**.
+    - Select all the results (**Select all**), then choose **Edit selection**.
+    - Tick **Edit validation**, choose *Validated*, save and confirm the bulk changes. The
+      change runs in the background.
+
+!!! warning "My org units don't show in Org Units"
+    The **Org Units** list only shows *Valid* units by default. Right after a DHIS2 import
+    from the IASO interface, all your units are *New*, so the list looks empty and the
+    import seems to have failed. It hasn't: change the status filter to *New* to see them,
+    then switch them to *Valid* (point 4 above).
+
+**From a GeoPackage** (see the [IASO GeoPackage format](./geopackage_format.md)):
+
+1. On the **Data Sources list**, click **Versions** on your data source, then
+   **New version from a Geopackage**.
+2. Choose your file.
+3. **Tick "Switch org units status to "Valid"".** Otherwise all your places are imported
+   with the status *New* and will have to be validated before they can be used.
+4. Launch the import and follow it in **Admin > Tasks**.
+5. When the task is finished, make the new version the default one: edit the data source,
+   choose the new version number under **Default version**, then **Save**.
+
+To check the result, go to **Org Units** and search for a few places you know, at each
+level: they must have the status *Valid*.
 
 #### Matching
 

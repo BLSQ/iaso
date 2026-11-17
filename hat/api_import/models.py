@@ -1,10 +1,9 @@
 import os.path
 
-from datetime import date
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import CASCADE
+from django.utils import timezone
 
 from iaso.utils.models.sized_file_field import SizedFileField
 from iaso.utils.models.upload_to import get_account_name_based_on_user
@@ -19,7 +18,7 @@ IMPORT_TYPE = (
 
 
 def api_import_upload_to(api_import: "APIImport", filename: str):
-    today = date.today()
+    today = timezone.now().date()
     year_month = today.strftime("%Y_%m")
     account_name = get_account_name_based_on_user(api_import.user)
 

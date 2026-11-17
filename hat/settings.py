@@ -252,6 +252,7 @@ if ENABLE_CORS:
 INSTALLED_APPS += [
     "rest_framework",
     "rest_framework_api_key",
+    "rest_framework_gis",
     "webpack_loader",
     "django_ltree",
     "hat",
@@ -558,7 +559,6 @@ SPECTACULAR_SETTINGS = {
     },
     "DISABLE_ERRORS_AND_WARNINGS": env.bool("DRF_SPECTACULAR_DISABLE_ERRORS_AND_WARNINGS", default=True),
     "COMPONENT_SPLIT_REQUEST": True,
-    "ENUM_NAME_OVERRIDES": {"MissionTypeEnum": "iaso.models.microplanning.MissionType"},
 }
 
 REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS = {

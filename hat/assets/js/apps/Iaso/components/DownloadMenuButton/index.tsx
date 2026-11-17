@@ -5,10 +5,12 @@ import {
     Box,
     Button,
     CircularProgress,
+    IconButton,
     ListItemIcon,
     ListItemText,
     Menu,
     MenuItem,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
@@ -25,6 +27,8 @@ export type { DownloadFormat, DownloadOption } from './types';
 type Props = {
     options: DownloadOption[];
     disabled?: boolean;
+    /** Toggle rendering: the labelled button (default) or a small round icon. */
+    buttonType?: 'button' | 'icon';
 };
 
 const getPercent = ({ loadedBytes, totalBytes }: DownloadState) =>
@@ -63,6 +67,7 @@ const DownloadStatusText: FunctionComponent<{ state: DownloadState }> = ({
 export const DownloadMenuButton: FunctionComponent<Props> = ({
     options,
     disabled = false,
+    buttonType = 'button',
 }) => {
     const { formatMessage } = useSafeIntl();
     const { download, state } = useDownloadWithProgress();
@@ -71,36 +76,52 @@ export const DownloadMenuButton: FunctionComponent<Props> = ({
     const percent =
         state.status === 'downloading' ? getPercent(state) : undefined;
 
+    const spinner = (
+        <CircularProgress
+            size={20}
+            variant={percent === undefined ? 'indeterminate' : 'determinate'}
+            value={percent}
+        />
+    );
     return (
         <Box data-test="download-menu" display="flex" alignItems="center">
             <DownloadStatusText state={state} />
-            <Button
-                data-test="download-menu-button"
-                variant="outlined"
-                color="primary"
-                disabled={disabled || isDownloading}
-                onClick={event => setAnchor(event.currentTarget)}
-                aria-haspopup="menu"
-                aria-expanded={Boolean(anchor)}
-                startIcon={
-                    isDownloading ? (
-                        <CircularProgress
-                            size={20}
-                            variant={
-                                percent === undefined
-                                    ? 'indeterminate'
-                                    : 'determinate'
-                            }
-                            value={percent}
-                        />
-                    ) : (
-                        <FileDownloadIcon />
-                    )
-                }
-                endIcon={<ArrowDropDownIcon />}
-            >
-                {formatMessage(MESSAGES.download)}
-            </Button>
+            {buttonType === 'icon' ? (
+                <Tooltip title={formatMessage(MESSAGES.export)}>
+                    <span>
+                        <IconButton
+                            data-test="download-menu-button"
+                            color="primary"
+                            size="small"
+                            disabled={disabled || isDownloading}
+                            onClick={event => setAnchor(event.currentTarget)}
+                            aria-haspopup="menu"
+                            aria-expanded={Boolean(anchor)}
+                            aria-label={formatMessage(MESSAGES.export)}
+                        >
+                            {isDownloading ? (
+                                spinner
+                            ) : (
+                                <FileDownloadIcon fontSize="small" />
+                            )}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            ) : (
+                <Button
+                    data-test="download-menu-button"
+                    variant="outlined"
+                    color="primary"
+                    disabled={disabled || isDownloading}
+                    onClick={event => setAnchor(event.currentTarget)}
+                    aria-haspopup="menu"
+                    aria-expanded={Boolean(anchor)}
+                    startIcon={isDownloading ? spinner : <FileDownloadIcon />}
+                    endIcon={<ArrowDropDownIcon />}
+                >
+                    {formatMessage(MESSAGES.download)}
+                </Button>
+            )}
             <Menu
                 anchorEl={anchor}
                 open={Boolean(anchor)}
@@ -124,7 +145,11 @@ export const DownloadMenuButton: FunctionComponent<Props> = ({
                         {option.icon && (
                             <ListItemIcon>{option.icon}</ListItemIcon>
                         )}
-                        <ListItemText>{option.label}</ListItemText>
+                        <ListItemText>
+                            {formatMessage(MESSAGES.exportFormat, {
+                                format: option.label,
+                            })}
+                        </ListItemText>
                     </MenuItem>
                 ))}
             </Menu>

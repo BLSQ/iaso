@@ -46,22 +46,6 @@ vi.mock(
     }),
 );
 
-vi.mock('Iaso/domains/missions/components/chips/FormsChip', () => ({
-    FormsChip: () => <div data-testid="forms-chip" />,
-}));
-
-vi.mock('Iaso/domains/missions/components/chips/OrgUnitAndFormChip', () => ({
-    OrgUnitAndFormChip: () => <div data-testid="org-unit-chip" />,
-}));
-
-vi.mock('Iaso/domains/missions/components/chips/EntityAndFormChip', () => ({
-    EntityAndFormChip: () => <div data-testid="entity-chip" />,
-}));
-
-vi.mock('Iaso/domains/missions/components/details/InfosTitle', () => ({
-    InfosTitle: () => <div data-testid="infos-title" />,
-}));
-
 const createFormik = (): FormikProps<any> =>
     ({
         handleSubmit: vi.fn(),
@@ -93,40 +77,40 @@ describe('EditMissionForm unit tests', () => {
 
         expect(screen.getByTestId('field-name')).toBeInTheDocument();
         expect(screen.getByTestId('field-description')).toBeInTheDocument();
-        expect(screen.getByTestId('infos-title')).toBeInTheDocument();
+        expect(screen.getByText('Mission type')).toBeInTheDocument();
     });
 
-    it('renders MissionFormsBaseInput and FormsChip for FORM_FILLING', () => {
+    it('renders MissionFormsBaseInput and the Form mission type for FORM_FILLING', () => {
         renderComponent({
             missionType: MissionTypeDa2Enum.enum.FORM_FILLING,
         });
 
         expect(screen.getByTestId('forms-base-input')).toBeInTheDocument();
-        expect(screen.getByTestId('forms-chip')).toBeInTheDocument();
+        expect(screen.getByText('Form')).toBeInTheDocument();
         expect(screen.queryByTestId('org-unit-input')).not.toBeInTheDocument();
         expect(screen.queryByTestId('entity-input')).not.toBeInTheDocument();
     });
 
-    it('renders MissionOrgUnitTypeInput and OrgUnitAndFormChip for ORG_UNIT_AND_FORM', () => {
+    it('renders MissionOrgUnitTypeInput and the Org unit + Form mission type for ORG_UNIT_AND_FORM', () => {
         renderComponent({
             missionType: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
         });
 
         expect(screen.getByTestId('org-unit-input')).toBeInTheDocument();
-        expect(screen.getByTestId('org-unit-chip')).toBeInTheDocument();
+        expect(screen.getByText('Org unit + Form')).toBeInTheDocument();
         expect(
             screen.queryByTestId('forms-base-input'),
         ).not.toBeInTheDocument();
         expect(screen.queryByTestId('entity-input')).not.toBeInTheDocument();
     });
 
-    it('renders MissionEntityTypeInput and EntityAndFormChip for ENTITY_AND_FORM', () => {
+    it('renders MissionEntityTypeInput and the Entity + Form mission type for ENTITY_AND_FORM', () => {
         renderComponent({
             missionType: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
         });
 
         expect(screen.getByTestId('entity-input')).toBeInTheDocument();
-        expect(screen.getByTestId('entity-chip')).toBeInTheDocument();
+        expect(screen.getByText('Entity + Form')).toBeInTheDocument();
         expect(
             screen.queryByTestId('forms-base-input'),
         ).not.toBeInTheDocument();

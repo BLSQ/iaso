@@ -4,7 +4,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event/dist/cjs/index.js';
 import { HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { Route, Routes } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { MissionTypeDa2Enum } from 'Iaso/api/missions';
@@ -79,6 +79,10 @@ vi.mock('bluesquare-components', async importOriginal => {
     };
 });
 
+const CurrentPath = () => (
+    <div data-testid="current-path">{useLocation().pathname}</div>
+);
+
 const renderEdit = (id: number = 1) => {
     return renderWithThemeAndIntlProvider(
         <MemoryRouter
@@ -89,6 +93,7 @@ const renderEdit = (id: number = 1) => {
                     path={`/${baseUrls.missionsEdit}/*`}
                     element={<MissionEdit />}
                 ></Route>
+                <Route path="*" element={<CurrentPath />} />
             </Routes>
         </MemoryRouter>,
     );
@@ -143,7 +148,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /select a form to add/i,
+                name: /add a form/i,
             }),
         );
     });
@@ -284,10 +289,14 @@ describe('Mission edit integration test', () => {
             ).toHaveValue('ET 1');
         });
         expect(
-            screen.getByRole('textbox', { name: /min cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /min (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('12');
         expect(
-            screen.getByRole('textbox', { name: /max cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /max (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('14');
     });
     it('renders initial data - MISSION_ORG_UNIT', async () => {
@@ -329,10 +338,14 @@ describe('Mission edit integration test', () => {
         });
 
         expect(
-            screen.getByRole('textbox', { name: /min cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /min (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('12');
         expect(
-            screen.getByRole('textbox', { name: /max cardinality/i }),
+            screen.getByRole('textbox', {
+                name: /max (new org units|entities) per assigned org unit/i,
+            }),
         ).toHaveValue('14');
     });
 
@@ -367,7 +380,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /select a form to add/i,
+                    name: /add a form/i,
                 }),
             );
         });
@@ -405,7 +418,7 @@ describe('Mission edit integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /select a form to add/i,
+                    name: /add a form/i,
                 }),
             );
         });
@@ -942,16 +955,22 @@ describe('Mission edit integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /max (new org units|entities) per assigned org unit/i,
+                }),
                 '20',
             );
         });
@@ -1047,16 +1066,22 @@ describe('Mission edit integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /max (new org units|entities) per assigned org unit/i,
+                }),
                 '20',
             );
         });
@@ -1112,8 +1137,13 @@ describe('Mission edit integration test', () => {
         await waitFor(() => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
-        expect(
-            screen.getByRole('link', { name: MESSAGES.cancel.defaultMessage }),
-        ).toHaveAttribute('href', `/${baseUrls.missionsDetails}/id/1/`);
+        await userEvent.click(
+            screen.getByRole('button', {
+                name: MESSAGES.cancel.defaultMessage,
+            }),
+        );
+        expect(screen.getByTestId('current-path').textContent).toBe(
+            `/${baseUrls.missionsDetails}/id/1/`,
+        );
     });
 });

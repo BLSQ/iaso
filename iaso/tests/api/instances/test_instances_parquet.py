@@ -311,8 +311,8 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         via its own direct Postgres connection -- so Django's query log only ever sees the
         small, fixed setup queries (permission checks, Form lookup, `SELECT 1`), regardless
         of how many instances actually match. This is what keeps parquet export immune to
-        the get_and_save_json_of_xml()-per-row write issue that xlsx/csv are exposed to
-        (see test_xlsx_export_is_constant_queries in test_instances.py)."""
+        per-row work (like the csv/xlsx export, see test_django_side_queries_are_constant in
+        test_instances_duckdb_export.py)."""
         self.yoda.iaso_profile.projects.add(self.instance_1.project)
         self.client.force_authenticate(self.yoda)
 

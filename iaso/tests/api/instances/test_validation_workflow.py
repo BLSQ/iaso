@@ -87,7 +87,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -141,7 +141,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -172,7 +172,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -198,7 +198,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -222,7 +222,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -255,7 +255,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]
@@ -282,7 +282,7 @@ class InstancesAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 15.5,
                 "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
+                "file": r"\/storage\/emulated\/0\/odk\/instances\/test_accuracy\/test.xml",
                 "name": "test_accuracy",
             }
         ]

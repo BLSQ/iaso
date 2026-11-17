@@ -15,11 +15,11 @@ import { ProjectChip } from './components/ProjectChip';
 import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
 import { FeatureFlag, ProjectFeatureFlag } from './types/featureFlag';
-import { Project } from './types/project';
+import { Project, ProjectSavePayload } from './types/project';
 
 export const baseUrl = baseUrls.projects;
 export const useColumns = (
-    saveProject: (s: Project) => Promise<any>,
+    saveProject: (s: ProjectSavePayload) => Promise<any>,
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {

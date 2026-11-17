@@ -59,6 +59,21 @@ class JsonLogicTests(TestCase):
         querySet = MetricValue.objects.filter(q)
         self.assertEqual(str(querySet.query), expectedQuerySet)
 
+    def test_jsonlogic_to_exists_q_clauses__numeric_string_targets_string_value(self) -> None:
+        """A numeric-looking string (e.g. a category label "1") is compared against string_value, not value."""
+        filters = {"==": [{"var": 22}, "1"]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE EXISTS("
+            'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."string_value" = 1) LIMIT 1)'
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
+
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
     def test_jsonlogic_to_exists_q_clauses__simple_and(self) -> None:
         filters = {"and": [{">=": [{"var": "23"}, 900]}, {"==": [{"var": "22"}, 700]}]}
         expectedQuerySet = (

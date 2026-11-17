@@ -94,6 +94,14 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS2 mappings',
     },
+    formAI: {
+        id: 'iaso.formAI.title',
+        defaultMessage: 'Form AI',
+    },
+    openInFormAI: {
+        id: 'iaso.forms.openInFormAI',
+        defaultMessage: 'Open in Form AI',
+    },
     deleteFormTitle: {
         id: 'iaso.forms.dialog.deleteFormTitle',
         defaultMessage: 'Are you sure you want to delete this form?',
@@ -386,6 +394,19 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
         id: 'iaso.label.periodsAfterAllowed',
         defaultMessage: 'Allowed periods after',
     },
+    promptness: {
+        id: 'iaso.promptness.title',
+        defaultMessage: 'Promptness',
+    },
+    promptnessGracePeriodDays: {
+        id: 'iaso.label.promptnessGracePeriodDays',
+        defaultMessage: 'Promptness grace period (days)',
+    },
+    promptnessGracePeriodDaysInfo: {
+        id: 'iaso.forms.promptnessGracePeriodDaysInfo',
+        defaultMessage:
+            'Number of days after the end of the period during which submissions are still considered on time',
+    },
     singlePerPeriod: {
         id: 'iaso.label.singlePerPeriod',
         defaultMessage: 'Single per period',
@@ -490,6 +511,29 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
     fields: {
         id: 'iaso.form.label.fields',
         defaultMessage: 'Default fields to display',
+    },
+    summaryFields: {
+        id: 'iaso.form.label.summaryFields',
+        defaultMessage: 'Summary fields',
+    },
+    summaryFieldsHelp: {
+        id: 'iaso.form.label.summaryFieldsHelp',
+        defaultMessage:
+            'Questions shown by default in the submission details. The other questions are shown on demand.',
+    },
+    restrictPii: {
+        id: 'iaso.form.label.restrictPii',
+        defaultMessage:
+            'This form contains personal data (PII): hide the questions not listed below to users without the PII permission',
+    },
+    nonPiiFields: {
+        id: 'iaso.form.label.nonPiiFields',
+        defaultMessage: 'Questions without personal data (non-PII)',
+    },
+    nonPiiFieldsHelp: {
+        id: 'iaso.form.label.nonPiiFieldsHelp',
+        defaultMessage:
+            'Only these questions are shown to users without the "View personal data (PII) in submissions" permission. Any question not listed is treated as personal data.',
     },
     showAdvancedSettings: {
         id: 'iaso.form.label.showAdvancedSettings',
@@ -723,6 +767,10 @@ const MESSAGES: Record<string, IntlMessage> = defineMessages({
     instances_count: {
         id: 'iaso.forms.instances_count',
         defaultMessage: 'Number of submissions',
+    },
+    instancesCountColumnWarning: {
+        id: 'iaso.forms.instancesCountColumnWarning',
+        defaultMessage: 'Including this column can make the API call very slow',
     },
     projectsInfo: {
         id: 'iaso.forms.projectsInfo',

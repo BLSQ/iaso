@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from submissions import (
     APP_VERSION,
@@ -14,7 +14,7 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
     the_uuid = str(uuid.uuid4())
     file_name = f"example_{the_uuid}.xml"
     local_path = f"generated/{file_name}"
-    current_datetime = int(datetime.now().timestamp())
+    current_datetime = int(datetime.now(timezone.utc).timestamp())
 
     instance_body = [
         {

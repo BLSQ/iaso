@@ -69,7 +69,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -108,7 +108,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -153,7 +153,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -191,7 +191,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -272,7 +272,7 @@ class CorrelationAPITestCase(APITestCase):
         self.assertAlmostEqual(instance.location.x, 4.40093901)  # longitude
         self.assertAlmostEqual(float(instance.accuracy), 49.312, places=2)
         self.assertIsNotNone(instance.device)
-        self.assertEqual(instance.device.imei, "358544083104930")
+        self.assertEqual(instance.device.installation_id, "358544083104930")
         self.assertIsNone(instance.correlation_id)
 
     def test_multiple_attachments_create_instance_files_on_sync_upload(self):
@@ -290,7 +290,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]
@@ -408,7 +408,7 @@ class CorrelationAPITestCase(APITestCase):
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
-                "file": f"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
+                "file": rf"\/storage\/emulated\/0\/odk\/instances\/{file_name}",
                 "name": file_name,
             }
         ]

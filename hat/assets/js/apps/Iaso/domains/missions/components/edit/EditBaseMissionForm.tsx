@@ -2,7 +2,7 @@ import React from 'react';
 import { SaveOutlined } from '@mui/icons-material';
 import { Alert, useMediaQuery, useTheme } from '@mui/material';
 import { Button } from '@mui/material';
-import { LinkButton, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
@@ -20,11 +20,11 @@ type EditBaseMissionFormProps = {
     data: MissionFormRetrieve;
     missionId: number;
     save: ReturnType<typeof useApiMicroplanningMissionsUpdate>['mutateAsync'];
-    redirectBackUrl: string;
+    goBack: () => void;
 };
 export const EditBaseMissionForm: React.FunctionComponent<
     EditBaseMissionFormProps
-> = ({ data, missionId, save, redirectBackUrl }) => {
+> = ({ data, missionId, save, goBack }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { formatMessage } = useSafeIntl();
@@ -55,14 +55,14 @@ export const EditBaseMissionForm: React.FunctionComponent<
             title={data.name}
             actions={
                 <>
-                    <LinkButton
-                        to={redirectBackUrl}
+                    <Button
+                        onClick={goBack}
                         color="primary"
                         variant="outlined"
                         size={isMobile ? 'small' : 'medium'}
                     >
                         {formatMessage(MESSAGES.cancel)}
-                    </LinkButton>
+                    </Button>
                     <Button
                         variant="contained"
                         type="submit"

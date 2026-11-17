@@ -38,7 +38,7 @@ def fix_ourgunit_group():
     cur = connection.cursor()
 
     query = """
-    select distinct       
+    select distinct
            iaso_orgunit.id            as orgunit_id
     from iaso_group_org_units go
              join iaso_group on (iaso_group.id = go.group_id)

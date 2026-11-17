@@ -1,43 +1,42 @@
 import React from 'react';
-import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
-import DescriptionIcon from '@mui/icons-material/Description';
+import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
 import {
     Alert,
+    Box,
+    SxProps,
     Table,
     TableBody,
     TableCell,
     TableContainer,
-    TableHead,
     TableRow,
-    Typography,
-    Box,
+    Theme,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { MissionPolymorphicRetrieve } from 'Iaso/api/missions';
 import MESSAGES from 'Iaso/domains/missions/messages';
 import { SxStyles } from 'Iaso/types/general';
+import { formatMaxCardinality } from '../../utils';
+import { MissionFormName } from '../forms/MissionFormName';
+import { MissionFormsTableHead } from '../forms/MissionFormsTableHead';
+import { missionStyles } from '../styles';
+import { DetailsSectionTitle } from './DetailsSectionTitle';
 
 type FormWidgetPaperProps = {
     mission: MissionPolymorphicRetrieve;
 };
 
 const styles: SxStyles = {
-    root: {
-        mb: 2,
-    },
     tableContainer: {
+        ...missionStyles.bordered,
         maxHeight: 'calc(95vh - 260px)',
         overscrollBehavior: 'none',
     },
-    row: {
-        '&:nth-of-type(odd)': theme => ({
-            backgroundColor: theme.palette.gray.background,
-        }),
-        '&:nth-of-type(even)': {
-            backgroundColor: 'transparent',
-        },
-    },
 };
+
+const tableSx = [
+    missionStyles.borderedTable,
+    missionStyles.greyHeaderTable,
+] as SxProps<Theme>;
 
 export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
     mission,
@@ -45,85 +44,46 @@ export const FormWidgetPaper: React.FunctionComponent<FormWidgetPaperProps> = ({
     const { formatMessage } = useSafeIntl();
 
     return (
-        <Box
-            title={formatMessage(MESSAGES.forms)}
-            id={`mission-${mission.id}-forms`}
-            data-testid={'missions-forms'}
-            sx={styles.root}
-        >
-            <Typography
-                variant="body1"
-                sx={{ textTransform: 'uppercase', mb: 2, fontSize: '15px' }}
-            >
-                <DescriptionIcon
-                    color="primary"
-                    sx={{
-                        mr: 1,
-                        fontSize: '15px',
-                        position: 'relative',
-                        top: '2px',
-                    }}
-                />
-                {formatMessage(MESSAGES.forms)}
-            </Typography>
-            {mission?.forms?.length ? (
+        <Box id={`mission-${mission.id}-forms`} data-testid={'missions-forms'}>
+            <DetailsSectionTitle
+                Icon={DescriptionIcon}
+                title={formatMessage(MESSAGES.forms)}
+            />
+            {mission.forms?.length ? (
                 <TableContainer sx={styles.tableContainer}>
-                    <Table
-                        size={'small'}
-                        stickyHeader
-                        sx={{
-                            border: theme =>
-                                `1px solid ${theme.palette.lightGray.border}`,
-                        }}
-                    >
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>
-                                    {formatMessage(MESSAGES.form)}
-                                </TableCell>
-                                <TableCell>
-                                    {formatMessage(MESSAGES.min)}
-                                </TableCell>
-
-                                <TableCell>
-                                    {formatMessage(MESSAGES.max)}
-                                </TableCell>
-                            </TableRow>
-                        </TableHead>
+                    <Table stickyHeader sx={tableSx}>
+                        <MissionFormsTableHead
+                            minLabel={formatMessage(MESSAGES.min)}
+                            maxLabel={formatMessage(MESSAGES.max)}
+                        />
                         <TableBody>
-                            {mission?.forms?.map(
+                            {mission.forms.map(
                                 ({
                                     form,
                                     form_name,
                                     min_cardinality,
                                     max_cardinality,
-                                }) => {
-                                    return (
-                                        <TableRow key={form} sx={styles.row}>
-                                            <TableCell>{form_name}</TableCell>
-                                            <TableCell>
-                                                {min_cardinality.toLocaleString()}
-                                            </TableCell>
-                                            <TableCell>
-                                                {max_cardinality?.toLocaleString() ?? (
-                                                    <AllInclusiveIcon
-                                                        fontSize="small"
-                                                        color="primary"
-                                                        aria-label={formatMessage(
-                                                            MESSAGES.infinity,
-                                                        )}
-                                                    />
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                },
+                                }) => (
+                                    <TableRow key={form}>
+                                        <TableCell>
+                                            <MissionFormName name={form_name} />
+                                        </TableCell>
+                                        <TableCell>
+                                            {min_cardinality.toLocaleString()}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatMaxCardinality(
+                                                max_cardinality,
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ),
                             )}
                         </TableBody>
                     </Table>
                 </TableContainer>
             ) : (
-                <Alert severity={'info'} sx={{ mb: 2 }}>
+                <Alert severity={'info'}>
                     {formatMessage(MESSAGES.noResultsFound)}
                 </Alert>
             )}

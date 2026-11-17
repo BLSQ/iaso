@@ -18,7 +18,7 @@ export const planningOperations = {
             },
         },
     },
-    apiMicroplanningPlanningsOrgunitsLevelTreeList: {
+    apiMicroplanningPlanningsOrgUnitTreeList: {
         query: {
             options: {
                 staleTime: Infinity,
@@ -26,7 +26,7 @@ export const planningOperations = {
             },
         },
     },
-    apiMicroplanningPlanningsOrgunitsLevelTreeGeometryRetrieve: {
+    apiMicroplanningPlanningsOrgUnitTreeWithGeomList: {
         query: {
             options: {
                 staleTime: Infinity,

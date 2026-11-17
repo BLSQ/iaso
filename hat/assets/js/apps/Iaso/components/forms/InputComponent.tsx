@@ -48,6 +48,11 @@ export type NumberInputOptions = {
     thousandSeparator?: '.' | ',' | ' ';
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
     currency?: string;
+    size?: 'small' | 'medium';
+    showArrows?: boolean;
+    showInfo?: boolean;
+    step?: number;
+    hideError?: boolean;
 };
 
 export type PhoneInputOptions = {
@@ -93,15 +98,9 @@ export type InputComponentProps = {
     max?: number;
     blockForbiddenChars?: boolean;
     onErrorChange?: (hasError: boolean) => void;
-    numberInputOptions?: {
+    numberInputOptions?: NumberInputOptions & {
         prefix?: string;
         suffix?: string;
-        currency?: string;
-        min?: number;
-        max?: number;
-        decimalScale?: number;
-        decimalSeparator?: '.' | ',';
-        thousandSeparator?: '.' | ',' | ' ';
     };
     phoneInputOptions?: PhoneInputOptions;
     setFieldError?: (keyValue: string, message: string) => void;

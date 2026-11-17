@@ -3,10 +3,12 @@ import { fireEvent, screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { MissionFormsBaseInput } from './MissionFormsBaseInput';
 
 const push = vi.fn();
+let mockFormik: FormikProps<any>;
 const remove = vi.fn();
 
 vi.mock('formik', async () => {
@@ -14,6 +16,7 @@ vi.mock('formik', async () => {
 
     return {
         ...actual,
+        useFormikContext: () => mockFormik,
         Field: () => <div data-testid="field" />,
         ErrorMessage: () => null,
         FieldArray: ({ render }: any) =>
@@ -102,16 +105,17 @@ describe('MissionFormsBaseInput', () => {
     });
 
     it('filters already selected forms from the available options', () => {
+        mockFormik = createFormik({
+            forms: [
+                {
+                    form: 1,
+                    min_cardinality: 1,
+                },
+            ],
+        });
         renderWithThemeAndIntlProvider(
             <MissionFormsBaseInput
-                formik={createFormik({
-                    forms: [
-                        {
-                            form: 1,
-                            min_cardinality: 1,
-                        },
-                    ],
-                })}
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
             />,
         );
 
@@ -132,8 +136,11 @@ describe('MissionFormsBaseInput', () => {
             forms: [],
         });
 
+        mockFormik = formik;
         renderWithThemeAndIntlProvider(
-            <MissionFormsBaseInput formik={formik} />,
+            <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+            />,
         );
 
         fireEvent.click(screen.getByTestId('select'));
@@ -157,8 +164,11 @@ describe('MissionFormsBaseInput', () => {
             ],
         });
 
+        mockFormik = formik;
         renderWithThemeAndIntlProvider(
-            <MissionFormsBaseInput formik={formik} />,
+            <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+            />,
         );
 
         fireEvent.click(
@@ -181,8 +191,11 @@ describe('MissionFormsBaseInput', () => {
             forms: 'Please select at least one form',
         };
 
+        mockFormik = formik;
         renderWithThemeAndIntlProvider(
-            <MissionFormsBaseInput formik={formik} />,
+            <MissionFormsBaseInput
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
+            />,
         );
 
         expect(
@@ -191,11 +204,12 @@ describe('MissionFormsBaseInput', () => {
     });
 
     it('does not show the array error when there is no error', () => {
+        mockFormik = createFormik({
+            forms: [],
+        });
         renderWithThemeAndIntlProvider(
             <MissionFormsBaseInput
-                formik={createFormik({
-                    forms: [],
-                })}
+                missionType={MissionTypeDa2Enum.enum.FORM_FILLING}
             />,
         );
 

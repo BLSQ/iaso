@@ -877,6 +877,6 @@ openhexa pipelines status my-pipeline
 
 - [OpenHexa Documentation](https://docs.openhexa.org/)
 - [OpenHexa SDK Python](https://github.com/BLSQ/openhexa-sdk-python)
-- [Iaso API Documentation](https://iaso.readthedocs.io/)
+- [Iaso API Documentation](https://docs.openiaso.com/)
 - [ngrok Documentation](https://ngrok.com/docs)
 

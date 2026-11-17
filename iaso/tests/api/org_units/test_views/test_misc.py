@@ -543,17 +543,17 @@ class OrgUnitAPITestCase(APITestCase):
         self.jedi_council_corruscant.opening_date = None
         self.jedi_council_corruscant.closed_date = None
         self.jedi_council_corruscant.save()
-        self.jedi_council_endor.opening_date = datetime.datetime(2020, 1, 1)
+        self.jedi_council_endor.opening_date = datetime.date(2020, 1, 1)
         self.jedi_council_endor.closed_date = None
         self.jedi_council_endor.save()
-        self.jedi_squad_endor.opening_date = datetime.datetime(2020, 1, 1)
-        self.jedi_squad_endor.closed_date = datetime.datetime(2020, 2, 1)
+        self.jedi_squad_endor.opening_date = datetime.date(2020, 1, 1)
+        self.jedi_squad_endor.closed_date = datetime.date(2020, 2, 1)
         self.jedi_squad_endor.save()
-        self.jedi_squad_endor_2.opening_date = datetime.datetime(2020, 2, 1)
-        self.jedi_squad_endor_2.closed_date = datetime.datetime(2020, 3, 1)
+        self.jedi_squad_endor_2.opening_date = datetime.date(2020, 2, 1)
+        self.jedi_squad_endor_2.closed_date = datetime.date(2020, 3, 1)
         self.jedi_squad_endor_2.save()
         self.jedi_council_brussels.opening_date = None
-        self.jedi_council_brussels.closed_date = datetime.datetime(2020, 12, 1)
+        self.jedi_council_brussels.closed_date = datetime.date(2020, 12, 1)
         self.jedi_council_brussels.save()
 
         def get_at_date(date: str):

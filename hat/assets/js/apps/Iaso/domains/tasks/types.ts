@@ -11,6 +11,7 @@ export type TaskStatus =
     | 'ERRORED';
 
 type User = {
+    id?: number;
     first_name: string;
     last_name: string;
     username?: string;
@@ -24,11 +25,26 @@ export type Task<T> = {
     ended_at: Nullable<number>; // date
     progress_value: number;
     end_value: number;
+    created_by?: Nullable<User>;
     launcher: User;
     result: Nullable<T>;
     status: TaskStatus;
     should_be_killed: boolean;
     progress_message: Nullable<string>;
+    external?: boolean;
+    heartbeat_at?: Nullable<number>; // date, last sign of life of the worker running the task
+};
+
+export type TaskResultFile = {
+    file: string;
+    expires_at?: string; // DateTime
+};
+
+// A file is reported either as "file:<name>", or as { file, expires_at } when it expires.
+export type TaskResult = {
+    result: string;
+    data?: Nullable<string | TaskResultFile>;
+    message?: string;
 };
 
 export type TaskLog = {

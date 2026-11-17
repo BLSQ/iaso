@@ -38,8 +38,6 @@ Expected figures (expected / on_time / late / missing):
 
 import datetime
 
-from django.utils import timezone
-
 from iaso import models as m
 from iaso.permissions.core_permissions import (
     CORE_COMPLETENESS_STATS_PERMISSION,
@@ -71,7 +69,7 @@ PERIOD_KEYS = {"value", "start", "end", "grace_period_days", "deadline", "is_cur
 
 
 def aware(*args) -> datetime.datetime:
-    return timezone.make_aware(datetime.datetime(*args))
+    return datetime.datetime(*args, tzinfo=datetime.timezone.utc)
 
 
 class PromptnessStatsTestCase(APITestCase):

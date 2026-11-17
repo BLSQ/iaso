@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react';
-import { InventoryOutlined } from '@mui/icons-material';
+import { AccessAlarm, InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AdsClickIcon from '@mui/icons-material/AdsClick';
@@ -250,7 +250,8 @@ const menuItems = (
                             icon: props => <AssessmentIcon {...props} />,
                             isActive: pathname =>
                                 pathname?.includes(FORMS_STATS) &&
-                                !pathname?.includes('completeness'),
+                                !pathname?.includes('completeness') &&
+                                !pathname?.includes('promptness'),
                         },
                         {
                             label: formatMessage(MESSAGES.completeness),
@@ -264,6 +265,12 @@ const menuItems = (
                                 paths.completenessStatsPath.permissions,
                             key: 'completenessStats',
                             icon: props => <DoneAll {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.promptness),
+                            permissions: paths.promptnessPath.permissions,
+                            key: 'promptness',
+                            icon: props => <AccessAlarm {...props} />,
                         },
                     ],
                 },
@@ -552,9 +559,29 @@ export const useMenuItems = (): MenuItems => {
     }
 
     const items: MenuItems = useMemo(() => {
+        // A plugin menu item with the key of a basic item (e.g. "entities") adds its sub menu to the basic item
+        const isMergedInBasicItem = (pluginItem: MenuItem) =>
+            Boolean(pluginItem.subMenu) &&
+            basicItems.some(item => item.key === pluginItem.key);
         const menuItemsTemp = [
-            ...(basicItems as MenuItems),
-            ...(pluginsMenu as MenuItems),
+            ...(basicItems as MenuItems).map(item => {
+                const pluginSubMenu = (pluginsMenu as MenuItems)
+                    .filter(
+                        pluginItem =>
+                            isMergedInBasicItem(pluginItem) &&
+                            pluginItem.key === item.key,
+                    )
+                    .flatMap(pluginItem => pluginItem.subMenu ?? []);
+                return pluginSubMenu.length > 0
+                    ? {
+                          ...item,
+                          subMenu: [...(item.subMenu ?? []), ...pluginSubMenu],
+                      }
+                    : item;
+            }),
+            ...(pluginsMenu as MenuItems).filter(
+                pluginItem => !isMergedInBasicItem(pluginItem),
+            ),
         ];
         if (admin) {
             menuItemsTemp.push(admin as MenuItem);

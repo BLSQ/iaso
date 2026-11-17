@@ -63,9 +63,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
         )
 
         if self.action in ["list", "retrieve"]:
-            # deleting previous prefetch_related from filter_for_user_and_app_id cause I don't want to break everything
-            # => more clean way would be to remove the prefetch_related from filter_for_user_and_app_id as it don't belong here
-            queryset = queryset.prefetch_related(None).prefetch_related(
+            queryset = queryset.prefetch_related(
                 Prefetch(
                     "projects",
                     queryset=Project.objects.select_related("account")
@@ -134,9 +132,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         )
 
         if self.action in ["list", "retrieve"]:
-            # deleting previous prefetch_related from filter_for_user_and_app_id cause I don't want to break everything
-            # => more clean way would be to remove the prefetch_related from filter_for_user_and_app_id as it don't belong here
-            queryset = queryset.prefetch_related(None).prefetch_related(
+            queryset = queryset.prefetch_related(
                 Prefetch(
                     "projects",
                     queryset=Project.objects.select_related("account")

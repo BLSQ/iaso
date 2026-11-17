@@ -7,7 +7,7 @@ from iaso.gpkg.import_gpkg import import_gpkg_file
 
 class Command(BaseCommand):
     help = """Import a complete OrgUnit tree from a geopackage.
-    
+
     Assume all orgunit here are to be created, not updated and the hierarchy is self sufficient.
     The DataSource must already be configured with at least one project."""
 

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useEffect } from 'react';
+import React, { FunctionComponent, ReactNode, useRef, useEffect } from 'react';
 import {
     Table,
     TableBody,
@@ -13,13 +13,29 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { TaskLog } from 'Iaso/domains/tasks/types';
+import { SxStyles } from 'Iaso/types/general';
+import { Nullable } from '../../../types/utils';
 import MESSAGES from '../messages';
+import { formatOffset } from '../utils';
+
+const styles: SxStyles = {
+    // The scroll container above handles the sideways scroll
+    singleLine: {
+        overflowX: 'visible',
+    },
+};
 
 export type Props = {
     messages?: TaskLog[];
     isRunning?: boolean;
     isFetching?: boolean;
     displayLoader?: boolean;
+    // When set, each log also shows the time elapsed since the task started
+    startedAt?: Nullable<number>;
+    // One line per log, scrolling sideways instead of wrapping
+    singleLine?: boolean;
+    // Show a placeholder instead of the table while there are no logs
+    emptyPlaceholder?: ReactNode;
 };
 
 export const TaskLogMessages: FunctionComponent<Props> = ({
@@ -27,13 +43,17 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
     isRunning = false,
     isFetching = false,
     displayLoader = true,
+    startedAt,
+    singleLine = false,
+    emptyPlaceholder,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+    const scrollRef = useRef<null | HTMLDivElement>(null);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, messagesEndRef]);
+        const list = scrollRef.current;
+        list?.scrollTo?.({ top: list.scrollHeight, behavior: 'smooth' });
+    }, [messages]);
     return (
         <Paper elevation={1}>
             <Typography
@@ -42,21 +62,38 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
                 sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}
             >
                 {formatMessage(MESSAGES.logs)}
+                {messages && messages.length > 0 && (
+                    <Typography
+                        component="span"
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ ml: 1 }}
+                    >
+                        {formatMessage(MESSAGES.logsCount, {
+                            count: `${messages.length}`,
+                        })}
+                    </Typography>
+                )}
             </Typography>
             <Box
+                ref={scrollRef}
                 sx={{
                     overflowY: 'auto',
-                    maxHeight: 500,
-                    scrollSnapAlign: 'end',
+                    overflowX: singleLine ? 'auto' : 'hidden',
+                    // Leave room for what is above the logs on small screens
+                    maxHeight: 'min(500px, 40vh)',
                 }}
             >
-                {messages && (
-                    <TableContainer component={Paper} sx={{ mt: 2 }}>
+                {messages?.length === 0 && emptyPlaceholder}
+                {messages && !(messages.length === 0 && emptyPlaceholder) && (
+                    <TableContainer
+                        sx={singleLine ? styles.singleLine : undefined}
+                    >
                         <Table size="small">
                             <TableBody>
                                 {messages.length === 0 && !isRunning && (
                                     <TableRow>
-                                        <TableCell colSpan={2}>
+                                        <TableCell colSpan={startedAt ? 3 : 2}>
                                             {formatMessage(
                                                 MESSAGES.noLogsToShow,
                                             )}
@@ -65,7 +102,7 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
                                 )}
                                 {displayLoader && isFetching && (
                                     <TableRow>
-                                        <TableCell colSpan={2}>
+                                        <TableCell colSpan={startedAt ? 3 : 2}>
                                             <CircularProgress size={20} />
                                         </TableCell>
                                     </TableRow>
@@ -84,12 +121,32 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
                                                 .unix(log.created_at)
                                                 .format('LTS')}
                                         </TableCell>
+                                        {startedAt && (
+                                            <TableCell
+                                                sx={{
+                                                    color: 'grey',
+                                                    whiteSpace: 'nowrap',
+                                                    width: '1%',
+                                                    verticalAlign: 'top',
+                                                    fontVariantNumeric:
+                                                        'tabular-nums',
+                                                }}
+                                            >
+                                                {formatOffset(
+                                                    log.created_at - startedAt,
+                                                )}
+                                            </TableCell>
+                                        )}
                                         <TableCell>
                                             <pre
                                                 style={{
                                                     margin: 0,
-                                                    whiteSpace: 'pre-wrap',
-                                                    wordBreak: 'break-word',
+                                                    whiteSpace: singleLine
+                                                        ? 'pre'
+                                                        : 'pre-wrap',
+                                                    wordBreak: singleLine
+                                                        ? 'normal'
+                                                        : 'break-word',
                                                 }}
                                             >
                                                 {log.message}
@@ -101,7 +158,6 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
                         </Table>
                     </TableContainer>
                 )}
-                <Box ref={messagesEndRef} />
             </Box>
         </Paper>
     );

@@ -1,4 +1,4 @@
-import { PlanningLevelTreeNode } from 'Iaso/api/plannings';
+import { OrgUnitTree } from 'Iaso/api/plannings';
 
 export type Assignment = {
     id: number;
@@ -17,8 +17,15 @@ export type Assignee = {
     color: string;
 };
 
-export type OrgUnitRow = PlanningLevelTreeNode & {
-    parentName?: string;
+// The OpenAPI schema can't express the recursion: it types grandchildren as unknown.
+export type LevelOrgUnitNode = Omit<OrgUnitTree, 'children'> & {
+    children: LevelOrgUnitNode[];
+};
+
+export type MapPresence = Pick<OrgUnitTree, 'has_geo_json' | 'has_location'>;
+
+export type OrgUnitRow = Omit<LevelOrgUnitNode, 'children'> & {
+    parentName: string;
     assignee?: Assignee;
     // Set when assigned to a sub-team, which can be opened.
     teamId?: number;

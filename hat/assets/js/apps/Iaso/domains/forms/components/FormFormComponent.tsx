@@ -1,11 +1,12 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { FormatListBulleted, History } from '@mui/icons-material';
+import { FormatListBulleted, History, QueryStats } from '@mui/icons-material';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExternalLink,
     InputWithInfos,
     LinkWithLocation,
+    makeRedirectionUrl,
     useSafeIntl,
 } from 'bluesquare-components';
 import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
@@ -16,7 +17,11 @@ import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
+import {
+    COMPLETENESS_STATS,
+    SUBMISSIONS,
+    SUBMISSIONS_UPDATE,
+} from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { formatLabel } from '../../instances/utils';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
@@ -25,9 +30,11 @@ import {
     NO_PERIOD,
     periodTypeOptionsWithNoPeriod,
 } from '../../periods/constants';
+import { getCurrentPeriodString } from '../../periods/utils';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { userHasAccessToModule } from '../../users/utils';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
+import { useGetPromptnessDefaultParentId } from '../hooks/useGetPromptnessDefaultParentId';
 import MESSAGES from '../messages';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
@@ -69,9 +76,11 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const hasDhis2Module = userHasAccessToModule(
-        'DHIS2_MAPPING',
-        useCurrentUser(),
+    const currentUser = useCurrentUser();
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
+    // Promptness is only computed for forms which have a period type
+    const defaultPromptnessParentId = useGetPromptnessDefaultParentId(
+        Boolean(currentForm.period_type.value),
     );
 
     const setPeriodType = (value: string | null) => {
@@ -81,6 +90,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             setFieldValue('single_per_period', false);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
+            setFieldValue('promptness_grace_period_days', null);
         } else {
             setFieldValue('single_per_period', originalSinglePerPeriod);
             setFieldValue('periods_before_allowed', 3);
@@ -162,6 +172,35 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         options={periodTypeOptionsWithNoPeriod}
                         label={MESSAGES.periodType}
                     />
+                    {displayPeriods && (
+                        <InputWithInfos
+                            infos={formatMessage(
+                                MESSAGES.promptnessGracePeriodDaysInfo,
+                            )}
+                        >
+                            <InputComponent
+                                keyValue="promptness_grace_period_days"
+                                onChange={(key, value) =>
+                                    setFieldValue(
+                                        key,
+                                        value === '' || value == null
+                                            ? null
+                                            : value,
+                                    )
+                                }
+                                value={
+                                    currentForm.promptness_grace_period_days
+                                        ?.value ?? undefined
+                                }
+                                errors={
+                                    currentForm.promptness_grace_period_days
+                                        ?.errors ?? []
+                                }
+                                type="number"
+                                label={MESSAGES.promptnessGracePeriodDays}
+                            />
+                        </InputWithInfos>
+                    )}
 
                     <Grid container spacing={2}>
                         {displayPeriods && (
@@ -385,6 +424,62 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 label={MESSAGES.fields}
                             />
                             <InputComponent
+                                multi
+                                clearable
+                                keyValue="summary_fields"
+                                onChange={(key, value) => {
+                                    setFieldValue(
+                                        key,
+                                        commaSeparatedIdsToStringArray(value),
+                                    );
+                                }}
+                                value={currentForm.summary_fields.value}
+                                errors={currentForm.summary_fields.errors}
+                                type="select"
+                                options={labelKeysOptions}
+                                label={MESSAGES.summaryFields}
+                                helperText={formatMessage(
+                                    MESSAGES.summaryFieldsHelp,
+                                )}
+                            />
+                            <InputComponent
+                                keyValue="non_pii_fields_enabled"
+                                onChange={(_key, value) =>
+                                    setFieldValue(
+                                        'non_pii_fields',
+                                        value ? [] : null,
+                                    )
+                                }
+                                value={
+                                    currentForm.non_pii_fields.value !== null
+                                }
+                                type="checkbox"
+                                label={MESSAGES.restrictPii}
+                            />
+                            {currentForm.non_pii_fields.value !== null && (
+                                <InputComponent
+                                    multi
+                                    clearable
+                                    keyValue="non_pii_fields"
+                                    onChange={(key, value) => {
+                                        setFieldValue(
+                                            key,
+                                            commaSeparatedIdsToStringArray(
+                                                value,
+                                            ),
+                                        );
+                                    }}
+                                    value={currentForm.non_pii_fields.value}
+                                    errors={currentForm.non_pii_fields.errors}
+                                    type="select"
+                                    options={labelKeysOptions}
+                                    label={MESSAGES.nonPiiFields}
+                                    helperText={formatMessage(
+                                        MESSAGES.nonPiiFieldsHelp,
+                                    )}
+                                />
+                            )}
+                            <InputComponent
                                 keyValue="change_request_mode"
                                 clearable
                                 onChange={(key, value) =>
@@ -460,6 +555,31 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             </LinkWithLocation>
                         </Grid>
                     </DisplayIfUserHasPerm>
+                    {/* Promptness is only computed for forms which have period type*/}
+                    {currentForm.period_type.value && (
+                        <DisplayIfUserHasPerm
+                            permissions={[COMPLETENESS_STATS]}
+                        >
+                            <Grid item>
+                                <LinkWithLocation
+                                    className={classes.linkWithIcon}
+                                    to={makeRedirectionUrl(
+                                        baseUrls.promptness,
+                                        {
+                                            formId: currentForm.id.value,
+                                            period: getCurrentPeriodString(
+                                                currentForm.period_type.value,
+                                            ),
+                                            parentId: defaultPromptnessParentId,
+                                        },
+                                    )}
+                                >
+                                    <QueryStats />
+                                    {formatMessage(MESSAGES.promptness)}
+                                </LinkWithLocation>
+                            </Grid>
+                        </DisplayIfUserHasPerm>
+                    )}
                     <Grid item>
                         <ExternalLink url={logsUrl}>
                             <Typography className={classes.linkWithIcon}>

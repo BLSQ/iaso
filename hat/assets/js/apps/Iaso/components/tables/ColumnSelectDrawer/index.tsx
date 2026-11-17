@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useCallback } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useCallback,
+    type ReactNode,
+} from 'react';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Close from '@mui/icons-material/Close';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
@@ -12,6 +17,7 @@ import {
     Tooltip,
     Button,
     Box,
+    Typography,
 } from '@mui/material';
 
 import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
@@ -20,7 +26,7 @@ import { InView } from 'react-intersection-observer';
 import { ColumnDrawerSwitch } from './ColumnDrawerSwitch';
 import { MESSAGES } from './messages';
 
-import { useStyles } from './styles';
+import { styles } from './styles';
 
 export type Option = {
     active: boolean;
@@ -28,6 +34,8 @@ export type Option = {
     key: string;
     label: string;
     index?: number;
+    /** Optional caution shown next to the column (e.g. slow API fields). */
+    warning?: string | ReactNode;
 };
 
 type TooltipProps = {
@@ -58,6 +66,7 @@ type Props = {
     disabledMessage?: string;
     handleApplyOptions?: () => void;
     isDisabled?: boolean;
+    buttonType?: 'button' | 'icon';
 };
 
 const filterResults = (searchString: string, options: Option[]): Option[] => {
@@ -82,24 +91,33 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     disabledMessage,
     handleApplyOptions,
     isDisabled,
+    buttonType = 'button',
 }) => {
-    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [searchString, setSearchString] = useState<string>('');
 
-    const toggleDrawer = open => () => {
+    const toggleDrawer = (open: boolean) => () => {
         setIsOpen(open);
     };
 
-    const handleSearch =
-        (reset = false) =>
-        event => {
-            setSearchString(reset ? '' : event.target.value);
-        };
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchString(event.target.value);
+    };
+
+    const handleSearchReset = () => {
+        setSearchString('');
+    };
+
+    const handleApply = () => {
+        handleApplyOptions?.();
+        setIsOpen(false);
+        setSearchString('');
+    };
 
     const handleChangeOptions = useCallback(
-        index => event => {
+        (index?: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+            if (index === undefined) return;
             const newOptions = [...options];
             newOptions[index] = {
                 ...newOptions[index],
@@ -113,93 +131,98 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     const activeOptionsCount = options.filter(o => o.active).length;
 
     const displayedOptions = filterResults(searchString, options);
+    // Previous labelled button by default, small round icon on request.
+    const renderToggle = (toggleDisabled: boolean, contained: boolean) =>
+        buttonType === 'icon' ? (
+            <IconButton
+                disabled={toggleDisabled}
+                color="primary"
+                size="small"
+                onClick={toggleDrawer(true)}
+                id="ColumnsSelectDrawer-toggleDrawer"
+                aria-label={formatMessage(MESSAGES.columnSelect)}
+            >
+                <ViewColumnIcon fontSize="small" />
+            </IconButton>
+        ) : (
+            <Button
+                disabled={toggleDisabled}
+                variant={contained ? 'contained' : 'outlined'}
+                color="primary"
+                onClick={toggleDrawer(true)}
+                id="ColumnsSelectDrawer-toggleDrawer"
+            >
+                <Box mr={1} display="inline-flex">
+                    <ViewColumnIcon />
+                </Box>
+                {formatMessage(MESSAGES.columnSelect)}
+            </Button>
+        );
     return (
         <>
             {disabled && disabledMessage && (
                 <Tooltip arrow title={disabledMessage}>
-                    <Box>
-                        <Button
-                            disabled
-                            variant="contained"
-                            color="primary"
-                            onClick={toggleDrawer(true)}
-                            id="ColumnsSelectDrawer-toggleDrawer"
-                        >
-                            <Box mr={1} display="inline-flex">
-                                <ViewColumnIcon />
-                            </Box>
-                            {formatMessage(MESSAGES.columnSelect)}
-                        </Button>
-                    </Box>
+                    <Box>{renderToggle(true, true)}</Box>
                 </Tooltip>
             )}
-            {(!disabled || (disabled && !disabledMessage)) && (
-                <Button
-                    disabled={disabled}
-                    variant="outlined"
-                    color="primary"
-                    onClick={toggleDrawer(true)}
-                    id="ColumnsSelectDrawer-toggleDrawer"
-                >
-                    <Box mr={1} display="inline-flex">
-                        <ViewColumnIcon />
-                    </Box>
-                    {formatMessage(MESSAGES.columnSelect)}
-                </Button>
-            )}
+            {(!disabled || (disabled && !disabledMessage)) &&
+                (buttonType === 'icon' ? (
+                    <Tooltip arrow title={formatMessage(MESSAGES.columnSelect)}>
+                        <span>{renderToggle(disabled, false)}</span>
+                    </Tooltip>
+                ) : (
+                    renderToggle(disabled, false)
+                ))}
             <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
-                <Box className={classes.root}>
-                    <div className={classes.toolbar}>
+                <Box sx={styles.root} role="presentation">
+                    <Box sx={styles.header}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
-                            <IconButton onClick={toggleDrawer(false)}>
+                            <IconButton
+                                onClick={toggleDrawer(false)}
+                                aria-label={formatMessage(MESSAGES.close)}
+                            >
                                 <ArrowBack />
                             </IconButton>
                         </Tooltip>
-                        <div className={classes.search}>
+                        <Typography variant="h6">
+                            {formatMessage(MESSAGES.title)}
+                        </Typography>
+                    </Box>
+                    <Divider />
+                    <Box sx={styles.content} id="ColumnsSelectDrawer-list">
+                        <Box sx={styles.search}>
                             <InputBase
                                 value={searchString}
-                                onChange={handleSearch()}
-                                className={classes.input}
+                                onChange={handleSearchChange}
+                                sx={styles.input}
                                 placeholder={formatMessage(MESSAGES.search)}
                                 inputProps={{
                                     'aria-label': formatMessage(
                                         MESSAGES.search,
                                     ),
-                                    className: classes.input,
                                     id: 'ColumnsSelectDrawer-search',
                                 }}
                             />
-                        </div>
-                        {searchString !== '' && (
-                            <Tooltip
-                                title={formatMessage(MESSAGES.resetSearch)}
-                            >
-                                <IconButton
-                                    onClick={handleSearch(true)}
-                                    id="ColumnsSelectDrawer-search-empty"
+                            {searchString !== '' && (
+                                <Tooltip
+                                    title={formatMessage(MESSAGES.resetSearch)}
                                 >
-                                    <Close />
-                                </IconButton>
-                            </Tooltip>
-                        )}
-                    </div>
-                    <Divider />
-                    <div
-                        className={
-                            handleApplyOptions
-                                ? classes.listWithApply
-                                : classes.list
-                        }
-                        id="ColumnsSelectDrawer-list"
-                    >
-                        <List>
+                                    <IconButton
+                                        onClick={handleSearchReset}
+                                        id="ColumnsSelectDrawer-search-empty"
+                                        size="small"
+                                    >
+                                        <Close fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Box>
+                        <List disablePadding>
                             {displayedOptions.map(o => (
                                 <InView key={o.key}>
                                     {({ inView, ref }) => (
-                                        <div ref={ref} id={o.key}>
-                                            <ListItem
-                                                className={classes.listItem}
-                                            >
+                                        <Box ref={ref} id={o.key}>
+                                            <ListItem sx={styles.listItem}>
                                                 {inView && (
                                                     <ColumnDrawerSwitch
                                                         disabled={
@@ -211,9 +234,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                         onChange={handleChangeOptions(
                                                             o.index,
                                                         )}
-                                                        className={
-                                                            classes.switch
-                                                        }
+                                                        sx={styles.switch}
                                                         toolTipTitle={
                                                             <TooltipTitle
                                                                 option={o}
@@ -225,6 +246,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                                 : o.key
                                                         }
                                                         secondaryText={o.key}
+                                                        warning={o.warning}
                                                     />
                                                 )}
                                                 {!inView && (
@@ -234,31 +256,27 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                     </>
                                                 )}
                                             </ListItem>
-                                        </div>
+                                        </Box>
                                     )}
                                 </InView>
                             ))}
                         </List>
-                    </div>
+                    </Box>
                     {handleApplyOptions && (
-                        <Box
-                            sx={{
-                                height: theme => theme.spacing(8),
-                                display: 'flex',
-                                justifyContent: 'flex-end',
-                                padding: theme => theme.spacing(2),
-                            }}
-                        >
-                            <Button
-                                onClick={handleApplyOptions}
-                                variant="contained"
-                                color="primary"
-                                size="small"
-                                disabled={isDisabled}
-                            >
-                                {formatMessage(MESSAGES.apply)}
-                            </Button>
-                        </Box>
+                        <>
+                            <Divider />
+                            <Box sx={styles.footer}>
+                                <Button
+                                    onClick={handleApply}
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={isDisabled}
+                                    data-test="columns-apply"
+                                >
+                                    {formatMessage(MESSAGES.apply)}
+                                </Button>
+                            </Box>
+                        </>
                     )}
                 </Box>
             </Drawer>

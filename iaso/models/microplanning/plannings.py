@@ -1,45 +1,17 @@
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import CheckConstraint, Q, UniqueConstraint
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import Group
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
-from iaso.models.team import Team, TeamQuerySet
+from iaso.models.team import Team
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
-
-
-class PlanningSamplingResult(models.Model):
-    """Stores the results of sampling runs."""
-
-    planning = models.ForeignKey("Planning", on_delete=models.CASCADE, related_name="sampling_results")
-    task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="sampling_results")
-    pipeline_id = models.CharField(max_length=36, blank=True, help_text="OpenHexa pipeline UUID")
-    pipeline_version = models.CharField(max_length=100, blank=True, help_text="Pipeline version identifier")
-    pipeline_name = models.CharField(max_length=100, blank=True, help_text="Pipeline name")
-    group = models.ForeignKey(
-        "Group",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        help_text="Created org unit group containing sampled units",
-    )
-    parameters = models.JSONField(help_text="Sampling parameters used for this run")
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "Sampling Result"
-        verbose_name_plural = "Sampling Results"
 
 
 class PlanningQuerySet(models.QuerySet):
@@ -90,7 +62,7 @@ class Planning(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     selected_sampling_result = models.OneToOneField(
-        PlanningSamplingResult,
+        "PlanningSamplingResult",
         on_delete=models.PROTECT,
         null=True,
         blank=True,
@@ -125,45 +97,3 @@ class Planning(SoftDeletableModel):
     def get_pipeline_uuids(self) -> list:
         """Get the list of pipeline UUIDs for this planning."""
         return self.pipeline_uuids or []
-
-
-class PlanningConfigQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User) -> "PlanningConfigQuerySet":
-        account = getattr(getattr(user, "iaso_profile", None), "account", None)
-        if not account:
-            return self.none()
-
-        return self.filter(Q(planning__deleted_at__isnull=True) & Q(planning__project__account=account))
-
-
-class PlanningConfig(models.Model):
-    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name="configs")
-
-    level = models.PositiveIntegerField(validators=[MinValueValidator(1)], null=False)
-
-    org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
-    org_unit_groups = models.ManyToManyField(Group, blank=True)
-
-    objects = PlanningConfigQuerySet.as_manager()
-
-    class Meta:
-        ordering = ("level",)
-        constraints = [
-            CheckConstraint(check=Q(level__gte=1), name="level_gte_1"),
-            UniqueConstraint(
-                fields=("planning", "level"),
-                name="planning_config_planning_level_uniq",
-            ),
-        ]
-
-    def get_related_teams(self) -> TeamQuerySet:
-        return (
-            Team.objects.filter_for_account(account=self.planning.project.account)
-            .annotate_with_depth()
-            .filter(depth__lte=self.level)
-        )
-
-    def __str__(self):
-        return _("Planning Config for planning {planning} at level {level}").format(
-            level=self.level, planning=self.planning
-        )

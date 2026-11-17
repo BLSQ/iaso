@@ -1,14 +1,14 @@
 """
 CSV / XLSX exports of a django queryset through duckdb (same idea as the parquet export).
 
-The legacy exports (see `hat.api.export_utils`) iterate on django model instances and write every cell from
+The python exports (see `hat.api.export_utils`, still used e.g. by the org units export) iterate on django model instances and write every cell from
 python, which is very slow on large querysets. Here the queryset is compiled to SQL, read from postgres by duckdb
 and written by duckdb's own writers: `COPY ... (FORMAT csv)` and `COPY ... (FORMAT xlsx)` (excel extension).
 
 The queryset is expected to already give the final content of each cell (texts, numbers...), so this module only
 chooses the columns titles and, for xlsx, the columns types.
 
-Columns are described like the legacy exports ({"title": ..., "width": ...}) with extra keys:
+Columns are described like the python exports ({"title": ..., "width": ...}) with extra keys:
     - "field": name of the queryset column (`.values()` key) holding the value
     - "infer_number" (optional): text column written as a number column in xlsx when all its non empty values
       are numbers (integers or decimals, without leading zeros so that codes like "007" stay texts)
@@ -84,7 +84,7 @@ def export_django_query_to_xlsx_via_duckdb(
     sub_columns: Optional[list[str]] = None,
 ):
     """
-    sub_columns: optional second header row (legacy export: the question labels under the question names)
+    sub_columns: optional second header row (submissions export: the question labels under the question names)
     """
     start = time.perf_counter()
     header_rows = 2 if sub_columns else 1
@@ -153,7 +153,7 @@ def export_django_query_to_xlsx_via_duckdb(
 
 def style_xlsx(raw_file_path: str, output_file_path: str, columns: list[dict], sub_columns: Optional[list[str]]):
     """
-    Styles the duckdb xlsx like the legacy export (bold header, frozen header, columns widths) and adds the sub
+    Styles the duckdb xlsx like the python exports (bold header, frozen header, columns widths) and adds the sub
     columns row. The files parts are patched directly: loading the workbook (openpyxl) would be much too slow.
     Only the beginning of the (big) sheet changes, the rest of it is streamed as is.
     """
@@ -175,7 +175,7 @@ def style_xlsx(raw_file_path: str, output_file_path: str, columns: list[dict], s
 
 
 def _patch_styles(styles: str) -> tuple[str, int]:
-    """adds a bold (and wrapped, like the legacy export) style for the header cells, returns it with its index"""
+    """adds a bold (and wrapped, like the python exports) style for the header cells, returns it with its index"""
     fonts = re.search(r'<fonts count="(\d+)">(.*?)</fonts>', styles, re.S)
     cell_xfs = re.search(r'<cellXfs count="(\d+)">(.*?)</cellXfs>', styles, re.S)
     if not fonts or not cell_xfs or "<font>" not in fonts.group(2):

@@ -367,7 +367,7 @@ class DayPeriod(Period):
         return year, month
 
     def next_period(self):
-        raise Exception
+        return DayPeriod((self.start_date() + timedelta(days=1)).strftime("%Y%m%d"))
 
     def gen_sub_periods(self):
         return []

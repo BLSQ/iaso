@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.db.models import ProtectedError
 from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.mixins import DestroyModelMixin, ListModelMixin
@@ -30,7 +29,7 @@ class CSVExportMixin:
         if hasattr(serializer_class.Meta, "labels"):
             renderer.labels = serializer_class.Meta.labels
 
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = timezone.now().strftime("%Y-%m-%d")
         filename = self.export_filename.format(date=date)
         response = HttpResponse(
             content_type="text/csv",

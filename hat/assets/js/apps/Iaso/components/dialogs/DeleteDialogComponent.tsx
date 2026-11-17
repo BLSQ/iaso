@@ -18,6 +18,8 @@ type Props = {
     Trigger?: React.ComponentType<any>;
     triggerProps?: Record<string, any>;
     disabled?: boolean;
+    /** Open the dialog on mount, without waiting for a trigger click (e.g. when hoisted outside a menu). */
+    defaultOpen?: boolean;
 };
 
 const DeleteDialog: FunctionComponent<Props> = ({
@@ -29,6 +31,7 @@ const DeleteDialog: FunctionComponent<Props> = ({
     iconColor = 'action',
     Trigger = null,
     triggerProps = {},
+    defaultOpen = false,
 }) => {
     const closeThenOnConfirm = useCallback(
         (closeDialog: () => void) => {
@@ -45,6 +48,7 @@ const DeleteDialog: FunctionComponent<Props> = ({
     return (
         <ConfirmCancelDialogComponent
             titleMessage={titleMessage}
+            defaultOpen={defaultOpen}
             dataTestId={`delete-dialog-${keyName}`}
             onConfirm={closeThenOnConfirm}
             renderTrigger={({ openDialog }) =>

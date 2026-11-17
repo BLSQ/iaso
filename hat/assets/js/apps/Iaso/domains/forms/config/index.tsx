@@ -3,24 +3,23 @@ import {
     Column,
     formatThousand,
     IconButton,
+    Setting,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PeriodTypeCell } from 'Iaso/components/Cells/PeriodTypeCell';
 import { UserCell } from 'Iaso/components/Cells/UserCell';
-import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { baseUrls } from '../../../constants/urls';
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser, User } from '../../../utils/usersUtils';
-import {
-    userHasAccessToModule,
-    userHasOneOfPermissions,
-    userHasPermission,
-} from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetOrgUnitTypeChips } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypeChips';
+import { useGetProjectChips } from '../../projects/hooks/useGetProjectChips';
+import { userHasAccessToModule } from '../../users/utils';
 import { FormActions } from '../components/FormActions';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { useDeleteForm } from '../hooks/useDeleteForm';
 import MESSAGES from '../messages';
-import { FormsParams } from '../types/forms';
+import { Form, FormsParams } from '../types/forms';
 
 export const baseUrl = baseUrls.forms;
 
@@ -117,23 +116,6 @@ export const useFormVersionsTableColumns = ({
     );
 };
 
-const getActionsColWidth = (user: User): number => {
-    const baseWidth = 50;
-    let width = baseWidth * 2;
-    if (
-        userHasOneOfPermissions(
-            [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
-            user,
-        )
-    ) {
-        width += baseWidth;
-    }
-    if (userHasPermission(Permission.FORMS, user)) {
-        width += baseWidth * 3;
-    }
-    return width;
-};
-
 type FormsTableColumnsProps = {
     orgUnitId: string;
     onlyDeleted: boolean;
@@ -160,6 +142,8 @@ export const useFormsTableColumns = ({
     const { formatMessage } = useSafeIntl();
 
     const { mutateAsync: deleteForm } = useDeleteForm({ params, count });
+    const getProjectChips = useGetProjectChips();
+    const getOrgUnitTypeChips = useGetOrgUnitTypeChips();
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -167,7 +151,8 @@ export const useFormsTableColumns = ({
                 Header: formatMessage(MESSAGES.projects),
                 id: 'projects',
                 accessor: 'projects',
-                Cell: settings => <ProjectChips projects={settings.value} />,
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getProjectChips(original.projects),
             },
             {
                 Header: formatMessage(MESSAGES.name),
@@ -198,10 +183,8 @@ export const useFormsTableColumns = ({
                 sortable: false,
                 accessor: 'org_unit_types',
                 id: 'org_unit_types',
-                Cell: settings =>
-                    settings.row.original.org_unit_types
-                        ?.map((o: { short_name: string }) => o.short_name)
-                        ?.join(', '),
+                Cell: ({ row: { original } }: Setting<Form>) =>
+                    getOrgUnitTypeChips(original.org_unit_types),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitsGroups),
@@ -220,10 +203,22 @@ export const useFormsTableColumns = ({
                 Cell: settings => formatThousand(settings.value),
             },
             {
+                Header: formatMessage(MESSAGES.periodType),
+                id: 'period_type',
+                accessor: 'period_type',
+                Cell: PeriodTypeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.singlePerPeriod),
+                id: 'single_per_period',
+                accessor: 'single_per_period',
+                Cell: YesNoCell,
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
-                width: getActionsColWidth(user),
+                width: 100,
                 id: 'actions',
                 accessor: 'actions',
                 Cell: settings => {
@@ -252,12 +247,13 @@ export const useFormsTableColumns = ({
         return cols;
     }, [
         formatMessage,
-        user,
         onlyDeleted,
         showDeleted,
         orgUnitId,
         hasDhis2Module,
         deleteForm,
+        getProjectChips,
+        getOrgUnitTypeChips,
     ]);
 };
 

@@ -15,7 +15,7 @@ import select
 
 class Command(BaseCommand):
     help = """Permanently listen for new background task and execute them
-    
+
     For local and dev, don't run more than one as it is not designed for concurrency"""
 
     def handle(self, *args, **kwargs):

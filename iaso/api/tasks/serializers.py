@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
@@ -27,15 +26,24 @@ class TaskSerializer(serializers.ModelSerializer):
             "name",
             "should_be_killed",
             "progress_message",
+            "external",
+            "heartbeat_at",
         ]
 
-        read_only_fields = ["launcher_name"]
+        read_only_fields = ["launcher_name", "external"]
 
     created_by = UserSerializer(read_only=True)
     launcher = UserSerializer(read_only=True)
     ended_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     started_at = TimestampField(read_only=True)
+    heartbeat_at = serializers.SerializerMethodField(
+        help_text="Last time the worker running the task reported it was alive. Null if no worker holds the task."
+    )
+
+    def get_heartbeat_at(self, task):
+        lease = getattr(task, "lease", None)
+        return lease.heartbeat_at.timestamp() if lease else None
 
     def update(self, task, validated_data):
         if validated_data["should_be_killed"] is not None:
@@ -71,6 +79,19 @@ class DeploymentStatusSerializer(serializers.Serializer):
     blocking_tasks = DeploymentStatusTaskGroupSerializer(many=True, read_only=True)
 
 
+class TaskPresignedUrlSerializer(serializers.Serializer):
+    presigned_url = serializers.URLField(
+        read_only=True,
+        allow_null=True,
+        help_text="Temporary URL to download the file produced by the task. Null if the file has expired.",
+    )
+    expires_at = serializers.DateTimeField(
+        read_only=True,
+        allow_null=True,
+        help_text="Date after which the file can no longer be downloaded. Null if the file does not expire.",
+    )
+
+
 class ExternalTaskSerializer(TaskSerializer):
     def update(self, task, validated_data):
         has_progress_message = validated_data.get("progress_message", None) is not None
@@ -90,7 +111,7 @@ class ExternalTaskSerializer(TaskSerializer):
                 or validated_data["status"] == ERRORED
                 or validated_data["status"] == KILLED
             ):
-                task.ended_at = datetime.now()
+                task.ended_at = timezone.now()
         if has_progress_message:
             task.progress_message = validated_data["progress_message"]
         if has_progress_value:
@@ -145,7 +166,7 @@ class ExternalTaskPostSerializer(serializers.Serializer):
             name=name,
             status=RUNNING,
             external=True,
-            started_at=datetime.now(),
+            started_at=timezone.now(),
             should_be_killed=False,
         )
         task.save()

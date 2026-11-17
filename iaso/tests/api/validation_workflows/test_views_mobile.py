@@ -1,8 +1,7 @@
 import uuid
 
-from datetime import datetime
-
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 
 from iaso.api.validation_workflows.constants import DEFAULT_COLOR, MOBILE_STATUS_TO_COLOR
@@ -257,7 +256,7 @@ class MobileValidationWorkflowAPITestCase(APITestCase):
         self.client.force_authenticate(self.john_wick)
 
         res = self.client.get(
-            reverse("mobile_validation_workflows-list"), data={"last_sync": datetime.now().isoformat()}
+            reverse("mobile_validation_workflows-list"), data={"last_sync": timezone.now().isoformat()}
         )
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)

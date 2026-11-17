@@ -57,10 +57,13 @@ const defaultForm = {
     single_per_period: false,
     periods_before_allowed: 0,
     periods_after_allowed: 0,
+    promptness_grace_period_days: null,
     device_field: 'deviceid',
     location_field: '',
     possible_fields: [],
     label_keys: [],
+    non_pii_fields: null,
+    summary_fields: [],
     legend_threshold: null,
     change_request_mode: CR_MODE_NONE,
     validation_workflow: null,
@@ -90,10 +93,13 @@ const formatFormData = (value?: Record<string, any> | null) => {
         single_per_period: form.single_per_period,
         periods_before_allowed: form.periods_before_allowed,
         periods_after_allowed: form.periods_after_allowed,
+        promptness_grace_period_days: form.promptness_grace_period_days ?? null,
         device_field: form.device_field,
         location_field: form.location_field,
         possible_fields: form.possible_fields ?? defaultForm.possible_fields,
         label_keys: form.label_keys ?? defaultForm.label_keys,
+        non_pii_fields: form.non_pii_fields ?? defaultForm.non_pii_fields,
+        summary_fields: form.summary_fields ?? defaultForm.summary_fields,
         legend_threshold: form.legend_threshold,
         change_request_mode: form.change_request_mode,
         validation_workflow: form.validation_workflow,
@@ -116,9 +122,17 @@ const getFormWritePayload = (formState: FormDataType): FormWritePayload => ({
     device_field: formState.device_field.value,
     location_field: formState.location_field.value,
     label_keys: formState.label_keys.value,
+    non_pii_fields: formState.non_pii_fields.value,
+    summary_fields: formState.summary_fields.value,
     legend_threshold: formState.legend_threshold?.value,
     change_request_mode: formState.change_request_mode.value,
     validation_workflow: formState.validation_workflow?.value,
+    ...(formState.period_type.value
+        ? {
+              promptness_grace_period_days:
+                  formState.promptness_grace_period_days?.value,
+          }
+        : {}),
 });
 
 const FormDetail: FunctionComponent = () => {
@@ -141,9 +155,12 @@ const FormDetail: FunctionComponent = () => {
             'single_per_period',
             'periods_before_allowed',
             'periods_after_allowed',
+            'promptness_grace_period_days',
             'device_field',
             'location_field',
             'label_keys',
+            'non_pii_fields',
+            'summary_fields',
             'possible_fields',
             'legend_threshold',
             'change_request_mode',

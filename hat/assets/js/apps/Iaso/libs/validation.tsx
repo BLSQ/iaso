@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { IntlFormatMessage, IntlMessage } from 'bluesquare-components';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
-import { isEqual } from 'lodash';
+import { get, isEqual } from 'lodash';
 import { UseMutateAsyncFunction, UseMutateFunction } from 'react-query';
 import { TestConfig, TestContext } from 'yup';
 import { ValidationError } from '../types/utils';
@@ -178,6 +178,8 @@ type GetErrorParams = {
  *
  * touched is used to prevent setting the fields in error before the user has had a chance to type
  *
+ * keyValue can be a nested path, e.g. `forms.0.min_cardinality`
+ *
  */
 export const useTranslatedErrors = ({
     formatMessage,
@@ -186,10 +188,10 @@ export const useTranslatedErrors = ({
     messages,
 }: GetErrorParams): ((keyValue: string) => string[]) => {
     const getErrors = useCallback(
-        keyValue => {
-            if (!touched[keyValue]) return [];
-            const errorKey = errors[keyValue];
-            if (!errorKey) return [];
+        (keyValue: string) => {
+            if (!get(touched, keyValue)) return [];
+            const errorKey = get(errors, keyValue);
+            if (typeof errorKey !== 'string') return [];
             const message = messages[errorKey as string]
                 ? formatMessage(messages[errorKey as string])
                 : (errorKey as string);

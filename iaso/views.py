@@ -7,10 +7,11 @@ from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
 from django.db import models
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.translation import gettext as _
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET, require_POST
 
@@ -59,6 +60,10 @@ def page(request, page_slug):
     if analytics_script:
         content["analytics_script"] = analytics_script
     page = get_object_or_404(Page, slug=page_slug)
+    if page_is_from_another_account(request.user, page):
+        return HttpResponseForbidden(
+            _("This page belongs to another account. Log out or switch to that account to open it.")
+        )
     path = request.get_full_path()
     resolved_login_url = resolve_url(settings.LOGIN_URL)
     if page.needs_authentication:
@@ -128,6 +133,15 @@ def page(request, page_slug):
     return response
 
 
+def page_is_from_another_account(user, page) -> bool:
+    """A page runs its JavaScript in the session of its viewer, so a logged-in user only opens the pages
+    of their own account. Anonymous visitors can still open public pages: they have no session to abuse."""
+    if not user.is_authenticated:
+        return False
+    profile = getattr(user, "iaso_profile", None)
+    return profile is None or page.account_id != profile.account_id
+
+
 def user_can_access_page(user, page):
     """Check if user has access to view this page."""
 
@@ -150,6 +164,8 @@ def user_may_launch_page_pipeline(user, page) -> bool:
     so a guessed slug is not enough to start or poll the pipeline.
     """
     if not page.pipeline_id or not page.account_id:
+        return False
+    if page_is_from_another_account(user, page):
         return False
     if page.needs_authentication and not user_can_access_page(user, page):
         return False

@@ -22,7 +22,7 @@ const beneficiariesUrl = '/api/wfp/beneficiaries/';
 const withApiDates = <T extends Filters>(params: T): T => ({
     ...params,
     visit_date_after: getApiParamDateString(params.visit_date_after) ?? undefined,
-    visit_date_before: getApiParamDateString(params.visit_date_after) ?? undefined,
+    visit_date_before: getApiParamDateString(params.visit_date_before) ?? undefined,
 });
 
 export const useGetBeneficiaries = (

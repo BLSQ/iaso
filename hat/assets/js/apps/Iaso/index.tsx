@@ -138,3 +138,5 @@ window.iasoApp = (
         />,
     );
 };
+
+window.dispatchEvent(new Event('iaso:ready'));

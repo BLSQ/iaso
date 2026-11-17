@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Use this script if you want to run the IASO (python side) locally outside of Docker
-# You can run the database and webpack with django-compose and it will connect to the by default
-# By running:  django-compose up db webpack
+# You can run the database and frontend with docker compose and it will connect by default
+# By running:  docker compose up db iaso-frontend
 
 # You will need to create the local venv first by running: uv sync
 

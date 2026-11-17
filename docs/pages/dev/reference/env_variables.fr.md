@@ -126,11 +126,11 @@ Lorsque cette variable est définie, Product Fruits sera activé et seuls le nom
 
 | Nom              | Optionnel | Valeur par défaut | Description                                          |
 | :--------------- | :-------- | :---------------- | :--------------------------------------------------- |
-| `WEBPACK_HOST`   | true      | `localhost`       | Hôte du serveur de développement.                    |
-| `WEBPACK_PORT`   | true      | `3000`            | Port du serveur de développement.                    |
-| `WEBPACK_PROTOCOL` | true      | `http`            | Protocole du serveur de développement.               |
-| `WEBPACK_PATH`   | true      | `./assets/webpack/` | Chemin des fichiers de sortie webpack.               |
-| `WEBPACK_POLL`   | true      | `false`           | Polling des fichiers (nécessaire sous Docker ; plus lent, à laisser désactivé en local). |
+| `VITE_HOST`   | true      | `localhost`       | Hôte du serveur de développement Vite.                    |
+| `VITE_PORT`   | true      | `3000`            | Port du serveur de développement Vite.                    |
+| `VITE_PROTOCOL` | true      | `http`            | Protocole du serveur de développement Vite.               |
+| `VITE_OUT_DIR`   | true      | `hat/assets/frontend` | Répertoire des assets frontend compilés et des bundle stats.               |
+| `VITE_POLL`   | true      | `false`           | Polling des fichiers (nécessaire sous Docker ; plus lent, à laisser désactivé en local). |
 | `OLD_BROWSER`    | true      | `false`           | Active le mode de compatibilité pour les navigateurs plus anciens. |
 | `LIVE_COMPONENTS` | true      | `false`           | Utilise les composants `bluesquare-components` locaux pour le développement. |
 

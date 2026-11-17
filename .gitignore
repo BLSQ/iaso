@@ -107,7 +107,8 @@ hat/assets/messages/**/*.json
 
 /pgdata/
 
-hat/assets/webpack/webpack-stats\.json
+hat/assets/frontend/bundle-stats\.json
+hat/assets/webpack/
 
 bin/
 
@@ -139,7 +140,7 @@ lintErrors.html
 **/translations/extracted/
 extracted_translation.json
 
-hat/assets/webpack/
+hat/assets/frontend/
 docker/DHIS2_home/
 
 # Auto-generated files

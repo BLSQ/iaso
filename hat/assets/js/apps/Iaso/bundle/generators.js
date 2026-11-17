@@ -5,7 +5,7 @@ const { getPluginFolders } = require('./plugins.js');
 
 /**
  * Checks if file content is the same to avoid rewriting the same file.
- * The goal is to avoid having webpack generate a new bundle every time with the same content.
+ * The goal is to avoid having the bundler regenerate files when content is unchanged.
  * @param filePath
  * @param content
  */
@@ -26,8 +26,19 @@ const generateCombinedTranslations = rootDir => {
         './assets/js/apps/Iaso/bundle/generated/combinedTranslations.js',
     );
 
-    // Create a combined translations object
+    // Create a combined translations object.
+    // ESM imports (not require) so Vite can bundle the generated file.
     const combinedTranslations = {};
+    const translationImports = [];
+    let translationImportIndex = 0;
+    const addTranslationImport = filePath => {
+        const importName = `translationModule${translationImportIndex}`;
+        translationImportIndex += 1;
+        translationImports.push(
+            `import ${importName} from ${JSON.stringify(filePath)};`,
+        );
+        return `...${importName}`;
+    };
 
     availableLanguages.forEach(lang => {
         // Main translations
@@ -80,18 +91,27 @@ const generateCombinedTranslations = rootDir => {
                         );
                     }
 
-                    // Generate code that directly requires the translation file
-                    return `...require('${fs.existsSync(pluginTransPath) ? pluginTransPath : enPluginTransPath}'),`;
+                    return addTranslationImport(
+                        fs.existsSync(pluginTransPath)
+                            ? pluginTransPath
+                            : enPluginTransPath,
+                    );
                 }
                 return '';
             })
             .filter(Boolean);
 
+        const spreads = [
+            addTranslationImport(translationPath),
+            ...(fs.existsSync(bluesquareTranslationsPath)
+                ? [addTranslationImport(bluesquareTranslationsPath)]
+                : []),
+            ...pluginTranslations,
+        ];
+
         // Start building the combined translations for this language
         combinedTranslations[lang] = `{
-            ...require('${translationPath}'),
-            ${fs.existsSync(bluesquareTranslationsPath) ? `...require('${bluesquareTranslationsPath}'),` : ''}
-            ${pluginTranslations.join('\n            ')}
+            ${spreads.join(',\n            ')}
         }`;
     });
 
@@ -99,6 +119,8 @@ const generateCombinedTranslations = rootDir => {
     const fileContent = `
 // This file is auto-generated. Do not edit directly.
 // It combines all translations into a single file.
+
+${translationImports.join('\n')}
 
 export const translations = {
     ${Object.entries(combinedTranslations)
@@ -128,22 +150,20 @@ const generateCombinedConfig = rootDir => {
         './assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js',
     );
 
-    // Create a combined config object
+    // import * as keeps `.default`, which usePlugins reads.
+    const pluginImports = [];
     const combinedConfig = {};
 
-    pluginFolders.forEach(plugin => {
+    pluginFolders.forEach((plugin, index) => {
         const configPath = path.resolve(
             rootDir,
             `../plugins/${plugin}/js/config.tsx`,
         );
-        // Use require to get the config
-        try {
-            // We need to use a dynamic require to avoid webpack bundling issues
-            // This will be replaced at runtime
-            combinedConfig[plugin] = `require('${configPath}')`;
-        } catch (error) {
-            console.error(`Error loading config for plugin ${plugin}:`, error);
-        }
+        const importName = `pluginConfig${index}`;
+        pluginImports.push(
+            `import * as ${importName} from ${JSON.stringify(configPath)};`,
+        );
+        combinedConfig[plugin] = importName;
     });
 
     // Create the file content
@@ -151,9 +171,11 @@ const generateCombinedConfig = rootDir => {
 // This file is auto-generated. Do not edit directly.
 // It combines all plugin configs into a single file.
 
+${pluginImports.join('\n')}
+
 const combinedConfigs = {
     ${Object.entries(combinedConfig)
-        .map(([key, value]) => `    ${key}: ${value}`)
+        .map(([key, value]) => `    ${JSON.stringify(key)}: ${value}`)
         .join(',\n')}
 };
 

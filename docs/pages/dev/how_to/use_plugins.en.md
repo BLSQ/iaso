@@ -233,7 +233,7 @@ A key that no host screen asks for is never rendered. Adding a slot means render
 
 ### Development Mode
 
-In development (`webpack.dev.js`):
+In development (`hat/vite.config.ts`):
 - Files are generated on-the-fly when changes are detected
 - Hot Module Replacement (HMR) is enabled for quick development
 - Source maps are available for debugging
@@ -241,7 +241,7 @@ In development (`webpack.dev.js`):
 
 ### Production Mode
 
-In production (`webpack.prod.js`):
+In production (`hat/vite.config.ts`):
 - Files are generated once during the build process
 - Code is minified and optimized
 - Dead code elimination is performed

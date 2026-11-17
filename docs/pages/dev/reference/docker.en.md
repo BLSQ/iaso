@@ -29,7 +29,7 @@ The following are some examples:
 ### Containers and services
 
 *  iaso       The python backend in [Django](https://www.djangoproject.com/)
-*  webpack    The JS frontend in react
+*  iaso-frontend    The React frontend (Vite dev server)
 *  db         [PostgreSQL](https://www.postgresql.org/) database
 
 All the container definitions for development can be found in `docker-compose.yml`.

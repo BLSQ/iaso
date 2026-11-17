@@ -1,0 +1,10 @@
+{
+  "latestErrorEvent": {
+    "code": "TYPE-001",
+    "message": "Failed to generate type declaration. Execute the below cmd to reproduce and fix the error. #TYPE-001\nargs: {\"cmd\":\"/Users/beygorghor/.nvm/versions/node/v22.18.0/bin/node /Users/beygorghor/WORK/BLSQ/iaso/iaso/node_modules/typescript/bin/tsc --project /Users/beygorghor/WORK/BLSQ/iaso/iaso/node_modules/.federation/tsconfig.42603924cb0424f0d8820f9b21bc74cf.json\"}\nView the docs to see how to solve: https://module-federation.io/guide/troubleshooting/type#type-001",
+    "args": {
+      "cmd": "/Users/beygorghor/.nvm/versions/node/v22.18.0/bin/node /Users/beygorghor/WORK/BLSQ/iaso/iaso/node_modules/typescript/bin/tsc --project /Users/beygorghor/WORK/BLSQ/iaso/iaso/node_modules/.federation/tsconfig.42603924cb0424f0d8820f9b21bc74cf.json"
+    },
+    "timestamp": 1794926343609
+  }
+}

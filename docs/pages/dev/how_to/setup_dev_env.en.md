@@ -349,7 +349,7 @@ LIVE_COMPONENTS=true docker compose up
 
 This way the page will reload automatically if you make a change to the bluesquare-components code.
 
-This functionality also works if you launch webpack outside of docker.
+This functionality also works if you launch the Vite dev server outside of Docker.
 
 If you encounter any problem, first check that your repo is on the correct branch and the deps are up-to-date
 

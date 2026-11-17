@@ -180,11 +180,11 @@ For detailed setup instructions, see [Plausible Analytics Setup](./analytics/pla
 
 | name | optional | default value | description |
 |------|----------|---------------|-------------|
-| WEBPACK_HOST | true | `localhost` | Host for the development server |
-| WEBPACK_PORT | true | `3000` | Port for the development server |
-| WEBPACK_PROTOCOL | true | `http` | Protocol for the development server |
-| WEBPACK_PATH | true | `./assets/webpack/` | Path for webpack output files |
-| WEBPACK_POLL | true | `false` | Poll for file changes (needed in Docker bind mounts; slower, leave off on host) |
+| VITE_HOST | true | `localhost` | Host for the Vite development server |
+| VITE_PORT | true | `3000` | Port for the Vite development server |
+| VITE_PROTOCOL | true | `http` | Protocol for the Vite development server |
+| VITE_OUT_DIR | true | `hat/assets/frontend` | Directory for built frontend assets and bundle stats |
+| VITE_POLL | true | `false` | Poll for file changes (needed in Docker bind mounts; slower, leave off on host) |
 | OLD_BROWSER | true | `false` | Enable compatibility mode for older browsers |
 | LIVE_COMPONENTS | true | `false` | Use local bluesquare-components for development |
 

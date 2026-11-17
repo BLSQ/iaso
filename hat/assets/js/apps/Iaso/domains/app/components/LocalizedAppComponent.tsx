@@ -20,7 +20,7 @@ type Props = {
 Object.keys(LANGUAGE_CONFIGS).forEach(lang => {
     if (lang !== 'en') {
         // English is included by default
-        import(`moment/locale/${lang}`).catch(() => {
+        import(/* @vite-ignore */ `moment/locale/${lang}`).catch(() => {
             console.warn(`Failed to load locale data for ${lang}`);
         });
     }

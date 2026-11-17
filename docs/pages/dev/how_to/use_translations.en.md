@@ -78,7 +78,7 @@ new ModuleFederationPlugin({
 });
 ```
 
-Additionally, the webpack configuration includes aliases for these exposed modules:
+Additionally, the Vite configuration includes aliases for these exposed modules:
 
 ```javascript
 resolve: {
@@ -178,7 +178,7 @@ These configuration files are used to:
 
 ### Development Mode
 
-In development (`webpack.dev.js`):
+In development (`hat/vite.config.ts`):
 
 - Translation files are generated on-the-fly when changes are detected
 - Hot Module Replacement (HMR) is enabled for quick development
@@ -186,7 +186,7 @@ In development (`webpack.dev.js`):
 
 ### Production Mode
 
-In production (`webpack.prod.js`):
+In production (`hat/vite.config.ts`):
 
 - Translation files are generated once during the build process
 - Translations are optimized and minified

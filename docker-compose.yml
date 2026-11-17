@@ -55,13 +55,12 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
 
-    # the webpack dev server
-    webpack:
-        image: iaso-webpack
+    iaso-frontend:
+        image: iaso-frontend
         platform: linux/amd64
         build:
             context: .
-            dockerfile: docker/webpack/Dockerfile
+            dockerfile: docker/iaso-frontend/Dockerfile
         depends_on:
             - iaso
         ports:
@@ -70,10 +69,10 @@ services:
         env_file:
             -   .env
         environment:
-            # Bind mounts don't reliably forward FS events; see hat/webpack.dev.js
-            WEBPACK_POLL: 'true'
+            # Bind mounts don't reliably forward FS events; enable polling in Docker.
+            VITE_POLL: 'true'
         logging: *iaso_logging
-        command: start_webpack
+        command: start_frontend
 
     mcp-ui:
         image: node:22.23.4-bookworm-slim

@@ -1,13 +1,16 @@
 {% extends 'iaso/base.html' %} 
 {% load i18n %} 
 {% load render_bundle from webpack_loader %} 
-{% block extrajs %} 
-{% render_bundle 'common' %} {% render_bundle 'iaso' %} 
+{% block extrajs %}
+{% render_bundle 'common' 'css' %}
+{% render_bundle 'iaso' 'css' %}
+{% render_bundle 'common' 'js' attrs='type="module"' %}
+{% render_bundle 'iaso' 'js' attrs='type="module"' %}
 {% endblock %} {% block body %}
 <section>
     {% block content %}
     <div id="app"></div>
-    <script>
+        <script type="module">
         window.STATIC_URL = "{{ STATIC_URL }}";
         window.IASO_VERSION = "{{ VERSION }}";
         window.SENTRY_CONFIG = {{ sentry_config | safe }};
@@ -20,7 +23,22 @@
         const THEME = {{ theme| safe }};
         const DEFAULT_APP_ID = "{{DEFAULT_APP_ID}}";
         const DNS_DOMAIN = "{{DNS_DOMAIN}}";
-        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE, DEFAULT_APP_ID, DNS_DOMAIN );
+        const mountIaso = () => {
+            window.iasoApp(
+                document.getElementById("app"),
+                PLUGINS_ENABLED,
+                THEME,
+                USER_HOME_PAGE,
+                DEFAULT_APP_ID,
+                DNS_DOMAIN,
+            );
+        };
+        // Vite + @module-federation/vite bootstraps the iaso entry asynchronously.
+        if (typeof window.iasoApp === "function") {
+            mountIaso();
+        } else {
+            window.addEventListener("iaso:ready", mountIaso, { once: true });
+        }
     </script>
     {% endblock %}
 </section>

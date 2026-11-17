@@ -10,7 +10,7 @@ show_help() {
 
   start            : start django + uwsgi
   start_dev        : start django devserver
-  start_webpack    : start webpack server (only in DEV mode)
+  start_frontend   : start the Vite dev server (only in DEV mode)
 
   manage           : run django manage.py
   eval             : eval shell command
@@ -77,14 +77,14 @@ case "$1" in
   "start_celery_worker" )
     celery -A hat worker -l info --without-heartbeat
   ;;
-  "start_webpack" )
+  "start_frontend" )
     # if TEST_PROD, make a static js bundle otherwise launch js dev server
     if [ -n "$TEST_PROD" ]; then
-      npm run webpack-prod
+      npm run build:prod
       exit 0
     fi
 
-    npm run webpack-server
+    npm run dev
   ;;
 
   "manage" )

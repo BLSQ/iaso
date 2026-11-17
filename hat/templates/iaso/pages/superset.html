@@ -4,13 +4,14 @@
     <head>
         <title>{{title}}</title>
         {{ analytics_script | safe }}
-        {% render_bundle 'superset' %}
+        {% render_bundle 'superset' 'css' %}
+        {% render_bundle 'superset' 'js' attrs='type="module"' %}
     </head>
 
     <body>
         <div id="superset-container"></div>
         {{ config|json_script:'config' }}
-        <script>
+        <script type="module">
             async function fetchGuestTokenFromBackend(dashboardId) {
                 response = await fetch('/api/superset/token/', {
                     method: 'POST',

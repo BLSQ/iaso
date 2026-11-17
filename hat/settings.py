@@ -670,7 +670,7 @@ else:
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
-    os.path.join(BASE_DIR, "hat/assets/webpack"),
+    os.path.join(BASE_DIR, "hat/assets/frontend"),
 ]
 for plugin_name in PLUGINS:
     plugin_name = (plugin_name or "").strip()
@@ -680,17 +680,17 @@ for plugin_name in PLUGINS:
     if os.path.isdir(plugin_static):
         STATICFILES_DIRS.append(plugin_static)
 
-# Javascript/CSS Files:
+# Javascript/CSS bundles (stats written by Vite; consumed via django-webpack-loader).
 WEBPACK_LOADER = {
     "DEFAULT": {
         "BUNDLE_DIR_NAME": "",  # used in prod
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,
-            "assets/webpack",
+            "assets/frontend",
             (
-                "webpack-stats.json"
+                "bundle-stats.json"
                 if (DEBUG and not env.bool("TEST_PROD", default=False) and not USE_S3)
-                else "webpack-stats-prod.json"
+                else "bundle-stats-prod.json"
             ),
         ),
     },

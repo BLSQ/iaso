@@ -1,4 +1,4 @@
-# ── Stage 1: JS / webpack build ───────────────────────────────────────────────
+# ── Stage 1: JS / Vite build ──────────────────────────────────────────────────
 FROM node:22.23.4-bookworm-slim AS npmbuilder
 
 # Set environment variables
@@ -22,11 +22,11 @@ RUN npm install -g npm@11.19.0 && \
 COPY ../../hat/ ./hat/
 COPY ../../plugins/ ./plugins/
 
-# Copy webpack configuration files
+# Copy frontend build configuration files
 COPY ../../tsconfig.json ../../babel-register.js ./
 
-# Build webpack assets
-RUN npm run webpack-prod
+# Build frontend assets (Vite)
+RUN npm run build:prod
 
 # MCP catalog UI (Vite). Served from iaso/mcp/frontend/dist at /mcp/app/.
 COPY ../../iaso/mcp/frontend/package.json ../../iaso/mcp/frontend/package-lock.json ./iaso/mcp/frontend/
@@ -105,7 +105,7 @@ COPY --from=pybuilder --chown=appuser:appuser /opt/app/.venv .venv
 ENV VIRTUAL_ENV=/opt/app/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Copy webpack assets
+# Copy built frontend assets
 COPY --from=npmbuilder --chown=appuser:appuser /opt/app/hat/assets /opt/app/hat/assets
 
 # Copy project code (all owned by appuser, no separate chown layer needed)

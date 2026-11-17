@@ -108,7 +108,6 @@ hat/assets/messages/**/*.json
 /pgdata/
 
 hat/assets/frontend/bundle-stats\.json
-hat/assets/webpack/
 
 bin/
 

@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-// todo : lazy import per locale instead and (switch to something more recent (vite/next.js/..) or fix webpack not picking lazy imports correctly)
+// todo: lazy import per locale instead (Vite supports dynamic import; keep an eye on bundle size).
 const zodLocales = {
     en: () => import('zod/v4/locales/en.js'),
     fr: () => import('zod/v4/locales/fr.js'),

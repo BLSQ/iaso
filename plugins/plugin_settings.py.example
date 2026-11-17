@@ -20,7 +20,7 @@ CONSTANTS = {
 
 TEMPLATES_DIRS = []
 STATICFILES_DIRS = []
-WEBPACK_LOADER = {}
+FRONTEND_BUNDLE_LOADER = {}
 
 # Optional hooks. Core calls these when the plugin is in PLUGINS.
 #

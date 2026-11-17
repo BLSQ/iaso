@@ -253,7 +253,6 @@ INSTALLED_APPS += [
     "rest_framework",
     "rest_framework_api_key",
     "rest_framework_gis",
-    "webpack_loader",
     "django_ltree",
     "hat",
     "hat.sync",
@@ -680,8 +679,8 @@ for plugin_name in PLUGINS:
     if os.path.isdir(plugin_static):
         STATICFILES_DIRS.append(plugin_static)
 
-# Javascript/CSS bundles (stats written by Vite; consumed via django-webpack-loader).
-WEBPACK_LOADER = {
+# Vite writes bundle-stats*.json; hat.frontend_bundles renders script/link tags in templates.
+FRONTEND_BUNDLE_LOADER = {
     "DEFAULT": {
         "BUNDLE_DIR_NAME": "",  # used in prod
         "STATS_FILE": os.path.join(
@@ -974,8 +973,8 @@ for plugin_name in PLUGINS:
         if hasattr(plugin_settings, "STATICFILES_DIRS"):
             STATICFILES_DIRS.extend(plugin_settings.STATICFILES_DIRS)
 
-        if hasattr(plugin_settings, "WEBPACK_LOADER"):
-            WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
+        if hasattr(plugin_settings, "FRONTEND_BUNDLE_LOADER"):
+            FRONTEND_BUNDLE_LOADER |= plugin_settings.FRONTEND_BUNDLE_LOADER
 
         if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
             REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)

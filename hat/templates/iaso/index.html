@@ -1,6 +1,6 @@
 {% extends 'iaso/base.html' %} 
 {% load i18n %} 
-{% load render_bundle from webpack_loader %} 
+{% load render_bundle from frontend_bundles %} 
 {% block extrajs %}
 {% render_bundle 'common' 'css' %}
 {% render_bundle 'iaso' 'css' %}
@@ -33,7 +33,7 @@
                 DNS_DOMAIN,
             );
         };
-        // Vite + @module-federation/vite bootstraps the iaso entry asynchronously.
+        // Vite bootstraps the iaso entry asynchronously (see hat/vite.config.ts).
         if (typeof window.iasoApp === "function") {
             mountIaso();
         } else {

@@ -1211,12 +1211,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-webpack-loader"
-version = "1.3.0"
-source = { url = "https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz" }
-sdist = { hash = "sha256:e6c9a08aa019ca84b232afc9cc9a6d10efd71dd6c015533a4217997cbe05aab9" }
-
-[[package]]
 name = "django-xlsform-validator"
 version = "0.1.0"
 source = { url = "https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip" }
@@ -1914,7 +1908,6 @@ dependencies = [
     { name = "django-storages" },
     { name = "django-stubs-ext" },
     { name = "django-translated-fields" },
-    { name = "django-webpack-loader" },
     { name = "django-xlsform-validator" },
     { name = "djangorestframework" },
     { name = "djangorestframework-api-key" },
@@ -2059,7 +2052,6 @@ requires-dist = [
     { name = "django-storages", specifier = "==1.14.2" },
     { name = "django-stubs-ext", specifier = "==4.2.7" },
     { name = "django-translated-fields", specifier = "==0.12.0" },
-    { name = "django-webpack-loader", url = "https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz" },
     { name = "django-xlsform-validator", url = "https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip" },
     { name = "djangorestframework", specifier = "==3.14.0" },
     { name = "djangorestframework-api-key", specifier = "==3.1.0" },

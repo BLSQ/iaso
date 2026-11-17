@@ -29,7 +29,7 @@ const compat = new FlatCompat({
     allConfig: js.configs.all,
 });
 
-// Webpack Module Federation virtual modules (see hat/webpack.dev.js aliases)
+// Vite-generated IasoModules/* imports (see hat/vite.config.ts)
 const IASO_MODULES_IMPORT_ORDER_PATH_GROUPS = [
     {
         pattern: 'react',

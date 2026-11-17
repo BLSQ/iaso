@@ -4,9 +4,8 @@ Frontend assets include JS, CSS, translations and images. They are built with
 **Vite** (`hat/vite.config.ts`). Output and bundle statistics live under
 ``hat/assets/frontend/``.
 
-Pages still mount bundles via
-`django-webpack-loader <https://github.com/owais/django-webpack-loader>`__
-(stats format compatible with the bundle tracker).
+Django templates mount bundles via ``{% load render_bundle from frontend_bundles %}``
+(``hat.frontend_bundles`` reads ``bundle-stats*.json`` written by Vite).
 
 
 Build
@@ -30,8 +29,8 @@ Rollup entry points are declared in ``hat/vite.config.ts`` (`common`, `iaso`,
 stats for Django via the bundle-stats Vite plugin.
 
 
-Including a JS bundle via django-webpack-loader
------------------------------------------------
+Including a JS bundle in a Django template
+----------------------------------------
 
 If we have created a new JS app ``MyCustomApp`` in ``hat/assets/js/apps/``.
 
@@ -89,7 +88,7 @@ These are the steps to visualize it within the dashboard:
 ```html
       {% extends 'app.html' %}
       {% load i18n %}
-      {% load render_bundle from webpack_loader %}
+      {% load render_bundle from frontend_bundles %}
 
       {% block header %}
         <h1 class="header__title">{% trans 'My Custom App' %}</h1>

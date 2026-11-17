@@ -77,9 +77,9 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
 
         instance = Instance.objects.get(uuid=uuid)
 
-        self.assertEqual(instance.OrgUnitChangeRequest.objects.count(), 1)
+        self.assertEqual(instance.orgunitchangerequest_set.count(), 1)
 
-        change_request = instance.OrgUnitChangeRequest.objects.first()
+        change_request = instance.orgunitchangerequest_set.first()
         self.assertIsNone(change_request.created_by)
         self.assertEqual(change_request.new_name, "")
         self.assertIsNone(change_request.new_org_unit_type)
@@ -116,4 +116,4 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
 
         instance = Instance.objects.get(uuid=uuid2)
 
-        self.assertEqual(len(instance.OrgUnitChangeRequest.objects.all()), 0)
+        self.assertEqual(len(instance.orgunitchangerequest_set.all()), 0)

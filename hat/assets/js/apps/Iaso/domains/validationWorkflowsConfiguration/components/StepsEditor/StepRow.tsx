@@ -61,11 +61,19 @@ const styles = {
     },
     fieldsRow: {
         display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
         gap: 2,
     },
     field: {
         flex: 1,
         minWidth: 0,
+    },
+    descriptionField: {
+        flex: 2,
+        minWidth: 0,
+    },
+    skipCheckbox: {
+        mt: 1,
     },
     delete: {
         mt: '2px',
@@ -113,18 +121,14 @@ export const StepRow: FC<Props> = ({
             ref={setNodeRef}
             sx={[styles.row, isDragging && styles.rowDragging]}
             style={{
-                transform: CSS.Transform.toString(transform),
+                transform: CSS.Translate.toString(transform),
                 transition,
             }}
             data-test={`step-row-${step.slug}`}
         >
             <Box
                 ref={setActivatorNodeRef}
-                sx={
-                    isLocked
-                        ? { ...styles.handle, ...styles.handleDisabled }
-                        : styles.handle
-                }
+                sx={[styles.handle, isLocked && styles.handleDisabled]}
                 {...attributes}
                 {...listeners}
             >
@@ -167,19 +171,40 @@ export const StepRow: FC<Props> = ({
                             }
                         />
                     </Box>
+                    <Box sx={styles.descriptionField}>
+                        <InputComponent
+                            keyValue={`description_${step.slug}`}
+                            type="text"
+                            withMarginTop={false}
+                            labelString={formatMessage(MESSAGES.description)}
+                            value={step.description ?? ''}
+                            onChange={(_keyValue, value) =>
+                                onChange(step.slug, {
+                                    description: value ?? '',
+                                })
+                            }
+                        />
+                    </Box>
                 </Box>
-                <InputComponent
-                    keyValue={`can_skip_previous_nodes_${step.slug}`}
-                    type="checkbox"
-                    withMarginTop={false}
-                    labelString={formatMessage(MESSAGES.canSkipPreviousNodes)}
-                    value={Boolean(step.canSkipPreviousNodes)}
-                    onChange={(_keyValue, value) =>
-                        onChange(step.slug, {
-                            canSkipPreviousNodes: Boolean(value),
-                        })
-                    }
-                />
+                {/* The first step has no previous step to skip */}
+                {index > 0 && (
+                    <Box sx={styles.skipCheckbox}>
+                        <InputComponent
+                            keyValue={`can_skip_previous_nodes_${step.slug}`}
+                            type="checkbox"
+                            withMarginTop={false}
+                            labelString={formatMessage(
+                                MESSAGES.canSkipPreviousNodes,
+                            )}
+                            value={Boolean(step.canSkipPreviousNodes)}
+                            onChange={(_keyValue, value) =>
+                                onChange(step.slug, {
+                                    canSkipPreviousNodes: Boolean(value),
+                                })
+                            }
+                        />
+                    </Box>
+                )}
             </Box>
             {!isLocked && (
                 <Box sx={styles.delete}>

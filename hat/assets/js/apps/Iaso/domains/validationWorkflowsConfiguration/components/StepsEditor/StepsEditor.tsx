@@ -14,7 +14,7 @@ import {
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Box, Button, Divider, Grid, Paper, Typography } from '@mui/material';
+import { Box, Button, Divider, Paper, Typography } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
@@ -29,7 +29,6 @@ import {
 import MESSAGES from '../../messages';
 import { AddNode } from '../CreateEditNode/CreateEditNode';
 import { StepRow } from './StepRow';
-import { StepsPreview } from './StepsPreview';
 
 const styles = {
     paper: {
@@ -46,6 +45,9 @@ const styles = {
     body: {
         p: 2,
         pb: 0.5,
+    },
+    empty: {
+        pb: 1.5,
     },
     footer: {
         display: 'flex',
@@ -94,25 +96,6 @@ export const StepsEditor: FC<Props> = ({ workflow, isLoading }) => {
     );
     const hasErrors = Object.values(errors).some(Boolean);
 
-    const getRoleNames = useCallback(
-        (roleIds: number[]) => {
-            const names = new Map<number, string>();
-            nodes.forEach(node =>
-                node.roles_required?.forEach(role =>
-                    names.set(role.id, role.name),
-                ),
-            );
-            roleOptions?.forEach(option =>
-                names.set(option.value, option.label),
-            );
-            return roleIds
-                .map(id => names.get(id))
-                .filter(Boolean)
-                .join(', ');
-        },
-        [nodes, roleOptions],
-    );
-
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -148,87 +131,81 @@ export const StepsEditor: FC<Props> = ({ workflow, isLoading }) => {
     }, [changedSteps, isOrderChanged, saveSteps, steps]);
 
     return (
-        <Grid container spacing={2}>
-            <Grid item xs={12} md={8}>
-                <Paper elevation={1} sx={styles.paper}>
-                    {(isLoading || isSaving) && <LoadingSpinner absolute />}
-                    <Box sx={styles.header}>
-                        <Typography variant="h6">
-                            {formatMessage(MESSAGES.validationSteps)}
-                        </Typography>
-                        {!isLocked && (
-                            <AddNode
-                                workflowSlug={workflowSlug}
-                                iconProps={{
-                                    message: MESSAGES.addStep,
-                                    variant: 'outlined',
-                                    disabled: !workflowSlug || isDirty,
-                                    dataTestId: 'add-step-button',
-                                }}
+        <Paper elevation={1} sx={styles.paper}>
+            {(isLoading || isSaving) && <LoadingSpinner absolute />}
+            <Box sx={styles.header}>
+                <Typography variant="h6">
+                    {formatMessage(MESSAGES.validationSteps)}
+                </Typography>
+                {!isLocked && (
+                    <AddNode
+                        workflowSlug={workflowSlug}
+                        isFirstStep={nodes.length === 0}
+                        iconProps={{
+                            message: MESSAGES.addStep,
+                            variant: 'outlined',
+                            disabled: !workflowSlug || isDirty,
+                            dataTestId: 'add-step-button',
+                        }}
+                    />
+                )}
+            </Box>
+            <Divider />
+            <Box sx={styles.body}>
+                {steps.length === 0 && !isLoading && (
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={styles.empty}
+                    >
+                        {formatMessage(MESSAGES.noSteps)}
+                    </Typography>
+                )}
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    modifiers={[restrictToVerticalAxis]}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext
+                        items={steps.map(step => step.slug)}
+                        strategy={verticalListSortingStrategy}
+                    >
+                        {steps.map((step, index) => (
+                            <StepRow
+                                key={step.slug}
+                                step={step}
+                                index={index}
+                                roleOptions={roleOptions ?? []}
+                                isLoadingRoles={isLoadingRoles}
+                                error={errors[step.slug]}
+                                isLocked={isLocked}
+                                isDeleteDisabled={isDirty}
+                                onChange={updateStep}
+                                onDelete={handleDelete}
                             />
-                        )}
-                    </Box>
-                    <Divider />
-                    <Box sx={styles.body}>
-                        {steps.length === 0 && !isLoading && (
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ pb: 1.5 }}
-                            >
-                                {formatMessage(MESSAGES.noSteps)}
-                            </Typography>
-                        )}
-                        <DndContext
-                            sensors={sensors}
-                            collisionDetection={closestCenter}
-                            modifiers={[restrictToVerticalAxis]}
-                            onDragEnd={handleDragEnd}
-                        >
-                            <SortableContext
-                                items={steps.map(step => step.slug)}
-                                strategy={verticalListSortingStrategy}
-                            >
-                                {steps.map((step, index) => (
-                                    <StepRow
-                                        key={step.slug}
-                                        step={step}
-                                        index={index}
-                                        roleOptions={roleOptions ?? []}
-                                        isLoadingRoles={isLoadingRoles}
-                                        error={errors[step.slug]}
-                                        isLocked={isLocked}
-                                        isDeleteDisabled={isDirty}
-                                        onChange={updateStep}
-                                        onDelete={handleDelete}
-                                    />
-                                ))}
-                            </SortableContext>
-                        </DndContext>
-                    </Box>
-                    <Divider />
-                    <Box sx={styles.footer}>
-                        <Button
-                            onClick={reset}
-                            disabled={!isDirty || isSaving}
-                            data-test="cancel-steps"
-                        >
-                            {formatMessage(MESSAGES.cancel)}
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={handleSave}
-                            disabled={!isDirty || hasErrors || isSaving}
-                            data-test="save-steps"
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-                    </Box>
-                </Paper>
-            </Grid>
-            <Grid item xs={12} md={4}>
-                <StepsPreview steps={steps} getRoleNames={getRoleNames} />
-            </Grid>
-        </Grid>
+                        ))}
+                    </SortableContext>
+                </DndContext>
+            </Box>
+            <Divider />
+            <Box sx={styles.footer}>
+                <Button
+                    onClick={reset}
+                    disabled={!isDirty || isSaving}
+                    data-test="cancel-steps"
+                >
+                    {formatMessage(MESSAGES.cancel)}
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={handleSave}
+                    disabled={!isDirty || hasErrors || isSaving}
+                    data-test="save-steps"
+                >
+                    {formatMessage(MESSAGES.save)}
+                </Button>
+            </Box>
+        </Paper>
     );
 };

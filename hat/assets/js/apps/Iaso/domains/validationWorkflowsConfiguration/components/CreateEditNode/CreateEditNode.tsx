@@ -23,6 +23,7 @@ type Props = {
     nodeSlug?: string;
     isOpen: boolean;
     closeDialog: () => void;
+    isFirstStep?: boolean;
 };
 
 export type NodeFormValues = {
@@ -39,6 +40,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     workflowSlug,
     isOpen,
     closeDialog,
+    isFirstStep = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: node } = useGetNode({ nodeSlug, workflowSlug });
@@ -98,16 +100,20 @@ export const CreateEditNode: FunctionComponent<Props> = ({
                         withMarginTop
                     />
                 </Box>
-                <Field
-                    label={formatMessage(MESSAGES.description)}
-                    name="description"
-                    component={TextInput}
-                />
-                <Field
-                    label={formatMessage(MESSAGES.canSkipPreviousNodes)}
-                    name="can_skip_previous_nodes"
-                    component={BooleanInput}
-                />
+                <Box mb={isFirstStep ? 2 : 0}>
+                    <Field
+                        label={formatMessage(MESSAGES.description)}
+                        name="description"
+                        component={TextInput}
+                    />
+                </Box>
+                {!isFirstStep && (
+                    <Field
+                        label={formatMessage(MESSAGES.canSkipPreviousNodes)}
+                        name="can_skip_previous_nodes"
+                        component={BooleanInput}
+                    />
+                )}
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.rolesRequired)}

@@ -5,7 +5,6 @@ import {
     getApiValidationWorkflowsRetrieveQueryKey,
 } from 'Iaso/api/validationWorkflows';
 import {
-    ValidationNodeTemplateBulkUpdateBody,
     ValidationNodeTemplateCreateBody,
     ValidationNodeTemplateUpdateBody,
 } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodeTemplates';
@@ -34,38 +33,21 @@ const saveNode = async ({
     );
 };
 
-export const useSaveNode = (nodeSlug?: string): UseMutationResult<any, any> => {
+export const useSaveNode = (
+    workflowSlug?: string,
+): UseMutationResult<any, any> => {
     const queryKey = React.useMemo(() => {
         return [
             ...getApiValidationWorkflowsListQueryKey(),
-            ...(nodeSlug
-                ? getApiValidationWorkflowsRetrieveQueryKey(nodeSlug)
+            ...(workflowSlug
+                ? getApiValidationWorkflowsRetrieveQueryKey(workflowSlug)
                 : []),
         ] as string[];
-    }, [nodeSlug]);
+    }, [workflowSlug]);
     const invalidateQueryKey = [...queryKey, WF_BASE_QUERYKEY];
     return useSnackMutation({
         mutationFn: saveNode,
         invalidateQueryKey: invalidateQueryKey,
-    });
-};
-
-const saveNodeOrder =
-    (slug: string) => (body: ValidationNodeTemplateBulkUpdateBody) => {
-        return putRequest(`${API_URL}${slug}/node-templates/bulk/`, body);
-    };
-
-export const useSaveNodeOrder = (
-    slug: string,
-    invalidateQueryKey?: string[],
-) => {
-    return useSnackMutation<
-        unknown,
-        unknown,
-        ValidationNodeTemplateBulkUpdateBody
-    >({
-        mutationFn: saveNodeOrder(slug),
-        invalidateQueryKey: [...(invalidateQueryKey ?? []), WF_BASE_QUERYKEY],
     });
 };
 

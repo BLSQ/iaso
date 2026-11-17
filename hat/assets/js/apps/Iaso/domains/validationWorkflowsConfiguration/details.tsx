@@ -17,6 +17,8 @@ import { SxStyles } from 'Iaso/types/general';
 import { MainWrapper } from '../../components/MainWrapper';
 import { StepsEditor } from './components/StepsEditor/StepsEditor';
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { WorkflowBreadcrumbs } from './components/WorkflowBreadcrumbs';
+import { WorkflowLinkedForms } from './components/WorkflowLinkedForms';
 import {
     getActiveTab,
     TabKey,
@@ -33,7 +35,7 @@ const styles = {
     },
     root: {
         backgroundColor: theme => theme.palette.primary.background,
-        padding: 4,
+        padding: { xs: 2, md: 4 },
     },
 } satisfies SxStyles;
 
@@ -71,6 +73,8 @@ export const ValidationWorkflowConfigurationDetail = () => {
         <>
             <TopBar title={title} goBack={goBack} displayBackButton />
             <MainWrapper sx={styles.root}>
+                <WorkflowBreadcrumbs workflowName={workflow?.name} />
+                {workflow && <WorkflowLinkedForms workflow={workflow} />}
                 <Tabs
                     value={activeTab}
                     onChange={handleChangeTab}

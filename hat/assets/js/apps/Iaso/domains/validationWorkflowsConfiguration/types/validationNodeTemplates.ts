@@ -34,6 +34,3 @@ export type ValidationNodeTemplateRetrieveResponse = {
     roles_required?: Array<{ name: string; id: number }>;
     can_skip_previous_nodes: true;
 };
-
-export type ValidationNodeTemplateBulkUpdateBody =
-    Array<ValidationNodeTemplateUpdateBody>;

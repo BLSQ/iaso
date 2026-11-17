@@ -24,6 +24,7 @@ const toDraft = (node: NodeTemplate): StepDraft => ({
 
 const isSameDraft = (a: StepDraft, b: StepDraft): boolean =>
     a.name === b.name &&
+    (a.description ?? '') === (b.description ?? '') &&
     Boolean(a.canSkipPreviousNodes) === Boolean(b.canSkipPreviousNodes) &&
     a.roleIds.length === b.roleIds.length &&
     a.roleIds.every(id => b.roleIds.includes(id));

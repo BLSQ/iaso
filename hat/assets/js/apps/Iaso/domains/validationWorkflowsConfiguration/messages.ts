@@ -69,21 +69,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.label.canSkipPreviousNodes',
         defaultMessage: 'Can skip previous steps',
     },
-    saveOrder: {
-        id: 'iaso.workflows.saveOrder',
-        defaultMessage: 'Save order',
-    },
-    resetOrder: {
-        id: 'iaso.workflows.resetOrder',
-        defaultMessage: 'Reset order',
-    },
     deleteNodeQuestion: {
         id: 'iaso.workflows.label.deleteNodeQuestion',
         defaultMessage: 'Delete step?',
-    },
-    color: {
-        defaultMessage: 'Color',
-        id: 'iaso.label.color',
     },
     description: {
         id: 'iaso.form.label.description',
@@ -121,25 +109,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.validatedByUserRole',
         defaultMessage: 'Validated by user role',
     },
-    preview: {
-        id: 'iaso.workflows.preview',
-        defaultMessage: 'Preview',
-    },
-    previewSubtitle: {
-        id: 'iaso.workflows.previewSubtitle',
-        defaultMessage: 'How validators will see the chain',
-    },
     noSteps: {
         id: 'iaso.workflows.noSteps',
         defaultMessage: 'No steps yet',
     },
-    noRole: {
-        id: 'iaso.workflows.noRole',
-        defaultMessage: 'No role required',
-    },
     duplicateStepName: {
         id: 'iaso.workflows.duplicateStepName',
         defaultMessage: 'Step names must be unique',
+    },
+    linkedForms: {
+        id: 'iaso.workflows.linkedForms',
+        defaultMessage:
+            '{count, plural, one {# form linked to this workflow:} other {# forms linked to this workflow:}}',
+    },
+    noLinkedForms: {
+        id: 'iaso.workflows.noLinkedForms',
+        defaultMessage: 'No form linked to this workflow',
+    },
+    manageLinkedForms: {
+        id: 'iaso.workflows.manageLinkedForms',
+        defaultMessage: 'Manage linked forms',
+    },
+    validationWorkflows: {
+        id: 'iaso.workflows.instance.validationWorkflow.label',
+        defaultMessage: 'Validation workflows',
     },
 });
 

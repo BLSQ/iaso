@@ -130,6 +130,7 @@ export const getApiValidationWorkflowsCreateResponseMock = (
 export const getApiValidationWorkflowsRetrieveResponseMock = (
     overrideResponse: Partial<Extract<ValidationWorkflowRetrieve, object>> = {},
 ): ValidationWorkflowRetrieve => ({
+    id: faker.number.int(),
     slug: faker.helpers.fromRegExp('[-a-zA-Z0-9_]+'),
     name: faker.string.alpha({ length: { min: 10, max: 256 } }),
     description: faker.helpers.arrayElement([

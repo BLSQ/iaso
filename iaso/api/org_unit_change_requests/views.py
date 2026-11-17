@@ -128,7 +128,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         org_units = OrgUnit.objects.filter_for_user(self.request.user)
         org_units_change_requests = (
-            OrgUnitChangeRequest.objects.select_related(
+            OrgUnitChangeRequest.objects_include_deleted.select_related(
                 "created_by",
                 "updated_by",
                 "org_unit__parent",
@@ -175,7 +175,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         """
         if (
             serializer.validated_data["uuid"]
-            and OrgUnitChangeRequest.objects.filter(uuid=serializer.validated_data["uuid"]).exists()
+            and OrgUnitChangeRequest.objects_include_deleted.filter(uuid=serializer.validated_data["uuid"]).exists()
         ):
             return
         org_unit_to_change = serializer.validated_data["org_unit"]

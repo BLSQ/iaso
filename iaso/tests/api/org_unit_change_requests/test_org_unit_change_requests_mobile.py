@@ -76,9 +76,15 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         cls.user2 = cls.create_user_with_profile(username="user2", account=cls.account, permissions=[])
 
     def test_list_ok(self):
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Foo", created_by=self.user)
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Bar", created_by=self.user2)
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Ding", created_by=self.user)
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit_a, new_name="Foo", created_by=self.user
+        )
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit_a, new_name="Bar", created_by=self.user2
+        )
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit_a, new_name="Ding", created_by=self.user
+        )
 
         self.client.force_authenticate(self.user)
 
@@ -98,9 +104,15 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             self.assertEqual(2, len(response.data["results"]))
 
     def test_list_should_be_filtered_by_project_via_orgunittype(self):
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_b, new_name="Foo", created_by=self.user)
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Bar", created_by=self.user)
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Ding", created_by=self.user)
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit_b, new_name="Foo", created_by=self.user
+        )
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit_a, new_name="Bar", created_by=self.user
+        )
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit_a, new_name="Ding", created_by=self.user
+        )
 
         self.client.force_authenticate(self.user)
 
@@ -112,7 +124,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_list_should_be_filtered_by_project_via_new_reference_instances(self):
         # The `change_request` is related to project A via new_reference_instances -> project.
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit_a, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
         )
         self.assertEqual(change_request.org_unit.org_unit_type.projects.count(), 1)
@@ -136,7 +148,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_be_filtered_by_project_via_new_reference_instances_when_form_removed_from_project(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit_a, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
         )
         self.assertEqual(change_request.org_unit.org_unit_type.projects.count(), 1)
@@ -155,7 +167,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_be_filtered_by_project_via_new_reference_instances_when_instance_project_is_null(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit_a, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
         )
         self.assertEqual(change_request.org_unit.org_unit_type.projects.count(), 1)
@@ -197,7 +209,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             account=self.account,
             created_by=self.user,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit_a,
             new_name="Foo",
             created_by=self.user,
@@ -209,7 +221,7 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_not_include_soft_deleted_intances(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit_a, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
         )
         change_request.new_reference_instances.set([self.instance_1.pk])

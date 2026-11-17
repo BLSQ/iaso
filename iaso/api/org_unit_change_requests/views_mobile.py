@@ -43,7 +43,7 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
         )
 
         change_requests = (
-            OrgUnitChangeRequest.objects.filter(
+            OrgUnitChangeRequest.objects_include_deleted.filter(
                 org_unit__in=org_units,
                 created_by=user,
                 # Change requests liked to a `data_source_synchronization` are limited to the web.

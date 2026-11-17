@@ -207,7 +207,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         org_unit_reference_instance = m.OrgUnitReferenceInstance.objects.create(
             org_unit=org_unit_child, form=form, instance=instances[0]
         )
-        org_unit_change_request = m.OrgUnitChangeRequest.objects.create(org_unit=org_unit_child)
+        org_unit_change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=org_unit_child)
         org_unit_change_request_configuration = m.OrgUnitChangeRequestConfiguration.objects.create(
             project=project, org_unit_type=org_unit_type, type="creation"
         )

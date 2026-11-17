@@ -167,7 +167,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
             "requested_fields": ["new_org_unit_type", "new_location"],
             "approved_fields": ["new_org_unit_type"],
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
 
         serializer = OrgUnitChangeRequestListSerializer(change_request)
         self.assertEqual(
@@ -266,7 +266,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
             "approved_fields": ["new_org_unit_type"],
             "new_code": "CODE1",
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
         change_request.new_groups.set([new_group])
         new_instance = m.Instance.objects.create(
@@ -442,7 +442,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
             "new_closed_date": datetime.date(2024, 10, 27),
             "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
         change_request.new_groups.set([new_group])
 
@@ -463,7 +463,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
             "new_closed_date": datetime.date(2024, 10, 27),
             "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
         change_request.new_groups.set([new_group])
 
@@ -692,7 +692,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
 
         serializer.save()
 
-        change_request = OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        change_request = OrgUnitChangeRequest.objects_include_deleted.get(uuid=data["uuid"])
         self.assertEqual(change_request.org_unit, self.org_unit)
         self.assertEqual(change_request.new_parent, parent_org_unit)
         self.assertEqual(change_request.new_name, "Foo")
@@ -719,7 +719,9 @@ class OrgUnitChangeRequestReviewSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.org_unit = m.OrgUnit.objects.create()
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=cls.org_unit, new_name="Foo"
+        )
 
     def test_serialize_ok(self):
         data = {
@@ -795,7 +797,9 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.org_unit = m.OrgUnit.objects.create()
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=cls.org_unit, new_name="Foo"
+        )
 
     def test_serialize_ok(self):
         data = {
@@ -866,7 +870,9 @@ class OrgUnitChangeRequestBulkDeleteSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.org_unit = m.OrgUnit.objects.create()
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=cls.org_unit, new_name="Foo"
+        )
 
     def test_serialize_ok(self):
         data = {

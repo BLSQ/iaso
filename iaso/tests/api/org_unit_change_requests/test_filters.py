@@ -51,14 +51,14 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_filterchange_request_on_date_created_from_and_date_created_to(self):
         self.client.force_authenticate(self.user_with_review_perm)
-        changeRequest1 = m.OrgUnitChangeRequest.objects.create(
+        changeRequest1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
         )
         changeRequest1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
         changeRequest1.save()
 
-        changeRequest2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        changeRequest2 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
         changeRequest2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
         changeRequest2.save()
 
@@ -83,9 +83,9 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
             project=self.project,
         )
 
-        change_request1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         change_request1.new_reference_instances.add(instance)
-        change_request2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
         change_request2.old_reference_instances.add(instance)
 
         self.client.force_authenticate(self.user)
@@ -100,11 +100,11 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         group2 = m.Group.objects.create(name="Group 2")
 
         # Create change requests with new groups
-        change_request1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         change_request1.new_groups.add(group1)
 
         # Create change requests with old groups
-        change_request2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
         change_request2.old_groups.add(group2)
 
         self.client.force_authenticate(self.user)
@@ -135,12 +135,12 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         another_parent_org_unit = m.OrgUnit.objects.create(name="Another Parent Org Unit")
 
         # Create a change request with a new parent
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", new_parent=parent_org_unit
         )
 
         # Create a change request with an old parent
-        change_request2 = m.OrgUnitChangeRequest.objects.create(
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Bar", old_parent=another_parent_org_unit
         )
 
@@ -164,10 +164,10 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_filter_on_org_unit_type_id(self):
         org_unit_type = m.OrgUnitType.objects.create(name="New Org Unit Type")
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", new_org_unit_type=org_unit_type
         )
-        change_request2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/orgunits/changes/?org_unit_type_id={org_unit_type.id}")
@@ -178,10 +178,10 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_filter_on_users(self):
         another_user = self.create_user_with_profile(username="another_user", account=self.account)
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", created_by=another_user
         )
-        change_request2 = m.OrgUnitChangeRequest.objects.create(
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", created_by=self.user
         )
 
@@ -197,10 +197,10 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         user_role = m.UserRole.objects.create(account=self.account, group=group)
         another_user = self.create_user_with_profile(username="another_user", account=self.account)
         self.user.iaso_profile.user_roles.add(user_role)
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", created_by=self.user
         )
-        change_request2 = m.OrgUnitChangeRequest.objects.create(
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", created_by=another_user
         )
 
@@ -212,18 +212,20 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
 
     def test_filter_on_with_location(self):
-        change_request_with_new_location = m.OrgUnitChangeRequest.objects.create(
+        change_request_with_new_location = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             new_location=Point(0, 0, 0, srid=4326),
         )
-        change_request_with_old_location = m.OrgUnitChangeRequest.objects.create(
+        change_request_with_old_location = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
         )
         change_request_with_old_location.old_location = Point(0, 0, 0, srid=4326)
         change_request_with_old_location.save()
-        change_request_without_location = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_without_location = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit, new_name="Bar"
+        )
 
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/orgunits/changes/?with_location=true")
@@ -238,13 +240,13 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertIn(change_request_without_location.id, [change["id"] for change in response.data["results"]])
 
     def test_filter_by_multiple_statuses(self):
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="New Request", status=m.OrgUnitChangeRequest.Statuses.NEW
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Rejected Request", status=m.OrgUnitChangeRequest.Statuses.REJECTED
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Approved Request", status=m.OrgUnitChangeRequest.Statuses.APPROVED
         )
 
@@ -262,17 +264,17 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_filter_on_payment_status(self):
         # Should not show up, because no payment status
-        change_request_new = m.OrgUnitChangeRequest.objects.create(
+        change_request_new = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="New Request", status=m.OrgUnitChangeRequest.Statuses.NEW
         )
 
         # Should show when filtering on "PENDING" status
-        change_request_approved = m.OrgUnitChangeRequest.objects.create(
+        change_request_approved = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Approved Request", status=m.OrgUnitChangeRequest.Statuses.APPROVED
         )
 
         # Should show when filtering on "PENDING" status
-        change_request_with_potential_payment = m.OrgUnitChangeRequest.objects.create(
+        change_request_with_potential_payment = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Approved Request with Potential Payment",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
@@ -283,7 +285,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Should show when filtering on "PAID" status
 
-        change_request_with_payment = m.OrgUnitChangeRequest.objects.create(
+        change_request_with_payment = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Approved Request with Payment",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
@@ -314,7 +316,9 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertNotIn(change_request_new.id, result_ids)
 
     def test_filter_on_data_source_synchronization_id(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Change request 1")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit, new_name="Change request 1"
+        )
 
         version2 = m.SourceVersion.objects.create(number=2, data_source=self.data_source)
         data_source_synchronization = m.DataSourceVersionsSynchronization.objects.create(
@@ -324,7 +328,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
             account=self.account,
             created_by=self.user,
         )
-        change_request_with_sync = m.OrgUnitChangeRequest.objects.create(
+        change_request_with_sync = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Change request 2",
             data_source_synchronization=data_source_synchronization,
@@ -352,9 +356,9 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(response.data["count"], 0)
 
     def test_filter_by_multiple_ids(self):
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
-        change_request_3 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Baz")
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_3 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Baz")
 
         self.client.force_authenticate(self.user)
 
@@ -375,9 +379,9 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertNotIn(change_request_3.pk, result_ids)
 
     def test_filter_by_is_soft_deleted(self):
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
-        change_request_3 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Baz")
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_3 = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Baz")
 
         change_request_2.delete()
         change_request_3.delete()
@@ -412,13 +416,13 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         # Create change requests with different requested fields.
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Test 1", requested_fields=["new_name"]
         )
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_parent=self.org_unit, requested_fields=["new_parent"]
         )
-        change_request_3 = m.OrgUnitChangeRequest.objects.create(
+        change_request_3 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Test 3",
             new_parent=self.org_unit,
@@ -460,10 +464,10 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
             org_unit_type=self.org_unit_type, version=self.version, validation_status=m.OrgUnit.VALIDATION_NEW
         )
 
-        change_request_for_new_org_unit = m.OrgUnitChangeRequest.objects.create(
+        change_request_for_new_org_unit = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=new_org_unit, new_name="Creation Request"
         )
-        change_request_for_existing_org_unit = m.OrgUnitChangeRequest.objects.create(
+        change_request_for_existing_org_unit = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Change Request"
         )
 

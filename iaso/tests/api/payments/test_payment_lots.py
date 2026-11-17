@@ -66,13 +66,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=cls.org_unit,
             new_name="Dueling Peaks",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=cls.payment,
         )
-        cls.second_change_request = m.OrgUnitChangeRequest.objects.create(
+        cls.second_change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=cls.org_unit,
             new_name="Serenne",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
@@ -84,7 +84,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             user=cls.payment_beneficiary2, task=running_task
         )
 
-        cls.third_change_request = m.OrgUnitChangeRequest.objects.create(
+        cls.third_change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=cls.org_unit,
             new_name="Wetlands",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
@@ -202,7 +202,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
     def test_retrieve_payment_lot_to_xlsx(self):
         self.client.force_authenticate(self.user)
 
-        extra_change_request = m.OrgUnitChangeRequest.objects.create(
+        extra_change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=self.second_payment,
@@ -364,7 +364,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             status=PaymentStatuses.PENDING,
             created_by=self.user,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Extra place",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,

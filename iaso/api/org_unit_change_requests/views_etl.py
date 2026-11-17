@@ -24,7 +24,7 @@ class ETLOrgUnitChangeRequestViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         org_units = OrgUnit.objects.filter_for_user(self.request.user).values_list("pk")
         return (
-            OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+            OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
             .filter(org_unit__in=org_units)
             .filter_on_user_projects(self.request.user)
             .prefetch_related(

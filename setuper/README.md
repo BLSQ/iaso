@@ -68,14 +68,9 @@ Steps 1-6 below and `credentials.py` are not needed in this mode.
 
          cd setuper
 
-    - Create a virtual env for your local Python:
+    - install requirements with `uv`:
 
-                   python3 -m venv venv
-                   source venv/bin/activate
-
-    - Install requirements:
-
-                    pip install -r requirements.txt
+                   uv sync --group setuper
 
     - Optional: update `credentials.py` because we need a user with API access (use your superuser credentials)
 
@@ -84,10 +79,10 @@ Steps 1-6 below and `credentials.py` are not needed in this mode.
 7.  Run the setuper
 
           # If you did not update credentials.py:
-          python3 setuper.py -u <username> -p <password> -s <server_url>
+          uv run python setuper.py -u <username> -p <password> -s <server_url>
 
           # If you updated credentials.py:
-          python3 setuper.py
+          uv run python setuper.py
 
     There are some optional parameters you can pass to this command:
     - If you want to create additional projects like:
@@ -97,16 +92,16 @@ Steps 1-6 below and `credentials.py` are not needed in this mode.
 
         You will need to add param `--additional_projects` or `-a`:
 
-                    python3 setuper.py --additional_projects
+                    uv run python setuper.py --additional_projects
 
     - If you want to choose the name that will be used for the account/project/user/... (max 147 characters, only a-z, A-Z, 0-9)
 
         You will need to add param `-n <name>`:
 
-                    python3 setuper.py -n ThisNameWasCarefullyChosen
+                    uv run python setuper.py -n ThisNameWasCarefullyChosen
 
     - If you want create a main org unit on the new account,
 
         You will need to add param `--create_main_org_unit`:
 
-                    python3 setuper.py --create_main_org_unit
+                    uv run python setuper.py --create_main_org_unit

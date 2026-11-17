@@ -134,8 +134,8 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )["orgunits"]
 
-    # Get the users from the team
-    team_users = team["users"]
+    # fetch team details to get its users
+    team_users = [u["id"] for u in iaso_client.get(f"/api/teams/{team['id']}/")["users"]]
 
     print(f"Found {len(team_users)} users in team {team['name']} but assign only {len(team_users[:3])}")
 
@@ -148,15 +148,16 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         else:
             health_facility_type_id = org_unit_type
 
+    campaign_mission = create_form_filling_mission(iaso_client, "Mission Carte Sanitaire", planning_form)
+
     campaign = iaso_client.post(
         "/api/microplanning/plannings/",
         {
             "name": "Campagne Carte Sanitaire",
-            "forms": [planning_form["id"]],
+            "missions": [campaign_mission["id"]],
             "project": project_id,
             "team": team["id"],
             "org_unit": country["id"],
-            "target_org_unit_types": [health_facility_type_id] if health_facility_type_id else [],
             "started_at": current_date.strftime("%Y-%m-%d"),
             "ended_at": (current_date + timedelta(days=365)).strftime("%Y-%m-%d"),
             "published_at": current_date.strftime("%Y-%m-%d"),
@@ -187,11 +188,13 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     print(campaign)
 
+    polio_mission = create_form_filling_mission(iaso_client, "Mission Polio", planning_form)
+
     campaign_of_teams_of_teams = iaso_client.post(
         "/api/microplanning/plannings/",
         json={
             "name": "Campaign Polio",
-            "forms": [planning_form["id"]],
+            "missions": [polio_mission["id"]],
             "project": project_id,
             "team": team_of_teams_id,
             "org_unit": country["id"],
@@ -229,6 +232,21 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     )
 
     print("-- Micro-planning setup complete.")
+
+
+def create_form_filling_mission(iaso_client, name, form):
+    """Create a FORM_FILLING mission dedicated to a planning. The response only contains the mission id."""
+    mission = iaso_client.post(
+        "/api/microplanning/missions/",
+        json={
+            "mission_type": "FORM_FILLING",
+            "name": name,
+            "description": f"Fill the form '{form['name']}'",
+            "forms": [{"form": form["id"], "min_cardinality": 1, "max_cardinality": None}],
+        },
+    )
+    print(f"\tMission '{name}' created (id {mission['id']}) with form '{form['name']}'")
+    return mission
 
 
 # Define the function outside the loop to avoid the loop variable binding issue

@@ -50,10 +50,10 @@ export const MappingImportActions: FunctionComponent<Props> = ({
             succesfullSnackBar(
                 undefined,
                 formatMessage(MESSAGES.importDone, {
-                    added: plan.added,
-                    overwritten: plan.overwritten,
-                    kept: plan.kept,
-                    ignored: plan.dropped + plan.skipped,
+                    added: `${plan.added}`,
+                    overwritten: `${plan.overwritten}`,
+                    kept: `${plan.kept}`,
+                    ignored: `${plan.dropped + plan.skipped}`,
                 }),
             ),
         );

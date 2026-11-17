@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 12:53+0000\n"
+"POT-Creation-Date: 2026-11-16 16:04+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -277,17 +277,13 @@ msgstr ""
 "Une configuration de planning avec ce niveau existe déjà pour ce planning."
 
 #: iaso/api/microplanning/plannings_nested_assignments/serializers/bulk.py
-#, python-format
-msgid "Org units not below the planning target geography: %(ids)s"
-msgstr "Unités d'organisation hors de la zone géographique cible du planning : %(ids)s"
-
-#: iaso/api/microplanning/plannings_nested_assignments/serializers/bulk.py
 msgid "Exactly one of team or user must be set."
 msgstr "Il faut renseigner soit une équipe, soit un utilisateur."
 
 #: iaso/api/microplanning/plannings_nested_assignments/serializers/bulk.py
 msgid "The parent of each org unit must be assigned to a team."
-msgstr "Le parent de chaque unité d'organisation doit être assigné à une équipe."
+msgstr ""
+"Le parent de chaque unité d'organisation doit être assigné à une équipe."
 
 #: iaso/api/microplanning/plannings_nested_assignments/serializers/bulk.py
 msgid ""
@@ -1548,6 +1544,12 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#, python-format
+#~ msgid "Org units not below the planning target geography: %(ids)s"
+#~ msgstr ""
+#~ "Unités d'organisation hors de la zone géographique cible du planning : "
+#~ "%(ids)s"
 
 #~ msgid "Ordinal legend type allows a maximum of four scale items."
 #~ msgstr ""

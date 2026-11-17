@@ -24,10 +24,11 @@ import { getCustomQueryOptions } from '../../../../../../orval/mutator/custom-qu
 import type {
     ApiMicroplanningPlanningsAssignmentsOrgUnitsListParams,
     ApiMicroplanningPlanningsAssignmentsTeamsListParams,
+    AssignOrgUnits,
     AssignOrgUnitsRequest,
-    AssignmentChanges,
     PaginatedAssignmentOrgUnitList,
     PaginatedAssignmentTeamList,
+    UnassignOrgUnits,
     UnassignOrgUnitsRequest,
 } from '../../models';
 
@@ -64,7 +65,7 @@ export const apiMicroplanningPlanningsAssignmentsAssignCreate = async (
     parentLookupPk: string,
     assignOrgUnitsRequest: AssignOrgUnitsRequest,
     options?: Parameters<typeof customFetchInstance>[1],
-): Promise<AssignmentChanges> => {
+): Promise<AssignOrgUnits> => {
     const getHeaders = (
         h?: NonNullable<RequestInit['headers']>,
     ): Record<string, string | readonly string[]> => {
@@ -86,7 +87,7 @@ export const apiMicroplanningPlanningsAssignmentsAssignCreate = async (
         }
         return headers;
     };
-    return customFetchInstance<AssignmentChanges>(
+    return customFetchInstance<AssignOrgUnits>(
         getApiMicroplanningPlanningsAssignmentsAssignCreateUrl(parentLookupPk),
         {
             credentials: 'same-origin',
@@ -568,7 +569,7 @@ export const apiMicroplanningPlanningsAssignmentsUnassignCreate = async (
     parentLookupPk: string,
     unassignOrgUnitsRequest: UnassignOrgUnitsRequest,
     options?: Parameters<typeof customFetchInstance>[1],
-): Promise<AssignmentChanges> => {
+): Promise<UnassignOrgUnits> => {
     const getHeaders = (
         h?: NonNullable<RequestInit['headers']>,
     ): Record<string, string | readonly string[]> => {
@@ -590,7 +591,7 @@ export const apiMicroplanningPlanningsAssignmentsUnassignCreate = async (
         }
         return headers;
     };
-    return customFetchInstance<AssignmentChanges>(
+    return customFetchInstance<UnassignOrgUnits>(
         getApiMicroplanningPlanningsAssignmentsUnassignCreateUrl(
             parentLookupPk,
         ),

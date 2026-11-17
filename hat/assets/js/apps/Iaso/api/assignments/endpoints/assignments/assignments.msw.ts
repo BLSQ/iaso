@@ -12,17 +12,27 @@ import type { RequestHandlerOptions } from 'msw';
 
 import { Type8edEnum } from '../../models';
 import type {
-    AssignmentChanges,
+    AssignOrgUnits,
     PaginatedAssignmentOrgUnitList,
     PaginatedAssignmentTeamList,
+    UnassignOrgUnits,
 } from '../../models';
 
 export const getApiMicroplanningPlanningsAssignmentsAssignCreateResponseMock = (
-    overrideResponse: Partial<Extract<AssignmentChanges, object>> = {},
-): AssignmentChanges => ({
-    created: faker.number.int(),
-    updated: faker.number.int(),
-    deleted: faker.number.int(),
+    overrideResponse: Partial<Extract<AssignOrgUnits, object>> = {},
+): AssignOrgUnits => ({
+    created: Array.from(
+        { length: faker.number.int({ min: 1, max: 10 }) },
+        (_, i) => i + 1,
+    ).map(() => faker.number.int()),
+    updated: Array.from(
+        { length: faker.number.int({ min: 1, max: 10 }) },
+        (_, i) => i + 1,
+    ).map(() => faker.number.int()),
+    deleted: Array.from(
+        { length: faker.number.int({ min: 1, max: 10 }) },
+        (_, i) => i + 1,
+    ).map(() => faker.number.int()),
     ...overrideResponse,
 });
 
@@ -93,20 +103,29 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListResponseMock = (
 
 export const getApiMicroplanningPlanningsAssignmentsUnassignCreateResponseMock =
     (
-        overrideResponse: Partial<Extract<AssignmentChanges, object>> = {},
-    ): AssignmentChanges => ({
-        created: faker.number.int(),
-        updated: faker.number.int(),
-        deleted: faker.number.int(),
+        overrideResponse: Partial<Extract<UnassignOrgUnits, object>> = {},
+    ): UnassignOrgUnits => ({
+        created: Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => faker.number.int()),
+        updated: Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => faker.number.int()),
+        deleted: Array.from(
+            { length: faker.number.int({ min: 1, max: 10 }) },
+            (_, i) => i + 1,
+        ).map(() => faker.number.int()),
         ...overrideResponse,
     });
 
 export const getApiMicroplanningPlanningsAssignmentsAssignCreateMockHandler = (
     overrideResponse?:
-        | AssignmentChanges
+        | AssignOrgUnits
         | ((
               info: Parameters<Parameters<typeof http.post>[1]>[0],
-          ) => Promise<AssignmentChanges> | AssignmentChanges),
+          ) => Promise<AssignOrgUnits> | AssignOrgUnits),
     options?: RequestHandlerOptions,
 ) => {
     return http.post(
@@ -201,10 +220,10 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListMockHandler = (
 export const getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler =
     (
         overrideResponse?:
-            | AssignmentChanges
+            | UnassignOrgUnits
             | ((
                   info: Parameters<Parameters<typeof http.post>[1]>[0],
-              ) => Promise<AssignmentChanges> | AssignmentChanges),
+              ) => Promise<UnassignOrgUnits> | UnassignOrgUnits),
         options?: RequestHandlerOptions,
     ) => {
         return http.post(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from django.contrib.auth import get_user_model
@@ -10,82 +11,94 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from hat.audit.models import Modification
 from iaso.api.microplanning.assignments.serializers.audit import AuditAssignmentSerializer
+from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
+from iaso.api.microplanning.plannings_nested_assignments.serializers.fields import BulkPrimaryKeyRelatedField
 from iaso.models import Assignment, OrgUnit, Planning, Team
+from iaso.models.microplanning.assignments import AssignmentQuerySet
+from iaso.models.org_unit import OrgUnitQuerySet
 
 
 User = get_user_model()
 
-
-class AssignmentChangesSerializer(serializers.Serializer):
-    created = serializers.IntegerField(read_only=True)
-    updated = serializers.IntegerField(read_only=True)
-    deleted = serializers.IntegerField(read_only=True)
+BULK_BATCH_SIZE = 100
 
 
-class BaseAssignmentChangeSerializer(serializers.Serializer):
-    """Changes the assignments of org units of a planning given in the context.
+@dataclass
+class AssignmentChange:
+    assignment: Assignment
+    past_value: list[dict]
+
+    @classmethod
+    def before_update(cls, assignment: Assignment) -> AssignmentChange:
+        return cls(assignment, [AuditAssignmentSerializer(assignment).data])
+
+
+class BaseAssignmentChangeSerializer(serializers.ModelSerializer):
+    """Changes the assignments of org units, given the assignments of the planning as instance.
 
     An org unit that is reassigned or unassigned loses the assignments made below it:
     they were made by its previous assignee.
     """
 
-    org_unit_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+    org_unit_ids = BulkPrimaryKeyRelatedField(
+        many=True, queryset=OrgUnit.objects.none(), allow_empty=False, write_only=True
+    )
+    updated_at = serializers.HiddenField(default=timezone.now)
+    created = serializers.ListField(child=serializers.IntegerField(), read_only=True)
+    updated = serializers.ListField(child=serializers.IntegerField(), read_only=True)
+    deleted = serializers.ListField(child=serializers.IntegerField(), read_only=True)
+
+    class Meta:
+        model = Assignment
+        fields = ["org_unit_ids", "updated_at", "created", "updated", "deleted"]
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.changes: list[AssignmentChange] = []
+        if self.requester and self.requester.is_authenticated and self.planning:
+            self.fields["org_unit_ids"].child_relation.queryset = self._get_assignable_org_units(
+                self.requester, self.planning
+            )
+
+    @staticmethod
+    def _get_assignable_org_units(user, planning: Planning) -> OrgUnitQuerySet:
+        """Org units below the planning target geography that its configs keep in the planning tree."""
+        root = planning.org_unit
+        root_level = len(str(root.path).split("."))
+        configs = planning.configs.prefetch_related("org_unit_types", "org_unit_groups")
+        return (
+            PlanningOrgUnitTreeQuerySetBuilder()
+            .build_queryset(
+                queryset=OrgUnit.objects.filter_for_user(user),
+                root=root,
+                processed_levels={root_level + config.level - 1 for config in configs},
+                configs=configs,
+            )
+            .exclude(pk=root.pk)
+            .only("id", "parent_id", "path")
+        )
 
     @property
-    def planning(self) -> Planning:
-        return self.context["planning"]
+    def planning(self) -> Planning | None:
+        return self.context.get("planning")
 
     @property
     def requester(self):
-        return self.context["request"].user
+        request = self.context.get("request")
+        return request.user if request else None
 
-    def validate_org_unit_ids(self, org_unit_ids: list[int]) -> list[OrgUnit]:
-        org_unit_ids = list(dict.fromkeys(org_unit_ids))
-        org_units = list(
-            OrgUnit.objects.filter_for_user(self.requester)
-            .descendants(self.planning.org_unit)
-            .filter(id__in=org_unit_ids)
-            .only("id", "parent_id", "path")
-        )
-        unknown_ids = set(org_unit_ids) - {org_unit.id for org_unit in org_units}
-        if unknown_ids:
-            raise serializers.ValidationError(
-                _("Org units not below the planning target geography: %(ids)s")
-                % {"ids": ", ".join(str(org_unit_id) for org_unit_id in sorted(unknown_ids))}
-            )
-        return org_units
-
-    def _audit(self, assignments: Iterable[Assignment], past_values: dict[int, list[dict]]) -> None:
-        request = self.context["request"]
-        Modification.objects.bulk_create(
-            Modification(
-                user=self.requester,
-                past_value=past_values.get(assignment.id, []),
-                new_value=[AuditAssignmentSerializer(assignment).data],
-                content_object=assignment,
-                source=f"API {request.method} {request.path}",
-            )
-            for assignment in assignments
-        )
-
-    def _soft_delete(self, assignments: list[Assignment]) -> None:
-        past_values = {assignment.id: [AuditAssignmentSerializer(assignment).data] for assignment in assignments}
-        now = timezone.now()
+    def _soft_delete(self, assignments: list[Assignment], now: datetime) -> None:
+        self.changes += [AssignmentChange.before_update(assignment) for assignment in assignments]
         for assignment in assignments:
             assignment.deleted_at = assignment.updated_at = now
-        Assignment.objects.bulk_update(assignments, ["deleted_at", "updated_at"])
-        self._audit(assignments, past_values)
+        Assignment.objects.bulk_update(assignments, ["deleted_at", "updated_at"], batch_size=BULK_BATCH_SIZE)
 
-    def _get_assignments_below(self, org_units: list[OrgUnit]) -> list[Assignment]:
+    @staticmethod
+    def _get_assignments_below(assignments: AssignmentQuerySet, org_units: list[OrgUnit]) -> list[Assignment]:
         org_unit_ids = [org_unit.id for org_unit in org_units]
         paths = ArraySubquery(OrgUnit.objects.filter(id__in=org_unit_ids).values("path"))
-        return list(
-            Assignment.objects.filter(planning=self.planning, org_unit__path__descendants=paths).exclude(
-                org_unit_id__in=org_unit_ids
-            )
-        )
+        return list(assignments.filter(org_unit__path__descendants=paths).exclude(org_unit_id__in=org_unit_ids))
 
 
 class AssignOrgUnitsSerializer(BaseAssignmentChangeSerializer):
@@ -95,15 +108,19 @@ class AssignOrgUnitsSerializer(BaseAssignmentChangeSerializer):
     the planning team for the children of the target geography, the team assigned to the parent otherwise.
     """
 
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.none(), required=False, allow_null=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.none(), required=False, allow_null=True)
+    class Meta(BaseAssignmentChangeSerializer.Meta):
+        fields = [*BaseAssignmentChangeSerializer.Meta.fields, "team", "user"]
+        extra_kwargs = {"team": {"write_only": True}, "user": {"write_only": True}}
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            self.fields["team"].queryset = Team.objects.filter_for_user(request.user)
-            self.fields["user"].queryset = User.objects.filter(iaso_profile__account=request.user.iaso_profile.account)
+        self.fields["team"].queryset = Team.objects.none()
+        self.fields["user"].queryset = User.objects.none()
+        if self.requester and self.requester.is_authenticated:
+            self.fields["team"].queryset = Team.objects.filter_for_user(self.requester)
+            account = getattr(getattr(self.requester, "iaso_profile", None), "account", None)
+            if account:
+                self.fields["user"].queryset = User.objects.filter(iaso_profile__account=account)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         team, user = attrs.get("team"), attrs.get("user")
@@ -144,16 +161,14 @@ class AssignOrgUnitsSerializer(BaseAssignmentChangeSerializer):
                 _("The assignee must be a member of the team owning the parent of each org unit.")
             )
 
-    def save(self, **kwargs: Any) -> dict[str, int]:
-        org_units: list[OrgUnit] = self.validated_data["org_unit_ids"]
-        team, user = self.validated_data.get("team"), self.validated_data.get("user")
+    def update(self, instance: AssignmentQuerySet, validated_data: dict[str, Any]) -> dict[str, list[int]]:
+        org_units: list[OrgUnit] = validated_data["org_unit_ids"]
+        team, user, now = validated_data.get("team"), validated_data.get("user"), validated_data["updated_at"]
         assignee_ids = (team.id if team else None, user.id if user else None)
         with transaction.atomic():
             assignment_by_org_unit_id = {
                 assignment.org_unit_id: assignment
-                for assignment in Assignment.objects.select_for_update().filter(
-                    planning=self.planning, org_unit__in=org_units
-                )
+                for assignment in instance.select_for_update().filter(org_unit__in=org_units)
             }
             reassigned = [
                 assignment
@@ -162,36 +177,45 @@ class AssignOrgUnitsSerializer(BaseAssignmentChangeSerializer):
             ]
             reassigned_org_unit_ids = {assignment.org_unit_id for assignment in reassigned}
             assignments_below = self._get_assignments_below(
-                [org_unit for org_unit in org_units if org_unit.id in reassigned_org_unit_ids]
+                instance, [org_unit for org_unit in org_units if org_unit.id in reassigned_org_unit_ids]
             )
 
-            past_values = {assignment.id: [AuditAssignmentSerializer(assignment).data] for assignment in reassigned}
-            now = timezone.now()
+            self.changes += [AssignmentChange.before_update(assignment) for assignment in reassigned]
             for assignment in reassigned:
                 assignment.team, assignment.user, assignment.updated_at = team, user, now
-            Assignment.objects.bulk_update(reassigned, ["team", "user", "updated_at"])
-            self._audit(reassigned, past_values)
+            Assignment.objects.bulk_update(reassigned, ["team", "user", "updated_at"], batch_size=BULK_BATCH_SIZE)
 
             created = Assignment.objects.bulk_create(
-                Assignment(planning=self.planning, org_unit=org_unit, team=team, user=user, created_by=self.requester)
-                for org_unit in org_units
-                if org_unit.id not in assignment_by_org_unit_id
+                (
+                    Assignment(
+                        planning=self.planning, org_unit=org_unit, team=team, user=user, created_by=self.requester
+                    )
+                    for org_unit in org_units
+                    if org_unit.id not in assignment_by_org_unit_id
+                ),
+                batch_size=BULK_BATCH_SIZE,
             )
-            self._audit(created, {})
+            self.changes += [AssignmentChange(assignment, []) for assignment in created]
 
-            self._soft_delete(assignments_below)
-        return {"created": len(created), "updated": len(reassigned), "deleted": len(assignments_below)}
+            self._soft_delete(assignments_below, now)
+        return {
+            "created": _org_unit_ids(created),
+            "updated": _org_unit_ids(reassigned),
+            "deleted": _org_unit_ids(assignments_below),
+        }
 
 
 class UnassignOrgUnitsSerializer(BaseAssignmentChangeSerializer):
     """Removes the assignments of org units, and the assignments made below them."""
 
-    def save(self, **kwargs: Any) -> dict[str, int]:
-        org_units: list[OrgUnit] = self.validated_data["org_unit_ids"]
+    def update(self, instance: AssignmentQuerySet, validated_data: dict[str, Any]) -> dict[str, list[int]]:
+        org_units: list[OrgUnit] = validated_data["org_unit_ids"]
         with transaction.atomic():
-            assignments = list(
-                Assignment.objects.select_for_update().filter(planning=self.planning, org_unit__in=org_units)
-            )
-            assignments_below = self._get_assignments_below(org_units)
-            self._soft_delete(assignments + assignments_below)
-        return {"created": 0, "updated": 0, "deleted": len(assignments) + len(assignments_below)}
+            assignments = list(instance.select_for_update().filter(org_unit__in=org_units))
+            assignments_below = self._get_assignments_below(instance, org_units)
+            self._soft_delete(assignments + assignments_below, validated_data["updated_at"])
+        return {"created": [], "updated": [], "deleted": _org_unit_ids(assignments + assignments_below)}
+
+
+def _org_unit_ids(assignments: list[Assignment]) -> list[int]:
+    return sorted(assignment.org_unit_id for assignment in assignments)

@@ -1,5 +1,6 @@
 """Serializers of the beneficiaries API: beneficiaries with their journeys, visits and steps, and their data."""
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from plugins.wfp.models import Journey, Step, Visit
@@ -114,3 +115,23 @@ class BeneficiaryDetailsSerializer(serializers.Serializer):
     beneficiary = EtlBeneficiarySerializer(allow_null=True)
     attributes = RowsField()
     submissions = SubmissionWithFieldsSerializer(many=True)
+
+
+class EligibleExportParamsSerializer(serializers.Serializer):
+    """The period of the eligible beneficiaries export, by default from the 26th of last month to the 25th (or today).
+
+    No date can be in the future.
+    """
+
+    start_date = serializers.DateField(required=False)
+    end_date = serializers.DateField(required=False)
+
+    def validate(self, attrs):
+        start_date, end_date = attrs.get("start_date"), attrs.get("end_date")
+        today = timezone.localdate()
+        for key in ("start_date", "end_date"):
+            if attrs.get(key) and attrs[key] > today:
+                raise serializers.ValidationError({key: "The date cannot be in the future"})
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError({"end_date": "The end date must be after the start date"})
+        return attrs

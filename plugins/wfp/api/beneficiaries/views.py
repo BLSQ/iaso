@@ -1,7 +1,6 @@
 """JSON API of the beneficiaries page of the dashboard (Entities > WFP beneficiaries) and of its xlsx exports."""
 
-from django.utils import timezone
-from rest_framework import mixins, permissions, serializers, viewsets
+from rest_framework import mixins, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -11,6 +10,7 @@ from plugins.wfp.api.beneficiaries.filters import ordering_from_param
 from plugins.wfp.api.beneficiaries.serializers import (
     BeneficiaryDetailsSerializer,
     BeneficiarySerializer,
+    EligibleExportParamsSerializer,
     SubmissionFieldsSerializer,
 )
 from plugins.wfp.filters import (
@@ -29,26 +29,6 @@ from plugins.wfp.utils.exports import KIND_CODA, KIND_ELIGIBLE, KIND_RAW, export
 class HasProfile(permissions.BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, "iaso_profile")
-
-
-class EligibleExportParamsSerializer(serializers.Serializer):
-    """The period of the eligible beneficiaries export, by default from the 26th of last month to the 25th (or today).
-
-    No date can be in the future.
-    """
-
-    start_date = serializers.DateField(required=False)
-    end_date = serializers.DateField(required=False)
-
-    def validate(self, attrs):
-        start_date, end_date = attrs.get("start_date"), attrs.get("end_date")
-        today = timezone.localdate()
-        for key in ("start_date", "end_date"):
-            if attrs.get(key) and attrs[key] > today:
-                raise serializers.ValidationError({key: "The date cannot be in the future"})
-        if start_date and end_date and start_date > end_date:
-            raise serializers.ValidationError({"end_date": "The end date must be after the start date"})
-        return attrs
 
 
 class BeneficiaryPaginator(Paginator):

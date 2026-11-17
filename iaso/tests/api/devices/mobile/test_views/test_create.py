@@ -233,6 +233,19 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
         response = self.client.post(f"""{self.url}?app_id={self.project_3.app_id}""", data=body)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_create_on_two_projects_links_device_to_both(self):
+        body = {"device": "test", "data": None, "app_id": "app_id", "app_version": "300500101", "projects": []}
+        response = self.client.post(f"""{self.url}?app_id={self.project_1.app_id}""", data=body, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        device = m.Device.objects.get(installation_id="test")
+        self.assertEqual([self.project_1], list(device.projects.all()), "anonymous sync links the project too")
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(device, m.Device.objects.get(installation_id="test"))
+        self.assertCountEqual([self.project_1, self.project_2], device.projects.all())
+
     def test_create_query_counts_new_device(self):
         self.client.force_authenticate(user=self.user)
         body = {"device": "test", "data": None, "app_id": "app_id", "app_version": "300500101", "projects": ["p2"]}
@@ -240,7 +253,7 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
             response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         with profiler.report_on_failure("device_sync_new_device_queries.md"):
-            # project from app_id + projects field (2), device lookup + insert, device.projects.set(), ownership, log
+            # project from app_id + projects field (2), device lookup + insert, ownership, device.projects.add(), log
             profiler.assertLessEqualQueryCount(
                 {
                     "iaso_project": 4,
@@ -260,9 +273,15 @@ class DeviceLogsAPITestCase(SwaggerTestCaseMixin, APITestCase):
             response = self.client.post(f"""{self.url}?app_id={self.project_2.app_id}""", data=body, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         with profiler.report_on_failure("device_sync_existing_device_queries.md"):
-            # project from app_id + projects field, a single device lookup, log insert + its projects
+            # project from app_id + projects field, a single device lookup, device.projects.add(), log + its projects
             profiler.assertLessEqualQueryCount(
-                {"iaso_project": 3, "iaso_device": 1, "iaso_devicelog": 1, "iaso_devicelog_projects": 1}
+                {
+                    "iaso_project": 3,
+                    "iaso_device": 1,
+                    "iaso_device_projects": 1,
+                    "iaso_devicelog": 1,
+                    "iaso_devicelog_projects": 1,
+                }
             )
 
     def assertValidBodyData(self, data):

@@ -17,7 +17,7 @@ type Props = {
 export const FitBoundsOnChange: FC<Props> = ({
     bounds,
     fitKey,
-    maxZoom,
+    maxZoom = 15,
     fitInitialKey = false,
 }) => {
     const { current: map } = useMap();

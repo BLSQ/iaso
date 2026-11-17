@@ -130,7 +130,12 @@ class ExportTestData:
         state = m.OrgUnit.objects.create(name="Unity", parent=country)
         cls.facility = m.OrgUnit.objects.create(name="Bentiu PHCC", parent=state)
 
-        cls.entity = m.Entity.objects.create(entity_type=entity_type, account=cls.account)
+        cls.entity = m.Entity.objects.create(
+            # fixed, starting with a letter: a random one starting with 8 digits would be searched as an entity id
+            uuid="a3c5e7f9-1b2d-4f6a-8c9e-0d1f2a3b4c5d",
+            entity_type=entity_type,
+            account=cls.account,
+        )
         day = datetime(2026, 5, 1, 9, tzinfo=timezone.utc)
         reference = m.Instance.objects.create(
             form=cls.reference_form,

@@ -59,6 +59,15 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
     def _entity_ids(self, user, params):
         return sorted(b["entity_id"] for b in self._beneficiaries(user, params)["results"])
 
+    def _assert_invalid_ids(self, key):
+        """Values that are not ids are rejected by the list and the exports."""
+        self.client.force_authenticate(self.user)
+        for value in ("abc", "-1", "0", "1.5"):
+            for url in (BENEFICIARIES_URL, f"{BENEFICIARIES_URL}export/coda/"):
+                with self.subTest(key=key, value=value, url=url):
+                    response = self.client.get(url, {key: value})
+                    self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
     def _beneficiaries(self, user, params=None):
         self.client.force_authenticate(user)
         response = self.client.get(BENEFICIARIES_URL, params or {})
@@ -224,14 +233,11 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
             "real id": (self.entity.entity_type_id, all_entities),
             "missing id": (self._missing_id(m.EntityType), []),
             "id of another account": (self.other_entity.entity_type_id, []),
-            # not an id: the filter is ignored
-            "not a number": ("abc", all_entities),
-            "negative": ("-1", all_entities),
-            "decimal": ("1.5", all_entities),
         }
         for case, (value, expected) in cases.items():
             with self.subTest(case):
                 self.assertEqual(self._entity_ids(self.user, {"entity_type": value}), expected)
+        self._assert_invalid_ids("entity_type")
 
     def test_org_unit_group_filter_ids(self):
         all_entities = sorted([self.entity.id, self.rubkona_entity.id])
@@ -239,14 +245,11 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
             "real id": (self.group.id, [self.entity.id]),
             "missing id": (self._missing_id(m.Group), []),
             "id of another account": (self.other_group.id, []),
-            # not an id: the filter is ignored
-            "not a number": ("abc", all_entities),
-            "negative": ("-1", all_entities),
-            "decimal": ("1.5", all_entities),
         }
         for case, (value, expected) in cases.items():
             with self.subTest(case):
                 self.assertEqual(self._entity_ids(self.user, {"org_unit_group": value}), expected)
+        self._assert_invalid_ids("org_unit_group")
 
     def test_group_of_another_account_is_valid_for_that_account(self):
         # the group is real: it only matches nothing for the users of other accounts
@@ -295,6 +298,21 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
             )
         )
         self.assertEqual(len(visits) - 1, 0)
+
+    def test_facilities(self):
+        def facilities(user, params):
+            self.client.force_authenticate(user)
+            response = self.client.get(f"{BENEFICIARIES_URL}facilities/", params)
+            return [f["label"] for f in self.assertJSONResponse(response, status.HTTP_200_OK)["facilities"]]
+
+        self.assertEqual(facilities(self.user, {"org_unit_group": self.group.id}), ["Bentiu PHCC"])
+        self.assertEqual(facilities(self.user, {"org_unit_group": self.rubkona_group.id}), ["Rubkona PHCC"])
+        self.assertEqual(facilities(self.user, {"org_unit_group": self.other_group.id}), [])
+        self.assertEqual(facilities(self.user, {}), [])
+        # restricted to Bentiu: no facility outside it
+        self.assertEqual(facilities(self.partner, {"org_unit_group": self.rubkona_group.id}), [])
+        response = self.client.get(f"{BENEFICIARIES_URL}facilities/", {"org_unit_group": "abc"})
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_options_of_another_account(self):
         self.client.force_authenticate(self.other_user)

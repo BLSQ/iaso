@@ -655,14 +655,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.orgUnitRejected',
         defaultMessage: 'Org Unit rejected successfully',
     },
-    yes: {
-        id: 'iaso.label.yes',
-        defaultMessage: 'Yes',
-    },
-    no: {
-        id: 'iaso.label.no',
-        defaultMessage: 'No',
-    },
 });
 
 export default MESSAGES;

@@ -10,7 +10,7 @@ import { faker } from '@faker-js/faker';
 import { HttpResponse, delay, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
-import { Type8edEnum } from '../../models';
+import { NestedTeamTypeValueEnum } from '../../models';
 import type {
     AssignOrgUnits,
     PaginatedAssignmentOrgUnitList,
@@ -85,6 +85,8 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListResponseMock = (
             (_, i) => i + 1,
         ).map(() => ({
             team_id: faker.number.int(),
+            assigned_for_level: faker.number.int(),
+            total_for_level: faker.number.int(),
             assigned: faker.number.int(),
             total: faker.number.int(),
             area_org_unit_ids: Array.from(
@@ -92,9 +94,15 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListResponseMock = (
                 (_, i) => i + 1,
             ).map(() => faker.number.int()),
             type: faker.helpers.arrayElement([
-                faker.helpers.arrayElement(Object.values(Type8edEnum)),
+                {
+                    label: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    value: faker.helpers.arrayElement(
+                        Object.values(NestedTeamTypeValueEnum),
+                    ),
+                },
                 null,
             ]),
+            depth: faker.number.int(),
         })),
         undefined,
     ]),

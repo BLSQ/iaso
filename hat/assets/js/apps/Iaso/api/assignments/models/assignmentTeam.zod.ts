@@ -9,18 +9,23 @@ import * as zod from 'zod';
 
 export const AssignmentTeam = zod.strictObject({
     team_id: zod.int(),
+    assigned_for_level: zod.int(),
+    total_for_level: zod.int(),
     assigned: zod.int(),
     total: zod.int(),
     area_org_unit_ids: zod.array(zod.int()),
     type: zod.union([
-        zod
-            .enum(['TEAM_OF_TEAMS', 'TEAM_OF_USERS'])
-            .describe(
-                '* `TEAM_OF_TEAMS` - Team of teams\n* `TEAM_OF_USERS` - Team of users',
-            ),
-        zod.literal(null),
+        zod.strictObject({
+            label: zod.string(),
+            value: zod
+                .enum(['TEAM_OF_TEAMS', 'TEAM_OF_USERS'])
+                .describe(
+                    '* `TEAM_OF_TEAMS` - TEAM_OF_TEAMS\n* `TEAM_OF_USERS` - TEAM_OF_USERS',
+                ),
+        }),
         zod.null(),
     ]),
+    depth: zod.int(),
 });
 
 export type AssignmentTeam = zod.input<typeof AssignmentTeam>;

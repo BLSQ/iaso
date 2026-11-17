@@ -1,4 +1,6 @@
-from django.contrib.auth.models import Group
+import datetime
+
+from django.contrib.auth.models import Group, User
 from django.urls import reverse
 from rest_framework import status
 
@@ -10,6 +12,9 @@ from iaso.permissions.core_permissions import (
 )
 from iaso.tests.api.profiles.test_views.common import BaseProfileAPITestCase
 from iaso.tests.utils.query_profiler import QueryProfiler
+
+
+JANE_LAST_LOGIN = datetime.datetime(2026, 11, 16, 9, 30, 15, tzinfo=datetime.timezone.utc)
 
 
 class ProfileListExportAPITestCase(BaseProfileAPITestCase):
@@ -49,6 +54,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
+        User.objects.filter(pk=self.jane.pk).update(last_login=JANE_LAST_LOGIN)  # john and the others never logged in
 
         self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-export-csv"))
@@ -75,17 +81,18 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                 "projects,"
                 "teams,"
                 "phone_number,"
-                "editable_org_unit_types\r\n"
+                "editable_org_unit_types,"
+                "last_login_at\r\n"
             ]
         )
 
-        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,Jane,Doe,,,,,,iaso_forms,,,{self.team1.name},,\r\n"
-        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,\r\n'
-        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,{self.team2.name},,\r\n'
-        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,,\r\n"
-        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,,\r\n"
-        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,,\r\n'
+        expected_csv += f"{self.jane.iaso_profile.id},janedoe,,,Jane,Doe,,,,,,iaso_forms,,,{self.team1.name},,,2026-11-16T09:30:15+00:00\r\n"
+        expected_csv += f'{self.john.iaso_profile.id},johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,,,\r\n'
+        expected_csv += f'{self.jim.iaso_profile.id},jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,{self.team2.name},,,\r\n'
+        expected_csv += f"{self.jam.iaso_profile.id},jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,,,\r\n"
+        expected_csv += f"{self.jom.iaso_profile.id},jom,,,,,,,fr,,,,,,,,,\r\n"
+        expected_csv += f"{self.jum.iaso_profile.id},jum,,,,,,,,,,,,{self.project.name},,,{self.sub_unit_type.pk},\r\n"
+        expected_csv += f'{self.user_managed_geo_limit.iaso_profile.id},managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -93,6 +100,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
         self.maxDiff = None
         self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
         self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
+        User.objects.filter(pk=self.jane.pk).update(last_login=JANE_LAST_LOGIN)  # john and the others never logged in
 
         self.client.force_authenticate(self.jim)
         response = self.client.get(reverse("profiles-export-xlsx"))
@@ -118,6 +126,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                 "teams",
                 "phone_number",
                 "editable_org_unit_types",
+                "last_login_at",
             ],
         )
 
@@ -189,6 +198,7 @@ class ProfileListExportAPITestCase(BaseProfileAPITestCase):
                     5: self.sub_unit_type.pk,
                     6: None,
                 },
+                "last_login_at": {0: "2026-11-16T09:30:15+00:00", 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             },
         )
 

@@ -1872,6 +1872,8 @@
     "iaso.registry.title": "Registre",
     "iaso.registry.withLocation": "Avec point",
     "iaso.registry.withShape": "Avec territoire",
+    "iaso.piiRestricted.description": "Vous n'êtes pas autorisé(e) à voir les données personnelles (PII). Les questions contenant des données personnelles ne sont pas affichées sur cette page et sont exclues des exports. Demandez la permission « Voir les données personnelles (PII) des soumissions » à un administrateur si vous en avez besoin.",
+    "iaso.piiRestricted.title": "Certaines informations sont masquées",
     "iaso.restricted_results_by_orgunits": "Vous êtes autorisé(e) à voir uniquement les unités d'organisation suivantes:",
     "iaso.runs.dialog.deleteRunText": "Toutes les correspondances créées seront effacées",
     "iaso.runs.dialog.deleteRunTitle": "Êtes-vous certain de vouloir effacer cette exécution d'algorithme ?",

@@ -10,6 +10,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import {
     DownloadMenuButton,
@@ -160,6 +161,7 @@ const Instances = () => {
                 formIds={formIds}
             />
             <Box className={classes.containerFullHeightPadded}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <InstancesFiltersComponent
                     params={params}
                     onSearch={onSearch}

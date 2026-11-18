@@ -14,6 +14,7 @@ import {
     setTableSelection,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { starsStyleForTable } from 'Iaso/components/stars/StarsComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -137,6 +138,7 @@ export const Duplicates: FunctionComponent = () => {
                     latestAnalysis={latestAnalysis}
                     isFetchingLatestAnalysis={isFetchingLatestAnalysis}
                 />
+                <PiiRestrictedBanner sx={{ mt: 2 }} />
                 <DuplicatesFilters params={params} />
                 <Box className={classes.table}>
                     <TableWithDeepLink

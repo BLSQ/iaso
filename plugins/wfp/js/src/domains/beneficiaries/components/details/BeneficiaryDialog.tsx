@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import MESSAGES from '../../messages';
 import { useGetBeneficiaryDetails } from '../../requests';
 import { BeneficiaryDetailsContent } from './BeneficiaryDetailsContent';
@@ -46,6 +47,7 @@ export const BeneficiaryDialog: FunctionComponent<DialogProps> = ({
                 </IconButton>
             </DialogTitle>
             <DialogContent sx={{ pb: 3 }}>
+                <PiiRestrictedBanner sx={{ mt: 2, mb: 2 }} />
                 {entityId !== undefined && (
                     <QueryResultView
                         query={query}

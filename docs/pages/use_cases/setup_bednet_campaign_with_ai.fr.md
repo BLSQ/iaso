@@ -1,9 +1,9 @@
-# Configurer une campagne de distribution de MII avec l'IA
+# Configurer une campagne de distribution de MILDA avec l'IA
 
-*Configurez IASO pour une distribution de masse de moustiquaires imprégnées d'insecticide (MII) avec l'aide d'un assistant IA.*
+*Configurez IASO pour une distribution de masse de moustiquaires imprégnées d'insecticide à longue durée d'action (MILDA) avec l'aide d'un assistant IA.*
 
 Ce guide s'adresse aux coordinateurs de campagne et aux points focaux informatiques qui
-veulent utiliser IASO pour planifier et suivre une campagne MII. Pas besoin d'être
+veulent utiliser IASO pour planifier et suivre une campagne MILDA. Pas besoin d'être
 développeur : un assistant IA (Claude, ChatGPT…) fait le travail technique, vous pose des
 questions sur votre campagne et attend votre accord avant de modifier quoi que ce soit dans
 IASO. Il rend la configuration de la campagne plus rapide, surtout si la plupart des
@@ -92,7 +92,7 @@ en votre nom.
 
 **Une démo, pour essayer le kit** (pyramide de démonstration du kit et réponses d'exemple) :
 
-> Voici un kit pour configurer une campagne de distribution de MII dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. C'est une démo : utilise la pyramide de
 > démonstration du kit et propose des réponses fictives pour tout, dans un seul récapitulatif
@@ -101,7 +101,7 @@ en votre nom.
 
 **Vos données géographiques dans un fichier Excel** (joint à la conversation) :
 
-> Voici un kit pour configurer une campagne de distribution de MII dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont dans le fichier
 > Excel joint. Pose-moi les questions de la campagne une section à la fois. Demande-moi
@@ -109,7 +109,7 @@ en votre nom.
 
 **Vos données géographiques dans DHIS2** (déjà configuré sur la source de données dans IASO) :
 
-> Voici un kit pour configurer une campagne de distribution de MII dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation viennent de notre
 > DHIS2, déjà configuré sur la source de données IASO. Pose-moi les questions de la campagne une
@@ -118,7 +118,7 @@ en votre nom.
 
 **Vos données géographiques déjà dans IASO** :
 
-> Voici un kit pour configurer une campagne de distribution de MII dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont déjà dans IASO.
 > Pose-moi les questions de la campagne une section à la fois. Demande-moi confirmation avant

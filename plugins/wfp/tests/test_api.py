@@ -1,4 +1,5 @@
 import io
+import uuid
 
 from datetime import datetime, timezone
 from unittest import mock
@@ -256,12 +257,39 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
         self.assertEqual(self._entity_ids(self.other_user, {"org_unit_group": self.group.id}), [])
 
     def test_search_ids(self):
+        # fixed uuids, starting with digits only: random ones sometimes do
+        self.entity.uuid = uuid.UUID("12345678-0000-4000-8000-000000000000")
+        self.entity.save()
+        self.other_entity.uuid = uuid.UUID("98765432-0000-4000-8000-000000000000")
+        self.other_entity.save()
+        lettered_entity = m.Entity.objects.create(
+            entity_type=self.entity.entity_type,
+            account=self.account,
+            uuid=uuid.UUID("12345678-abcd-4ef0-8abc-def012345678"),
+        )
+        lettered_journey = Journey.objects.create(
+            beneficiary=Beneficiary.objects.create(
+                entity=lettered_entity,
+                account=self.account,
+                birth_date=datetime(2025, 1, 1, tzinfo=timezone.utc).date(),
+            ),
+            nutrition_programme="TSFP",
+        )
+        Visit.objects.create(
+            journey=lettered_journey,
+            date=datetime(2026, 5, 1, tzinfo=timezone.utc),
+            number=1,
+            org_unit=self.facility,
+        )
+
         cases = {
             "real id": (self.entity.id, [self.entity.id]),
-            "start of the uuid": (str(self.entity.uuid)[:8], [self.entity.id]),
+            "start of the uuid, digits only": ("12345678", [self.entity.id, lettered_entity.id]),
+            "start of the uuid": ("12345678-abcd", [lettered_entity.id]),
             "missing id": (self._missing_id(m.Entity), []),
             "id of another account": (self.other_entity.id, []),
-            "uuid of another account": (str(self.other_entity.uuid), []),
+            "uuid of another account": ("98765432-0000-4000-8000-000000000000", []),
+            "start of the uuid of another account": ("98765432", []),
             # not an id: searched as the start of a uuid
             "not a number": ("xyz", []),
             "negative": ("-1", []),

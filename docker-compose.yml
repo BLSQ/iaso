@@ -23,7 +23,6 @@ services:
             - ./README.md:/opt/app/README.md
             - ./tsconfig.json:/opt/app/tsconfig.json
             - ./vitest.config.ts:/opt/app/vitest.config.ts
-            - ./babel-register.js:/opt/app/babel-register.js
             - ./pyproject.toml:/opt/app/pyproject.toml
             - ./htmlcov:/opt/app/htmlcov
             # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
@@ -33,7 +32,7 @@ services:
         links: &hat_links
             - db
         env_file:
-            -   .env
+            - .env
         logging: &iaso_logging
             driver: 'json-file'
             options:
@@ -67,7 +66,7 @@ services:
             - '3000:3000'
         volumes: *hat_volumes
         env_file:
-            -   .env
+            - .env
         environment:
             # Bind mounts don't reliably forward FS events; enable polling in Docker.
             VITE_POLL: 'true'
@@ -78,7 +77,7 @@ services:
         image: node:22.23.4-bookworm-slim
         working_dir: /opt/app/iaso/mcp/frontend
         ports:
-            - "5173:5173"
+            - '5173:5173'
         volumes:
             - ./iaso/mcp/frontend:/opt/app/iaso/mcp/frontend
         environment:
@@ -92,5 +91,5 @@ services:
     redis:
         image: redis:7
         ports:
-        - "6379:6379"
-        profiles: ["celery"]
+            - '6379:6379'
+        profiles: ['celery']

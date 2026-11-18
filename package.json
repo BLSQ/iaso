@@ -126,7 +126,6 @@
         "@babel/preset-env": "^7.0.0",
         "@babel/preset-react": "^7.0.0",
         "@babel/preset-typescript": "^7.16.0",
-        "@babel/register": "^7.12.1",
         "@eslint/compat": "^1.2.9",
         "@eslint/js": "^9.27.0",
         "@faker-js/faker": "^10.3.0",

@@ -23,7 +23,7 @@ COPY ../../hat/ ./hat/
 COPY ../../plugins/ ./plugins/
 
 # Copy frontend build configuration files
-COPY ../../tsconfig.json ../../babel-register.js ./
+COPY ../../tsconfig.json ./
 
 # Build frontend assets (Vite)
 RUN npm run build:prod
@@ -119,7 +119,7 @@ COPY --chown=appuser:appuser ../../dynamic_fields ./dynamic_fields
 COPY --chown=appuser:appuser ../../django_sql_dashboard_export ./django_sql_dashboard_export
 COPY --chown=appuser:appuser ../../plugins ./plugins
 COPY --chown=appuser:appuser ../../scripts ./scripts
-COPY --chown=appuser:appuser ../../README.md manage.py entrypoint.sh tsconfig.json babel-register.js pyproject.toml ./
+COPY --chown=appuser:appuser ../../README.md manage.py entrypoint.sh tsconfig.json pyproject.toml ./
 
 # Create dir for uploaded files
 RUN mkdir media && chown appuser:appuser media

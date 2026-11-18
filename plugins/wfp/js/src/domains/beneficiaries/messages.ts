@@ -164,20 +164,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.rawData',
         defaultMessage: 'raw data',
     },
-<<<<<<< HEAD
-    eligibleBeneficiaries: {
-        id: 'iaso.wfp.beneficiaries.eligibleBeneficiaries',
-        defaultMessage: 'eligible beneficiaries',
-=======
-    rawData: {
-        id: 'iaso.wfp.beneficiaries.rawData',
-        defaultMessage: 'raw data',
-    },
     exportRawTooltip: {
         id: 'iaso.wfp.beneficiaries.exportRawTooltip',
         defaultMessage:
             'The ETL tables and the submissions (one sheet per form) of the beneficiaries matching the filters',
->>>>>>> 7ba6fb92bb (Integate filter for start and end date and get eligible beneficiary export in the selected period)
     },
     eligibleBeneficiaries: {
         id: 'iaso.wfp.beneficiaries.eligibleBeneficiaries',

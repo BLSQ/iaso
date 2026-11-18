@@ -2,8 +2,8 @@ from iaso.test import IasoMigratorTestCase
 
 
 class Test0417Workspace(IasoMigratorTestCase):
-    migrate_from = ("iaso", "0416_alter_corepermissionsupport_options_and_more")
-    migrate_to = ("iaso", "0417_workspace")
+    migrate_from = ("iaso", "0418_alter_devicelog_user")
+    migrate_to = ("iaso", "0419_workspace")
 
     def prepare(self):
         Account = self.old_state.apps.get_model("iaso", "Account")

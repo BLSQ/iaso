@@ -30,7 +30,7 @@ def create_first_snt_workspaces(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0416_alter_corepermissionsupport_options_and_more"),
+        ("iaso", "0418_alter_devicelog_user"),
     ]
 
     operations = [

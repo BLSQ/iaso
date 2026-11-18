@@ -13,7 +13,7 @@ RUN apt-get update && apt-get --yes install \
 WORKDIR /opt/app
 
 # install python dependencies
-COPY pyproject.toml /opt/app/pyproject.toml
+COPY pyproject.toml uv.lock /opt/app/
 
 # install pinned uv version
 COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
@@ -21,7 +21,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
 # make uv use the system python and install everything in the system, not in a .venv
 ENV UV_PROJECT_ENVIRONMENT=/usr/local
 ENV UV_PYTHON_PREFERENCE=only-system
-RUN uv sync --python "$(which python3)"
+RUN uv sync --python "$(which python3)" --locked
 
 # preinstall the duckdb extensions, otherwise downloaded in every new container (~5 s, see the script)
 COPY scripts/install_duckdb_extensions.py /opt/app/scripts/install_duckdb_extensions.py

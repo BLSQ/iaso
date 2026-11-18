@@ -86,7 +86,7 @@ en votre nom.
 
 ### Étape 4 : Donner le kit à votre assistant IA
 
-1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip.
+1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip contenant le token enregistré dans le fichier .txt.
 2. Choisissez l'origine de vos données géographiques et copiez tel quel le message correspondant.
 
 **Option A : Utiliser les données géographiques de démonstration** (pyramide de démonstration du kit et réponses d'exemple). La plupart des gens commencent ici : il n'y a rien à préparer, et vous voyez le résultat avant de préparer vos propres données. Copiez ce message, puis allez directement à l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant) pour répondre aux questions :

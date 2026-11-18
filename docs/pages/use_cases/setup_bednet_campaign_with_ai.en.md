@@ -80,7 +80,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 ### Step 4: Give the kit to your AI assistant
 
-1. Start a new conversation in Claude or ChatGPT and attach the zip.
+1. Start a new conversation in Claude or ChatGPT and attach the zip with the token saved in the .txt file.
 2. Choose where your geographic data comes from and copy the matching message as it is.
 
 **Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data. Copy this message, then go directly to [step 5](#step-5-answer-the-assistants-questions) to answer the questions:

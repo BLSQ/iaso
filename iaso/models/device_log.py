@@ -7,7 +7,7 @@ User = get_user_model()
 
 class DeviceLog(models.Model):
     device = models.ForeignKey("Device", on_delete=models.CASCADE, related_name="logs")
-    user = models.OneToOneField(User, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     data = models.JSONField(null=True, blank=True)
     app_id = models.CharField(max_length=250)
     app_version = models.CharField(max_length=25)

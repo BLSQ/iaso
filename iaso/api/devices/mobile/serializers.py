@@ -35,3 +35,9 @@ class DeviceLogCreateSerializer(ModelSerializer):
         if self.project and self.project.account:
             self.fields["device"].queryset = Device.objects.all().filter(account=self.project.account)
             self.fields["projects"].child_relation.queryset = Project.objects.all().filter(account=self.project.account)
+
+    def to_internal_value(self, data: dict) -> dict:
+        data = super().to_internal_value(data)
+        if self.user and self.user.is_authenticated:
+            data["user"] = self.user
+        return data

@@ -4,6 +4,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer
 from iaso.api.validation_workflows.serializers.common import UserDisplayNameField
 from iaso.models import Instance, ValidationNode
+from iaso.utils.pii import filter_submission_json, get_allowed_fields
 
 
 class NestedHistorySerializer(ModelSerializer):
@@ -49,10 +50,17 @@ class ETLInstanceListSerializer(ModelSerializer):
 
     @extend_schema_field(serializers.JSONField)
     def get_file_content(self, obj):
-        return obj.get_and_save_json_of_xml()
+        return filter_submission_json(obj.get_and_save_json_of_xml(), obj.form, self._user())
+
+    def _user(self):
+        request = self.context.get("request")
+        return request.user if request else None
 
     @extend_schema_field(serializers.URLField(allow_null=True, allow_blank=True))
     def get_file_url(self, obj):
+        # The raw XML file contains all the answers, including personal data
+        if get_allowed_fields(obj.form, self._user()) is not None:
+            return None
         if obj.file:
             return obj.file.url
         return None

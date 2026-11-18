@@ -510,6 +510,14 @@ msgid "Parent is not in the same version"
 msgstr "Le parent n'est pas dans la même version"
 
 #: iaso/api/pages.py
+msgid "Users must belong to your account."
+msgstr "Les utilisateurs doivent appartenir à votre compte."
+
+#: iaso/api/pages.py
+msgid "User roles must belong to your account."
+msgstr "Les rôles d'utilisateur doivent appartenir à votre compte."
+
+#: iaso/api/pages.py
 msgid "Limit result by name or slug"
 msgstr "Limiter les résultats par nom ou slug"
 
@@ -1354,6 +1362,10 @@ msgid "Soumissions"
 msgstr "Soumissions"
 
 #: iaso/permissions/core_permissions.py
+msgid "View personal data (PII) in submissions"
+msgstr "Consulter les données personnelles (PII) dans les soumissions"
+
+#: iaso/permissions/core_permissions.py
 msgid "Editer soumissions"
 msgstr "Editer soumissions"
 
@@ -1544,6 +1556,14 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#: iaso/views.py
+msgid ""
+"This page belongs to another account. Log out or switch to that account to "
+"open it."
+msgstr ""
+"Cette page appartient à un autre compte. Déconnectez-vous ou passez à ce "
+"compte pour l'ouvrir."
 
 #, python-format
 #~ msgid "Org units not below the planning target geography: %(ids)s"

@@ -15,6 +15,7 @@ from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import (
     CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
     CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+    CORE_SUBMISSIONS_PII_PERMISSION,
 )
 from iaso.test import APITestCase
 
@@ -572,7 +573,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertContains(response, "This duplicate has already been validated or ignored", status_code=400)
 
         # we can't merge it after it was ignored
-        merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
+        merged_data = dict.fromkeys(duplicate.analyze.metadata["fields"], duplicate.entity1.id)
         response = self.client.post(
             "/api/entityduplicates/",
             data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
@@ -1176,3 +1177,74 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(dup_2.validation_status, ValidationStatus.PENDING)
         self.assertEqual(dup_3.validation_status, ValidationStatus.PENDING)
         self.assertEqual(dup_4.validation_status, ValidationStatus.IGNORED)
+
+    def _create_pii_duplicate(self, non_pii_fields):
+        """Configure the PII whitelist of the reference form and create a duplicate between two of its entities."""
+        self.default_form.non_pii_fields = non_pii_fields
+        self.default_form.save()
+        analyze = m.EntityDuplicateAnalyzis.objects.create(
+            algorithm="levenshtein",
+            metadata={"entity_type_id": self.default_entity_type.id, "fields": ["Prenom", "Nom", "age__int__"]},
+        )
+        return m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, analyze=analyze, similarity_score=50
+        )
+
+    def _detail_fields(self, duplicate):
+        resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        return {f["the_field"]["field"]: (f["entity1"]["value"], f["entity2"]["value"]) for f in resp.json()["fields"]}
+
+    def test_detail_allowed_fields_without_pii_permission(self):
+        """Without the PII permission, the detail only lists the questions whitelisted in `non_pii_fields`."""
+        # Case-insensitive match against the question names.
+        duplicate = self._create_pii_duplicate(["age__int__", "weight_kgs__double__"])
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+
+        fields = self._detail_fields(duplicate)
+
+        # `instanceID` is a technical key (see `TECHNICAL_KEYS`), always allowed.
+        self.assertEqual(
+            fields,
+            {
+                "age__int__": ("20", "99"),
+                "weight_kgs__double__": ("60.0", "80.0"),
+                "instanceID": ("Not Found", "Not Found"),
+            },
+        )
+        self.assertNotIn("same_instance", str(fields))
+
+    def test_detail_allowed_fields_with_pii_permission(self):
+        """With the PII permission, the whitelist is ignored and every question is listed."""
+        duplicate = self._create_pii_duplicate(["age__int__", "weight_kgs__double__"])
+        user = self.create_user_with_profile(
+            username="user_with_pii",
+            account=self.default_account,
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_SUBMISSIONS_PII_PERMISSION],
+            org_units=[self.default_orgunit],
+        )
+        self.client.force_authenticate(user)
+
+        fields = self._detail_fields(duplicate)
+
+        self.assertEqual(fields["Prenom"], ("same_instance", "Far. Ent."))
+        self.assertEqual(fields["Nom"], ("iaso", "Yeeeeeaaaahhhhhhhhhhh"))
+        self.assertEqual(fields["age__int__"], ("20", "99"))
+        self.assertEqual(fields["weight_kgs__double__"], ("60.0", "80.0"))
+
+    def test_detail_allowed_fields_without_pii_configuration(self):
+        """A form without `non_pii_fields` is not filtered, even for a user without the PII permission."""
+        duplicate = self._create_pii_duplicate(None)
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+
+        fields = self._detail_fields(duplicate)
+
+        self.assertEqual(fields["Prenom"], ("same_instance", "Far. Ent."))
+        self.assertEqual(fields["age__int__"], ("20", "99"))
+
+    def test_detail_allowed_fields_empty_whitelist(self):
+        """An empty whitelist hides every question but the technical keys from a user without the PII permission."""
+        duplicate = self._create_pii_duplicate([])
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+
+        self.assertEqual(self._detail_fields(duplicate), {"instanceID": ("Not Found", "Not Found")})

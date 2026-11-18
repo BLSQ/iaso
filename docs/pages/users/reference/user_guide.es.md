@@ -156,7 +156,7 @@ style="width:1.56771in;height:1.65794in" />
 
 **Exportar un envío**
 
-La función de exportación le permite exportar el formulario a DHIS2. Previamente, necesita haber sido mapeado usando la funcionalidad de [mapeo DHIS2](./iaso_web/DHIS2).
+La función de exportación le permite exportar el formulario a DHIS2. Previamente, necesita haber sido mapeado usando la funcionalidad de [mapeo DHIS2](../how_to/map_a_form_to_dhis2.md).
 
 **Editar el envío vía Enketo**
 

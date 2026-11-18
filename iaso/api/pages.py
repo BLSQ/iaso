@@ -13,18 +13,30 @@ class PagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
         fields = "__all__"
+        # The account is always the one of the requester: a page cannot be moved into another account.
+        read_only_fields = ["account"]
+
+    def _account(self):
+        return self.context["request"].user.iaso_profile.account
+
+    # A page runs its author's JavaScript in the session of its viewers, so it can only be shared
+    # with users and roles of the author's account.
+    def validate_users(self, users):
+        account = self._account()
+        if any(getattr(getattr(user, "iaso_profile", None), "account_id", None) != account.id for user in users):
+            raise serializers.ValidationError(_("Users must belong to your account."))
+        return users
+
+    def validate_user_roles(self, user_roles):
+        account = self._account()
+        if any(role.account_id != account.id for role in user_roles):
+            raise serializers.ValidationError(_("User roles must belong to your account."))
+        return user_roles
 
     def create(self, validated_data):
-        request = self.context.get("request")
-        account = request.user.iaso_profile.account
+        account = self._account()
         users = validated_data.pop("users")
         user_roles = validated_data.pop("user_roles", [])
-
-        # Validate user_roles belong to user's account
-        if user_roles:
-            invalid_roles = [role for role in user_roles if role.account != account]
-            if invalid_roles:
-                raise serializers.ValidationError({"user_roles": "User roles must belong to your account."})
 
         page = Page.objects.create(**validated_data, account=account)
         page.users.set(users)

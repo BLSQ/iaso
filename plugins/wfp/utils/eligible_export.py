@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 
 import xlsxwriter
 
+from dateutil.relativedelta import relativedelta
 from django.db.models import Prefetch
 from django.utils import timezone
 
@@ -42,8 +43,8 @@ NORMAL_MUAC = {U5: 12.5, PBWG: 23.0}
 def current_period(today: datetime.date) -> tuple[datetime.date, datetime.date]:
     """From the 26th of the previous month to the 25th of the current month (both included)."""
     end = today.replace(day=25)
-    previous_month = today.replace(day=1) - datetime.timedelta(days=1)
-    return previous_month.replace(day=26), end
+    start = end + relativedelta(months=-1, day=26)
+    return start, end
 
 
 @dataclass

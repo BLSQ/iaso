@@ -23,7 +23,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { baseUrls } from '../../constants/urls';
-import { useFormState } from '../../hooks/form.js';
+import { useFormState } from '../../hooks/form';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { NO_PERIOD } from '../periods/constants';

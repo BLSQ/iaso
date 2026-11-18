@@ -2,6 +2,20 @@ import L from 'leaflet';
 import location from '../../../images/location.svg';
 import square from '../../../images/square.svg';
 
+declare module 'leaflet' {
+    // Leaflet publishes this as a namespace; interface merging has to follow it.
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace Control {
+        interface ZoomOptions {
+            zoomInfoTitle?: string;
+            zoomBoxTitle?: string;
+            fitToBoundsTitle?: string;
+            searchTitle?: string;
+            fitToBounds?: () => void;
+        }
+    }
+}
+
 /*
  * In react use the <ZoomControl> component from mapUtils instead !
  *  from L.Control.ZoomBar
@@ -14,7 +28,75 @@ import square from '../../../images/square.svg';
  *     without it, it's not going to be included in the bar.
  */
 
-L.Control.Zoom = L.Control.Zoom.extend({
+type ZoomBarOptions = L.Control.ZoomOptions & {
+    zoomInfoTitle: string;
+    zoomBoxTitle: string;
+    fitToBoundsTitle: string;
+    searchTitle: string;
+    fitToBounds?: () => void;
+};
+
+type BoxZoomMouseEvent = {
+    clientX: number;
+    clientY: number;
+    which: number;
+    shiftKey: boolean;
+};
+
+/** Leaflet map fields this control uses that are not on the public Map type. */
+interface ZoomBarMap extends L.Map {
+    _container: HTMLElement;
+    boxZoom: L.Handler & {
+        addHooks(): void;
+        removeHooks(): void;
+        _onMouseDown(event: BoxZoomMouseEvent): void;
+    };
+}
+
+type ZoomButtonHandler = (this: ZoomBar, event: L.LeafletMouseEvent) => void;
+
+interface ZoomBar extends L.Control.Zoom {
+    options: ZoomBarOptions;
+    _map: ZoomBarMap;
+    _zoomBoxActive: boolean;
+    /** Leaflet writes the numeric zoom level straight into innerHTML. */
+    _zoomInfoButton: { innerHTML: string | number };
+    _zoomInButton: HTMLElement;
+    _zoomOutButton: HTMLElement;
+    _zoomBoxButton: HTMLElement;
+    _fitToBoundsButton?: HTMLElement;
+    _createButton(
+        html: string | number | undefined,
+        title: string | undefined,
+        className: string,
+        container: HTMLElement,
+        fn: ZoomButtonHandler | (() => void),
+        context: ZoomBar,
+    ): HTMLElement;
+    _zoomIn(event?: L.LeafletMouseEvent): void;
+    _zoomOut(event?: L.LeafletMouseEvent): void;
+    _updateDisabled(): void;
+    _zoomBox(): void;
+    _zoomBoxHTML(): string;
+    _zoomBoxStateOn(): void;
+    _zoomBoxStateOff(): void;
+    _zoomBoxHandleMouseDown(event: L.LeafletMouseEvent): void;
+}
+
+interface ZoomBarPrototype {
+    options: ZoomBarOptions;
+    initialize(options?: ZoomBarOptions): void;
+    onAdd(map: ZoomBarMap): HTMLElement;
+    onRemove(): void;
+    _updateInfoValue(): void;
+    _zoomBox(): void;
+    _zoomBoxHTML(): string;
+    _zoomBoxStateOn(): void;
+    _zoomBoxStateOff(): void;
+    _zoomBoxHandleMouseDown(event: L.LeafletMouseEvent): void;
+}
+
+const zoomBarExtension: ZoomBarPrototype & ThisType<ZoomBar> = {
     options: {
         zoomInfoTitle: 'Current zoom level',
         zoomBoxTitle:
@@ -157,4 +239,9 @@ L.Control.Zoom = L.Control.Zoom.extend({
             shiftKey: true,
         });
     },
-});
+};
+
+// Leaflet's extend() builds a new constructor; the public Zoom class stays the same.
+L.Control.Zoom = L.Control.Zoom.extend(
+    zoomBarExtension,
+) as typeof L.Control.Zoom;

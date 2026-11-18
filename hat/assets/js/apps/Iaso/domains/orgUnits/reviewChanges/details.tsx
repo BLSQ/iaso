@@ -10,6 +10,7 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from 'Iaso/types/general';
@@ -94,6 +95,10 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
         return orgUnitAsChangeRequestDetailsOldValues(changeRequest);
     }, [changeRequest, useValuesAtCreation, isNew]);
     const { newFields, setSelected } = useNewFields(data);
+    // the reference submissions may have questions hidden from the user
+    const hasReferenceInstances =
+        (data?.new_reference_instances?.length ?? 0) > 0 ||
+        (data?.old_reference_instances?.length ?? 0) > 0;
     const goBack = useGoBack(baseUrls.orgUnitsChangeRequest);
     const titleMessage = useMemo(() => {
         if (changeRequest?.status === CHANGE_REQUEST_STATUS.REJECTED) {
@@ -128,6 +133,9 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
                     />
                 )}
                 <Box sx={styles.body}>
+                    {hasReferenceInstances && (
+                        <PiiRestrictedBanner sx={{ mb: 2 }} />
+                    )}
                     {isNew && (
                         <FormControlLabel
                             control={

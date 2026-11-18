@@ -1,6 +1,7 @@
+import { CSSProperties } from 'react';
 import { theme } from 'bluesquare-components';
 
-export const styles = {
+export const styles: Record<string, CSSProperties> = {
     '[class*="leaflet-control-zoom-"]': {
         fontSize: 14,
         fontWeight: 'bold',

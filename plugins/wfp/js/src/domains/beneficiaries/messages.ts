@@ -164,24 +164,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.wfp.beneficiaries.rawData',
         defaultMessage: 'raw data',
     },
-    exportRawTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportRawTooltip',
-        defaultMessage:
-            'The ETL tables and the submissions (one sheet per form) of the beneficiaries matching the filters',
-    },
     eligibleBeneficiaries: {
         id: 'iaso.wfp.beneficiaries.eligibleBeneficiaries',
         defaultMessage: 'eligible beneficiaries',
-    },
-    exportEligibleTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportEligibleTooltip',
-        defaultMessage:
-            'One sheet per programme (and physiology status for women) with the beneficiaries having an ongoing journey, found normal at their last visit during the period',
-    },
-    exportEligibleDisabledTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportEligibleDisabledTooltip',
-        defaultMessage:
-            'Select an entity type to export the eligible beneficiaries',
     },
     beneficiaryData: {
         id: 'iaso.wfp.beneficiaries.beneficiaryData',

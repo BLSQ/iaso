@@ -10,6 +10,7 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
@@ -295,6 +296,7 @@ export const DuplicateDetails: FunctionComponent = () => {
                 )}
                 {!hasNoData && (
                     <>
+                        <PiiRestrictedBanner sx={{ mt: 2 }} />
                         <Grid container>
                             <Grid item xs={12}>
                                 <Box pb={4}>

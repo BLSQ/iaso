@@ -8,12 +8,8 @@ import openpyxl
 from rest_framework import status
 
 from iaso import models as m
-<<<<<<< HEAD
-from iaso.test import APITestCase
-=======
 from iaso.test import APITestCase, TestCase
 from plugins.wfp.api.beneficiaries.serializers import EligibleExportParamsSerializer
->>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 from plugins.wfp.utils.eligible_export import PBWG, U5, _sheet_name, current_period
@@ -27,15 +23,6 @@ def _at(day, hour=12):
     return datetime(day.year, day.month, day.day, hour, tzinfo=timezone.utc)
 
 
-<<<<<<< HEAD
-class CurrentPeriodTestCase(APITestCase):
-    def test_from_the_26th_of_the_previous_month_to_the_25th(self):
-        self.assertEqual(current_period(date(2026, 11, 13)), (date(2026, 10, 26), date(2026, 11, 25)))
-        self.assertEqual(current_period(date(2026, 1, 31)), (date(2025, 12, 26), date(2026, 1, 25)))
-
-
-class SheetNameTestCase(APITestCase):
-=======
 class CurrentPeriodTestCase(TestCase):
     def test_from_the_26th_of_the_previous_month_to_the_25th(self):
         # in the middle of the month
@@ -50,7 +37,6 @@ class CurrentPeriodTestCase(TestCase):
 
 
 class SheetNameTestCase(TestCase):
->>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
     def test_programme_postfixed_with_the_entity_type_and_the_physiology_status(self):
         taken = set()
         self.assertEqual(_sheet_name("BSFP", "Child Under 5", U5, "", taken), "BSFP Child Under 5")
@@ -151,10 +137,6 @@ class EligibleExportTestCase(APITestCase):
         self.assertIn("Expected Date of Delivery (EDD)", woman_row)
 
         # with an entity type, only its beneficiaries
-<<<<<<< HEAD
-        self.assertEqual(sorted(self._export({"entity_type": self.children.id})), ["BSFP Child Under 5"])
-        self.assertEqual(sorted(self._export({"entity_type": self.women.id})), ["BSFP PBWG Pregnant"])
-=======
         expected = ["BSFP Child Under 5"]
         actual = sorted(self._export({"entity_type": self.children.id}))
         self.assertEqual(actual, expected)
@@ -162,7 +144,6 @@ class EligibleExportTestCase(APITestCase):
         expected = ["BSFP PBWG Pregnant"]
         actual = sorted(self._export({"entity_type": self.women.id}))
         self.assertEqual(actual, expected)
->>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
 
     def test_children_with_an_ongoing_journey_found_green(self):
         journey = self._child()
@@ -202,8 +183,7 @@ class EligibleExportTestCase(APITestCase):
         self.assertEqual(sorted(sheets), ["BSFP Child Under 5", "NSEP Child Under 5"])
         self.assertEqual(sheets["NSEP Child Under 5"][0]["Nutritional Status"], "Normal")
 
-<<<<<<< HEAD
-=======
+
     def _entity_ids_by_sheet(self, params=None):
         """[(sheet name, entity ids of its rows)], both in the order of the file."""
         return [(name, [row["Entity ID"] for row in rows]) for name, rows in self._export(params).items()]
@@ -279,7 +259,6 @@ class EligibleExportTestCase(APITestCase):
         )
         self.assertEqual(actual, expected)
 
->>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
     def test_women_visited_during_the_period_one_sheet_per_physiology_status(self):
         pregnant = self._woman("pregnant")
         self._visit(pregnant, date(2026, 11, 2), muac_size="24.1", json={"pregnancy_edd": "2027-01-15"})

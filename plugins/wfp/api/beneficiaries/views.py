@@ -87,6 +87,15 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         period.is_valid(raise_exception=True)
         return period.validated_data
 
+    def _period(self, serializer_class=VisitPeriodSerializer):
+        """The validated visit period of the request (`start_date` and `end_date`), a 400 if a date is invalid.
+
+        The errors are keyed by the date field to correct (`visit_date_after` or `visit_date_before`).
+        """
+        period = serializer_class(data=self.request.query_params)
+        period.is_valid(raise_exception=True)
+        return period.validated_data
+
     def get_queryset(self):
         return (
             Beneficiary.objects.filter(entity__account=self.request.user.iaso_profile.account)
@@ -196,6 +205,17 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return export_response(
             request.user, KIND_ELIGIBLE, beneficiaries, self.get_visit_scope(), **serializer.validated_data
         )
+
+    @action(detail=False, methods=["get"], url_path="export/eligible")
+    def export_eligible(self, request):
+        """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
+
+        One sheet per programme (and per physiology status for women): without an entity type, the children and the
+        women are both exported, in separate sheets as their columns differ. The period is given by `visit_date_after`
+        and `visit_date_before` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
+        """
+        period = self._period(EligibleExportParamsSerializer)
+        return export_response(request.user, KIND_ELIGIBLE, filters_from_params(request.query_params), **period)
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
     def data(self, request, entity_id):

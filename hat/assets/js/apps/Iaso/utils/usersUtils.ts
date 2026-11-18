@@ -88,6 +88,7 @@ export type User = {
     user_roles: number[];
     user_roles_editable_org_unit_type_ids?: number[];
     color?: string;
+    pii_restricted?: boolean;
 };
 
 export const getDisplayName = (

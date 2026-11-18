@@ -1,9 +1,10 @@
 import { grey } from '@mui/material/colors';
+import { Theme } from '@mui/material/styles';
 
 export const menuHeight = 112;
 export const tabsHeight = 68;
 
-const innerDrawer = theme => ({
+const innerDrawer = (theme: Theme) => ({
     innerDrawerToolContainer: {
         display: 'flex',
         flexDirection: 'column',

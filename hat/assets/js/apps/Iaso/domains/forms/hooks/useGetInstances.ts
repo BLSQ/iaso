@@ -11,8 +11,12 @@ const REQUESTED_FIELDS = [
     'longitude',
 ];
 
-export const useGetInstances = ({ orgUnitId }) => {
-    const params = {
+export const useGetInstances = ({
+    orgUnitId,
+}: {
+    orgUnitId?: string | number;
+}) => {
+    const params: Record<string, any> = {
         order: 'id',
         limit: '20000',
         fields: REQUESTED_FIELDS.join(','),

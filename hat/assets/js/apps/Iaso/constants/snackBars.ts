@@ -1,3 +1,8 @@
+import { IntlMessage } from 'bluesquare-components';
+
+// A snack bar can receive a descriptor, or a string already produced by formatMessage.
+type SnackBarMessage = string | IntlMessage | null;
+
 export const formSuccessFullMessageKey = 'successful';
 export const formErrorMessageKey = 'error';
 export const formWarningMessageKey = 'warning';
@@ -6,7 +11,7 @@ export const reloadPageMessageKey = 'reloadPage';
 
 export const succesfullSnackBar = (
     messageKey = formSuccessFullMessageKey,
-    messageObject,
+    messageObject?: SnackBarMessage,
 ) => ({
     messageKey,
     messageObject,
@@ -21,6 +26,12 @@ export const successfullSnackBarWithButtons = ({
     persist,
     buttonMessageKey,
     buttonAction,
+}: {
+    messageKey?: string;
+    messageObject?: SnackBarMessage;
+    persist?: boolean;
+    buttonMessageKey?: string;
+    buttonAction?: () => void;
 }) => ({
     messageKey,
     messageObject,
@@ -34,8 +45,8 @@ export const successfullSnackBarWithButtons = ({
 
 export const errorSnackBar = (
     messageKey = formErrorMessageKey,
-    messageObject,
-    errorLog,
+    messageObject?: SnackBarMessage,
+    errorLog?: unknown,
 ) => ({
     messageKey,
     messageObject,
@@ -49,8 +60,8 @@ export const errorSnackBar = (
 
 export const warningSnackBar = (
     messageKey = formWarningMessageKey,
-    messageObject,
-    id,
+    messageObject?: SnackBarMessage,
+    id?: string,
 ) => ({
     messageKey,
     messageObject,
@@ -74,5 +85,7 @@ export const reloadPageSnackBar = (
         persist: true,
     },
     buttonMessageKey,
-    buttonAction: () => window.location.reload(true),
+    // forceGet arg is legacy; kept for same call shape
+    buttonAction: () =>
+        (window.location.reload as (forceGet?: boolean) => void)(true),
 });

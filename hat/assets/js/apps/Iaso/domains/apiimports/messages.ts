@@ -42,7 +42,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.apiimport.has_problem',
     },
     app_id: {
-        defaultMessage: 'App Id',
+        defaultMessage: 'App ID',
         id: 'iaso.projects.appId',
     },
     app_version: {

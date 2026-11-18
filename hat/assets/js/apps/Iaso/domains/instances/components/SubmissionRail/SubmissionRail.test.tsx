@@ -99,7 +99,7 @@ describe('SubmissionRail', () => {
         expect(screen.getByText('Locks')).toBeInTheDocument();
         expect(screen.getByText('Unlocked')).toBeInTheDocument();
         expect(screen.queryByText('Files')).not.toBeInTheDocument();
-        expect(screen.queryByText('Change requests')).not.toBeInTheDocument();
+        expect(screen.queryByText('Change Requests')).not.toBeInTheDocument();
     });
 
     it('shows the files row when the instance has files', () => {
@@ -126,7 +126,7 @@ describe('SubmissionRail', () => {
                 onLightBoxToggled={vi.fn()}
             />,
         );
-        expect(screen.getByText('Change requests')).toBeInTheDocument();
+        expect(screen.getByText('Change Requests')).toBeInTheDocument();
         expect(screen.getByText('2')).toBeInTheDocument();
     });
 

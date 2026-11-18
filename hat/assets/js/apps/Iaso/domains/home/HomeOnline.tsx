@@ -9,6 +9,7 @@ import iasoBg from '../../images/iaso-bg.jpg';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
+import { djangoStaticUrl } from 'Iaso/utils/djangoStaticUrl';
 import { useHomeButtons } from './hooks/useHomeButtons';
 
 const useStyles = makeStyles(theme => ({
@@ -99,7 +100,7 @@ export const HomeOnline: FunctionComponent = () => {
             <TopBar displayBackButton={false} />
             <Box
                 className={classes.root}
-                sx={{ backgroundImage: `url("${window.STATIC_URL}${iasoBg}")` }}
+                sx={{ backgroundImage: `url("${iasoBg}")` }}
             >
                 <Grid className={classes.topMenu} container spacing={2}>
                     <Grid container item xs={6} justifyContent="flex-end">
@@ -138,7 +139,7 @@ export const HomeOnline: FunctionComponent = () => {
                                 {APP_TITLE !== 'Iaso' && LOGO_PATH && (
                                     <img
                                         alt="logo"
-                                        src={`${window.STATIC_URL}${LOGO_PATH}`}
+                                        src={djangoStaticUrl(LOGO_PATH)}
                                         style={{ width: 150, height: 'auto' }}
                                     />
                                 )}

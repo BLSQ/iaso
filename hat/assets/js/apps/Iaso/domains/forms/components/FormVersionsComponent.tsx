@@ -5,6 +5,7 @@ import {
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
+import { djangoStaticUrl } from 'Iaso/utils/djangoStaticUrl';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 import MESSAGES from '../messages';
 import FormVersionsDialog from './FormVersionsDialogComponent';
@@ -25,9 +26,7 @@ const FormVersionsComponent: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     if (!formId) return null;
-    const templateUrl = `${
-        window.STATIC_URL ?? '/static/'
-    }templates/XLSForm_Template.xlsx`;
+    const templateUrl = djangoStaticUrl('templates/XLSForm_Template.xlsx');
     return (
         <Box>
             <Box

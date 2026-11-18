@@ -7,59 +7,44 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { BooleanInput } from 'Iaso/components/forms/BooleanInput';
 import { MultiSelect } from 'Iaso/domains/pages/components/MultiSelect';
 import TextInput from 'Iaso/domains/pages/components/TextInput';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
 
-import { useGetNode } from '../../api/Get';
 import { useSaveNode } from '../../api/PostPutPatch';
 import MESSAGES from '../../messages';
 import { useNodeValidation } from './validation';
 
 type Props = {
     workflowSlug: string;
-    nodeSlug?: string;
     isOpen: boolean;
     closeDialog: () => void;
     isFirstStep?: boolean;
 };
 
 export type NodeFormValues = {
-    slug?: string;
     name?: string;
     description?: string;
-    color?: string;
     roles_required?: number[];
     can_skip_previous_nodes?: boolean;
 };
 
 export const CreateEditNode: FunctionComponent<Props> = ({
-    nodeSlug,
     workflowSlug,
     isOpen,
     closeDialog,
     isFirstStep = false,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { data: node } = useGetNode({ nodeSlug, workflowSlug });
     const { data: userRoles, isFetching: isLoadingRoles } =
         useGetUserRolesDropDown();
 
     const { mutateAsync: save } = useSaveNode(workflowSlug);
     const validationSchema = useNodeValidation();
     const formik = useFormik<NodeFormValues>({
-        initialValues: {
-            name: node?.name,
-            slug: node?.slug,
-            description: node?.description,
-            can_skip_previous_nodes: node?.can_skip_previous_nodes,
-            roles_required: node?.roles_required?.map(r => r.id),
-        },
-        enableReinitialize: true,
-        onSubmit: values =>
-            save({ workflowSlug: workflowSlug, slug: nodeSlug, body: values }),
+        initialValues: {},
+        onSubmit: values => save({ workflowSlug: workflowSlug, body: values }),
         validationSchema,
     });
     const handleChangeUserRoles = useCallback(
@@ -70,8 +55,7 @@ export const CreateEditNode: FunctionComponent<Props> = ({
         },
         [formik],
     );
-    const titleMessage = node?.slug ? MESSAGES.edit : MESSAGES.create;
-    const title = formatMessage(titleMessage);
+    const title = formatMessage(MESSAGES.create);
     const allowConfirm = formik.isValid && formik.dirty;
 
     return (
@@ -129,6 +113,5 @@ export const CreateEditNode: FunctionComponent<Props> = ({
     );
 };
 const modalWithButton = makeFullModal(CreateEditNode, AddButton);
-const modalWithIcon = makeFullModal(CreateEditNode, EditIconButton);
 
-export { modalWithButton as AddNode, modalWithIcon as EditNode };
+export { modalWithButton as AddNode };

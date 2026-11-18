@@ -10,41 +10,33 @@ import {
 } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodeTemplates';
 import { postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { API_URL, WF_BASE_QUERYKEY } from '../constants';
+import { getNodeTemplatesUrl, WF_BASE_QUERYKEY } from '../constants';
 
 const saveNode = async ({
     workflowSlug,
-    slug,
     body,
 }: {
     workflowSlug: string;
-    slug?: string;
-    body: ValidationNodeTemplateCreateBody | ValidationNodeTemplateUpdateBody;
-}) => {
-    if (!!slug) {
-        return putRequest(
-            `${API_URL}${workflowSlug}/node-templates/${slug}/`,
-            body as ValidationNodeTemplateUpdateBody,
-        );
-    }
-    return postRequest(
-        `${API_URL}${workflowSlug}/node-templates/`,
-        body as ValidationNodeTemplateCreateBody,
-    );
-};
+    body: ValidationNodeTemplateCreateBody;
+}) => postRequest(getNodeTemplatesUrl(workflowSlug), body);
 
-export const useSaveNode = (
-    workflowSlug?: string,
-): UseMutationResult<any, any> => {
-    const queryKey = React.useMemo(() => {
-        return [
+// Queries to refresh after adding or deleting a step
+export const useNodeInvalidationQueryKey = (workflowSlug?: string) =>
+    React.useMemo(
+        () => [
             ...getApiValidationWorkflowsListQueryKey(),
             ...(workflowSlug
                 ? getApiValidationWorkflowsRetrieveQueryKey(workflowSlug)
                 : []),
-        ] as string[];
-    }, [workflowSlug]);
-    const invalidateQueryKey = [...queryKey, WF_BASE_QUERYKEY];
+            WF_BASE_QUERYKEY,
+        ],
+        [workflowSlug],
+    ) as string[];
+
+export const useSaveNode = (
+    workflowSlug?: string,
+): UseMutationResult<any, any> => {
+    const invalidateQueryKey = useNodeInvalidationQueryKey(workflowSlug);
     return useSnackMutation({
         mutationFn: saveNode,
         invalidateQueryKey: invalidateQueryKey,
@@ -62,16 +54,13 @@ const saveSteps =
     ({ steps, reorder }: SaveStepsArgs): Promise<unknown> => {
         if (reorder) {
             return putRequest(
-                `${API_URL}${workflowSlug}/node-templates/bulk/`,
+                `${getNodeTemplatesUrl(workflowSlug)}bulk/`,
                 steps,
             );
         }
         return Promise.all(
             steps.map(({ slug, ...body }) =>
-                putRequest(
-                    `${API_URL}${workflowSlug}/node-templates/${slug}/`,
-                    body,
-                ),
+                putRequest(getNodeTemplatesUrl(workflowSlug, slug), body),
             ),
         );
     };

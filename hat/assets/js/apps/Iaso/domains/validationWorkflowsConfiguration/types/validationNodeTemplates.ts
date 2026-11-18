@@ -1,16 +1,3 @@
-import { PaginatedResponse } from 'Iaso/domains/validationWorkflowsConfiguration/types/common';
-
-export type ValidationNodeTemplateListResponseItem = {
-    slug: string;
-    name: string;
-    description?: string;
-    role_required?: Array<{ name: string; id: number }>;
-    can_skip_previous_nodes: boolean;
-};
-
-export type ValidationNodeTemplateListResponse =
-    PaginatedResponse<ValidationNodeTemplateListResponseItem>;
-
 export type ValidationNodeTemplateCreateBody = {
     name: string;
     description?: string;
@@ -25,12 +12,4 @@ export type ValidationNodeTemplateUpdateBody = {
     description?: string;
     roles_required?: number[];
     can_skip_previous_nodes?: boolean;
-};
-
-export type ValidationNodeTemplateRetrieveResponse = {
-    slug: string;
-    name: string;
-    description?: string;
-    roles_required?: Array<{ name: string; id: number }>;
-    can_skip_previous_nodes: true;
 };

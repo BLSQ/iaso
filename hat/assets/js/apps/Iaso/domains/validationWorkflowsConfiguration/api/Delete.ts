@@ -1,12 +1,8 @@
-import React from 'react';
 import { UseMutationResult } from 'react-query';
-import {
-    getApiValidationWorkflowsListQueryKey,
-    getApiValidationWorkflowsRetrieveQueryKey,
-} from 'Iaso/api/validationWorkflows';
 import { deleteRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { API_URL, WF_BASE_QUERYKEY } from '../constants';
+import { getNodeTemplatesUrl } from '../constants';
+import { useNodeInvalidationQueryKey } from './PostPutPatch';
 
 const deleteNode = ({
     workflowSlug,
@@ -14,22 +10,14 @@ const deleteNode = ({
 }: {
     workflowSlug: string;
     nodeSlug: string;
-}) => deleteRequest(`${API_URL}${workflowSlug}/node-templates/${nodeSlug}/`);
+}) => deleteRequest(getNodeTemplatesUrl(workflowSlug, nodeSlug));
 
 export const useDeleteNode = (
     workflowSlug?: string,
 ): UseMutationResult<any, any> => {
-    const queryKey = React.useMemo(() => {
-        return [
-            ...getApiValidationWorkflowsListQueryKey(),
-            ...(workflowSlug
-                ? getApiValidationWorkflowsRetrieveQueryKey(workflowSlug)
-                : []),
-        ] as string[];
-    }, [workflowSlug]);
-
+    const invalidateQueryKey = useNodeInvalidationQueryKey(workflowSlug);
     return useSnackMutation({
         mutationFn: deleteNode,
-        invalidateQueryKey: [...queryKey, WF_BASE_QUERYKEY],
+        invalidateQueryKey,
     });
 };

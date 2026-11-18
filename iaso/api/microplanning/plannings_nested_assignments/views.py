@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.postgres.expressions import ArraySubquery
+from django.db import transaction
 from django.db.models import Count, F, IntegerField, OuterRef, Prefetch, Q, Subquery, Value
 from django.db.models.aggregates import Max
 from django.db.models.functions import Coalesce
@@ -12,24 +13,30 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.pagination import BasePagination
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from iaso.api.common import HasPermission
+from hat.audit.models import Modification
 from iaso.api.common.views import NestedParentLookupMixin
+from iaso.api.microplanning.assignments.serializers.audit import AuditAssignmentSerializer
 from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.api.microplanning.plannings_nested_assignments.filters import OrgUnitFilterSet, TeamFilterSet
 from iaso.api.microplanning.plannings_nested_assignments.pagination import PlanningNestedAssignmentPagination
+from iaso.api.microplanning.plannings_nested_assignments.permissions import HasPlanningPermission
+from iaso.api.microplanning.plannings_nested_assignments.serializers.bulk import (
+    BULK_BATCH_SIZE,
+    AssignmentChange,
+    AssignOrgUnitsSerializer,
+    UnassignOrgUnitsSerializer,
+)
 from iaso.api.microplanning.plannings_nested_assignments.serializers.org_units import AssignmentOrgUnitSerializer
 from iaso.api.microplanning.plannings_nested_assignments.serializers.teams import AssignmentTeamSerializer
 from iaso.models import Assignment, OrgUnit, Planning, PlanningConfig, Team
 from iaso.models.microplanning.assignments import AssignmentQuerySet
 from iaso.models.microplanning.plannings import PlanningQuerySet
 from iaso.models.team import TeamQuerySet
-from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION
 
 
 if TYPE_CHECKING:
@@ -39,7 +46,7 @@ if TYPE_CHECKING:
 
 @extend_schema(tags=["Assignments"])
 class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
-    permission_classes = [IsAuthenticated, HasPermission(CORE_PLANNING_READ_PERMISSION)]
+    permission_classes = [HasPlanningPermission]
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     ordering = ["id"]
 
@@ -55,11 +62,23 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             return ["id", "assigned", "total", "team_depth"]
         return None
 
+    def get_serializer_context(self) -> dict[str, Any]:
+        return {**super().get_serializer_context(), "planning": self.get_parent_instance()}
+
+    def get_parent_instance(self) -> Planning:
+        if not hasattr(self, "_planning"):
+            self._planning = super().get_parent_instance()
+        return self._planning
+
     def get_serializer_class(self):
         if self.action == "org_units":
             return AssignmentOrgUnitSerializer
         if self.action == "teams":
             return AssignmentTeamSerializer
+        if self.action == "assign":
+            return AssignOrgUnitsSerializer
+        if self.action == "unassign":
+            return UnassignOrgUnitsSerializer
         raise NotImplementedError(f"Serializer not implemented for action {self.action}")
 
     @property
@@ -100,6 +119,8 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
                     "id", "org_unit", "org_unit__id", "org_unit__path", "team", "team__id", "team__path", "team__parent"
                 )
             )
+        if self.action in ["assign", "unassign"]:
+            return qs.select_related("org_unit")
         return qs
 
     def get_queryset(self) -> AssignmentQuerySet | TeamQuerySet:
@@ -113,6 +134,9 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             return parent.assignment_set.filter(deleted_at__isnull=True).only(
                 "org_unit_id", "planning_id", "id", "user_id", "team_id"
             )
+
+        if self.action in ["assign", "unassign"]:
+            return parent.assignment_set.filter(deleted_at__isnull=True)
 
         if self.action == "teams":
             configs = parent.configs.all()
@@ -229,3 +253,48 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(
+        request=AssignOrgUnitsSerializer,
+        responses={200: AssignOrgUnitsSerializer},
+        description=(
+            "Assigns org units to a direct member of the team owning their parent. "
+            "Reassigned org units lose the assignments made below them."
+        ),
+    )
+    @action(detail=False, methods=["POST"])
+    def assign(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return self._change_assignments(request)
+
+    @extend_schema(
+        request=UnassignOrgUnitsSerializer,
+        responses={200: UnassignOrgUnitsSerializer},
+        description="Removes the assignments of org units and the assignments made below them.",
+    )
+    @action(detail=False, methods=["POST"])
+    def unassign(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        return self._change_assignments(request)
+
+    def _change_assignments(self, request: Request) -> Response:
+        serializer = self.get_serializer(self.get_queryset(), data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            serializer.save()
+            self._audit(request, serializer.changes)
+        return Response(serializer.data)
+
+    @staticmethod
+    def _audit(request: Request, changes: list[AssignmentChange]) -> None:
+        Modification.objects.bulk_create(
+            (
+                Modification(
+                    user=request.user,
+                    past_value=change.past_value,
+                    new_value=[AuditAssignmentSerializer(change.assignment).data],
+                    content_object=change.assignment,
+                    source=f"API {request.method} {request.path}",
+                )
+                for change in changes
+            ),
+            batch_size=BULK_BATCH_SIZE,
+        )

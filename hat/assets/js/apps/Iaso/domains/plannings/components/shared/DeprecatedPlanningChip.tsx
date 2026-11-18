@@ -16,7 +16,12 @@ export const DeprecatedPlanningChip: FC = () => {
     const { formatMessage } = useSafeIntl();
     return (
         <Tooltip
-            title={`${formatMessage(MESSAGES.readOnlyPlanning)} ${formatMessage(MESSAGES.deprecatedPlanningInfos)}`}
+            title={
+                <>
+                    <div>{formatMessage(MESSAGES.readOnlyPlanning)}</div>
+                    <div>{formatMessage(MESSAGES.deprecatedPlanningInfos)}</div>
+                </>
+            }
         >
             <Box component="span" sx={styles.chipWrapper}>
                 <PlanningStatusChip status="deprecated" />

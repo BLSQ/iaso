@@ -566,6 +566,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'view',
             'onlyUnassigned',
             'focusOrgUnitId',
+            'assignee',
         ],
     },
     teams: {

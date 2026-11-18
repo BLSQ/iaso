@@ -142,6 +142,9 @@ NEW_GUIDE_LINES_FORMS = [
 
 ACCOUNT_WITH_GUIDELINE = "South Sudan"
 
+# Mapping of raw WHZ color values from forms to their standard full-word form
+WHZ_COLOR_MAP = {"Y": "Yellow", "R": "Red", "G": "Green", "green": "Green", "yellow": "Yellow", "red": "Red"}
+
 # ---------------------------------------------------------------------------
 # Field extraction helpers
 # ---------------------------------------------------------------------------
@@ -427,8 +430,8 @@ def extract_visit_entry_point(submission):
 
 def extract_whz_color(data):
     """Extract WHZ color from form data and normalize to full word."""
-    raw = _first_of(data, "_Xwhz_color", "_Xfinal_color_result")
-    return {"Y": "Yellow", "R": "Red", "G": "Green"}.get(raw, raw)
+    raw = _first_of(data, "_Xwhz_color", "_Xfinal_color_result", "_status")
+    return WHZ_COLOR_MAP.get(raw, raw)
 
 
 def is_oedema_visit(data):
@@ -502,7 +505,7 @@ def extract_pbwg_physiology(data):
     is_pregnant = normalize(data.get("is_pregnant"))
     pregnant = normalize(data.get("pregnant"))
     lactating = normalize(data.get("luctating") or data.get("lactating"))
-    physiology = normalize(data.get("physiology_status") or data.get("woman_status"))
+    physiology = normalize(data.get("physiology_status") or data.get("woman_status") or data.get("status_of_woman"))
 
     if "yes" in (is_pregnant, pregnant) or physiology == "pregnant":
         return "pregnant"

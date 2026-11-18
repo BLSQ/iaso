@@ -74,11 +74,11 @@ export type BeneficiaryOptions = {
     org_unit_groups: DropdownOptions<number>[];
 };
 
+export type ExportKind = 'coda' | 'raw' | 'eligible';
+
 export type FacilityOptions = {
     facilities: DropdownOptions<number>[];
 };
-
-export type ExportKind = 'coda' | 'raw';
 
 // A field of a submission: its path in the JSON (e.g. "household/size") and its value
 export type SubmissionRow = {

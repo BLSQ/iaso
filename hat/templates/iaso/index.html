@@ -9,7 +9,15 @@
 {% endblock %} {% block body %}
 <section>
     {% block content %}
-    <div id="app"></div>
+    <div id="app" class="iaso-app-boot" aria-busy="true" aria-live="polite"></div>
+    <style>
+      /* Canvas (#edf1f4) until React mounts; avoids a white flash while Vite loads on cold start */
+      .iaso-app-boot:empty {
+        display: block;
+        min-height: 100vh;
+        background: {{ THEME_PRIMARY_BACKGROUND_COLOR|default:"#edf1f4" }};
+      }
+    </style>
         <script type="module">
         window.STATIC_URL = "{{ STATIC_URL }}";
         window.IASO_VERSION = "{{ VERSION }}";

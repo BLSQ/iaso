@@ -212,6 +212,20 @@ const djangoBuildStats = (statsFile: string): Plugin => ({
     },
 });
 
+/** Pre-transform entries on server start (Vite runs optimizeDeps automatically during warmup). */
+const devWarmupPlugin = (): Plugin => ({
+    name: 'iaso-dev-warmup',
+    apply: 'serve',
+    configureServer(server) {
+        server.httpServer?.once('listening', () => {
+            void Promise.all([
+                server.warmupRequest(`/${rollupInputs.common}`),
+                server.warmupRequest(`/${rollupInputs.iaso}`),
+            ]);
+        });
+    },
+});
+
 const djangoDevStats = (): Plugin => ({
     name: 'django-bundle-stats-dev',
     apply: 'serve',
@@ -324,6 +338,7 @@ export default defineConfig(({ mode, command }) => {
             }),
             // IasoModules/* imports resolve via aliases (same as vitest).
             djangoDevStats(),
+            devWarmupPlugin(),
             djangoBuildStats(statsFile),
         ],
         resolve: {
@@ -377,16 +392,32 @@ export default defineConfig(({ mode, command }) => {
         optimizeDeps: {
             // Do not crawl repo-wide *.html (Django templates, docs, emails, …).
             entries: Object.values(entryPoints),
-            // dist/ is CJS (require); pre-bundle for dev. LIVE_COMPONENTS uses src alias.
-            ...(liveComponents
-                ? { exclude: ['bluesquare-components'] }
-                : { include: ['bluesquare-components'] }),
+            holdUntilCrawlEnd: true,
+            include: [
+                'react',
+                'react-dom',
+                'react-intl',
+                '@mui/material',
+                '@mui/lab',
+                '@mui/x-date-pickers',
+                'lodash',
+                'moment',
+                'leaflet',
+                'leaflet-draw',
+                'react-query',
+                'formik',
+                ...(liveComponents ? [] : ['bluesquare-components']),
+            ],
+            ...(liveComponents ? { exclude: ['bluesquare-components'] } : {}),
         },
         server: {
             host: '0.0.0.0',
             port: devPort,
             strictPort: true,
             origin: devOrigin,
+            warmup: {
+                clientFiles: [rollupInputs.common, rollupInputs.iaso],
+            },
             cors: true,
             headers: {
                 'Access-Control-Allow-Origin': '*',

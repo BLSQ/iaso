@@ -266,6 +266,31 @@ const generateLanguageConfigs = rootDir => {
     Object.assign(configs, result.configs);
     imports.push(...result.imports);
 
+    const zodRequiredFieldMessageKey = 'iaso.forms.error.fieldRequired';
+    const readRequiredFieldMessage = lang => {
+        const translationPath = path.resolve(
+            rootDir,
+            `./assets/js/apps/Iaso/domains/app/translations/${lang}.json`,
+        );
+        if (!fs.existsSync(translationPath)) {
+            return null;
+        }
+        const translations = JSON.parse(
+            fs.readFileSync(translationPath, 'utf-8'),
+        );
+        return translations[zodRequiredFieldMessageKey] ?? null;
+    };
+
+    const defaultRequiredFieldMessage =
+        readRequiredFieldMessage('en') ?? 'This field is required';
+    const zodLocalesDir = path.resolve(
+        rootDir,
+        '../node_modules/zod/v4/locales',
+    );
+    const zodLocaleLanguages = Object.keys(configs).filter(lang =>
+        fs.existsSync(path.join(zodLocalesDir, `${lang}.js`)),
+    );
+
     // Create the file content
     const fileContent = `
 // This file is auto-generated. Do not edit directly.
@@ -302,6 +327,36 @@ export const LANGUAGE_CONFIGS = {
             }`;
         })
         .join(',\n    ')}
+};
+
+/** Lazy moment locale packs for languages exposed in the app (see AVAILABLE_LANGUAGES). */
+export const MOMENT_LOCALE_LOADERS = {
+    ${Object.keys(configs)
+        .filter(lang => lang !== 'en')
+        .map(lang => `${lang}: () => import('moment/locale/${lang}'),`)
+        .join('\n    ')}
+};
+
+/** Lazy zod v4 locale packs when a matching file exists in the zod package. */
+export const ZOD_LOCALE_LOADERS = {
+    ${zodLocaleLanguages
+        .map(
+            lang =>
+                `${lang}: () => import('zod/v4/locales/${lang}.js'),`,
+        )
+        .join('\n    ')}
+};
+
+/** Required-field copy for zod customError (iaso.forms.error.fieldRequired). */
+export const ZOD_REQUIRED_FIELD_MESSAGES = {
+    ${Object.keys(configs)
+        .map(lang => {
+            const message =
+                readRequiredFieldMessage(lang) ??
+                defaultRequiredFieldMessage;
+            return `${lang}: ${JSON.stringify(message)},`;
+        })
+        .join('\n    ')}
 };
 
 export default LANGUAGE_CONFIGS;

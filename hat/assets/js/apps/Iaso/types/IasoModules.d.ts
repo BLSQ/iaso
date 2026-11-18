@@ -31,5 +31,17 @@ declare module 'IasoModules/language/configs' {
     }
 
     const LANGUAGE_CONFIGS: { [key: string]: LanguageConfig };
-    export { LANGUAGE_CONFIGS };
+    const MOMENT_LOCALE_LOADERS: {
+        [key: string]: () => Promise<unknown>;
+    };
+    const ZOD_LOCALE_LOADERS: {
+        [key: string]: () => Promise<unknown>;
+    };
+    const ZOD_REQUIRED_FIELD_MESSAGES: { [key: string]: string };
+    export {
+        LANGUAGE_CONFIGS,
+        MOMENT_LOCALE_LOADERS,
+        ZOD_LOCALE_LOADERS,
+        ZOD_REQUIRED_FIELD_MESSAGES,
+    };
 }

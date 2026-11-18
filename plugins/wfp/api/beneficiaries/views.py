@@ -74,11 +74,9 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     pagination_class = BeneficiaryPaginator
     filter_backends = [DjangoFilterBackend]
     filterset_class = BeneficiaryFilter
-<<<<<<< HEAD
     # The visit scope is computed by `BeneficiaryFilter` and handed to the view when the beneficiaries are filtered.
     _visit_scope = _UNSET
-=======
->>>>>>> 562d2fad3c (Remove manually filter and use django filter instead)
+
 
     def _period(self, serializer_class=VisitPeriodSerializer):
         """The validated visit period of the request (`start_date` and `end_date`), a 400 if a date is invalid.
@@ -96,7 +94,6 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             .annotate(progress_id=KeyTextTransform("progress_id", "entity__attributes__json"))
         )
 
-<<<<<<< HEAD
     def set_visit_scope(self, org_units):
         """Called by `BeneficiaryFilter` when filtering, with the org units of the scope"""
         self._visit_scope = org_units
@@ -109,20 +106,10 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             raise RuntimeError("The visit scope is set by BeneficiaryFilter: call `filter_queryset` first")
         return self._visit_scope
 
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         org_units = self.get_visit_scope()
-=======
-    def _filtered(self):
-        """The beneficiaries matching the filters, and the org units their visits are restricted to (None for all)."""
-        filterset = DjangoFilterBackend().get_filterset(self.request, self.get_queryset(), self)
-        if not filterset.is_valid():
-            raise translate_validation(filterset.errors)
-        return filterset.qs, filterset.org_units
-
-    def list(self, request, *args, **kwargs):
-        queryset, org_units = self._filtered()
->>>>>>> 562d2fad3c (Remove manually filter and use django filter instead)
         queryset = with_counts(queryset, org_units).order_by(
             *ordering_from_param(request.query_params.get("order", ""))
         )
@@ -196,19 +183,19 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             request.user, KIND_ELIGIBLE, beneficiaries, self.get_visit_scope(), **serializer.validated_data
         )
 
-    @action(detail=False, methods=["get"], url_path="export/eligible")
+    @action(detail=False, methods=["get"], url_path="export/eligible", serializer_class=EligibleExportParamsSerializer)
     def export_eligible(self, request):
         """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
 
         One sheet per programme. The entity type must be selected, as the columns depend on it. The period is given by
         `start_date` and `end_date` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
         """
-        filters = filters_from_params(request.query_params)
-        if not filters.get("entity_type", "").isdigit():
-            raise serializers.ValidationError({"entity_type": "An entity type must be selected"})
-        period = EligibleExportParamsSerializer(data=request.query_params)
-        period.is_valid(raise_exception=True)
-        return export_response(request.user, KIND_ELIGIBLE, beneficiaries, org_units, **period.validated_data)
+        beneficiaries = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        return export_response(
+            request.user, KIND_ELIGIBLE, beneficiaries, self.get_visit_scope(), **serializer.validated_data
+        )
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
     def data(self, request, entity_id):

@@ -2,7 +2,7 @@
 
 from django.db.models import Count, Max, Prefetch, Q
 
-from iaso.models import OrgUnit
+from iaso.models import Group, OrgUnit
 
 from ..models import Beneficiary, Journey, Visit
 
@@ -12,6 +12,37 @@ def restricted_org_units(user):
     if user.is_superuser or not user.iaso_profile.org_units.exists():
         return None
     return OrgUnit.objects.filter_for_user(user)
+
+
+def partner_org_units(user, group_id):
+    """Org units of a cooperation partner (an org unit group the user can see)."""
+    return OrgUnit.objects.filter(groups__in=Group.objects.filter_for_user(user).filter(id=group_id))
+
+
+def visit_scope(user, group_id=None, facility_id=None):
+    """Org units whose visits are shown and exported, None for all of them.
+
+    The cooperation partner (`group_id`) and the facility, intersected with each other and with the org units of the
+    user when they are restricted. The ids must already be validated.
+    """
+    org_units = restricted_org_units(user)
+
+    if group_id:
+        in_group = partner_org_units(user, group_id)
+        org_units = in_group if org_units is None else in_group.filter(id__in=org_units.values("id"))
+
+    if facility_id:
+        facility = OrgUnit.objects.filter_for_user(user).filter(id=facility_id)
+        org_units = facility if org_units is None else facility.filter(id__in=org_units.values("id"))
+    return org_units
+
+
+def visits_in(org_units=None):
+    """Visits made in `org_units`, all of them for None."""
+    visits = Visit.objects.all()
+    if org_units is not None:
+        visits = visits.filter(org_unit_id__in=org_units.values("id"))
+    return visits
 
 
 def with_counts(beneficiaries, org_units=None):

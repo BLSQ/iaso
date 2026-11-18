@@ -23,6 +23,9 @@ from plugins.wfp.utils.details import beneficiary_details, submission_details
 from plugins.wfp.utils.exports import KIND_CODA, KIND_ELIGIBLE, KIND_RAW, export_response
 
 
+_UNSET = object()
+
+
 class HasProfile(permissions.BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, "iaso_profile")
@@ -68,6 +71,8 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     pagination_class = BeneficiaryPaginator
     filter_backends = [DjangoFilterBackend]
     filterset_class = BeneficiaryFilter
+    # The visit scope is computed by `BeneficiaryFilter` and handed to the view when the beneficiaries are filtered.
+    _visit_scope = _UNSET
 
     def get_queryset(self):
         return (
@@ -76,15 +81,21 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             .annotate(progress_id=KeyTextTransform("progress_id", "entity__attributes__json"))
         )
 
-    def _filtered(self):
-        """The beneficiaries matching the filters, and the org units their visits are restricted to (None for all)."""
-        filterset = DjangoFilterBackend().get_filterset(self.request, self.get_queryset(), self)
-        if not filterset.is_valid():
-            raise translate_validation(filterset.errors)
-        return filterset.qs, filterset.org_units
+    def set_visit_scope(self, org_units):
+        """Called by `BeneficiaryFilter` when filtering, with the org units of the scope"""
+        self._visit_scope = org_units
+
+    def get_visit_scope(self):
+        """
+        Only available once the beneficiaries are filtered (`self.filter_queryset`), which sets it.
+        """
+        if self._visit_scope is _UNSET:
+            raise RuntimeError("The visit scope is set by BeneficiaryFilter: call `filter_queryset` first")
+        return self._visit_scope
 
     def list(self, request, *args, **kwargs):
-        queryset, org_units = self._filtered()
+        queryset = self.filter_queryset(self.get_queryset())
+        org_units = self.get_visit_scope()
         queryset = with_counts(queryset, org_units).order_by(
             *ordering_from_param(request.query_params.get("order", ""))
         )
@@ -134,14 +145,16 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=["get"], url_path="export/coda")
     def export_coda(self, request):
         """The selection in the "CODA 2.0 Full data fields" format."""
-        return export_response(request.user, KIND_CODA, *self._filtered())
+        beneficiaries = self.filter_queryset(self.get_queryset())
+        return export_response(request.user, KIND_CODA, beneficiaries, self.get_visit_scope())
 
     @action(detail=False, methods=["get"], url_path="export/raw")
     def export_raw(self, request):
         """The ETL tables and the submissions of the selection, one sheet per form."""
-        return export_response(request.user, KIND_RAW, *self._filtered())
+        beneficiaries = self.filter_queryset(self.get_queryset())
+        return export_response(request.user, KIND_RAW, beneficiaries, self.get_visit_scope())
 
-    @action(detail=False, methods=["get"], url_path="export/eligible")
+    @action(detail=False, methods=["get"], url_path="export/eligible", serializer_class=EligibleExportParamsSerializer)
     def export_eligible(self, request):
         """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
 
@@ -149,10 +162,12 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         women are both exported, in separate sheets as their columns differ. The period is given by `start_date` and
         `end_date` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
         """
-        beneficiaries, org_units = self._filtered()
-        period = EligibleExportParamsSerializer(data=request.query_params)
-        period.is_valid(raise_exception=True)
-        return export_response(request.user, KIND_ELIGIBLE, beneficiaries, org_units, **period.validated_data)
+        beneficiaries = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        return export_response(
+            request.user, KIND_ELIGIBLE, beneficiaries, self.get_visit_scope(), **serializer.validated_data
+        )
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
     def data(self, request, entity_id):

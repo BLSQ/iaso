@@ -94,10 +94,9 @@ type Props = {
     roleOptions: DropdownOptions<number>[];
     isLoadingRoles: boolean;
     error?: string;
-    // The chain can't change once submissions went through it.
     isLocked: boolean;
-    // Deleting refetches the steps, which would drop unsaved edits.
     isDeleteDisabled: boolean;
+    readOnly: boolean;
     onChange: (slug: string, changes: Partial<StepDraft>) => void;
     onDelete: (slug: string) => void;
 };
@@ -110,6 +109,7 @@ export const StepRow: FC<Props> = ({
     error,
     isLocked,
     isDeleteDisabled,
+    readOnly,
     onChange,
     onDelete,
 }) => {
@@ -152,6 +152,7 @@ export const StepRow: FC<Props> = ({
                             keyValue={`name_${step.slug}`}
                             type="text"
                             withMarginTop={false}
+                            disabled={readOnly}
                             labelString={formatMessage(MESSAGES.stepName)}
                             value={step.name}
                             onChange={(_keyValue, value) =>
@@ -168,6 +169,7 @@ export const StepRow: FC<Props> = ({
                             multi
                             clearable
                             withMarginTop={false}
+                            disabled={readOnly}
                             value={step.roleIds}
                             options={roleOptions}
                             loading={isLoadingRoles}
@@ -186,6 +188,7 @@ export const StepRow: FC<Props> = ({
                             keyValue={`description_${step.slug}`}
                             type="text"
                             withMarginTop={false}
+                            disabled={readOnly}
                             labelString={formatMessage(MESSAGES.description)}
                             value={step.description ?? ''}
                             onChange={(_keyValue, value) =>
@@ -203,6 +206,7 @@ export const StepRow: FC<Props> = ({
                             keyValue={`can_skip_previous_nodes_${step.slug}`}
                             type="checkbox"
                             withMarginTop={false}
+                            disabled={readOnly}
                             labelString={formatMessage(
                                 MESSAGES.canSkipPreviousNodes,
                             )}

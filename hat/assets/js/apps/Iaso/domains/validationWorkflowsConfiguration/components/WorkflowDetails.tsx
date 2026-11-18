@@ -50,6 +50,7 @@ type Props = {
     details: WorkflowDetailsDraft;
     nameError?: string;
     isLoading: boolean;
+    readOnly: boolean;
     onChange: (changes: Partial<WorkflowDetailsDraft>) => void;
 };
 
@@ -58,6 +59,7 @@ export const WorkflowDetails: FC<Props> = ({
     details,
     nameError,
     isLoading,
+    readOnly,
     onChange,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -95,6 +97,7 @@ export const WorkflowDetails: FC<Props> = ({
                             keyValue="name"
                             type="text"
                             withMarginTop={false}
+                            disabled={readOnly}
                             labelString={formatMessage(MESSAGES.workflowName)}
                             value={details.name}
                             onChange={(_keyValue, value) =>
@@ -111,6 +114,7 @@ export const WorkflowDetails: FC<Props> = ({
                             multi
                             clearable
                             withMarginTop={false}
+                            disabled={readOnly}
                             labelString={formatMessage(MESSAGES.forms)}
                             value={details.formIds}
                             options={formOptions ?? []}
@@ -128,6 +132,7 @@ export const WorkflowDetails: FC<Props> = ({
                     keyValue="description"
                     type="text"
                     withMarginTop={false}
+                    disabled={readOnly}
                     labelString={formatMessage(MESSAGES.description)}
                     value={details.description}
                     onChange={(_keyValue, value) =>

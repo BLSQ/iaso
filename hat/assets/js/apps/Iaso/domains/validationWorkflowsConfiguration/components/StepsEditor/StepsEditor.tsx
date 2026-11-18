@@ -63,6 +63,7 @@ type Props = {
     editor: StepsEditorState;
     errors: StepErrors;
     hasUnsavedChanges: boolean;
+    readOnly: boolean;
     footer: ReactNode;
 };
 
@@ -72,11 +73,13 @@ export const StepsEditor: FC<Props> = ({
     editor,
     errors,
     hasUnsavedChanges,
+    readOnly,
     footer,
 }) => {
     const { formatMessage } = useSafeIntl();
     const workflowSlug = workflow?.slug ?? '';
-    const isLocked = Boolean(workflow?.has_processes);
+    // No adding, deleting or reordering: the chain is used by submissions, or the user can't edit
+    const isLocked = Boolean(workflow?.has_processes) || readOnly;
     const { steps, updateStep, moveStep } = editor;
 
     const { data: roleOptions, isFetching: isLoadingRoles } =
@@ -166,6 +169,7 @@ export const StepsEditor: FC<Props> = ({
                                 isLoadingRoles={isLoadingRoles}
                                 error={errors[step.slug]}
                                 isLocked={isLocked}
+                                readOnly={readOnly}
                                 isDeleteDisabled={hasUnsavedChanges}
                                 onChange={updateStep}
                                 onDelete={handleDelete}
@@ -174,8 +178,12 @@ export const StepsEditor: FC<Props> = ({
                     </SortableContext>
                 </DndContext>
             </Box>
-            <Divider />
-            {footer}
+            {footer && (
+                <>
+                    <Divider />
+                    {footer}
+                </>
+            )}
         </Paper>
     );
 };

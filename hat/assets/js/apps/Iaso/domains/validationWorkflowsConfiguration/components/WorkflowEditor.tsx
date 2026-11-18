@@ -7,8 +7,11 @@ import {
     ValidationWorkflowRetrieve,
 } from 'Iaso/api/validationWorkflows';
 import { baseUrls } from 'Iaso/constants/urls';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from 'Iaso/types/general';
+import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useSaveSteps } from '../api/PostPutPatch';
 import {
     getStepErrors,
@@ -44,6 +47,12 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
     );
     const redirectToReplace = useRedirectToReplace();
     const workflowSlug = workflow?.slug ?? '';
+    const currentUser = useCurrentUser();
+    // Without the permission the page is read only: no field, step or save action
+    const canEdit = userHasOneOfPermissions(
+        [VALIDATION_WORKFLOWS],
+        currentUser,
+    );
 
     const detailsForm = useWorkflowDetailsForm(workflow);
     const stepsEditor = useStepsEditor(workflow?.node_templates ?? NO_NODES);
@@ -130,6 +139,7 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
                 details={detailsForm.details}
                 nameError={nameError}
                 isLoading={isLoading}
+                readOnly={!canEdit}
                 onChange={detailsForm.updateDetails}
             />
             <StepsEditor
@@ -138,24 +148,27 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
                 editor={stepsEditor}
                 errors={stepErrors}
                 hasUnsavedChanges={isDirty}
+                readOnly={!canEdit}
                 footer={
-                    <Box sx={styles.footer}>
-                        <Button
-                            onClick={handleCancel}
-                            disabled={!isDirty || isSaving}
-                            data-test="cancel-workflow"
-                        >
-                            {formatMessage(MESSAGES.cancel)}
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={handleSave}
-                            disabled={!isDirty || hasErrors || isSaving}
-                            data-test="save-workflow"
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-                    </Box>
+                    canEdit && (
+                        <Box sx={styles.footer}>
+                            <Button
+                                onClick={handleCancel}
+                                disabled={!isDirty || isSaving}
+                                data-test="cancel-workflow"
+                            >
+                                {formatMessage(MESSAGES.cancel)}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                onClick={handleSave}
+                                disabled={!isDirty || hasErrors || isSaving}
+                                data-test="save-workflow"
+                            >
+                                {formatMessage(MESSAGES.save)}
+                            </Button>
+                        </Box>
+                    )
                 }
             />
         </>

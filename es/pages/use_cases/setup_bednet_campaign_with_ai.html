@@ -17,7 +17,7 @@
     
     
       
-        <title>Configurar una campaña de distribución de mosquiteros con IA - IASO</title>
+        <title>Configurar una campaña de distribución de MTI con IA - IASO</title>
       
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configurar-una-campana-de-distribucion-de-mosquiteros-con-ia" class="md-skip">
+        <a href="#configurar-una-campana-de-distribucion-de-mti-con-ia" class="md-skip">
           Saltar a contenido
         </a>
       
@@ -125,7 +125,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configurar una campaña de distribución de mosquiteros con IA
+              Configurar una campaña de distribución de MTI con IA
             
           </span>
         </div>
@@ -822,7 +822,7 @@
           
   
   <span class="md-ellipsis">
-    Configurar una campaña de distribución de mosquiteros con IA
+    Configurar una campaña de distribución de MTI con IA
   </span>
   
 
@@ -833,7 +833,7 @@
         
   
   <span class="md-ellipsis">
-    Configurar una campaña de distribución de mosquiteros con IA
+    Configurar una campaña de distribución de MTI con IA
   </span>
   
 
@@ -853,13 +853,6 @@
       Tabla de contenidos
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-      
-        <li class="md-nav__item">
-  <a href="#lo-que-obtiene-al-final" class="md-nav__link">
-    Lo que obtiene al final
-  </a>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#antes-de-empezar" class="md-nav__link">
@@ -1519,70 +1512,14 @@
   
 
 
-<h1 id="configurar-una-campana-de-distribucion-de-mosquiteros-con-ia">Configurar una campaña de distribución de mosquiteros con IA<a class="headerlink" href="#configurar-una-campana-de-distribucion-de-mosquiteros-con-ia" title="Permanent link">#</a></h1>
+<h1 id="configurar-una-campana-de-distribucion-de-mti-con-ia">Configurar una campaña de distribución de MTI con IA<a class="headerlink" href="#configurar-una-campana-de-distribucion-de-mti-con-ia" title="Permanent link">#</a></h1>
 <p><em>Configure IASO para una distribución masiva de mosquiteros tratados con insecticida (MTI) con la ayuda de un asistente de IA.</em></p>
 <p>Esta guía está dirigida a coordinadores de campaña y responsables informáticos que quieren
-usar IASO para planificar y supervisar una campaña de mosquiteros. No hace falta ser
+usar IASO para planificar y supervisar una campaña de MTI. No hace falta ser
 desarrollador: un asistente de IA (Claude, ChatGPT…) hace el trabajo técnico, le hace
 preguntas sobre su campaña y espera su aprobación antes de cambiar nada en IASO. Hace que la
 configuración de la campaña sea más rápida, sobre todo si la mayoría de las decisiones de la
 campaña ya están tomadas.</p>
-<p>La guía tiene dos partes:</p>
-<ol>
-<li><strong><a href="#parte-1-preparar-su-cuenta-iaso">Preparar su cuenta IASO</a></strong>: crear o abrir su cuenta
-   y elegir el usuario para la configuración.</li>
-<li><strong><a href="#parte-2-configurar-la-campana-con-el-kit-de-campana">Configurar la campaña</a></strong>: dar el
-   kit de campaña IASO a su asistente de IA y dejar que importe sus datos geográficos y
-   construya las herramientas de la campaña.</li>
-</ol>
-<h2 id="lo-que-obtiene-al-final">Lo que obtiene al final<a class="headerlink" href="#lo-que-obtiene-al-final" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th>Herramienta</th>
-<th>Para</th>
-<th>Qué hace</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Proyectos móviles</strong> (hasta seis)</td>
-<td>agentes de empadronamiento, agentes de distribución, equipos de grupos especiales, jefes de equipo, gestores de stock, supervisores</td>
-<td>registrar los hogares con un ticket QR, distribuir los mosquiteros una sola vez por hogar, registrar a los trabajadores y su asistencia, seguir los movimientos de stock, rellenar las listas de supervisión</td>
-</tr>
-<tr>
-<td><strong>15 formularios listos para usar</strong></td>
-<td>todos los agentes</td>
-<td>en inglés y francés, adaptados a su regla de asignación</td>
-</tr>
-<tr>
-<td><strong>Registros</strong></td>
-<td>todos</td>
-<td>hogares, grupos especiales (prisiones, campamentos, internados…) y trabajadores, que los agentes vuelven a encontrar en el teléfono</td>
-</tr>
-<tr>
-<td><strong>Seguimiento del stock</strong></td>
-<td>gestores de stock</td>
-<td>saldo de mosquiteros de cada almacén, calculado a partir de recepciones, salidas, devoluciones, transferencias y pérdidas</td>
-</tr>
-<tr>
-<td><strong>Paneles web</strong></td>
-<td>equipo de coordinación</td>
-<td>avance de la campaña por región, distrito o establecimiento de salud, con un mapa de los hogares; asistencia y hoja de pago de los trabajadores; stock por zona</td>
-</tr>
-<tr>
-<td><strong>Informes móviles</strong></td>
-<td>jefes de equipo, gestores de stock</td>
-<td>avance, mapa de hogares, asistencia del equipo y stock, disponibles sin conexión en el teléfono</td>
-</tr>
-<tr>
-<td><strong>Códigos QR</strong></td>
-<td>formadores</td>
-<td>para instalar la aplicación IASO y configurarla para cada proyecto en segundos</td>
-</tr>
-</tbody>
-</table>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/projects.jpg" data-desc-position="bottom"><img alt="Los proyectos de la campaña en IASO" class="doc-shot" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/projects.jpg"></a></p>
 <h2 id="antes-de-empezar">Antes de empezar<a class="headerlink" href="#antes-de-empezar" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -1670,48 +1607,38 @@ lugar seguro: lo necesitará para volver al asistente y hacer cambios más adela
 </div>
 <h3 id="paso-4-dar-el-kit-a-su-asistente-de-ia">Paso 4: Dar el kit a su asistente de IA<a class="headerlink" href="#paso-4-dar-el-kit-a-su-asistente-de-ia" title="Permanent link">#</a></h3>
 <ol>
-<li>Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip, junto con su archivo
-   Excel o GeoPackage si tiene uno. (Con Claude Code, ábralo en la carpeta del kit.)</li>
-<li>Copie tal cual uno de estos mensajes, según el origen de sus datos geográficos.</li>
+<li>Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip.</li>
+<li>Elija el origen de sus datos geográficos y copie tal cual el mensaje correspondiente.</li>
 </ol>
-<p><strong>Una demostración, para probar el kit</strong> (la pirámide de demostración del kit y respuestas de
-ejemplo):</p>
+<p><strong>Opción A: Usar los datos geográficos de demostración</strong> (la pirámide de demostración del kit y respuestas de ejemplo). La mayoría de la gente empieza aquí: no hay nada que preparar, y verá el resultado antes de preparar sus propios datos. Copie este mensaje y vaya directamente al <a href="#paso-5-responder-a-las-preguntas-del-asistente">paso 5</a> para responder a las preguntas:</p>
 <blockquote>
-<p>Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+<p>Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 Descomprímelo si hace falta, lee <code>SKILL.md</code> y síguelo paso a paso para guiarme. Usa solo
 los scripts del kit, ningún conector IASO. Es una demostración: usa la pirámide de
 demostración del kit y propón respuestas de ejemplo para todo en un solo resumen (modo
 demo). Pide mi confirmación antes de cada paso que escriba en IASO, y no te detengas antes
 de la lista del § 12c.</p>
 </blockquote>
+<p>Si el asistente no consigue acceder a IASO, vea el consejo al final de este paso.</p>
+<p><strong>Opción B: Usar sus propios datos geográficos.</strong> Consulte la <a href="../users/reference/user_guide.html#lista-de-fuentes-de-datos">guía de usuario</a> para más detalles sobre cómo dar formato a su archivo GeoPackage o Excel, o cómo conectar su instancia de DHIS2. Para obtener la ayuda del kit con sus datos, use uno de estos mensajes:</p>
 <p><strong>Sus datos geográficos en un archivo Excel</strong> (adjunto a la conversación):</p>
 <blockquote>
-<p>Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+<p>Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 Descomprímelo si hace falta, lee <code>SKILL.md</code> y síguelo paso a paso para guiarme. Usa solo
 los scripts del kit, ningún conector IASO. Mis unidades organizativas están en el archivo
 Excel adjunto. Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación
 antes de cada paso que escriba en IASO, y no te detengas antes de la lista del § 12c.</p>
 </blockquote>
+<p>Con un archivo GeoPackage, use este mensaje escribiendo «GeoPackage» en lugar de «Excel».</p>
 <p><strong>Sus datos geográficos en DHIS2</strong> (ya configurado en la fuente de datos de IASO):</p>
 <blockquote>
-<p>Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+<p>Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 Descomprímelo si hace falta, lee <code>SKILL.md</code> y síguelo paso a paso para guiarme. Usa solo
 los scripts del kit, ningún conector IASO. Mis unidades organizativas vienen de nuestro
 DHIS2, ya configurado en la fuente de datos de IASO. Hazme las preguntas de la campaña una
 sección a la vez. Pide mi confirmación antes de cada paso que escriba en IASO, y no te
 detengas antes de la lista del § 12c.</p>
 </blockquote>
-<p><strong>Sus datos geográficos ya están en IASO</strong>:</p>
-<blockquote>
-<p>Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
-Descomprímelo si hace falta, lee <code>SKILL.md</code> y síguelo paso a paso para guiarme. Usa solo
-los scripts del kit, ningún conector IASO. Mis unidades organizativas ya están en IASO.
-Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación antes de cada
-paso que escriba en IASO, y no te detengas antes de la lista del § 12c.</p>
-</blockquote>
-<p>Si tiene dudas, empiece por la demostración: construye todo sobre lugares ficticios, y verá el
-resultado antes de preparar sus propios datos. Con un archivo GeoPackage, use el mensaje de
-Excel escribiendo «GeoPackage» en lugar de «Excel».</p>
 <p>El asistente trabaja en su propio espacio: pídale que le dé como descargas los archivos que
 produce (códigos QR, contraseñas de los usuarios, copia de seguridad).</p>
 <div class="admonition tip">
@@ -1736,8 +1663,14 @@ tiene permiso para acceder a esa dirección:</p>
 </div>
 <h3 id="paso-5-responder-a-las-preguntas-del-asistente">Paso 5: Responder a las preguntas del asistente<a class="headerlink" href="#paso-5-responder-a-las-preguntas-del-asistente" title="Permanent link">#</a></h3>
 <p>El asistente hace sus preguntas un tema a la vez (en una demostración, propone todas las
-respuestas de una vez, en un solo resumen para aprobar). Cuantas más decisiones haya tomado
-ya, más rápida será la configuración:</p>
+respuestas de una vez, en un solo resumen para aprobar).</p>
+<p>¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
+asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
+distritos, almacenes y agentes) que luego sustituirá por los suyos.</p>
+<p>Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
+datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
+móviles.</p>
+<p>Cuantas más decisiones haya tomado ya, más rápida será la configuración:</p>
 <table>
 <thead>
 <tr>
@@ -1784,12 +1717,6 @@ ya, más rápida será la configuración:</p>
 </tr>
 </tbody>
 </table>
-<p>¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
-asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
-distritos, almacenes y agentes) que luego sustituirá por los suyos.</p>
-<p>Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
-datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
-móviles.</p>
 <p>Puede instalar la aplicación IASO en cuanto el asistente muestre los códigos QR, pero el
 teléfono muestra poco hasta que existe el resto:</p>
 <table>
@@ -1845,9 +1772,6 @@ los dos tercios de la sesión.</p>
    stock.</li>
 <li>Abra los informes móviles, con red y luego en modo avión.</li>
 </ol>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-home.jpg" data-desc-position="bottom"><img alt="Inicio de un proyecto en el teléfono" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-home.jpg" width="220"></a>
-<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-report.jpg" data-desc-position="bottom"><img alt="El informe de avance en la aplicación" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/phone-report.jpg" width="220"></a>
-<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg" data-desc-position="bottom"><img alt="El mapa de hogares en el informe de avance" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg" width="220"></a></p>
 <div class="admonition note">
 <p class="admonition-title">¿Dónde están los formularios de stock?</p>
 <p>En los servidores que tienen la pantalla de inicio de stock, el proyecto Stock se abre en
@@ -1869,7 +1793,6 @@ de prueba.</p>
   servidor de teselas de Bluesquare, a partir de OpenStreetMap): en el panel, haga clic en una
   fila de la tabla para acercarse a ese lugar.</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg" data-desc-position="bottom"><img alt="El panel de la campaña" class="doc-shot" src="../../../pages/use_cases/setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg"></a></p>
 <h2 id="mas-informacion">Más información<a class="headerlink" href="#mas-informacion" title="Permanent link">#</a></h2>
 <ul>
 <li>El kit contiene una guía detallada (<code>GUIDE.html</code>) que presenta la campaña fase por fase,

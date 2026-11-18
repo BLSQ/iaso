@@ -61,9 +61,9 @@ export const WorkflowLinkedForms: FC<Props> = ({ workflow }) => {
                     to={makeRedirectionUrl(baseUrls.forms, {
                         validationWorkflowIds: `${workflow.id}`,
                     })}
-                    data-test="manage-linked-forms-link"
+                    data-test="go-to-all-forms-link"
                 >
-                    {formatMessage(MESSAGES.manageLinkedForms)}
+                    {formatMessage(MESSAGES.goToAllForms)}
                 </LinkWithLocation>
             </Typography>
         </Paper>

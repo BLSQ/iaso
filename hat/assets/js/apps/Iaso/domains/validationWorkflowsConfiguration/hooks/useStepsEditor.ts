@@ -114,3 +114,5 @@ export const useStepsEditor = (nodes: NodeTemplate[]) => {
         reset,
     };
 };
+
+export type StepsEditorState = ReturnType<typeof useStepsEditor>;

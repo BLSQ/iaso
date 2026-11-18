@@ -693,7 +693,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     validationWorkflowsConfigurationDetail: {
         url: 'validation-workflows/configuration/detail',
-        params: ['accountId', 'slug', 'tab'],
+        params: ['accountId', 'slug'],
     },
     validationWorkflowInstances: {
         url: 'validation-workflows/submissions',

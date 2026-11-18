@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react';
+import React, { FC, ReactNode, useCallback } from 'react';
 import {
     closestCenter,
     DndContext,
@@ -14,18 +14,14 @@ import {
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Box, Button, Divider, Paper, Typography } from '@mui/material';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { Box, Divider, Paper, Typography } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
 import { SxStyles } from 'Iaso/types/general';
 import { useDeleteNode } from '../../api/Delete';
-import { useSaveSteps } from '../../api/PostPutPatch';
-import {
-    getStepErrors,
-    NodeTemplate,
-    useStepsEditor,
-} from '../../hooks/useStepsEditor';
+import { StepErrors, StepsEditorState } from '../../hooks/useStepsEditor';
 import MESSAGES from '../../messages';
 import { AddNode } from '../CreateEditNode/CreateEditNode';
 import { StepRow } from './StepRow';
@@ -38,9 +34,15 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        gap: 2,
         px: 2,
         py: 1.5,
         minHeight: 40,
+    },
+    orderHelp: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.5,
     },
     body: {
         p: 2,
@@ -49,52 +51,33 @@ const styles = {
     empty: {
         pb: 1.5,
     },
-    footer: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: 2,
-        px: 2,
-        py: 1.5,
-    },
 } satisfies SxStyles;
-
-const NO_NODES: NodeTemplate[] = [];
 
 type Props = {
     workflow?: ValidationWorkflowRetrieve;
     isLoading: boolean;
+    editor: StepsEditorState;
+    errors: StepErrors;
+    hasUnsavedChanges: boolean;
+    footer: ReactNode;
 };
 
-export const StepsEditor: FC<Props> = ({ workflow, isLoading }) => {
+export const StepsEditor: FC<Props> = ({
+    workflow,
+    isLoading,
+    editor,
+    errors,
+    hasUnsavedChanges,
+    footer,
+}) => {
     const { formatMessage } = useSafeIntl();
     const workflowSlug = workflow?.slug ?? '';
     const isLocked = Boolean(workflow?.has_processes);
-    const nodes = workflow?.node_templates ?? NO_NODES;
+    const { steps, updateStep, moveStep } = editor;
 
-    const {
-        steps,
-        changedSteps,
-        isOrderChanged,
-        isDirty,
-        updateStep,
-        moveStep,
-        reset,
-    } = useStepsEditor(nodes);
     const { data: roleOptions, isFetching: isLoadingRoles } =
         useGetUserRolesDropDown();
-    const { mutateAsync: saveSteps, isLoading: isSaving } =
-        useSaveSteps(workflowSlug);
     const { mutate: deleteNode } = useDeleteNode(workflowSlug);
-
-    const errors = useMemo(
-        () =>
-            getStepErrors(steps, {
-                required: formatMessage(MESSAGES.requiredField),
-                duplicate: formatMessage(MESSAGES.duplicateStepName),
-            }),
-        [steps, formatMessage],
-    );
-    const hasErrors = Object.values(errors).some(Boolean);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -116,35 +99,31 @@ export const StepsEditor: FC<Props> = ({ workflow, isLoading }) => {
         [deleteNode, workflowSlug],
     );
 
-    const handleSave = useCallback(() => {
-        const toSave = isOrderChanged ? steps : changedSteps;
-        return saveSteps({
-            reorder: isOrderChanged,
-            steps: toSave.map(step => ({
-                slug: step.slug,
-                name: step.name.trim(),
-                description: step.description,
-                can_skip_previous_nodes: step.canSkipPreviousNodes,
-                roles_required: step.roleIds,
-            })),
-        });
-    }, [changedSteps, isOrderChanged, saveSteps, steps]);
-
     return (
         <Paper elevation={1} sx={styles.paper}>
-            {(isLoading || isSaving) && <LoadingSpinner absolute />}
+            {isLoading && <LoadingSpinner absolute />}
             <Box sx={styles.header}>
-                <Typography variant="h6">
-                    {formatMessage(MESSAGES.validationSteps)}
-                </Typography>
+                <Box>
+                    <Typography variant="h6">
+                        {formatMessage(MESSAGES.validationSteps)}
+                    </Typography>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={styles.orderHelp}
+                    >
+                        <ArrowDownwardIcon fontSize="inherit" />
+                        {formatMessage(MESSAGES.stepsOrderHelp)}
+                    </Typography>
+                </Box>
                 {!isLocked && (
                     <AddNode
                         workflowSlug={workflowSlug}
-                        isFirstStep={nodes.length === 0}
+                        isFirstStep={steps.length === 0}
                         iconProps={{
                             message: MESSAGES.addStep,
                             variant: 'outlined',
-                            disabled: !workflowSlug || isDirty,
+                            disabled: !workflowSlug || hasUnsavedChanges,
                             dataTestId: 'add-step-button',
                         }}
                     />
@@ -180,7 +159,7 @@ export const StepsEditor: FC<Props> = ({ workflow, isLoading }) => {
                                 isLoadingRoles={isLoadingRoles}
                                 error={errors[step.slug]}
                                 isLocked={isLocked}
-                                isDeleteDisabled={isDirty}
+                                isDeleteDisabled={hasUnsavedChanges}
                                 onChange={updateStep}
                                 onDelete={handleDelete}
                             />
@@ -189,23 +168,7 @@ export const StepsEditor: FC<Props> = ({ workflow, isLoading }) => {
                 </DndContext>
             </Box>
             <Divider />
-            <Box sx={styles.footer}>
-                <Button
-                    onClick={reset}
-                    disabled={!isDirty || isSaving}
-                    data-test="cancel-steps"
-                >
-                    {formatMessage(MESSAGES.cancel)}
-                </Button>
-                <Button
-                    variant="contained"
-                    onClick={handleSave}
-                    disabled={!isDirty || hasErrors || isSaving}
-                    data-test="save-steps"
-                >
-                    {formatMessage(MESSAGES.save)}
-                </Button>
-            </Box>
+            {footer}
         </Paper>
     );
 };

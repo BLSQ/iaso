@@ -53,21 +53,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.addInstancesValidationWorkflow',
         defaultMessage: 'Add validation workflow',
     },
-    infos: {
-        defaultMessage: 'Informations',
-        id: 'iaso.instance.infos',
-    },
-    steps: {
-        id: 'iaso.form.label.steps',
-        defaultMessage: 'step(s)',
-    },
-    general: {
-        id: 'iaso.instance.general',
-        defaultMessage: 'General',
-    },
     canSkipPreviousNodes: {
         id: 'iaso.workflows.label.canSkipPreviousNodes',
-        defaultMessage: 'Can skip previous steps',
+        defaultMessage: 'Can skip previous validation step(s)',
     },
     deleteNodeQuestion: {
         id: 'iaso.workflows.label.deleteNodeQuestion',
@@ -126,13 +114,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.noLinkedForms',
         defaultMessage: 'No form linked to this workflow',
     },
-    manageLinkedForms: {
-        id: 'iaso.workflows.manageLinkedForms',
-        defaultMessage: 'Manage linked forms',
-    },
     validationWorkflows: {
         id: 'iaso.workflows.instance.validationWorkflow.label',
         defaultMessage: 'Validation workflows',
+    },
+    goToAllForms: {
+        id: 'iaso.workflows.goToAllForms',
+        defaultMessage: 'Go to all forms',
+    },
+    workflowDetails: {
+        id: 'iaso.workflows.workflowDetails',
+        defaultMessage: 'Workflow details',
+    },
+    workflowName: {
+        id: 'iaso.workflows.workflowName',
+        defaultMessage: 'Workflow name',
+    },
+    formsHelp: {
+        id: 'iaso.workflows.formsHelp',
+        defaultMessage: 'Submissions of these forms follow this workflow.',
+    },
+    createdByOn: {
+        id: 'iaso.workflows.createdByOn',
+        defaultMessage: 'Created by {name} on {date}',
+    },
+    updatedOn: {
+        id: 'iaso.workflows.updatedOn',
+        defaultMessage: 'Updated {date}',
+    },
+    stepsOrderHelp: {
+        id: 'iaso.workflows.stepsOrderHelp',
+        defaultMessage:
+            'Steps run from top to bottom. Step 1 is the first validator; the submission moves to the next step once it is approved.',
     },
 });
 

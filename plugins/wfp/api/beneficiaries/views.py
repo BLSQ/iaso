@@ -12,6 +12,7 @@ from plugins.wfp.api.beneficiaries.serializers import (
     BeneficiarySerializer,
     EligibleExportParamsSerializer,
     SubmissionFieldsSerializer,
+    VisitPeriodSerializer,
 )
 from plugins.wfp.filters import (
     attach_journeys,
@@ -41,7 +42,8 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     Filters: `entity_type`, `programme`, `org_unit_group` (the cooperation partner: only the visits made in the org
     units of its group), `facility` (one integrated nutrition facility of that group), `q` (entity id, start of the
     UUID or start of the progress id) and `visit_date_after` / `visit_date_before` (beneficiaries visited in the
-    period for a journey they didn't exit yet). Users restricted to some org units only see the visits made there.
+    period for a journey they didn't exit yet: a 400 keyed by the field to correct when a date is invalid, see
+    `VisitPeriodSerializer`). Users restricted to some org units only see the visits made there.
     `order` sorts the beneficiaries and `visits_order` (`date`, `-date`, `number` or `-number`) the visits of each
     journey, by date by default.
     The `export/coda/`, `export/raw/` and `export/eligible/` actions download the xlsx exports of the same selection.
@@ -56,6 +58,15 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             self._facility_scope = facility_scope(self.request.user, filters_from_params(self.request.query_params))
         return self._facility_scope
 
+    def _period(self, serializer_class=VisitPeriodSerializer):
+        """The validated visit period of the request (`start_date` and `end_date`), a 400 if a date is invalid.
+
+        The errors are keyed by the date field to correct (`visit_date_after` or `visit_date_before`).
+        """
+        period = serializer_class(data=self.request.query_params)
+        period.is_valid(raise_exception=True)
+        return period.validated_data
+
     def get_queryset(self):
         # also called by the browsable API (to render its filter form)
         params = self.request.query_params
@@ -65,6 +76,7 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return queryset.order_by(*ordering_from_param(params.get("order", "")))
 
     def list(self, request, *args, **kwargs):
+        self._period()
         page = self.paginate_queryset(self.get_queryset())
         attach_journeys(page, self._org_units(), request.query_params.get("visits_order", ""))
         return self.get_paginated_response(BeneficiarySerializer(page, many=True).data)
@@ -116,11 +128,13 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=["get"], url_path="export/coda")
     def export_coda(self, request):
         """The selection in the "CODA 2.0 Full data fields" format."""
+        self._period()
         return export_response(request.user, KIND_CODA, filters_from_params(request.query_params))
 
     @action(detail=False, methods=["get"], url_path="export/raw")
     def export_raw(self, request):
         """The ETL tables and the submissions of the selection, one sheet per form."""
+        self._period()
         return export_response(request.user, KIND_RAW, filters_from_params(request.query_params))
 
     @action(detail=False, methods=["get"], url_path="export/eligible")
@@ -128,13 +142,11 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
 
         One sheet per programme (and per physiology status for women): without an entity type, the children and the
-        women are both exported, in separate sheets as their columns differ. The period is given by `start_date` and
-        `end_date` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
+        women are both exported, in separate sheets as their columns differ. The period is given by `visit_date_after`
+        and `visit_date_before` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
         """
-        filters = filters_from_params(request.query_params)
-        period = EligibleExportParamsSerializer(data=request.query_params)
-        period.is_valid(raise_exception=True)
-        return export_response(request.user, KIND_ELIGIBLE, filters, **period.validated_data)
+        period = self._period(EligibleExportParamsSerializer)
+        return export_response(request.user, KIND_ELIGIBLE, filters_from_params(request.query_params), **period)
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")
     def data(self, request, entity_id):

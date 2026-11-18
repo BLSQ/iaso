@@ -9,6 +9,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.test import APITestCase
+from plugins.wfp.api.beneficiaries.serializers import EligibleExportParamsSerializer
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 from plugins.wfp.utils.eligible_export import PBWG, U5, _sheet_name, current_period
@@ -243,7 +244,7 @@ class EligibleExportTestCase(APITestCase):
         november = self._child()
         self._visit(november, date(2026, 11, 5), whz_color="Green")
 
-        params = {"entity_type": self.children.id, "start_date": "2026-09-01", "end_date": "2026-09-30"}
+        params = {"entity_type": self.children.id, "visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30"}
         [row] = self._export(params)["BSFP Child Under 5"]
         self.assertEqual(row["UUID"], str(september.beneficiary.entity.uuid))
         self.assertEqual(row["Actual Visit Date"].date(), date(2026, 9, 10))
@@ -255,25 +256,70 @@ class EligibleExportTestCase(APITestCase):
         journey = self._child()
         self._visit(journey, date(2026, 9, 10), whz_color="Green")
         self._visit(journey, date(2026, 10, 10), whz_color="Yellow")
-        params = {"entity_type": self.children.id, "start_date": "2026-09-01", "end_date": "2026-09-30"}
+        params = {"entity_type": self.children.id, "visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30"}
         self.assertEqual(len(self._export(params)["BSFP Child Under 5"]), 1)
-        params["end_date"] = "2026-10-31"
+        params["visit_date_before"] = "2026-10-31"
         self.assertEqual(self._export(params), {"Eligible beneficiaries": []})
 
-    def test_invalid_period(self):
+    def _period_errors(self, **params):
+        """The errors of the eligible export for an invalid period, by field."""
+        response = self.client.get(ELIGIBLE_EXPORT_URL, {"entity_type": self.children.id, **params})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        return response.json()
+
+    def test_invalid_date_format(self):
         self.client.force_authenticate(self.user)
-        for params in [{"start_date": "2026-10-01", "end_date": "2026-09-01"}, {"start_date": "01-09-2026"}]:
-            with self.subTest(params):
-                response = self.client.get(ELIGIBLE_EXPORT_URL, {"entity_type": self.children.id, **params})
-                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        for field in ["visit_date_after", "visit_date_before"]:
+            with self.subTest(field):
+                self.assertEqual(
+                    self._period_errors(**{field: "01-09-2026"}),
+                    {field: ["Date has wrong format. Use one of these formats instead: YYYY-MM-DD."]},
+                )
+
+    def test_end_date_before_start_date(self):
+        self.client.force_authenticate(self.user)
+        self.assertEqual(
+            self._period_errors(visit_date_after="2026-10-01", visit_date_before="2026-09-01"),
+            {"visit_date_before": ["The end date must be after the start date."]},
+        )
 
     def test_no_future_date(self):
         self.client.force_authenticate(self.user)
-        for params in [{"end_date": "2026-11-14"}, {"start_date": "2026-11-14"}]:
-            with self.subTest(params):
-                response = self.client.get(ELIGIBLE_EXPORT_URL, {"entity_type": self.children.id, **params})
-                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self._export({"entity_type": self.children.id, "end_date": TODAY.isoformat()})
+        future = "The date cannot be in the future."
+        for field in ["visit_date_after", "visit_date_before"]:
+            with self.subTest(field):
+                self.assertEqual(self._period_errors(**{field: "2026-11-14"}), {field: [future]})
+        # both dates in the future: each field gets its own error
+        self.assertEqual(
+            self._period_errors(visit_date_after="2026-11-14", visit_date_before="2026-11-15"),
+            {"visit_date_after": [future], "visit_date_before": [future]},
+        )
+        self._export({"entity_type": self.children.id, "visit_date_before": TODAY.isoformat()})
+
+    def test_period_error_codes(self):
+        # the codes identify each error, whatever the language of the message
+        for data, codes in [
+            ({"visit_date_after": "2026-11-14"}, {"visit_date_after": ["future_date"]}),
+            ({"visit_date_before": "2026-11-14"}, {"visit_date_before": ["future_date"]}),
+            (
+                {"visit_date_after": "2026-10-01", "visit_date_before": "2026-09-01"},
+                {"visit_date_before": ["end_before_start"]},
+            ),
+            ({"visit_date_after": "01-09-2026"}, {"visit_date_after": ["invalid"]}),
+        ]:
+            with self.subTest(data):
+                period = EligibleExportParamsSerializer(data=data)
+                self.assertFalse(period.is_valid())
+                self.assertEqual(
+                    {key: [error.code for error in errors] for key, errors in period.errors.items()}, codes
+                )
+
+    def test_visit_date_filters_give_the_period_of_the_export(self):
+        period = EligibleExportParamsSerializer(
+            data={"visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30", "q": "ignored"}
+        )
+        self.assertTrue(period.is_valid())
+        self.assertEqual(period.validated_data, {"start_date": date(2026, 9, 1), "end_date": date(2026, 9, 30)})
 
     def test_the_default_period_ends_today_at_the_latest(self):
         # TODAY is the 13th: the visits made after it (e.g. planned ones) are not in the default period

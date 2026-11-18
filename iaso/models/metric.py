@@ -44,8 +44,17 @@ class MetricType(models.Model):
 
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
-        unique_together = [
-            ["account", "code"],
+        constraints = [
+            models.UniqueConstraint(
+                fields=["account", "code"],
+                condition=models.Q(workspace__isnull=True),
+                name="iaso_metrictype_account_code_uniq",
+            ),
+            models.UniqueConstraint(
+                fields=["workspace", "code"],
+                condition=models.Q(workspace__isnull=False),
+                name="iaso_metrictype_workspace_code_uniq",
+            ),
         ]
 
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)

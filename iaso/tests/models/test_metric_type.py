@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+
 from iaso.models import Account, MetricType, Workspace
 from iaso.test import TestCase
 
@@ -28,3 +30,21 @@ class MetricTypeModelTestCase(TestCase):
         visible = MetricType.objects.visible_in_workspace(self.workspace)
 
         self.assertCountEqual(visible, [own, shared])
+
+    def test_same_code_is_allowed_in_two_workspaces_of_the_account(self):
+        MetricType.objects.create(workspace=self.workspace, name="Layer", code="layer")
+        MetricType.objects.create(workspace=self.other_workspace, name="Layer", code="layer")
+
+        self.assertEqual(MetricType.objects.filter(code="layer").count(), 2)
+
+    def test_duplicate_code_in_the_same_workspace_is_rejected(self):
+        MetricType.objects.create(workspace=self.workspace, name="Layer", code="layer")
+
+        with self.assertRaises(IntegrityError):
+            MetricType.objects.create(workspace=self.workspace, name="Layer again", code="layer")
+
+    def test_duplicate_code_between_account_wide_layers_is_rejected(self):
+        MetricType.objects.create(account=self.account, name="Layer", code="layer")
+
+        with self.assertRaises(IntegrityError):
+            MetricType.objects.create(account=self.account, name="Layer again", code="layer")

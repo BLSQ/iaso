@@ -94,5 +94,25 @@ class Migration(migrations.Migration):
                 to="iaso.workspace",
             ),
         ),
+        migrations.AlterUniqueTogether(
+            name="metrictype",
+            unique_together=set(),
+        ),
+        migrations.AddConstraint(
+            model_name="metrictype",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("workspace__isnull", True)),
+                fields=("account", "code"),
+                name="iaso_metrictype_account_code_uniq",
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="metrictype",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("workspace__isnull", False)),
+                fields=("workspace", "code"),
+                name="iaso_metrictype_workspace_code_uniq",
+            ),
+        ),
         migrations.RunPython(create_first_snt_workspaces, migrations.RunPython.noop),
     ]

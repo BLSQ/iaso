@@ -16,6 +16,7 @@ from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
+from iaso.models.workspace import Workspace
 from iaso.test import TestCase
 
 
@@ -290,6 +291,45 @@ class MetricTypeCreateSerializerTestCase(TestCase):
         serializer = MetricTypeCreateSerializer(data=self.request_data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
         self.assertEqual("uniqueCode", serializer.errors["code"][0])
+
+    def _fresh_request(self):
+        """The active workspace is cached on the request, so tests creating workspaces need their own."""
+        request = APIRequestFactory().get("/")
+        request.user = self.user
+        return request
+
+    def _is_valid_with_code(self, code, origin):
+        data = {**self.request_data, "code": code, "origin": origin}
+        serializer = MetricTypeCreateSerializer(data=data, context={"request": self._fresh_request()})
+        return serializer.is_valid(), serializer.errors
+
+    def test_validate_code_used_in_another_workspace_is_accepted_for_a_workspace_layer(self):
+        Workspace.objects.create(account=self.account, name="Active workspace")
+        other_workspace = Workspace.objects.create(account=self.account, name="Other workspace")
+        MetricType.objects.create(workspace=other_workspace, code="shared_code", name="Other workspace layer")
+
+        is_valid, _errors = self._is_valid_with_code("shared_code", MetricType.MetricTypeOrigin.CUSTOM)
+
+        self.assertTrue(is_valid)
+
+    def test_validate_code_of_an_account_wide_layer_is_rejected_for_a_workspace_layer(self):
+        Workspace.objects.create(account=self.account, name="Active workspace")
+        MetricType.objects.create(account=self.account, code="account_code", name="Account-wide layer")
+
+        is_valid, errors = self._is_valid_with_code("account_code", MetricType.MetricTypeOrigin.CUSTOM)
+
+        self.assertFalse(is_valid)
+        self.assertEqual("uniqueCode", errors["code"][0])
+
+    def test_validate_code_used_by_any_workspace_is_rejected_for_an_account_wide_layer(self):
+        Workspace.objects.create(account=self.account, name="Active workspace")
+        other_workspace = Workspace.objects.create(account=self.account, name="Other workspace")
+        MetricType.objects.create(workspace=other_workspace, code="ws_code", name="Other workspace layer")
+
+        is_valid, errors = self._is_valid_with_code("ws_code", MetricType.MetricTypeOrigin.OPENHEXA)
+
+        self.assertFalse(is_valid)
+        self.assertEqual("uniqueCode", errors["code"][0])
 
     def test_validate_code_new(self):
         serializer_context = {"request": self.request}

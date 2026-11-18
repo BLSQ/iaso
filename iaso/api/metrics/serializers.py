@@ -8,7 +8,12 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from iaso.api.common.serializer_fields import JSONSchemaField
-from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_missing_headers, get_org_unit_row
+from iaso.api.metrics.utils import (
+    REQUIRED_METRIC_VALUES_HEADERS,
+    get_missing_headers,
+    get_org_unit_row,
+    get_visible_metric_types,
+)
 from iaso.models import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit
 from iaso.utils.legend import ORDINAL_MAX_ITEMS, build_auto_legend_config, resolve_auto_legend_type
@@ -104,15 +109,11 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
         fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
 
     def create(self, validated_data):
-        request = self.context["request"]
-        origin = validated_data.get("origin", MetricType.MetricTypeOrigin.OPENHEXA)
-        # OpenHEXA layers are shared by every workspace of the account.
-        workspace = None if origin == MetricType.MetricTypeOrigin.OPENHEXA else find_active_workspace(request)
         return super().create(
             {
                 **validated_data,
-                "account": request.user.iaso_profile.account,
-                "workspace": workspace,
+                "account": self._account(),
+                "workspace": self._target_workspace(validated_data),
                 "is_complete": False,
             }
         )
@@ -120,14 +121,32 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
     def validate_code(self, value):
         if any(char.isspace() for char in value):
             raise serializers.ValidationError("Code must not contain whitespace.", code="no_whitespace")
-
-        instance = getattr(self, "instance", None)
-
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        if MetricType.objects.filter(account=account, code=value).exclude(pk=getattr(instance, "pk", None)).exists():
-            raise serializers.ValidationError("uniqueCode", code="unique_code")
         return value
+
+    def validate(self, data):
+        data = super().validate(data)
+        if self._metric_types_sharing_code_scope(self._target_workspace(data)).filter(code=data["code"]).exists():
+            raise serializers.ValidationError(
+                {"code": serializers.ErrorDetail("uniqueCode", code="unique_code")}, code="unique_code"
+            )
+        return data
+
+    def _account(self):
+        return self.context["request"].user.iaso_profile.account
+
+    def _target_workspace(self, data):
+        # OpenHEXA layers are shared by every workspace of the account.
+        origin = data.get("origin", MetricType.MetricTypeOrigin.OPENHEXA)
+        if origin == MetricType.MetricTypeOrigin.OPENHEXA:
+            return None
+        return find_active_workspace(self.context["request"])
+
+    def _metric_types_sharing_code_scope(self, workspace):
+        """A workspace layer must not reuse a code visible in its workspace, and a shared layer one used
+        anywhere in the account, so a code never resolves to two layers (e.g. in the CSV import)."""
+        if workspace is None:
+            return MetricType.objects.filter(account=self._account())
+        return MetricType.objects.visible_in_workspace(workspace)
 
 
 class MetricValueSerializer(serializers.ModelSerializer):
@@ -149,7 +168,7 @@ class MetricValueSerializer(serializers.ModelSerializer):
         user = getattr(request, "user", None)
         if user and user.is_authenticated:
             account = user.iaso_profile.account
-            self.fields["metric_type"].queryset = MetricType.objects.filter(account=account)
+            self.fields["metric_type"].queryset = get_visible_metric_types(request)
             self.fields["org_unit"].queryset = get_valid_org_units_with_geography(account)
 
 
@@ -182,10 +201,10 @@ class ImportMetricValuesSerializer(serializers.Serializer):
 
         # Verify that metric type columns correspond to existing MetricTypes
         metric_type_codes = set(df.columns) - set(REQUIRED_METRIC_VALUES_HEADERS)
-        user = self.context.get("request").user
-        account = user.iaso_profile.account
-        existing_metric_types = MetricType.objects.filter(account=account, code__in=metric_type_codes).values_list(
-            "code", "id"
+        existing_metric_types = (
+            get_visible_metric_types(self.context["request"])
+            .filter(code__in=metric_type_codes)
+            .values_list("code", "id")
         )
         missing_metric_types = metric_type_codes - set(mt[0] for mt in existing_metric_types)
         if missing_metric_types:
@@ -197,6 +216,7 @@ class ImportMetricValuesSerializer(serializers.Serializer):
             raise serializers.ValidationError(_("The CSV must contain at least one value row."))
 
         org_unit_ids = df["ADM2_ID"].tolist()
+        account = self.context["request"].user.iaso_profile.account
         matching_org_unit_ids = (
             get_valid_org_units_with_geography(account).filter(id__in=org_unit_ids).values_list("id", flat=True)
         )
@@ -272,8 +292,7 @@ class ImportMetricValuesJsonSerializer(serializers.Serializer):
     values = MetricValueEntrySerializer(many=True, required=False, default=list)
 
     def validate_metric_type_id(self, value):
-        account = self.context["request"].user.iaso_profile.account
-        if not MetricType.objects.filter(id=value, account=account).exists():
+        if not get_visible_metric_types(self.context["request"]).filter(id=value).exists():
             raise serializers.ValidationError(_("Metric type does not exist."))
         return value
 
@@ -341,10 +360,9 @@ class ExportMetricValuesSerializer(serializers.Serializer):
         return requested_ids
 
     def get_metric_types(self):
-        """The requested metric types, scoped to the user's account, in the requested order."""
-        account = self.context["request"].user.iaso_profile.account
+        """The requested metric types visible to the user, in the requested order."""
         requested_ids = self.validated_data["metric_type_ids"]
-        metric_types_by_id = MetricType.objects.filter(account=account, id__in=requested_ids).in_bulk()
+        metric_types_by_id = get_visible_metric_types(self.context["request"]).filter(id__in=requested_ids).in_bulk()
         return [metric_types_by_id[mt_id] for mt_id in requested_ids if mt_id in metric_types_by_id]
 
     def get_csv_rows(self):

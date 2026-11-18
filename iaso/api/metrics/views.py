@@ -14,7 +14,12 @@ from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_CSV, DropdownOptionsWithRepresentationSerializer
 from iaso.api.metrics.filters import MetricValueFilter, ValueAndTypeFilterBackend, ValueFilterBackend
-from iaso.api.metrics.utils import REQUIRED_METRIC_VALUES_HEADERS, get_org_unit_row
+from iaso.api.metrics.utils import (
+    REQUIRED_METRIC_VALUES_HEADERS,
+    get_org_unit_row,
+    get_visible_metric_types,
+    get_visible_metric_values,
+)
 from iaso.models import ALIVE_STATUSES, MetricType, MetricValue, Task
 from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.utils.org_units import get_valid_org_units_with_geography
@@ -40,7 +45,7 @@ class MetricTypeViewSet(viewsets.ModelViewSet):
     permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
-        queryset = MetricType.objects.filter(account=self.request.user.iaso_profile.account)
+        queryset = get_visible_metric_types(self.request)
         include_utility = self.request.query_params.get("include_utility", "false").lower() == "true"
         if not include_utility:
             queryset = queryset.filter(is_utility=False)
@@ -125,7 +130,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
-        qs = MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
+        qs = get_visible_metric_values(self.request)
         reference_year = self.request.query_params.get("reference_year")
         if reference_year is not None:
             try:
@@ -138,7 +143,7 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     def csv_template(self, request):
         account = request.user.iaso_profile.account
         # Get all custom metric types for the user's account
-        metric_types = MetricType.objects.filter(account=account, origin=MetricType.MetricTypeOrigin.CUSTOM)
+        metric_types = get_visible_metric_types(request).filter(origin=MetricType.MetricTypeOrigin.CUSTOM)
         if is_snt_malaria_plugin_active():
             # Composite metric types are computed from a graph, not meant to be filled in manually.
             metric_types = metric_types.filter(composite_layer__isnull=True)
@@ -232,4 +237,4 @@ class MetricOrgUnitsViewSet(viewsets.ModelViewSet):
     permission_classes = [MetricsPermissions]
 
     def get_queryset(self):
-        return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
+        return get_visible_metric_values(self.request)

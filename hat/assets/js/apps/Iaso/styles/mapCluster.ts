@@ -1,4 +1,5 @@
-export const styles = {
+import { CSSProperties } from 'react';
+export const styles: Record<string, CSSProperties> = {
     '.marker-cluster,.marker-custom': {
         backgroundClip: 'padding-box',
         borderRadius: '100%',

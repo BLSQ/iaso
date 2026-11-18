@@ -1,43 +1,115 @@
-import React from 'react';
+import { useState } from 'react';
+import { IntlMessage } from 'bluesquare-components';
 import { useMutation, useQueryClient } from 'react-query';
-import {
-    getRequest,
-    iasoFetch,
-    postRequest,
-    putRequest,
-} from 'Iaso/libs/Api.ts';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
+import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
-import { getValues } from '../../hooks/form';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { FormState, getValues } from '../../hooks/form';
+import { DropdownOptions } from '../../types/utils';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { DataSource as OrgUnitDataSource } from '../orgUnits/types/dataSources';
+import {
+    OrgunitType,
+    PaginatedOrgUnitTypes,
+} from '../orgUnits/types/orgunitTypes';
 import MESSAGES from './messages';
+import { Version } from './types/dataSources';
+import { Dhis2OuImporterRequest } from './types/dhis2OuImporter';
 
-/**
- *
- * @param {Object} requestBody - request's body
- * @param {number} requestBody.source_id
- * @param {number} requestBody.source_version_number
- * @param {string} requestBody.dhis_name
- * @param {string} requestBody.dhis_url
- * @param {string} requestBody.dhis_login
- * @param {string} requestBody.dhis_password
- * @param {boolean} requestBody.force - should be false
- * @param {boolean} requestBody.validate_status
- * @param {boolean} requestBody.continue_on_error
- * @returns {Object} request's response
- */
+type SourceVersionListItem = Pick<
+    Version,
+    'id' | 'data_source' | 'data_source_name' | 'is_default' | 'number'
+>;
 
-export const sendDhisOuImporterRequest = async requestBody =>
-    postRequest('/api/dhis2ouimporter/', requestBody);
-
-export const postGeoPkg = async request => {
-    const file = { file: request.file };
-    const body = { ...request };
-    delete body.file;
-    return postRequest('/api/tasks/create/importgpkg/', body, file);
+type SourceVersionsList = {
+    versions: SourceVersionListItem[];
 };
+
+type SourceVersionRow = Omit<SourceVersionListItem, 'id'> & {
+    id: string;
+};
+
+type DataSourceListItem = Pick<
+    OrgUnitDataSource,
+    'id' | 'name' | 'credentials'
+>;
+
+type DataSourceList = {
+    sources: DataSourceListItem[];
+};
+
+type QueryParamValue = string | number | boolean | null | undefined;
+
+/** Query string for the DHIS2 diff/export. Extra keys are forwarded as-is. */
+type DiffExportData = {
+    ref_version_id?: QueryParamValue;
+    source_version_id?: QueryParamValue;
+    source_status?: QueryParamValue;
+    ref_status?: QueryParamValue;
+    source_top_org_unit_id?: QueryParamValue;
+    ref_top_org_unit_id?: QueryParamValue;
+    source_org_unit_group_id?: QueryParamValue;
+    ref_org_unit_group_id?: QueryParamValue;
+    source_org_unit_type_ids?: Array<string | number>;
+    ref_org_unit_type_ids?: Array<string | number>;
+    fields_to_export?: string[];
+    [key: string]: QueryParamValue | Array<string | number> | undefined;
+};
+
+type ImportGpkgRequest = {
+    file: Blob;
+    data_source?: string | number;
+    version_number?: string;
+    description?: string;
+    default_valid?: boolean;
+    project?: string | number | null;
+};
+
+type DataSourceSavePayload = {
+    id?: number;
+    [key: string]: unknown;
+};
+
+type Dhis2CredentialCheckForm = {
+    id: { value: number };
+    credentials: {
+        value: {
+            dhis_url?: string;
+            dhis_login?: string;
+            dhis_password?: string;
+        };
+    };
+};
+
+type CopyVersionRequest = {
+    dataSourceId: number;
+    dataSourceVersionNumber: number;
+    destinationSourceId: number | string;
+    destinationVersionNumber: number | string;
+};
+
+type CreateSourceVersionRequest = {
+    dataSourceId: number;
+    description: string | null;
+};
+
+type UpdateSourceVersionRequest = {
+    sourceVersionId: number;
+    description: string | null;
+    dataSourceId: number;
+    sourceVersionNumber: number;
+};
+
+type SetFieldErrors = (errorKey: string, errorMessages: unknown) => void;
+
+export const sendDhisOuImporterRequest = (
+    requestBody: Dhis2OuImporterRequest,
+) => postRequest('/api/dhis2ouimporter/', requestBody);
+
+export const postGeoPkg = async ({ file, ...body }: ImportGpkgRequest) =>
+    postRequest('/api/tasks/create/importgpkg/', body, { file });
 
 const getOrgUnitTypes = async () => {
     return getRequest('/api/v2/orgunittypes/');
@@ -45,8 +117,8 @@ const getOrgUnitTypes = async () => {
 
 export const useOrgUnitTypes = () => {
     return useSnackQuery(['orgUnitTypes'], getOrgUnitTypes, undefined, {
-        select: data =>
-            data.orgUnitTypes.map(orgUnitType => ({
+        select: (data: PaginatedOrgUnitTypes): DropdownOptions<number>[] =>
+            data.orgUnitTypes.map((orgUnitType: OrgunitType) => ({
                 value: orgUnitType.id,
                 label: orgUnitType.name,
             })),
@@ -59,7 +131,7 @@ const getDataSourceVersions = async () => {
 
 // Func to compare version to  order them
 // string.localeCompare allow us to have case-insensitive sorting and to take accents into account
-const compareVersions = (a, b) => {
+const compareVersions = (a: SourceVersionRow, b: SourceVersionRow) => {
     const comparison = a.data_source_name.localeCompare(
         b.data_source_name,
         undefined,
@@ -85,9 +157,9 @@ export const useDataSourceVersions = (enabled = true) => {
         queryFn: getDataSourceVersions,
         options: {
             enabled,
-            select: data => {
+            select: (data: SourceVersionsList): SourceVersionRow[] => {
                 return data.versions
-                    .map(version => {
+                    .map((version: SourceVersionListItem) => {
                         return {
                             id: version.id.toString(),
                             data_source: version.data_source,
@@ -123,7 +195,7 @@ export const useSourceVersionDropDown = () => {
         },
     );
 };
-const adaptForApi = data => {
+const adaptForApi = (data: DiffExportData): DiffExportData => {
     const adaptedData = { ...data };
     if (data.ref_status === 'all') {
         adaptedData.ref_status = '';
@@ -134,26 +206,26 @@ const adaptForApi = data => {
     return adaptedData;
 };
 
-export const postToDHIS2 = async data => {
+export const postToDHIS2 = async (data: DiffExportData) => {
     const adaptedData = adaptForApi(data);
     return postRequest('/api/sourceversions/export_dhis2/', adaptedData);
 };
 
-export const convertExportDataToURL = data => {
+export const convertExportDataToURL = (data: DiffExportData) => {
     const up = new URLSearchParams();
 
     Object.entries(data).forEach(([k, v]) => {
         if (Array.isArray(v)) {
-            v.forEach(p => up.append(k, p));
+            v.forEach(p => up.append(k, String(p)));
         } else if (v !== undefined && v !== null) {
-            up.append(k, v);
+            up.append(k, String(v));
         }
     });
 
     return `/api/sourceversions/diff.csv/?${up.toString()}`;
 };
 
-export const csvPreview = async data => {
+export const csvPreview = async (data: DiffExportData) => {
     const adaptedData = adaptForApi(data);
     const url = convertExportDataToURL(adaptedData);
     const requestSettings = {
@@ -163,7 +235,7 @@ export const csvPreview = async data => {
     // using iasoFetch, so I can convert response to text i.o. json
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
-        .catch(error => {
+        .catch((error: unknown) => {
             openSnackBar(
                 errorSnackBar(
                     'iaso.snackBar.generateCSVError',
@@ -175,7 +247,10 @@ export const csvPreview = async data => {
         });
 };
 
-export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
+export const updateDefaultDataSource = ([
+    accountId,
+    defaultVersionId,
+]: [number, number]) =>
     putRequest(`/api/accounts/${accountId}/set-default-version/`, {
         default_version: defaultVersionId,
     });
@@ -187,29 +262,43 @@ export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
  * Mark errors in form.
  * @param {func} setFieldErrors
  */
-export const useSaveDataSource = setFieldErrors => {
-    const [isSaving, setIsSaving] = React.useState(false);
+export const useSaveDataSource = (setFieldErrors: SetFieldErrors) => {
+    const [isSaving, setIsSaving] = useState(false);
     const currentUser = useCurrentUser();
     const queryClient = useQueryClient();
 
-    const { mutateAsync: saveMutation } = useSnackMutation(
-        campaignData =>
+    const { mutateAsync: saveMutation } = useSnackMutation<
+        unknown,
+        unknown,
+        DataSourceSavePayload
+    >(
+        (campaignData: DataSourceSavePayload) =>
             putRequest(`/api/datasources/${campaignData.id}/`, campaignData),
         undefined,
         snackBarMessages.updateDataSourceError,
     );
-    const { mutateAsync: createMutation } = useSnackMutation(
-        campaignData => postRequest('/api/datasources/', campaignData),
+    const { mutateAsync: createMutation } = useSnackMutation<
+        unknown,
+        unknown,
+        DataSourceSavePayload
+    >(
+        (campaignData: DataSourceSavePayload) =>
+            postRequest('/api/datasources/', campaignData),
         undefined,
         snackBarMessages.createDataSourceError,
     );
-    const saveDefaultDataSourceMutation = useSnackMutation(
+    const saveDefaultDataSourceMutation = useSnackMutation<
+        unknown,
+        unknown,
+        [number, number]
+    >(
         updateDefaultDataSource,
-        false,
+        // false suppresses the success snack bar; the hook types this argument as a message
+        false as unknown as IntlMessage,
         snackBarMessages.updateDefaultSourceError,
     );
 
-    const saveDataSource = async form => {
+    const saveDataSource = async (form: FormState) => {
         setIsSaving(true);
 
         const { is_default_source, ...campaignData } = getValues(form);
@@ -223,9 +312,17 @@ export const useSaveDataSource = setFieldErrors => {
                 await createMutation(campaignData);
             }
             queryClient.invalidateQueries('sources');
-        } catch (error) {
+        } catch (error: unknown) {
             // Update error on forms
-            if (error.status === 400) {
+            if (
+                typeof error === 'object' &&
+                error !== null &&
+                'status' in error &&
+                error.status === 400 &&
+                'details' in error &&
+                typeof error.details === 'object' &&
+                error.details !== null
+            ) {
                 Object.entries(error.details).forEach(
                     ([errorKey, errorMessages]) => {
                         setFieldErrors(errorKey, errorMessages);
@@ -237,7 +334,7 @@ export const useSaveDataSource = setFieldErrors => {
 
         if (is_default_source && form.default_version_id.value) {
             await saveDefaultDataSourceMutation.mutateAsync([
-                currentUser.account.id,
+                currentUser.account!.id,
                 form.default_version_id.value,
             ]);
             queryClient.invalidateQueries('currentUser');
@@ -247,9 +344,9 @@ export const useSaveDataSource = setFieldErrors => {
     return { saveDataSource, isSaving };
 };
 
-export const useCheckDhis2Mutation = setFieldErrors =>
+export const useCheckDhis2Mutation = (setFieldErrors: SetFieldErrors) =>
     useMutation(
-        form =>
+        (form: Dhis2CredentialCheckForm) =>
             postRequest(`/api/datasources/check_dhis2/`, {
                 data_source: form.id.value,
                 dhis2_url: form.credentials.value.dhis_url,
@@ -266,8 +363,16 @@ export const useCheckDhis2Mutation = setFieldErrors =>
                     'credentials_dhis2_password',
                 ].forEach(key => setFieldErrors(key, []));
             },
-            onError: error => {
-                if (error.status === 400)
+            onError: (error: unknown) => {
+                if (
+                    typeof error === 'object' &&
+                    error !== null &&
+                    'status' in error &&
+                    error.status === 400 &&
+                    'details' in error &&
+                    typeof error.details === 'object' &&
+                    error.details !== null
+                ) {
                     Object.entries(error.details).forEach(
                         ([errorKey, errorMessages]) => {
                             setFieldErrors(
@@ -276,25 +381,36 @@ export const useCheckDhis2Mutation = setFieldErrors =>
                             );
                         },
                     );
-                else {
-                    setFieldErrors('credentials', [
-                        error.details?.detail ?? 'Test failed',
-                    ]);
+                } else {
+                    const detail =
+                        typeof error === 'object' &&
+                        error !== null &&
+                        'details' in error &&
+                        typeof error.details === 'object' &&
+                        error.details !== null &&
+                        'detail' in error.details &&
+                        typeof error.details.detail === 'string'
+                            ? error.details.detail
+                            : 'Test failed';
+                    setFieldErrors('credentials', [detail]);
                 }
             },
         },
     );
 
-export const useDataSourceForVersion = sourceVersion =>
+export const useDataSourceForVersion = (
+    sourceVersion?: Pick<SourceVersionListItem, 'data_source'> | null,
+) =>
     useSnackQuery(
         ['dataSources'],
         () => getRequest('/api/datasources/'),
         snackBarMessages.fetchSourcesError,
         {
-            select: data => {
+            select: (data: DataSourceList) => {
                 if (sourceVersion) {
                     const source = data.sources.find(
-                        s => s.id === sourceVersion.data_source,
+                        (s: DataSourceListItem) =>
+                            s.id === sourceVersion.data_source,
                     );
                     return source;
                 }
@@ -309,8 +425,10 @@ export const useDataSourceAsDropDown = () =>
         () => getRequest('/api/datasources/'),
         snackBarMessages.fetchSourcesError,
         {
-            select: data =>
-                data?.sources.map(datasource => ({
+            select: (
+                data: DataSourceList | undefined,
+            ): DropdownOptions<number>[] =>
+                data?.sources.map((datasource: DataSourceListItem) => ({
                     label: datasource.name,
                     value: datasource.id,
                 })) ?? [],
@@ -319,13 +437,13 @@ export const useDataSourceAsDropDown = () =>
     );
 
 export const useCopyDataSourceVersion = () => {
-    return useSnackMutation(
+    return useSnackMutation<unknown, unknown, CopyVersionRequest>(
         ({
             dataSourceId,
             dataSourceVersionNumber,
             destinationSourceId,
             destinationVersionNumber,
-        }) => {
+        }: CopyVersionRequest) => {
             return postRequest('/api/copyversion/', {
                 source_source_id: dataSourceId,
                 source_version_number: dataSourceVersionNumber,
@@ -339,7 +457,7 @@ export const useCopyDataSourceVersion = () => {
         'dataSources',
     );
 };
-const saveSourceVersion = newSourceVersion => {
+const saveSourceVersion = (newSourceVersion: CreateSourceVersionRequest) => {
     const url = '/api/sourceversions/';
     return postRequest(url, {
         description: newSourceVersion.description,
@@ -348,7 +466,7 @@ const saveSourceVersion = newSourceVersion => {
 };
 
 export const useCreateSourceVersion = () => {
-    return useSnackMutation({
+    return useSnackMutation<unknown, unknown, CreateSourceVersionRequest>({
         mutationFn: saveSourceVersion,
         snackErrorMsg: MESSAGES.newEmptyVersionError,
         snackSuccessMessage: MESSAGES.newEmptyVersionSavedSuccess,
@@ -361,7 +479,7 @@ const updateSourceVersion = async ({
     description,
     dataSourceId,
     sourceVersionNumber,
-}) => {
+}: UpdateSourceVersionRequest) => {
     return putRequest(`/api/sourceversions/${sourceVersionId}/`, {
         id: sourceVersionId,
         description,
@@ -371,8 +489,13 @@ const updateSourceVersion = async ({
 };
 
 export const usePutSourceVersion = () => {
-    return useSnackMutation(
-        ({ sourceVersionId, description, dataSourceId, sourceVersionNumber }) =>
+    return useSnackMutation<unknown, unknown, UpdateSourceVersionRequest>(
+        ({
+            sourceVersionId,
+            description,
+            dataSourceId,
+            sourceVersionNumber,
+        }: UpdateSourceVersionRequest) =>
             updateSourceVersion({
                 sourceVersionId,
                 description,

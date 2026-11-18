@@ -18,12 +18,9 @@ type Props = {
     triggerFitToBoundsId?: string;
 };
 
-type ZoomOptions = {
-    fitToBounds: () => void;
-    fitToBoundsTitle: string;
-    position: 'topleft' | 'topright' | 'bottomleft' | 'bottomright';
-    zoomBoxTitle: string;
-    zoomInfoTitle: string;
+type ZoomControlHost = {
+    addControl(control: L.Control): void;
+    removeControl(control: L.Control): void;
 };
 
 const MESSAGES = defineMessages({
@@ -43,7 +40,7 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
     fitOnLoad = false,
     triggerFitToBoundsId,
 }) => {
-    const map: any = useMap();
+    const map = useMap();
     const [mapFitted, setMapFitted] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
     const fitToBounds = useCallback(() => {
@@ -53,7 +50,10 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
     }, [bounds, boundsOptions, map]);
     const context = useLeafletContext();
 
-    L.control.zoom = (opts: ZoomOptions) => new L.Control.Zoom(opts);
+    // Leaflet's factory closes over the original Zoom class. Rebuild it so
+    // it uses the ZoomBar constructor installed by ./zoom-bar.
+    L.control.zoom = (options?: L.Control.ZoomOptions) =>
+        new L.Control.Zoom(options);
 
     useEffect(() => {
         if (!mapFitted && bounds?.isValid() && fitOnLoad && map) {
@@ -63,7 +63,8 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
     }, [fitOnLoad, bounds, mapFitted, fitToBounds, map]);
 
     useEffect(() => {
-        const container = context.layerContainer || context.map;
+        const container = (context.layerContainer ||
+            context.map) as unknown as ZoomControlHost;
 
         const control = L.control.zoom({
             zoomBoxTitle: formatMessage(MESSAGES.boxZoomTitle),

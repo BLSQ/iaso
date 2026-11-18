@@ -3,8 +3,8 @@ import { deleteRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 
 export const useRemovePage = () =>
-    useSnackMutation(
-        slug => deleteRequest(`/api/pages/${slug}`),
+    useSnackMutation<any, any, string>(
+        (slug: string) => deleteRequest(`/api/pages/${slug}`),
         defineMessage({
             defaultMessage: 'Embedded link successfully removed',
             id: 'iaso.page.deleteSuccess',

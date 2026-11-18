@@ -4,8 +4,8 @@ import {
     useSafeIntl,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { baseUrls } from '../../../constants/urls';
 import { djangoStaticUrl } from 'Iaso/utils/djangoStaticUrl';
+import { baseUrls } from '../../../constants/urls';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 import MESSAGES from '../messages';
 import FormVersionsDialog from './FormVersionsDialogComponent';

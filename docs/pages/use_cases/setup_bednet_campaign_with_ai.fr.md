@@ -86,9 +86,9 @@ en votre nom.
 ### Étape 4 : Donner le kit à votre assistant IA
 
 1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip.
-2. Copiez tel quel l'un des messages ci-dessous, selon les données géographiques que vous voulez utiliser.
+2. Choisissez l'origine de vos données géographiques et copiez tel quel le message correspondant.
 
-**Option A : Utiliser les données géographiques de démonstration** (pyramide de démonstration du kit et réponses d'exemple). La plupart des gens commencent ici : il n'y a rien à préparer, et vous voyez le résultat avant de préparer vos propres données :
+**Option A : Utiliser les données géographiques de démonstration** (pyramide de démonstration du kit et réponses d'exemple). La plupart des gens commencent ici : il n'y a rien à préparer, et vous voyez le résultat avant de préparer vos propres données. Copiez ce message, puis allez directement à l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant) pour répondre aux questions :
 
 > Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
@@ -97,11 +97,11 @@ en votre nom.
 > (mode démo). Demande-moi confirmation avant chaque étape qui écrit dans IASO, et ne t'arrête
 > qu'après la liste du § 12c.
 
-**Vous utilisez la démo ?** Vous avez terminé avec les données géographiques : passez les options B à D et allez à l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant). Si l'assistant n'arrive pas à joindre IASO, voyez l'astuce à la fin de cette étape.
+Si l'assistant n'arrive pas à joindre IASO, voyez l'astuce à la fin de cette étape.
 
-**Vous utilisez vos propres données géographiques ?** Soit l'assistant les importe (options B et C), soit vous les importez d'abord vous-même en suivant les [étapes du guide utilisateur](../users/reference/user_guide.md#liste-des-sources-de-donnees), puis vous utilisez l'option D.
+**Option B : Utiliser vos propres données géographiques.** Reportez-vous au [guide utilisateur](../users/reference/user_guide.md#liste-des-sources-de-donnees) pour plus de détails sur la façon de formater votre fichier GeoPackage ou Excel, ou de connecter votre instance DHIS2. Pour obtenir l'aide du kit avec vos données, utilisez l'un de ces messages :
 
-**Option B : Vos données géographiques dans un fichier Excel** (joint à la conversation) :
+**Vos données géographiques dans un fichier Excel** (joint à la conversation) :
 
 > Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
@@ -111,7 +111,7 @@ en votre nom.
 
 Avec un fichier GeoPackage, utilisez ce message en écrivant « GeoPackage » au lieu d'« Excel ».
 
-**Option C : Vos données géographiques dans DHIS2** (déjà configuré sur la source de données dans IASO) :
+**Vos données géographiques dans DHIS2** (déjà configuré sur la source de données dans IASO) :
 
 > Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
@@ -119,14 +119,6 @@ Avec un fichier GeoPackage, utilisez ce message en écrivant « GeoPackage » au
 > DHIS2, déjà configuré sur la source de données IASO. Pose-moi les questions de la campagne une
 > section à la fois. Demande-moi confirmation avant chaque étape qui écrit dans IASO, et ne
 > t'arrête qu'après la liste du § 12c.
-
-**Option D : Vos données géographiques déjà dans IASO** (par exemple importées par vous-même avec les étapes du guide utilisateur) :
-
-> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
-> Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
-> que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont déjà dans IASO.
-> Pose-moi les questions de la campagne une section à la fois. Demande-moi confirmation avant
-> chaque étape qui écrit dans IASO, et ne t'arrête qu'après la liste du § 12c.
 
 L'assistant travaille dans son propre espace : demandez-lui de vous donner en téléchargement
 les fichiers qu'il produit (QR codes, mots de passe des utilisateurs, sauvegarde).
@@ -153,8 +145,18 @@ les fichiers qu'il produit (QR codes, mots de passe des utilisateurs, sauvegarde
 ### Étape 5 : Répondre aux questions de l'assistant
 
 L'assistant pose ses questions un thème à la fois (en démo, il propose toutes les réponses
-d'un coup, dans un seul récapitulatif à valider). Plus vous avez déjà pris de décisions, plus
-la configuration est rapide :
+d'un coup, dans un seul récapitulatif à valider).
+
+Tout n'est pas encore décidé ? Vous pouvez quand même tester la configuration de la
+campagne : l'assistant peut proposer des données de démonstration (pyramide de
+démonstration, exemples de districts, de magasins et d'agents) que vous remplacerez ensuite
+par les vôtres.
+
+L'assistant construit ensuite la campagne étape par étape, en demandant votre accord à
+chaque fois : données géographiques, projets, formulaires, registres, stock,
+utilisateurs, tableaux de bord et rapports mobiles.
+
+Plus vous avez déjà pris de décisions, plus la configuration est rapide :
 
 | Thème | Questions | À préparer |
 |---|---|---|
@@ -165,15 +167,6 @@ la configuration est rapide :
 | Travailleurs | les rôles, les taux journaliers, qui valide la présence | la grille de paiement |
 | Stock | les magasins suivis, le nombre de moustiquaires par balle | la liste des magasins |
 | Utilisateurs | qui utilise quel projet, dans quelle zone | la liste des agents |
-
-Tout n'est pas encore décidé ? Vous pouvez quand même tester la configuration de la
-campagne : l'assistant peut proposer des données de démonstration (pyramide de
-démonstration, exemples de districts, de magasins et d'agents) que vous remplacerez ensuite
-par les vôtres.
-
-L'assistant construit ensuite la campagne étape par étape, en demandant votre accord à
-chaque fois : données géographiques, projets, formulaires, registres, stock,
-utilisateurs, tableaux de bord et rapports mobiles.
 
 Vous pouvez installer l'application IASO dès que l'assistant montre les QR codes, mais le
 téléphone montre peu de choses tant que le reste n'existe pas :

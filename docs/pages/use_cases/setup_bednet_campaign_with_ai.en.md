@@ -80,9 +80,9 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 ### Step 4: Give the kit to your AI assistant
 
 1. Start a new conversation in Claude or ChatGPT and attach the zip.
-2. Copy one of the messages below as it is, depending on the geographic data you want to use.
+2. Choose where your geographic data comes from and copy the matching message as it is.
 
-**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data:
+**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data. Copy this message, then go directly to [step 5](#step-5-answer-the-assistants-questions) to answer the questions:
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -90,11 +90,11 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 > everything in one summary (demo mode). Confirm with me before each step that writes to
 > IASO, and do not stop before the checklist of § 12c.
 
-**Using the demo?** You are done with the geographic data: skip options B to D and go to [step 5](#step-5-answer-the-assistants-questions). If the assistant can't reach IASO, see the tip at the end of this step.
+If the assistant can't reach IASO, see the tip at the end of this step.
 
-**Using your own geographic data?** Either let the assistant import it (options B and C), or import it yourself first by following the [steps in the user guide](../users/reference/user_guide.md#data-sources-list), then use option D.
+**Option B: Use your own geographic data.** Refer to the [user guide](../users/reference/user_guide.md#data-sources-list) for more details on how to format your GeoPackage or Excel file, or how to connect your DHIS2 instance. To get support from the kit with your data, use one of these messages:
 
-**Option B: Your geographic data in an Excel file** (attached to the conversation):
+**Your geographic data in an Excel file** (attached to the conversation):
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -104,21 +104,13 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".
 
-**Option C: Your geographic data in DHIS2** (already set up on the data source in IASO):
+**Your geographic data in DHIS2** (already set up on the data source in IASO):
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
 > the campaign questions one section at a time. Confirm with me before each step that writes
 > to IASO, and do not stop before the checklist of § 12c.
-
-**Option D: Your geographic data already in IASO** (for example imported yourself with the steps of the user guide):
-
-> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
-> `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
-> connector. My org units are already in IASO. Ask me the campaign questions one section at a
-> time. Confirm with me before each step that writes to IASO, and do not stop before the
-> checklist of § 12c.
 
 The assistant works in its own space: ask it to give you as downloads the files it produces
 (QR codes, user passwords, backup).
@@ -144,8 +136,16 @@ The assistant works in its own space: ask it to give you as downloads the files 
 ### Step 5: Answer the assistant's questions
 
 The assistant asks its questions one topic at a time (in a demo, it proposes all the answers
-at once, in one summary to approve). The more of these decisions you have already made, the
-quicker the configuration:
+at once, in one summary to approve).
+
+Not everything decided yet? You can still test the campaign setup: the assistant can propose
+demo data (demo pyramid, example districts, stores and agents) that you replace later with
+your own.
+
+Then the assistant builds the campaign step by step, asking for your go-ahead each time:
+geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.
+
+The more of these decisions you have already made, the quicker the configuration:
 
 | Topic | Questions | Prepare |
 |---|---|---|
@@ -156,13 +156,6 @@ quicker the configuration:
 | Workers | the roles, daily rates, who validates attendance | the payment scale |
 | Stock | the stores tracked, the number of nets per bale | the list of stores |
 | Users | who uses which project, in which area | the list of agents |
-
-Not everything decided yet? You can still test the campaign setup: the assistant can propose
-demo data (demo pyramid, example districts, stores and agents) that you replace later with
-your own.
-
-Then the assistant builds the campaign step by step, asking for your go-ahead each time:
-geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.
 
 You can install the IASO app as soon as the assistant shows the QR codes, but the phone shows
 little until the rest exists:

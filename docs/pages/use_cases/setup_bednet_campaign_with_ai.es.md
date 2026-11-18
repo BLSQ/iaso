@@ -84,9 +84,9 @@ nombre.
 ### Paso 4: Dar el kit a su asistente de IA
 
 1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip.
-2. Copie tal cual uno de los mensajes siguientes, según los datos geográficos que quiera usar.
+2. Elija el origen de sus datos geográficos y copie tal cual el mensaje correspondiente.
 
-**Opción A: Usar los datos geográficos de demostración** (la pirámide de demostración del kit y respuestas de ejemplo). La mayoría de la gente empieza aquí: no hay nada que preparar, y verá el resultado antes de preparar sus propios datos:
+**Opción A: Usar los datos geográficos de demostración** (la pirámide de demostración del kit y respuestas de ejemplo). La mayoría de la gente empieza aquí: no hay nada que preparar, y verá el resultado antes de preparar sus propios datos. Copie este mensaje y vaya directamente al [paso 5](#paso-5-responder-a-las-preguntas-del-asistente) para responder a las preguntas:
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
@@ -95,11 +95,11 @@ nombre.
 > demo). Pide mi confirmación antes de cada paso que escriba en IASO, y no te detengas antes
 > de la lista del § 12c.
 
-**¿Usa la demostración?** Ya ha terminado con los datos geográficos: salte las opciones B a D y vaya al [paso 5](#paso-5-responder-a-las-preguntas-del-asistente). Si el asistente no consigue acceder a IASO, vea el consejo al final de este paso.
+Si el asistente no consigue acceder a IASO, vea el consejo al final de este paso.
 
-**¿Usa sus propios datos geográficos?** O bien el asistente los importa (opciones B y C), o bien los importa usted mismo antes siguiendo los [pasos de la guía de usuario](../users/reference/user_guide.md#lista-de-fuentes-de-datos), y luego usa la opción D.
+**Opción B: Usar sus propios datos geográficos.** Consulte la [guía de usuario](../users/reference/user_guide.md#lista-de-fuentes-de-datos) para más detalles sobre cómo dar formato a su archivo GeoPackage o Excel, o cómo conectar su instancia de DHIS2. Para obtener la ayuda del kit con sus datos, use uno de estos mensajes:
 
-**Opción B: Sus datos geográficos en un archivo Excel** (adjunto a la conversación):
+**Sus datos geográficos en un archivo Excel** (adjunto a la conversación):
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
@@ -109,7 +109,7 @@ nombre.
 
 Con un archivo GeoPackage, use este mensaje escribiendo «GeoPackage» en lugar de «Excel».
 
-**Opción C: Sus datos geográficos en DHIS2** (ya configurado en la fuente de datos de IASO):
+**Sus datos geográficos en DHIS2** (ya configurado en la fuente de datos de IASO):
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
@@ -117,14 +117,6 @@ Con un archivo GeoPackage, use este mensaje escribiendo «GeoPackage» en lugar 
 > DHIS2, ya configurado en la fuente de datos de IASO. Hazme las preguntas de la campaña una
 > sección a la vez. Pide mi confirmación antes de cada paso que escriba en IASO, y no te
 > detengas antes de la lista del § 12c.
-
-**Opción D: Sus datos geográficos ya están en IASO** (por ejemplo, importados por usted mismo con los pasos de la guía de usuario):
-
-> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
-> Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
-> los scripts del kit, ningún conector IASO. Mis unidades organizativas ya están en IASO.
-> Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación antes de cada
-> paso que escriba en IASO, y no te detengas antes de la lista del § 12c.
 
 El asistente trabaja en su propio espacio: pídale que le dé como descargas los archivos que
 produce (códigos QR, contraseñas de los usuarios, copia de seguridad).
@@ -151,8 +143,17 @@ produce (códigos QR, contraseñas de los usuarios, copia de seguridad).
 ### Paso 5: Responder a las preguntas del asistente
 
 El asistente hace sus preguntas un tema a la vez (en una demostración, propone todas las
-respuestas de una vez, en un solo resumen para aprobar). Cuantas más decisiones haya tomado
-ya, más rápida será la configuración:
+respuestas de una vez, en un solo resumen para aprobar).
+
+¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
+asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
+distritos, almacenes y agentes) que luego sustituirá por los suyos.
+
+Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
+datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
+móviles.
+
+Cuantas más decisiones haya tomado ya, más rápida será la configuración:
 
 | Tema | Preguntas | Qué preparar |
 |---|---|---|
@@ -163,14 +164,6 @@ ya, más rápida será la configuración:
 | Trabajadores | las funciones, las tarifas diarias, quién valida la asistencia | la escala de pagos |
 | Stock | los almacenes seguidos, el número de mosquiteros por fardo | la lista de almacenes |
 | Usuarios | quién usa qué proyecto, en qué zona | la lista de agentes |
-
-¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
-asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
-distritos, almacenes y agentes) que luego sustituirá por los suyos.
-
-Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
-datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
-móviles.
 
 Puede instalar la aplicación IASO en cuanto el asistente muestre los códigos QR, pero el
 teléfono muestra poco hasta que existe el resto:

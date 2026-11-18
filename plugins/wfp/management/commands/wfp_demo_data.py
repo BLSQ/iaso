@@ -53,7 +53,7 @@ PBWG_FORMS = {
 
 
 def _question_type(name):
-    if "date" in name or name in ("edd", "child_dob", "actual_birthday__date__"):
+    if "date" in name or name in ("pregnancy_edd", "child_dob", "actual_birthday__date__"):
         return "date"
     if name in ("muac", "mother_muac", "weight_kgs", "quantity", "age__int__"):
         return "decimal"
@@ -299,8 +299,16 @@ class Command(BaseCommand):
             account=account,
             reference_form=forms["reference"],
             is_active=True,
-            fields_list_view=["first_name", "last_name", "progress_id", "fcn"],
-            fields_detail_info_view=["first_name", "last_name", "progress_id", "fcn", "camp", "block"],
+            fields_list_view=["first_name", "last_name", "progress_id", "case_id", "fcn_number"],
+            fields_detail_info_view=[
+                "first_name",
+                "last_name",
+                "progress_id",
+                "case_id",
+                "fcn_number",
+                "camp",
+                "block",
+            ],
         )
 
     @staticmethod
@@ -361,7 +369,8 @@ class Command(BaseCommand):
             "first_name": self.random.choice(first_names),
             "last_name": self.random.choice(LAST_NAMES),
             "progress_id": f"{self.random.randint(100000, 999999)}",
-            "fcn": f"FCN{self.random.randint(1000000, 9999999)}",
+            "case_id": f"CASE-{self.random.randint(100000, 999999)}",
+            "fcn_number": f"FCN{self.random.randint(1000000, 9999999)}",
             "block": f"Block {self.random.choice('ABCDEFG')}{self.random.randint(1, 30)}",
             "phone_number": f"01{self.random.randint(300000000, 999999999)}",
         }
@@ -486,7 +495,7 @@ class Command(BaseCommand):
         )
 
         if status == "pregnant":
-            extra = {"edd": (admission + timedelta(days=rnd.randint(30, 200))).isoformat()}
+            extra = {"pregnancy_edd": (admission + timedelta(days=rnd.randint(30, 200))).isoformat()}
         else:
             extra = {"child_dob": (admission - timedelta(days=rnd.randint(10, 300))).isoformat()}
 

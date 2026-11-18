@@ -156,23 +156,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.no',
         defaultMessage: 'No',
     },
-    exportCoda: {
-        id: 'iaso.wfp.beneficiaries.exportCoda',
-        defaultMessage: 'Export CODA 2.0',
+    coda: {
+        id: 'iaso.wfp.beneficiaries.coda',
+        defaultMessage: 'CODA 2.0',
     },
-    exportCodaTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportCodaTooltip',
-        defaultMessage:
-            'One row per visit of the beneficiaries matching the filters',
+    rawData: {
+        id: 'iaso.wfp.beneficiaries.rawData',
+        defaultMessage: 'raw data',
     },
-    exportRaw: {
-        id: 'iaso.wfp.beneficiaries.exportRaw',
-        defaultMessage: 'Export raw data',
-    },
-    exportRawTooltip: {
-        id: 'iaso.wfp.beneficiaries.exportRawTooltip',
-        defaultMessage:
-            'The ETL tables and the submissions (one sheet per form) of the beneficiaries matching the filters',
+    eligibleBeneficiaries: {
+        id: 'iaso.wfp.beneficiaries.eligibleBeneficiaries',
+        defaultMessage: 'eligible beneficiaries',
     },
     beneficiaryData: {
         id: 'iaso.wfp.beneficiaries.beneficiaryData',

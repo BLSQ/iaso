@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="device",
             name="imei",
-            field=models.CharField(default="empty", max_length=250, unique=True),
+            field=models.CharField(default="empty", max_length=250),
             preserve_default=False,
         ),
         migrations.RenameField(

@@ -9,28 +9,6 @@ preguntas sobre su campaña y espera su aprobación antes de cambiar nada en IAS
 configuración de la campaña sea más rápida, sobre todo si la mayoría de las decisiones de la
 campaña ya están tomadas.
 
-La guía tiene dos partes:
-
-1. **[Preparar su cuenta IASO](#parte-1-preparar-su-cuenta-iaso)**: crear o abrir su cuenta
-   y elegir el usuario para la configuración.
-2. **[Configurar la campaña](#parte-2-configurar-la-campana-con-el-kit-de-campana)**: dar el
-   kit de campaña IASO a su asistente de IA y dejar que importe sus datos geográficos y
-   construya las herramientas de la campaña.
-
-## Lo que obtiene al final
-
-| Herramienta | Para | Qué hace |
-|---|---|---|
-| **Proyectos móviles** (hasta seis) | agentes de empadronamiento, agentes de distribución, equipos de grupos especiales, jefes de equipo, gestores de stock, supervisores | registrar los hogares con un ticket QR, distribuir los mosquiteros una sola vez por hogar, registrar a los trabajadores y su asistencia, seguir los movimientos de stock, rellenar las listas de supervisión |
-| **15 formularios listos para usar** | todos los agentes | en inglés y francés, adaptados a su regla de asignación |
-| **Registros** | todos | hogares, grupos especiales (prisiones, campamentos, internados…) y trabajadores, que los agentes vuelven a encontrar en el teléfono |
-| **Seguimiento del stock** | gestores de stock | saldo de mosquiteros de cada almacén, calculado a partir de recepciones, salidas, devoluciones, transferencias y pérdidas |
-| **Paneles web** | equipo de coordinación | avance de la campaña por región, distrito o establecimiento de salud, con un mapa de los hogares; asistencia y hoja de pago de los trabajadores; stock por zona |
-| **Informes móviles** | jefes de equipo, gestores de stock | avance, mapa de hogares, asistencia del equipo y stock, disponibles sin conexión en el teléfono |
-| **Códigos QR** | formadores | para instalar la aplicación IASO y configurarla para cada proyecto en segundos |
-
-![Los proyectos de la campaña en IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
-
 ## Antes de empezar
 
 | Necesita | Detalles |

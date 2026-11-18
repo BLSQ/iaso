@@ -8,28 +8,6 @@ ChatGPT…) does the technical work, asks you questions about your campaign and 
 go-ahead before changing anything in IASO. It makes the campaign configuration quicker,
 especially if most of the campaign decisions are already made.
 
-The guide has two parts:
-
-1. **[Prepare your IASO account](#part-1-prepare-your-iaso-account)**: create or open your
-   account and choose the user for the setup.
-2. **[Configure the campaign](#part-2-configure-the-campaign-with-the-campaign-kit)**: give
-   the IASO campaign kit to your AI assistant and let it import your geographic data and
-   build the campaign tools.
-
-## What you get at the end
-
-| Tool | For | What it does |
-|---|---|---|
-| **Mobile projects** (up to six) | enumeration agents, distribution agents, special group teams, team leaders, stock managers, supervisors | register households with a QR ticket, distribute nets once per household, register workers and their attendance, track stock movements, fill in supervision checklists |
-| **15 ready-made forms** | all agents | in English and French, adapted to your allocation rule |
-| **Registries** | everyone | households, special groups (prisons, camps, boarding schools…) and workers, which agents find again on the phone |
-| **Stock tracking** | stock managers | balance of nets in each store, computed from receipts, issues, returns, transfers and losses |
-| **Web dashboards** | coordination team | campaign progress by region, district or health facility, with a map of the households; worker attendance and payment sheet; stock by area |
-| **Mobile reports** | team leaders, stock managers | progress, map of households, team attendance and stock, available offline on the phone |
-| **QR codes** | trainers | to install the IASO app and configure it for each project in seconds |
-
-![The campaign projects in IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
-
 ## Before you start
 
 | You need | Details |

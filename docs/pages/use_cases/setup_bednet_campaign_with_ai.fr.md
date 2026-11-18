@@ -9,28 +9,6 @@ questions sur votre campagne et attend votre accord avant de modifier quoi que c
 IASO. Il rend la configuration de la campagne plus rapide, surtout si la plupart des
 décisions de la campagne sont déjà prises.
 
-Le guide comporte deux parties :
-
-1. **[Préparer votre compte IASO](#partie-1-preparer-votre-compte-iaso)** : créer ou ouvrir
-   votre compte et choisir l'utilisateur pour la configuration.
-2. **[Configurer la campagne](#partie-2-configurer-la-campagne-avec-le-kit-de-campagne)** :
-   donner le kit de campagne IASO à votre assistant IA et le laisser importer vos données
-   géographiques et construire les outils de la campagne.
-
-## Ce que vous obtenez à la fin
-
-| Outil | Pour | Ce qu'il fait |
-|---|---|---|
-| **Projets mobiles** (jusqu'à six) | agents de dénombrement, agents de distribution, équipes groupes spéciaux, chefs d'équipe, gestionnaires de stock, superviseurs | enregistrer les ménages avec un ticket QR, distribuer les moustiquaires une seule fois par ménage, enregistrer les travailleurs et leur présence, suivre les mouvements de stock, remplir les grilles de supervision |
-| **15 formulaires prêts à l'emploi** | tous les agents | en français et en anglais, adaptés à votre règle d'attribution |
-| **Registres** | tous | ménages, groupes spéciaux (prisons, camps, internats…) et travailleurs, que les agents retrouvent sur le téléphone |
-| **Suivi du stock** | gestionnaires de stock | solde de moustiquaires de chaque magasin, calculé à partir des réceptions, sorties, retours, transferts et pertes |
-| **Tableaux de bord web** | équipe de coordination | avancement de la campagne par région, district ou formation sanitaire, avec une carte des ménages ; présence et fiche de paiement des travailleurs ; stock par zone |
-| **Rapports mobiles** | chefs d'équipe, gestionnaires de stock | avancement, carte des ménages, présence de l'équipe et stock, disponibles hors ligne sur le téléphone |
-| **QR codes** | formateurs | pour installer l'application IASO et la configurer pour chaque projet en quelques secondes |
-
-![Les projets de la campagne dans IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
-
 ## Avant de commencer
 
 | Il vous faut | Détails |

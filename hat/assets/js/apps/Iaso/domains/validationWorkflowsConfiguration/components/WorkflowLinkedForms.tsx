@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
 import LinkIcon from '@mui/icons-material/Link';
-import { Box, Chip, Paper, Typography } from '@mui/material';
+import { Box, Paper, Typography } from '@mui/material';
 import {
+    ChipList,
     LinkWithLocation,
     makeRedirectionUrl,
     useSafeIntl,
@@ -61,10 +62,14 @@ export const WorkflowLinkedForms: FC<Props> = ({ workflow }) => {
                               numericValues({ count: linkedForms.length }),
                           )}
                 </Typography>
-                {/* Read only: forms are linked in the workflow details */}
-                {linkedForms.map(form => (
-                    <Chip key={form.id} label={form.label} size="small" />
-                ))}
+                {linkedForms.length > 0 && (
+                    <ChipList
+                        items={linkedForms.map(form => ({
+                            id: form.id,
+                            label: form.label,
+                        }))}
+                    />
+                )}
             </Box>
             <Typography variant="body2" sx={styles.link}>
                 <LinkWithLocation

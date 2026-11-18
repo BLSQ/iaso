@@ -183,7 +183,6 @@ class EligibleExportTestCase(APITestCase):
         self.assertEqual(sorted(sheets), ["BSFP Child Under 5", "NSEP Child Under 5"])
         self.assertEqual(sheets["NSEP Child Under 5"][0]["Nutritional Status"], "Normal")
 
-
     def _entity_ids_by_sheet(self, params=None):
         """[(sheet name, entity ids of its rows)], both in the order of the file."""
         return [(name, [row["Entity ID"] for row in rows]) for name, rows in self._export(params).items()]

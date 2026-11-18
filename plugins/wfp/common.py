@@ -505,9 +505,7 @@ def extract_pbwg_physiology(data):
     is_pregnant = normalize(data.get("is_pregnant"))
     pregnant = normalize(data.get("pregnant"))
     lactating = normalize(data.get("luctating") or data.get("lactating"))
-    physiology = normalize(
-        data.get("physiology_status") or data.get("woman_status") or data.get("status_of_woman")
-    )
+    physiology = normalize(data.get("physiology_status") or data.get("woman_status") or data.get("status_of_woman"))
 
     if "yes" in (is_pregnant, pregnant) or physiology == "pregnant":
         return "pregnant"

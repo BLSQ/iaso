@@ -77,7 +77,6 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     # The visit scope is computed by `BeneficiaryFilter` and handed to the view when the beneficiaries are filtered.
     _visit_scope = _UNSET
 
-
     def _period(self, serializer_class=VisitPeriodSerializer):
         """The validated visit period of the request (`start_date` and `end_date`), a 400 if a date is invalid.
 
@@ -114,7 +113,6 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if self._visit_scope is _UNSET:
             raise RuntimeError("The visit scope is set by BeneficiaryFilter: call `filter_queryset` first")
         return self._visit_scope
-
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

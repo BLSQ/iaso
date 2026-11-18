@@ -79,11 +79,10 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 ### Step 4: Give the kit to your AI assistant
 
-1. Start a new conversation in Claude or ChatGPT and attach the zip, plus your Excel or
-   GeoPackage file if you have one. (With Claude Code, open it in the kit folder instead.)
-2. Copy one of these messages as it is, depending on where your geographic data comes from.
+1. Start a new conversation in Claude or ChatGPT and attach the zip.
+2. Copy one of the messages below as it is, depending on the geographic data you want to use.
 
-**A demo, to try the kit** (the kit's demo pyramid and example answers):
+**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data:
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -91,7 +90,11 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 > everything in one summary (demo mode). Confirm with me before each step that writes to
 > IASO, and do not stop before the checklist of § 12c.
 
-**Your geographic data in an Excel file** (attached to the conversation):
+**Using the demo?** You are done with the geographic data: skip options B to D and go to [step 5](#step-5-answer-the-assistants-questions). If the assistant can't reach IASO, see the tip at the end of this step.
+
+**Using your own geographic data?** Either let the assistant import it (options B and C), or import it yourself first by following the [steps in the user guide](../users/reference/user_guide.md#data-sources-list), then use option D.
+
+**Option B: Your geographic data in an Excel file** (attached to the conversation):
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -99,7 +102,9 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 > section at a time. Confirm with me before each step that writes to IASO, and do not stop
 > before the checklist of § 12c.
 
-**Your geographic data in DHIS2** (already set up on the data source in IASO):
+With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".
+
+**Option C: Your geographic data in DHIS2** (already set up on the data source in IASO):
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -107,17 +112,13 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 > the campaign questions one section at a time. Confirm with me before each step that writes
 > to IASO, and do not stop before the checklist of § 12c.
 
-**Your geographic data already in IASO**:
+**Option D: Your geographic data already in IASO** (for example imported yourself with the steps of the user guide):
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units are already in IASO. Ask me the campaign questions one section at a
 > time. Confirm with me before each step that writes to IASO, and do not stop before the
 > checklist of § 12c.
-
-If you are unsure, start with the demo: it builds everything on fictitious places, and you see
-the result before preparing your own data. With a GeoPackage file, use the Excel message and
-say "GeoPackage" instead of "Excel".
 
 The assistant works in its own space: ask it to give you as downloads the files it produces
 (QR codes, user passwords, backup).
@@ -195,10 +196,6 @@ session.
    distribute nets, register a worker, record a stock movement.
 7. Open the mobile reports, with network and then in airplane mode.
 
-![A project home screen on the phone](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
-![The progress report in the app](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
-![The map of households in the progress report](./setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg){ width="220" }
-
 !!! note "Where are the stock forms?"
     On servers that have the stock home screen, the Stock project opens on the stores and their
     forms. Otherwise, the assistant adds a **Data collection** tab to the Stock project: open
@@ -218,8 +215,6 @@ users.
   The campaign dashboard and the progress report show the households on a map (base map from
   Bluesquare's tile server, from OpenStreetMap): in the dashboard, click a row of the table to
   zoom on that place.
-
-![The campaign dashboard](./setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg){ .doc-shot }
 
 ## Learn more
 

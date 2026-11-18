@@ -83,12 +83,10 @@ nombre.
 
 ### Paso 4: Dar el kit a su asistente de IA
 
-1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip, junto con su archivo
-   Excel o GeoPackage si tiene uno. (Con Claude Code, ábralo en la carpeta del kit.)
-2. Copie tal cual uno de estos mensajes, según el origen de sus datos geográficos.
+1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip.
+2. Copie tal cual uno de los mensajes siguientes, según los datos geográficos que quiera usar.
 
-**Una demostración, para probar el kit** (la pirámide de demostración del kit y respuestas de
-ejemplo):
+**Opción A: Usar los datos geográficos de demostración** (la pirámide de demostración del kit y respuestas de ejemplo). La mayoría de la gente empieza aquí: no hay nada que preparar, y verá el resultado antes de preparar sus propios datos:
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
@@ -97,7 +95,11 @@ ejemplo):
 > demo). Pide mi confirmación antes de cada paso que escriba en IASO, y no te detengas antes
 > de la lista del § 12c.
 
-**Sus datos geográficos en un archivo Excel** (adjunto a la conversación):
+**¿Usa la demostración?** Ya ha terminado con los datos geográficos: salte las opciones B a D y vaya al [paso 5](#paso-5-responder-a-las-preguntas-del-asistente). Si el asistente no consigue acceder a IASO, vea el consejo al final de este paso.
+
+**¿Usa sus propios datos geográficos?** O bien el asistente los importa (opciones B y C), o bien los importa usted mismo antes siguiendo los [pasos de la guía de usuario](../users/reference/user_guide.md#lista-de-fuentes-de-datos), y luego usa la opción D.
+
+**Opción B: Sus datos geográficos en un archivo Excel** (adjunto a la conversación):
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
@@ -105,7 +107,9 @@ ejemplo):
 > Excel adjunto. Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación
 > antes de cada paso que escriba en IASO, y no te detengas antes de la lista del § 12c.
 
-**Sus datos geográficos en DHIS2** (ya configurado en la fuente de datos de IASO):
+Con un archivo GeoPackage, use este mensaje escribiendo «GeoPackage» en lugar de «Excel».
+
+**Opción C: Sus datos geográficos en DHIS2** (ya configurado en la fuente de datos de IASO):
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
@@ -114,17 +118,13 @@ ejemplo):
 > sección a la vez. Pide mi confirmación antes de cada paso que escriba en IASO, y no te
 > detengas antes de la lista del § 12c.
 
-**Sus datos geográficos ya están en IASO**:
+**Opción D: Sus datos geográficos ya están en IASO** (por ejemplo, importados por usted mismo con los pasos de la guía de usuario):
 
 > Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Mis unidades organizativas ya están en IASO.
 > Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación antes de cada
 > paso que escriba en IASO, y no te detengas antes de la lista del § 12c.
-
-Si tiene dudas, empiece por la demostración: construye todo sobre lugares ficticios, y verá el
-resultado antes de preparar sus propios datos. Con un archivo GeoPackage, use el mensaje de
-Excel escribiendo «GeoPackage» en lugar de «Excel».
 
 El asistente trabaja en su propio espacio: pídale que le dé como descargas los archivos que
 produce (códigos QR, contraseñas de los usuarios, copia de seguridad).
@@ -207,10 +207,6 @@ los dos tercios de la sesión.
    stock.
 7. Abra los informes móviles, con red y luego en modo avión.
 
-![Inicio de un proyecto en el teléfono](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
-![El informe de avance en la aplicación](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
-![El mapa de hogares en el informe de avance](./setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg){ width="220" }
-
 !!! note "¿Dónde están los formularios de stock?"
     En los servidores que tienen la pantalla de inicio de stock, el proyecto Stock se abre en
     los almacenes y sus formularios. Si no, el asistente añade una pestaña **Data collection**
@@ -231,8 +227,6 @@ de prueba.
   panel de la campaña y el informe de avance muestran los hogares en un mapa (mapa base del
   servidor de teselas de Bluesquare, a partir de OpenStreetMap): en el panel, haga clic en una
   fila de la tabla para acercarse a ese lugar.
-
-![El panel de la campaña](./setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg){ .doc-shot }
 
 ## Más información
 

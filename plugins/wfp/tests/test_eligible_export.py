@@ -8,7 +8,12 @@ import openpyxl
 from rest_framework import status
 
 from iaso import models as m
+<<<<<<< HEAD
 from iaso.test import APITestCase
+=======
+from iaso.test import APITestCase, TestCase
+from plugins.wfp.api.beneficiaries.serializers import EligibleExportParamsSerializer
+>>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
 from plugins.wfp.utils.eligible_export import PBWG, U5, _sheet_name, current_period
@@ -22,6 +27,7 @@ def _at(day, hour=12):
     return datetime(day.year, day.month, day.day, hour, tzinfo=timezone.utc)
 
 
+<<<<<<< HEAD
 class CurrentPeriodTestCase(APITestCase):
     def test_from_the_26th_of_the_previous_month_to_the_25th(self):
         self.assertEqual(current_period(date(2026, 11, 13)), (date(2026, 10, 26), date(2026, 11, 25)))
@@ -29,6 +35,22 @@ class CurrentPeriodTestCase(APITestCase):
 
 
 class SheetNameTestCase(APITestCase):
+=======
+class CurrentPeriodTestCase(TestCase):
+    def test_from_the_26th_of_the_previous_month_to_the_25th(self):
+        # in the middle of the month
+        expected = (date(2026, 10, 26), date(2026, 11, 25))
+        actual = current_period(date(2026, 11, 13))
+        self.assertEqual(actual, expected)
+
+        # end of January: the period of the calendar month, started in December of the previous year
+        expected = (date(2025, 12, 26), date(2026, 1, 25))
+        actual = current_period(date(2026, 1, 31))
+        self.assertEqual(actual, expected)
+
+
+class SheetNameTestCase(TestCase):
+>>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
     def test_programme_postfixed_with_the_entity_type_and_the_physiology_status(self):
         taken = set()
         self.assertEqual(_sheet_name("BSFP", "Child Under 5", U5, "", taken), "BSFP Child Under 5")
@@ -129,8 +151,18 @@ class EligibleExportTestCase(APITestCase):
         self.assertIn("Expected Date of Delivery (EDD)", woman_row)
 
         # with an entity type, only its beneficiaries
+<<<<<<< HEAD
         self.assertEqual(sorted(self._export({"entity_type": self.children.id})), ["BSFP Child Under 5"])
         self.assertEqual(sorted(self._export({"entity_type": self.women.id})), ["BSFP PBWG Pregnant"])
+=======
+        expected = ["BSFP Child Under 5"]
+        actual = sorted(self._export({"entity_type": self.children.id}))
+        self.assertEqual(actual, expected)
+
+        expected = ["BSFP PBWG Pregnant"]
+        actual = sorted(self._export({"entity_type": self.women.id}))
+        self.assertEqual(actual, expected)
+>>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
 
     def test_children_with_an_ongoing_journey_found_green(self):
         journey = self._child()
@@ -170,6 +202,84 @@ class EligibleExportTestCase(APITestCase):
         self.assertEqual(sorted(sheets), ["BSFP Child Under 5", "NSEP Child Under 5"])
         self.assertEqual(sheets["NSEP Child Under 5"][0]["Nutritional Status"], "Normal")
 
+<<<<<<< HEAD
+=======
+    def _entity_ids_by_sheet(self, params=None):
+        """[(sheet name, entity ids of its rows)], both in the order of the file."""
+        return [(name, [row["Entity ID"] for row in rows]) for name, rows in self._export(params).items()]
+
+    @mock.patch("plugins.wfp.utils.eligible_export.BATCH_SIZE", 2)  # the rows of a sheet span several batches
+    def test_order_of_the_sheets_and_rows_with_filters(self):
+        # created interleaved: the beneficiaries of a sheet are not created one after the other
+        child_1 = self._child()
+        self._visit(child_1, date(2026, 11, 5), whz_color="Green")
+        pregnant_1 = self._woman("pregnant")
+        self._visit(pregnant_1, date(2026, 11, 2), muac_size="24.1")
+        nsep_child = self._child(nutrition_programme="NSEP")
+        self._visit(nsep_child, date(2026, 11, 3), muac_size="13.0")
+        child_2 = self._child()
+        self._visit(child_2, date(2026, 10, 28), whz_color="Green")
+        yellow_child = self._child()  # not eligible: never in the export
+        self._visit(yellow_child, date(2026, 11, 4), whz_color="Yellow")
+        breastfeeding = self._woman("breastfeeding")
+        self._visit(breastfeeding, date(2026, 11, 1), muac_size="23.5")
+        pregnant_2 = self._woman("pregnant")
+        self._visit(pregnant_2, date(2026, 10, 27), muac_size="24.5")
+        child_3 = self._child()
+        self._visit(child_3, date(2026, 11, 10), whz_color="Green")
+
+        def ids(*journeys):
+            return [journey.beneficiary.entity_id for journey in journeys]
+
+        # no filter: the sheets sorted by programme, entity type and physiology status, the rows by beneficiary
+        expected = [
+            ("BSFP Child Under 5", ids(child_1, child_2, child_3)),
+            ("BSFP PBWG Breastfeeding", ids(breastfeeding)),
+            ("BSFP PBWG Pregnant", ids(pregnant_1, pregnant_2)),
+            ("NSEP Child Under 5", ids(nsep_child)),
+        ]
+        actual = self._entity_ids_by_sheet()
+        self.assertEqual(actual, expected)
+
+        # entity type: only the children, in the same order
+        expected = [
+            ("BSFP Child Under 5", ids(child_1, child_2, child_3)),
+            ("NSEP Child Under 5", ids(nsep_child)),
+        ]
+        actual = self._entity_ids_by_sheet({"entity_type": self.children.id})
+        self.assertEqual(actual, expected)
+
+        # programme and entity type: the BSFP women
+        expected = [
+            ("BSFP PBWG Breastfeeding", ids(breastfeeding)),
+            ("BSFP PBWG Pregnant", ids(pregnant_1, pregnant_2)),
+        ]
+        actual = self._entity_ids_by_sheet({"programme": "BSFP", "entity_type": self.women.id})
+        self.assertEqual(actual, expected)
+
+        # visit period: without the beneficiaries last visited in October (child 2 and pregnant 2)
+        expected = [
+            ("BSFP Child Under 5", ids(child_1, child_3)),
+            ("BSFP PBWG Breastfeeding", ids(breastfeeding)),
+            ("BSFP PBWG Pregnant", ids(pregnant_1)),
+            ("NSEP Child Under 5", ids(nsep_child)),
+        ]
+        actual = self._entity_ids_by_sheet({"visit_date_after": "2026-11-01", "visit_date_before": "2026-11-13"})
+        self.assertEqual(actual, expected)
+
+        # every filter at once
+        expected = [("BSFP Child Under 5", ids(child_1, child_3))]
+        actual = self._entity_ids_by_sheet(
+            {
+                "entity_type": self.children.id,
+                "programme": "BSFP",
+                "visit_date_after": "2026-11-01",
+                "visit_date_before": "2026-11-13",
+            }
+        )
+        self.assertEqual(actual, expected)
+
+>>>>>>> f2780cf336 (feat: Configure Reporting Cycle for Monthly Beneficiary Extraction (#3550))
     def test_women_visited_during_the_period_one_sheet_per_physiology_status(self):
         pregnant = self._woman("pregnant")
         self._visit(pregnant, date(2026, 11, 2), muac_size="24.1", json={"pregnancy_edd": "2027-01-15"})
@@ -243,7 +353,7 @@ class EligibleExportTestCase(APITestCase):
         november = self._child()
         self._visit(november, date(2026, 11, 5), whz_color="Green")
 
-        params = {"entity_type": self.children.id, "start_date": "2026-09-01", "end_date": "2026-09-30"}
+        params = {"entity_type": self.children.id, "visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30"}
         [row] = self._export(params)["BSFP Child Under 5"]
         self.assertEqual(row["UUID"], str(september.beneficiary.entity.uuid))
         self.assertEqual(row["Actual Visit Date"].date(), date(2026, 9, 10))
@@ -255,25 +365,69 @@ class EligibleExportTestCase(APITestCase):
         journey = self._child()
         self._visit(journey, date(2026, 9, 10), whz_color="Green")
         self._visit(journey, date(2026, 10, 10), whz_color="Yellow")
-        params = {"entity_type": self.children.id, "start_date": "2026-09-01", "end_date": "2026-09-30"}
+        params = {"entity_type": self.children.id, "visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30"}
         self.assertEqual(len(self._export(params)["BSFP Child Under 5"]), 1)
-        params["end_date"] = "2026-10-31"
+        params["visit_date_before"] = "2026-10-31"
         self.assertEqual(self._export(params), {"Eligible beneficiaries": []})
 
-    def test_invalid_period(self):
+    def _period_errors(self, **params):
+        """The errors of the eligible export for an invalid period, by field."""
+        response = self.client.get(ELIGIBLE_EXPORT_URL, {"entity_type": self.children.id, **params})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        return response.json()
+
+    def test_invalid_date_format(self):
         self.client.force_authenticate(self.user)
-        for params in [{"start_date": "2026-10-01", "end_date": "2026-09-01"}, {"start_date": "01-09-2026"}]:
-            with self.subTest(params):
-                response = self.client.get(ELIGIBLE_EXPORT_URL, {"entity_type": self.children.id, **params})
-                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        for field in ["visit_date_after", "visit_date_before"]:
+            with self.subTest(field):
+                self.assertEqual(
+                    self._period_errors(**{field: "01-09-2026"}),
+                    {field: ["Date has wrong format. Use one of these formats instead: YYYY-MM-DD."]},
+                )
+
+    def test_end_date_before_start_date(self):
+        self.client.force_authenticate(self.user)
+        self.assertEqual(
+            self._period_errors(visit_date_after="2026-10-01", visit_date_before="2026-09-01"),
+            {"visit_date_before": ["The end date must be after the start date."]},
+        )
 
     def test_no_future_date(self):
         self.client.force_authenticate(self.user)
-        for params in [{"end_date": "2026-11-14"}, {"start_date": "2026-11-14"}]:
-            with self.subTest(params):
-                response = self.client.get(ELIGIBLE_EXPORT_URL, {"entity_type": self.children.id, **params})
-                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self._export({"entity_type": self.children.id, "end_date": TODAY.isoformat()})
+        future = "The date cannot be in the future."
+        for field in ["visit_date_after", "visit_date_before"]:
+            with self.subTest(field):
+                self.assertEqual(self._period_errors(**{field: "2026-11-14"}), {field: [future]})
+        # both dates in the future: each field gets its own error
+        self.assertEqual(
+            self._period_errors(visit_date_after="2026-11-14", visit_date_before="2026-11-15"),
+            {"visit_date_after": [future], "visit_date_before": [future]},
+        )
+
+    def test_period_error_codes(self):
+        # the codes identify each error, whatever the language of the message
+        for data, codes in [
+            ({"visit_date_after": "2026-11-14"}, {"visit_date_after": ["future_date"]}),
+            ({"visit_date_before": "2026-11-14"}, {"visit_date_before": ["future_date"]}),
+            (
+                {"visit_date_after": "2026-10-01", "visit_date_before": "2026-09-01"},
+                {"visit_date_before": ["end_before_start"]},
+            ),
+            ({"visit_date_after": "01-09-2026"}, {"visit_date_after": ["invalid"]}),
+        ]:
+            with self.subTest(data):
+                period = EligibleExportParamsSerializer(data=data)
+                self.assertFalse(period.is_valid())
+                self.assertEqual(
+                    {key: [error.code for error in errors] for key, errors in period.errors.items()}, codes
+                )
+
+    def test_visit_date_filters_give_the_period_of_the_export(self):
+        period = EligibleExportParamsSerializer(
+            data={"visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30", "q": "ignored"}
+        )
+        self.assertTrue(period.is_valid())
+        self.assertEqual(period.validated_data, {"start_date": date(2026, 9, 1), "end_date": date(2026, 9, 30)})
 
     def test_the_default_period_ends_today_at_the_latest(self):
         # TODAY is the 13th: the visits made after it (e.g. planned ones) are not in the default period

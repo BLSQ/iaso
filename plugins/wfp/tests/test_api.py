@@ -333,3 +333,37 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
         for case, path in cases.items():
             with self.subTest(case):
                 self.assertEqual(self.client.get(f"{BENEFICIARIES_URL}{path}").status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_invalid_visit_period(self):
+        # the list and every export: each error on the date field to correct (shown next to it by the page)
+        self.client.force_authenticate(self.user)
+        wrong_format = ["Date has wrong format. Use one of these formats instead: YYYY-MM-DD."]
+        cases = {
+            "wrong format": (
+                {"visit_date_after": "01-09-2026"},
+                {"visit_date_after": wrong_format},
+            ),
+            "day out of range": (  # was a 500: parsed but not a date
+                {"visit_date_before": "2026-02-30"},
+                {"visit_date_before": wrong_format},
+            ),
+            "end before start": (
+                {"visit_date_after": "2026-10-01", "visit_date_before": "2026-09-01"},
+                {"visit_date_before": ["The end date must be after the start date."]},
+            ),
+        }
+        for path in ["", "export/coda/", "export/raw/", "export/eligible/"]:
+            for case, (params, errors) in cases.items():
+                with self.subTest(path=path, case=case):
+                    response = self.client.get(f"{BENEFICIARIES_URL}{path}", params)
+                    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                    self.assertEqual(response.json(), errors)
+
+    def test_visit_period_in_the_future(self):
+        # the list shows the planned visits too: only the eligible export refuses the future
+        self.client.force_authenticate(self.user)
+        params = {"visit_date_after": "2026-01-01", "visit_date_before": "2999-12-31"}
+        self.assertJSONResponse(self.client.get(BENEFICIARIES_URL, params), status.HTTP_200_OK)
+        response = self.client.get(f"{BENEFICIARIES_URL}export/eligible/", params)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json(), {"visit_date_before": ["The date cannot be in the future."]})

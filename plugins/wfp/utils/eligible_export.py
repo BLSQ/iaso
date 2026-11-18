@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 
 import xlsxwriter
 
+from dateutil.relativedelta import relativedelta
 from django.db.models import Prefetch
 from django.utils import timezone
 
@@ -42,8 +43,8 @@ NORMAL_MUAC = {U5: 12.5, PBWG: 23.0}
 def current_period(today: datetime.date) -> tuple[datetime.date, datetime.date]:
     """From the 26th of the previous month to the 25th of the current month (both included)."""
     end = today.replace(day=25)
-    previous_month = today.replace(day=1) - datetime.timedelta(days=1)
-    return previous_month.replace(day=26), end
+    start = end + relativedelta(months=-1, day=26)
+    return start, end
 
 
 @dataclass
@@ -72,7 +73,11 @@ class Row:
             "reference": [self.reference_answers],
             "visit": [self.visit_answers],
         }[sources]
-        return next((value for answers in all_answers if (value := _first_of(answers, *candidates)) is not None), None)
+        for answers in all_answers:
+            value = _first_of(answers, *candidates)
+            if value is not None:
+                return value
+        return None
 
     @property
     def visit_date(self) -> typing.Optional[datetime.date]:
@@ -176,11 +181,12 @@ COLUMNS: dict[str, list[tuple[str, typing.Callable[[Row], typing.Any]]]] = {
 }
 
 PHYSIOLOGY_STATUS_LABELS = {"pregnant": "Pregnant", "breastfeeding": "Breastfeeding"}
+HIDDEN_COLUMN_BY_PHYSIOLOGY_STATUS = {"pregnant": CHILD_BIRTH_DATE, "breastfeeding": EDD}
 
 
 def sheet_columns(kind: str, physiology_status: str) -> list[tuple[str, typing.Callable[[Row], typing.Any]]]:
     """The columns of a sheet: no child birth date for pregnant women, no EDD for breastfeeding ones."""
-    hidden = {"pregnant": CHILD_BIRTH_DATE, "breastfeeding": EDD}.get(physiology_status) if kind == PBWG else None
+    hidden = HIDDEN_COLUMN_BY_PHYSIOLOGY_STATUS.get(physiology_status) if kind == PBWG else None
     return [column for column in COLUMNS[kind] if column[0] != hidden]
 
 
@@ -208,6 +214,20 @@ def nutritional_status(visit: Visit, kind: str, answers: typing.Optional[dict] =
 def eligible_beneficiaries(beneficiaries):
     """The beneficiaries of the queryset having at least one ongoing journey."""
     return beneficiaries.filter(id__in=Journey.objects.filter(exit_type__isnull=True).values("beneficiary_id"))
+
+
+def _last_synced_visit(
+    visits: list[Visit], instances: dict[int, Instance], cut_off: datetime.datetime
+) -> tuple[typing.Optional[Visit], typing.Optional[Instance]]:
+    """The most recent visit synchronised before the cut-off, with its submission: (None, None) if there is none.
+
+    `visits` are ordered from the most recent, `instances` are the submissions of the visits by id.
+    """
+    for visit in visits:
+        instance = instances.get(visit.instance_id)
+        if instance is not None and instance.created_at < cut_off:
+            return visit, instance
+    return None, None
 
 
 def iter_rows(
@@ -257,17 +277,11 @@ def iter_rows(
         instances = Instance.objects.filter(id__in=instance_ids).select_related("form").in_bulk()
 
         for beneficiary, journey, kind, journey_visits in candidates:
-            # the last visit (the visits are ordered from the most recent) synchronised by the cut-off
-            visit, instance = next(
-                (
-                    (visit, instances.get(visit.instance_id))
-                    for visit in journey_visits
-                    if visit.instance_id in instances and instances[visit.instance_id].created_at < cut_off
-                ),
-                (None, None),
-            )
+            visit, instance = _last_synced_visit(journey_visits, instances, cut_off)
+            if visit is None:
+                continue
             # the raw answers: the colour decides who is exported but isn't exported itself
-            status = nutritional_status(visit, kind, instance.json or {}) if visit else None
+            status = nutritional_status(visit, kind, instance.json or {})
             if not status:
                 continue
             reference = beneficiary.entity.attributes

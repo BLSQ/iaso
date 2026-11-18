@@ -1,9 +1,9 @@
-# Configurar una campaña de distribución de mosquiteros con IA
+# Configurar una campaña de distribución de MTI con IA
 
 *Configure IASO para una distribución masiva de mosquiteros tratados con insecticida (MTI) con la ayuda de un asistente de IA.*
 
 Esta guía está dirigida a coordinadores de campaña y responsables informáticos que quieren
-usar IASO para planificar y supervisar una campaña de mosquiteros. No hace falta ser
+usar IASO para planificar y supervisar una campaña de MTI. No hace falta ser
 desarrollador: un asistente de IA (Claude, ChatGPT…) hace el trabajo técnico, le hace
 preguntas sobre su campaña y espera su aprobación antes de cambiar nada en IASO. Hace que la
 configuración de la campaña sea más rápida, sobre todo si la mayoría de las decisiones de la
@@ -90,7 +90,7 @@ nombre.
 **Una demostración, para probar el kit** (la pirámide de demostración del kit y respuestas de
 ejemplo):
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Es una demostración: usa la pirámide de
 > demostración del kit y propón respuestas de ejemplo para todo en un solo resumen (modo
@@ -99,7 +99,7 @@ ejemplo):
 
 **Sus datos geográficos en un archivo Excel** (adjunto a la conversación):
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Mis unidades organizativas están en el archivo
 > Excel adjunto. Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación
@@ -107,7 +107,7 @@ ejemplo):
 
 **Sus datos geográficos en DHIS2** (ya configurado en la fuente de datos de IASO):
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Mis unidades organizativas vienen de nuestro
 > DHIS2, ya configurado en la fuente de datos de IASO. Hazme las preguntas de la campaña una
@@ -116,7 +116,7 @@ ejemplo):
 
 **Sus datos geográficos ya están en IASO**:
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Mis unidades organizativas ya están en IASO.
 > Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación antes de cada

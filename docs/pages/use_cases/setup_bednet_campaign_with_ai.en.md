@@ -1,9 +1,9 @@
-# Set up a bed net distribution campaign with AI
+# Set up an ITN distribution campaign with AI
 
 *Configure IASO for a mass distribution of insecticide-treated nets (ITNs) with the help of an AI assistant.*
 
 This guide is for campaign coordinators and IT focal points who want to use IASO to plan and
-monitor a bed net campaign. You don't need to be a developer: an AI assistant (Claude,
+monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
 ChatGPT…) does the technical work, asks you questions about your campaign and waits for your
 go-ahead before changing anything in IASO. It makes the campaign configuration quicker,
 especially if most of the campaign decisions are already made.
@@ -85,7 +85,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 **A demo, to try the kit** (the kit's demo pyramid and example answers):
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. This is a demo: use the kit's demo pyramid and propose placeholder answers for
 > everything in one summary (demo mode). Confirm with me before each step that writes to
@@ -93,7 +93,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 **Your geographic data in an Excel file** (attached to the conversation):
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units are in the attached Excel file. Ask me the campaign questions one
 > section at a time. Confirm with me before each step that writes to IASO, and do not stop
@@ -101,7 +101,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 **Your geographic data in DHIS2** (already set up on the data source in IASO):
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
 > the campaign questions one section at a time. Confirm with me before each step that writes
@@ -109,7 +109,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 **Your geographic data already in IASO**:
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units are already in IASO. Ask me the campaign questions one section at a
 > time. Confirm with me before each step that writes to IASO, and do not stop before the

@@ -137,8 +137,13 @@ class EligibleExportTestCase(APITestCase):
         self.assertIn("Expected Date of Delivery (EDD)", woman_row)
 
         # with an entity type, only its beneficiaries
-        self.assertEqual(sorted(self._export({"entity_type": self.children.id})), ["BSFP Child Under 5"])
-        self.assertEqual(sorted(self._export({"entity_type": self.women.id})), ["BSFP PBWG Pregnant"])
+        expected = ["BSFP Child Under 5"]
+        actual = sorted(self._export({"entity_type": self.children.id}))
+        self.assertEqual(actual, expected)
+
+        expected = ["BSFP PBWG Pregnant"]
+        actual = sorted(self._export({"entity_type": self.women.id}))
+        self.assertEqual(actual, expected)
 
     def test_children_with_an_ongoing_journey_found_green(self):
         journey = self._child()
@@ -177,6 +182,81 @@ class EligibleExportTestCase(APITestCase):
         sheets = self._export({"entity_type": self.children.id})
         self.assertEqual(sorted(sheets), ["BSFP Child Under 5", "NSEP Child Under 5"])
         self.assertEqual(sheets["NSEP Child Under 5"][0]["Nutritional Status"], "Normal")
+
+    def _entity_ids_by_sheet(self, params=None):
+        """[(sheet name, entity ids of its rows)], both in the order of the file."""
+        return [(name, [row["Entity ID"] for row in rows]) for name, rows in self._export(params).items()]
+
+    @mock.patch("plugins.wfp.utils.eligible_export.BATCH_SIZE", 2)  # the rows of a sheet span several batches
+    def test_order_of_the_sheets_and_rows_with_filters(self):
+        # created interleaved: the beneficiaries of a sheet are not created one after the other
+        child_1 = self._child()
+        self._visit(child_1, date(2026, 11, 5), whz_color="Green")
+        pregnant_1 = self._woman("pregnant")
+        self._visit(pregnant_1, date(2026, 11, 2), muac_size="24.1")
+        nsep_child = self._child(nutrition_programme="NSEP")
+        self._visit(nsep_child, date(2026, 11, 3), muac_size="13.0")
+        child_2 = self._child()
+        self._visit(child_2, date(2026, 10, 28), whz_color="Green")
+        yellow_child = self._child()  # not eligible: never in the export
+        self._visit(yellow_child, date(2026, 11, 4), whz_color="Yellow")
+        breastfeeding = self._woman("breastfeeding")
+        self._visit(breastfeeding, date(2026, 11, 1), muac_size="23.5")
+        pregnant_2 = self._woman("pregnant")
+        self._visit(pregnant_2, date(2026, 10, 27), muac_size="24.5")
+        child_3 = self._child()
+        self._visit(child_3, date(2026, 11, 10), whz_color="Green")
+
+        def ids(*journeys):
+            return [journey.beneficiary.entity_id for journey in journeys]
+
+        # no filter: the sheets sorted by programme, entity type and physiology status, the rows by beneficiary
+        expected = [
+            ("BSFP Child Under 5", ids(child_1, child_2, child_3)),
+            ("BSFP PBWG Breastfeeding", ids(breastfeeding)),
+            ("BSFP PBWG Pregnant", ids(pregnant_1, pregnant_2)),
+            ("NSEP Child Under 5", ids(nsep_child)),
+        ]
+        actual = self._entity_ids_by_sheet()
+        self.assertEqual(actual, expected)
+
+        # entity type: only the children, in the same order
+        expected = [
+            ("BSFP Child Under 5", ids(child_1, child_2, child_3)),
+            ("NSEP Child Under 5", ids(nsep_child)),
+        ]
+        actual = self._entity_ids_by_sheet({"entity_type": self.children.id})
+        self.assertEqual(actual, expected)
+
+        # programme and entity type: the BSFP women
+        expected = [
+            ("BSFP PBWG Breastfeeding", ids(breastfeeding)),
+            ("BSFP PBWG Pregnant", ids(pregnant_1, pregnant_2)),
+        ]
+        actual = self._entity_ids_by_sheet({"programme": "BSFP", "entity_type": self.women.id})
+        self.assertEqual(actual, expected)
+
+        # visit period: without the beneficiaries last visited in October (child 2 and pregnant 2)
+        expected = [
+            ("BSFP Child Under 5", ids(child_1, child_3)),
+            ("BSFP PBWG Breastfeeding", ids(breastfeeding)),
+            ("BSFP PBWG Pregnant", ids(pregnant_1)),
+            ("NSEP Child Under 5", ids(nsep_child)),
+        ]
+        actual = self._entity_ids_by_sheet({"visit_date_after": "2026-11-01", "visit_date_before": "2026-11-13"})
+        self.assertEqual(actual, expected)
+
+        # every filter at once
+        expected = [("BSFP Child Under 5", ids(child_1, child_3))]
+        actual = self._entity_ids_by_sheet(
+            {
+                "entity_type": self.children.id,
+                "programme": "BSFP",
+                "visit_date_after": "2026-11-01",
+                "visit_date_before": "2026-11-13",
+            }
+        )
+        self.assertEqual(actual, expected)
 
     def test_women_visited_during_the_period_one_sheet_per_physiology_status(self):
         pregnant = self._woman("pregnant")
@@ -301,7 +381,6 @@ class EligibleExportTestCase(APITestCase):
             self._period_errors(visit_date_after="2026-11-14", visit_date_before="2026-11-15"),
             {"visit_date_after": [future], "visit_date_before": [future]},
         )
-        self._export({"entity_type": self.children.id, "visit_date_before": TODAY.isoformat()})
 
     def test_period_error_codes(self):
         # the codes identify each error, whatever the language of the message

@@ -177,11 +177,12 @@ COLUMNS: dict[str, list[tuple[str, typing.Callable[[Row], typing.Any]]]] = {
 }
 
 PHYSIOLOGY_STATUS_LABELS = {"pregnant": "Pregnant", "breastfeeding": "Breastfeeding"}
+HIDDEN_COLUMN_BY_PHYSIOLOGY_STATUS = {"pregnant": CHILD_BIRTH_DATE, "breastfeeding": EDD}
 
 
 def sheet_columns(kind: str, physiology_status: str) -> list[tuple[str, typing.Callable[[Row], typing.Any]]]:
     """The columns of a sheet: no child birth date for pregnant women, no EDD for breastfeeding ones."""
-    hidden = {"pregnant": CHILD_BIRTH_DATE, "breastfeeding": EDD}.get(physiology_status) if kind == PBWG else None
+    hidden = HIDDEN_COLUMN_BY_PHYSIOLOGY_STATUS.get(physiology_status) if kind == PBWG else None
     return [column for column in COLUMNS[kind] if column[0] != hidden]
 
 

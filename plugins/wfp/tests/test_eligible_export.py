@@ -8,7 +8,7 @@ import openpyxl
 from rest_framework import status
 
 from iaso import models as m
-from iaso.test import APITestCase
+from iaso.test import APITestCase, TestCase
 from plugins.wfp.api.beneficiaries.serializers import EligibleExportParamsSerializer
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
@@ -23,13 +23,20 @@ def _at(day, hour=12):
     return datetime(day.year, day.month, day.day, hour, tzinfo=timezone.utc)
 
 
-class CurrentPeriodTestCase(APITestCase):
+class CurrentPeriodTestCase(TestCase):
     def test_from_the_26th_of_the_previous_month_to_the_25th(self):
-        self.assertEqual(current_period(date(2026, 11, 13)), (date(2026, 10, 26), date(2026, 11, 25)))
-        self.assertEqual(current_period(date(2026, 1, 31)), (date(2025, 12, 26), date(2026, 1, 25)))
+        # in the middle of the month
+        expected = (date(2026, 10, 26), date(2026, 11, 25))
+        actual = current_period(date(2026, 11, 13))
+        self.assertEqual(actual, expected)
+
+        # end of January: the period of the calendar month, started in December of the previous year
+        expected = (date(2025, 12, 26), date(2026, 1, 25))
+        actual = current_period(date(2026, 1, 31))
+        self.assertEqual(actual, expected)
 
 
-class SheetNameTestCase(APITestCase):
+class SheetNameTestCase(TestCase):
     def test_programme_postfixed_with_the_entity_type_and_the_physiology_status(self):
         taken = set()
         self.assertEqual(_sheet_name("BSFP", "Child Under 5", U5, "", taken), "BSFP Child Under 5")

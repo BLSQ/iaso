@@ -830,7 +830,7 @@ const MESSAGES = defineMessages({
     },
     selectAll: {
         defaultMessage: 'Select all',
-        id: 'iaso.plannings.label.selectAll',
+        id: 'iaso.label.selectAll',
     },
     selectUnassigned: {
         defaultMessage: 'Select unassigned',
@@ -838,7 +838,7 @@ const MESSAGES = defineMessages({
     },
     unselectAll: {
         defaultMessage: 'Unselect all',
-        id: 'iaso.plannings.label.unselectAll',
+        id: 'iaso.label.unSelectAll',
     },
     noOrgUnitMatchesFilter: {
         defaultMessage: 'No org unit matches the filter',

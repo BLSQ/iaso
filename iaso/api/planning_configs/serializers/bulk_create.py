@@ -7,21 +7,22 @@ from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer import BulkListQueryOptimizedSerializer
 from iaso.models import Group, OrgUnitType, Planning, PlanningConfig
 
 
-class PlanningConfigBulkCreateListSerializer(serializers.ListSerializer):
+class PlanningConfigBulkCreateListSerializer(BulkListQueryOptimizedSerializer):
     class Meta:
         model = PlanningConfig
 
     @staticmethod
-    def validate(data: dict[str, Any]) -> dict[str, Any]:
-        level_planning = [(x["level"], x["planning"]) for x in data]
+    def validate(attrs: dict[str, Any]) -> dict[str, Any]:
+        level_planning = [(x["level"], x["planning"]) for x in attrs]
 
         if len(level_planning) != len(set(level_planning)):
             raise serializers.ValidationError(_("Level and planning must be unique together"))
 
-        return data
+        return attrs
 
     @staticmethod
     def _get_instance_dict(data: dict[str, Any]) -> dict[str, Any]:

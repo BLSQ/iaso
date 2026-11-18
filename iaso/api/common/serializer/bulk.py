@@ -1,87 +1,95 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import Any
 
-from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models, transaction
 from django.db.models import Q
-from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from iaso.models import UserRole
-
-from .serializer_fields import UserRoleNameField
+from iaso.api.common.serializer.bulk_fields import BulkPrimaryKeyRelatedField, BulkSlugRelatedField
 
 
-class UserSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source="get_full_name")
+class BulkListQueryOptimizedSerializer(serializers.ListSerializer):
+    field_mapping = {
+        serializers.PrimaryKeyRelatedField: BulkPrimaryKeyRelatedField,
+        serializers.SlugRelatedField: BulkSlugRelatedField,
+    }
 
-    class Meta:
-        model = User
-        fields = ["id", "first_name", "last_name", "username", "full_name"]
+    @staticmethod
+    def clone_field(new_class: type[serializers.Field], field: serializers.Field) -> serializers.Field:
+        new_field = new_class(*field._args, **field._kwargs)
+        for k, v in field.__dict__.items():
+            if k not in {
+                "_args",
+                "_kwargs",
+                "field_name",
+                "parent",
+                "source",
+                "source_attrs",
+            }:
+                setattr(new_field, k, v)
+        return new_field
+
+    def replace_field(self, field: serializers.Field) -> serializers.Field | None:
+        for k, bulk_class in self.field_mapping.items():
+            if isinstance(field, bulk_class):
+                return field
+
+            if isinstance(field, k):
+                return self.clone_field(bulk_class, field)
+
+        return None
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self.related_bulk_fields = dict()
+
+        super().__init__(*args, **kwargs)
+
+        for field_name, field in self.child.fields.items():
+            if isinstance(field, serializers.ManyRelatedField):
+                child = field.child_relation
+                new_field = self.replace_field(child)
+                if new_field:
+                    self.child.fields[field_name].child_relation = new_field
+                    self.related_bulk_fields[field_name] = self.child.fields[field_name].child_relation
+
+            else:
+                new_field = self.replace_field(field)
+                if new_field:
+                    self.child.fields[field_name] = new_field
+                    self.related_bulk_fields[field_name] = self.child.fields[field_name]
+
+    def _populate_queryset_caches(self, data) -> None:
+        for field_name, field in self.related_bulk_fields.items():
+            submitted_ids = []
+            for item in data:
+                value = item.get(field_name)
+                if value is not None:
+                    submitted_ids.extend(
+                        value if isinstance(value, (list, tuple, set)) else [value]
+                    )  # value can be a list, null or a single value
+
+            if not submitted_ids:
+                field.set_queryset_cache([])
+            else:
+                queryset = field.get_queryset().filter(
+                    **{
+                        f"{field.get_lookup_field()}__in": [
+                            field.normalize_pk(submitted_id) for submitted_id in submitted_ids
+                        ]
+                    }
+                )
+                field.set_queryset_cache(queryset)
+
+    def to_internal_value(self, data: Any) -> Any:
+        if isinstance(data, list):
+            self._populate_queryset_caches(data)
+        return super().to_internal_value(data)
 
 
-class ModelSerializerFieldMappingMixin:
-    @property
-    def serializer_field_mapping(self):
-        mapping = getattr(settings, "REST_FRAMEWORK_SERIALIZER_FIELDS_MAPPINGS", {})
-        resolved_mapping = {}
-
-        for model_field_class, serializer_field in mapping.items():
-            # Dynamically import from string path to avoid circular import in settings
-            if isinstance(serializer_field, str):
-                serializer_field = import_string(serializer_field)
-            if isinstance(model_field_class, str):
-                model_field_class = import_string(model_field_class)
-            resolved_mapping[model_field_class] = serializer_field
-
-        return {**serializers.ModelSerializer.serializer_field_mapping, **resolved_mapping}
-
-
-class ModelSerializer(ModelSerializerFieldMappingMixin, serializers.ModelSerializer):
-    pass
-
-
-class UserRoleNameSerializer(ModelSerializer):
-    name = UserRoleNameField(source="group.name", read_only=True)
-
-    class Meta:
-        model = UserRole
-        fields = ["name", "id"]
-
-
-class DropdownOptionsSerializer(serializers.Serializer):
-    value = serializers.CharField()
-    label = serializers.CharField()
-
-
-class DropdownOptionsWithRepresentationSerializer(DropdownOptionsSerializer):
-    def to_representation(self, instance):
-        return {"value": instance[0], "label": str(instance[1])}
-
-
-class JsonPatchOperationSerializer(serializers.Serializer):
-    """
-    Serializer just there for swagger compliance: see https://jsonpatch.com/
-    """
-
-    op = serializers.ChoiceField(
-        choices=[
-            "add",
-            "remove",
-            "replace",
-            "move",
-            "copy",
-            "test",
-        ]
-    )
-    path = serializers.CharField()
-    value = serializers.JSONField(required=False)
-    vars()["from"] = serializers.CharField(required=False)
-
-
-class BulkUpdateListSerializer(serializers.ListSerializer):
+class BulkUpdateListSerializer(BulkListQueryOptimizedSerializer):
     update_fields: tuple[str, ...] = ()
     m2m_fields: dict[str, tuple[str, str]] = {}
     lookup_field: str = "id"

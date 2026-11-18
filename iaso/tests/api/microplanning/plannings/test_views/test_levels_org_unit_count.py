@@ -283,14 +283,12 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
                 },
             ]
             self.assertValidBody(body)
-            with self.assertNumQueries(7):
+            with self.assertNumQueries(5):
                 # 1. SELECT PLANNING
                 # 2: OUT SERIALIZER QUERYSET VALIDATION
                 # 3: GROUP SERIALIZER QUERYSET VALIDATION
-                # 4: OUT SERIALIZER QUERYSET VALIDATION - SECOND ITEM
-                # 5: GROUP SERIALIZER QUERYSET VALIDATION - SECOND ITEM
-                # 6: OU FILTER FOR USER
-                # 7: RECURSIVE
+                # 4: OU FILTER FOR USER
+                # 5: RECURSIVE
                 res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidResponse(res_data, 3)

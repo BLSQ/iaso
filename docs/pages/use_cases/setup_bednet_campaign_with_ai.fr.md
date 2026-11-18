@@ -71,11 +71,12 @@ en votre nom.
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. La page affiche une ligne comme `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copiez le long texte
    entre la deuxième paire de guillemets : c'est votre clé d'accès.
-3. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
+3. Décompressez le fichier ZIP.
+4. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
    (Bloc-notes, TextEdit…).
-4. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
+5. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
    d'accès après `IASO_TOKEN=`. Enregistrez le fichier.
-5. Recompressez le dossier du kit en zip.
+6. Recompressez le dossier du kit en zip.
 
 !!! warning "Gardez votre clé d'accès privée"
     La clé d'accès fonctionne comme votre mot de passe. Ne la collez jamais dans la

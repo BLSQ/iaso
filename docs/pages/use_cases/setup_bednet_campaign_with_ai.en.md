@@ -66,11 +66,12 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. The page shows a line like `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copy the long text between
    the second pair of quotes: this is your access key.
-3. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
+3. Decompress the ZIP file.
+4. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
    TextEdit…).
-4. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
+5. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
    after `IASO_TOKEN=`. Save the file.
-5. Zip the kit folder again.
+6. Zip the kit folder again.
 
 !!! warning "Keep your access key private"
     The access key works like your password. Never paste it into the conversation and never

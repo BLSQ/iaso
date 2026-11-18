@@ -1,9 +1,8 @@
-import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { PaginatedResponse } from 'Iaso/domains/app/types';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { apiDateFormat, dateFormat } from 'Iaso/utils/dates';
+import { getApiParamDateString } from 'Iaso/utils/dates';
 import { formatParams } from 'Iaso/utils/requests';
 import {
     Params,
@@ -20,12 +19,8 @@ const beneficiariesUrl = '/api/wfp/beneficiaries/';
 
 const withApiDates = <T extends Filters>(params: T): T => ({
     ...params,
-    visit_date_after:
-        params.visit_date_after &&
-        moment(params.visit_date_after, dateFormat).format(apiDateFormat),
-    visit_date_before:
-        params.visit_date_before &&
-        moment(params.visit_date_before, dateFormat).format(apiDateFormat),
+    visit_date_after: getApiParamDateString(params.visit_date_after) ?? undefined,
+    visit_date_before: getApiParamDateString(params.visit_date_before) ?? undefined,
 });
 
 export const useGetBeneficiaries = (
@@ -63,9 +58,7 @@ export const useGetFacilityOptions = (
     });
 
 export const exportUrl = (kind: ExportKind, filters: Filters): string => {
-    const queryString = new URLSearchParams(
-        formatParams({ ...withApiDates(filters) }),
-    ).toString();
+    const queryString = new URLSearchParams(formatParams({ ...withApiDates(filters) })).toString();
     return `${beneficiariesUrl}export/${kind}/${queryString ? `?${queryString}` : ''}`;
 };
 

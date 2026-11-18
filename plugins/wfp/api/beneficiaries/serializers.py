@@ -1,5 +1,7 @@
 """Serializers of the beneficiaries API: beneficiaries with their journeys, visits and steps, and their data."""
 
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from plugins.wfp.models import Journey, Step, Visit
@@ -114,3 +116,49 @@ class BeneficiaryDetailsSerializer(serializers.Serializer):
     beneficiary = EtlBeneficiarySerializer(allow_null=True)
     attributes = RowsField()
     submissions = SubmissionWithFieldsSerializer(many=True)
+
+
+class VisitPeriodSerializer(serializers.Serializer):
+    """The visit period filter of the beneficiaries page, of its list and of its exports.
+
+    `visit_date_after` and `visit_date_before` (YYYY-MM-DD, both included, both optional), validated as `start_date`
+    and `end_date`. Each error is reported on the field to correct, so that the page can show it next to it.
+    """
+
+    default_error_messages = {
+        "end_before_start": _("The end date must be after the start date."),
+    }
+
+    visit_date_after = serializers.DateField(required=False, source="start_date")
+    visit_date_before = serializers.DateField(required=False, source="end_date")
+
+    def validate(self, attrs):
+        start_date, end_date = attrs.get("start_date"), attrs.get("end_date")
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {"visit_date_before": self.error_messages["end_before_start"]}, code="end_before_start"
+            )
+        return attrs
+
+
+class EligibleExportParamsSerializer(VisitPeriodSerializer):
+    """The period of the eligible beneficiaries export, by default from the 26th of last month to the 25th (or today).
+
+    Unlike the list (which shows the planned visits too), no date can be in the future.
+    """
+
+    # merged by DRF with the error messages of the parent
+    default_error_messages = {
+        "future_date": _("The date cannot be in the future."),
+    }
+
+    def _not_in_the_future(self, value):
+        if value > timezone.localdate():
+            raise serializers.ValidationError(self.error_messages["future_date"], code="future_date")
+        return value
+
+    def validate_visit_date_after(self, value):
+        return self._not_in_the_future(value)
+
+    def validate_visit_date_before(self, value):
+        return self._not_in_the_future(value)

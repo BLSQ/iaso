@@ -18,6 +18,7 @@ import {
     useGetFacilityOptions,
 } from './../requests';
 import { Params } from './../types';
+import { NoFutureDates } from './NoFutureDates';
 
 type Props = {
     params: Params;
@@ -149,20 +150,22 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
             <Grid item xs={12} md={6}>
                 <Box display="flex" alignItems="center" mt={2}>
                     <Box flexGrow={1}>
-                        <DatesRange
-                            marginTop={0}
-                            xs={12}
-                            sm={6}
-                            md={6}
-                            lg={6}
-                            keyDateFrom="visit_date_after"
-                            keyDateTo="visit_date_before"
-                            onChangeDate={handleChange}
-                            dateFrom={filters.visit_date_after}
-                            dateTo={filters.visit_date_before}
-                            labelFrom={MESSAGES.visitDateFrom}
-                            labelTo={MESSAGES.visitDateTo}
-                        />
+                        <NoFutureDates>
+                            <DatesRange
+                                marginTop={0}
+                                xs={12}
+                                sm={6}
+                                md={6}
+                                lg={6}
+                                keyDateFrom="visit_date_after"
+                                keyDateTo="visit_date_before"
+                                onChangeDate={handleChange}
+                                dateFrom={filters.visit_date_after}
+                                dateTo={filters.visit_date_before}
+                                labelFrom={MESSAGES.visitDateFrom}
+                                labelTo={MESSAGES.visitDateTo}
+                            />
+                        </NoFutureDates>
                     </Box>
                     <Tooltip
                         title={formatMessage(MESSAGES.visitDateTooltip)}

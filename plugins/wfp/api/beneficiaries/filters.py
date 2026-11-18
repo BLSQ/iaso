@@ -62,8 +62,9 @@ class BeneficiaryFilter(django_filters.FilterSet):
 
     def filter_search(self, queryset, name, value):
         value = value.strip()
-        criteria = Q(progress_id__istartswith=value)
-        criteria |= Q(entity_id=value) if value.isdigit() else Q(entity__uuid__startswith=value)
+        criteria = Q(progress_id__istartswith=value) | Q(entity__uuid__startswith=value)
+        if value.isdigit():
+            criteria |= Q(entity_id=value)
         return queryset.filter(criteria)
 
     def filter_visit_date(self, queryset, name, value):

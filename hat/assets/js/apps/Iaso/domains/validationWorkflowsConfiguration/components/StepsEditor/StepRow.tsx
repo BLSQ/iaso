@@ -17,8 +17,8 @@ const styles = {
         position: 'relative',
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 2,
-        p: 2,
+        gap: { xs: 1, sm: 2 },
+        p: { xs: 1.5, sm: 2 },
         mb: 1.5,
         border: theme => `1px solid ${theme.palette.divider}`,
         borderRadius: 1,
@@ -27,6 +27,14 @@ const styles = {
     rowDragging: {
         zIndex: 1,
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+
+    rail: {
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: 'center',
+        gap: { xs: 0.5, sm: 2 },
+        flexShrink: 0,
     },
     handle: {
         display: 'flex',
@@ -126,15 +134,17 @@ export const StepRow: FC<Props> = ({
             }}
             data-test={`step-row-${step.slug}`}
         >
-            <Box
-                ref={setActivatorNodeRef}
-                sx={[styles.handle, isLocked && styles.handleDisabled]}
-                {...attributes}
-                {...listeners}
-            >
-                <DragIndicatorIcon fontSize="small" />
+            <Box sx={styles.rail}>
+                <Box
+                    ref={setActivatorNodeRef}
+                    sx={[styles.handle, isLocked && styles.handleDisabled]}
+                    {...attributes}
+                    {...listeners}
+                >
+                    <DragIndicatorIcon fontSize="small" />
+                </Box>
+                <Box sx={styles.order}>{index + 1}</Box>
             </Box>
-            <Box sx={styles.order}>{index + 1}</Box>
             <Box sx={styles.fields}>
                 <Box sx={styles.fieldsRow}>
                     <Box sx={styles.field}>

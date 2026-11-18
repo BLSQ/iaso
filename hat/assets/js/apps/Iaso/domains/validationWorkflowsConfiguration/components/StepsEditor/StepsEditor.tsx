@@ -32,6 +32,7 @@ const styles = {
     },
     header: {
         display: 'flex',
+        flexWrap: 'wrap',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 2,
@@ -41,8 +42,11 @@ const styles = {
     },
     orderHelp: {
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         gap: 0.5,
+    },
+    orderHelpIcon: {
+        mt: '2px',
     },
     body: {
         p: 2,
@@ -112,7 +116,10 @@ export const StepsEditor: FC<Props> = ({
                         color="text.secondary"
                         sx={styles.orderHelp}
                     >
-                        <ArrowDownwardIcon fontSize="inherit" />
+                        <ArrowDownwardIcon
+                            fontSize="inherit"
+                            sx={styles.orderHelpIcon}
+                        />
                         {formatMessage(MESSAGES.stepsOrderHelp)}
                     </Typography>
                 </Box>

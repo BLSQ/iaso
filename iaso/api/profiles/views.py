@@ -404,9 +404,7 @@ class ProfilesViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @staticmethod
-    def list_export(
-        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
-    ) -> HttpResponse | StreamingHttpResponse:
+    def list_export(queryset: "QuerySet[Profile]", file_format: FileFormatEnum) -> HttpResponse | StreamingHttpResponse:
         columns = [
             {"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST + ["last_login_at"]
         ]

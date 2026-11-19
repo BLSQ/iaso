@@ -35,7 +35,7 @@ class BeneficiaryFilter(django_filters.FilterSet):
     programme = django_filters.ChoiceFilter(choices=NUTRITION_PROGRAMMES, method="filter_programme")
     org_unit_group = IdFilter(method="filter_scope", help_text="The cooperation partner")
     facility = IdFilter(method="filter_scope", help_text="An integrated nutrition facility of the partner")
-    q = django_filters.CharFilter(method="filter_search", help_text="Entity id, start of the UUID or progress id")
+    search = django_filters.CharFilter(method="filter_search", help_text="Entity id, start of the UUID or progress id")
     visit_date = django_filters.DateFromToRangeFilter(method="filter_visit_date")
 
     class Meta:

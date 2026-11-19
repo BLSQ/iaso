@@ -402,7 +402,7 @@ class EligibleExportTestCase(APITestCase):
 
     def test_visit_date_filters_give_the_period_of_the_export(self):
         period = EligibleExportParamsSerializer(
-            data={"visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30", "q": "ignored"}
+            data={"visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30", "search": "ignored"}
         )
         self.assertTrue(period.is_valid())
         self.assertEqual(period.validated_data, {"start_date": date(2026, 9, 1), "end_date": date(2026, 9, 30)})

@@ -261,7 +261,7 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
 
     def test_search_ids(self):
         # fixed uuids, starting with digits only: random ones sometimes do. They start with 0, as no id does: a
-        # number is searched both as an id and as the start of a uuid, so `q=<id>` must not match them by uuid
+        # number is searched both as an id and as the start of a uuid, so `search=<id>` must not match them by uuid
         self.entity.uuid = uuid.UUID("01234567-0000-4000-8000-000000000000")
         self.entity.save()
         self.other_entity.uuid = uuid.UUID("98765432-0000-4000-8000-000000000000")
@@ -299,7 +299,7 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
         }
         for case, (value, expected) in cases.items():
             with self.subTest(case):
-                self.assertEqual(self._entity_ids(self.user, {"q": value}), expected)
+                self.assertEqual(self._entity_ids(self.user, {"search": value}), expected)
 
     def test_restricted_user_with_a_group(self):
         cases = {

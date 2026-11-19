@@ -40,7 +40,7 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """Beneficiaries computed by the ETL for the account of the user, with their journeys and visits.
 
     Filters: `entity_type`, `programme`, `org_unit_group` (the cooperation partner: only the visits made in the org
-    units of its group), `facility` (one integrated nutrition facility of that group), `q` (entity id, start of the
+    units of its group), `facility` (one integrated nutrition facility of that group), `search` (entity id, start of the
     UUID or start of the progress id) and `visit_date_after` / `visit_date_before` (beneficiaries visited in the
     period for a journey they didn't exit yet: a 400 keyed by the field to correct when a date is invalid, see
     `VisitPeriodSerializer`). Users restricted to some org units only see the visits made there.

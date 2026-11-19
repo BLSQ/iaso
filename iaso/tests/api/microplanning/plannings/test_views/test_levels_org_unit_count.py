@@ -303,15 +303,8 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
-                res_data,
-                [
-                    {},
-                    {
-                        "org_unit_types": [
-                            f'Invalid pk "{self.org_unit_type_other_account.pk}" - object does not exist.'
-                        ]
-                    },
-                ],
+                res_data["1"],
+                {"org_unit_types": [f'Invalid pk "{self.org_unit_type_other_account.pk}" - object does not exist.']},
             )
 
         with self.subTest("org unit type that does not exist"):
@@ -321,8 +314,8 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
-                res_data,
-                [{}, {"org_unit_types": [f'Invalid pk "{pk}" - object does not exist.']}],
+                res_data["1"],
+                {"org_unit_types": [f'Invalid pk "{pk}" - object does not exist.']},
             )
 
     def test_validation_levels(self):
@@ -333,14 +326,14 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             # self.assertValidBody(body) swagger will fail obviously :)
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(res_data, [{"level": ["This field is required."]}])
+            self.assertEqual(res_data["0"], {"level": ["This field is required."]})
 
         with self.subTest("level must be > 0"):
             body = [{"level": 0}]
             # self.assertValidBody(body) swagger will fail obviously :)
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertEqual(res_data, [{"level": ["Ensure this value is greater than or equal to 1."]}])
+            self.assertEqual(res_data["0"], {"level": ["Ensure this value is greater than or equal to 1."]})
 
             body = [{"level": 1}]
             self.assertValidBody(body)
@@ -355,15 +348,8 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
-                res_data,
-                [
-                    {},
-                    {
-                        "org_unit_groups": [
-                            f'Invalid pk "{self.org_unit_group_other_account.pk}" - object does not exist.'
-                        ]
-                    },
-                ],
+                res_data["1"],
+                {"org_unit_groups": [f'Invalid pk "{self.org_unit_group_other_account.pk}" - object does not exist.']},
             )
 
         with self.subTest("org unit type that does not exist"):
@@ -373,8 +359,8 @@ class PlanningLevelsOrgUnitCountViewAPITestCase(SwaggerTestCaseMixin, APITestCas
             res = self.client.post(self.get_url(), data=body)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(
-                res_data,
-                [{}, {"org_unit_groups": [f'Invalid pk "{pk}" - object does not exist.']}],
+                res_data["1"],
+                {"org_unit_groups": [f'Invalid pk "{pk}" - object does not exist.']},
             )
 
     def test_happy_path_with_body(self):

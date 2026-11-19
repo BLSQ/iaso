@@ -101,10 +101,13 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             ],
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        for error in res_data:
-            self.assertHasError(
-                error, "workflow", f"Object with slug={self.other_validation_workflow.slug} does not exist."
-            )
+        self.assertEqual(
+            res_data,
+            {
+                "0": {"workflow": [f"Object with slug={self.other_validation_workflow.slug} does not exist."]},
+                "1": {"workflow": [f"Object with slug={self.other_validation_workflow.slug} does not exist."]},
+            },
+        )
 
     def test_validation(self):
         self.client.force_authenticate(self.john_wick)
@@ -127,8 +130,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
             data=[{"roles_required": [222]}],
         )
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-        self.assertHasError(res_data[0], "name", "This field is required.")
-        self.assertHasError(res_data[0], "roles_required", 'Invalid pk "222" - object does not exist.')
+        self.assertHasError(res_data["0"], "name", "This field is required.")
+        self.assertHasError(res_data["0"], "roles_required", 'Invalid pk "222" - object does not exist.')
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
@@ -288,7 +291,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
         self.assertHasError(
-            res_data[0], api_settings.NON_FIELD_ERRORS_KEY, "The fields name, workflow must make a unique set."
+            res_data["0"], api_settings.NON_FIELD_ERRORS_KEY, "The fields name, workflow must make a unique set."
         )
 
     def test_forbidden_if_validation_workflow_is_soft_deleted(self):

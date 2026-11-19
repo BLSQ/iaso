@@ -330,8 +330,14 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 ],
             )
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            for error in res_data:
-                self.assertHasError(error, "name", "This field may not be blank.")
+            self.assertEqual(
+                res_data,
+                {
+                    "0": {"name": ["This field may not be blank."]},
+                    "1": {"name": ["This field may not be blank."]},
+                    "2": {"name": ["This field may not be blank."]},
+                },
+            )
 
             res = self.client.put(
                 reverse(
@@ -345,8 +351,14 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 ],
             )
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            for error in res_data:
-                self.assertHasError(error, "name", "This field may not be null.")
+            self.assertEqual(
+                res_data,
+                {
+                    "0": {"name": ["This field may not be null."]},
+                    "1": {"name": ["This field may not be null."]},
+                    "2": {"name": ["This field may not be null."]},
+                },
+            )
 
             res = self.client.put(
                 reverse(
@@ -356,8 +368,14 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 data=[{"slug": self.third_node.slug}, {"slug": self.second_node.slug}, {"slug": self.first_node.slug}],
             )
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            for error in res_data:
-                self.assertHasError(error, "name", "This field is required.")
+            self.assertEqual(
+                res_data,
+                {
+                    "0": {"name": ["This field is required."]},
+                    "1": {"name": ["This field is required."]},
+                    "2": {"name": ["This field is required."]},
+                },
+            )
 
         with self.subTest("Validate items : roles required"):
             res = self.client.put(
@@ -373,8 +391,14 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            for error in res_data:
-                self.assertHasError(error, "roles_required", 'Invalid pk "1111" - object does not exist.')
+            self.assertEqual(
+                res_data,
+                {
+                    "0": {"roles_required": ['Invalid pk "1111" - object does not exist.']},
+                    "1": {"roles_required": ['Invalid pk "1111" - object does not exist.']},
+                    "2": {"roles_required": ['Invalid pk "1111" - object does not exist.']},
+                },
+            )
 
             res = self.client.put(
                 reverse(
@@ -389,10 +413,14 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
             )
 
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            for error in res_data:
-                self.assertHasError(
-                    error, "roles_required", f'Invalid pk "{self.other_user_role.pk}" - object does not exist.'
-                )
+            self.assertEqual(
+                res_data,
+                {
+                    "0": {"roles_required": [f'Invalid pk "{self.other_user_role.pk}" - object does not exist.']},
+                    "1": {"roles_required": [f'Invalid pk "{self.other_user_role.pk}" - object does not exist.']},
+                    "2": {"roles_required": [f'Invalid pk "{self.other_user_role.pk}" - object does not exist.']},
+                },
+            )
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)

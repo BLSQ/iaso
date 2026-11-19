@@ -111,8 +111,8 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
         response_delete = self.client.delete("/api/workflowchanges/1000/")
 
-        self.assertJSONResponse(response_delete, status.HTTP_404_NOT_FOUND)
-        assert "Not found." in response_delete.data["detail"]
+        response_data = self.assertJSONResponse(response_delete, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response_data["detail"], "No WorkflowChange matches the given query.")
 
     def test_create_change_with_non_existing_form_should_fail(self):
         self.client.force_authenticate(self.blue_adult_1)

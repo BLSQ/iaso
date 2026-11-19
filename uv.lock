@@ -1225,15 +1225,14 @@ requires-dist = [
 
 [[package]]
 name = "djangorestframework"
-version = "3.14.0"
+version = "3.18.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
-    { name = "pytz" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/53/5b2a002c5ebafd60dff1e1945a7d63dee40155830997439a9ba324f0fd50/djangorestframework-3.14.0.tar.gz", hash = "sha256:579a333e6256b09489cbe0a067e66abe55c6595d8926be6b99423786334350c8", size = 1055343, upload-time = "2022-09-22T11:38:44.245Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8d/b2/1cee76b188301f7d03169ca77fab2b3d3ec5d01b3469189f944af2d7f11a/djangorestframework-3.18.3.tar.gz", hash = "sha256:446a9b352e7eff630421ab3f2328bd2401b109a9470afa4a31189994911ed030", size = 923563, upload-time = "2026-10-06T21:33:51.521Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/4b/3b46c0914ba4b7546a758c35fdfa8e7f017fcbe7f23c878239e93623337a/djangorestframework-3.14.0-py3-none-any.whl", hash = "sha256:eb63f58c9f218e1a7d064d17a70751f528ed4e1d35547fdade9aaf4cd103fd08", size = 1062761, upload-time = "2022-09-22T11:38:41.825Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/dd/de5f4543765bec94e036a5e9593a42f8fa7efec8de78eb56b9ca834385f3/djangorestframework-3.18.3-py3-none-any.whl", hash = "sha256:8544bb674846731b1e3c9b309236ee1dc412905a0aa725be2ec193ca950a7d12", size = 903986, upload-time = "2026-10-06T21:33:49.917Z" },
 ]
 
 [[package]]
@@ -1276,16 +1275,16 @@ wheels = [
 
 [[package]]
 name = "djangorestframework-simplejwt"
-version = "5.3.1"
+version = "5.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "djangorestframework" },
     { name = "pyjwt" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ac/f3/f2ce06fcd1c53e12b26cc5a3ec9e0acd47eb4be02e1d24de50edee5c5abf/djangorestframework_simplejwt-5.3.1.tar.gz", hash = "sha256:6c4bd37537440bc439564ebf7d6085e74c5411485197073f508ebdfa34bc9fae", size = 94266, upload-time = "2023-12-04T06:37:22.761Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/27/2874a325c11112066139769f7794afae238a07ce6adf96259f08fd37a9d7/djangorestframework_simplejwt-5.5.1.tar.gz", hash = "sha256:e72c5572f51d7803021288e2057afcbd03f17fe11d484096f40a460abc76e87f", size = 101265, upload-time = "2025-07-21T16:52:25.026Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/ab/88f73cf08d2ad3fb9f71b956dceca5680a57f121e5ce9a604f365877d57e/djangorestframework_simplejwt-5.3.1-py3-none-any.whl", hash = "sha256:381bc966aa46913905629d472cd72ad45faa265509764e20ffd440164c88d220", size = 101339, upload-time = "2023-12-04T06:38:25.362Z" },
+    { url = "https://files.pythonhosted.org/packages/60/94/fdfb7b2f0b16cd3ed4d4171c55c1c07a2d1e3b106c5978c8ad0c15b4a48b/djangorestframework_simplejwt-5.5.1-py3-none-any.whl", hash = "sha256:2c30f3707053d384e9f315d11c2daccfcb548d4faa453111ca19a542b732e469", size = 107674, upload-time = "2025-07-21T16:52:07.493Z" },
 ]
 
 [[package]]
@@ -1304,15 +1303,15 @@ wheels = [
 
 [[package]]
 name = "drf-excel"
-version = "2.5.3"
+version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "djangorestframework" },
     { name = "openpyxl" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/57/3bc9d43dd6a792319943a78c79038338506590107b8ffcbe54c2e15fe99b/drf_excel-2.5.3.tar.gz", hash = "sha256:cac688c4b7581d7cfde1e6dfa88bcbc649939e4277a052877109d40934692202", size = 45139, upload-time = "2025-03-07T09:18:07.176Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/65/5867e155780b0a6928a961ca5931dbac9ce9a4c105aefe1d0a5e975ef98f/drf_excel-2.6.0.tar.gz", hash = "sha256:ea9b36f9d01a50981b4c821366847c243073dd004ebd20f62a7ddbc659791b39", size = 55546, upload-time = "2026-08-06T11:04:07.646Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/2c/94ce25e3bf42db0d8fcd494f3aa2e9c90ba9fc811351e2d352c656ffcaee/drf_excel-2.5.3-py3-none-any.whl", hash = "sha256:3c1e3a0f925394eec348a0d133288ab9cb4e7e676d2dbbc1f3a9c038167543e6", size = 15039, upload-time = "2025-03-07T09:18:05.839Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/a4/edc327efb441d8690198391acd190d8ac22458eae35d1fd68afe4297e987/drf_excel-2.6.0-py3-none-any.whl", hash = "sha256:609a2c882a2ec393357b5a0bf3f6bc0d6b6622f0f0baab09b77152c37e0f5f71", size = 15639, upload-time = "2026-08-06T11:04:06.351Z" },
 ]
 
 [[package]]
@@ -1331,7 +1330,7 @@ wheels = [
 
 [[package]]
 name = "drf-spectacular"
-version = "0.29.0"
+version = "0.30.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
@@ -1341,9 +1340,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "uritemplate" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/0e/a4f50d83e76cbe797eda88fc0083c8ca970cfa362b5586359ef06ec6f70a/drf_spectacular-0.29.0.tar.gz", hash = "sha256:0a069339ea390ce7f14a75e8b5af4a0860a46e833fd4af027411a3e94fc1a0cc", size = 241722, upload-time = "2025-11-02T03:40:26.348Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/43/41d25039a6a53545420ebc98eb9f877ec9fe30c7bd03fefabcaf9b953af7/drf_spectacular-0.30.0.tar.gz", hash = "sha256:53e79e7ba00e240441b63c32273754a5368e4c2ab44a19f2595277cc1cd559c9", size = 252311, upload-time = "2026-07-06T11:29:46.264Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/32/d9/502c56fc3ca960075d00956283f1c44e8cafe433dada03f9ed2821f3073b/drf_spectacular-0.29.0-py3-none-any.whl", hash = "sha256:d1ee7c9535d89848affb4427347f7c4a22c5d22530b8842ef133d7b72e19b41a", size = 105433, upload-time = "2025-11-02T03:40:24.823Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/56/74dd7b45bbde6d24494220b98d6961cb1200b63a1800332b430daa2c4551/drf_spectacular-0.30.0-py3-none-any.whl", hash = "sha256:006cf5921ebe20a9bd24f7c846261ebbf78780be5961b0d6e87afaa82afd62ff", size = 111150, upload-time = "2026-07-06T11:29:45.12Z" },
 ]
 
 [package.optional-dependencies]
@@ -2042,14 +2041,14 @@ requires-dist = [
     { name = "django-translated-fields", specifier = "==0.12.0" },
     { name = "django-webpack-loader", url = "https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz" },
     { name = "django-xlsform-validator", url = "https://github.com/BLSQ/spreadsheet-xlsform-validator/archive/main.zip" },
-    { name = "djangorestframework", specifier = "==3.14.0" },
+    { name = "djangorestframework", specifier = "==3.18.3" },
     { name = "djangorestframework-api-key", specifier = "==3.1.0" },
     { name = "djangorestframework-csv", specifier = "==3.0.2" },
-    { name = "djangorestframework-gis", specifier = ">=1.3.0" },
-    { name = "djangorestframework-simplejwt", specifier = "==5.3.1" },
-    { name = "drf-excel", specifier = "==2.5.3" },
+    { name = "djangorestframework-gis", specifier = "==1.3.0" },
+    { name = "djangorestframework-simplejwt", specifier = "==5.5.1" },
+    { name = "drf-excel", specifier = "==2.6.0" },
     { name = "drf-extensions", specifier = "==0.8.0" },
-    { name = "drf-spectacular", extras = ["sidecar"], specifier = "==0.29.0" },
+    { name = "drf-spectacular", extras = ["sidecar"], specifier = "==0.30.0" },
     { name = "duckdb", specifier = "==1.4.4" },
     { name = "environs", specifier = "==14.4.0" },
     { name = "fiona", specifier = "==1.10.1" },

@@ -1,7 +1,8 @@
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework import status
 
-from iaso.models import Account, Form, Instance, ValidationWorkflow
+from iaso.models import Account, Form, Instance, UserRole, ValidationNodeTemplate, ValidationWorkflow
 from iaso.test import SwaggerTestCaseMixin
 from iaso.tests.api.validation_workflows.test_views.common import BaseValidationWorkflowAPITestCase
 
@@ -53,6 +54,19 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
 
         self.out_of_account_vw = ValidationWorkflow.objects.create(name="out-of-account", account=self.account_2)
 
+        # Steps created in reverse order: the list must follow the chain, not the creation order
+        self.user_role = UserRole.objects.create(
+            group=Group.objects.create(name=f"{self.account.id}_Validator"), account=self.account
+        )
+        self.last_step = ValidationNodeTemplate.objects.create(
+            name="Last step", workflow=self.validation_workflow_multiple_forms
+        )
+        self.first_step = ValidationNodeTemplate.objects.create(
+            name="First step", workflow=self.validation_workflow_multiple_forms
+        )
+        self.first_step.roles_required.add(self.user_role)
+        self.first_step.next_node_templates.add(self.last_step)
+
     def test_output_fields(self):
         for user in [self.john_wick, self.superuser]:
             with self.subTest(f"with user {user}"):
@@ -63,6 +77,18 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
                 item = res_json["results"][0]
 
                 self.assertEqual(item["form_count"], 2)
+                self.assertEqual(item["linked_forms_count"], 2)
+                self.assertEqual(
+                    item["steps"],
+                    [
+                        {
+                            "slug": self.first_step.slug,
+                            "name": "First step",
+                            "roles_required": [{"id": self.user_role.id, "name": "Validator"}],
+                        },
+                        {"slug": self.last_step.slug, "name": "Last step", "roles_required": []},
+                    ],
+                )
                 self.assertEqual(item["created_by"], "John Doe")
                 self.assertEqual(item["updated_by"], "john.wick")
 
@@ -166,7 +192,8 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_with_parameters_and_one_search_result(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        # +1: steps (the workflow found has none, so no step relations to load)
+        with self.assertNumQueries(6):
             res = self.client.get(
                 reverse("validation_workflows-list"), data={"name": "name", "forms": [self.form.pk, self.form_3.pk]}
             )
@@ -176,11 +203,19 @@ class ValidationWorkflowAPIListTestCase(BaseValidationWorkflowAPITestCase):
     def test_search_num_queries_without_parameters_and_multiple_search_results(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(5):
+        # +5: steps, their next and previous steps, their roles and the roles' groups
+        with self.assertNumQueries(10):
             self.client.force_authenticate(self.john_wick)
             res = self.client.get(reverse("validation_workflows-list"))
             res_json = self.assertJSONResponse(res, status.HTTP_200_OK)
             self.assertValidValidationWorkflowListData(res_json, 17)
+
+    def test_linked_forms_count_and_steps_of_workflows_without_them(self):
+        self.client.force_authenticate(self.john_wick)
+        res = self.client.get(reverse("validation_workflows-list"), data={"name": "no-form"})
+        item = self.assertJSONResponse(res, status.HTTP_200_OK)["results"][0]
+        self.assertEqual(item["linked_forms_count"], 0)
+        self.assertEqual(item["steps"], [])
 
     def test_permissions(self):
         res = self.client.get(reverse("validation_workflows-list"))

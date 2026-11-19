@@ -54,14 +54,23 @@ class ValidationWorkflowViewSet(ModelViewSet):
         qs = ValidationWorkflow.objects.filter(account=account).select_related("account")
         if self.action == "list":
             qs = (
-                qs.prefetch_related("form_set")
+                qs.prefetch_related(
+                    "form_set",
+                    Prefetch(
+                        "node_templates",
+                        ValidationNodeTemplate.objects.prefetch_related(
+                            "next_node_templates", "previous_node_templates", "roles_required__group"
+                        ),
+                    ),
+                )
                 .select_related("created_by", "updated_by")
                 .annotate(
                     form_count=Count(
                         "form_set__instances",
                         filter=Q(form_set__validation_workflow__account=account, form_set__deleted_at__isnull=True),
                         distinct=True,
-                    )
+                    ),
+                    linked_forms_count=Count("form_set", filter=Q(form_set__deleted_at__isnull=True), distinct=True),
                 )
             )
         if self.action == "retrieve":

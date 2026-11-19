@@ -22,6 +22,7 @@ class DroppedConnection(io.RawIOBase):
 
 
 SERVER = "https://iaso.test"
+S3 = "https://bucket.s3.amazonaws.com"
 
 
 @mock.patch("time.sleep")
@@ -174,3 +175,16 @@ class IasoClientTest(SimpleTestCase):
             client.request("GET", "/api/forms/")
 
         self.assertEqual(request.call_args.kwargs["timeout"], (1, 2))
+
+
+class StorageDownloadTest(SimpleTestCase):
+    @responses.activate
+    def test_download(self):
+        url = f"{S3}/acc/form_attachments/form_a/image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc"
+        content = bytes(range(256))  # binary content
+        responses.add(responses.GET, url, body=content, content_type="image/png")
+
+        self.assertEqual(HttpClient().get_bytes(url), content)
+
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.url, url)

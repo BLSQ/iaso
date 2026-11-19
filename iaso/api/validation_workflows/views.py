@@ -1,7 +1,7 @@
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
@@ -14,6 +14,7 @@ from iaso.api.validation_workflows.pagination import ValidationWorkflowPaginatio
 from iaso.api.validation_workflows.permissions import HasSubmissionPermission, HasValidationWorkflowPermission
 from iaso.api.validation_workflows.serializers.create import ValidationWorkflowCreateSerializer
 from iaso.api.validation_workflows.serializers.dropdown import ValidationWorkflowDropdownSerializer
+from iaso.api.validation_workflows.serializers.duplicate import ValidationWorkflowDuplicateSerializer
 from iaso.api.validation_workflows.serializers.list import ValidationWorkflowListSerializer
 from iaso.api.validation_workflows.serializers.retrieve import ValidationWorkflowRetrieveSerializer
 from iaso.api.validation_workflows.serializers.update import ValidationWorkflowUpdateSerializer
@@ -41,6 +42,8 @@ class ValidationWorkflowViewSet(ModelViewSet):
             return ValidationWorkflowListSerializer
         if self.action == "dropdown":
             return ValidationWorkflowDropdownSerializer
+        if self.action == "duplicate":
+            return ValidationWorkflowDuplicateSerializer
         if self.action == "create":
             return ValidationWorkflowCreateSerializer
         if self.action == "retrieve":
@@ -54,14 +57,23 @@ class ValidationWorkflowViewSet(ModelViewSet):
         qs = ValidationWorkflow.objects.filter(account=account).select_related("account")
         if self.action == "list":
             qs = (
-                qs.prefetch_related("form_set")
+                qs.prefetch_related(
+                    "form_set",
+                    Prefetch(
+                        "node_templates",
+                        ValidationNodeTemplate.objects.prefetch_related(
+                            "next_node_templates", "previous_node_templates", "roles_required__group"
+                        ),
+                    ),
+                )
                 .select_related("created_by", "updated_by")
                 .annotate(
                     form_count=Count(
                         "form_set__instances",
                         filter=Q(form_set__validation_workflow__account=account, form_set__deleted_at__isnull=True),
                         distinct=True,
-                    )
+                    ),
+                    linked_forms_count=Count("form_set", filter=Q(form_set__deleted_at__isnull=True), distinct=True),
                 )
             )
         if self.action == "retrieve":
@@ -90,3 +102,11 @@ class ValidationWorkflowViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @extend_schema(request=None, responses={status.HTTP_201_CREATED: ValidationWorkflowDuplicateSerializer})
+    @action(detail=True, methods=["post"])
+    def duplicate(self, request, *args, **kwargs):
+        workflow = self.get_object()
+        copy = workflow.duplicate(request.user)
+        serializer = self.get_serializer(copy)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

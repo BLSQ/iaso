@@ -232,6 +232,57 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             ignore_conflicts=True,
         )
 
+    def get_duplicate_name(self):
+        """
+        First free name among "<name> (copy)", "<name> (copy 2)", ... in the account.
+        """
+        suffix = " (copy)"
+        index = 1
+        while True:
+            name = f"{self.name[: self._meta.get_field('name').max_length - len(suffix)]}{suffix}"
+            if not ValidationWorkflow.objects.filter(account_id=self.account_id, name=name).exists():
+                return name
+            index += 1
+            suffix = f" (copy {index})"
+
+    @transaction.atomic
+    def duplicate(self, user):
+        """
+        Copy of the workflow with its steps, their required roles and their order.
+        Linked forms are not copied (a form belongs to a single workflow), so the copy has no processes.
+        """
+        copy = ValidationWorkflow.objects.create(
+            name=self.get_duplicate_name(),
+            description=self.description,
+            account_id=self.account_id,
+            created_by=user,
+        )
+
+        nodes = list(self.node_templates.prefetch_related("roles_required", "next_node_templates"))
+        new_nodes_by_old_id = {}
+        for node in nodes:
+            new_node = ValidationNodeTemplate.objects.create(
+                workflow=copy,
+                name=node.name,
+                description=node.description,
+                can_skip_previous_nodes=node.can_skip_previous_nodes,
+            )
+            new_node.roles_required.set(node.roles_required.all())
+            new_nodes_by_old_id[node.id] = new_node
+
+        through_table = ValidationNodeTemplate.next_node_templates.through
+        through_table.objects.bulk_create(
+            [
+                through_table(
+                    from_validationnodetemplate_id=new_nodes_by_old_id[node.id].id,
+                    to_validationnodetemplate_id=new_nodes_by_old_id[next_node.id].id,
+                )
+                for node in nodes
+                for next_node in node.next_node_templates.all()
+            ]
+        )
+        return copy
+
     def dump_nodes(self):
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
             node_templates = self._prefetched_objects_cache["node_templates"]

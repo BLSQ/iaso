@@ -70,6 +70,8 @@ class BaseValidationWorkflowAPITestCase(APITestCase):
             self.assertIn("slug", data)
             self.assertIn("name", data)
             self.assertIn("form_count", data)
+            self.assertIn("linked_forms_count", data)
+            self.assertIn("steps", data)
             self.assertIn("created_by", data)
             self.assertIn("updated_by", data)
             self.assertIn("created_at", data)

@@ -199,7 +199,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
         )
 
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             res = self.client.get(
                 reverse("validation_workflows-detail", kwargs={"slug": self.validation_workflow.slug})
             )

@@ -1,13 +1,13 @@
 import hashlib
-import os
+import io
 
-from typing import Optional
+from typing import BinaryIO, Optional
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA1
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Random import get_random_bytes
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Util.Padding import pad as pkcs7_pad, unpad
 from django.core.files import File
 
 
@@ -35,65 +35,76 @@ def file_content_changed(old_md5: Optional[str], new_file: File) -> bool:
     return old_md5 != calculate_md5(new_file)
 
 
-def encrypt_file(file_path, file_name_in, file_name_out, password):
-    """
-    Encrypt a file using AES with following settings:
+class PasswordCipher:
+    """AES encryption with a password, in the format read by the mobile app.
+
+    Encryption settings:
     - 256 bits (32 bytes) key from PBKDF2 key derivation function (with salt of
       32 bytes, 1234 iteration and HMAC SHA-1)
-    - Mode: Cipher-Block Chaining (CBC)
+    - Mode: Cipher-Block Chaining (CBC), with PKCS7 padding
 
     See:
     - https://pycryptodome.readthedocs.io/en/latest/src/cipher/aes.html
     - https://pycryptodome.readthedocs.io/en/latest/src/protocol/kdf.html
     """
-    salt = get_random_bytes(32)
-    key = PBKDF2(
-        password,
-        salt,
-        dkLen=32,
-        count=1234,
-        hmac_hash_module=SHA1,
-    )  # AES-256 key (32 bytes)
 
-    data = ""
-    with open(os.path.join(file_path, file_name_in), "rb") as file:
-        data = file.read()
+    SALT_SIZE = 32
+    KEY_SIZE = 32
+    PBKDF2_ITERATIONS = 1234
+    BLOCK_SIZE = AES.block_size
+    HEADER_SIZE = SALT_SIZE + BLOCK_SIZE
 
-    cipher = AES.new(key, AES.MODE_CBC)
-    ct_bytes = cipher.encrypt(pad(data, AES.block_size))
+    def __init__(self, password: str, salt: Optional[bytes] = None, iv: Optional[bytes] = None):
+        """To encrypt, leave out `salt` and `iv` so that random ones are picked."""
+        self.salt = get_random_bytes(self.SALT_SIZE) if salt is None else salt
+        key = PBKDF2(password, self.salt, dkLen=self.KEY_SIZE, count=self.PBKDF2_ITERATIONS, hmac_hash_module=SHA1)
+        self._aes = AES.new(key, AES.MODE_CBC, iv=iv)
 
-    file_path_out = os.path.join(file_path, file_name_out)
-    with open(file_path_out, "wb") as file_enc:
-        file_enc.write(salt)
-        file_enc.write(cipher.iv)
-        file_enc.write(ct_bytes)
+    @property
+    def header(self) -> bytes:
+        return self.salt + self._aes.iv
 
-    return file_path_out
+    def encrypt(self, data: bytes, *, pad: bool = False) -> bytes:
+        """
+        Encrypt `data` using AES.
+
+        The length must be a multiple of `BLOCK_SIZE` unless `pad` is set (use it for the last block).
+        """
+        return self._aes.encrypt(pkcs7_pad(data, self.BLOCK_SIZE) if pad else data)
+
+    @classmethod
+    def decrypt(cls, data: bytes, password: str) -> bytes:
+        cipher = cls(password, salt=data[: cls.SALT_SIZE], iv=data[cls.SALT_SIZE : cls.HEADER_SIZE])
+        return unpad(cipher._aes.decrypt(data[cls.HEADER_SIZE :]), cls.BLOCK_SIZE)
 
 
-def decrypt_file(file_path, file_name_in, file_name_out, password):
-    """
-    Decrypt a AES-256 encrypted file with the same settings as described in
-    the `encrypt_file` function.
-    """
-    with open(os.path.join(file_path, file_name_in), "rb") as file_enc:
-        salt = file_enc.read(32)
-        iv = file_enc.read(16)
-        ct = file_enc.read()
+class StreamingEncryptionWriter(io.RawIOBase):
+    """Streaming encryption writer."""
 
-    key = PBKDF2(
-        password,
-        salt,
-        dkLen=32,
-        count=1234,
-        hmac_hash_module=SHA1,
-    )  # AES-256 key (32 bytes)
+    def __init__(self, output: BinaryIO, password: str):
+        super().__init__()
+        self._cipher = PasswordCipher(password)
+        self._output = output
+        # As AES only encrypts whole blocks,
+        # the last bytes written are buffered here until the block is full.
+        self._partial_block = b""
+        output.write(self._cipher.header)
 
-    cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    decrypted_data = unpad(cipher.decrypt(ct), AES.block_size)
+    # Part of the io.IOBase interface.
+    def writable(self) -> bool:
+        return True
 
-    file_path_out = os.path.join(file_path, file_name_out)
-    with open(file_path_out, "wb") as file_dec:
-        file_dec.write(decrypted_data)
+    def write(self, data) -> int:
+        if self.closed:
+            raise ValueError("write to closed file")
+        data = bytes(data)
+        buffered = self._partial_block + data
+        whole_blocks_end = len(buffered) - len(buffered) % PasswordCipher.BLOCK_SIZE
+        self._output.write(self._cipher.encrypt(buffered[:whole_blocks_end]))
+        self._partial_block = buffered[whole_blocks_end:]
+        return len(data)
 
-    return file_path_out
+    def close(self):
+        if not self.closed:
+            self._output.write(self._cipher.encrypt(self._partial_block, pad=True))
+        super().close()

@@ -14,7 +14,6 @@ first login on the mobile app.
 """
 
 import logging
-import os
 import tempfile
 import uuid
 
@@ -31,11 +30,13 @@ from iaso.tasks.mobile_app_setup.archive import ZipArchive
 from iaso.tasks.mobile_app_setup.exporter import export_app_setup
 from iaso.tasks.mobile_app_setup.hooks import make_payload_transformers
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
-from iaso.utils.encryption import encrypt_file
+from iaso.utils.encryption import StreamingEncryptionWriter
 from iaso.utils.iaso_api_client import HttpClient, IasoClient
 
 
 logger = logging.getLogger(__name__)
+
+MAX_IN_MEMORY_EXPORT_SIZE = 50 * 1024 * 1024
 
 
 @task_decorator(task_name="export_mobile_app_setup")
@@ -58,11 +59,9 @@ def export_mobile_app_setup_for_user(
     # Can't rely on `settings.SSL_ON` for the scheme as this runs on the worker
     server_url = f"https://{settings.DNS_DOMAIN}"
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_path = os.path.join(tmp_dir, export_name)
-        logger.info(f"Creating zip file {zip_path}")
-
-        with ZipArchive(zip_path) as archive:
+    logger.info(f"Creating encrypted zip file {export_name}")
+    with tempfile.SpooledTemporaryFile(max_size=MAX_IN_MEMORY_EXPORT_SIZE) as encrypted_zip:
+        with StreamingEncryptionWriter(encrypted_zip, password) as stream, ZipArchive(stream) as archive:
             export_app_setup(
                 client=IasoClient(server_url),
                 storage=HttpClient(),
@@ -74,26 +73,11 @@ def export_mobile_app_setup_for_user(
                 payload_transformers=payload_transformers,
             )
 
-        file_name = _encrypt_and_save_to_storage(tmp_dir, export_name, password)
+        encrypted_zip.seek(0)
+        file_name = default_storage.save(f"export-files/{export_name}.zip", File(encrypted_zip))
 
     task.report_success_with_file(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
         file_name=file_name,
     )
     return task
-
-
-def _encrypt_and_save_to_storage(tmp_dir, source_name, password):
-    dest_name = f"{source_name}.zip"
-
-    logger.info("Encrypting zipfile")
-    encrypted_file_path = encrypt_file(
-        file_path=tmp_dir,
-        file_name_in=source_name,
-        file_name_out=dest_name,
-        password=password,
-    )
-
-    logger.info(f"Saving zipfile {dest_name} to the default storage")
-    with open(encrypted_file_path, "rb") as encrypted_file:
-        return default_storage.save(f"export-files/{dest_name}", File(encrypted_file))

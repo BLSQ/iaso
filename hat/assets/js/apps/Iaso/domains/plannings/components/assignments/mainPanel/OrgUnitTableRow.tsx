@@ -17,7 +17,7 @@ import { AssigneeCell } from './AssigneeCell';
 import { OrgUnitRow } from './types';
 
 const styles = {
-    openable: {
+    clickable: {
         cursor: 'pointer',
     },
     focused: {
@@ -45,23 +45,23 @@ type Props = {
     row: OrgUnitRow;
     // Found with "Find an org unit".
     isFocused: boolean;
-    onOpenTeam: (teamId: number) => void;
+    isClickable: boolean;
+    onClick: (row: OrgUnitRow) => void;
 };
 
-export const OrgUnitTableRow: FC<Props> = ({ row, isFocused, onOpenTeam }) => {
+export const OrgUnitTableRow: FC<Props> = ({
+    row,
+    isFocused,
+    isClickable,
+    onClick,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const { teamId } = row;
-    const handleClick = useCallback(() => {
-        if (teamId) onOpenTeam(teamId);
-    }, [teamId, onOpenTeam]);
+    const handleClick = useCallback(() => onClick(row), [onClick, row]);
     return (
         <TableRow
             hover
-            onClick={teamId ? handleClick : undefined}
-            sx={[
-                Boolean(teamId) && styles.openable,
-                isFocused && styles.focused,
-            ]}
+            onClick={isClickable ? handleClick : undefined}
+            sx={[isClickable && styles.clickable, isFocused && styles.focused]}
         >
             <TableCell>
                 <Box sx={styles.name}>

@@ -24,16 +24,21 @@ import { useCreateDataSourceVersionsSync } from '../../hooks/useCreateDataSource
 import { useCreateJsonDiffAsync } from '../../hooks/useCreateJsonDiffAsync';
 import { useLaunchDiff } from '../../hooks/useLaunchDiff';
 import MESSAGES from '../../messages';
-import { Version } from '../../types/dataSources';
 import { SyncResponse } from '../../types/sync';
 import { VersionFields } from '../VersionPicker';
 import { ConfirmSyncPreview } from './ConfirmSyncPreview';
 
+type SyncVersionRef = {
+    id: string | number;
+    number: number;
+    data_source_name: string;
+};
+
 type Props = {
     closeMainDialog: () => void;
     allowConfirm: boolean;
-    toUpdateSourceVersion: Version;
-    toCompareWithSourceVersion?: Version;
+    toUpdateSourceVersion?: SyncVersionRef;
+    toCompareWithSourceVersion?: SyncVersionRef;
     toUpdateFields: VersionFields;
     toCompareWithFields: VersionFields;
     fieldsToExport: string[];
@@ -77,9 +82,12 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
             if (!syncId) {
                 result = await createDataSourceVersionsSync({
                     name: syncName,
-                    toUpdateSourceVersionId: toUpdateSourceVersion.id,
-                    toCompareWithSourceVersionId:
-                        toCompareWithSourceVersion?.id,
+                    toUpdateSourceVersionId: toUpdateSourceVersion
+                        ? Number(toUpdateSourceVersion.id)
+                        : undefined,
+                    toCompareWithSourceVersionId: toCompareWithSourceVersion
+                        ? Number(toCompareWithSourceVersion.id)
+                        : undefined,
                 });
                 setSyncId(result.id);
             }

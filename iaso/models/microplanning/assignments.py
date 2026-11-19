@@ -4,7 +4,12 @@ from django.db.models import Q
 
 from iaso.models.common import CreatedAndUpdatedModel
 from iaso.models.team import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class AssignmentQuerySet(models.QuerySet):
@@ -15,7 +20,9 @@ class AssignmentQuerySet(models.QuerySet):
 
 
 class Assignment(CreatedAndUpdatedModel, SoftDeletableModel):
-    objects = AssignmentQuerySet.as_manager()
+    objects = DefaultSoftDeletableManager.from_queryset(AssignmentQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(AssignmentQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(AssignmentQuerySet)()
 
     class Meta:
         constraints = [

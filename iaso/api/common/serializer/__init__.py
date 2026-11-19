@@ -1,4 +1,4 @@
-from .bulk import BulkListQueryOptimizedSerializer, BulkUpdateListSerializer
+from .list import BulkUpdateListSerializer, ListQueryOptimizedSerializer
 from .misc import (
     DropdownOptionsSerializer,
     DropdownOptionsWithRepresentationSerializer,
@@ -11,7 +11,7 @@ from .misc import (
 
 __all__ = [
     "BulkUpdateListSerializer",
-    "BulkListQueryOptimizedSerializer",
+    "ListQueryOptimizedSerializer",
     "DropdownOptionsSerializer",
     "DropdownOptionsWithRepresentationSerializer",
     "ModelSerializer",

@@ -8,39 +8,32 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from iaso.api.common.serializer.bulk_fields import BulkPrimaryKeyRelatedField, BulkSlugRelatedField
+from iaso.api.common.serializer_fields import IasoManyRelatedField, IasoPrimaryKeyRelatedField, IasoSlugRelatedField
 
 
-class BulkListQueryOptimizedSerializer(serializers.ListSerializer):
+class ListQueryOptimizedSerializer(serializers.ListSerializer):
     field_mapping = {
-        serializers.PrimaryKeyRelatedField: BulkPrimaryKeyRelatedField,
-        serializers.SlugRelatedField: BulkSlugRelatedField,
+        serializers.PrimaryKeyRelatedField: IasoPrimaryKeyRelatedField,
+        serializers.SlugRelatedField: IasoSlugRelatedField,
     }
 
     @staticmethod
     def clone_field(new_class: type[serializers.Field], field: serializers.Field) -> serializers.Field:
         new_field = new_class(*field._args, **field._kwargs)
         for k, v in field.__dict__.items():
-            if k not in {
-                "_args",
-                "_kwargs",
-                "field_name",
-                "parent",
-                "source",
-                "source_attrs",
-            }:
+            if k not in {"_args", "_kwargs", "field_name", "parent", "source", "source_attrs", "_queryset_cache"}:
                 setattr(new_field, k, v)
         return new_field
 
-    def replace_field(self, field: serializers.Field) -> serializers.Field | None:
+    def replace_field(self, field: serializers.Field) -> (serializers.Field | None, bool):
         for k, bulk_class in self.field_mapping.items():
             if isinstance(field, bulk_class):
-                return field
+                return None, True
 
             if isinstance(field, k):
-                return self.clone_field(bulk_class, field)
+                return self.clone_field(bulk_class, field), True
 
-        return None
+        return None, False
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.related_bulk_fields = dict()
@@ -50,15 +43,21 @@ class BulkListQueryOptimizedSerializer(serializers.ListSerializer):
         for field_name, field in self.child.fields.items():
             if isinstance(field, serializers.ManyRelatedField):
                 child = field.child_relation
-                new_field = self.replace_field(child)
+                new_field, mapped = self.replace_field(child)
                 if new_field:
                     self.child.fields[field_name].child_relation = new_field
                     self.related_bulk_fields[field_name] = self.child.fields[field_name].child_relation
+                elif mapped:
+                    self.related_bulk_fields[field_name] = self.child.fields[field_name].child_relation
 
+                if isinstance(field, IasoManyRelatedField):
+                    self.child.fields[field_name].parent_optimized_list = True
             else:
-                new_field = self.replace_field(field)
+                new_field, mapped = self.replace_field(field)
                 if new_field:
                     self.child.fields[field_name] = new_field
+                    self.related_bulk_fields[field_name] = self.child.fields[field_name]
+                elif mapped:
                     self.related_bulk_fields[field_name] = self.child.fields[field_name]
 
     def _populate_queryset_caches(self, data) -> None:
@@ -74,14 +73,7 @@ class BulkListQueryOptimizedSerializer(serializers.ListSerializer):
             if not submitted_ids:
                 field.set_queryset_cache([])
             else:
-                queryset = field.get_queryset().filter(
-                    **{
-                        f"{field.get_lookup_field()}__in": [
-                            field.normalize_pk(submitted_id) for submitted_id in submitted_ids
-                        ]
-                    }
-                )
-                field.set_queryset_cache(queryset)
+                field.set_queryset_cache([field.normalize_pk(submitted_id) for submitted_id in submitted_ids])
 
     def to_internal_value(self, data: Any) -> Any:
         if isinstance(data, list):
@@ -89,7 +81,7 @@ class BulkListQueryOptimizedSerializer(serializers.ListSerializer):
         return super().to_internal_value(data)
 
 
-class BulkUpdateListSerializer(BulkListQueryOptimizedSerializer):
+class BulkUpdateListSerializer(ListQueryOptimizedSerializer):
     update_fields: tuple[str, ...] = ()
     m2m_fields: dict[str, tuple[str, str]] = {}
     lookup_field: str = "id"

@@ -2,14 +2,14 @@ from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
-from rest_framework.relations import PrimaryKeyRelatedField
 
 from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer_fields import IasoPrimaryKeyRelatedField
 from iaso.models import Group, OrgUnitType, PlanningConfig
 
 
 class PlanningConfigUpdateSerializer(ModelSerializer):
-    org_unit_types = PrimaryKeyRelatedField(
+    org_unit_types = IasoPrimaryKeyRelatedField(
         queryset=OrgUnitType.objects.none(),
         write_only=True,
         required=False,
@@ -17,7 +17,7 @@ class PlanningConfigUpdateSerializer(ModelSerializer):
         allow_empty=True,
         many=True,
     )
-    org_unit_groups = PrimaryKeyRelatedField(
+    org_unit_groups = IasoPrimaryKeyRelatedField(
         queryset=Group.objects.none(), write_only=True, required=False, allow_null=True, allow_empty=True, many=True
     )
 

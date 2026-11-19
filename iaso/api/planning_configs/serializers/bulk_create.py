@@ -7,11 +7,11 @@ from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
-from iaso.api.common.serializer import BulkListQueryOptimizedSerializer
+from iaso.api.common.serializer import ListQueryOptimizedSerializer
 from iaso.models import Group, OrgUnitType, Planning, PlanningConfig
 
 
-class PlanningConfigBulkCreateListSerializer(BulkListQueryOptimizedSerializer):
+class PlanningConfigBulkCreateListSerializer(ListQueryOptimizedSerializer):
     class Meta:
         model = PlanningConfig
 

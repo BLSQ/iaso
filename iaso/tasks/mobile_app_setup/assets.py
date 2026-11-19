@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Optional
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 
 MANIFEST_DOWNLOAD_URL_REGEX = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
@@ -70,11 +70,11 @@ def form_attachment_files(payload: Any, app_id: str) -> list[AssetFile]:
 
 
 def filename_from_url(url: str) -> str:
-    """Determine the file name in the zip based on the URL.
+    """Determine the file name in the zip based on the URL: the last segment of its path, URL-decoded.
 
     Matches the rewritten manifest `downloadUrl`s.
     """
-    return urlparse(url).path.split("/")[-1]
+    return unquote(urlparse(url).path.split("/")[-1])
 
 
 def form_attachment_path(form_id, url: str) -> str:

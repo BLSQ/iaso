@@ -6,6 +6,7 @@ import re
 import zipfile
 
 from unittest import mock
+from urllib.parse import unquote
 
 import responses
 
@@ -153,11 +154,23 @@ class AssetsTest(SimpleTestCase):
     def test_filename_from_signed_url(self):
         self.assertEqual(filename_from_url(f"{S3}/a/b/file.xml?X-Amz-Signature=1&b=2"), "file.xml")
 
-    def test_filename_from_url_is_not_url_decoded(self):
-        # Also test that the filenames match the rewritten manifests.
-        self.assertEqual(filename_from_url(f"{S3}/a/my%20file.png?sig=1"), "my%20file.png")
-        manifest = f"<downloadUrl>{S3}/a/my%20file.png?sig=1</downloadUrl>".encode()
-        self.assertEqual(rewrite_manifest(1, manifest), b"<downloadUrl>formattachments/1/my%20file.png</downloadUrl>")
+    def test_filename_from_url_is_url_decoded(self):
+        self.assertEqual(filename_from_url(f"{S3}/a/r%C3%A9gions.csv?sig=1"), "régions.csv")
+        manifest = f"<downloadUrl>{S3}/a/r%C3%A9gions.csv?sig=1</downloadUrl>".encode()
+        self.assertEqual(
+            rewrite_manifest(1, manifest),
+            "<downloadUrl>formattachments/1/régions.csv</downloadUrl>".encode(),
+        )
+
+    def test_form_attachment_paths_are_url_decoded(self):
+        payload = {
+            "results": [{"form_id": 1, "file": f"{SERVER}/media/acc/form_attachments/f/vaccins_%C3%A9t%C3%A9.csv"}]
+        }
+
+        files = form_attachment_files(payload, "app")
+
+        self.assertEqual(files[0].path, "formattachments/1/vaccins_été.csv")
+        self.assertEqual(payload["results"][0]["file"], files[0].path)
 
     def test_form_version_files(self):
         payload = {"form_versions": [{"id": 1, "file": f"{S3}/acc/forms/a.xml?X-Amz-Signature=1"}]}
@@ -414,11 +427,13 @@ class AssetFilesContractTest(APITestCase):
         self.assertEqual(
             attachment_paths,
             sorted(
-                f"formattachments/{self.form.id}/{attachment.file.url.split('/')[-1]}"
+                f"formattachments/{self.form.id}/{unquote(attachment.file.url.split('/')[-1])}"
                 for attachment in self.attachments
             ),
         )
-        self.assertIn("%C3%A9", attachment_paths[0])  # the encoded special character is kept
+        # Check that special characters are encoded in URLs, and decoded in the zip file paths.
+        self.assertIn("%C3%A9", self.attachments[1].file.url)
+        self.assertIn("é", attachment_paths[0])
         self.assertEqual(sorted(file.path for file in files if not file.from_api), attachment_paths)
 
         [manifest] = [file for file in files if file.from_api]
@@ -428,3 +443,4 @@ class AssetFilesContractTest(APITestCase):
 
         download_urls = sorted(re.findall(r"<downloadUrl>(.*?)</downloadUrl>", rewritten))
         self.assertEqual(download_urls, attachment_paths)
+

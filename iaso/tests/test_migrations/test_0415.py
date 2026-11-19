@@ -1,6 +1,9 @@
+from unittest import skip
+
 from iaso.test import IasoMigratorTestCase
 
 
+@skip("skipping because this migration was successfully applied on prod - keeping it for future reference")
 class Test0414DirectMigration(IasoMigratorTestCase):
     migrate_from = ("iaso", "0414_add_mobile_stock_home_feature_flag")
     migrate_to = ("iaso", "0415_remove_device_imei_remove_device_projects_and_more")

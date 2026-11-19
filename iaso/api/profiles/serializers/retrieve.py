@@ -9,6 +9,7 @@ from rest_framework import serializers
 from iaso.api.common import ModelSerializer, TimestampField
 from iaso.api.common.serializer_fields import UserRoleNameField
 from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion, UserRole
+from iaso.utils.pii import restricted_forms_for_user
 
 
 class RelatedProjectSerializer(ModelSerializer):
@@ -260,6 +261,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
     )
     account = NestedAccountExtendedSerializer(read_only=True)
     org_units = NestedOrgUnitSerializer(many=True, source="get_ordered_org_units", read_only=True)
+    pii_restricted = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
@@ -290,6 +292,7 @@ class ProfileRetrieveSerializer(ModelSerializer):
             "color",
             "account",
             "org_units",
+            "pii_restricted",
         ]
 
     # todo : cache this ?
@@ -298,6 +301,10 @@ class ProfileRetrieveSerializer(ModelSerializer):
         if hasattr(user, "tenant_user") and user.tenant_user:
             return user.tenant_user.main_user
         return user
+
+    @extend_schema_field(OpenApiTypes.BOOL)
+    def get_pii_restricted(self, obj) -> bool:
+        return bool(restricted_forms_for_user(obj.user))
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_user_name(self, obj):

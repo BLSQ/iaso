@@ -178,3 +178,15 @@ class PiiAPITestCase(APITestCase):
         self.open_form.refresh_from_db()
         self.assertEqual(self.open_form.non_pii_fields, ["district"])
         self.assertEqual(self.open_form.summary_fields, ["district"])
+
+    def _pii_restricted(self, user) -> bool:
+        """The `pii_restricted` flag of the current user, as returned to the frontend."""
+        self.client.force_authenticate(user)
+        return self.assertJSONResponse(self.client.get("/api/profiles/me/"), status.HTTP_200_OK)["pii_restricted"]
+
+    def test_current_user_has_pii_restricted(self):
+        self.assertTrue(self._pii_restricted(self.user))
+        self.assertFalse(self._pii_restricted(self.pii_user))
+        # nothing is hidden when no form of the account has a PII configuration
+        m.Form.objects.filter(id=self.form.id).update(non_pii_fields=None)
+        self.assertFalse(self._pii_restricted(self.user))

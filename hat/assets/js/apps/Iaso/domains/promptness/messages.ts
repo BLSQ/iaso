@@ -89,7 +89,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.promptness.openSubmissions',
     },
     orgUnit: {
-        defaultMessage: 'Org Unit',
+        defaultMessage: 'Org unit',
         id: 'iaso.label.orgUnitSingle',
     },
     orgUnitsIn: {

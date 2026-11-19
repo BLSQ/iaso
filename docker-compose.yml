@@ -7,7 +7,7 @@ services:
             dockerfile: docker/django/Dockerfile
         image: iaso
         ports:
-            - '8081:8081'
+            - '${DOCKER_IASO_PORT:-8081}:8081'
         volumes: &hat_volumes
             - ./manage.py:/opt/app/manage.py
             - ./hat:/opt/app/hat
@@ -46,9 +46,9 @@ services:
         image: postgis/postgis:16-3.5
         logging: *iaso_logging
         ports:
-            - '5433:5432'
+            - '${DOCKER_DB_PORT:-5433}:5432'
         volumes:
-            - ../pgdata-iaso-16:/var/lib/postgresql/data
+            - ${DOCKER_PGDATA_DIR:-../pgdata-iaso-16}:/var/lib/postgresql/data
         environment:
             POSTGRES_DB: ${RDS_DB_NAME}
             POSTGRES_USER: postgres
@@ -64,7 +64,7 @@ services:
         depends_on:
             - iaso
         ports:
-            - '3000:3000'
+            - '${DOCKER_WEBPACK_PORT:-3000}:3000'
         volumes: *hat_volumes
         env_file:
             - .env
@@ -78,7 +78,7 @@ services:
         image: node:22.23.4-bookworm-slim
         working_dir: /opt/app/iaso/mcp/frontend
         ports:
-            - '5173:5173'
+            - '${DOCKER_MCP_UI_PORT:-5173}:5173'
         volumes:
             - ./iaso/mcp/frontend:/opt/app/iaso/mcp/frontend
         environment:
@@ -92,5 +92,5 @@ services:
     redis:
         image: redis:7
         ports:
-            - '6379:6379'
+            - '${DOCKER_REDIS_PORT:-6379}:6379'
         profiles: ['celery']

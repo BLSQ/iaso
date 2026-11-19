@@ -1,6 +1,7 @@
 import { accountFeatureFlagsOperations } from './accountFeatureFlags/configuration';
 import { accountsOperations } from './accounts/configuration';
 import { apiImportsOperations } from './apiImports/configuration';
+import { assignmentsOperations } from './assignments/configuration';
 import { instanceDiffOperations } from './instanceDiff/configuration';
 import { missionsOperations } from './missions/configuration';
 import { modulesOperations } from './modules/configuration';
@@ -15,6 +16,7 @@ export const OperationConfig: Record<string, any> = {
         ...accountsOperations,
         ...accountFeatureFlagsOperations,
         ...apiImportsOperations,
+        ...assignmentsOperations,
         ...instanceDiffOperations,
         ...missionsOperations,
         ...modulesOperations,

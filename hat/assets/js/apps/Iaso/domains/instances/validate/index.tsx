@@ -10,6 +10,7 @@ import {
 import { commonStyles, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { useApiDiffInstancesList } from 'Iaso/api/instanceDiff';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import {
@@ -106,6 +107,7 @@ export const ValidateInstance = () => {
                 title={formatMessage(MESSAGES.validateInstance)}
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <Grid container spacing={2}>
                     {instance && (
                         <Grid item xs={12} sm={6}>

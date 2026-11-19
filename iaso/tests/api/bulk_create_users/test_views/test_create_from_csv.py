@@ -80,7 +80,7 @@ class BulkCreateFromCsvTestCase(BulkCreateAPITestCase, APITestCase):
         )
         user.iaso_profile.org_units.set([self.org_unit1])
         User.objects.filter(pk=user.pk).update(
-            last_login=datetime.datetime(2026, 11, 16, 9, 30, 15, tzinfo=datetime.timezone.utc)
+            last_login=datetime.datetime(2026, 11, 16, 9, 30, 15, tzinfo=datetime.UTC)
         )
         export = self.client.get("/api/profiles/export-csv/", {"search": "jdupont"})
         exported_file = SimpleUploadedFile("users.csv", b"".join(export.streaming_content), content_type="text/csv")

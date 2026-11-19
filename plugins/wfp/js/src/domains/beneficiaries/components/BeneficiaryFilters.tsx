@@ -68,9 +68,9 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
                 <InputComponent
-                    keyValue="q"
+                    keyValue="search"
                     onChange={handleChange}
-                    value={filters.q}
+                    value={filters.search}
                     type="search"
                     label={MESSAGES.search}
                     onEnterPressed={handleSearch}

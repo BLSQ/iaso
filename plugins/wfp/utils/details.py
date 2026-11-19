@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404
 from iaso.models import Entity, Instance
 from iaso.utils.pii import filter_submission_json
 
-from ..filters import restricted_org_units
 from ..models import Beneficiary, Visit
+from .beneficiaries import restricted_org_units
 
 
 def flatten_json(data, prefix=""):

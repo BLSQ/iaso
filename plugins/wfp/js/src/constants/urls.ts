@@ -15,7 +15,7 @@ export const RouteConfigs: Record<string, RouteConfig> = {
             'programme',
             'org_unit_group',
             'facility',
-            'q',
+            'search',
             'visit_date_after',
             'visit_date_before',
             ...paginationPathParams,

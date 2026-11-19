@@ -18,7 +18,7 @@ FILTER_KEYS = (
     "programme",
     "org_unit_group",
     "facility",
-    "q",
+    "search",
     "visit_date_after",
     "visit_date_before",
 )
@@ -83,7 +83,7 @@ def filtered_beneficiaries(account, filters, org_units=None):
             id__in=Journey.objects.filter(nutrition_programme=programme).values("beneficiary_id")
         )
 
-    search = filters.get("q", "")
+    search = filters.get("search", "")
     if search:
         criteria = Q(progress_id__istartswith=search) | Q(entity__uuid__startswith=search)
         if search.isdigit():

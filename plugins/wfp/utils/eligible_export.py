@@ -7,6 +7,10 @@ by default from the 26th of the previous month to the 25th of the current month,
 - the beneficiary was found normal at that visit: green colour (stored by the ETL, else read from the submission of
   the visit like the ETL does), else a normal MUAC.
 
+Each entity type of the ETL has one sheet per programme of its country (see `plugins.wfp.programmes_by_country`), and
+per physiology status for women, even without data ("No data"): all of them, or only the selected programme and
+entity type.
+
 The identifiers (progress ID, case ID, FCN) and the camp are answers of the reference (registration) form; the INF
 is the org unit of the visit. The pregnant and breastfeeding women are split in one sheet per physiology status.
 Answers are filtered according to the PII configuration of their form, like in the other exports. The answers are
@@ -25,11 +29,12 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Prefetch
 from django.utils import timezone
 
-from iaso.models import Instance
+from iaso.models import EntityType, Instance
 from iaso.utils.pii import filter_submission_json
 
 from ..common import _first_of, _safe_float, _to_date, extract_pbwg_physiology, extract_whz_color
-from ..models import Beneficiary, Journey, Visit
+from ..models import NUTRITION_PROGRAMMES, Beneficiary, Journey, Visit
+from ..programmes_by_country import PROGRAMMES_BY_ENTITY_TYPE
 
 
 BATCH_SIZE = 500
@@ -38,6 +43,7 @@ U5 = "U5"
 PBWG = "PBWG"
 # MUAC (in cm) from which a beneficiary is normal, when neither the ETL nor the form gives a colour
 NORMAL_MUAC = {U5: 12.5, PBWG: 23.0}
+NO_DATA = "No data"
 
 
 def current_period(today: datetime.date) -> tuple[datetime.date, datetime.date]:
@@ -190,8 +196,60 @@ def sheet_columns(kind: str, physiology_status: str) -> list[tuple[str, typing.C
     return [column for column in COLUMNS[kind] if column[0] != hidden]
 
 
+def kind_of(programme_type: typing.Optional[str]) -> str:
+    """The kind of beneficiaries (and so of columns) of a programme type: PBWG for "PLW", else U5."""
+    return PBWG if programme_type == "PLW" else U5
+
+
 def _kind(journey: Journey) -> str:
-    return PBWG if journey.programme_type == "PLW" else U5
+    return kind_of(journey.programme_type)
+
+
+# the sheets are sorted by programme in the order of their choices, the unknown ones last
+PROGRAMME_ORDER = {value: index for index, (value, _) in enumerate(NUTRITION_PROGRAMMES)}
+
+
+class Sheet(typing.NamedTuple):
+    """A sheet of the export: a programme and an entity type, and for the women a physiology status."""
+
+    programme: str
+    entity_type: str  # name
+    kind: str  # U5 or PBWG
+    physiology_status: str = ""  # for PBWG only
+
+    @property
+    def columns(self) -> list[tuple[str, typing.Callable[[Row], typing.Any]]]:
+        return sheet_columns(self.kind, self.physiology_status)
+
+    def sort_key(self):
+        return PROGRAMME_ORDER.get(self.programme, len(PROGRAMME_ORDER)), self
+
+
+def _physiology_statuses(kind: str) -> list[str]:
+    """The physiology statuses with their own sheet: one per status for the women, none for the children."""
+    return list(PHYSIOLOGY_STATUS_LABELS) if kind == PBWG else [""]
+
+
+def expected_sheets(
+    account, programme: typing.Optional[str] = None, entity_type_id: typing.Optional[int] = None
+) -> list[Sheet]:
+    """The sheets shown even without data: for each entity type of the ETL of the account, one per programme of its
+    country (see `programmes_by_country`) and per physiology status for the women.
+
+    With the `programme` or the `entity_type_id` selected in the filters, only their sheets.
+    """
+    entity_types = EntityType.objects.filter(account=account, code__in=PROGRAMMES_BY_ENTITY_TYPE)
+    if entity_type_id:
+        entity_types = entity_types.filter(id=entity_type_id)
+    sheets = []
+    for entity_type in entity_types.order_by("name"):
+        configured = PROGRAMMES_BY_ENTITY_TYPE[entity_type.code]
+        kind = kind_of(configured.programme_type)
+        programmes = [name for name in configured.programmes if programme in (None, name)]
+        sheets += [
+            Sheet(name, entity_type.name, kind, status) for name in programmes for status in _physiology_statuses(kind)
+        ]
+    return sheets
 
 
 def nutritional_status(visit: Visit, kind: str, answers: typing.Optional[dict] = None) -> typing.Optional[str]:
@@ -343,16 +401,22 @@ def build_eligible_xlsx(
     start_date: typing.Optional[datetime.date] = None,
     end_date: typing.Optional[datetime.date] = None,
     today: typing.Optional[datetime.date] = None,
+    programme: typing.Optional[str] = None,
+    entity_type_id: typing.Optional[int] = None,
 ) -> None:
     """Write the export as an Excel file at `path`: one sheet per programme and entity type (and physiology status for
-    women)."""
-    sheets: dict[tuple[str, str, str, str], list[list]] = {}
-    for programme, kind, row in iter_rows(beneficiaries, user, org_units, start_date, end_date, today):
+    women).
+
+    The sheets of the programmes of the country (see `expected_sheets`) are there even without data, with "No data":
+    all of them, or only the ones of the `programme` and `entity_type_id` selected in the filters.
+    """
+    expected = expected_sheets(user.iaso_profile.account, programme, entity_type_id)
+    sheets: dict[Sheet, list[list]] = {sheet: [] for sheet in expected}
+    for programme_name, kind, row in iter_rows(beneficiaries, user, org_units, start_date, end_date, today):
         entity_type = row.beneficiary.entity.entity_type.name if row.beneficiary.entity.entity_type else ""
         physiology_status = (row.physiology_status() or "") if kind == PBWG else ""
-        columns = sheet_columns(kind, physiology_status)
-        key = (programme, entity_type, kind, physiology_status)
-        sheets.setdefault(key, []).append([_cell(value(row)) for _, value in columns])
+        sheet = Sheet(programme_name, entity_type, kind, physiology_status)
+        sheets.setdefault(sheet, []).append([_cell(value(row)) for _, value in sheet.columns])
 
     workbook = xlsxwriter.Workbook(path)
     header_format = workbook.add_format({"bold": True, "bg_color": "#D9E1F2", "border": 1, "text_wrap": True})
@@ -362,13 +426,16 @@ def build_eligible_xlsx(
     if not sheets:
         workbook.add_worksheet("Eligible beneficiaries").write(0, 0, "No eligible beneficiaries")
     taken: set[str] = set()
-    for (programme, entity_type, kind, physiology_status), rows in sorted(sheets.items()):
-        sheet = workbook.add_worksheet(_sheet_name(programme, entity_type, kind, physiology_status, taken))
-        columns = sheet_columns(kind, physiology_status)
+    for key in sorted(sheets, key=Sheet.sort_key):
+        rows, columns = sheets[key], key.columns
+        sheet = workbook.add_worksheet(_sheet_name(*key, taken))
         sheet.set_column(0, len(columns) - 1, 20)
         sheet.freeze_panes(1, 0)
         for column, (title, _) in enumerate(columns):
             sheet.write(0, column, title, header_format)
+        if not rows:
+            sheet.write(1, 0, NO_DATA)
+            continue
         for row_index, row in enumerate(rows, start=1):
             for column, value in enumerate(row):
                 if isinstance(value, datetime.datetime):

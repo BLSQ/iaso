@@ -31,6 +31,7 @@ class HasProfile(permissions.BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, "iaso_profile")
 
+
 class BeneficiaryPaginator(Paginator):
     page_size = 20
 
@@ -55,7 +56,6 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     # The visit scope is computed by `BeneficiaryFilter` and handed to the view when the beneficiaries are filtered.
     _visit_scope = _UNSET
 
-
     def get_queryset(self):
         return (
             Beneficiary.objects.filter(entity__account=self.request.user.iaso_profile.account)
@@ -77,9 +77,7 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def filter_queryset(self, queryset):
         # check the period first, so that each error is on the date field to correct
-        serializer_class = (
-            EligibleExportParamsSerializer if self.action == "export_eligible" else VisitPeriodSerializer
-        )
+        serializer_class = EligibleExportParamsSerializer if self.action == "export_eligible" else VisitPeriodSerializer
         serializer_class(data=self.request.query_params).is_valid(raise_exception=True)
         return super().filter_queryset(queryset)
 

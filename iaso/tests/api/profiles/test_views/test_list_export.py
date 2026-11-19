@@ -14,7 +14,7 @@ from iaso.tests.api.profiles.test_views.common import BaseProfileAPITestCase
 from iaso.tests.utils.query_profiler import QueryProfiler
 
 
-JANE_LAST_LOGIN = datetime.datetime(2026, 11, 16, 9, 30, 15, tzinfo=datetime.timezone.utc)
+JANE_LAST_LOGIN = datetime.datetime(2026, 11, 16, 9, 30, 15, tzinfo=datetime.UTC)
 
 
 class ProfileListExportAPITestCase(BaseProfileAPITestCase):

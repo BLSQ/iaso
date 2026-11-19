@@ -1,6 +1,6 @@
 import io
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from unittest import mock
 
 import openpyxl
@@ -20,7 +20,7 @@ TODAY = date(2026, 11, 13)  # period from 2026-10-26 to 2026-11-25
 
 
 def _at(day, hour=12):
-    return datetime(day.year, day.month, day.day, hour, tzinfo=timezone.utc)
+    return datetime(day.year, day.month, day.day, hour, tzinfo=UTC)
 
 
 class CurrentPeriodTestCase(TestCase):
@@ -117,7 +117,7 @@ class EligibleExportTestCase(APITestCase):
         sheets = {}
         for sheet in workbook.worksheets:
             rows = list(sheet.iter_rows(values_only=True))
-            sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]]
+            sheets[sheet.title] = [dict(zip(rows[0], row, strict=False)) for row in rows[1:]]
         return sheets
 
     def test_without_entity_type_children_and_women_are_exported(self):

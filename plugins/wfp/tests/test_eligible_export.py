@@ -10,8 +10,13 @@ from rest_framework import status
 from iaso import models as m
 from iaso.test import APITestCase, TestCase
 from plugins.wfp.api.beneficiaries.serializers import EligibleExportParamsSerializer
-from plugins.wfp.models import Beneficiary, Journey, Visit
+from plugins.wfp.models import NUTRITION_PROGRAMMES, PROGRAMME_TYPE, Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
+from plugins.wfp.programmes_by_country import (
+    PROGRAMMES_BY_COUNTRY,
+    PROGRAMMES_BY_ENTITY_TYPE,
+    EntityTypeProgrammes,
+)
 from plugins.wfp.utils.eligible_export import PBWG, U5, _sheet_name, current_period
 
 
@@ -51,6 +56,17 @@ class SheetNameTestCase(TestCase):
         self.assertEqual(first, "TSFP Pregnant and breastfeeding")
         self.assertEqual(second, "TSFP Pregnant and breastfeedi 2")
         self.assertTrue(all(len(name) <= 31 for name in (first, second)))
+
+
+class ProgrammesByCountryTestCase(TestCase):
+    def test_only_known_programmes_and_programme_types(self):
+        programmes = {value for value, _ in NUTRITION_PROGRAMMES}
+        programme_types = {value for value, _ in PROGRAMME_TYPE}
+        for country, entity_types in PROGRAMMES_BY_COUNTRY.items():
+            for code, configured in entity_types.items():
+                with self.subTest(country=country, code=code):
+                    self.assertIn(configured.programme_type, programme_types)
+                    self.assertLessEqual(set(configured.programmes), programmes)
 
 
 @mock.patch("plugins.wfp.utils.eligible_export.timezone.localdate", lambda: TODAY)
@@ -414,3 +430,63 @@ class EligibleExportTestCase(APITestCase):
         self._visit(journey, date(2026, 11, 20), synced=_at(date(2026, 11, 5)), whz_color="Yellow")
         [row] = self._export({"entity_type": self.children.id})["BSFP Child Under 5"]
         self.assertEqual(row["Actual Visit Date"].date(), date(2026, 11, 5))
+
+    def _with_etl_codes(self):
+        """The entity types of the ETL (known by their code) have the sheets of the programmes of their country.
+
+        A fixed configuration, so that the tests don't depend on the one of the real countries.
+        """
+        configuration = {
+            "test_under5": EntityTypeProgrammes("U5", ["BSFP", "NSEP"]),
+            "test_pbwg": EntityTypeProgrammes("PLW", ["BSFP", "NSEP"]),
+        }
+        patcher = mock.patch.dict(PROGRAMMES_BY_ENTITY_TYPE, configuration, clear=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.children.code = "test_under5"
+        self.children.save()
+        self.women.code = "test_pbwg"
+        self.women.save()
+        # not an entity type of the ETL: no sheet without data
+        m.EntityType.objects.create(name="Household", account=self.account, code="household")
+
+    def test_the_programmes_of_the_country_have_their_sheets_even_without_data(self):
+        self._with_etl_codes()
+        journey = self._child()
+        self._visit(journey, date(2026, 11, 5), whz_color="Green")
+        expected = [
+            "BSFP Child Under 5",
+            "BSFP PBWG Breastfeeding",
+            "BSFP PBWG Pregnant",
+            "NSEP Child Under 5",
+            "NSEP PBWG Breastfeeding",
+            "NSEP PBWG Pregnant",
+        ]
+        sheets = self._export()
+        self.assertEqual(list(sheets), expected)
+        [row] = sheets["BSFP Child Under 5"]
+        self.assertEqual(row["Entity ID"], journey.beneficiary.entity_id)
+        [empty] = sheets["NSEP PBWG Pregnant"]
+        self.assertEqual(empty["Entity ID"], "No data")
+        self.assertIn("Expected Date of Delivery (EDD)", empty)
+        [empty] = sheets["NSEP Child Under 5"]
+        self.assertEqual(empty["Entity ID"], "No data")
+
+    def test_a_programme_out_of_the_country_still_has_its_data(self):
+        self._with_etl_codes()
+        journey = self._child(nutrition_programme="TSFP")
+        self._visit(journey, date(2026, 11, 5), whz_color="Green")
+        sheets = self._export({"entity_type": self.children.id})
+        expected = ["TSFP Child Under 5", "BSFP Child Under 5", "NSEP Child Under 5"]
+        self.assertEqual(list(sheets), expected)
+
+    def test_only_the_sheets_of_the_selected_programme_and_entity_type(self):
+        self._with_etl_codes()
+        sheets = self._export({"programme": "BSFP"})
+        expected = ["BSFP Child Under 5", "BSFP PBWG Breastfeeding", "BSFP PBWG Pregnant"]
+        self.assertEqual(list(sheets), expected)
+        self.assertEqual([[row["Entity ID"] for row in rows] for rows in sheets.values()], [["No data"]] * 3)
+
+        sheets = self._export({"programme": "NSEP", "entity_type": self.children.id})
+        self.assertEqual(list(sheets), ["NSEP Child Under 5"])
+        self.assertEqual(self._export({"programme": "TSFP"}), {"Eligible beneficiaries": []})

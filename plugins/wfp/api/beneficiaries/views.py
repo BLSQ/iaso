@@ -2,7 +2,6 @@
 
 from django.db.models.fields.json import KeyTextTransform
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.utils import translate_validation
 from rest_framework import mixins, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -76,9 +75,12 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return self._visit_scope
 
     def filter_queryset(self, queryset):
-        # check the period first, so that each error is on the date field to correct
-        serializer_class = EligibleExportParamsSerializer if self.action == "export_eligible" else VisitPeriodSerializer
-        serializer_class(data=self.request.query_params).is_valid(raise_exception=True)
+        if self.filterset_class is BeneficiaryFilter:
+            # check the period first, so that each error is on the date field to correct
+            serializer_class = (
+                EligibleExportParamsSerializer if self.action == "export_eligible" else VisitPeriodSerializer
+            )
+            serializer_class(data=self.request.query_params).is_valid(raise_exception=True)
         return super().filter_queryset(queryset)
 
     def list(self, request, *args, **kwargs):
@@ -121,13 +123,10 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             }
         )
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], filterset_class=FacilityFilter)
     def facilities(self, request):
         """Facilities of the cooperation partner given by `org_unit_group`, to choose the `facility` filter."""
-        filterset = FacilityFilter(request.query_params, OrgUnit.objects.filter_for_user(request.user), request=request)
-        if not filterset.is_valid():
-            raise translate_validation(filterset.errors)
-        org_units = filterset.qs.order_by("name", "id")
+        org_units = self.filter_queryset(OrgUnit.objects.filter_for_user(request.user)).order_by("name", "id")
         return Response({"facilities": [{"value": org_unit.id, "label": org_unit.name} for org_unit in org_units]})
 
     @action(detail=False, methods=["get"], url_path="export/coda")

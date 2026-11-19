@@ -769,7 +769,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent',
     },
     changeRequests: {
-        defaultMessage: 'Change requests',
+        defaultMessage: 'Change Requests',
         id: 'iaso.label.changeRequests',
     },
     new: {
@@ -861,10 +861,6 @@ const MESSAGES = defineMessages({
     validationNodeStatusSubmission: {
         defaultMessage: 'Submission',
         id: 'iaso.validationNode.status.submission',
-    },
-    featureDisabled: {
-        defaultMessage: 'This feature is disabled for your account',
-        id: 'iaso.label.featureDisabled',
     },
     moduleDisabled: {
         defaultMessage:
@@ -1029,11 +1025,11 @@ const MESSAGES = defineMessages({
     },
     workflow: {
         id: 'iaso.forms.validationWorkflow',
-        defaultMessage: 'Validation Workflow',
+        defaultMessage: 'Validation workflow',
     },
     validation_status: {
         id: 'iaso.forms.validationStatus',
-        defaultMessage: 'Validation Status',
+        defaultMessage: 'Validation status',
     },
 });
 

@@ -222,7 +222,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Mobile: Search through children in OrgUnit tree.',
     },
     mobile_org_unit_deep_search_tooltip: {
-        id: 'iaso.projets.featureflag.mobile_org_unit_deep_search',
+        id: 'iaso.projets.featureflag.mobile_org_unit_deep_search_tooltip',
         defaultMessage: 'Search through children in OrgUnit tree.',
     },
     data_collection: {

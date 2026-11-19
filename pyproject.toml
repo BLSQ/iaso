@@ -10,6 +10,7 @@ dependencies = [
     "boto3==1.42.44", # https://github.com/boto/boto3/tags
     "celery==5.3.6", # https://github.com/celery/celery/tags
     "clamav-client==0.6.3", # https://github.com/artefactual-labs/clamav-client/tags
+    "cmr-emulator==0.1.0", # https://pypi.org/project/cmr-emulator/ - SwissTPH impact emulator (SNT plugin)
     "cryptography==45.0.7", # https://github.com/pyca/cryptography
     "dateparser==1.2.0", # https://github.com/scrapinghub/dateparser/tags
     "dhis2-py==2.3.0", # https://github.com/davidhuser/dhis2.py/tags

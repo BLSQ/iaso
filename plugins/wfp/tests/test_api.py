@@ -260,15 +260,17 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
         self.assertEqual(self._entity_ids(self.other_user, {"org_unit_group": self.group.id}), [])
 
     def test_search_ids(self):
-        # fixed uuids, starting with digits only: random ones sometimes do
-        self.entity.uuid = uuid.UUID("12345678-0000-4000-8000-000000000000")
+        # fixed uuids, starting with digits only: random ones sometimes do. They start with 0, as no id does: a
+        # number is searched both as an id and as the start of a uuid, so `q=<id>` must not match them by uuid
+        self.entity.uuid = uuid.UUID("01234567-0000-4000-8000-000000000000")
         self.entity.save()
         self.other_entity.uuid = uuid.UUID("98765432-0000-4000-8000-000000000000")
         self.other_entity.save()
         lettered_entity = m.Entity.objects.create(
+            #id=100,
             entity_type=self.entity.entity_type,
             account=self.account,
-            uuid=uuid.UUID("12345678-abcd-4ef0-8abc-def012345678"),
+            uuid=uuid.UUID("01234567-abcd-4ef0-8abc-def012345678"),
         )
         lettered_journey = Journey.objects.create(
             beneficiary=Beneficiary.objects.create(
@@ -284,11 +286,10 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
             number=1,
             org_unit=self.facility,
         )
-
         cases = {
             "real id": (self.entity.id, [self.entity.id]),
-            "start of the uuid, digits only": ("12345678", [self.entity.id, lettered_entity.id]),
-            "start of the uuid": ("12345678-abcd", [lettered_entity.id]),
+            "start of the uuid, digits only": ("01234567", [self.entity.id, lettered_entity.id]),
+            "start of the uuid": ("01234567-abcd", [lettered_entity.id]),
             "missing id": (self._missing_id(m.Entity), []),
             "id of another account": (self.other_entity.id, []),
             "uuid of another account": ("98765432-0000-4000-8000-000000000000", []),

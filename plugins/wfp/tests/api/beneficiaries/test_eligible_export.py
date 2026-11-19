@@ -1,56 +1,20 @@
-import io
-
 from datetime import date, datetime, timezone
 from unittest import mock
-
-import openpyxl
 
 from rest_framework import status
 
 from iaso import models as m
-from iaso.test import APITestCase, TestCase
-from plugins.wfp.api.beneficiaries.serializers import EligibleExportParamsSerializer
+from iaso.test import APITestCase
 from plugins.wfp.models import Beneficiary, Journey, Visit
 from plugins.wfp.permissions import WFP_BENEFICIARY_EXPORT_PERMISSION
-from plugins.wfp.utils.eligible_export import PBWG, U5, _sheet_name, current_period
+from plugins.wfp.tests.api.beneficiaries.common import ELIGIBLE_EXPORT_URL, load_workbook, sheets_as_dicts
 
 
-ELIGIBLE_EXPORT_URL = "/api/wfp/beneficiaries/export/eligible/"
 TODAY = date(2026, 11, 13)  # period from 2026-10-26 to 2026-11-25
 
 
 def _at(day, hour=12):
     return datetime(day.year, day.month, day.day, hour, tzinfo=timezone.utc)
-
-
-class CurrentPeriodTestCase(TestCase):
-    def test_from_the_26th_of_the_previous_month_to_the_25th(self):
-        # in the middle of the month
-        expected = (date(2026, 10, 26), date(2026, 11, 25))
-        actual = current_period(date(2026, 11, 13))
-        self.assertEqual(actual, expected)
-
-        # end of January: the period of the calendar month, started in December of the previous year
-        expected = (date(2025, 12, 26), date(2026, 1, 25))
-        actual = current_period(date(2026, 1, 31))
-        self.assertEqual(actual, expected)
-
-
-class SheetNameTestCase(TestCase):
-    def test_programme_postfixed_with_the_entity_type_and_the_physiology_status(self):
-        taken = set()
-        self.assertEqual(_sheet_name("BSFP", "Child Under 5", U5, "", taken), "BSFP Child Under 5")
-        self.assertEqual(_sheet_name("BSFP", "PBWG", PBWG, "pregnant", taken), "BSFP PBWG Pregnant")
-        self.assertEqual(_sheet_name("BSFP", "PBWG", PBWG, "", taken), "BSFP PBWG Unknown status")
-
-    def test_names_are_short_and_unique(self):
-        taken = set()
-        long_type = "Pregnant and breastfeeding women and girls"
-        first = _sheet_name("TSFP", long_type, PBWG, "pregnant", taken)
-        second = _sheet_name("TSFP", long_type, PBWG, "breastfeeding", taken)
-        self.assertEqual(first, "TSFP Pregnant and breastfeeding")
-        self.assertEqual(second, "TSFP Pregnant and breastfeedi 2")
-        self.assertTrue(all(len(name) <= 31 for name in (first, second)))
 
 
 @mock.patch("plugins.wfp.utils.eligible_export.timezone.localdate", lambda: TODAY)
@@ -113,12 +77,7 @@ class EligibleExportTestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(ELIGIBLE_EXPORT_URL, params or {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        workbook = openpyxl.load_workbook(io.BytesIO(b"".join(response.streaming_content)))
-        sheets = {}
-        for sheet in workbook.worksheets:
-            rows = list(sheet.iter_rows(values_only=True))
-            sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]]
-        return sheets
+        return sheets_as_dicts(load_workbook(response))
 
     def test_without_entity_type_children_and_women_are_exported(self):
         child = self._child()
@@ -381,31 +340,6 @@ class EligibleExportTestCase(APITestCase):
             self._period_errors(visit_date_after="2026-11-14", visit_date_before="2026-11-15"),
             {"visit_date_after": [future], "visit_date_before": [future]},
         )
-
-    def test_period_error_codes(self):
-        # the codes identify each error, whatever the language of the message
-        for data, codes in [
-            ({"visit_date_after": "2026-11-14"}, {"visit_date_after": ["future_date"]}),
-            ({"visit_date_before": "2026-11-14"}, {"visit_date_before": ["future_date"]}),
-            (
-                {"visit_date_after": "2026-10-01", "visit_date_before": "2026-09-01"},
-                {"visit_date_before": ["end_before_start"]},
-            ),
-            ({"visit_date_after": "01-09-2026"}, {"visit_date_after": ["invalid"]}),
-        ]:
-            with self.subTest(data):
-                period = EligibleExportParamsSerializer(data=data)
-                self.assertFalse(period.is_valid())
-                self.assertEqual(
-                    {key: [error.code for error in errors] for key, errors in period.errors.items()}, codes
-                )
-
-    def test_visit_date_filters_give_the_period_of_the_export(self):
-        period = EligibleExportParamsSerializer(
-            data={"visit_date_after": "2026-09-01", "visit_date_before": "2026-09-30", "search": "ignored"}
-        )
-        self.assertTrue(period.is_valid())
-        self.assertEqual(period.validated_data, {"start_date": date(2026, 9, 1), "end_date": date(2026, 9, 30)})
 
     def test_the_default_period_ends_today_at_the_latest(self):
         # TODAY is the 13th: the visits made after it (e.g. planned ones) are not in the default period

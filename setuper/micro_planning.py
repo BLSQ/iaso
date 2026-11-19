@@ -23,14 +23,16 @@ TEAM_NAMES = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
 TEAM_SIZE = 5
 
 
-def create_planning(iaso_client, *, name, project_id, form_id, team_id, org_unit_id, level_type_ids, days, published):
+def create_planning(
+    iaso_client, *, name, project_id, mission_id, team_id, org_unit_id, level_type_ids, days, published
+):
     """`level_type_ids` holds the org unit types of each assignable level below `org_unit_id`."""
     now = datetime.now(timezone.utc)
     planning = iaso_client.post(
         "/api/microplanning/plannings/",
         json={
             "name": name,
-            "forms": [form_id],
+            "missions": [mission_id],
             "project": project_id,
             "team": team_id,
             "org_unit": org_unit_id,
@@ -150,11 +152,12 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     # A team of users plans a single level: users can't hand their org units down to anyone.
     alpha_id = team_ids[0]
     alpha_district = districts[0]
+    health_map_mission = create_form_filling_mission(iaso_client, "Mission Carte Sanitaire", planning_form)
     health_map_id = create_planning(
         iaso_client,
         name="Campagne Carte Sanitaire",
         project_id=project_id,
-        form_id=planning_form["id"],
+        mission_id=health_map_mission["id"],
         team_id=alpha_id,
         org_unit_id=alpha_district.id,
         level_type_ids=[health_area_type_ids],
@@ -171,11 +174,12 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     # Each team hands its org units down: the country team gives the region to the region team,
     # which gives the districts to its teams, which give the health areas to their users.
+    polio_mission = create_form_filling_mission(iaso_client, "Mission Polio", planning_form)
     polio_id = create_planning(
         iaso_client,
         name="Campaign Polio",
         project_id=project_id,
-        form_id=planning_form["id"],
+        mission_id=polio_mission["id"],
         team_id=country_team_id,
         org_unit_id=country.id,
         level_type_ids=[region_type_ids, district_type_ids, health_area_type_ids],

@@ -149,7 +149,8 @@ class FakeIasoServer:
                 self._file(url, f"content of {url.split('?')[0]}".encode())
 
         self._paginated("/api/mobile/orgunits/", [[{"id": 1}, {"id": 2}], [{"id": 3}]])
-        self._json("/api/mobile/orgunits/changes/", [])
+        self._paginated("/api/mobile/orgunits/changes/configs/", [[{"type": "creation"}, {"type": "edition"}]])
+        self._paginated("/api/mobile/orgunits/changes/", [[{"id": 1}], [{"id": 2}]])
         self._json("/api/mobile/plannings/", {"plannings": []})
         self._json("/api/mobile/storage/passwords/", {"results": []})
         self._json("/api/mobile/storage/blacklisted/", {"results": []})
@@ -251,7 +252,9 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
                 "formattachments/10/manifest.xml",
                 "formattachments/11/choices.csv",
                 "formattachments/11/manifest.xml",
-                "orgunitchanges.json",
+                "orgunitchangerequestconfigs-1.json",
+                "orgunitchanges-1.json",
+                "orgunitchanges-2.json",
                 "plannings.json",
                 "storage-passwords.json",
                 "storage-blacklisted.json",
@@ -290,6 +293,27 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
         for call in server.calls:
             if urlparse(call.request.url).path.startswith("/api/"):
                 self.assertIn("app_id=com.fixtures.app", call.request.url)
+
+    def test_org_unit_change_requests_query_params(self):
+        server = FakeIasoServer()
+        self.run_export(server)
+
+        def queries(path):
+            return [parse_qs(urlparse(c.request.url).query) for c in server.calls_to(path)]
+
+        self.assertEqual(
+            queries("/api/mobile/orgunits/changes/configs/"),
+            [{"include_creation": ["1"], "app_id": ["com.fixtures.app"], "page": ["1"], "limit": ["5000"]}],
+        )
+        self.assertEqual(
+            queries("/api/mobile/orgunits/changes/"),
+            [
+                {"app_id": ["com.fixtures.app"], "page": ["1"], "limit": ["1000"]},
+                {"app_id": ["com.fixtures.app"], "page": ["2"], "limit": ["1000"]},
+            ],
+        )
+        [forms_query] = queries("/api/mobile/forms/")
+        self.assertIn("org_unit_groups", forms_query["fields"][0].split(","))
 
     def test_api_calls_config_is_not_mutated(self):
         api_calls_before = [(call, dict(call.default_params)) for call in API_CALLS]
@@ -382,7 +406,8 @@ class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
             "storage-blacklisted.json",
             "workflows.json",
             "plannings.json",
-            "orgunitchanges.json",
+            "orgunitchangerequestconfigs-1.json",
+            "orgunitchanges-1.json",
             "reports.json",
         ]:
             self.assertNotIn(skipped, names)

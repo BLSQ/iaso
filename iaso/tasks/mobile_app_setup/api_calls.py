@@ -83,7 +83,7 @@ API_CALLS = (
         path="/api/mobile/forms/",
         filename="forms",
         default_params={
-            "fields": "id,name,form_id,org_unit_types,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,label_keys,possible_fields,predefined_filters,has_attachments,created_at,updated_at,reference_form_of_org_unit_types"
+            "fields": "id,name,form_id,org_unit_types,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,label_keys,possible_fields,predefined_filters,has_attachments,created_at,updated_at,reference_form_of_org_unit_types,org_unit_groups"
         },
     ),
     ApiCall(
@@ -95,10 +95,22 @@ API_CALLS = (
         asset_files=form_version_files,
     ),
     ApiCall(path="/api/formattachments/", filename="formattachments", asset_files=form_attachment_files),
+    # The mobile app reads both as paginated files: `orgunitchangerequestconfigs-<page>.json`, then
+    # `orgunitchanges-<page>.json`, with the same page sizes as its own requests.
+    ApiCall(
+        path="/api/mobile/orgunits/changes/configs/",
+        filename="orgunitchangerequestconfigs",
+        default_params={"include_creation": "1"},
+        required_feature_flag=FeatureFlag.MOBILE_ORG_UNIT_REGISTRY,
+        paginated=True,
+        page_size=5000,
+    ),
     ApiCall(
         path="/api/mobile/orgunits/changes/",
         filename="orgunitchanges",
         required_feature_flag=FeatureFlag.MOBILE_ORG_UNIT_REGISTRY,
+        paginated=True,
+        page_size=1000,
     ),
     ApiCall(path="/api/mobile/plannings/", filename="plannings", required_feature_flag=FeatureFlag.PLANNING),
     ApiCall(

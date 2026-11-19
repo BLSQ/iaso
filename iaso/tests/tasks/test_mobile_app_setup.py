@@ -1,7 +1,9 @@
 """Unit tests for the mobile app setup export."""
 
+import dataclasses
 import io
 import json
+import math
 import re
 import zipfile
 
@@ -28,6 +30,7 @@ from iaso.tasks.mobile_app_setup.assets import (
 from iaso.tasks.mobile_app_setup.exporter import export_app_setup
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 from iaso.test import APITestCase
+from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
 from iaso.utils.iaso_api_client import HttpClient
 
 
@@ -444,3 +447,35 @@ class AssetFilesContractTest(APITestCase):
         download_urls = sorted(re.findall(r"<downloadUrl>(.*?)</downloadUrl>", rewritten))
         self.assertEqual(download_urls, attachment_paths)
 
+    def test_forms_include_their_org_unit_groups(self):
+        call = next(call for call in API_CALLS if call.filename == "forms")
+        [page] = call.fetch_pages(self, self.project.app_id)
+
+        self.assertEqual(page.payload["forms"][0]["org_unit_groups"], [])
+
+
+class OrgUnitChangeRequestConfigsContractTest(OUCRCAPIBase):
+    def get_json(self, path, params=None):
+        response = self.client.get(path, params)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.requests.append(dict(params))
+        return response.json()
+
+    def test_configs_are_saved_page_by_page(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        self.requests = []
+        call = next(call for call in API_CALLS if call.filename == "orgunitchangerequestconfigs")
+
+        pages = list(dataclasses.replace(call, page_size=4).fetch_pages(self, self.app_id))
+
+        count = pages[0].payload["count"]
+        self.assertGreater(count, 4)
+        page_count = math.ceil(count / 4)
+        self.assertEqual(
+            [page.filename for page in pages],
+            [f"orgunitchangerequestconfigs-{number}.json" for number in range(1, page_count + 1)],
+        )
+        self.assertEqual({request["include_creation"] for request in self.requests}, {"1"})
+        types = [config["type"] for page in pages for config in page.payload["results"]]
+        self.assertEqual(len(types), count)
+        self.assertIn("creation", types)

@@ -2,6 +2,7 @@ import logging
 
 import django_filters
 
+from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
 from gql import Client, gql
@@ -22,7 +23,6 @@ from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED
 from iaso.models.json_config import Config
 from iaso.models.task import Task
 from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
-from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 from ...models import TaskLog
 from .serializers import (
@@ -103,9 +103,8 @@ class TaskSourceViewSet(ModelViewSet):
     @extend_schema(
         responses={
             status.HTTP_200_OK: TaskPresignedUrlSerializer,
-            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                description="The task did not produce a file, or the URL could not be generated."
-            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(description="The task did not produce a file."),
+            status.HTTP_503_SERVICE_UNAVAILABLE: OpenApiResponse(description="The URL could not be generated."),
             status.HTTP_410_GONE: OpenApiResponse(
                 response=TaskPresignedUrlSerializer,
                 description="The file has expired and can no longer be downloaded.",
@@ -124,12 +123,13 @@ class TaskSourceViewSet(ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_410_GONE)
 
             try:
-                presigned_url = generate_presigned_url_from_s3(result_file.file)
+                # On S3, the URL is signed and expires after `AWS_QUERYSTRING_EXPIRE` (1 hour by default).
+                presigned_url = default_storage.url(result_file.file)
             except Exception:
                 logger.exception("Failed to generate presigned URL for task %s", task.pk)
                 return Response(
                     {"error": "Could not generate a presigned URL at this time."},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
 
             serializer = TaskPresignedUrlSerializer(

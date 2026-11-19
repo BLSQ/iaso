@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, urlparse
 import responses
 
 from django.contrib.auth.models import User
+from django.core.files.storage import default_storage
 from django.test import TestCase, override_settings
 
 from iaso.models import ERRORED, SUCCESS, Account, FeatureFlag, Project, Task
@@ -18,7 +19,7 @@ from iaso.tasks import export_mobile_app_setup_for_user as export_module
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
 from iaso.tasks.mobile_app_setup.api_calls import API_CALLS
 from iaso.utils import iaso_api_client
-from iaso.utils.encryption import decrypt_file
+from iaso.utils.encryption import decrypt_file, encrypt_file
 
 
 PASSWORD = "supersecret"
@@ -193,25 +194,39 @@ class ExportMobileAppSetupTestCase(TestCase):
             launcher=self.user,
             account=Account.objects.get(name="test"),
         )
-        # Refactor note:
-        # Because of `upload_file_to_s3`, and `decrypt_file`, the tests write files to disk.
-        # Once we migrate the task to use Django's storage in a subsequent PR, we can use Django's
-        # InMemoryStorage and stop mocking the upload.
         self.out_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.out_dir, ignore_errors=True)
-        self.uploaded = []
 
-        upload_patcher = mock.patch.object(export_module, "upload_file_to_s3", side_effect=self._fake_upload)
-        self.upload_mock = upload_patcher.start()
-        self.addCleanup(upload_patcher.stop)
+        self.exports_before = self.stored_exports()
+        self.addCleanup(self.delete_new_exports)
+
+        self.encrypted_paths = []
+        encrypt_patcher = mock.patch.object(export_module, "encrypt_file", side_effect=self._spy_encrypt_file)
+        encrypt_patcher.start()
+        self.addCleanup(encrypt_patcher.stop)
 
         sleep_patcher = mock.patch("time.sleep")
         self.sleep_mock = sleep_patcher.start()
         self.addCleanup(sleep_patcher.stop)
 
-    def _fake_upload(self, file_name, object_name=None):
-        self.uploaded.append({"source": file_name, "object_name": object_name})
-        shutil.copy(file_name, os.path.join(self.out_dir, os.path.basename(object_name)))
+    def _spy_encrypt_file(self, **kwargs):
+        path = encrypt_file(**kwargs)
+        self.encrypted_paths.append(path)
+        return path
+
+    def stored_exports(self) -> set[str]:
+        try:
+            _, files = default_storage.listdir("export-files")
+        except FileNotFoundError:
+            return set()
+        return {f"export-files/{name}" for name in files}
+
+    def new_exports(self) -> set[str]:
+        return self.stored_exports() - self.exports_before
+
+    def delete_new_exports(self):
+        for name in self.new_exports():
+            default_storage.delete(name)
 
     def run_export(self, server, **kwargs):
         with server:
@@ -226,10 +241,15 @@ class ExportMobileAppSetupTestCase(TestCase):
         self.task.refresh_from_db()
 
     def open_export(self) -> zipfile.ZipFile:
-        self.assertEqual(len(self.uploaded), 1)
-        zip_name = os.path.basename(self.uploaded[0]["object_name"])
+        new_exports = self.new_exports()
+        self.assertEqual(len(new_exports), 1)
+        with (
+            default_storage.open(new_exports.pop(), "rb") as stored,
+            open(os.path.join(self.out_dir, "encrypted.zip"), "wb") as encrypted,
+        ):
+            shutil.copyfileobj(stored, encrypted)
         decrypted = decrypt_file(
-            file_path=self.out_dir, file_name_in=zip_name, file_name_out="decrypted.zip", password=PASSWORD
+            file_path=self.out_dir, file_name_in="encrypted.zip", file_name_out="decrypted.zip", password=PASSWORD
         )
         archive = zipfile.ZipFile(decrypted)
         self.addCleanup(archive.close)
@@ -237,16 +257,24 @@ class ExportMobileAppSetupTestCase(TestCase):
 
 
 class ExportMobileAppSetupTest(ExportMobileAppSetupTestCase):
-    def test_export_succeeds_and_uploads_encrypted_zip(self):
+    def test_export_succeeds_and_saves_encrypted_zip(self):
         self.run_export(FakeIasoServer())
 
         self.assertEqual(self.task.status, SUCCESS, self.task.result)
         self.assertRegex(self.task.result_file.file, r"^export-files/mobile-app-export-[0-9a-f-]+\.zip$")
         self.assertIsNone(self.task.result_file.expires_at)
-        self.upload_mock.assert_called_once()
-        self.assertEqual(self.uploaded[0]["object_name"], self.task.result_file.file)
-        # The temporary files are removed once uploaded.
-        self.assertFalse(os.path.exists(self.uploaded[0]["source"]))
+        self.assertEqual(self.new_exports(), {self.task.result_file.file})
+        self.assertEqual(len(self.encrypted_paths), 1)
+        self.assertFalse(os.path.exists(self.encrypted_paths[0]))
+
+    def test_reports_the_name_chosen_by_the_storage(self):
+        # With `AWS_S3_FILE_OVERWRITE=False`, the storage could save the file under another name than the requested one.
+        with mock.patch.object(default_storage, "get_available_name", return_value="export-files/renamed.zip"):
+            self.run_export(FakeIasoServer())
+
+        self.assertEqual(self.task.status, SUCCESS, self.task.result)
+        self.assertEqual(self.task.result_file.file, "export-files/renamed.zip")
+        self.assertEqual(self.new_exports(), {"export-files/renamed.zip"})
 
     def test_zip_contents(self):
         self.run_export(FakeIasoServer())
@@ -519,7 +547,7 @@ class ExportMobileAppSetupRetryTest(ExportMobileAppSetupTestCase):
 
         self.assertEqual(self.task.status, ERRORED)
         self.assertEqual(len(server.calls_to(REPORT_PATH)), 1 + iaso_api_client.RETRIES)
-        self.upload_mock.assert_not_called()
+        self.assertEqual(self.new_exports(), set())
 
 
 class ExportMobileAppSetupPayloadTransformersTest(ExportMobileAppSetupTestCase):

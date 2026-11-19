@@ -20,6 +20,8 @@ import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.files import File
+from django.core.files.storage import default_storage
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from beanstalk_worker import task_decorator
@@ -31,7 +33,6 @@ from iaso.tasks.mobile_app_setup.hooks import make_payload_transformers
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import HttpClient, IasoClient
-from iaso.utils.s3_client import upload_file_to_s3
 
 
 logger = logging.getLogger(__name__)
@@ -73,18 +74,16 @@ def export_mobile_app_setup_for_user(
                 payload_transformers=payload_transformers,
             )
 
-        s3_object_name = _encrypt_and_upload_to_s3(tmp_dir, export_name, password)
+        file_name = _encrypt_and_save_to_storage(tmp_dir, export_name, password)
 
     task.report_success_with_file(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
-        file_name=s3_object_name,
+        file_name=file_name,
     )
     return task
 
 
-def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
-    # TODO: to be refactored with the upcoming storage changes
-    # where we get rid of the the bespoke S3 client and upload through Django's default storage
+def _encrypt_and_save_to_storage(tmp_dir, source_name, password):
     dest_name = f"{source_name}.zip"
 
     logger.info("Encrypting zipfile")
@@ -95,7 +94,6 @@ def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
         password=password,
     )
 
-    logger.info(f"Uploading zipfile to S3 {dest_name}")
-    s3_object_name = "export-files/" + dest_name
-    upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
-    return s3_object_name
+    logger.info(f"Saving zipfile {dest_name} to the default storage")
+    with open(encrypted_file_path, "rb") as encrypted_file:
+        return default_storage.save(f"export-files/{dest_name}", File(encrypted_file))

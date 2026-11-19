@@ -267,7 +267,6 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
         self.other_entity.uuid = uuid.UUID("98765432-0000-4000-8000-000000000000")
         self.other_entity.save()
         lettered_entity = m.Entity.objects.create(
-            #id=100,
             entity_type=self.entity.entity_type,
             account=self.account,
             uuid=uuid.UUID("01234567-abcd-4ef0-8abc-def012345678"),

@@ -271,13 +271,13 @@ class BeneficiariesAPITestCase(OrgUnitScopeTestData, APITestCase):
             beneficiary=Beneficiary.objects.create(
                 entity=lettered_entity,
                 account=self.account,
-                birth_date=datetime(2025, 1, 1, tzinfo=timezone.utc).date(),
+                birth_date=datetime(2025, 1, 1, tzinfo=UTC).date(),
             ),
             nutrition_programme="TSFP",
         )
         Visit.objects.create(
             journey=lettered_journey,
-            date=datetime(2026, 5, 1, tzinfo=timezone.utc),
+            date=datetime(2026, 5, 1, tzinfo=UTC),
             number=1,
             org_unit=self.facility,
         )

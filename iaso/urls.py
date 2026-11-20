@@ -130,6 +130,7 @@ from .api.stocks.views_mobile import (
     StockRulesVersionMobileViewSet,
 )
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
+from .api.submissions.views import SubmissionsViewSet
 from .api.superset import SupersetTokenViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
@@ -175,6 +176,7 @@ router.register(r"payments/lots", PaymentLotsViewSet, basename="paymentslots")
 router.register(r"payments/options", PaymentOptionsViewSet, basename="paymentsoptions")
 router.register(r"payments", PaymentsViewSet, basename="payments")
 router.register(r"instances", InstancesViewSet, basename="instances")
+router.register(r"submissions", SubmissionsViewSet, basename="submissions")
 router.register(r"mobile/instances", InstancesMobileViewSet, basename="mobile_instances")
 router.register(r"diff/instances/(?P<instance_id>\d+)", InstanceDiffViewSet, basename="instances_diff")
 router.register(r"forms", FormsViewSet, basename="forms")

@@ -200,6 +200,78 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
             )
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_move_first_step_to_first_position_does_nothing(self):
+        self._assert_move_does_nothing(self.first_node, PositionChoices.first)
+
+    def test_move_last_step_to_last_position_does_nothing(self):
+        self._assert_move_does_nothing(self.third_node, PositionChoices.last)
+
+    def _assert_move_does_nothing(self, node, position):
+        self.client.force_authenticate(self.john_wick)
+        # The step is already at this position: the move stops before changing anything
+        with self.assertNumQueries(6):
+            res = self.client.put(
+                reverse(
+                    "validation_node_templates-move",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": node.slug},
+                ),
+                data={"position": position},
+            )
+            self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["first-node", "second-node", "third-node"])
+
+    def test_first_step_cannot_skip_previous_steps(self):
+        self.client.force_authenticate(self.john_wick)
+        self.second_node.can_skip_previous_nodes = True
+        self.second_node.save()
+        self.third_node.can_skip_previous_nodes = True
+        self.third_node.save()
+
+        with self.subTest("moving a step in first position"):
+            res = self.client.put(
+                reverse(
+                    "validation_node_templates-move",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "slug": self.third_node.slug,
+                    },
+                ),
+                data={"position": PositionChoices.first},
+            )
+            self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+            self.assertEqual(self.validation_workflow.dump_nodes(), ["third-node", "first-node", "second-node"])
+
+            for node in (self.first_node, self.second_node, self.third_node):
+                node.refresh_from_db()
+            # The moved step is now the first one: it has no previous step to skip
+            self.assertFalse(self.third_node.can_skip_previous_nodes)
+            self.assertFalse(self.first_node.can_skip_previous_nodes)
+            self.assertTrue(self.second_node.can_skip_previous_nodes)
+
+        with self.subTest("moving the first step away"):
+            self.first_node.can_skip_previous_nodes = True
+            self.first_node.save()
+
+            res = self.client.put(
+                reverse(
+                    "validation_node_templates-move",
+                    kwargs={
+                        "parent_lookup_workflow__slug": self.validation_workflow.slug,
+                        "slug": self.third_node.slug,
+                    },
+                ),
+                data={"position": PositionChoices.last},
+            )
+            self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+            self.assertEqual(self.validation_workflow.dump_nodes(), ["first-node", "second-node", "third-node"])
+
+            for node in (self.first_node, self.second_node, self.third_node):
+                node.refresh_from_db()
+            # The next step of the moved one becomes the first one: it has no previous step to skip
+            self.assertFalse(self.first_node.can_skip_previous_nodes)
+            self.assertTrue(self.second_node.can_skip_previous_nodes)
+            self.assertFalse(self.third_node.can_skip_previous_nodes)
+
     def test_forbid_if_validation_workflow_is_soft_deleted(self):
         self.client.force_authenticate(self.john_wick)
 

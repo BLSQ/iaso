@@ -197,6 +197,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "First node",
                     "description": "Here we should check something",
+                    # The first step has no previous step to skip: it must be saved as False
+                    "can_skip_previous_nodes": True,
                 },
                 {"name": "Second node"},
                 {

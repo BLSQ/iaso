@@ -76,7 +76,8 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     @transaction.atomic
     def delete_node_template(self, node):
         previous_nodes = list(node.previous_node_templates.values_list("pk", flat=True))
-        next_nodes = list(node.next_node_templates.values_list("pk", flat=True))
+        next_nodes_can_skip = dict(node.next_node_templates.values_list("pk", "can_skip_previous_nodes"))
+        next_nodes = list(next_nodes_can_skip)
 
         through_table = node.next_node_templates.through
 
@@ -103,21 +104,32 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
         node.delete()
 
+        # Only the deletion of the starting step makes its next steps the new starting steps
+        nodes_to_reset = [pk for pk, can_skip in next_nodes_can_skip.items() if can_skip]
+        if not previous_nodes and nodes_to_reset:
+            ValidationNodeTemplate.objects.filter(pk__in=nodes_to_reset, previous_node_templates__isnull=True).update(
+                can_skip_previous_nodes=False
+            )
+
     @transaction.atomic
     def insert_node_template(self, node, position=PositionChoices.last, parent_node_templates=None):
         """
         Function to insert a node in the workflow
         """
 
+        # Only the inserted step can become a starting step: in first position, or in last position of an empty workflow
+        is_starting_node = False
+
         if position == PositionChoices.last:
-            node.previous_node_templates.set(
-                self.node_templates.filter(next_node_templates__isnull=True).exclude(pk=node.pk)
-            )
+            last_nodes = list(self.node_templates.filter(next_node_templates__isnull=True).exclude(pk=node.pk))
+            node.previous_node_templates.set(last_nodes)
+            is_starting_node = not last_nodes
 
         if position == PositionChoices.first:
             node.next_node_templates.set(
                 self.node_templates.filter(previous_node_templates__isnull=True).exclude(pk=node.pk)
             )
+            is_starting_node = True
 
         if position == PositionChoices.child_of:
             if not parent_node_templates:
@@ -160,16 +172,20 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
                 ignore_conflicts=True,
             )
 
+        if is_starting_node and node.can_skip_previous_nodes:
+            node.can_skip_previous_nodes = False
+            node.save(update_fields=["can_skip_previous_nodes"])
+
     @transaction.atomic
     def move_node_template(self, node, position=None, parent_node_templates=None):
         if not position:
             raise ValueError("Position is required")
 
-        if position == PositionChoices.last and not node.next_node_templates:
+        if position == PositionChoices.last and not node.next_node_templates.exists():
             # nothing to do , node is already last
             return
 
-        if position == PositionChoices.first and not node.previous_node_templates:
+        if position == PositionChoices.first and not node.previous_node_templates.exists():
             # nothing to do , node is already first
             return
 
@@ -198,7 +214,8 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             new_previous_nodes = [x.pk for x in parent_node_templates]
 
         old_previous = list(node.previous_node_templates.values_list("pk", flat=True))
-        old_next = list(node.next_node_templates.values_list("pk", flat=True))
+        old_next_can_skip = dict(node.next_node_templates.values_list("pk", "can_skip_previous_nodes"))
+        old_next = list(old_next_can_skip)
 
         through_table = node.next_node_templates.through
 
@@ -231,6 +248,23 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             ],
             ignore_conflicts=True,
         )
+
+        # A starting step has no previous step to skip: reset the steps that became starting steps
+        is_moved_to_first = not new_previous_nodes
+        was_first = not old_previous
+
+        nodes_to_reset = []
+        if is_moved_to_first and node.can_skip_previous_nodes:
+            nodes_to_reset.append(node.pk)
+        if was_first:
+            # its next steps are now the starting steps
+            nodes_to_reset += [pk for pk, can_skip in old_next_can_skip.items() if can_skip]
+
+        if nodes_to_reset:
+            ValidationNodeTemplate.objects.filter(
+                pk__in=nodes_to_reset,
+                previous_node_templates__isnull=True,
+            ).update(can_skip_previous_nodes=False)
 
     def dump_nodes(self):
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):

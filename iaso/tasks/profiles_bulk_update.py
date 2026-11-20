@@ -1,5 +1,4 @@
 from time import time
-from typing import Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -25,18 +24,18 @@ from iaso.utils import search_by_ids_refs
 
 def get_filtered_profiles(
     queryset: QuerySet[Profile],
-    user: Optional[User],
-    search: Optional[str] = None,
-    perms: Optional[list[str]] = None,
-    location: Optional[str] = None,
-    org_unit_type: Optional[str] = None,
-    parent_ou: Optional[bool] = False,
-    children_ou: Optional[bool] = False,
-    projects: Optional[list[int]] = None,
-    user_roles: Optional[list[int]] = None,
-    teams: Optional[list[int]] = None,
-    managed_users_only: Optional[bool] = False,
-    ids: Optional[str] = None,
+    user: User | None,
+    search: str | None = None,
+    perms: list[str] | None = None,
+    location: str | None = None,
+    org_unit_type: str | None = None,
+    parent_ou: bool | None = False,
+    children_ou: bool | None = False,
+    projects: list[int] | None = None,
+    user_roles: list[int] | None = None,
+    teams: list[int] | None = None,
+    managed_users_only: bool | None = False,
+    ids: str | None = None,
 ) -> QuerySet[Profile]:
     if search:
         if search.startswith("ids:"):
@@ -59,7 +58,7 @@ def get_filtered_profiles(
             user__iaso_profile__org_units__pk=location,
         ).distinct()
 
-    parent: Optional[OrgUnit] = None
+    parent: OrgUnit | None = None
     if (parent_ou and location) or (children_ou and location):
         ou = get_object_or_404(OrgUnit, pk=location)
         if parent_ou and ou.parent is not None:
@@ -125,7 +124,7 @@ class TeamAuditLogger(AuditLogger):
 
 def update_single_profile_from_bulk(
     user: User,
-    managed_org_units: Optional[list[int]],
+    managed_org_units: list[int] | None,
     profile: Profile,
     *,
     projects_ids_added: list[int],
@@ -136,8 +135,8 @@ def update_single_profile_from_bulk(
     teams_id_removed: list[int],
     location_ids_added: list[int],
     location_ids_removed: list[int],
-    language: Optional[str],
-    organization: Optional[str],
+    language: str | None,
+    organization: str | None,
 ):
     """Used within the context of a bulk operation"""
     audit_logger = ProfileAuditLogger()
@@ -277,17 +276,17 @@ def profiles_bulk_update(
     teams_id_removed: list[int],
     location_ids_added: list[int],
     location_ids_removed: list[int],
-    language: Optional[str],
-    organization: Optional[str],
-    search: Optional[str],
-    perms: Optional[list[str]],
-    location: Optional[str],
-    org_unit_type: Optional[str],
-    parent_ou: Optional[bool],
-    children_ou: Optional[bool],
-    projects: Optional[list[int]],
-    user_roles: Optional[list[int]],
-    teams: Optional[list[int]],
+    language: str | None,
+    organization: str | None,
+    search: str | None,
+    perms: list[str] | None,
+    location: str | None,
+    org_unit_type: str | None,
+    parent_ou: bool | None,
+    children_ou: bool | None,
+    projects: list[int] | None,
+    user_roles: list[int] | None,
+    teams: list[int] | None,
     task: Task,
 ):
     """Background Task to bulk update profiles."""
@@ -334,7 +333,7 @@ def profiles_bulk_update(
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )
-        for index, profile in enumerate(queryset.iterator()):
+        for index, profile in enumerate(queryset.iterator(chunk_size=100)):
             res_string = f"{time() - start:.2f} sec, processed {index} profiles"
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             update_single_profile_from_bulk(

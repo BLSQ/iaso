@@ -2,7 +2,7 @@
 
 import io
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import openpyxl
 
@@ -34,7 +34,7 @@ def sheets_as_dicts(workbook):
     sheets = {}
     for sheet in workbook.worksheets:
         rows = list(sheet.iter_rows(values_only=True))
-        sheets[sheet.title] = [dict(zip(rows[0], row)) for row in rows[1:]] if rows else []
+        sheets[sheet.title] = [dict(zip(rows[0], row, strict=False)) for row in rows[1:]] if rows else []
     return sheets
 
 
@@ -67,7 +67,7 @@ class ExportTestData:
             entity_type=entity_type,
             account=cls.account,
         )
-        day = datetime(2026, 5, 1, 9, tzinfo=timezone.utc)
+        day = datetime(2026, 5, 1, 9, tzinfo=UTC)
         reference = m.Instance.objects.create(
             form=cls.reference_form,
             entity=cls.entity,
@@ -131,7 +131,7 @@ class OrgUnitScopeTestData(ExportTestData):
         cls.group = m.Group.objects.create(name="Friendship", source_version=version)
         cls.group.org_units.set([cls.facility])
 
-        day = datetime(2026, 5, 15, 10, tzinfo=timezone.utc)
+        day = datetime(2026, 5, 15, 10, tzinfo=UTC)
         journey = Journey.objects.get(beneficiary__entity=cls.entity)
         cls.rubkona_instance = m.Instance.objects.create(
             form=cls.visit_form,
@@ -189,7 +189,7 @@ class BeneficiariesTestData(OrgUnitScopeTestData):
             beneficiary=Beneficiary.objects.get(entity=cls.other_entity), nutrition_programme="TSFP"
         )
         Visit.objects.create(
-            journey=other_journey, date=datetime(2026, 5, 2, tzinfo=timezone.utc), number=1, org_unit=other_facility
+            journey=other_journey, date=datetime(2026, 5, 2, tzinfo=UTC), number=1, org_unit=other_facility
         )
         cls.other_instance = m.Instance.objects.create(
             form=cls.visit_form, entity=cls.other_entity, org_unit=other_facility, json={"muac": "11.0"}

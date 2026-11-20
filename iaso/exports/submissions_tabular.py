@@ -135,7 +135,7 @@ def build_submissions_tabular_queryset(
         raise ValueError(f"{len(annotations)} values for {len(columns)} columns")
 
     named_annotations = {}
-    for index, (column, annotation) in enumerate(zip(columns, annotations)):
+    for index, (column, annotation) in enumerate(zip(columns, annotations, strict=False)):
         column["field"] = f"{FIELD_PREFIX}{index}"
         # the answers are texts in the submission json: written as numbers in xlsx when they all are. The other
         # columns keep their type (ids, coordinates...) or must stay texts (codes like org_unit__code, export_id)

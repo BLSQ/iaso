@@ -40,7 +40,7 @@ class ValidationNode(CreatedAndUpdatedModel):
         get_user_model(), null=True, blank=True, on_delete=models.PROTECT, related_name="%(class)s_updated_set"
     )
 
-    status = models.CharField(max_length=20, choices=ValidationNodeStatus.choices, default=ValidationNodeStatus.UNKNOWN)
+    status = models.CharField(max_length=20, choices=ValidationNodeStatus, default=ValidationNodeStatus.UNKNOWN)
     comment = models.TextField(blank=True)
     final = models.BooleanField(default=False)
 

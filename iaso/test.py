@@ -423,7 +423,7 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
         self,
         *,
         list_data: typing.Mapping,
-        results_key: typing.Optional[str],
+        results_key: str | None,
         expected_length: int,
         paginated: bool = False,
     ):

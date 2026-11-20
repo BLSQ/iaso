@@ -28,7 +28,7 @@ def _www_authenticate(request: HttpRequest) -> str:
 
 
 def _has_bearer(request: HttpRequest) -> bool:
-    raw = request.META.get("HTTP_AUTHORIZATION") or request.headers.get("Authorization") or ""
+    raw = request.headers.get("authorization") or request.headers.get("Authorization") or ""
     return raw.lower().startswith("bearer ")
 
 

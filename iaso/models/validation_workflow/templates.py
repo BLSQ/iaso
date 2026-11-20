@@ -87,7 +87,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
                     from_validationnodetemplate_id=prev,
                     to_validationnodetemplate_id=nxt,
                 )
-                for (prev, nxt) in zip(previous_nodes, next_nodes)
+                for (prev, nxt) in zip(previous_nodes, next_nodes, strict=False)
             ],
             ignore_conflicts=True,
         )
@@ -219,7 +219,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         through_table.objects.bulk_create(
             [
                 through_table(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=nxt)
-                for (prev, nxt) in zip(old_previous, old_next)
+                for (prev, nxt) in zip(old_previous, old_next, strict=False)
             ]
             + [
                 through_table(from_validationnodetemplate_id=prev, to_validationnodetemplate_id=node.id)

@@ -21,11 +21,11 @@ TECHNICAL_KEYS = frozenset({"_version", "instanceID", "deprecatedID", "meta"})
 FILE_NAME_RE = re.compile(r"\.[A-Za-z][A-Za-z0-9]{1,4}$")
 
 
-def user_can_view_pii(user: typing.Optional[typing.Union[User, AnonymousUser]]) -> bool:
+def user_can_view_pii(user: User | AnonymousUser | None) -> bool:
     return bool(user and user.is_authenticated and user.has_perm(CORE_SUBMISSIONS_PII_PERMISSION.full_name()))
 
 
-def get_allowed_fields(form, user) -> typing.Optional[frozenset[str]]:
+def get_allowed_fields(form, user) -> frozenset[str] | None:
     """Return the allowed question names when the form must be filtered for this user, None otherwise."""
     if form is None or form.non_pii_fields is None or user_can_view_pii(user):
         return None
@@ -41,7 +41,7 @@ def filter_pii(data: typing.Any, allowed: frozenset[str]) -> typing.Any:
     if isinstance(data, dict):
         result = {}
         for key, value in data.items():
-            if isinstance(value, (dict, list)) and not _is_list_of_values(value):
+            if isinstance(value, dict | list) and not _is_list_of_values(value):
                 filtered = filter_pii(value, allowed)
                 if filtered:
                     result[key] = filtered
@@ -54,10 +54,10 @@ def filter_pii(data: typing.Any, allowed: frozenset[str]) -> typing.Any:
 
 
 def _is_list_of_values(value) -> bool:
-    return isinstance(value, list) and all(not isinstance(item, (dict, list)) for item in value)
+    return isinstance(value, list) and all(not isinstance(item, dict | list) for item in value)
 
 
-def filter_submission_json(json: typing.Optional[dict], form, user) -> typing.Optional[dict]:
+def filter_submission_json(json: dict | None, form, user) -> dict | None:
     """Filter a submission JSON for the given user, according to the PII configuration of its form."""
     allowed = get_allowed_fields(form, user)
     if allowed is None or json is None:
@@ -72,7 +72,7 @@ def _slugify_value(value: str) -> str:
     return re.sub(r"\s+", "_", re.sub(r"[(),]", "", without_accents))
 
 
-def filter_submission_files(files: list[typing.Optional[str]], filtered_json: typing.Optional[dict]):
+def filter_submission_files(files: list[str | None], filtered_json: dict | None):
     """Keep only the attachments referenced by a question that remained after filtering (e.g. a whitelisted photo).
 
     Attachments are matched like in the frontend: the stored file name contains the (slugified) answer.
@@ -101,7 +101,7 @@ def filter_submission_files(files: list[typing.Optional[str]], filtered_json: ty
     return kept
 
 
-def is_field_allowed(name: str, allowed: typing.Optional[frozenset[str]]) -> bool:
+def is_field_allowed(name: str, allowed: frozenset[str] | None) -> bool:
     """Whether a question can be shown, `allowed` being the result of `get_allowed_fields`."""
     return allowed is None or str(name).lower() in allowed
 

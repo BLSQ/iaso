@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from unittest import mock
 
 from rest_framework import status
@@ -14,7 +14,7 @@ TODAY = date(2026, 11, 13)  # period from 2026-10-26 to 2026-11-25
 
 
 def _at(day, hour=12):
-    return datetime(day.year, day.month, day.day, hour, tzinfo=timezone.utc)
+    return datetime(day.year, day.month, day.day, hour, tzinfo=UTC)
 
 
 @mock.patch("plugins.wfp.utils.eligible_export.timezone.localdate", lambda: TODAY)

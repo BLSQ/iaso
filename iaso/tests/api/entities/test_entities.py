@@ -4,9 +4,8 @@ import io
 import json
 import uuid
 
-from datetime import timedelta
+from datetime import UTC, timedelta
 
-import pytz
 import time_machine
 
 from django.core.files import File
@@ -359,7 +358,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         self.client.force_authenticate(self.yoda)
-        source_created_at = datetime.datetime(2025, 2, 3, tzinfo=datetime.timezone.utc)
+        source_created_at = datetime.datetime(2025, 2, 3, tzinfo=datetime.UTC)
 
         for i in range(3):
             entity = Entity.objects.create(entity_type=self.entity_type, account=self.yoda.iaso_profile.account)
@@ -390,7 +389,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(ctx.captured_queries), 5)
         self.assertIn(subquery_annotation, "".join(q["sql"] for q in ctx.captured_queries))
 
-    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.timezone.utc), tick=False)
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.UTC), tick=False)
     def test_list_entities_single_entity_type(self):
         """Test the 'entityTypeIds' parameter of /api/entities with a single entity type id.
 
@@ -743,9 +742,9 @@ class WebEntityAPITestCase(EntityAPITestCase):
         """
         self.client.force_authenticate(self.yoda)
 
-        date1 = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
-        date2 = datetime.datetime(2024, 9, 13, 0, 0, 5, tzinfo=pytz.UTC)
-        date3 = datetime.datetime(2024, 9, 14, 0, 0, 5, tzinfo=pytz.UTC)
+        date1 = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=UTC)
+        date2 = datetime.datetime(2024, 9, 13, 0, 0, 5, tzinfo=UTC)
+        date3 = datetime.datetime(2024, 9, 14, 0, 0, 5, tzinfo=UTC)
         date1_str = date1.strftime("%Y-%m-%d")
         date2_str = date2.strftime("%Y-%m-%d")
         date3_str = date3.strftime("%Y-%m-%d")
@@ -1079,10 +1078,10 @@ class WebEntityAPITestCase(EntityAPITestCase):
     def test_list_entities_filter_by_date_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
 
-        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date_attr = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=UTC)
         source_date_attr_str = source_date_attr.strftime("%Y-%m-%d")
 
-        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=pytz.UTC)
+        source_date = datetime.datetime(2024, 10, 15, 0, 0, 5, tzinfo=UTC)
         source_date_str = source_date.strftime("%Y-%m-%d")
 
         entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)
@@ -1277,7 +1276,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()["result"]), 1)
 
-    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.timezone.utc), tick=False)
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.UTC), tick=False)
     def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
 
@@ -1325,7 +1324,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
-    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.timezone.utc), tick=False)
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1, tzinfo=datetime.UTC), tick=False)
     def test_entities_empty_export(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/entities/?csv=true/")

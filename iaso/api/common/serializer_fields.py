@@ -1,14 +1,10 @@
-from __future__ import annotations
-
 import json
 import re
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
-
-import pytz
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -32,7 +28,7 @@ class TimestampField(serializers.Field):
         return value.timestamp()
 
     def to_internal_value(self, data: float):
-        return datetime.fromtimestamp(data, tz=timezone.utc)
+        return datetime.fromtimestamp(data, tz=UTC)
 
 
 class DateTimestampField(serializers.Field):
@@ -41,10 +37,10 @@ class DateTimestampField(serializers.Field):
     Use only for mobile APIs"""
 
     def to_representation(self, value: date):
-        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
+        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=UTC).timestamp()
 
     def to_internal_value(self, data: float):
-        return datetime.fromtimestamp(data, tz=timezone.utc).date()
+        return datetime.fromtimestamp(data, tz=UTC).date()
 
 
 @extend_schema_field(OpenApiTypes.NONE)

@@ -145,15 +145,23 @@ class BeneficiaryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def export_eligible(self, request):
         """The beneficiaries of the selection with an ongoing journey, found normal at their last visit of the period.
 
-        One sheet per programme (and per physiology status for women): without an entity type, the children and the
-        women are both exported, in separate sheets as their columns differ. The period is given by `start_date` and
-        `end_date` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
+        One sheet per programme and entity type (and per physiology status for women), as their columns differ: the
+        programmes of each entity type of the account, as configured for its country in `programmes_by_country` (a
+        sheet with "No data" when there is none), or only the selected ones. The period is given by `visit_date_after`
+        and `visit_date_before` (YYYY-MM-DD, both included), by default from the 26th of last month to the 25th.
         """
+        # filtered first: the filters (e.g. `programme`, `entity_type`) are validated by then
         beneficiaries = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         return export_response(
-            request.user, KIND_ELIGIBLE, beneficiaries, self.get_visit_scope(), **serializer.validated_data
+            request.user,
+            KIND_ELIGIBLE,
+            beneficiaries,
+            self.get_visit_scope(),
+            programme=request.query_params.get("programme") or None,
+            entity_type_id=request.query_params.get("entity_type") or None,
+            **serializer.validated_data,
         )
 
     @action(detail=False, methods=["get"], url_path=r"(?P<entity_id>\d+)/data")

@@ -27,6 +27,14 @@ especially if most of the campaign decisions are already made.
     Trial accounts already have every module the campaign needs (forms, entities, stock
     management, embedded links, DHIS2 mapping).
 
+!!! warning "Using Claude? Prefer Claude Code"
+    If you use Claude, preferably use **Claude Code** (desktop app or terminal) to avoid
+    limitations. Claude in the browser or in its app can only reach domains on an allowed
+    list: with an IASO server other than **app.openiaso.com**, get its domain allowed
+    **before** the session (on Team and Enterprise plans, only an owner of your Claude
+    organisation can add it: see the
+    [tip at the end of step 4](#step-4-give-the-kit-to-your-ai-assistant)).
+
 ---
 
 ## Part 1: Prepare your IASO account
@@ -66,11 +74,12 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. The page shows a line like `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copy the long text between
    the second pair of quotes: this is your access key.
-3. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
+3. Decompress the ZIP file.
+4. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
    TextEdit…).
-4. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
+5. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
    after `IASO_TOKEN=`. Save the file.
-5. Zip the kit folder again.
+6. Zip the kit folder again.
 
 !!! warning "Keep your access key private"
     The access key works like your password. Never paste it into the conversation and never
@@ -79,7 +88,7 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 ### Step 4: Give the kit to your AI assistant
 
-1. Start a new conversation in Claude or ChatGPT and attach the zip.
+1. Start a new conversation in Claude or ChatGPT and attach the zip with the token saved in the .txt file.
 2. Choose where your geographic data comes from and copy the matching message as it is.
 
 **Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data. Copy this message, then go directly to [step 5](#step-5-answer-the-assistants-questions) to answer the questions:

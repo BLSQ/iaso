@@ -28,6 +28,14 @@ décisions de la campagne sont déjà prises.
     Les comptes d'essai ont déjà tous les modules nécessaires à la campagne (formulaires,
     entités, gestion de stock, liens intégrés, mapping DHIS2).
 
+!!! warning "Vous utilisez Claude ? Préférez Claude Code"
+    Si vous utilisez Claude, utilisez de préférence **Claude Code** (application de bureau ou
+    terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
+    ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
+    **app.openiaso.com**, faites autoriser son domaine **avant** la session (sur les offres
+    Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
+    voir l'[astuce à la fin de l'étape 4](#etape-4-donner-le-kit-a-votre-assistant-ia)).
+
 ---
 
 ## Partie 1 : Préparer votre compte IASO
@@ -71,11 +79,12 @@ en votre nom.
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. La page affiche une ligne comme `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copiez le long texte
    entre la deuxième paire de guillemets : c'est votre clé d'accès.
-3. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
+3. Décompressez le fichier ZIP.
+4. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
    (Bloc-notes, TextEdit…).
-4. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
+5. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
    d'accès après `IASO_TOKEN=`. Enregistrez le fichier.
-5. Recompressez le dossier du kit en zip.
+6. Recompressez le dossier du kit en zip.
 
 !!! warning "Gardez votre clé d'accès privée"
     La clé d'accès fonctionne comme votre mot de passe. Ne la collez jamais dans la
@@ -85,7 +94,7 @@ en votre nom.
 
 ### Étape 4 : Donner le kit à votre assistant IA
 
-1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip.
+1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip contenant le token enregistré dans le fichier .txt.
 2. Choisissez l'origine de vos données géographiques et copiez tel quel le message correspondant.
 
 **Option A : Utiliser les données géographiques de démonstration** (pyramide de démonstration du kit et réponses d'exemple). La plupart des gens commencent ici : il n'y a rien à préparer, et vous voyez le résultat avant de préparer vos propres données. Copiez ce message, puis allez directement à l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant) pour répondre aux questions :

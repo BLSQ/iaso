@@ -28,6 +28,14 @@ campaña ya están tomadas.
     Las cuentas de prueba ya tienen todos los módulos que necesita la campaña (formularios,
     entidades, gestión de stock, enlaces integrados, mapeo DHIS2).
 
+!!! warning "¿Usa Claude? Prefiera Claude Code"
+    Si usa Claude, use preferiblemente **Claude Code** (aplicación de escritorio o terminal)
+    para evitar limitaciones. Claude en el navegador o en su aplicación solo puede acceder a
+    los dominios de una lista autorizada: con un servidor IASO distinto de
+    **app.openiaso.com**, haga autorizar su dominio **antes** de la sesión (en los planes
+    Team y Enterprise, solo un propietario de su organización de Claude puede añadirlo:
+    vea el [consejo al final del paso 4](#paso-4-dar-el-kit-a-su-asistente-de-ia)).
+
 ---
 
 ## Parte 1: Preparar su cuenta IASO
@@ -69,11 +77,12 @@ nombre.
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. La página muestra una línea como `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copie el texto largo
    entre el segundo par de comillas: es su clave de acceso.
-3. En la carpeta del kit, abra el archivo `iaso_config.txt` con un editor de texto (Bloc de
+3. Descomprima el archivo ZIP.
+4. En la carpeta del kit, abra el archivo `iaso_config.txt` con un editor de texto (Bloc de
    notas, TextEdit…).
-4. Compruebe que la línea `IASO_URL=` indica `https://app.openiaso.com`. Pegue su clave de
+5. Compruebe que la línea `IASO_URL=` indica `https://app.openiaso.com`. Pegue su clave de
    acceso después de `IASO_TOKEN=`. Guarde el archivo.
-5. Vuelva a comprimir la carpeta del kit en zip.
+6. Vuelva a comprimir la carpeta del kit en zip.
 
 !!! warning "Mantenga su clave de acceso en privado"
     La clave de acceso funciona como su contraseña. No la pegue nunca en la conversación y
@@ -83,7 +92,7 @@ nombre.
 
 ### Paso 4: Dar el kit a su asistente de IA
 
-1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip.
+1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip con el token guardado en el archivo .txt.
 2. Elija el origen de sus datos geográficos y copie tal cual el mensaje correspondiente.
 
 **Opción A: Usar los datos geográficos de demostración** (la pirámide de demostración del kit y respuestas de ejemplo). La mayoría de la gente empieza aquí: no hay nada que preparar, y verá el resultado antes de preparar sus propios datos. Copie este mensaje y vaya directamente al [paso 5](#paso-5-responder-a-las-preguntas-del-asistente) para responder a las preguntas:

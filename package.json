@@ -11,7 +11,7 @@
     "packageManager": "npm@11.19.0",
     "scripts": {
         "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\"",
-        "show-lint-problems-plugins": "eslint \"./**/polio/js/**/*.{js,jsx,ts,tsx}\"",
+        "show-lint-problems-plugins": "eslint \"./plugins/**/js/**/*.{js,jsx,ts,tsx}\"",
         "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
         "fix-lint-plugins": "eslint \"./plugins/**/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
         "fix-lint-pre-commit": "eslint --cache --fix",

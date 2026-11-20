@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { wktToGeoJSON as terraformer } from '@terraformer/wkt';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';

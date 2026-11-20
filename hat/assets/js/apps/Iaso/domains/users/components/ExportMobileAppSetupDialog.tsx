@@ -5,10 +5,13 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Alert, Box, Button, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import LinearProgress, {
     LinearProgressProps,
 } from '@mui/material/LinearProgress';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     IconButton,

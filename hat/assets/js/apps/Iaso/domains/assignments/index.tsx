@@ -6,7 +6,12 @@ import React, {
 } from 'react';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Grid, Typography, Tabs, Tab } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import Typography from '@mui/material/Typography/Typography';
 import {
     useSafeIntl,
     useGoBack,
@@ -14,7 +19,7 @@ import {
     Optional,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { useApiTeamsRetrieve } from 'Iaso/api/teams';
+import { useApiTeamsRetrieve } from 'Iaso/api/teams/endpoints/teams/teams';
 import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { MainWrapper } from 'Iaso/components/MainWrapper';

@@ -82,9 +82,9 @@ describe('useFormsTableColumns', () => {
 
         const projectsCol = result.current.find(col => col.id === 'projects');
         const projects = [{ id: 1, name: 'Census' }];
-        expect(
-            projectsCol?.Cell?.({ row: { original: { projects } } }),
-        ).toBe('chips');
+        expect(projectsCol?.Cell?.({ row: { original: { projects } } })).toBe(
+            'chips',
+        );
         expect(mockGetProjectChips).toHaveBeenCalledWith(projects);
     });
 
@@ -100,10 +100,14 @@ describe('useFormsTableColumns', () => {
             }),
         );
 
-        const typesCol = result.current.find(col => col.id === 'org_unit_types');
+        const typesCol = result.current.find(
+            col => col.id === 'org_unit_types',
+        );
         const orgUnitTypes = [{ id: 1, short_name: 'DIST', name: 'District' }];
         expect(
-            typesCol?.Cell?.({ row: { original: { org_unit_types: orgUnitTypes } } }),
+            typesCol?.Cell?.({
+                row: { original: { org_unit_types: orgUnitTypes } },
+            }),
         ).toBe('type-chips');
         expect(mockGetOrgUnitTypeChips).toHaveBeenCalledWith(orgUnitTypes);
     });

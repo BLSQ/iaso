@@ -1,12 +1,10 @@
 import React, { FC, useCallback, useMemo } from 'react';
-import {
-    Stack,
-    TableBody,
-    TableCell,
-    TableRow,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';

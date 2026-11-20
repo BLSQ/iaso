@@ -1,8 +1,13 @@
 import React, { useState, FunctionComponent } from 'react';
 
 import SearchIcon from '@mui/icons-material/Search';
-import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
+
 import { useSafeIntl } from 'bluesquare-components';
 
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';

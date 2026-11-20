@@ -94,7 +94,9 @@ def admin_login(server_url, username, password):
     return iaso_admin_client
 
 
-def setup_account(account_name, server_url, username, password, create_main_org_unit, create_demo_form):
+def setup_account(
+    account_name, server_url, username, password, create_main_org_unit, create_demo_form, dev_features=False
+):
     data = {
         "account_name": account_name,
         "user_username": account_name,
@@ -116,6 +118,7 @@ def setup_account(account_name, server_url, username, password, create_main_org_
             "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
             "SHOW_LINK_INSTANCE_REFERENCE",
             "ALLOW_CATCHMENT_EDITION",
+            *(["SHOW_DEV_FEATURES"] if dev_features else []),
         ],
         "create_main_org_unit": create_main_org_unit,
         "create_demo_form": create_demo_form,
@@ -160,10 +163,13 @@ def create_account(
     additional_projects: bool,
     create_main_org_unit: bool,
     create_demo_form: bool,
+    dev_features: bool = False,
 ):
     account_name = validate_account_name(optional_account_name)
     print("Creating account:", account_name)
-    iaso_client = setup_account(account_name, server_url, username, password, create_main_org_unit, create_demo_form)
+    iaso_client = setup_account(
+        account_name, server_url, username, password, create_main_org_unit, create_demo_form, dev_features
+    )
     setup_orgunits(iaso_client=iaso_client)
     create_user_role(iaso_client)
 
@@ -213,6 +219,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--create_demo_form", action="store_true", help="Flag to create a demo form (default: False")
     parser.add_argument(
+        "--dev_features",
+        action="store_true",
+        help="Enable the SHOW_DEV_FEATURES account feature flag to see pages still in development (default: False)",
+    )
+    parser.add_argument(
         "--local",
         action="store_true",
         help=(
@@ -256,5 +267,12 @@ if __name__ == "__main__":
         sys.exit("ERROR: Values for server url, user name and password are all required")
 
     create_account(
-        server_url, username, password, account_name, additional_projects, create_main_org_unit, create_demo_form
+        server_url,
+        username,
+        password,
+        account_name,
+        additional_projects,
+        create_main_org_unit,
+        create_demo_form,
+        args.dev_features,
     )

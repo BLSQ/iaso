@@ -1,11 +1,15 @@
 import React, { FC } from 'react';
-import { Alert, Box, Table, TableBody, TableContainer } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
 import { AlertProps } from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
 import Divider from '@mui/material/Divider';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { FieldArrayRenderProps, useFormikContext } from 'formik';
 import { FormikContextType } from 'formik/dist/types';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import {
     useGetFormsDropdownOptions,
     UseGetFormsDropdownParams,

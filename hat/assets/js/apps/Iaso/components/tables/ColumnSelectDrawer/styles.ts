@@ -1,4 +1,4 @@
-import { Theme } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import { SxStyles } from 'Iaso/types/general';
 
 export const styles = {

@@ -5,11 +5,11 @@ import userEvent from '@testing-library/user-event';
 import { FormikProps } from 'formik';
 import { setupServer } from 'msw/node';
 import { vi } from 'vitest';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
     getApiMicroplanningMissionsMissionTypesDropdownListResponseMock,
 } from 'Iaso/api/missions/endpoints/missions/missions.msw';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import {
     renderWithThemeAndIntlProvider,
     TestingQueryClient,

@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Alert, Box, Chip } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { FormVersionDiff } from '../requests';

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Chip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Chip from '@mui/material/Chip/Chip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';

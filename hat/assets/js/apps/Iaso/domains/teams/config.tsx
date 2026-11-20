@@ -1,6 +1,7 @@
 import React, { ReactElement } from 'react';
 import { Column, Setting, useSafeIntl } from 'bluesquare-components';
-import { PaginatedTeamListList, useApiTeamsDestroy } from 'Iaso/api/teams';
+import { useApiTeamsDestroy } from 'Iaso/api/teams/endpoints/teams/teams';
+import { PaginatedTeamListList } from 'Iaso/api/teams/models/paginatedTeamListList.zod';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import {

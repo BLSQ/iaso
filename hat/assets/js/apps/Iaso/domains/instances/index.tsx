@@ -1,6 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Box, Grid, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     commonStyles,
@@ -10,6 +12,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import {
     DownloadMenuButton,
@@ -160,6 +163,7 @@ const Instances = () => {
                 formIds={formIds}
             />
             <Box className={classes.containerFullHeightPadded}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <InstancesFiltersComponent
                     params={params}
                     onSearch={onSearch}

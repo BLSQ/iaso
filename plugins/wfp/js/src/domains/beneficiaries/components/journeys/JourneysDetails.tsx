@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { alpha } from '@mui/material/styles';
 import { Beneficiary } from '../../types';
 import { Journeys } from './Journeys';

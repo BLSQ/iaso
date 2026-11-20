@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Divider } from '@mui/material';
+import Divider from '@mui/material/Divider/Divider';
 import { SxStyles } from '../../../../types/general';
 import { QuestionMapping } from '../../types';
 import ObjectDumper from '../ObjectDumper';

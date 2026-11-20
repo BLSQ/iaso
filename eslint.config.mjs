@@ -321,6 +321,13 @@ export default defineConfig([
             'no-continue': 'warn',
             'no-nested-ternary': 'warn',
             'no-prototype-builtins': 'warn',
+            // as recommended by mui itself : https://mui.com/material-ui/guides/minimizing-bundle-size/?#enforce-best-practices-with-eslint
+            "no-restricted-imports": [
+              "error",
+              {
+                "patterns": [{ "regex": "^@mui/[^/]+$" }]
+              }
+            ],
             'no-restricted-syntax': 'warn',
             'no-tabs': 'off',
             'no-this-before-super': 'warn',
@@ -405,6 +412,23 @@ export default defineConfig([
         },
         rules: {
             'no-process-env': 'off',
+        },
+    },
+    {
+        files: ['**/*.{ts,tsx,js,jsx}'],
+        ignores: ['Iaso/api/**'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex:                 "^Iaso/api/(?![^/]+/(?:endpoints|models)/(?:[^/]+/(?!index(?:\\.|$))[^/]+|(?!index\\.zod$)[^/]+\\.zod)$).*",
+                            message: 'Import API modules through their endpoint or models files.',
+                        },
+                    ],
+                },
+            ],
         },
     },
 ]);

@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
 import InputIcon from '@mui/icons-material/Input';
-import { Box, Button } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import { useSafeIntl } from 'bluesquare-components';
 import { openSnackBar } from '../../../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../../../constants/snackBars';

@@ -1,4 +1,4 @@
-import { PaginatedNestedPlanningConfigListList } from 'Iaso/api/plannings';
+import { PaginatedNestedPlanningConfigListList } from 'Iaso/api/plannings/models/paginatedNestedPlanningConfigListList.zod';
 
 export type LevelGroup = {
     id: number;

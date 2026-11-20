@@ -25,7 +25,11 @@ export const FitBoundsOnChange: FC<Props> = ({
     useEffect(() => {
         if (!map || !bounds || fittedKey.current === fitKey) return;
         fittedKey.current = fitKey;
-        map.fitBounds(bounds, { padding: FIT_BOUNDS_PADDING, maxZoom });
+        // An explicit undefined maxZoom overrides MapLibre's default and makes the camera NaN.
+        map.fitBounds(bounds, {
+            padding: FIT_BOUNDS_PADDING,
+            ...(maxZoom !== undefined && { maxZoom }),
+        });
     }, [map, bounds, fitKey, maxZoom]);
     return null;
 };

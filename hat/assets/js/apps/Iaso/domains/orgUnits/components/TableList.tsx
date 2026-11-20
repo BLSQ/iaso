@@ -5,7 +5,7 @@ import React, {
     useState,
 } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import {
     selectionInitialState,
     setTableSelection,

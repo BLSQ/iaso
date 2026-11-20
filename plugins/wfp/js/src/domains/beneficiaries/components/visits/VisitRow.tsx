@@ -1,6 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { Box, TableCell, TableRow } from '@mui/material';
-import { alpha, useTheme, Theme } from '@mui/material/styles';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { ColorChip, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';

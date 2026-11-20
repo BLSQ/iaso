@@ -1,17 +1,15 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import {
-    Box,
-    Button,
-    Tab,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Tabs,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Tab from '@mui/material/Tab/Tab';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Tabs from '@mui/material/Tabs/Tabs';
+import Typography from '@mui/material/Typography/Typography';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { textPlaceholder } from '../../../../constants/uiConstants';
 import { SxStyles } from '../../../../types/general';

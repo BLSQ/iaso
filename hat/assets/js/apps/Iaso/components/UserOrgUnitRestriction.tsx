@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Alert } from '@mui/lab';
-import { Snackbar } from '@mui/material';
+import Alert from '@mui/lab/Alert/Alert';
+import Snackbar from '@mui/material/Snackbar/Snackbar';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../domains/instances/messages';
 import { useCurrentUser } from '../utils/usersUtils';

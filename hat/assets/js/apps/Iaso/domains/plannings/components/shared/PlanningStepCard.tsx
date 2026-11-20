@@ -1,5 +1,10 @@
 import React, { FC, ReactNode } from 'react';
-import { Avatar, Box, Card, Divider, Stack, Typography } from '@mui/material';
+import Avatar from '@mui/material/Avatar/Avatar';
+import Box from '@mui/material/Box/Box';
+import Card from '@mui/material/Card/Card';
+import Divider from '@mui/material/Divider/Divider';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 
 const styles = {

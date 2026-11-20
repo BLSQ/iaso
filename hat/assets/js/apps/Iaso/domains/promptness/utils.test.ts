@@ -1,5 +1,5 @@
 import { createElement, ReactNode } from 'react';
-import { Theme, ThemeProvider } from '@mui/material';
+import { Theme, ThemeProvider } from '@mui/material/styles';
 import { renderHook } from '@testing-library/react';
 import { textPlaceholder } from 'bluesquare-components';
 import { describe, expect, it } from 'vitest';

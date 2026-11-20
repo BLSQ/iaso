@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { textPlaceholder } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 

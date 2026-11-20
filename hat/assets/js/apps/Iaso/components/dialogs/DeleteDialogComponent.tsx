@@ -1,5 +1,5 @@
 import React, { useCallback, FunctionComponent } from 'react';
-import { DialogContentText } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText/DialogContentText';
 import {
     IconButton as IconButtonComponent,
     IntlMessage,

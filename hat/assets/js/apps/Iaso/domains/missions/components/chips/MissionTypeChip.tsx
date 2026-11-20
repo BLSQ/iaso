@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { EntityAndFormChip } from './EntityAndFormChip';
 import { FormsChip } from './FormsChip';
 import { OrgUnitAndFormChip } from './OrgUnitAndFormChip';

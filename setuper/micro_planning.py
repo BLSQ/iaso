@@ -1,9 +1,14 @@
-import json
-import random
-
 from datetime import datetime, timedelta, timezone
 
 from fake import fake_person
+from planning_assignments import (
+    Assignee,
+    assign,
+    distinct_colors,
+    fetch_palette,
+    load_pyramid,
+    round_robin,
+)
 
 
 NEW = "new"
@@ -13,222 +18,192 @@ PENDING = "pending"
 SAME = "same"
 UNKNOWN = "unknown"
 
+USER_COUNT = 39
+TEAM_NAMES = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]
+TEAM_SIZE = 5
+
+
+def create_planning(
+    iaso_client, *, name, project_id, mission_id, team_id, org_unit_id, level_type_ids, days, published
+):
+    """`level_type_ids` holds the org unit types of each assignable level below `org_unit_id`."""
+    now = datetime.now(timezone.utc)
+    planning = iaso_client.post(
+        "/api/microplanning/plannings/",
+        json={
+            "name": name,
+            "missions": [mission_id],
+            "project": project_id,
+            "team": team_id,
+            "org_unit": org_unit_id,
+            "target_org_unit_types": level_type_ids[-1],
+            "started_at": now.strftime("%Y-%m-%d"),
+            "ended_at": (now + timedelta(days=days)).strftime("%Y-%m-%d"),
+            "published_at": now.strftime("%Y-%m-%d") if published else None,
+        },
+    )
+    iaso_client.put(
+        f"/api/microplanning/plannings/{planning['id']}/configs/bulk/",
+        json=[
+            {"level": level, "org_unit_types": type_ids, "org_unit_groups": []}
+            for level, type_ids in enumerate(level_type_ids, start=1)
+        ],
+    )
+    return planning["id"]
+
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
     print("-- users, teams and micro planning")
 
     project_ids = [x["id"] for x in iaso_client.get("/api/projects/")["projects"] if x["name"] == "Planning"]
-
-    permissions_codes = [x["codename"] for x in iaso_client.get("/api/permissions/")["permissions"]]
-
-    for user_index in range(1, 40):
-        person = fake_person()
-
-        first_name = person["firstname"]
-        last_name = person["lastname"]
-        user_identifier = f"user{user_index:02d}"
-        user = {
-            "id": None,
-            "user_name": f"{account_name}.{user_identifier}",
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": "",
-            "password": f"{account_name}.{user_identifier}",
-            "permissions": [],
-            "org_units": [],
-            "language": "",
-            "home_page": "",
-            "dhis2_id": "",
-            "user_roles": [],
-            "user_roles_permissions": [],
-            "user_permissions": permissions_codes,
-            "send_email_invitation": False,
-            "projects": project_ids,
-        }
-        iaso_client.post("/api/profiles/", json=user)
-
-    users = iaso_client.get("/api/profiles?limit=20000")["results"]
-
-    print(f"\t{len(users) - 1} users created")
-
-    manager = iaso_client.get("/api/profiles/me/")
-
     project_id = project_ids[0]
+    permissions_codes = [x["codename"] for x in iaso_client.get("/api/permissions/")["permissions"]]
+    palette = fetch_palette(iaso_client)
 
-    team_index = 0
-    for team_name in ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"]:
-        user_ids = [x["user_id"] for x in users[team_index : team_index + 5]]
-        iaso_client.post(
-            "/api/teams/",
+    user_ids = []
+    for user_index, color in enumerate(distinct_colors(palette, USER_COUNT), start=1):
+        person = fake_person()
+        user_identifier = f"user{user_index:02d}"
+        profile = iaso_client.post(
+            "/api/profiles/",
             json={
-                "manager": manager["user_id"],
-                "name": f"TEAM {team_name}",
-                "project": project_id,
-                "sub_teams": [],
-                "type": "TEAM_OF_USERS",
-                "users": user_ids,
+                "id": None,
+                "user_name": f"{account_name}.{user_identifier}",
+                "first_name": person["firstname"],
+                "last_name": person["lastname"],
+                "email": "",
+                "password": f"{account_name}.{user_identifier}",
+                "permissions": [],
+                "org_units": [],
+                "language": "",
+                "home_page": "",
+                "dhis2_id": "",
+                "color": color,
+                "user_roles": [],
+                "user_roles_permissions": [],
+                "user_permissions": permissions_codes,
+                "send_email_invitation": False,
+                "projects": project_ids,
             },
         )
-        team_index = team_index + 1
+        user_ids.append(iaso_client.get(f"/api/profiles/{profile['id']}/")["user_id"])
 
-    teams = iaso_client.get("/api/teams/?limit=20000")["results"]
+    print(f"\t{len(user_ids)} users created")
 
-    print(f"\t{len(teams) - 1} teams created")
+    # Country > region > districts > health areas > health facilities.
+    pyramid = load_pyramid(iaso_client, levels=3)
+    country = pyramid.root
+    region = pyramid.first_level[0]
+    districts = region.children
+    region_type_ids, district_type_ids, health_area_type_ids = pyramid.level_type_ids
 
-    iaso_client.post(
+    # The team tree mirrors the pyramid: country team > region team > district teams > users.
+    manager = iaso_client.get("/api/profiles/me/")
+    team_colors = distinct_colors(palette, len(TEAM_NAMES) + 2)
+
+    country_team_id = iaso_client.post(
         "/api/teams/",
         json={
-            "name": "Team of Teams",
+            "name": f"TEAM {country.name}",
             "project": project_id,
             "manager": manager["user_id"],
             "type": "TEAM_OF_TEAMS",
+            "color": team_colors[0],
             "users": [],
-            "sub_teams": [x["id"] for x in teams],
         },
-    )
-    teams_after_creation = iaso_client.get("/api/teams/?limit=20000")["results"]
-    teams_of_users = [t for t in teams_after_creation if t["type"] == "TEAM_OF_USERS"]
-    team_of_teams = [t for t in teams_after_creation if t["type"] == "TEAM_OF_TEAMS"][0]
-    team_of_teams_id = team_of_teams["id"]
+    )["id"]
+
+    region_team_id = iaso_client.post(
+        "/api/teams/",
+        json={
+            "name": f"TEAM {region.name}",
+            "project": project_id,
+            "manager": manager["user_id"],
+            "type": "TEAM_OF_TEAMS",
+            "color": team_colors[1],
+            "parent": country_team_id,
+            "users": [],
+        },
+    )["id"]
+
+    members_by_team_id = {}
+    for team_index, (team_name, color) in enumerate(zip(TEAM_NAMES, team_colors[2:])):
+        members = user_ids[team_index * TEAM_SIZE : (team_index + 1) * TEAM_SIZE]
+        team_id = iaso_client.post(
+            "/api/teams/",
+            json={
+                "name": f"TEAM {team_name}",
+                "project": project_id,
+                "manager": manager["user_id"],
+                "type": "TEAM_OF_USERS",
+                "color": color,
+                "parent": region_team_id,
+                "users": members,
+            },
+        )["id"]
+        members_by_team_id[team_id] = members
+    team_ids = list(members_by_team_id)
+
+    print(f"\t{len(team_ids) + 2} teams created: TEAM {country.name} > TEAM {region.name} > {len(team_ids)} teams")
+
     forms = iaso_client.get("/api/forms")["forms"]
     planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
 
-    source_id = manager["account"]["default_version"]["data_source"]["id"]
-    country = iaso_client.get(
-        "/api/orgunits/",
-        params={
-            "limit": 2,
-            "order": "-id",
-            "searches": json.dumps(
-                [
-                    {
-                        "validation_status": "VALID",
-                        "color": "f4511e",
-                        "source": str(source_id),
-                        "depth": 1,
-                    }
-                ]
-            ),
-        },
-    )["orgunits"][0]
-
-    team = teams[0]
-    current_date = datetime.now(timezone.utc)
-
-    health_facitities = iaso_client.get(
-        "/api/orgunits/",
-        params={
-            "limit": 70,
-            "order": "name",
-            "page": 1,
-            "searches": json.dumps(
-                [
-                    {
-                        "validation_status": "VALID",
-                        "geography": "any",
-                        "depth": 5,
-                    }
-                ]
-            ),
-            "locationLimit": 100,
-        },
-    )["orgunits"]
-
-    # fetch team details to get its users
-    team_users = [u["id"] for u in iaso_client.get(f"/api/teams/{team['id']}/")["users"]]
-
-    print(f"Found {len(team_users)} users in team {team['name']} but assign only {len(team_users[:3])}")
-
-    health_facility_type_id = None
-    if health_facitities:
-        facility = health_facitities[0]
-        org_unit_type = facility.get("org_unit_type")
-        if isinstance(org_unit_type, dict):
-            health_facility_type_id = org_unit_type.get("id")
-        else:
-            health_facility_type_id = org_unit_type
-
-    campaign_mission = create_form_filling_mission(iaso_client, "Mission Carte Sanitaire", planning_form)
-
-    campaign = iaso_client.post(
-        "/api/microplanning/plannings/",
-        {
-            "name": "Campagne Carte Sanitaire",
-            "missions": [campaign_mission["id"]],
-            "project": project_id,
-            "team": team["id"],
-            "org_unit": country["id"],
-            "started_at": current_date.strftime("%Y-%m-%d"),
-            "ended_at": (current_date + timedelta(days=365)).strftime("%Y-%m-%d"),
-            "published_at": current_date.strftime("%Y-%m-%d"),
-        },
+    # A team of users plans a single level: users can't hand their org units down to anyone.
+    alpha_id = team_ids[0]
+    alpha_district = districts[0]
+    health_map_mission = create_form_filling_mission(iaso_client, "Mission Carte Sanitaire", planning_form)
+    health_map_id = create_planning(
+        iaso_client,
+        name="Campagne Carte Sanitaire",
+        project_id=project_id,
+        mission_id=health_map_mission["id"],
+        team_id=alpha_id,
+        org_unit_id=alpha_district.id,
+        level_type_ids=[health_area_type_ids],
+        days=365,
+        published=True,
     )
-
-    for health_facitity in health_facitities:
-        # Select an arbitrary user from the team for this assignment
-        selected_user_id = random.choice(team_users[:3])
-
-        print(
-            "assigning",
-            health_facitity["name"],
-            "to",
-            team["name"],
-            "user ID:",
-            selected_user_id,
-        )
-
-        iaso_client.post(
-            "/api/microplanning/assignments/",
-            json={
-                "planning": campaign["id"],
-                "org_unit": health_facitity["id"],
-                "user": selected_user_id,
-            },
-        )
-
-    print(campaign)
-
-    polio_mission = create_form_filling_mission(iaso_client, "Mission Polio", planning_form)
-
-    campaign_of_teams_of_teams = iaso_client.post(
-        "/api/microplanning/plannings/",
-        json={
-            "name": "Campaign Polio",
-            "missions": [polio_mission["id"]],
-            "project": project_id,
-            "team": team_of_teams_id,
-            "org_unit": country["id"],
-            "target_org_unit_types": [health_facility_type_id] if health_facility_type_id else [],
-            "started_at": current_date.strftime("%Y-%m-%d"),
-            "ended_at": (current_date + timedelta(days=30)).strftime("%Y-%m-%d"),
-        },
-    )
-
-    print(campaign_of_teams_of_teams)
-
-    print(f"--Planning with teams of teams created: {campaign_of_teams_of_teams['name']}")
-
-    print("--Creating assignments for team of teams")
-
-    active_sub_teams = teams_of_users[:4]
-
-    for facility in health_facitities:
-        sub_team = random.choice(active_sub_teams)
-        print(f"Assigning {facility['name']} to {sub_team['name']}...")
-        try:
-            iaso_client.post(
-                "/api/microplanning/assignments/",
-                json={
-                    "planning": campaign_of_teams_of_teams["id"],
-                    "org_unit": facility["id"],
-                    "team": sub_team["id"],
-                },
-            )
-        except Exception as e:
-            print(f"\tFailed to assign {facility['name']} to {sub_team['name']}: {e}")
+    surveyors = [Assignee(user_id=user_id) for user_id in members_by_team_id[alpha_id][:3]]
+    health_map_count = assign(iaso_client, health_map_id, round_robin(alpha_district.children, surveyors))
 
     print(
-        f"\tCreated {len(health_facitities)} assignments across {len(active_sub_teams)} sub-teams ({teams_of_users[4]['name']} and {teams_of_users[5]['name']} left without assignments)"
+        f"\tCampagne Carte Sanitaire: {health_map_count} health areas of {alpha_district.name} "
+        f"assigned to {len(surveyors)} users of TEAM alpha"
+    )
+
+    # Each team hands its org units down: the country team gives the region to the region team,
+    # which gives the districts to its teams, which give the health areas to their users.
+    polio_mission = create_form_filling_mission(iaso_client, "Mission Polio", planning_form)
+    polio_id = create_planning(
+        iaso_client,
+        name="Campaign Polio",
+        project_id=project_id,
+        mission_id=polio_mission["id"],
+        team_id=country_team_id,
+        org_unit_id=country.id,
+        level_type_ids=[region_type_ids, district_type_ids, health_area_type_ids],
+        days=30,
+        published=False,
+    )
+    region_assignments = [(region, Assignee(team_id=region_team_id))]
+    active_team_ids = team_ids[:4]
+    district_assignments = round_robin(districts, [Assignee(team_id=team_id) for team_id in active_team_ids])
+    health_area_assignments = [
+        pair
+        for district, district_team in district_assignments
+        for pair in round_robin(
+            district.children,
+            [Assignee(user_id=user_id) for user_id in members_by_team_id[district_team.team_id]],
+        )
+    ]
+    polio_count = assign(iaso_client, polio_id, region_assignments)
+    polio_count += assign(iaso_client, polio_id, district_assignments)
+    polio_count += assign(iaso_client, polio_id, health_area_assignments)
+
+    print(
+        f"\tCampaign Polio: {polio_count} assignments across {len(active_team_ids)} sub-teams "
+        f"(TEAM epsilon and TEAM zeta left without assignments)"
     )
 
     print("-- Micro-planning setup complete.")

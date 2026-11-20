@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Paper } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';

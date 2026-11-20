@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { Link, Tooltip } from '@mui/material';
+import Link from '@mui/material/Link/Link';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { SubmissionFields } from './SubmissionFields';
 import { submissionUrl } from './utils';
 

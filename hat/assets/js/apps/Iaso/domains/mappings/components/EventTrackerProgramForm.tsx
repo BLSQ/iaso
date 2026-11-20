@@ -1,8 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
-import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
 import Dhis2Search from './Dhis2SearchComponent';
 import { MappingCard } from './QuestionPanel/MappingCard';

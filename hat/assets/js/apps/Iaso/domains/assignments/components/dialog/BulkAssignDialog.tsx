@@ -6,15 +6,13 @@ import React, {
 } from 'react';
 import CheckBox from '@mui/icons-material/CheckBox';
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox';
-import {
-    Button,
-    DialogActions,
-    DialogTitle,
-    Dialog,
-    Box,
-    Divider,
-    Grid,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
 import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
 import { UrlParams } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';

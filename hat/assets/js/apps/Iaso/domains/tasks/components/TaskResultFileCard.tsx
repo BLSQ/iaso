@@ -1,8 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Paper from '@mui/material/Paper/Paper';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useTaskResultFile } from '../hooks/useTaskResultFile';

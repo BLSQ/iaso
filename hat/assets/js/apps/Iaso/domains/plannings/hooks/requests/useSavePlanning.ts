@@ -4,7 +4,7 @@ import {
     apiMicroplanningPlanningConfigsBulkCreateCreate,
     apiMicroplanningPlanningConfigsBulkUpdateUpdate,
     apiMicroplanningPlanningConfigsDestroy,
-} from 'Iaso/api/planningConfigs';
+} from 'Iaso/api/planningConfigs/endpoints/planning-configs/planning-configs';
 import { patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import {

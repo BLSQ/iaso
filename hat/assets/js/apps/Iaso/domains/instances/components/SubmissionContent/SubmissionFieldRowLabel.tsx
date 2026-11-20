@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import FunctionsIcon from '@mui/icons-material/Functions';
-import { Box, Tooltip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { SubmissionHighlightText } from './SubmissionHighlightText';
 import { SubmissionQuestionId } from './SubmissionQuestionId';
 import { SubmissionField } from './types';

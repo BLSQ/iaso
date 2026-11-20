@@ -1,14 +1,13 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-import {
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    Divider,
-    Box,
-    Button,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     textPlaceholder,
     useRedirectToReplace,
@@ -18,8 +17,8 @@ import {
 import {
     useApiValidationWorkflowsCreate,
     useApiValidationWorkflowsUpdate,
-    ValidationWorkflowRetrieve,
-} from 'Iaso/api/validationWorkflows';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';

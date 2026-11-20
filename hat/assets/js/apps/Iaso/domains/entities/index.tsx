@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LoadingSpinner,
@@ -8,6 +10,7 @@ import {
     useRedirectTo,
 } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
@@ -161,6 +164,7 @@ export const Entities: FunctionComponent = () => {
                 </Tabs>
             </TopBar>
             <MainWrapper sx={{ padding: 4 }} navHasTabs={true}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <Filters
                     params={params}
                     isFetching={isFetching}

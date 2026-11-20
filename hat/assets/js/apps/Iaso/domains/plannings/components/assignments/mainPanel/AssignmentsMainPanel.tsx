@@ -1,12 +1,18 @@
 import React, { FC, SyntheticEvent, useCallback } from 'react';
 import ListIcon from '@mui/icons-material/List';
 import MapIcon from '@mui/icons-material/Map';
-import { Paper, Stack, Tab, Tabs } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
+import Stack from '@mui/material/Stack/Stack';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
 import { AssignmentsView } from '../../../types';
+import { BulkAssignButton } from '../assign/BulkAssignButton';
+import { EmptyAreaButton } from '../assign/EmptyAreaButton';
 import { FindOrgUnitField } from '../findOrgUnit/FindOrgUnitField';
 import { AssignmentsMap } from './AssignmentsMap';
 import { OnlyUnassignedToggle } from './OnlyUnassignedToggle';
@@ -36,6 +42,7 @@ const styles = {
 export const AssignmentsMainPanel: FC = () => {
     const { formatMessage } = useSafeIntl();
     const { view, updateParams } = useAssignmentsParams();
+    const { isAssignMode } = useAssignmentsContext();
     const handleChangeView = useCallback(
         (_event: SyntheticEvent, newView: AssignmentsView) =>
             updateParams({ view: newView }),
@@ -48,7 +55,6 @@ export const AssignmentsMainPanel: FC = () => {
                 direction="row"
                 alignItems="center"
                 justifyContent="space-between"
-                gap={1}
                 sx={styles.header}
             >
                 <Tabs value={view} onChange={handleChangeView}>
@@ -71,6 +77,12 @@ export const AssignmentsMainPanel: FC = () => {
                     gap={1}
                     sx={styles.filters}
                 >
+                    {isAssignMode && (
+                        <>
+                            <BulkAssignButton />
+                            <EmptyAreaButton />
+                        </>
+                    )}
                     <OnlyUnassignedToggle />
                     <FindOrgUnitField />
                 </Stack>

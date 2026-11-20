@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import Add from '@mui/icons-material/Add';
 import Cancel from '@mui/icons-material/Cancel';
-import { Chip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Chip from '@mui/material/Chip/Chip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import {
     translateOptions,

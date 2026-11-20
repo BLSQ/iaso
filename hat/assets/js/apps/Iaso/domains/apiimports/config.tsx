@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Done } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
+import Done from '@mui/icons-material/Done';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 

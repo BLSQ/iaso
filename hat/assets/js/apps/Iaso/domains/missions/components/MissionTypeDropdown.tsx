@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
-import {
-    MissionTypeDa2Enum,
-    useApiMicroplanningMissionsMissionTypesDropdownList,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsMissionTypesDropdownList } from 'Iaso/api/missions/endpoints/missions/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { userHasPermission } from 'Iaso/domains/users/utils';
 import { MISSION_READ } from 'Iaso/utils/permissions';

@@ -1,7 +1,10 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import GpsOffIcon from '@mui/icons-material/GpsOff';
-import { Table, TableBody, TableRow, TableCell } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';

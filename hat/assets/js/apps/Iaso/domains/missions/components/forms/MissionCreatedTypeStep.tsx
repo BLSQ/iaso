@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { DropdownOptions, useSafeIntl } from 'bluesquare-components';
 import { Field } from 'formik';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';

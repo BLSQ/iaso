@@ -1,6 +1,9 @@
 import React, { useCallback } from 'react';
-import { Box, Button, Grid, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     ColumnWithAccessor,
     commonStyles,
@@ -9,10 +12,9 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    useApiValidationWorkflowsRetrieve,
-    ValidationWorkflowRetrieve,
-} from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsRetrieve } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';

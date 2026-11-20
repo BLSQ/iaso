@@ -6,7 +6,7 @@ import LockOpenOutlinedIcon from '@mui/icons-material/LockOpenOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
-import { Paper } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
 import { useSafeIntl } from 'bluesquare-components';
 import { getInstancesFilesList } from 'Iaso/domains/instances/utils';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';

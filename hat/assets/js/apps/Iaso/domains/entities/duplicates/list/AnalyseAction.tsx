@@ -1,7 +1,10 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import Autorenew from '@mui/icons-material/Autorenew';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Button, Box, Tooltip, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';

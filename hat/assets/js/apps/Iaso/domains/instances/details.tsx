@@ -1,11 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import Alert from '@mui/lab/Alert';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { baseUrls } from 'Iaso/constants/urls';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
@@ -106,6 +108,12 @@ const InstanceDetails: FunctionComponent = () => {
                         />
                     )}
                     <MainWrapper sx={{ p: 4 }}>
+                        <PiiRestrictedBanner
+                            show={
+                                (currentInstance.hidden_fields ?? []).length > 0
+                            }
+                            sx={{ mb: 3 }}
+                        />
                         <Grid container spacing={3}>
                             <Grid xs={12} md={8} lg={9} item>
                                 <SubmissionContent

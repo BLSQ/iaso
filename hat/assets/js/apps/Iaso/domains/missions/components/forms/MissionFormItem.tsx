@@ -1,7 +1,10 @@
 import React, { FC } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FormHelperText, IconButton, TableCell, TableRow } from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
+import FormHelperText from '@mui/material/FormHelperText/FormHelperText';
+import IconButton from '@mui/material/IconButton/IconButton';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import visuallyHidden from '@mui/utils/visuallyHidden/visuallyHidden';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, FieldArrayRenderProps, useFormikContext } from 'formik';
 import { NumberInput } from 'Iaso/components/forms/NumberInput';

@@ -3,7 +3,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
-import { Avatar } from '@mui/material';
+import Avatar from '@mui/material/Avatar/Avatar';
 import { Timeline } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodes';
 
 type AvatarTimelineProps = {

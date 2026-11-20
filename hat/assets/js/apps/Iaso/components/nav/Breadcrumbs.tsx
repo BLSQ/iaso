@@ -1,12 +1,10 @@
 import React, { FC, Key, ReactNode } from 'react';
-import {
-    Box,
-    Breadcrumbs as MuiBreadcrumbs,
-    Link,
-    SxProps,
-    Theme,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import MuiBreadcrumbs from '@mui/material/Breadcrumbs/Breadcrumbs';
+import Link from '@mui/material/Link/Link';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { SxStyles } from 'Iaso/types/general';
 import { LinkTo } from './LinkTo';
 

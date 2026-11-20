@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
 
-import { useApiTeamsTypesDropdownList, Value8edEnum } from 'Iaso/api/teams';
+import { useApiTeamsTypesDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
+import { Value8edEnum } from 'Iaso/api/teams/models/value8edEnum.zod';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from '../messages';
 

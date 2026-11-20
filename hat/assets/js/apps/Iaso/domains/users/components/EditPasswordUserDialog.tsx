@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import PasswordIcon from '@mui/icons-material/Password';
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button/Button';
 import {
     ConfirmCancelModal,
     IntlMessage,

@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { grey } from '@mui/material/colors';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';

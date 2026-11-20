@@ -1,12 +1,10 @@
 import React, { FC, MouseEvent, ReactNode, useCallback, useState } from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import {
-    IconButton,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem,
-} from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import Menu from '@mui/material/Menu/Menu';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from './messages';

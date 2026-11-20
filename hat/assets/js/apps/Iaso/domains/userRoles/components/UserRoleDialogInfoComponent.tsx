@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { SimpleModal, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import DialogInfoButton from './DialogInfoButton';

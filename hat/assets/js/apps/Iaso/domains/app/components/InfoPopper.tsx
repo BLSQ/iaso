@@ -6,15 +6,13 @@ import React, {
 } from 'react';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import {
-    Popper,
-    Box,
-    IconButton,
-    Paper,
-    PopperPlacementType,
-} from '@mui/material';
-import { Theme } from '@mui/material/styles';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import { PopperPlacementType } from '@mui/material/Popper';
+import Popper from '@mui/material/Popper/Popper';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 const useStyles = makeStyles((theme: Theme) => ({
     popper: {

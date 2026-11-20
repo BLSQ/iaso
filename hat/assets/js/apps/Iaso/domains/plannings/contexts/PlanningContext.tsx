@@ -15,13 +15,14 @@ import {
 } from 'bluesquare-components';
 import { isEmpty, isEqual, union, unionBy, without } from 'lodash';
 import {
-    MissionPolymorphicList,
-    MissionPolymorphicRetrieve,
-    PaginatedMissionPolymorphicListList,
     useApiMicroplanningMissionsList,
     useApiMicroplanningMissionsRetrieve,
-} from 'Iaso/api/missions';
-import { useApiMicroplanningPlanningsConfigsList } from 'Iaso/api/plannings';
+} from 'Iaso/api/missions/endpoints/missions/missions';
+
+import { MissionPolymorphicList } from 'Iaso/api/missions/models/missionPolymorphicList.zod';
+import { MissionPolymorphicRetrieve } from 'Iaso/api/missions/models/missionPolymorphicRetrieve.zod';
+import { PaginatedMissionPolymorphicListList } from 'Iaso/api/missions/models/paginatedMissionPolymorphicListList.zod';
+import { useApiMicroplanningPlanningsConfigsList } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SavedPlanningConfig } from '../components/orgUnitLevels/types';

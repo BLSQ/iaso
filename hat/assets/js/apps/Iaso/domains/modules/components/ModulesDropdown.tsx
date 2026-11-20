@@ -1,8 +1,6 @@
 import React from 'react';
-import {
-    ApiModulesDropdownListParams,
-    useApiModulesDropdownList,
-} from 'Iaso/api/modules';
+import { useApiModulesDropdownList } from 'Iaso/api/modules/endpoints/modules/modules';
+import { ApiModulesDropdownListParams } from 'Iaso/api/modules/models/apiModulesDropdownListParams.zod';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { ACCOUNT_MANAGEMENT, MODULES } from 'Iaso/utils/permissions';

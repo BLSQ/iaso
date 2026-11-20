@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Paper } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
 import { getOrderArray, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';

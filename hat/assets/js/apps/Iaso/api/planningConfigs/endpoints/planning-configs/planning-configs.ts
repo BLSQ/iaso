@@ -13,7 +13,7 @@ import type {
     UseMutationResult,
 } from 'react-query';
 
-import { getApiMicroplanningPlanningsConfigsListQueryKey } from 'Iaso/api/plannings/endpoints';
+import { getApiMicroplanningPlanningsConfigsListQueryKey } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
 
 import { customFetchInstance } from '../../../../../../orval/client/custom-fetch';
 import { useCustomMutationOptions } from '../../../../../../orval/mutator/custom-mutation-options';

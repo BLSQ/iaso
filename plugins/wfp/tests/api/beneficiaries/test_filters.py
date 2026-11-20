@@ -1,6 +1,6 @@
 import uuid
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from django.core.exceptions import ValidationError
 from django.db.models import F
@@ -148,7 +148,7 @@ class BeneficiaryFilterTestCase(BeneficiariesTestData, APITestCase):
         )
         Visit.objects.create(
             journey=lettered_journey,
-            date=datetime(2026, 5, 1, tzinfo=timezone.utc),
+            date=datetime(2026, 5, 1, tzinfo=UTC),
             number=1,
             org_unit=self.facility,
         )

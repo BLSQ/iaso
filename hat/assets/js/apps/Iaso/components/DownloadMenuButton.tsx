@@ -8,18 +8,16 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import DatasetOutlinedIcon from '@mui/icons-material/DatasetOutlined';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import PublicIcon from '@mui/icons-material/Public';
-import {
-    Box,
-    Button,
-    CircularProgress,
-    IconButton,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import IconButton from '@mui/material/IconButton/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import Menu from '@mui/material/Menu/Menu';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { CsvSvg, ExcellSvg, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import {

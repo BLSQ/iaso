@@ -4,7 +4,8 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';

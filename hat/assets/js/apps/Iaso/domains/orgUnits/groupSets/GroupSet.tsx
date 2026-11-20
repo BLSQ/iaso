@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
-import { Box, Button, Container } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Container from '@mui/material/Container/Container';
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';

@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, useMemo, useState } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { LngLatBounds, setWorkerUrl } from 'maplibre-gl';
 import workerSource from 'maplibre-gl/dist/maplibre-gl-worker.mjs?raw';
 import Map, {

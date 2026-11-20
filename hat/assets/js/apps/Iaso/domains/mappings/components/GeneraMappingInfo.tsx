@@ -1,13 +1,15 @@
 import React, { useMemo } from 'react';
 
-import { ArrowForward } from '@mui/icons-material';
-import { Box, Button } from '@mui/material';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { UseMutationResult } from 'react-query';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
-import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
 import {
     ApplyUpdateVariables,

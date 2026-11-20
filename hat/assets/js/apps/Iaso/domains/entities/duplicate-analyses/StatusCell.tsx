@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Chip } from '@mui/material';
+import Chip from '@mui/material/Chip/Chip';
 import { useSafeIntl } from 'bluesquare-components';
 import {
     getStatusColor,

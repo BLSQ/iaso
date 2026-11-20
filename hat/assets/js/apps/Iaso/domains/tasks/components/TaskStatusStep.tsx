@@ -1,8 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 import ReplayIcon from '@mui/icons-material/Replay';
 import StopIcon from '@mui/icons-material/Stop';
-import { Box, Button, LinearProgress, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import LinearProgress from '@mui/material/LinearProgress/LinearProgress';
 import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { SxStyles } from 'Iaso/types/general';

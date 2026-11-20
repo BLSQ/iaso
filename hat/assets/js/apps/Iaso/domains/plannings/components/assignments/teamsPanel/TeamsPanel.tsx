@@ -1,15 +1,13 @@
 import React, { FC, useCallback, useMemo, useState } from 'react';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import LastPageIcon from '@mui/icons-material/LastPage';
-import {
-    Box,
-    Button,
-    IconButton,
-    Paper,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Stack from '@mui/material/Stack/Stack';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import USERS_MESSAGES from 'Iaso/domains/users/messages';
 import { SxStyles } from 'Iaso/types/general';

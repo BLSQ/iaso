@@ -6,21 +6,18 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import {
-    ChevronLeft,
-    ChevronRight,
-    ExpandMore,
-    KeyboardArrowRight,
-} from '@mui/icons-material';
-import {
-    Box,
-    Divider,
-    IconButton,
-    Paper,
-    Tooltip,
-    Typography,
-} from '@mui/material';
-import { TreeItem, TreeView } from '@mui/x-tree-view';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
+import { TreeItem } from '@mui/x-tree-view/TreeItem/TreeItem';
+import { TreeView } from '@mui/x-tree-view/TreeView/TreeView';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { SxStyles } from '../../../../types/general';

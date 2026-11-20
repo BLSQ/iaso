@@ -4,7 +4,7 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { DialogContentText } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText/DialogContentText';
 import { IconButton, ConfirmCancelModal } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { baseUrls } from '../../../constants/urls';

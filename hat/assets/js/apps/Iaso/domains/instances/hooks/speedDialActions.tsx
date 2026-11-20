@@ -5,7 +5,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { DialogContentText } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText/DialogContentText';
 import { ExportButton, useSafeIntl } from 'bluesquare-components';
 import { UseMutateAsyncFunction } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';

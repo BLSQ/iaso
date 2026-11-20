@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('Iaso/api/reports', () => ({
+vi.mock('Iaso/api/reports/endpoints/reports/reports', () => ({
     useApiReportsList: vi.fn(),
     useApiReportsVersionsList: vi.fn(),
     useApiReportsCreate: vi.fn(),
@@ -16,7 +16,7 @@ import {
     useApiReportsPublishCreate,
     useApiReportsVersionsCreate,
     useApiReportsVersionsList,
-} from 'Iaso/api/reports';
+} from 'Iaso/api/reports/endpoints/reports/reports';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { ProjectMobileReport } from './ProjectMobileReport';
 

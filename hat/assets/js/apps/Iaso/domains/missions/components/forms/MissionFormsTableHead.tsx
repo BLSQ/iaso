@@ -1,6 +1,9 @@
 import React, { FC } from 'react';
-import { Box, TableCell, TableHead, TableRow } from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
+import Box from '@mui/material/Box/Box';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import visuallyHidden from '@mui/utils/visuallyHidden/visuallyHidden';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';

@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
-import {
-    type ApiMicroplanningMissionsDropdownListParams,
-    useApiMicroplanningMissionsDropdownList,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsDropdownList } from 'Iaso/api/missions/endpoints/missions/missions';
+import { type ApiMicroplanningMissionsDropdownListParams } from 'Iaso/api/missions/models/apiMicroplanningMissionsDropdownListParams.zod';
+
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { userHasPermission } from 'Iaso/domains/users/utils';
 import { MISSION_READ } from 'Iaso/utils/permissions';

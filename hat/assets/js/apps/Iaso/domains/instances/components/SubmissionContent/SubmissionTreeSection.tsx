@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { SxStyles } from 'Iaso/types/general';
 import { SubmissionContentHeader } from './SubmissionContentHeader';
 import { SubmissionFieldRow } from './SubmissionFieldRow';

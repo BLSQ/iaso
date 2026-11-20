@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { DateTimeCellRfc } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';

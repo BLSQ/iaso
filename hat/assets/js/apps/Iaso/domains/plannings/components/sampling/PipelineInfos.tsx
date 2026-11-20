@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography, LinearProgress } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import LinearProgress from '@mui/material/LinearProgress/LinearProgress';
+import Typography from '@mui/material/Typography/Typography';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';

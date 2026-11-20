@@ -1,9 +1,7 @@
-import {
-    MissionEntityTypeUpdateRequest,
-    MissionTypeDa2Enum,
-    MissionFormUpdateRequest,
-    MissionOrgUnitTypeUpdateRequest,
-} from 'Iaso/api/missions';
+import { MissionEntityTypeUpdateRequest } from 'Iaso/api/missions/models/missionEntityTypeUpdateRequest.zod';
+import { MissionFormUpdateRequest } from 'Iaso/api/missions/models/missionFormUpdateRequest.zod';
+import { MissionOrgUnitTypeUpdateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeUpdateRequest.zod';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 
 /** All update payloads that include a `forms` array. */
 export type MissionUpdateBody =

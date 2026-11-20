@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
 import { User } from 'Iaso/utils/usersUtils';

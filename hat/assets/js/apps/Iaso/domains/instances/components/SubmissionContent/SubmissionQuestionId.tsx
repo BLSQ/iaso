@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { SubmissionHighlightText } from './SubmissionHighlightText';
 
 export const SubmissionQuestionId: FunctionComponent<{

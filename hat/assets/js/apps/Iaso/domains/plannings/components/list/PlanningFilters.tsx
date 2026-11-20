@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import { AddButton } from 'bluesquare-components';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';

@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import { Box, Button } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';

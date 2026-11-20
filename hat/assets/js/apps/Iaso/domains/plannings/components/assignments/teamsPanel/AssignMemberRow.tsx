@@ -1,6 +1,7 @@
 import React, { FC, MouseEvent, useCallback } from 'react';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
-import { IconButton, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../messages';
 import { MemberRowLayout } from './MemberRowLayout';

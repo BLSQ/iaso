@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import PublicIcon from '@mui/icons-material/Public';
-import { Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { ExcellSvg, CsvSvg } from 'bluesquare-components';
 
 export const useDownloadButtonStyles = makeStyles(theme => ({

@@ -1,6 +1,12 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { AccountTree, ListAlt, OpenInNew } from '@mui/icons-material';
-import { Box, Button, Divider, Paper, Typography } from '@mui/material';
+import AccountTree from '@mui/icons-material/AccountTree';
+import ListAlt from '@mui/icons-material/ListAlt';
+import OpenInNew from '@mui/icons-material/OpenInNew';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import {
     LoadingSpinner,
     makeRedirectionUrl,

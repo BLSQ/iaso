@@ -247,10 +247,10 @@ export const csvPreview = async (data: DiffExportData) => {
         });
 };
 
-export const updateDefaultDataSource = ([
-    accountId,
-    defaultVersionId,
-]: [number, number]) =>
+export const updateDefaultDataSource = ([accountId, defaultVersionId]: [
+    number,
+    number,
+]) =>
     putRequest(`/api/accounts/${accountId}/set-default-version/`, {
         default_version: defaultVersionId,
     });

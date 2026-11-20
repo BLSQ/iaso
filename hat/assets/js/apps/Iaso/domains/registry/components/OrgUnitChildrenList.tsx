@@ -1,6 +1,6 @@
 import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { Table, useRedirectToReplace } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';

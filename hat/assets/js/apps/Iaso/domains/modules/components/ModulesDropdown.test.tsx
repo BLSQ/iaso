@@ -9,7 +9,7 @@ vi.mock('Iaso/domains/users/utils', () => ({
     userHasOneOfPermissions: vi.fn(),
 }));
 
-vi.mock('Iaso/api/modules', () => ({
+vi.mock('Iaso/api/modules/endpoints/modules/modules', () => ({
     getApiModulesDropdownListQueryKey: vi.fn(),
     useApiModulesDropdownList: vi.fn(),
 }));
@@ -17,7 +17,7 @@ vi.mock('Iaso/api/modules', () => ({
 import {
     getApiModulesDropdownListQueryKey,
     useApiModulesDropdownList,
-} from 'Iaso/api/modules';
+} from 'Iaso/api/modules/endpoints/modules/modules';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';

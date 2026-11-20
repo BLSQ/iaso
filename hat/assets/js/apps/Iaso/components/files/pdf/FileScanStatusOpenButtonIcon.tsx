@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Warning } from '@mui/icons-material';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import Error from '@mui/icons-material/Error';
+import Warning from '@mui/icons-material/Warning';
 import {
     fileScanResultInfected,
     fileScanResultClean,

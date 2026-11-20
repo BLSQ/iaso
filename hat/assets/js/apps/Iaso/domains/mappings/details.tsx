@@ -1,6 +1,10 @@
-import React, { useCallback, useMemo } from 'react';
-import { History } from '@mui/icons-material';
-import { Grid, Box, LinearProgress, Typography, useTheme } from '@mui/material';
+import React, { useMemo, useCallback } from 'react';
+import History from '@mui/icons-material/History';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import LinearProgress from '@mui/material/LinearProgress/LinearProgress';
+import useTheme from '@mui/material/styles/useTheme';
+import Typography from '@mui/material/Typography/Typography';
 
 import {
     commonStyles,
@@ -11,10 +15,10 @@ import {
     useSafeIntl,
     useGoBack,
 } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { SxStyles } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { SxStyles } from '../../types/general';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
 import { MappingImportActions } from './components/ImportMappings/MappingImportActions';

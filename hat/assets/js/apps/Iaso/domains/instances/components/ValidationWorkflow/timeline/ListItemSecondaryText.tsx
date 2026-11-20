@@ -1,5 +1,6 @@
 import React, { ReactNode, useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { baseUrls } from 'Iaso/constants/urls';

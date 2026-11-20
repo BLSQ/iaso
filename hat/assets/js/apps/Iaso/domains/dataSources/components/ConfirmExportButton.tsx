@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import { ConfirmDialogWarningTitle } from '../../../components/dialogs/ConfirmDialogWarningTitle';

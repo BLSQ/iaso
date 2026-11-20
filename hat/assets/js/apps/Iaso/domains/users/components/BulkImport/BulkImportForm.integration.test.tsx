@@ -67,7 +67,7 @@ vi.mock('Iaso/domains/projects/hooks/requests', async () => ({
     useGetProjectsDropdownOptions: mockUseGetProjectsDropdownOptions,
 }));
 
-vi.mock('Iaso/api/teams', async () => ({
+vi.mock('Iaso/api/teams/endpoints/teams/teams', async () => ({
     useApiTeamsDropdownList: mockUseGetTeamsDropdown,
 }));
 

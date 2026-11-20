@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Autocomplete, TextField, Tooltip } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete/Autocomplete';
+import TextField from '@mui/material/TextField/TextField';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetFormVersionsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormVersionsDropdownOptions';
 import MESSAGES from 'Iaso/domains/instances/messages';

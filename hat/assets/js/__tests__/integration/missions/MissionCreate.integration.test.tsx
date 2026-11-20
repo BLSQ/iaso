@@ -7,11 +7,11 @@ import { setupServer } from 'msw/node';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsCreateMockHandler,
     getApiMicroplanningMissionsMissionTypesDropdownListMockHandler,
 } from 'Iaso/api/missions/endpoints/missions/missions.msw';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionCreate } from 'Iaso/domains/missions/create';
 import MESSAGES from 'Iaso/domains/missions/messages';

@@ -4,7 +4,7 @@ import type { FormikProps } from 'formik';
 import type { FieldInputProps } from 'formik/dist/types';
 import { axe } from 'jest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import {
     MissionTypeCardsInput,

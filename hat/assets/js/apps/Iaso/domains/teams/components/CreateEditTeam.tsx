@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo, useEffect } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import {
     AddButton,
     useSafeIntl,
@@ -11,10 +11,10 @@ import {
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import {
-    type TeamDropdown,
     useApiTeamsDropdownList,
     useApiTeamsRetrieve,
-} from 'Iaso/api/teams';
+} from 'Iaso/api/teams/endpoints/teams/teams';
+import { TeamDropdown } from 'Iaso/api/teams/models/teamDropdown.zod';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';

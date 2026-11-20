@@ -3,7 +3,7 @@ import { fireEvent, screen } from '@testing-library/react';
 import type { FormikProps } from 'formik';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { MissionFormsBaseInput } from './MissionFormsBaseInput';
 

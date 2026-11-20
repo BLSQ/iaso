@@ -1,15 +1,13 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import {
-    Tooltip,
-    Box,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Divider,
-    Alert,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import Divider from '@mui/material/Divider/Divider';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import {
     InputWithInfos,
     LoadingSpinner,

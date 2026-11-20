@@ -1,5 +1,8 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { keyValue } from './styles';
 
 export const KeyValueTable: FunctionComponent<{

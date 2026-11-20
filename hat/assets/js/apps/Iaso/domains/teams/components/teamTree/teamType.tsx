@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
-import { SvgIconProps } from '@mui/material';
+import type { SvgIconProps } from '@mui/material/SvgIcon/SvgIcon';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import MESSAGES from './messages';

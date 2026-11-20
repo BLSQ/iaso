@@ -5,7 +5,11 @@ import React, {
     useState,
 } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
-import { Box, Grid, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { useSafeIntl } from 'bluesquare-components';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -13,10 +17,7 @@ import { SearchButton } from 'Iaso/components/SearchButton';
 import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from './../messages';
-import {
-    useGetBeneficiaryOptions,
-    useGetFacilityOptions,
-} from './../requests';
+import { useGetBeneficiaryOptions, useGetFacilityOptions } from './../requests';
 import { Params } from './../types';
 import { NoFutureDates } from './NoFutureDates';
 
@@ -115,7 +116,9 @@ export const BeneficiaryFilters: FunctionComponent<Props> = ({ params }) => {
                         />
                     </Box>
                     <Tooltip
-                        title={formatMessage(MESSAGES.cooperationPartnerTooltip)}
+                        title={formatMessage(
+                            MESSAGES.cooperationPartnerTooltip,
+                        )}
                         placement="top"
                     >
                         <InfoIcon color="primary" sx={{ ml: 1 }} />

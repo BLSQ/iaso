@@ -1,6 +1,9 @@
 import React, { FC, ReactNode, useMemo } from 'react';
-import { Box, Breakpoint, Theme, Typography } from '@mui/material';
-import { SystemStyleObject } from '@mui/system';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
+import type { Breakpoint } from '@mui/system/createTheme/createBreakpoints';
+import { SystemStyleObject } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { MENU_HEIGHT_WITHOUT_TABS } from 'Iaso/constants/uiConstants';
 import { SxStyles } from 'Iaso/types/general';
 import { MainWrapper } from './MainWrapper';

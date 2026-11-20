@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';

@@ -2,13 +2,11 @@ import React, { ChangeEvent, FC, useCallback } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
-import {
-    IconButton,
-    InputAdornment,
-    Stack,
-    TextField,
-    Tooltip,
-} from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import InputAdornment from '@mui/material/InputAdornment/InputAdornment';
+import Stack from '@mui/material/Stack/Stack';
+import TextField from '@mui/material/TextField/TextField';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from './messages';

@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
 import { ColorChip, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { Journey } from '../../types';

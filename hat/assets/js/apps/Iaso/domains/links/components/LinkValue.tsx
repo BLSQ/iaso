@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 // ts complaints about the import of moment for some reason
 // @ts-ignore
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';

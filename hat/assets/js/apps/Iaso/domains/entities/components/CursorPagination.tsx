@@ -1,5 +1,7 @@
 import React from 'react';
-import { Box, Stack, PaginationItem } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import PaginationItem from '@mui/material/PaginationItem/PaginationItem';
+import Stack from '@mui/material/Stack/Stack';
 import { PageRowSelect } from 'bluesquare-components';
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 30, 40, 50];

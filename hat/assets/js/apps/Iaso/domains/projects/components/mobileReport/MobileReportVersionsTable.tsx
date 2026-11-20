@@ -1,23 +1,20 @@
 import React, { FunctionComponent } from 'react';
-import {
-    Box,
-    Button,
-    Chip,
-    Link,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Chip from '@mui/material/Chip/Chip';
+import Link from '@mui/material/Link/Link';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
-import {
-    Report,
-    ReportVersion,
-    useApiReportsPublishCreate,
-} from 'Iaso/api/reports';
-import { convertToDateTimeRfc } from '../../../../components/Cells/DateTimeCell';
+import { useApiReportsPublishCreate } from 'Iaso/api/reports/endpoints/reports/reports';
+import { Report } from 'Iaso/api/reports/models/report.zod';
+
+import { ReportVersion } from 'Iaso/api/reports/models/reportVersion.zod';
+import { convertToDateTimeRfc } from 'Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../messages';
 
 type Props = {

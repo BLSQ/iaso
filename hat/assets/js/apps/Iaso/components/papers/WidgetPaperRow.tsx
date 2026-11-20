@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { TableRow, TableCell } from '@mui/material';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { SxStyles } from 'Iaso/types/general';
 

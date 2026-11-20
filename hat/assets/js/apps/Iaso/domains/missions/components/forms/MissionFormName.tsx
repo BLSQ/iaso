@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {

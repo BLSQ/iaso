@@ -1,14 +1,12 @@
 import React, { FC, useCallback } from 'react';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
-import {
-    Box,
-    TableCell,
-    TableRow,
-    Tooltip,
-    Typography,
-    alpha,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { amber } from '@mui/material/colors';
+import { alpha } from '@mui/material/styles';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

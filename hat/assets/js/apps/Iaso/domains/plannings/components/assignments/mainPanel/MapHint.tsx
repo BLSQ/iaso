@@ -1,7 +1,11 @@
 import React, { FC, useCallback, useState } from 'react';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';

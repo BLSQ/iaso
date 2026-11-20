@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Box, Chip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { computeEditableFields } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
 import MESSAGES from '../messages';

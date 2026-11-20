@@ -1,5 +1,8 @@
 import React, { useMemo, useCallback, ReactNode, FC } from 'react';
-import { Box, Grid, Tooltip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import {
     LoadingSpinner,
     useRedirectTo,

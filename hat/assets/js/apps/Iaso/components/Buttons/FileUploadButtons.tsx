@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Button, Grid } from '@mui/material';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
 import { CsvSvg, useSafeIntl } from 'bluesquare-components';
 import { useDownloadButtonStyles } from '../DownloadButtonsComponent';
 import MESSAGES from './messages';

@@ -5,7 +5,8 @@ import React, {
     useState,
 } from 'react';
 import LinkIcon from '@mui/icons-material/Link';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     LoadingSpinner,

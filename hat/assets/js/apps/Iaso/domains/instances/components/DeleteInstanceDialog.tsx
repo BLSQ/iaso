@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-import { DialogContentText, IconButton } from '@mui/material';
+import DialogContentText from '@mui/material/DialogContentText/DialogContentText';
+import IconButton from '@mui/material/IconButton/IconButton';
 import { FormattedMessage } from 'react-intl';
 import { useBoundState } from 'Iaso/hooks/useBoundState';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';

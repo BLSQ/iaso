@@ -2,7 +2,7 @@ import React, { ReactElement, useMemo } from 'react';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MergeIcon from '@mui/icons-material/Merge';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
 import { baseUrls } from '../../../../constants/urls';

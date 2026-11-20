@@ -1,13 +1,11 @@
 import React, { FC, useCallback, useMemo, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-    Box,
-    ButtonBase,
-    IconButton,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import ButtonBase from '@mui/material/ButtonBase/ButtonBase';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';

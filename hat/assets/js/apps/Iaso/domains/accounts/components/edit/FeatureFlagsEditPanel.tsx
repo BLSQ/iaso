@@ -1,16 +1,14 @@
 import React, { FunctionComponent } from 'react';
-import {
-    Alert,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-    TableContainer,
-} from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { useSafeIntl } from 'bluesquare-components';
 import { ErrorMessage, Field, useFormikContext } from 'formik';
-import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags';
-import { ApiAccountsUpdateBody } from 'Iaso/api/accounts';
+import { ApiAccountFeatureFlagsDropdownListQueryResult } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags';
+import { ApiAccountsUpdateBody } from 'Iaso/api/accounts/models/apiAccountsUpdateBody.zod';
 import { ArrayCheckboxInput } from 'Iaso/components/forms/ArrayCheckboxInput';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { getOverriddenTheme } from 'Iaso/styles';

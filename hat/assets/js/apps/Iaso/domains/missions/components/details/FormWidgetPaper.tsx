@@ -1,18 +1,16 @@
 import React from 'react';
-import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
-import {
-    Alert,
-    Box,
-    SxProps,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow,
-    Theme,
-} from '@mui/material';
+import DescriptionIcon from '@mui/icons-material/Description';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableRow from '@mui/material/TableRow/TableRow';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionPolymorphicRetrieve } from 'Iaso/api/missions';
+import { MissionPolymorphicRetrieve } from 'Iaso/api/missions/models/missionPolymorphicRetrieve.zod';
 import MESSAGES from 'Iaso/domains/missions/messages';
 import { SxStyles } from 'Iaso/types/general';
 import { formatMaxCardinality } from '../../utils';

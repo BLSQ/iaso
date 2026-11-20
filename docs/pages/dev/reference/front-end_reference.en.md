@@ -5,7 +5,7 @@ Frontend assets include JS, CSS, translations and images. They are built with
 ``hat/assets/frontend/``.
 
 Django templates mount bundles via ``{% load render_bundle from frontend_bundles %}``
-(``hat.frontend_bundles`` reads ``bundle-stats*.json`` written by Vite).
+(``iaso.frontend_bundles`` reads ``bundle-stats*.json`` written by Vite).
 
 
 Build

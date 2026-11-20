@@ -1,8 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
-from hat.frontend_bundles import utils
-
+from iaso.frontend_bundles import utils
 
 register = template.Library()
 

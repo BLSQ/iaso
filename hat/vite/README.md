@@ -10,5 +10,5 @@ Entry point: `hat/vite.config.ts` (required by Vite/npm scripts).
 | `optimize-deps.ts` | `optimizeDeps` |
 | `server.ts` | Dev server, HMR, polling |
 | `build.ts` | Rollup build output |
-| `django-stats/` | Stats file writers for `hat.frontend_bundles` |
+| `django-stats/` | Stats file writers for `iaso.frontend_bundles` |
 | `plugins/` | Custom Vite plugins (Django stats, PDF worker, warmup, LIVE_COMPONENTS) |

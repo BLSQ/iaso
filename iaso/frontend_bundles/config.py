@@ -13,7 +13,7 @@ DEFAULT_CONFIG = {
         "POLL_INTERVAL": 0.1,
         "TIMEOUT": None,
         "IGNORE": [r".+\.hot-update\.js", r".+\.map"],
-        "LOADER_CLASS": "hat.frontend_bundles.loader.FrontendBundleLoader",
+        "LOADER_CLASS": "iaso.frontend_bundles.loader.FrontendBundleLoader",
     }
 }
 

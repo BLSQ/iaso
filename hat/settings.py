@@ -679,7 +679,7 @@ for plugin_name in PLUGINS:
     if os.path.isdir(plugin_static):
         STATICFILES_DIRS.append(plugin_static)
 
-# Vite writes bundle-stats*.json; hat.frontend_bundles renders script/link tags in templates.
+# Vite writes bundle-stats*.json; iaso.frontend_bundles renders script/link tags in templates.
 FRONTEND_BUNDLE_LOADER = {
     "DEFAULT": {
         "BUNDLE_DIR_NAME": "",  # used in prod

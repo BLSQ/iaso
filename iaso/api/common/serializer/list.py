@@ -67,7 +67,7 @@ class ListQueryOptimizedSerializer(serializers.ListSerializer):
                 value = item.get(field_name)
                 if value is not None:
                     submitted_ids.extend(
-                        value if isinstance(value, (list, tuple, set)) else [value]
+                        value if isinstance(value, list | tuple | set) else [value]
                     )  # value can be a list, null or a single value
 
             if not submitted_ids:

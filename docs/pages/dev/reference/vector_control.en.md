@@ -6,6 +6,6 @@ The idea is that the mobile app user may not have great internet connection wher
 
     API endpoint to be logged as such are decorated with the @safe_api_import decorator.
     The request themselves are stored in the vector_control.APIImport model.
-    To replay the failings requests use the django command reimport_failed_imports.py
+    To replay the failing requests use the django command reimport_failed_imports (--ids or --all, --dry-run first)
 
 This app used to be a lot of others things too before, hence the not matching name.

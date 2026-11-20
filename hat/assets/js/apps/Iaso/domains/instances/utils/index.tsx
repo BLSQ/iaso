@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import CallMade from '@mui/icons-material/CallMade';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import { Tooltip } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import {
     Column,
     LinkWithLocation,

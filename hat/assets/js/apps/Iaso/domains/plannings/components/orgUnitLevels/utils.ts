@@ -1,8 +1,6 @@
 import { uniq, xor } from 'lodash';
-import {
-    PlanningConfigBulkCreateRequest,
-    PlanningConfigBulkUpdateRequest,
-} from 'Iaso/api/planningConfigs';
+import { PlanningConfigBulkCreateRequest } from 'Iaso/api/planningConfigs/models/planningConfigBulkCreateRequest.zod';
+import { PlanningConfigBulkUpdateRequest } from 'Iaso/api/planningConfigs/models/planningConfigBulkUpdateRequest.zod';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import {
     LevelIssue,

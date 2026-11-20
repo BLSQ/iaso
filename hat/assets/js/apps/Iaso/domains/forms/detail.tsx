@@ -5,8 +5,11 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Button, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     LoadingSpinner,
     commonStyles,
@@ -23,7 +26,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { baseUrls } from '../../constants/urls';
-import { useFormState } from '../../hooks/form.js';
+import { useFormState } from '../../hooks/form';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { NO_PERIOD } from '../periods/constants';

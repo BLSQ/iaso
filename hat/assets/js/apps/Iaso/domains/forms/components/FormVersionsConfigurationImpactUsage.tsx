@@ -1,5 +1,5 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';

@@ -3,10 +3,8 @@ import { act, screen, waitFor } from '@testing-library/react';
 
 import { FormikProps } from 'formik';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import {
-    MissionOrgUnitTypeCreateRequest,
-    MissionOrgUnitTypeUpdateRequest,
-} from 'Iaso/api/missions';
+import { MissionOrgUnitTypeCreateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeCreateRequest.zod';
+import { MissionOrgUnitTypeUpdateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeUpdateRequest.zod';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { MissionOrgUnitTypeInput } from './MissionOrgUnitTypeInput';
 

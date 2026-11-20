@@ -1,6 +1,6 @@
 import React from 'react';
-import { Chip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Chip from '@mui/material/Chip/Chip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     formatThousand,
     IconButton,

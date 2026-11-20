@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, TableBody } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { screen } from '@testing-library/react';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { renderWithTheme } from '../../../../tests/helpers';

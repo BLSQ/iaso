@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { Chip } from '@mui/material';
+import Chip from '@mui/material/Chip/Chip';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { missionTypeChipStyles } from './styles';

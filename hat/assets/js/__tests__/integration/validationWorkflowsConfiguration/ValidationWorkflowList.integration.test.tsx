@@ -10,12 +10,12 @@ import { IntlProvider } from 'react-intl';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { expect, describe, vi } from 'vitest';
-import { ApiValidationWorkflowsListParams } from 'Iaso/api/validationWorkflows';
 import {
     getApiValidationWorkflowsDestroyMockHandler,
     getApiValidationWorkflowsListMockHandler,
     getApiValidationWorkflowsListResponseMock,
 } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
+import { ApiValidationWorkflowsListParams } from 'Iaso/api/validationWorkflows/models/apiValidationWorkflowsListParams.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { ValidationWorkflowsConfiguration } from 'Iaso/domains/validationWorkflowsConfiguration';
 import {

@@ -1,6 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { LinkWithLocationForwardRef } from 'Iaso/components/nav/LinkWithLocationForwardRef';
 import { baseUrls } from '../../../../constants/urls';

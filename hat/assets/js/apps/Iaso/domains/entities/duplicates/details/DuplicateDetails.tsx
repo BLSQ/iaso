@@ -5,11 +5,16 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Alert, Box, Divider, Grid, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
@@ -295,6 +300,7 @@ export const DuplicateDetails: FunctionComponent = () => {
                 )}
                 {!hasNoData && (
                     <>
+                        <PiiRestrictedBanner sx={{ mt: 2 }} />
                         <Grid container>
                             <Grid item xs={12}>
                                 <Box pb={4}>

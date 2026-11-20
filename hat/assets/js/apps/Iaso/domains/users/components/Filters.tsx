@@ -1,14 +1,18 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import useTheme from '@mui/material/styles/useTheme';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import {
     commonStyles,
     useRedirectTo,
     useSafeIntl,
     InputWithInfos,
 } from 'bluesquare-components';
-import { useApiTeamsDropdownList } from 'Iaso/api/teams';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { stringToBoolean } from 'Iaso/utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';

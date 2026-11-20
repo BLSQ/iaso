@@ -1,8 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { ArrowBack } from '@mui/icons-material';
-import { Box, Chip, IconButton, Tooltip, Typography } from '@mui/material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { ChipList, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { SxStyles } from '../../../types/general';
+import { SxStyles } from 'Iaso/types/general';
 import { QUESTION_STATUS_MESSAGES } from '../config';
 import Descriptor from '../descriptor';
 import MESSAGES from '../messages';

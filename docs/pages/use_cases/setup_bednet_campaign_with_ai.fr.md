@@ -1,35 +1,13 @@
-# Configurer une campagne de distribution de moustiquaires avec l'IA
+# Configurer une campagne de distribution de MILDA avec l'IA
 
-*Configurez IASO pour une distribution de masse de moustiquaires imprégnées d'insecticide (MII) avec l'aide d'un assistant IA.*
+*Configurez IASO pour une distribution de masse de moustiquaires imprégnées d'insecticide à longue durée d'action (MILDA) avec l'aide d'un assistant IA.*
 
 Ce guide s'adresse aux coordinateurs de campagne et aux points focaux informatiques qui
-veulent utiliser IASO pour planifier et suivre une campagne MII. Pas besoin d'être
+veulent utiliser IASO pour planifier et suivre une campagne MILDA. Pas besoin d'être
 développeur : un assistant IA (Claude, ChatGPT…) fait le travail technique, vous pose des
 questions sur votre campagne et attend votre accord avant de modifier quoi que ce soit dans
 IASO. Il rend la configuration de la campagne plus rapide, surtout si la plupart des
 décisions de la campagne sont déjà prises.
-
-Le guide comporte deux parties :
-
-1. **[Préparer votre compte IASO](#partie-1-preparer-votre-compte-iaso)** : créer ou ouvrir
-   votre compte et choisir l'utilisateur pour la configuration.
-2. **[Configurer la campagne](#partie-2-configurer-la-campagne-avec-le-kit-de-campagne)** :
-   donner le kit de campagne IASO à votre assistant IA et le laisser importer vos données
-   géographiques et construire les outils de la campagne.
-
-## Ce que vous obtenez à la fin
-
-| Outil | Pour | Ce qu'il fait |
-|---|---|---|
-| **Projets mobiles** (jusqu'à six) | agents de dénombrement, agents de distribution, équipes groupes spéciaux, chefs d'équipe, gestionnaires de stock, superviseurs | enregistrer les ménages avec un ticket QR, distribuer les moustiquaires une seule fois par ménage, enregistrer les travailleurs et leur présence, suivre les mouvements de stock, remplir les grilles de supervision |
-| **15 formulaires prêts à l'emploi** | tous les agents | en français et en anglais, adaptés à votre règle d'attribution |
-| **Registres** | tous | ménages, groupes spéciaux (prisons, camps, internats…) et travailleurs, que les agents retrouvent sur le téléphone |
-| **Suivi du stock** | gestionnaires de stock | solde de moustiquaires de chaque magasin, calculé à partir des réceptions, sorties, retours, transferts et pertes |
-| **Tableaux de bord web** | équipe de coordination | avancement de la campagne par région, district ou formation sanitaire, avec une carte des ménages ; présence et fiche de paiement des travailleurs ; stock par zone |
-| **Rapports mobiles** | chefs d'équipe, gestionnaires de stock | avancement, carte des ménages, présence de l'équipe et stock, disponibles hors ligne sur le téléphone |
-| **QR codes** | formateurs | pour installer l'application IASO et la configurer pour chaque projet en quelques secondes |
-
-![Les projets de la campagne dans IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
 
 ## Avant de commencer
 
@@ -49,6 +27,14 @@ Le guide comporte deux parties :
     Tout ce guide se déroule sur **[https://app.openiaso.com](https://app.openiaso.com/)**.
     Les comptes d'essai ont déjà tous les modules nécessaires à la campagne (formulaires,
     entités, gestion de stock, liens intégrés, mapping DHIS2).
+
+!!! warning "Vous utilisez Claude ? Préférez Claude Code"
+    Si vous utilisez Claude, utilisez de préférence **Claude Code** (application de bureau ou
+    terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
+    ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
+    **app.openiaso.com**, faites autoriser son domaine **avant** la session (sur les offres
+    Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
+    voir l'[astuce à la fin de l'étape 4](#etape-4-donner-le-kit-a-votre-assistant-ia)).
 
 ---
 
@@ -93,11 +79,12 @@ en votre nom.
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. La page affiche une ligne comme `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copiez le long texte
    entre la deuxième paire de guillemets : c'est votre clé d'accès.
-3. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
+3. Décompressez le fichier ZIP.
+4. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
    (Bloc-notes, TextEdit…).
-4. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
+5. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
    d'accès après `IASO_TOKEN=`. Enregistrez le fichier.
-5. Recompressez le dossier du kit en zip.
+6. Recompressez le dossier du kit en zip.
 
 !!! warning "Gardez votre clé d'accès privée"
     La clé d'accès fonctionne comme votre mot de passe. Ne la collez jamais dans la
@@ -107,48 +94,40 @@ en votre nom.
 
 ### Étape 4 : Donner le kit à votre assistant IA
 
-1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip, ainsi que
-   votre fichier Excel ou GeoPackage si vous en avez un. (Avec Claude Code, ouvrez-le plutôt
-   dans le dossier du kit.)
-2. Copiez tel quel l'un de ces messages, selon l'origine de vos données géographiques.
+1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip contenant le token enregistré dans le fichier .txt.
+2. Choisissez l'origine de vos données géographiques et copiez tel quel le message correspondant.
 
-**Une démo, pour essayer le kit** (pyramide de démonstration du kit et réponses d'exemple) :
+**Option A : Utiliser les données géographiques de démonstration** (pyramide de démonstration du kit et réponses d'exemple). La plupart des gens commencent ici : il n'y a rien à préparer, et vous voyez le résultat avant de préparer vos propres données. Copiez ce message, puis allez directement à l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant) pour répondre aux questions :
 
-> Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. C'est une démo : utilise la pyramide de
 > démonstration du kit et propose des réponses fictives pour tout, dans un seul récapitulatif
 > (mode démo). Demande-moi confirmation avant chaque étape qui écrit dans IASO, et ne t'arrête
 > qu'après la liste du § 12c.
 
+Si l'assistant n'arrive pas à joindre IASO, voyez l'astuce à la fin de cette étape.
+
+**Option B : Utiliser vos propres données géographiques.** Reportez-vous au [guide utilisateur](../users/reference/user_guide.md#liste-des-sources-de-donnees) pour plus de détails sur la façon de formater votre fichier GeoPackage ou Excel, ou de connecter votre instance DHIS2. Pour obtenir l'aide du kit avec vos données, utilisez l'un de ces messages :
+
 **Vos données géographiques dans un fichier Excel** (joint à la conversation) :
 
-> Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont dans le fichier
 > Excel joint. Pose-moi les questions de la campagne une section à la fois. Demande-moi
 > confirmation avant chaque étape qui écrit dans IASO, et ne t'arrête qu'après la liste du § 12c.
 
+Avec un fichier GeoPackage, utilisez ce message en écrivant « GeoPackage » au lieu d'« Excel ».
+
 **Vos données géographiques dans DHIS2** (déjà configuré sur la source de données dans IASO) :
 
-> Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
+> Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
 > Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
 > que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation viennent de notre
 > DHIS2, déjà configuré sur la source de données IASO. Pose-moi les questions de la campagne une
 > section à la fois. Demande-moi confirmation avant chaque étape qui écrit dans IASO, et ne
 > t'arrête qu'après la liste du § 12c.
-
-**Vos données géographiques déjà dans IASO** :
-
-> Voici un kit pour configurer une campagne de distribution de moustiquaires dans IASO.
-> Décompresse-le si besoin, lis `SKILL.md` et suis-le étape par étape pour me guider. N'utilise
-> que les scripts du kit, aucun connecteur IASO. Mes unités d'organisation sont déjà dans IASO.
-> Pose-moi les questions de la campagne une section à la fois. Demande-moi confirmation avant
-> chaque étape qui écrit dans IASO, et ne t'arrête qu'après la liste du § 12c.
-
-En cas de doute, commencez par la démo : elle construit tout sur des lieux fictifs, et vous
-voyez le résultat avant de préparer vos propres données. Avec un fichier GeoPackage, utilisez
-le message Excel en écrivant « GeoPackage » au lieu d'« Excel ».
 
 L'assistant travaille dans son propre espace : demandez-lui de vous donner en téléchargement
 les fichiers qu'il produit (QR codes, mots de passe des utilisateurs, sauvegarde).
@@ -175,8 +154,18 @@ les fichiers qu'il produit (QR codes, mots de passe des utilisateurs, sauvegarde
 ### Étape 5 : Répondre aux questions de l'assistant
 
 L'assistant pose ses questions un thème à la fois (en démo, il propose toutes les réponses
-d'un coup, dans un seul récapitulatif à valider). Plus vous avez déjà pris de décisions, plus
-la configuration est rapide :
+d'un coup, dans un seul récapitulatif à valider).
+
+Tout n'est pas encore décidé ? Vous pouvez quand même tester la configuration de la
+campagne : l'assistant peut proposer des données de démonstration (pyramide de
+démonstration, exemples de districts, de magasins et d'agents) que vous remplacerez ensuite
+par les vôtres.
+
+L'assistant construit ensuite la campagne étape par étape, en demandant votre accord à
+chaque fois : données géographiques, projets, formulaires, registres, stock,
+utilisateurs, tableaux de bord et rapports mobiles.
+
+Plus vous avez déjà pris de décisions, plus la configuration est rapide :
 
 | Thème | Questions | À préparer |
 |---|---|---|
@@ -187,15 +176,6 @@ la configuration est rapide :
 | Travailleurs | les rôles, les taux journaliers, qui valide la présence | la grille de paiement |
 | Stock | les magasins suivis, le nombre de moustiquaires par balle | la liste des magasins |
 | Utilisateurs | qui utilise quel projet, dans quelle zone | la liste des agents |
-
-Tout n'est pas encore décidé ? Vous pouvez quand même tester la configuration de la
-campagne : l'assistant peut proposer des données de démonstration (pyramide de
-démonstration, exemples de districts, de magasins et d'agents) que vous remplacerez ensuite
-par les vôtres.
-
-L'assistant construit ensuite la campagne étape par étape, en demandant votre accord à
-chaque fois : données géographiques, projets, formulaires, registres, stock,
-utilisateurs, tableaux de bord et rapports mobiles.
 
 Vous pouvez installer l'application IASO dès que l'assistant montre les QR codes, mais le
 téléphone montre peu de choses tant que le reste n'existe pas :
@@ -233,10 +213,6 @@ tiers environ de la séance.
    de stock.
 7. Ouvrez les rapports mobiles, avec réseau puis en mode avion.
 
-![L'accueil d'un projet sur le téléphone](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
-![Le rapport d'avancement dans l'application](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
-![La carte des ménages dans le rapport d'avancement](./setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg){ width="220" }
-
 !!! note "Où sont les formulaires de stock ?"
     Sur les serveurs qui ont l'écran d'accueil du stock, le projet Stock s'ouvre sur les
     magasins et leurs formulaires. Sinon, l'assistant ajoute un onglet **Collecte de données**
@@ -259,8 +235,6 @@ les utilisateurs de test.
   ménages sur une carte (fond de carte du serveur de tuiles de Bluesquare, tiré
   d'OpenStreetMap) : dans le tableau de bord, cliquez sur une ligne du tableau pour zoomer sur
   ce lieu.
-
-![Le tableau de bord de la campagne](./setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg){ .doc-shot }
 
 ## En savoir plus
 

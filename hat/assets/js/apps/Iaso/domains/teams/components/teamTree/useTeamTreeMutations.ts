@@ -1,11 +1,13 @@
 import { useMutation, useQueryClient } from 'react-query';
 import {
-    PatchedTeamUpdateRequest,
-    TeamTree,
     apiTeamsPartialUpdate,
     useApiTeamsDestroy,
     useApiTeamsPartialUpdate,
-} from 'Iaso/api/teams';
+} from 'Iaso/api/teams/endpoints/teams/teams';
+import { PatchedTeamUpdateRequest } from 'Iaso/api/teams/models/patchedTeamUpdateRequest.zod';
+
+import { TeamTree } from 'Iaso/api/teams/models/teamTree.zod';
+
 import { TEAM_QUERY_KEYS } from 'Iaso/domains/teams/constants';
 import { getTeamTreeQueryKey } from 'Iaso/domains/teams/hooks/requests/useGetTeamTree';
 import TEAM_MESSAGES from 'Iaso/domains/teams/messages';

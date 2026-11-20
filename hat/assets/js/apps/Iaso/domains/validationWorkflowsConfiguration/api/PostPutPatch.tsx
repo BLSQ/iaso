@@ -3,7 +3,7 @@ import { UseMutationResult } from 'react-query';
 import {
     getApiValidationWorkflowsListQueryKey,
     getApiValidationWorkflowsRetrieveQueryKey,
-} from 'Iaso/api/validationWorkflows';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import {
     ValidationNodeTemplateBulkUpdateBody,
     ValidationNodeTemplateCreateBody,

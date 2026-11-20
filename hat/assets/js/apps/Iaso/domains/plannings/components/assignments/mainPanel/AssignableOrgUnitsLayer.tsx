@@ -1,6 +1,7 @@
 import React, { FC, useMemo } from 'react';
-import { Theme, useTheme } from '@mui/material';
 import { amber } from '@mui/material/colors';
+import type { Theme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import { FeatureCollection } from 'geojson';
 import {
     CircleLayerSpecification,
@@ -60,6 +61,27 @@ export const FOCUS_LINE_PAINT: LineLayerSpecification['paint'] = {
     'line-width': 4,
 };
 
+const getIsDimmed = (
+    colorByOrgUnitId: ExpressionSpecification,
+    dimAssigned: boolean,
+    undimmedOrgUnitIds?: Set<number>,
+): ExpressionSpecification | false => {
+    const isAssigned: ExpressionSpecification = [
+        'has',
+        orgUnitIdKey,
+        colorByOrgUnitId,
+    ];
+    const isOutsideUndimmed: ExpressionSpecification | undefined =
+        undimmedOrgUnitIds && [
+            '!',
+            ['in', ['get', 'id'], ['literal', [...undimmedOrgUnitIds]]],
+        ];
+    if (dimAssigned && isOutsideUndimmed)
+        return ['any', isAssigned, isOutsideUndimmed];
+    if (dimAssigned) return isAssigned;
+    return isOutsideUndimmed ?? false;
+};
+
 type Props = {
     geoJson: FeatureCollection;
     colorByOrgUnitId: Map<number, string>;
@@ -67,6 +89,8 @@ type Props = {
     showPoints: boolean;
     dimAssigned: boolean;
     focusedOrgUnitId?: number;
+    // When set, the other org units are dimmed.
+    undimmedOrgUnitIds?: Set<number>;
 };
 
 export const AssignableOrgUnitsLayer: FC<Props> = ({
@@ -75,6 +99,7 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
     showPoints,
     dimAssigned,
     focusedOrgUnitId,
+    undimmedOrgUnitIds,
 }) => {
     const theme = useTheme();
     const colorByOrgUnitIdLiteral: ExpressionSpecification = useMemo(
@@ -85,9 +110,14 @@ export const AssignableOrgUnitsLayer: FC<Props> = ({
         () => getFillColor(colorByOrgUnitIdLiteral, getUnassignedColor(theme)),
         [colorByOrgUnitIdLiteral, theme],
     );
-    const isDimmed: ExpressionSpecification | boolean = useMemo(
-        () => dimAssigned && ['has', orgUnitIdKey, colorByOrgUnitIdLiteral],
-        [colorByOrgUnitIdLiteral, dimAssigned],
+    const isDimmed = useMemo(
+        () =>
+            getIsDimmed(
+                colorByOrgUnitIdLiteral,
+                dimAssigned,
+                undimmedOrgUnitIds,
+            ),
+        [colorByOrgUnitIdLiteral, dimAssigned, undimmedOrgUnitIds],
     );
     const isFocused = useMemo(
         () => getIsFocused(focusedOrgUnitId),

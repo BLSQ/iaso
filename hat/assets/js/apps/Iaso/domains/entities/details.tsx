@@ -1,12 +1,15 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Divider, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LoadingSpinner,
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -68,6 +71,7 @@ export const Details: FunctionComponent = () => {
             {isLoading && <LoadingSpinner />}
             {!isLoading && (
                 <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+                    <PiiRestrictedBanner sx={{ mb: 2 }} />
                     <Grid container spacing={2} alignItems="flex-start">
                         <Grid item xs={12} md={4}>
                             <EntityBaseInfo

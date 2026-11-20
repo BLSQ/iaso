@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Paper, Typography, Button } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import PageError from 'Iaso/components/errors/PageError';
 import { baseUrls } from 'Iaso/constants/urls';

@@ -8,6 +8,7 @@ import {
 import {
     mutationInvalidates as accountsMutationInvalidates,
 } from './hat/assets/js/orval/apiConfiguration/accounts/configuration';
+import { mutationInvalidates as assignmentsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/assignments/configuration';
 import { mutationInvalidates as missionsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/missions/configuration';
 import { mutationInvalidates as planningConfigsMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/planningConfigs/configuration';
 import { mutationInvalidates as planningMutationInvalidates } from './hat/assets/js/orval/apiConfiguration/plannings/configuration';
@@ -166,6 +167,11 @@ module.exports = {
         'Account feature flags',
     ]),
     apiImports: createConfig('apiImports', ['API import']),
+    assignments: createConfig(
+        'assignments',
+        ['Assignments'],
+        assignmentsMutationInvalidates,
+    ),
     instanceDiff: createConfig('instanceDiff', ['Submission diff']),
     missions: createConfig('missions', ['Missions'], missionsMutationInvalidates),
     modules: createConfig('modules', ['Modules']),

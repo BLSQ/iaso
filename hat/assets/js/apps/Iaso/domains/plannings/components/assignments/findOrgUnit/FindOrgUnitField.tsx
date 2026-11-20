@@ -1,13 +1,11 @@
 import React, { FC, useCallback, useMemo, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-    Box,
-    ButtonBase,
-    IconButton,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import ButtonBase from '@mui/material/ButtonBase/ButtonBase';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
 import { errorSnackBar } from 'Iaso/constants/snackBars';
@@ -15,7 +13,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
-import { useAssignments } from '../mainPanel/useAssignments';
+import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { getTeamIdByOrgUnitId } from '../mainPanel/utils';
 import { usePlanningOrgUnits } from '../usePlanningOrgUnitTree';
 import { FindOrgUnitDialog } from './FindOrgUnitDialog';
@@ -63,7 +61,7 @@ export const FindOrgUnitField: FC = () => {
     const { focusOrgUnitId, updateParams } = useAssignmentsParams();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { planning, tree } = useAssignmentsContext();
-    const { data: assignments } = useAssignments(`${planning.id}`);
+    const { data: assignments } = usePlanningAssignments(planning.id);
     // Same org units as the dialog, which can only pick loaded ones.
     const { orgUnits } = usePlanningOrgUnits(0, 2);
     const focusedOrgUnit = focusOrgUnitId

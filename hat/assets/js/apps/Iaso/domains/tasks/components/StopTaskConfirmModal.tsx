@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { useKillTask } from '../hooks/api';
 import MESSAGES from '../messages';

@@ -1,12 +1,11 @@
 import React, { FC, ReactNode } from 'react';
-import {
-    SxProps,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableRow,
-} from '@mui/material';
+
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableRow from '@mui/material/TableRow/TableRow';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { textPlaceholder } from 'bluesquare-components';
 import { LEFT_CELL_WIDTH } from 'Iaso/domains/missions/constants';
 import { SxStyles } from 'Iaso/types/general';

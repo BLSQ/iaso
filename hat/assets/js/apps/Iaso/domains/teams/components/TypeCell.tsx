@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { Value8edEnum } from 'Iaso/api/teams';
+import { Value8edEnum } from 'Iaso/api/teams/models/value8edEnum.zod';
 import MESSAGES from '../messages';
 
 type Props = {

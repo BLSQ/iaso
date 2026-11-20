@@ -1,11 +1,9 @@
 import React, { useMemo } from 'react';
-import {
-    HighlightOffOutlined as NotCheckedIcon,
-    CheckCircleOutlineOutlined as CheckedIcon,
-} from '@mui/icons-material';
-import { Chip } from '@mui/material';
+import CheckedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import NotCheckedIcon from '@mui/icons-material/HighlightOffOutlined';
+import Chip from '@mui/material/Chip/Chip';
 import { useSafeIntl } from 'bluesquare-components';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { userHasAccessToModule } from '../users/utils';
 import MESSAGES from './messages';
 

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { Theme, useTheme } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import { textPlaceholder } from 'bluesquare-components';
 import {
     DEFAULT_ORDERS,

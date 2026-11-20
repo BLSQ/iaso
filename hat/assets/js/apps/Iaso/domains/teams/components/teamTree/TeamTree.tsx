@@ -1,6 +1,7 @@
 import React, { FC, useDeferredValue, useMemo } from 'react';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import { Stack, Typography } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from './messages';

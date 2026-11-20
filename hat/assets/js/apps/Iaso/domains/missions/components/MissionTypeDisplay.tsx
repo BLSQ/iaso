@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import MESSAGES from '../messages';
 import { MissionTypeBadge } from './MissionTypeBadge';
 import { missionStyles } from './styles';

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, FunctionComponent } from 'react';
 import PauseIcon from '@mui/icons-material/PauseCircleFilled';
 import PlayIcon from '@mui/icons-material/PlayCircleFilled';
-import { Box, IconButton } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import IconButton from '@mui/material/IconButton/IconButton';
 import videojs from 'video.js';
 
 import 'video.js/dist/video-js.min.css';

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Divider } from '@mui/material';
+import Divider from '@mui/material/Divider/Divider';
 import { ExpandableItem } from 'bluesquare-components';
 import WidgetPaperComponent from '../../../../../components/papers/WidgetPaperComponent';
 import { InstanceDetailRaw } from '../../../../instances/compare/components/InstanceDetailRaw';

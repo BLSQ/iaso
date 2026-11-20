@@ -279,7 +279,7 @@ if USE_CELERY:
     INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
 
 if IN_TESTS:
-    INSTALLED_APPS.extend(["iaso.tests"])
+    INSTALLED_APPS.extend(["iaso.tests.base_app"])
 
 # needed because we customize the comment model
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm

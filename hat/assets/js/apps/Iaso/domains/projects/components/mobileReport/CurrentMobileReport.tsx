@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Link, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Link from '@mui/material/Link/Link';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
-import { Report } from 'Iaso/api/reports';
+import { Report } from 'Iaso/api/reports/models/report.zod';
 import MESSAGES from '../../messages';
 
 type Props = {

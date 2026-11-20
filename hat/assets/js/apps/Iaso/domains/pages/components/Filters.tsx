@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import { UserRolesSelect } from 'Iaso/components/filters/UserRolesSelect';
 import InputComponent from '../../../components/forms/InputComponent';

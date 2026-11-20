@@ -1,7 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import Search from '@mui/icons-material/Search';
-import { Box, Button, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     QueryBuilderInput,
     commonStyles,

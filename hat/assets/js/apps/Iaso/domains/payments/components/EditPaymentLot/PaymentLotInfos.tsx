@@ -1,5 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Button, Grid, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Grid from '@mui/material/Grid/Grid';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import InputComponent from '../../../../components/forms/InputComponent';

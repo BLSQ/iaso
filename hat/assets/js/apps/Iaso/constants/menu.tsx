@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react';
-import { AccessAlarm, InventoryOutlined } from '@mui/icons-material';
+import AccessAlarm from '@mui/icons-material/AccessAlarm';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import AdsClickIcon from '@mui/icons-material/AdsClick';
@@ -20,6 +20,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import InventoryOutlined from '@mui/icons-material/InventoryOutlined';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';

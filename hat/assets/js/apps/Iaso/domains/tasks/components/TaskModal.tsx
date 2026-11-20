@@ -1,13 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import {
-    Box,
-    CircularProgress,
-    Divider,
-    IconButton,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import Divider from '@mui/material/Divider/Divider';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Typography from '@mui/material/Typography/Typography';
 import { AlertModal, makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { TaskHeader } from 'Iaso/domains/tasks/components/TaskHeader';

@@ -1,18 +1,18 @@
 import React, { FunctionComponent } from 'react';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-    Paper,
-    IconButton,
-    Tooltip,
-    Grid,
-    Typography,
-} from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
+import Grid from '@mui/material/Grid/Grid';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Paper from '@mui/material/Paper/Paper';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
+
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { MESSAGES as LOG_MESSAGES } from '../../orgUnits/history/messages';

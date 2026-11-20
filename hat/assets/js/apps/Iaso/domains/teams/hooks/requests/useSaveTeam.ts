@@ -1,5 +1,5 @@
 import { useQueryClient } from 'react-query';
-import { getApiTeamsRetrieveQueryKey } from 'Iaso/api/teams';
+import { getApiTeamsRetrieveQueryKey } from 'Iaso/api/teams/endpoints/teams/teams';
 import { TEAM_QUERY_KEYS } from 'Iaso/domains/teams/constants';
 import { patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';

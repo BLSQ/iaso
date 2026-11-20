@@ -22,9 +22,12 @@ vi.mock('../hooks/requests/useGetInstance', () => ({
     useGetInstance: mockUseGetInstance,
 }));
 
-vi.mock('Iaso/api/instanceDiff', () => ({
-    useApiDiffInstancesList: mockUseApiDiffInstancesList,
-}));
+vi.mock(
+    'Iaso/api/instanceDiff/endpoints/submission-diff/submission-diff',
+    () => ({
+        useApiDiffInstancesList: mockUseApiDiffInstancesList,
+    }),
+);
 
 vi.mock('Iaso/components/nav/TopBarComponent', () => ({
     default: ({ title }: { title: string }) => (

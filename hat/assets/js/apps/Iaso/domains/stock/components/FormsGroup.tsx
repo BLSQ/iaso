@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { LinkToForm } from 'Iaso/domains/forms/components/LinkToForm';
 

@@ -7,7 +7,10 @@ import React, {
     useState,
 } from 'react';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import { Box, Divider, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';

@@ -281,7 +281,8 @@ describe('ColumnsSelectDrawer', () => {
                     label: 'Number of submissions',
                     active: false,
                     disabled: false,
-                    warning: 'Including this column can make the API call very slow',
+                    warning:
+                        'Including this column can make the API call very slow',
                 },
             ];
 

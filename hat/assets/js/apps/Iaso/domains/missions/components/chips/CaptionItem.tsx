@@ -1,5 +1,6 @@
 import React, { FC, ReactNode } from 'react';
-import { Stack, Typography } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 
 type Props = {

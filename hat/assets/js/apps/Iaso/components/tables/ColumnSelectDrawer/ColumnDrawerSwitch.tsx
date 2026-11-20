@@ -5,16 +5,14 @@ import React, {
     ReactNode,
 } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import {
-    Box,
-    ListItemText,
-    Switch,
-    Theme,
-    Tooltip,
-    useMediaQuery,
-    useTheme,
-} from '@mui/material';
-import { SxProps } from '@mui/system';
+import Box from '@mui/material/Box/Box';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import type { Theme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
+import Switch from '@mui/material/Switch/Switch';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
+import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { truncateText } from 'bluesquare-components';
 
 type Props = {
@@ -95,9 +93,7 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                         flexShrink={0}
                         role="img"
                         aria-label={
-                            typeof warning === 'string'
-                                ? warning
-                                : undefined
+                            typeof warning === 'string' ? warning : undefined
                         }
                     >
                         <WarningAmberIcon fontSize="small" aria-hidden />

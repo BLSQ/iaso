@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
-import { SvgIconComponent } from '@mui/icons-material';
-import { Stack, Typography } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
+import SvgIcon from '@mui/material/SvgIcon';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 
 const styles: SxStyles = {
@@ -15,7 +16,7 @@ const styles: SxStyles = {
 };
 
 type Props = {
-    Icon: SvgIconComponent;
+    Icon: typeof SvgIcon;
     title: string;
 };
 

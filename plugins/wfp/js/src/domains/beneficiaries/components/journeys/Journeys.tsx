@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, Typography } from '@mui/material';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { Beneficiary } from '../../types';

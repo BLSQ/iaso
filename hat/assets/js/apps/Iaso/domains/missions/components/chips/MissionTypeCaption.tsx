@@ -3,7 +3,7 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 import { CaptionItem } from './CaptionItem';

@@ -5,7 +5,10 @@ import React, {
     useState,
 } from 'react';
 import Add from '@mui/icons-material/Add';
-import { Box, Button, Divider, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Grid from '@mui/material/Grid/Grid';
 import {
     ConfirmCancelModal,
     IntlMessage,

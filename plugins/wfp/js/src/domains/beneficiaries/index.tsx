@@ -2,13 +2,14 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
-import { useGetBeneficiaries } from './requests';
-import { TableList, DEFAULT_PAGE_SIZE } from './components/TableList';
-import { Exports } from './components/Exports';
 import { BeneficiaryFilters } from './components/BeneficiaryFilters';
+import { Exports } from './components/Exports';
+import { TableList, DEFAULT_PAGE_SIZE } from './components/TableList';
 import MESSAGES from './messages';
+import { useGetBeneficiaries } from './requests';
 import { Params, Filters } from './types';
 
 const baseUrl = baseUrls.wfpBeneficiaries;
@@ -29,7 +30,7 @@ export const Beneficiaries: FunctionComponent = () => {
             programme: params.programme,
             org_unit_group: params.org_unit_group,
             facility: params.facility,
-            q: params.q,
+            search: params.search,
             visit_date_after: params.visit_date_after,
             visit_date_before: params.visit_date_before,
         }),
@@ -38,7 +39,7 @@ export const Beneficiaries: FunctionComponent = () => {
             params.programme,
             params.org_unit_group,
             params.facility,
-            params.q,
+            params.search,
             params.visit_date_after,
             params.visit_date_before,
         ],
@@ -51,6 +52,7 @@ export const Beneficiaries: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <MainWrapper sx={styles.root}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <BeneficiaryFilters params={params} />
                 <Exports filters={searched} disabled={isFetching} />
                 <TableList data={data} loading={isFetching} params={params} />

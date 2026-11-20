@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography, TypographyVariant } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import type { Variant as TypographyVariant } from '@mui/material/styles/createTypography';
+import Typography from '@mui/material/Typography/Typography';
 import {
     IconButton as IconButtonComponent,
     LoadingSpinner,

@@ -1,4 +1,4 @@
-import { TeamRetrieve } from 'Iaso/api/teams';
+import { TeamRetrieve } from 'Iaso/api/teams/models/teamRetrieve.zod';
 import { defaultAssignmentColor } from 'Iaso/domains/assignments/constants/colors';
 import { AssignmentsResult } from 'Iaso/domains/assignments/types/assigment';
 

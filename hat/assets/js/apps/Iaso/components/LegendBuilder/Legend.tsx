@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { useTheme } from '@mui/material';
+import useTheme from '@mui/material/styles/useTheme';
 import { LegendThreshold, LegendItem, LegendLabel } from '@visx/legend';
 import { scaleThreshold } from '@visx/scale';
 import { ScaleThreshold } from './types';

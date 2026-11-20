@@ -4,13 +4,11 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import {
-    FormLabel,
-    Box,
-    Tooltip,
-    ClickAwayListener,
-    TooltipProps,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import { ClickAwayListener } from '@mui/material/ClickAwayListener/ClickAwayListener';
+import FormLabel from '@mui/material/FormLabel/FormLabel';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import type { TooltipProps } from '@mui/material/Tooltip/Tooltip';
 
 import { TwitterPicker, ColorResult } from 'react-color';
 import { FormattedMessage, defineMessages } from 'react-intl';

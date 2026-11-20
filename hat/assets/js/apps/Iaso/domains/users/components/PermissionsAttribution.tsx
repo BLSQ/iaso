@@ -1,16 +1,21 @@
 import React, { useCallback, useMemo } from 'react';
-import { Box, SxProps, Typography, Theme } from '@mui/material';
+
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
+
 import {
     Column,
     LoadingSpinner,
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
+import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import InputComponent from '../../../components/forms/InputComponent';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
 import * as Permissions from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';

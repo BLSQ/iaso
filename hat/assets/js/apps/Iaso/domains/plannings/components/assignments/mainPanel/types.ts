@@ -1,4 +1,4 @@
-import { OrgUnitTree } from 'Iaso/api/plannings';
+import { OrgUnitTree } from 'Iaso/api/plannings/models/orgUnitTree.zod';
 
 export type Assignment = {
     id: number;

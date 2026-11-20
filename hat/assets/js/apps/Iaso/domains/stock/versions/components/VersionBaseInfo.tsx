@@ -1,13 +1,11 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import {
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    Divider,
-    Box,
-} from '@mui/material';
-import { Theme } from '@mui/system';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import { Theme } from '@mui/system/createTheme/createTheme';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { textPlaceholder } from 'Iaso/constants/uiConstants';

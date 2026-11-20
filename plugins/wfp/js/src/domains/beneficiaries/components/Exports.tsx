@@ -1,7 +1,10 @@
-import React, { FunctionComponent } from 'react';
-import { Box, Button, Tooltip } from '@mui/material';
+import React, { FunctionComponent, useMemo } from 'react';
+import Box from '@mui/material/Box/Box';
 import { ExcellSvg, useSafeIntl } from 'bluesquare-components';
-import { useDownloadButtonStyles } from 'Iaso/components/DownloadButtonsComponent';
+import {
+    DownloadMenuButton,
+    DownloadOption,
+} from 'Iaso/components/DownloadMenuButton';
 import MESSAGES from './../messages';
 import { exportUrl } from './../requests';
 import { Filters } from './../types';
@@ -11,43 +14,41 @@ type Props = {
     disabled?: boolean;
 };
 
-// The files are built by the server when the link is followed, then downloaded by the browser
+// The xlsx files are built by the server (which names them), then downloaded with a progress indicator
 export const Exports: FunctionComponent<Props> = ({
     filters,
     disabled = false,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useDownloadButtonStyles();
+    const options: DownloadOption[] = useMemo(
+        () => [
+            {
+                key: 'eligible',
+                extension: 'xlsx',
+                label: formatMessage(MESSAGES.eligibleBeneficiaries),
+                url: exportUrl('eligible', filters),
+                icon: <ExcellSvg />,
+            },
+            {
+                key: 'raw',
+                extension: 'xlsx',
+                label: formatMessage(MESSAGES.rawData),
+                url: exportUrl('raw', filters),
+                icon: <ExcellSvg />,
+            },
+            {
+                key: 'coda',
+                extension: 'xlsx',
+                label: formatMessage(MESSAGES.coda),
+                url: exportUrl('coda', filters),
+                icon: <ExcellSvg />,
+            },
+        ],
+        [filters, formatMessage],
+    );
     return (
         <Box display="flex" justifyContent="flex-end" mt={2}>
-            <Tooltip title={formatMessage(MESSAGES.exportRawTooltip)}>
-                <span>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        className={classes.button}
-                        href={exportUrl('raw', filters)}
-                        disabled={disabled}
-                    >
-                        <ExcellSvg />
-                        {formatMessage(MESSAGES.exportRaw)}
-                    </Button>
-                </span>
-            </Tooltip>
-            <Tooltip title={formatMessage(MESSAGES.exportCodaTooltip)}>
-                <span>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        className={classes.button}
-                        href={exportUrl('coda', filters)}
-                        disabled={disabled}
-                    >
-                        <ExcellSvg />
-                        {formatMessage(MESSAGES.exportCoda)}
-                    </Button>
-                </span>
-            </Tooltip>
+            <DownloadMenuButton options={options} disabled={disabled} />
         </Box>
     );
 };

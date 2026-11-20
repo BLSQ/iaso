@@ -6,8 +6,10 @@ import React, {
     useEffect,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
-import { Box, Button, Paper } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
 import { grey } from '@mui/material/colors';
+import Paper from '@mui/material/Paper/Paper';
 import { useSafeIntl } from 'bluesquare-components';
 import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { Planning } from 'Iaso/domains/plannings/types';

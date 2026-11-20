@@ -1,6 +1,10 @@
 import React, { ChangeEvent, FunctionComponent, useRef } from 'react';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { Alert, Box, Button, Divider, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Divider from '@mui/material/Divider/Divider';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import MESSAGES from '../../messages';

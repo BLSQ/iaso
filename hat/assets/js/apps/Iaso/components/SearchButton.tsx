@@ -1,8 +1,8 @@
 import React from 'react';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button } from '@mui/material';
+import Button from '@mui/material/Button/Button';
 import { ButtonProps } from '@mui/material/Button/Button';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 

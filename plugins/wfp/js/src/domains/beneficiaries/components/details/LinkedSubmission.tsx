@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Link } from '@mui/material';
+import Link from '@mui/material/Link/Link';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { Submission, SubmissionRow } from '../../types';

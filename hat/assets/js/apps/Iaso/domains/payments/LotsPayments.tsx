@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, useTheme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import useTheme from '@mui/material/styles/useTheme';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import Color from 'color';
 import { RefreshButton } from '../../components/Buttons/RefreshButton';

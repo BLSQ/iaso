@@ -1,14 +1,12 @@
 import React, { FC, MouseEvent, useCallback } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-    Box,
-    CircularProgress,
-    IconButton,
-    Stack,
-    Typography,
-    alpha,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Stack from '@mui/material/Stack/Stack';
+import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from 'Iaso/types/general';
 import { AssigneeCell } from '../mainPanel/AssigneeCell';
 import { Assignee } from '../mainPanel/types';

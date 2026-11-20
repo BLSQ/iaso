@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('Iaso/api/reports', () => ({
+vi.mock('Iaso/api/reports/endpoints/reports/reports', () => ({
     useApiReportsCreate: vi.fn(),
     useApiReportsVersionsCreate: vi.fn(),
 }));
@@ -33,7 +33,7 @@ vi.mock('bluesquare-components', async importOriginal => ({
 import {
     useApiReportsCreate,
     useApiReportsVersionsCreate,
-} from 'Iaso/api/reports';
+} from 'Iaso/api/reports/endpoints/reports/reports';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { MobileReportUploadForm } from './MobileReportUploadForm';
 

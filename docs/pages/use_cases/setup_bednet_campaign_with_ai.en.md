@@ -1,34 +1,12 @@
-# Set up a bed net distribution campaign with AI
+# Set up an ITN distribution campaign with AI
 
 *Configure IASO for a mass distribution of insecticide-treated nets (ITNs) with the help of an AI assistant.*
 
 This guide is for campaign coordinators and IT focal points who want to use IASO to plan and
-monitor a bed net campaign. You don't need to be a developer: an AI assistant (Claude,
+monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
 ChatGPT…) does the technical work, asks you questions about your campaign and waits for your
 go-ahead before changing anything in IASO. It makes the campaign configuration quicker,
 especially if most of the campaign decisions are already made.
-
-The guide has two parts:
-
-1. **[Prepare your IASO account](#part-1-prepare-your-iaso-account)**: create or open your
-   account and choose the user for the setup.
-2. **[Configure the campaign](#part-2-configure-the-campaign-with-the-campaign-kit)**: give
-   the IASO campaign kit to your AI assistant and let it import your geographic data and
-   build the campaign tools.
-
-## What you get at the end
-
-| Tool | For | What it does |
-|---|---|---|
-| **Mobile projects** (up to six) | enumeration agents, distribution agents, special group teams, team leaders, stock managers, supervisors | register households with a QR ticket, distribute nets once per household, register workers and their attendance, track stock movements, fill in supervision checklists |
-| **15 ready-made forms** | all agents | in English and French, adapted to your allocation rule |
-| **Registries** | everyone | households, special groups (prisons, camps, boarding schools…) and workers, which agents find again on the phone |
-| **Stock tracking** | stock managers | balance of nets in each store, computed from receipts, issues, returns, transfers and losses |
-| **Web dashboards** | coordination team | campaign progress by region, district or health facility, with a map of the households; worker attendance and payment sheet; stock by area |
-| **Mobile reports** | team leaders, stock managers | progress, map of households, team attendance and stock, available offline on the phone |
-| **QR codes** | trainers | to install the IASO app and configure it for each project in seconds |
-
-![The campaign projects in IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
 
 ## Before you start
 
@@ -48,6 +26,14 @@ The guide has two parts:
     Everything in this guide happens on **[https://app.openiaso.com](https://app.openiaso.com/)**.
     Trial accounts already have every module the campaign needs (forms, entities, stock
     management, embedded links, DHIS2 mapping).
+
+!!! warning "Using Claude? Prefer Claude Code"
+    If you use Claude, preferably use **Claude Code** (desktop app or terminal) to avoid
+    limitations. Claude in the browser or in its app can only reach domains on an allowed
+    list: with an IASO server other than **app.openiaso.com**, get its domain allowed
+    **before** the session (on Team and Enterprise plans, only an owner of your Claude
+    organisation can add it: see the
+    [tip at the end of step 4](#step-4-give-the-kit-to-your-ai-assistant)).
 
 ---
 
@@ -88,11 +74,12 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. The page shows a line like `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copy the long text between
    the second pair of quotes: this is your access key.
-3. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
+3. Decompress the ZIP file.
+4. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
    TextEdit…).
-4. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
+5. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
    after `IASO_TOKEN=`. Save the file.
-5. Zip the kit folder again.
+6. Zip the kit folder again.
 
 !!! warning "Keep your access key private"
     The access key works like your password. Never paste it into the conversation and never
@@ -101,45 +88,38 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 
 ### Step 4: Give the kit to your AI assistant
 
-1. Start a new conversation in Claude or ChatGPT and attach the zip, plus your Excel or
-   GeoPackage file if you have one. (With Claude Code, open it in the kit folder instead.)
-2. Copy one of these messages as it is, depending on where your geographic data comes from.
+1. Start a new conversation in Claude or ChatGPT and attach the zip with the token saved in the .txt file.
+2. Choose where your geographic data comes from and copy the matching message as it is.
 
-**A demo, to try the kit** (the kit's demo pyramid and example answers):
+**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data. Copy this message, then go directly to [step 5](#step-5-answer-the-assistants-questions) to answer the questions:
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. This is a demo: use the kit's demo pyramid and propose placeholder answers for
 > everything in one summary (demo mode). Confirm with me before each step that writes to
 > IASO, and do not stop before the checklist of § 12c.
 
+If the assistant can't reach IASO, see the tip at the end of this step.
+
+**Option B: Use your own geographic data.** Refer to the [user guide](../users/reference/user_guide.md#data-sources-list) for more details on how to format your GeoPackage or Excel file, or how to connect your DHIS2 instance. To get support from the kit with your data, use one of these messages:
+
 **Your geographic data in an Excel file** (attached to the conversation):
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units are in the attached Excel file. Ask me the campaign questions one
 > section at a time. Confirm with me before each step that writes to IASO, and do not stop
 > before the checklist of § 12c.
 
+With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".
+
 **Your geographic data in DHIS2** (already set up on the data source in IASO):
 
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
 > connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
 > the campaign questions one section at a time. Confirm with me before each step that writes
 > to IASO, and do not stop before the checklist of § 12c.
-
-**Your geographic data already in IASO**:
-
-> Here is a kit to set up a bed net distribution campaign in IASO. Unzip it if needed, read
-> `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
-> connector. My org units are already in IASO. Ask me the campaign questions one section at a
-> time. Confirm with me before each step that writes to IASO, and do not stop before the
-> checklist of § 12c.
-
-If you are unsure, start with the demo: it builds everything on fictitious places, and you see
-the result before preparing your own data. With a GeoPackage file, use the Excel message and
-say "GeoPackage" instead of "Excel".
 
 The assistant works in its own space: ask it to give you as downloads the files it produces
 (QR codes, user passwords, backup).
@@ -165,8 +145,16 @@ The assistant works in its own space: ask it to give you as downloads the files 
 ### Step 5: Answer the assistant's questions
 
 The assistant asks its questions one topic at a time (in a demo, it proposes all the answers
-at once, in one summary to approve). The more of these decisions you have already made, the
-quicker the configuration:
+at once, in one summary to approve).
+
+Not everything decided yet? You can still test the campaign setup: the assistant can propose
+demo data (demo pyramid, example districts, stores and agents) that you replace later with
+your own.
+
+Then the assistant builds the campaign step by step, asking for your go-ahead each time:
+geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.
+
+The more of these decisions you have already made, the quicker the configuration:
 
 | Topic | Questions | Prepare |
 |---|---|---|
@@ -177,13 +165,6 @@ quicker the configuration:
 | Workers | the roles, daily rates, who validates attendance | the payment scale |
 | Stock | the stores tracked, the number of nets per bale | the list of stores |
 | Users | who uses which project, in which area | the list of agents |
-
-Not everything decided yet? You can still test the campaign setup: the assistant can propose
-demo data (demo pyramid, example districts, stores and agents) that you replace later with
-your own.
-
-Then the assistant builds the campaign step by step, asking for your go-ahead each time:
-geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.
 
 You can install the IASO app as soon as the assistant shows the QR codes, but the phone shows
 little until the rest exists:
@@ -217,10 +198,6 @@ session.
    distribute nets, register a worker, record a stock movement.
 7. Open the mobile reports, with network and then in airplane mode.
 
-![A project home screen on the phone](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
-![The progress report in the app](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
-![The map of households in the progress report](./setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg){ width="220" }
-
 !!! note "Where are the stock forms?"
     On servers that have the stock home screen, the Stock project opens on the stores and their
     forms. Otherwise, the assistant adds a **Data collection** tab to the Stock project: open
@@ -240,8 +217,6 @@ users.
   The campaign dashboard and the progress report show the households on a map (base map from
   Bluesquare's tile server, from OpenStreetMap): in the dashboard, click a row of the table to
   zoom on that place.
-
-![The campaign dashboard](./setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg){ .doc-shot }
 
 ## Learn more
 

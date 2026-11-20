@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Box, Button, Collapse } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Collapse from '@mui/material/Collapse/Collapse';
 import { useSafeIntl } from 'bluesquare-components';
 import { MarkerMap } from 'Iaso/components/maps/MarkerMapComponent';
 import { SxStyles } from 'Iaso/types/general';

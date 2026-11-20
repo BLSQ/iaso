@@ -6,30 +6,24 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import {
-    Box,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableContainer from '@mui/material/TableContainer/TableContainer';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
-import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDialog';
+import { useAssignOnClick } from '../assign/useAssignOnClick';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
-import { useAssignments } from './useAssignments';
-import { useLevelOrgUnits } from './useLevelOrgUnits';
-import {
-    getAssigneeByOrgUnitId,
-    getLevelOrgUnitRows,
-    getTeamIdByOrgUnitId,
-} from './utils';
+import { OrgUnitRow } from './types';
+import { useLevelOrgUnitRows } from './useLevelOrgUnitRows';
 
 const styles = {
     container: {
@@ -67,26 +61,29 @@ const DEFAULT_ROWS_PER_PAGE = 20;
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { planning, tree, selectedTeam, selectedLevel } =
-        useAssignmentsContext();
-    const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
+    const { rows: levelRows, isFetching } = useLevelOrgUnitRows();
     const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const { isAssignMode } = useAssignmentsContext();
     const focusedOrgUnitId = focusOrgUnitId
         ? Number(focusOrgUnitId)
         : undefined;
-    const { data: assignments } = useAssignments(`${planning.id}`);
-    const levelRows = useMemo(
-        () =>
-            getLevelOrgUnitRows({
-                parents: parents ?? [],
-                assigneeByOrgUnitId: getAssigneeByOrgUnitId(
-                    tree,
-                    assignments ?? [],
-                ),
-                teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
-                showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
-            }),
-        [parents, selectedTeam.type, tree, assignments],
+    const {
+        assignableOrgUnitIds,
+        toggleAssignment,
+        pendingChange,
+        cancelPendingChange,
+    } = useAssignOnClick();
+    const isRowClickable = (row: OrgUnitRow) =>
+        isAssignMode ? assignableOrgUnitIds.has(row.id) : Boolean(row.teamId);
+    const handleRowClick = useCallback(
+        (row: OrgUnitRow) => {
+            if (isAssignMode) {
+                toggleAssignment(row.id);
+            } else if (row.teamId) {
+                openTeam(row.teamId);
+            }
+        },
+        [isAssignMode, toggleAssignment, openTeam],
     );
     const rows = useMemo(
         () =>
@@ -169,7 +166,8 @@ export const OrgUnitsTable: FC = () => {
                                 key={row.id}
                                 row={row}
                                 isFocused={row.id === focusedOrgUnitId}
-                                onOpenTeam={openTeam}
+                                isClickable={isRowClickable(row)}
+                                onClick={handleRowClick}
                             />
                         ))}
                         {rows.length === 0 && !isFetching && (
@@ -202,6 +200,10 @@ export const OrgUnitsTable: FC = () => {
                     selectCount={0}
                 />
             </Box>
+            <ClearAssignmentsBelowDialog
+                pendingChange={pendingChange}
+                onClose={cancelPendingChange}
+            />
         </Box>
     );
 };

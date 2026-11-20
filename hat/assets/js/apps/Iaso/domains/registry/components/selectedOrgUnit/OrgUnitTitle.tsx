@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Grid, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import { IconButton } from 'bluesquare-components';
 
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';

@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
-import { Box, Tooltip } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
@@ -16,7 +17,12 @@ export const DeprecatedPlanningChip: FC = () => {
     const { formatMessage } = useSafeIntl();
     return (
         <Tooltip
-            title={`${formatMessage(MESSAGES.readOnlyPlanning)} ${formatMessage(MESSAGES.deprecatedPlanningInfos)}`}
+            title={
+                <>
+                    <div>{formatMessage(MESSAGES.readOnlyPlanning)}</div>
+                    <div>{formatMessage(MESSAGES.deprecatedPlanningInfos)}</div>
+                </>
+            }
         >
             <Box component="span" sx={styles.chipWrapper}>
                 <PlanningStatusChip status="deprecated" />

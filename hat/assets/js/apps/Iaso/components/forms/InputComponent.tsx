@@ -1,5 +1,6 @@
 import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
-import { Box, SxProps } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import {
     ArrayFieldInput,
     BaseCountryData,

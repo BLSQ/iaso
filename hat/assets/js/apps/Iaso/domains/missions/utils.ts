@@ -1,9 +1,7 @@
-import {
-    MissionEntityTypeRetrieve,
-    MissionFormRetrieve,
-    MissionOrgUnitTypeRetrieve,
-    MissionTypeDa2Enum,
-} from 'Iaso/api/missions';
+import { MissionEntityTypeRetrieve } from 'Iaso/api/missions/models/missionEntityTypeRetrieve.zod';
+import { MissionFormRetrieve } from 'Iaso/api/missions/models/missionFormRetrieve.zod';
+import { MissionOrgUnitTypeRetrieve } from 'Iaso/api/missions/models/missionOrgUnitTypeRetrieve.zod';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { INFINITY_SYMBOL, MISSION_TYPE_OPTIONS } from './constants';
 
 export const isMissionFormRetrieve = (

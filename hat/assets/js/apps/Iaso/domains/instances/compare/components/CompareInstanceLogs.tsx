@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useEffect, useState, useMemo } from 'react';
-import { Box, Grid, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     useSafeIntl,
     commonStyles,
@@ -9,6 +11,7 @@ import {
     useGoBack,
 } from 'bluesquare-components';
 
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { baseUrls } from '../../../../constants/urls';
@@ -158,6 +161,7 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                 goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <Grid
                     container
                     spacing={3}

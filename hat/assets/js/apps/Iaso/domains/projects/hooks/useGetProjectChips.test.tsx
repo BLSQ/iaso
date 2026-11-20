@@ -2,10 +2,7 @@ import React from 'react';
 import { render, renderHook, screen } from '@testing-library/react';
 import { ChipListItem, textPlaceholder } from 'bluesquare-components';
 import { describe, expect, it, vi } from 'vitest';
-import {
-    ProjectChipSource,
-    useGetProjectChips,
-} from './useGetProjectChips';
+import { ProjectChipSource, useGetProjectChips } from './useGetProjectChips';
 
 vi.mock('bluesquare-components', async importOriginal => {
     const actual =

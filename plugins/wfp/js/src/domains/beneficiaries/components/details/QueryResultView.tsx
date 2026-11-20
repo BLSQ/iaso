@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import MESSAGES from '../../messages';

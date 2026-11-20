@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
 import {
-    ApiTeamsTreeListParams,
-    TeamTree,
     getApiTeamsTreeListQueryKey,
     useApiTeamsTreeList,
-} from 'Iaso/api/teams';
+} from 'Iaso/api/teams/endpoints/teams/teams';
+import { ApiTeamsTreeListParams } from 'Iaso/api/teams/models/apiTeamsTreeListParams.zod';
+import { TeamTree } from 'Iaso/api/teams/models/teamTree.zod';
 import { TeamTreeNode } from '../../types/team';
 import { normalizeTeamTree } from '../../utils';
 

@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Dataset } from '@mui/icons-material';
-import { Box, Typography } from '@mui/material';
+import Dataset from '@mui/icons-material/Dataset';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ChipList,
     ChipListItem,

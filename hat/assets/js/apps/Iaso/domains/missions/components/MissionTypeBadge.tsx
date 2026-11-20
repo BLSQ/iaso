@@ -1,7 +1,9 @@
 import React, { FC } from 'react';
-import { Box, SxProps, Theme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { SxStyles } from 'Iaso/types/general';
 import { getMissionTypeOption } from '../utils';
 

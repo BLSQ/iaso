@@ -666,6 +666,11 @@ const MESSAGES = defineMessages({
         defaultMessage: '{assigned} of {total} assigned',
         id: 'iaso.plannings.label.belowAssigned',
     },
+    assignmentProgressHelp: {
+        defaultMessage:
+            'Org units in the area of {team} that are assigned to its members',
+        id: 'iaso.plannings.label.assignmentProgressHelp',
+    },
     notOnMap: {
         defaultMessage: 'No shape or point: not shown on the map',
         id: 'iaso.plannings.label.notOnMap',
@@ -685,6 +690,10 @@ const MESSAGES = defineMessages({
     showAllOrgUnits: {
         defaultMessage: 'Show all org units',
         id: 'iaso.plannings.label.showAllOrgUnits',
+    },
+    showOnlyAssignableOrgUnits: {
+        defaultMessage: 'Show only org units that can be assigned',
+        id: 'iaso.plannings.label.showOnlyAssignableOrgUnits',
     },
     findOrgUnit: {
         defaultMessage: 'Find an org unit',
@@ -839,6 +848,27 @@ const MESSAGES = defineMessages({
     unselectAll: {
         defaultMessage: 'Unselect all',
         id: 'iaso.label.unSelectAll',
+    },
+    selectedOrgUnitsCount: {
+        defaultMessage: '{count} org units selected',
+        id: 'iaso.plannings.label.selectedOrgUnitsCount',
+    },
+    noOrgUnitSelected: {
+        defaultMessage: 'No org unit selected',
+        id: 'iaso.plannings.label.noOrgUnitSelected',
+    },
+    unassignSelected: {
+        defaultMessage: 'Unassign selected',
+        id: 'iaso.plannings.label.unassignSelected',
+    },
+    clearSelectionAssignmentsBelowTitle: {
+        defaultMessage: 'Remove the assignments made inside?',
+        id: 'iaso.plannings.label.clearSelectionAssignmentsBelowTitle',
+    },
+    clearSelectionAssignmentsBelowText: {
+        defaultMessage:
+            '{count} of the selected org units contain assignments made by their current assignee. Those assignments are removed.',
+        id: 'iaso.plannings.label.clearSelectionAssignmentsBelowText',
     },
     noOrgUnitMatchesFilter: {
         defaultMessage: 'No org unit matches the filter',

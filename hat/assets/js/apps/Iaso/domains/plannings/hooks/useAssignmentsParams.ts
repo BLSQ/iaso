@@ -4,13 +4,18 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { AssignmentsMode, AssignmentsParams, AssignmentsView } from '../types';
 
-type UseAssignmentsParams = Omit<AssignmentsParams, 'onlyUnassigned'> & {
+type UseAssignmentsParams = Omit<
+    AssignmentsParams,
+    'onlyUnassigned' | 'onlyAssignable'
+> & {
     mode: AssignmentsMode;
     view: AssignmentsView;
     onlyUnassigned: boolean;
+    onlyAssignable: boolean;
     updateParams: (changes: Partial<AssignmentsParams>) => void;
     openTeam: (teamId: number) => void;
     toggleOnlyUnassigned: () => void;
+    toggleOnlyAssignable: () => void;
     pickAssignee: (teamId: number, memberKey: string) => void;
 };
 
@@ -36,6 +41,14 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
             }),
         [onlyUnassigned, updateParams],
     );
+    const onlyAssignable = params.onlyAssignable === 'true';
+    const toggleOnlyAssignable = useCallback(
+        () =>
+            updateParams({
+                onlyAssignable: onlyAssignable ? undefined : 'true',
+            }),
+        [onlyAssignable, updateParams],
+    );
     const pickAssignee = useCallback(
         (teamId: number, memberKey: string) =>
             updateParams({ teamId: `${teamId}`, assignee: memberKey }),
@@ -48,10 +61,12 @@ export const useAssignmentsParams = (): UseAssignmentsParams => {
         mode: (params.mode as AssignmentsMode) ?? 'explore',
         view: (params.view as AssignmentsView) ?? 'map',
         onlyUnassigned,
+        onlyAssignable,
         updateParams,
         assignee: params.assignee,
         openTeam,
         toggleOnlyUnassigned,
+        toggleOnlyAssignable,
         pickAssignee,
     };
 };

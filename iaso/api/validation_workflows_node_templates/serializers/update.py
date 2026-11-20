@@ -46,5 +46,5 @@ class ValidationNodeTemplateUpdateSerializer(ModelSerializer):
     def validate_can_skip_previous_nodes(self, value):
         # The step is not moved here: only the starting step has to be checked, it has no previous step to skip
         if value and not self.instance.previous_node_templates.exists():
-            raise serializers.ValidationError("The first step can't skip previous steps.")
+            raise serializers.ValidationError(_("The first step can't skip previous steps."))
         return value

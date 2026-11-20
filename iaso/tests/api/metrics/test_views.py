@@ -9,6 +9,7 @@ from iaso.models.metric import MetricType, MetricValue
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.models.task import Task
+from iaso.models.workspace import Workspace
 from iaso.permissions.core_permissions import CORE_METRIC_TYPES_PERMISSION, CORE_ORG_UNITS_PERMISSION
 from iaso.plugins import is_snt_malaria_plugin_active
 from iaso.test import APITestCase
@@ -102,6 +103,64 @@ class MetricTypeAPITestCase(APITestCase):
                 ],
             },
         )
+
+    def _post_metric_type(self, code, origin):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            self.BASE_URL,
+            {
+                "code": code,
+                "name": code,
+                "category": "Category",
+                "origin": origin,
+                "legend_config": {"domain": [1.0, 2.0], "range": ["#A2CAEA", "#ACDF9B", "#F2B16E"]},
+                "legend_type": MetricType.LegendType.THRESHOLD.value,
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        return MetricType.objects.get(code=code)
+
+    def test_metric_type_post_custom_layer_belongs_to_the_active_workspace(self):
+        workspace = Workspace.objects.create(account=self.account, name="Workspace")
+
+        metric_type = self._post_metric_type("custom", MetricType.MetricTypeOrigin.CUSTOM.value)
+
+        self.assertEqual(metric_type.workspace, workspace)
+
+    def test_metric_type_post_openhexa_layer_stays_at_account_level(self):
+        Workspace.objects.create(account=self.account, name="Workspace")
+
+        metric_type = self._post_metric_type("openhexa", MetricType.MetricTypeOrigin.OPENHEXA.value)
+
+        self.assertIsNone(metric_type.workspace)
+
+    def test_metric_type_post_custom_layer_stays_at_account_level_without_workspace(self):
+        metric_type = self._post_metric_type("custom", MetricType.MetricTypeOrigin.CUSTOM.value)
+
+        self.assertIsNone(metric_type.workspace)
+
+    def _create_layer_in_other_workspace(self):
+        Workspace.objects.create(account=self.account, name="Active workspace")
+        other_workspace = Workspace.objects.create(account=self.account, name="Other workspace")
+        return MetricType.objects.create(workspace=other_workspace, code="OTHER_WS", name="Other workspace layer")
+
+    def test_metric_type_list_hides_layers_of_other_workspaces(self):
+        self._create_layer_in_other_workspace()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.BASE_URL)
+
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertCountEqual([mt["code"] for mt in data], ["MT001", "MT002"])
+
+    def test_metric_type_retrieve_layer_of_other_workspace_returns_404(self):
+        other_workspace_layer = self._create_layer_in_other_workspace()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.BASE_URL}{other_workspace_layer.id}/")
+
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
     def test_metric_type_post_creates_an_incomplete_shell(self):
         """A fresh POST is the wizard creating its shell before the user has finished the
@@ -650,6 +709,33 @@ class MetricValueAPITestCase(APITestCase):
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
 
+    def _create_layer_in_other_workspace(self):
+        Workspace.objects.create(account=self.account, name="Active workspace")
+        other_workspace = Workspace.objects.create(account=self.account, name="Other workspace")
+        return MetricType.objects.create(workspace=other_workspace, code="OTHER_WS", name="Other workspace layer")
+
+    def test_metric_value_list_hides_values_of_other_workspace_layers(self):
+        other_workspace_layer = self._create_layer_in_other_workspace()
+        MetricValue.objects.create(metric_type=other_workspace_layer, org_unit=self.org_unit, year=2020, value=1.0)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.BASE_URL)
+
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertNotIn(other_workspace_layer.id, {mv["metric_type"] for mv in data})
+        self.assertEqual(len(data), 2)
+
+    def test_metric_value_import_values_rejects_metric_type_from_other_workspace(self):
+        other_workspace_layer = self._create_layer_in_other_workspace()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            f"{self.BASE_URL}import_values/",
+            {"metric_type_id": other_workspace_layer.id, "years": [2020], "values": []},
+        )
+
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
     def test_metric_value_list_unauthenticated(self):
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
@@ -908,7 +994,8 @@ class MetricValueAPITestCase(APITestCase):
             category="Composite",
             origin=MetricType.MetricTypeOrigin.CUSTOM,
         )
-        CompositeLayer.objects.create(account=self.account, name="Composite Layer", metric_type=composite_metric_type)
+        workspace = Workspace.objects.create(account=self.account, name="Workspace")
+        CompositeLayer.objects.create(workspace=workspace, name="Composite Layer", metric_type=composite_metric_type)
 
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}csv_template/")

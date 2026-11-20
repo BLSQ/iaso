@@ -179,6 +179,14 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         metric_value = m.MetricValue.objects.create(
             metric_type=metric_type, org_unit=org_unit_child, year=2024, value=1.0
         )
+        workspace = m.Workspace.objects.create(account=account, name=f"workspace_{suffix}", created_by=user)
+        deleted_workspace = m.Workspace.objects.create(
+            account=account, name=f"deleted_workspace_{suffix}", created_by=user, source_workspace=workspace
+        )
+        deleted_workspace.delete()
+        workspace_metric_type = m.MetricType.objects.create(
+            account=account, workspace=workspace, name=f"ws_metric_{suffix}", code=f"ws_metric_{suffix}"
+        )
 
         mission_form = m.MissionForm.objects.create(name=f"mission_form_{suffix}", account=account)
         mission_org_unit_type = m.MissionOrgUnitType.objects.create(
@@ -362,6 +370,9 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
             "json_data_store": json_data_store,
             "metric_type": metric_type,
             "metric_value": metric_value,
+            "workspace": workspace,
+            "deleted_workspace": deleted_workspace,
+            "workspace_metric_type": workspace_metric_type,
             "org_unit_reference_instance": org_unit_reference_instance,
             "org_unit_change_request": org_unit_change_request,
             "org_unit_change_request_configuration": org_unit_change_request_configuration,
@@ -509,6 +520,12 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(m.MatchingAlgorithm.objects.filter(pk=other_models["matching_algorithm"].pk).exists())
         self.assertFalse(m.MetricType.objects.filter(pk=other_models["metric_type"].pk).exists())
         self.assertFalse(m.MetricValue.objects.filter(pk=other_models["metric_value"].pk).exists())
+        self.assertFalse(
+            m.Workspace.objects_include_deleted.filter(
+                pk__in=[other_models["workspace"].pk, other_models["deleted_workspace"].pk]
+            ).exists()
+        )
+        self.assertFalse(m.MetricType.objects.filter(pk=other_models["workspace_metric_type"].pk).exists())
         self.assertFalse(Modification.objects.filter(pk=other_models["modification"].pk).exists())
         self.assertFalse(m.OpenHEXAWorkspace.objects.filter(pk=other_models["openhexa_workspace"].pk).exists())
         self.assertFalse(
@@ -684,6 +701,9 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(m.MatchingAlgorithm.objects.filter(pk=other_models["matching_algorithm"].pk).exists())
         self.assertTrue(m.MetricType.objects.filter(pk=other_models["metric_type"].pk).exists())
         self.assertTrue(m.MetricValue.objects.filter(pk=other_models["metric_value"].pk).exists())
+        self.assertTrue(m.Workspace.objects.filter(pk=other_models["workspace"].pk).exists())
+        self.assertTrue(m.Workspace.objects_only_deleted.filter(pk=other_models["deleted_workspace"].pk).exists())
+        self.assertTrue(m.MetricType.objects.filter(pk=other_models["workspace_metric_type"].pk).exists())
         self.assertTrue(Modification.objects.filter(pk=other_models["modification"].pk).exists())
         self.assertTrue(m.OpenHEXAInstance.objects.filter(pk=other_models["openhexa_instance"].pk).exists())
         self.assertTrue(m.OpenHEXAWorkspace.objects.filter(pk=other_models["openhexa_workspace"].pk).exists())
@@ -1169,6 +1189,7 @@ class DeleteAccountsModelCoverageTestCase(TestCase):
             "iaso.WorkflowChange",
             "iaso.WorkflowFollowup",
             "iaso.WorkflowVersion",
+            "iaso.Workspace",
         }
     )
 

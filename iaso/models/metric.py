@@ -4,6 +4,14 @@ from django.utils.translation import gettext_lazy as _
 from iaso.models import OrgUnit
 
 
+class MetricTypeQuerySet(models.QuerySet):
+    def visible_in_workspace(self, workspace):
+        return self.filter(
+            models.Q(workspace=workspace) | models.Q(workspace__isnull=True),
+            account=workspace.account,
+        )
+
+
 class MetricType(models.Model):
     class LegendType(models.TextChoices):
         THRESHOLD = "threshold", _("Threshold")
@@ -36,11 +44,24 @@ class MetricType(models.Model):
 
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
-        unique_together = [
-            ["account", "code"],
+        constraints = [
+            models.UniqueConstraint(
+                fields=["account", "code"],
+                condition=models.Q(workspace__isnull=True),
+                name="iaso_metrictype_account_code_uniq",
+            ),
+            models.UniqueConstraint(
+                fields=["workspace", "code"],
+                condition=models.Q(workspace__isnull=False),
+                name="iaso_metrictype_workspace_code_uniq",
+            ),
         ]
 
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)
+    # Without a workspace, the layer is shared by every workspace of the account (e.g. OpenHEXA imports).
+    workspace = models.ForeignKey(
+        "iaso.Workspace", null=True, blank=True, on_delete=models.CASCADE, related_name="metric_types"
+    )
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -77,8 +98,25 @@ class MetricType(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = MetricTypeQuerySet.as_manager()
+
     def __str__(self):
         return f"{self.name} {self.id}"
+
+    def save(self, *args, **kwargs):
+        self._ensure_account_matches_workspace()
+        super().save(*args, **kwargs)
+
+    def _ensure_account_matches_workspace(self):
+        if self.workspace_id is None:
+            return
+        if self.account_id is None:
+            self.account_id = self.workspace.account_id
+        elif self.account_id != self.workspace.account_id:
+            raise ValueError(
+                f"MetricType account ({self.account_id}) does not match its workspace's account "
+                f"({self.workspace.account_id})."
+            )
 
     def mark_complete(self):
         """Explicitly flip an incomplete shell to complete, e.g. a user finishing the

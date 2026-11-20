@@ -17,15 +17,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { useNavigate } from 'react-router-dom';
 import { fileScanResultInfected } from 'Iaso/constants/fileScanResults';
 import { SxStyles } from 'Iaso/types/general';
+import { configurePdfWorker } from './configurePdfWorker';
 import { FileScanHeader } from './FileScanHeader';
 import { FileScanStatusOpenButton } from './FileScanStatusOpenButton';
 import MESSAGES from './messages';
 
-// react-pdf resets workerSrc to `pdf.worker.mjs` on import (not valid under Vite).
-const PDF_WORKER_FILE = 'iaso-pdf.worker.min.mjs';
-pdfjs.GlobalWorkerOptions.workerSrc = import.meta.env.DEV
-    ? import.meta.env.VITE_PDF_WORKER_URL
-    : new URL(`./${PDF_WORKER_FILE}`, import.meta.url).href;
+configurePdfWorker(pdfjs);
 
 type PdfPreviewProps = {
     pdf?: string | { path: string; name: string };

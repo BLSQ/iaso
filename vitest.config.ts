@@ -29,6 +29,11 @@ const languageConfigsPath = generateLanguageConfigs(LIB_PATH);
 
 export default defineConfig({
     plugins: [react(), tsconfigPaths()],
+    define: {
+        'import.meta.env.VITE_PDF_WORKER_URL': JSON.stringify(
+            'http://localhost/iaso-pdf.worker.min.mjs',
+        ),
+    },
     test: {
         globals: true,
         hookTimeout: 150_000,

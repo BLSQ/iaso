@@ -124,5 +124,5 @@ class FrontendBundleLoader:
 
         raise FrontendBundleLoaderBadStatsError(
             "The bundle stats file does not contain valid data. "
-            "Run `npm run dev` or `npm run build:prod` to generate bundle-stats.json.",
+            "Run `npm run dev` or `npm run build` to generate bundle-stats.json.",
         )

@@ -142,6 +142,7 @@ const zoomBarExtension: ZoomBarPrototype & ThisType<ZoomBar> = {
             this,
         );
 
+        // Bundler-resolved URLs (not djangoStaticUrl — see Iaso/utils/djangoStaticUrl.ts).
         this._zoomBoxButton = this._createButton(
             `<img src="${square}"/>`,
             options.zoomBoxTitle,

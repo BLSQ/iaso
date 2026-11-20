@@ -20,16 +20,12 @@ const hatDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(hatDir, '..');
 const repoNodeModules = path.resolve(repoRoot, 'node_modules');
 
-// Dev stays on `fr` to avoid react-intl missing-message noise while French is the default locale.
-const LOCALE = 'fr';
+const LOCALE = 'en';
 
 const devPort = Number(process.env.VITE_PORT || 3000);
 const devProtocol = process.env.VITE_PROTOCOL || 'http';
 const devHost = process.env.VITE_HOST || 'localhost';
-const devOrigin =
-    process.env.VITE_HOST && process.env.VITE_PORT && process.env.VITE_PROTOCOL
-        ? `${process.env.VITE_PROTOCOL}://${process.env.VITE_HOST}:${process.env.VITE_PORT}`
-        : `${devProtocol}://${devHost}:${devPort}`;
+const devOrigin = `${devProtocol}://${devHost}:${devPort}`;
 
 const outDir = process.env.VITE_OUT_DIR || path.resolve(hatDir, 'assets/frontend');
 const liveComponents = process.env.LIVE_COMPONENTS === 'true';

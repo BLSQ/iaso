@@ -68,7 +68,7 @@ services:
         env_file:
             - .env
         environment:
-            # Bind mounts don't reliably forward FS events; enable polling in Docker.
+            # Bind mounts don't reliably forward FS events → hat/vite.config.ts server.watch.usePolling
             VITE_POLL: 'true'
         logging: *iaso_logging
         command: start_frontend

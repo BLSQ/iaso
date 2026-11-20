@@ -16,7 +16,9 @@ Dev and prod
 
 * Dev: ``npm run dev`` (Docker: ``docker compose up iaso-frontend`` → ``start_frontend``)
 
-* Prod: ``npm run build:prod`` (also used in ``docker/prod/Dockerfile``)
+* Prod: ``npm run build`` (default Vite production mode; ``build:prod`` is an alias). Dev bundle: ``npm run build:dev``.
+
+* Local prod check: ``npm run preview`` after ``npm run build``.
 
 * Stats files: ``bundle-stats.json`` (dev) / ``bundle-stats-prod.json`` (prod)
 

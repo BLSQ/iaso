@@ -415,7 +415,7 @@ export default defineConfig([
         },
     },
     {
-        files: ['hat/vite.config.ts', 'vitest.config.ts'],
+        files: ['hat/vite.config.ts', 'hat/vite/**/*.ts', 'vitest.config.ts'],
         languageOptions: {
             parser: tsParser,
             ecmaVersion: 'latest',

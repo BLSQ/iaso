@@ -27,12 +27,13 @@ especially if most of the campaign decisions are already made.
     Trial accounts already have every module the campaign needs (forms, entities, stock
     management, embedded links, DHIS2 mapping).
 
-!!! warning "Using another IASO server?"
-    Test on **app.openiaso.com** first. Claude's code execution can only reach domains on an
-    allowed list: if you use another IASO server, get its domain allowed **before** the
-    session (on Team and Enterprise plans, only an owner of your Claude organisation can add
-    it: see the [tip at the end of step 4](#step-4-give-the-kit-to-your-ai-assistant)).
-    Claude Code on your computer does not have this limit.
+!!! warning "Using Claude? Prefer Claude Code"
+    If you use Claude, preferably use **Claude Code** (desktop app or terminal) to avoid
+    limitations. Claude in the browser or in its app can only reach domains on an allowed
+    list: with an IASO server other than **app.openiaso.com**, get its domain allowed
+    **before** the session (on Team and Enterprise plans, only an owner of your Claude
+    organisation can add it: see the
+    [tip at the end of step 4](#step-4-give-the-kit-to-your-ai-assistant)).
 
 ---
 

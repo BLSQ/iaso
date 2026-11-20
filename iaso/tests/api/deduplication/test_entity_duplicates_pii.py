@@ -159,7 +159,6 @@ class EntityDuplicatesPiiAPITestCase(APITestCase):
         fields = self.get_detail_fields(self.open_duplicate)
         self.assertEqual(fields["first_name"], ("Fatou", "Fatoumata"))
 
-
     def test_form_without_whitelisted_fields_hides_all_pii_without_permission(self):
         self.client.force_authenticate(self.user)
 

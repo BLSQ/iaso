@@ -420,7 +420,7 @@ The following are some examples:
 The list of the main containers:
 
 - iaso The python backend in [Django](https://www.djangoproject.com/)
-- iaso-frontend The React frontend (Vite dev server)
+- frontend The React frontend (Vite dev server)
 - db [PostgreSQL](https://www.postgresql.org/) database
 
 All the container definitions for development can be found in the

@@ -14,4 +14,4 @@ Django pages include bundles with::
 See ``docs/pages/dev/reference/front-end_reference.en.md`` for adding new entries
 and template integration.
 
-Local dev: ``npm run dev`` or ``docker compose up iaso-frontend``.
+Local dev: ``npm run dev`` or ``docker compose up frontend``.

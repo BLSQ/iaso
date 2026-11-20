@@ -2,7 +2,7 @@
 
 # Use this script if you want to run the IASO (python side) locally outside of Docker
 # You can run the database and frontend with docker compose and it will connect by default
-# By running:  docker compose up db iaso-frontend
+# By running:  docker compose up db frontend
 
 # You will need to create the local venv first by running: uv sync
 

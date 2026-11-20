@@ -14,7 +14,7 @@ Build
 Dev and prod
 ------------
 
-* Dev: ``npm run dev`` (Docker: ``docker compose up iaso-frontend`` → ``start_frontend``)
+* Dev: ``npm run dev`` (Docker: ``docker compose up frontend`` → ``start_frontend``)
 
 * Prod: ``npm run build`` (default Vite production mode; ``build:prod`` is an alias). Dev bundle: ``npm run build:dev``.
 
@@ -124,7 +124,7 @@ Testing the production build
       TEST_PROD=true docker compose up
 
 When the setup is run with ``TEST_PROD=true``, it will exit the unneeded containers
-``iaso-frontend`` and ``jupyter``. With ``TEST_PROD=true`` it runs a production build at startup, so
+``frontend`` and ``jupyter``. With ``TEST_PROD=true`` it runs a production build at startup, so
 that there is no need to rebuild the image for that.
 
 JS Unit Testing

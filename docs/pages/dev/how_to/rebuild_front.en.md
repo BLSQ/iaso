@@ -9,7 +9,7 @@ docker rmi -f iaso-frontend:latest
 
 ### Build the new Docker image:
 ```
-docker compose build --no-cache iaso-frontend
+docker compose build --no-cache frontend
 ```
 
 

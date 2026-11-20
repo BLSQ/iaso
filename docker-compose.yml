@@ -54,7 +54,7 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
 
-    iaso-frontend:
+    frontend:
         image: iaso-frontend
         platform: linux/amd64
         build:

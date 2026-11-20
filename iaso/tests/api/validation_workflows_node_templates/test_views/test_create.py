@@ -125,7 +125,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
     def test_num_queries_insert_last(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(16):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",
@@ -144,7 +144,7 @@ class ValidationNodeTemplateAPICreateTestCase(BaseApiTestCase):
 
     def test_num_queries_insert_between(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(17):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-list",

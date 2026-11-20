@@ -104,6 +104,13 @@ class TestValidationWorkflow(TransactionTestCase):
             self.assertEqual(workflow.dump_nodes(), [step_2.slug, step_0.slug, step_1.slug])
             self.assertEqual(self._can_skip(step_2, step_0, step_1), [False, False, True])
 
+        with self.subTest("moving the first step away"):
+            step_0.can_skip_previous_nodes = True
+            step_0.save()
+            workflow.move_node_template(step_2, position=PositionChoices.last)
+            self.assertEqual(workflow.dump_nodes(), [step_0.slug, step_1.slug, step_2.slug])
+            self.assertEqual(self._can_skip(step_0, step_1, step_2), [False, True, False])
+
         with self.subTest("deleting the first step"):
             workflow.delete_node_template(step_2)
             workflow.delete_node_template(step_0)

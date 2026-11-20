@@ -41,6 +41,10 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
             existing_slugs.add(instance.slug)
             instances.append(instance)
 
+        # The new steps are only chained to each other: the first one has no previous step to skip
+        if instances:
+            instances[0].can_skip_previous_nodes = False
+
         ValidationNodeTemplate.objects.bulk_create(instances, batch_size=100)
 
         instance_role_pairs = [
@@ -67,10 +71,6 @@ class ValidationNodeTemplateBulkCreateListSerializer(serializers.ListSerializer)
 
         if next_links:
             ValidationNodeTemplate.next_node_templates.through.objects.bulk_create(next_links, ignore_conflicts=True)
-
-        if instances:
-            instances[0].workflow.clear_skip_on_starting_nodes()
-            instances[0].can_skip_previous_nodes = False
 
         return instances
 

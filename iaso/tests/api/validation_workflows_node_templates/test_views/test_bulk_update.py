@@ -167,7 +167,13 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
                 kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug},
             ),
             data=[
-                {"slug": self.third_node.slug, "name": "new first node", "roles_required": [self.user_role.pk]},
+                # The first step has no previous step to skip: it must be saved as False
+                {
+                    "slug": self.third_node.slug,
+                    "name": "new first node",
+                    "roles_required": [self.user_role.pk],
+                    "can_skip_previous_nodes": True,
+                },
                 {"slug": self.first_node.slug, "name": "new second node", "can_skip_previous_nodes": True},
                 {
                     "slug": self.second_node.slug,
@@ -396,7 +402,7 @@ class ValidationNodeTemplateAPIBulkUpdateTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(15):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-bulk",

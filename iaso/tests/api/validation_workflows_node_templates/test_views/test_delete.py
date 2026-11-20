@@ -97,7 +97,7 @@ class ValidationNodeTemplateAPIDeleteTestCase(BaseApiTestCase):
 
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(15):
             res = self.client.delete(
                 reverse(
                     "validation_node_templates-detail",

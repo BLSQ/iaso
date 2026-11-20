@@ -133,7 +133,7 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
     def test_num_queries(self):
         self.client.force_authenticate(self.john_wick)
 
-        with self.assertNumQueries(19):
+        with self.assertNumQueries(18):
             res = self.client.post(
                 reverse(
                     "validation_node_templates-bulk",
@@ -197,6 +197,8 @@ class ValidationNodeTemplateAPIBulkCreateTestCase(BaseApiTestCase):
                 {
                     "name": "First node",
                     "description": "Here we should check something",
+                    # The first step has no previous step to skip: it must be saved as False
+                    "can_skip_previous_nodes": True,
                 },
                 {"name": "Second node"},
                 {

@@ -33,6 +33,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.endDateUntil',
         defaultMessage: 'End date until',
     },
+    period: {
+        id: 'iaso.label.period',
+        defaultMessage: 'Period',
+    },
     actions: {
         defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',

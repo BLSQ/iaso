@@ -38,6 +38,9 @@ const baseUrl = baseUrls.planning;
 const urlParamToDate = (date?: string): Moment | undefined =>
     date ? getUrlParamDateObject(date) : undefined;
 
+const isStatusFilterActive = (status?: string): boolean =>
+    Boolean(status) && status !== 'all';
+
 const dateToUrlParam = (date?: Moment | null): string | undefined =>
     date?.isValid() ? date.format(dateFormat) : undefined;
 
@@ -48,8 +51,10 @@ export const PlanningFilters = ({ params }: Props) => {
     const values: FilterValues = useMemo(
         () => ({
             search: params.search,
-            dateFrom: urlParamToDate(params.dateFrom),
-            dateTo: urlParamToDate(params.dateTo),
+            period: {
+                from: urlParamToDate(params.dateFrom),
+                to: urlParamToDate(params.dateTo),
+            },
             publishingStatus: params.publishingStatus,
         }),
         [params],
@@ -57,16 +62,18 @@ export const PlanningFilters = ({ params }: Props) => {
 
     const fields: FilterFieldDescriptor[] = useMemo(
         () => [
-            { key: 'search', label: MESSAGES.search, type: 'search' },
             {
-                key: 'dateFrom',
-                label: MESSAGES.startDatefrom,
-                type: 'date',
+                key: 'search',
+                label: MESSAGES.search,
+                type: 'search',
+                blockForbiddenChars: true,
             },
             {
-                key: 'dateTo',
-                label: MESSAGES.endDateUntil,
-                type: 'date',
+                key: 'period',
+                label: MESSAGES.period,
+                type: 'daterange',
+                fromLabel: MESSAGES.startDatefrom,
+                toLabel: MESSAGES.endDateUntil,
             },
             {
                 key: 'publishingStatus',
@@ -74,6 +81,7 @@ export const PlanningFilters = ({ params }: Props) => {
                 type: 'select',
                 options: statusOptions,
                 multi: false,
+                isActive: isStatusFilterActive,
             },
         ],
         [statusOptions],
@@ -85,8 +93,8 @@ export const PlanningFilters = ({ params }: Props) => {
                 ...params,
                 page: '1',
                 search: next.search || undefined,
-                dateFrom: dateToUrlParam(next.dateFrom),
-                dateTo: dateToUrlParam(next.dateTo),
+                dateFrom: dateToUrlParam(next.period?.from),
+                dateTo: dateToUrlParam(next.period?.to),
                 publishingStatus: next.publishingStatus || undefined,
             });
         },
@@ -101,7 +109,7 @@ export const PlanningFilters = ({ params }: Props) => {
                     values={values}
                     onApply={handleApply}
                 />
-            </Box>{' '}
+            </Box>
             <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
                 <AddButton
                     message={MESSAGES.create}

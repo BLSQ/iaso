@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 
 from iaso.frontend_bundles import utils
 
+
 register = template.Library()
 
 

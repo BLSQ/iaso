@@ -24,7 +24,6 @@ import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDial
 import { useAssignableOrgUnits } from '../assign/useAssignableOrgUnits';
 import { useAssignOnClick } from '../assign/useAssignOnClick';
 import { useListSelection } from '../assign/useListSelection';
-import { AssignmentProgressSummary } from './AssignmentProgressSummary';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
 import { SelectionBar } from './SelectionBar';
 import { OrgUnitRow } from './types';
@@ -59,15 +58,9 @@ const styles = {
     nameColumn: { width: '30%' },
     parentColumn: { width: '22%' },
     assignmentColumn: { width: '28%' },
-    footer: {
-        display: 'flex',
-        alignItems: 'center',
+    pagination: {
         borderTop: 1,
         borderColor: 'divider',
-    },
-    pagination: {
-        flex: 1,
-        minWidth: 0,
     },
 } satisfies SxStyles;
 
@@ -176,7 +169,9 @@ export const OrgUnitsTable: FC = () => {
     return (
         <Box sx={styles.container}>
             {isFetching && <LoadingSpinner absolute fixed={false} />}
-            {isAssignMode && <SelectionBar selection={selection} />}
+            {isAssignMode && (
+                <SelectionBar selection={selection} progress={progress} />
+            )}
             <TableContainer sx={styles.tableContainer}>
                 <Table stickyHeader sx={styles.table}>
                     <TableHead>
@@ -278,19 +273,16 @@ export const OrgUnitsTable: FC = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Box sx={styles.footer}>
-                <AssignmentProgressSummary progress={progress} />
-                <Box sx={styles.pagination}>
-                    <Pagination
-                        count={rows.length}
-                        rowsPerPage={rowsPerPage}
-                        pageIndex={currentPage}
-                        pages={lastPage + 1}
-                        onTableParamsChange={handleTableParamsChange}
-                        countOnTop={false}
-                        selectCount={0}
-                    />
-                </Box>
+            <Box sx={styles.pagination}>
+                <Pagination
+                    count={rows.length}
+                    rowsPerPage={rowsPerPage}
+                    pageIndex={currentPage}
+                    pages={lastPage + 1}
+                    onTableParamsChange={handleTableParamsChange}
+                    countOnTop={false}
+                    selectCount={0}
+                />
             </Box>
             <ClearAssignmentsBelowDialog
                 pendingChange={pendingChange}

@@ -10,13 +10,13 @@ import { AssignmentProgress } from './utils';
 const styles = {
     summary: {
         alignItems: 'center',
-        gap: 1.5,
-        pl: 4,
+        gap: 1,
+        mx: 1,
         minWidth: 0,
     },
     bar: {
-        width: 120,
-        flexShrink: 0,
+        flex: '0 1 80px',
+        minWidth: 24,
         height: 6,
         borderRadius: 3,
     },

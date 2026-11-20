@@ -17,6 +17,8 @@ import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';
 import { ListSelection } from '../assign/useListSelection';
+import { AssignmentProgressSummary } from './AssignmentProgressSummary';
+import { AssignmentProgress } from './utils';
 
 const styles = {
     bar: {
@@ -65,9 +67,10 @@ const SelectionAction: FC<ActionProps> = ({
 
 type Props = {
     selection: ListSelection;
+    progress: AssignmentProgress;
 };
 
-export const SelectionBar: FC<Props> = ({ selection }) => {
+export const SelectionBar: FC<Props> = ({ selection, progress }) => {
     const { formatMessage } = useSafeIntl();
     const { currentAssignee } = useAssignmentsContext();
     const {
@@ -145,6 +148,7 @@ export const SelectionBar: FC<Props> = ({ selection }) => {
                     </Tooltip>
                 </>
             )}
+            <AssignmentProgressSummary progress={progress} />
             <ConfirmCancelModal
                 open={Boolean(pendingChange)}
                 id="clear-selection-assignments-below"

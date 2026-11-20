@@ -177,19 +177,11 @@ Plus vous avez déjà pris de décisions, plus la configuration est rapide :
 | Stock | les magasins suivis, le nombre de moustiquaires par balle | la liste des magasins |
 | Utilisateurs | qui utilise quel projet, dans quelle zone | la liste des agents |
 
-Vous pouvez installer l'application IASO dès que l'assistant montre les QR codes, mais le
-téléphone montre peu de choses tant que le reste n'existe pas :
-
-| Après | Sur le téléphone |
-|---|---|
-| les projets | l'application se configure avec le QR code du projet, mais ne montre encore rien |
-| les formulaires et les utilisateurs | un agent se connecte, synchronise et voit les formulaires |
-| les registres et leurs suivis | les ménages et les travailleurs peuvent être enregistrés et retrouvés |
-| le stock | les formulaires de stock ; les soldes apparaissent après une première réception |
-| les rapports mobiles | le rapport s'ouvre depuis l'application |
-
-Le premier test utile sur un téléphone se fait donc une fois les utilisateurs créés, aux deux
-tiers environ de la séance.
+L'assistant montre les QR codes à la fin, une fois chaque projet entièrement configuré
+(formulaires, registres et leurs suivis, stock, utilisateurs et rapports) : avant, l'application
+serait vide ou incomplète. Il vous donne aussi une feuille de QR codes de test (tickets de ménage,
+moustiquaires, ballots), puisque vous n'en avez pas encore de vrais : imprimez-la, ou scannez-la
+sur votre écran.
 
 ### Étape 6 : Tester sur un téléphone
 
@@ -208,9 +200,11 @@ tiers environ de la séance.
    scannez le QR code du projet à tester. Acceptez les demandes d'autorisation qui
    s'affichent (appareil photo, localisation…).
 5. **Connectez-vous** avec l'utilisateur choisi au point 2.
-6. Suivez la liste de tests que l'assistant vous donne : enregistrer un ménage, le
-   retrouver, distribuer des moustiquaires, enregistrer un travailleur, saisir un mouvement
-   de stock.
+6. Suivez le **test guidé** que l'assistant propose, avec les QR codes de test : enregistrer
+   deux ménages avec les tickets de test, distribuer des moustiquaires à l'un d'eux, enregistrer
+   un groupement spécial et un travailleur, saisir un mouvement de stock. Une nouvelle campagne
+   n'a pas de données : c'est ce qui remplit les listes, les suivis et les rapports de chaque
+   projet.
 7. Ouvrez les rapports mobiles, avec réseau puis en mode avion.
 
 !!! note "Où sont les formulaires de stock ?"

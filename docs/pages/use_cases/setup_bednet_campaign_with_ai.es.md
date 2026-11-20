@@ -174,19 +174,11 @@ Cuantas más decisiones haya tomado ya, más rápida será la configuración:
 | Stock | los almacenes seguidos, el número de mosquiteros por fardo | la lista de almacenes |
 | Usuarios | quién usa qué proyecto, en qué zona | la lista de agentes |
 
-Puede instalar la aplicación IASO en cuanto el asistente muestre los códigos QR, pero el
-teléfono muestra poco hasta que existe el resto:
-
-| Después de | En el teléfono |
-|---|---|
-| los proyectos | la aplicación se configura con el código QR del proyecto, pero aún no muestra nada |
-| los formularios y los usuarios | un agente inicia sesión, sincroniza y ve los formularios |
-| los registros y sus seguimientos | los hogares y los trabajadores se pueden registrar y volver a encontrar |
-| el stock | los formularios de stock; los saldos aparecen tras una primera recepción |
-| los informes móviles | el informe se abre desde la aplicación |
-
-La primera prueba útil en un teléfono se hace, por tanto, una vez creados los usuarios, hacia
-los dos tercios de la sesión.
+El asistente muestra los códigos QR al final, una vez que cada proyecto está completamente
+configurado (formularios, registros y sus seguimientos, stock, usuarios e informes): antes, la
+aplicación estaría vacía o incompleta. También le da una hoja de códigos QR de prueba (tickets de
+hogar, mosquiteros, fardos), ya que aún no tiene los reales: imprímala o escanéela desde su
+pantalla.
 
 ### Paso 6: Probar en un teléfono
 
@@ -204,9 +196,11 @@ los dos tercios de la sesión.
    código QR del proyecto que va a probar. Acepte las solicitudes de permisos que
    aparezcan (cámara, ubicación…).
 5. **Inicie sesión** con el usuario elegido en el punto 2.
-6. Siga la lista de pruebas que le da el asistente: registrar un hogar, volver a
-   encontrarlo, distribuir mosquiteros, registrar un trabajador, registrar un movimiento de
-   stock.
+6. Siga la **prueba guiada** que le propone el asistente, con los códigos QR de prueba:
+   registrar dos hogares con los tickets de prueba, distribuir mosquiteros a uno de ellos,
+   registrar un grupo especial y un trabajador, registrar un movimiento de stock. Una campaña
+   nueva no tiene datos: esto es lo que llena las listas, los seguimientos y los informes de
+   cada proyecto.
 7. Abra los informes móviles, con red y luego en modo avión.
 
 !!! note "¿Dónde están los formularios de stock?"

@@ -4,6 +4,7 @@ import Edit from '@mui/icons-material/Settings';
 import Box from '@mui/material/Box/Box';
 import Button, { ButtonPropsColorOverrides } from '@mui/material/Button/Button';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
+// eslint-disable-next-line no-restricted-imports
 import { OverridableStringUnion } from '@mui/types';
 import { commonStyles } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';

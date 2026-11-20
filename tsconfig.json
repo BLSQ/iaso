@@ -43,6 +43,7 @@
         "hat/assets/js/apps/Iaso/**/*",
         "hat/assets/js/apps/Iaso/*",
         "hat/assets/js/*.tsx",
+        "hat/assets/js/vite-client.d.ts",
         "plugins/**/js/**/*",
         "hat/assets/js/__tests__/**/*",
         "hat/assets/js/tests/*",

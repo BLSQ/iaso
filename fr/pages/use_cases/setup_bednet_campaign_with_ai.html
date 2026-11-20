@@ -1557,6 +1557,15 @@ autre assistant IA, vos retours nous intéressent :
 Les comptes d'essai ont déjà tous les modules nécessaires à la campagne (formulaires,
 entités, gestion de stock, liens intégrés, mapping DHIS2).</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Vous utilisez Claude ? Préférez Claude Code</p>
+<p>Si vous utilisez Claude, utilisez de préférence <strong>Claude Code</strong> (application de bureau ou
+terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
+ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
+<strong>app.openiaso.com</strong>, faites autoriser son domaine <strong>avant</strong> la session (sur les offres
+Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
+voir l'<a href="#etape-4-donner-le-kit-a-votre-assistant-ia">astuce à la fin de l'étape 4</a>).</p>
+</div>
 <hr>
 <h2 id="partie-1-preparer-votre-compte-iaso">Partie 1 : Préparer votre compte IASO<a class="headerlink" href="#partie-1-preparer-votre-compte-iaso" title="Permanent link">#</a></h2>
 <h3 id="etape-1-ouvrir-votre-compte-iaso">Étape 1 : Ouvrir votre compte IASO<a class="headerlink" href="#etape-1-ouvrir-votre-compte-iaso" title="Permanent link">#</a></h3>
@@ -1592,6 +1601,7 @@ en votre nom.</p>
    <strong><a href="https://app.openiaso.com/login/?next=/api/apitoken/">https://app.openiaso.com/login/?next=/api/apitoken/</a></strong></li>
 <li>La page affiche une ligne comme <code>{"token": "eyJ0eXAiOiJKV1Qi…"}</code>. Copiez le long texte
    entre la deuxième paire de guillemets : c'est votre clé d'accès.</li>
+<li>Décompressez le fichier ZIP.</li>
 <li>Dans le dossier du kit, ouvrez le fichier <code>iaso_config.txt</code> avec un éditeur de texte
    (Bloc-notes, TextEdit…).</li>
 <li>Vérifiez que la ligne <code>IASO_URL=</code> indique <code>https://app.openiaso.com</code>. Collez votre clé
@@ -1607,7 +1617,7 @@ modifications plus tard (voir l'étape 7).</p>
 </div>
 <h3 id="etape-4-donner-le-kit-a-votre-assistant-ia">Étape 4 : Donner le kit à votre assistant IA<a class="headerlink" href="#etape-4-donner-le-kit-a-votre-assistant-ia" title="Permanent link">#</a></h3>
 <ol>
-<li>Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip.</li>
+<li>Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip contenant le token enregistré dans le fichier .txt.</li>
 <li>Choisissez l'origine de vos données géographiques et copiez tel quel le message correspondant.</li>
 </ol>
 <p><strong>Option A : Utiliser les données géographiques de démonstration</strong> (pyramide de démonstration du kit et réponses d'exemple). La plupart des gens commencent ici : il n'y a rien à préparer, et vous voyez le résultat avant de préparer vos propres données. Copiez ce message, puis allez directement à l'<a href="#etape-5-repondre-aux-questions-de-lassistant">étape 5</a> pour répondre aux questions :</p>

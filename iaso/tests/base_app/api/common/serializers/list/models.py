@@ -1,3 +1,8 @@
+"""
+Models for api/common/test_serializers/test_list
+
+"""
+
 from django.db import models
 
 

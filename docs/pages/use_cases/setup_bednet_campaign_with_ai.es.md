@@ -28,6 +28,14 @@ campaña ya están tomadas.
     Las cuentas de prueba ya tienen todos los módulos que necesita la campaña (formularios,
     entidades, gestión de stock, enlaces integrados, mapeo DHIS2).
 
+!!! warning "¿Usa otro servidor IASO?"
+    Pruebe primero en **app.openiaso.com**. El código que ejecuta Claude solo puede acceder
+    a los dominios de una lista autorizada: si usa otro servidor IASO, haga autorizar su
+    dominio **antes** de la sesión (en los planes Team y Enterprise, solo un propietario de
+    su organización de Claude puede añadirlo: vea el [consejo al final del paso
+    4](#paso-4-dar-el-kit-a-su-asistente-de-ia)). Claude Code en su ordenador no tiene este
+    límite.
+
 ---
 
 ## Parte 1: Preparar su cuenta IASO

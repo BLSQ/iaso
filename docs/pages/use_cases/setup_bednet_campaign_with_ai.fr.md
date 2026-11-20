@@ -28,6 +28,14 @@ décisions de la campagne sont déjà prises.
     Les comptes d'essai ont déjà tous les modules nécessaires à la campagne (formulaires,
     entités, gestion de stock, liens intégrés, mapping DHIS2).
 
+!!! warning "Vous utilisez un autre serveur IASO ?"
+    Testez d'abord sur **app.openiaso.com**. Le code exécuté par Claude ne peut joindre que
+    les domaines d'une liste autorisée : si vous utilisez un autre serveur IASO, faites
+    autoriser son domaine **avant** la session (sur les offres Team et Enterprise, seul un
+    propriétaire de votre organisation Claude peut l'ajouter : voir l'[astuce à la fin de
+    l'étape 4](#etape-4-donner-le-kit-a-votre-assistant-ia)). Claude Code sur votre
+    ordinateur n'a pas cette limite.
+
 ---
 
 ## Partie 1 : Préparer votre compte IASO

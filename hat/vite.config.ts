@@ -15,10 +15,12 @@ import {
     generatePluginKeysFile,
 } from './assets/js/apps/Iaso/bundle/generators.js';
 
-dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.env') });
-
 const hatDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(hatDir, '..');
+
+// Repo-root `.env` for Node-side config (ports, LIVE_COMPONENTS, Orval, …).
+// `envDir` below exposes only `VITE_*` to client code via `import.meta.env`.
+dotenv.config({ path: path.resolve(repoRoot, '.env') });
 const repoNodeModules = path.resolve(repoRoot, 'node_modules');
 const pdfjsDistDir = fs.existsSync(
     path.join(repoNodeModules, 'pdfjs-dist/package.json'),

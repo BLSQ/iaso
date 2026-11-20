@@ -187,6 +187,16 @@ For detailed setup instructions, see [Plausible Analytics Setup](./analytics/pla
 | VITE_POLL | true | `false` | Poll for file changes (needed in Docker bind mounts; slower, leave off on host) |
 | OLD_BROWSER | true | `false` | Enable compatibility mode for older browsers |
 | LIVE_COMPONENTS | true | `false` | Use local bluesquare-components for development |
+| ORVAL_API_BASE_URL | true | `''` | Base URL for Orval-generated API clients (inlined into the bundle via `hat/vite.config.ts` `define`) |
+
+### Vite and the shared `.env`
+
+Django and the Vite toolchain read the **same** repo-root `.env` (see `docker-compose.yml`).
+
+- **`envDir`** in `hat/vite.config.ts` points at the repo root. Vite loads `.env`, `.env.local`, and mode-specific files (`.env.development`, `.env.production`, …) and exposes only variables prefixed with **`VITE_`** to application code through `import.meta.env` (plus built-ins such as `import.meta.env.DEV`). See the [Vite env and mode guide](https://vite.dev/guide/env-and-mode).
+- **`dotenv.config`** at the top of `hat/vite.config.ts` is **not** redundant: the config module runs in Node **before** Vite applies `envDir` to that file, so we load `.env` early for options read while building the config (`VITE_PORT`, `LIVE_COMPONENTS`, `ORVAL_API_BASE_URL`, …).
+- **Browser bundle:** prefer `VITE_*` and `import.meta.env`. Do not rely on non-`VITE_` names in client code unless they are explicitly mapped in `define` (current exceptions: `process.env.ORVAL_API_BASE_URL` for Orval output, `__LOCALE` for formatjs, and dev-only `import.meta.env.VITE_PDF_WORKER_URL` for PDF.js).
+- A separate frontend-only `.env` is possible but not required; splitting files can be a follow-up if we want stricter FE/BE separation.
 
 ### Language Settings
 

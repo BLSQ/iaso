@@ -17,7 +17,6 @@ export * from './nestedForm.zod';
 export * from './nestedHistory.zod';
 export * from './nestedValidationNodeTemplate.zod';
 export * from './paginatedMobileValidationWorkflowListList.zod';
-export * from './paginatedValidationWorkflowDropdownList.zod';
 export * from './paginatedValidationWorkflowListList.zod';
 export * from './patchedValidationWorkflowUpdateRequest.zod';
 export * from './status7b5Enum.zod';

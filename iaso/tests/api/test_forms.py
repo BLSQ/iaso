@@ -224,6 +224,35 @@ class FormsAPITestCase(APITestCase):
         res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertValidFormListData(res_data, 0)
 
+    def test_forms_list_filtered_by_validation_workflow(self):
+        """GET /forms/ filtered by validation workflow"""
+        workflow_1 = m.ValidationWorkflow.objects.create(name="Workflow 1", account=self.account)
+        workflow_2 = m.ValidationWorkflow.objects.create(name="Workflow 2", account=self.account)
+        unused_workflow = m.ValidationWorkflow.objects.create(name="Unused workflow", account=self.account)
+        self.form_1.validation_workflow = workflow_1
+        self.form_1.save()
+        self.form_2.validation_workflow = workflow_2
+        self.form_2.save()
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/forms/?validationWorkflowIds={workflow_1.pk}")
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidFormListData(res_data, 1)
+        self.assertEqual(res_data["forms"][0]["id"], self.form_1.pk)
+
+        response = self.client.get(f"/api/forms/?validationWorkflowIds={workflow_1.pk},{workflow_2.pk}")
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidFormListData(res_data, 2)
+
+        response = self.client.get(f"/api/forms/?validationWorkflowIds={unused_workflow.pk}")
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidFormListData(res_data, 0)
+
+        # Non numeric ids are ignored instead of raising an error
+        response = self.client.get(f"/api/forms/?validationWorkflowIds={workflow_1.pk},abc")
+        res_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidFormListData(res_data, 1)
+
     def test_forms_list_filtered_by_project(self):
         """GET /forms/ filtered by project"""
         self.client.force_authenticate(self.yoda)

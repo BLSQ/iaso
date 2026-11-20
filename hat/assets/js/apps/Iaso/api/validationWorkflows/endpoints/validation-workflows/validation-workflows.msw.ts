@@ -13,9 +13,9 @@ import type { RequestHandlerOptions } from 'msw';
 import { Status7b5Enum } from '../../models';
 import type {
     PaginatedMobileValidationWorkflowListList,
-    PaginatedValidationWorkflowDropdownList,
     PaginatedValidationWorkflowListList,
     ValidationWorkflowCreate,
+    ValidationWorkflowDropdown,
     ValidationWorkflowRetrieve,
     ValidationWorkflowUpdate,
 } from '../../models';
@@ -198,32 +198,15 @@ export const getApiValidationWorkflowsPartialUpdateResponseMock = (
     ...overrideResponse,
 });
 
-export const getApiValidationWorkflowsDropdownListResponseMock = (
-    overrideResponse: Partial<
-        Extract<PaginatedValidationWorkflowDropdownList, object>
-    > = {},
-): PaginatedValidationWorkflowDropdownList => ({
-    count: faker.helpers.arrayElement([faker.number.int(), undefined]),
-    has_next: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
-    has_previous: faker.helpers.arrayElement([
-        faker.datatype.boolean(),
-        undefined,
-    ]),
-    limit: faker.helpers.arrayElement([faker.number.int(), undefined]),
-    page: faker.helpers.arrayElement([faker.number.int(), undefined]),
-    pages: faker.helpers.arrayElement([faker.number.int(), undefined]),
-    results: faker.helpers.arrayElement([
+export const getApiValidationWorkflowsDropdownListResponseMock =
+    (): ValidationWorkflowDropdown[] =>
         Array.from(
             { length: faker.number.int({ min: 1, max: 10 }) },
             (_, i) => i + 1,
         ).map(() => ({
             value: faker.number.int(),
             label: faker.string.alpha({ length: { min: 10, max: 20 } }),
-        })),
-        undefined,
-    ]),
-    ...overrideResponse,
-});
+        }));
 
 export const getApiMobileValidationWorkflowsListMockHandler = (
     overrideResponse?:
@@ -446,12 +429,12 @@ export const getApiValidationWorkflowsDestroyMockHandler = (
 
 export const getApiValidationWorkflowsDropdownListMockHandler = (
     overrideResponse?:
-        | PaginatedValidationWorkflowDropdownList
+        | ValidationWorkflowDropdown[]
         | ((
               info: Parameters<Parameters<typeof http.get>[1]>[0],
           ) =>
-              | Promise<PaginatedValidationWorkflowDropdownList>
-              | PaginatedValidationWorkflowDropdownList),
+              | Promise<ValidationWorkflowDropdown[]>
+              | ValidationWorkflowDropdown[]),
     options?: RequestHandlerOptions,
 ) => {
     return http.get(

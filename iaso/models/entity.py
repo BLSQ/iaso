@@ -30,8 +30,11 @@ from iaso.models.deduplication import ValidationStatus
 from iaso.utils.jsonlogic import annotate_suffixed_json_fields, jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
     IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
     OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
     SoftDeletableModel,
 )
 
@@ -323,6 +326,18 @@ class EntityQuerySet(models.QuerySet):
         return self.filter_for_user(user).filter_for_app_id(user, app_id)
 
 
+class DefaultEntityQuerySet(EntityQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedEntityQuerySet(EntityQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedEntityQuerySet(EntityQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
 class Entity(SoftDeletableModel):
     """An entity represents a physical object or person with a known Entity Type
 
@@ -342,11 +357,9 @@ class Entity(SoftDeletableModel):
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     merged_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT)
 
-    objects = DefaultSoftDeletableManager.from_queryset(EntityQuerySet)()
-
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
-
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultEntityQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedEntityQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(IncludeDeletedEntityQuerySet)()
 
     class Meta:
         verbose_name_plural = "Entities"

@@ -122,7 +122,7 @@ class PaymentLotsViewSet(ModelViewSet):
             queryset=Payment.objects.select_related("user__iaso_profile").prefetch_related(
                 Prefetch(
                     "change_requests",
-                    queryset=OrgUnitChangeRequest.objects.select_related("org_unit"),
+                    queryset=OrgUnitChangeRequest.objects_include_deleted.select_related("org_unit"),
                     to_attr="prefetched_change_requests",
                 )
             ),
@@ -130,7 +130,7 @@ class PaymentLotsViewSet(ModelViewSet):
         queryset = queryset.prefetch_related(payments_prefetch)
 
         change_requests_count = (
-            OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
+            OrgUnitChangeRequest.objects_include_deleted.filter(payment__payment_lot=OuterRef("pk"))
             .order_by()
             .distinct()
             .values("payment__payment_lot")
@@ -494,7 +494,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         return queryset
 
     def calculate_new_potential_payments(self):
-        change_requests = OrgUnitChangeRequest.objects.filter(
+        change_requests = OrgUnitChangeRequest.objects_include_deleted.filter(
             created_by__iaso_profile__account=self.request.user.iaso_profile.account,
             status=OrgUnitChangeRequest.Statuses.APPROVED,
             payment__isnull=True,
@@ -512,7 +512,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
                 change_request.potential_payment_id = potential_payment.pk
                 cache[user_id] = potential_payment.pk
 
-        OrgUnitChangeRequest.objects.bulk_update(change_requests, ["potential_payment"])
+        OrgUnitChangeRequest.objects_include_deleted.bulk_update(change_requests, ["potential_payment"])
 
     @extend_schema(exclude=True)
     def retrieve(self, request, *args, **kwargs):

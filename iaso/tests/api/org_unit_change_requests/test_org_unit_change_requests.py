@@ -87,8 +87,8 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         cls.version = version
 
     def test_list_ok(self):
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
+        m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Bar")
 
         self.client.force_authenticate(self.user)
 
@@ -118,7 +118,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     def test_retrieve_ok(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
@@ -126,7 +126,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(response.data["id"], change_request.pk)
 
     def test_retrieve_should_not_include_soft_deleted_intances(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         change_request.new_reference_instances.set([self.instance_1.pk])
         change_request.old_reference_instances.set([self.instance_2.pk])
 
@@ -163,7 +163,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             self.assertEqual(len(response.data["org_unit"]["reference_instances"]), 0)
 
     def test_retrieve_without_auth(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
@@ -177,7 +177,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.created_at, self.DT)
@@ -196,7 +196,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(new_name=data["new_name"])
         self.assertEqual(change_request.uuid.__str__(), data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
@@ -204,7 +204,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
-        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
+        self.assertEqual(m.OrgUnitChangeRequest.objects_include_deleted.count(), 1)
 
         new_data = {
             "uuid": data["uuid"],
@@ -214,8 +214,8 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         response = self.client.post("/api/orgunits/changes/", data=new_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
-        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        self.assertEqual(m.OrgUnitChangeRequest.objects_include_deleted.count(), 1)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(uuid=data["uuid"])
         self.assertEqual(change_request.uuid.__str__(), data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
@@ -234,7 +234,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_code, data["new_code"])
         self.assertEqual(change_request.old_code, self.org_unit.code)
         self.assertEqual(change_request.requested_fields, ["new_code"])
@@ -256,7 +256,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, "")
         self.assertEqual(change_request.new_groups.count(), 0)
         self.assertEqual(change_request.new_location, None)
@@ -294,7 +294,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         with self.assertNumQueries(12):
             response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.created_at, self.DT)
@@ -323,7 +323,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             # 9–11. Old + new reference instances: SELECTs + M2M insert
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
@@ -345,7 +345,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         with self.assertNumQueries(11):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_location_accuracy, Decimal("1.23"))
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
@@ -380,7 +380,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "org_unit": self.org_unit,
             "new_name": "Foo",
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
 
         data = {
             "status": change_request.Statuses.REJECTED,
@@ -399,7 +399,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "created_by": self.user,
             "new_name": "Foo",
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
 
         data = {
             "status": change_request.Statuses.REJECTED,
@@ -423,7 +423,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "new_name": "Foo",
             "new_closed_date": None,
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
 
         data = {
             "status": change_request.Statuses.APPROVED,
@@ -447,7 +447,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "org_unit": self.org_unit,
             "approved_fields": ["new_name"],
         }
-        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(**kwargs)
 
         data = {
             "status": change_request.Statuses.APPROVED,
@@ -462,7 +462,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         new_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)], srid=4326), srid=4326)
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             created_by=self.user,
             new_geom=new_geom,
@@ -488,7 +488,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         new_code = "000000000000001"
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             created_by=self.user,
             new_code=new_code,
@@ -509,14 +509,14 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
     def test_update_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         data = {"new_name": "Baz"}
         response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete_should_be_forbidden(self):
         self.client.force_authenticate(self.user_with_review_perm)
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -529,7 +529,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     def test_bulk_review_approve(self):
         self.client.force_authenticate(self.user_with_review_perm)
 
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW,
             org_unit=self.org_unit,
             created_by=self.user,
@@ -542,7 +542,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             version=self.version,
             parent=self.org_unit,
         )
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW,
             org_unit=org_unit_2,
             created_by=self.user,
@@ -591,13 +591,13 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         user_1 = self.user_with_review_perm
         user_2 = self.user
 
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=user_1, new_name="foo"
         )
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=user_2, new_name="bar"
         )
-        self.assertEqual(2, m.OrgUnitChangeRequest.objects.count())
+        self.assertEqual(2, m.OrgUnitChangeRequest.objects_include_deleted.count())
 
         data = {
             "select_all": 1,
@@ -629,13 +629,13 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     def test_bulk_review_reject(self):
         self.client.force_authenticate(self.user_with_review_perm)
 
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
         )
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
         )
-        change_request_3 = m.OrgUnitChangeRequest.objects.create(
+        change_request_3 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="baz"
         )
 
@@ -685,13 +685,13 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     def test_bulk_delete(self):
         self.client.force_authenticate(self.user_with_review_perm)
 
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
         )
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
         )
-        change_request_3 = m.OrgUnitChangeRequest.objects.create(
+        change_request_3 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="baz"
         )
 
@@ -742,14 +742,14 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     def test_bulk_restore(self):
         self.client.force_authenticate(self.user_with_review_perm)
 
-        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+        change_request_1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW,
             org_unit=self.org_unit,
             created_by=self.user,
             new_name="foo",
             deleted_at=self.DT,
         )
-        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+        change_request_2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             status=m.OrgUnitChangeRequest.Statuses.NEW,
             org_unit=self.org_unit,
             created_by=self.user,
@@ -838,8 +838,12 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         actual CSV against a template where only the genuinely dynamic values are
         substituted in.
         """
-        change_request_foo = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        change_request_bar = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_foo = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit, new_name="Foo"
+        )
+        change_request_bar = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit, new_name="Bar"
+        )
 
         self.client.force_authenticate(self.user)
 
@@ -882,7 +886,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         """
         Test that NEW change requests have correct conclusions based on field changes.
         """
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, new_name="Foo", requested_fields=["new_name"]
         )
 
@@ -900,7 +904,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         """
         Test that APPROVED change requests have correct conclusions based on field changes.
         """
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             requested_fields=["new_name", "new_groups"],
@@ -926,7 +930,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         """
         Test that REJECTED change requests have correct conclusions based on field changes.
         """
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             requested_fields=["new_name", "new_groups"],
@@ -968,7 +972,9 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             parent=self.org_unit,
             source_ref="55667788",
         )
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=child_org_unit, new_name="Child renamed")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=child_org_unit, new_name="Child renamed"
+        )
 
         self.client.force_authenticate(self.user)
 

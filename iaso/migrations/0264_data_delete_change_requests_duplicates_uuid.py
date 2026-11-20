@@ -12,14 +12,16 @@ def migrate_data_forward(apps, schema_editor):
     OrgUnitChangeRequest = apps.get_model("iaso", "OrgUnitChangeRequest")
 
     duplicated_uuids = (
-        OrgUnitChangeRequest.objects.values_list("uuid", flat=True)
+        OrgUnitChangeRequest.objects_include_deleted.values_list("uuid", flat=True)
         .annotate(Count("uuid"))
         .order_by()
         .filter(uuid__count__gt=1)
     )
 
     for uuid in duplicated_uuids:
-        change_requests_with_same_uuid = list(OrgUnitChangeRequest.objects.filter(uuid=uuid).order_by("-created_at"))
+        change_requests_with_same_uuid = list(
+            OrgUnitChangeRequest.objects_include_deleted.filter(uuid=uuid).order_by("-created_at")
+        )
         change_request_to_keep = None
         for change_request in change_requests_with_same_uuid:
             if change_request.status == "approved":
@@ -30,7 +32,9 @@ def migrate_data_forward(apps, schema_editor):
             # Keep the most recent change request.
             change_request_to_keep = change_requests_with_same_uuid[0]
         # Delete duplicates.
-        OrgUnitChangeRequest.objects.filter(uuid=uuid).exclude(pk=change_request_to_keep.pk).delete()
+        OrgUnitChangeRequest.objects_include_deleted.filter(uuid=uuid).exclude(
+            pk=change_request_to_keep.pk
+        ).delete_hard()
 
 
 class Migration(migrations.Migration):

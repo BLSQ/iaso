@@ -207,7 +207,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         org_unit_reference_instance = m.OrgUnitReferenceInstance.objects.create(
             org_unit=org_unit_child, form=form, instance=instances[0]
         )
-        org_unit_change_request = m.OrgUnitChangeRequest.objects.create(org_unit=org_unit_child)
+        org_unit_change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=org_unit_child)
         org_unit_change_request_configuration = m.OrgUnitChangeRequestConfiguration.objects.create(
             project=project, org_unit_type=org_unit_type, type="creation"
         )
@@ -467,7 +467,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(m.AccountFeatureFlag.objects.filter(pk=other_models["account_feature_flag"].pk).exists())
         self.assertFalse(m.AlgorithmRun.objects.filter(pk=other_models["algorithm_run"].pk).exists())
         self.assertFalse(APIImport.objects.filter(pk=other_models["api_import"].pk).exists())
-        self.assertFalse(Assignment.objects.filter(pk=other_models["assignment"].pk).exists())
+        self.assertFalse(Assignment.objects_include_deleted.filter(pk=other_models["assignment"].pk).exists())
         self.assertFalse(m.BulkCreateUserFile.objects.filter(pk=other_models["bulk_create_user_file"].pk).exists())
         self.assertFalse(m.CommentIaso.objects.filter(pk=other_models["comment_iaso"].pk).exists())
         self.assertFalse(m.DataSource.objects.filter(pk=data_source.pk).exists())
@@ -510,13 +510,19 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(m.MetricType.objects.filter(pk=other_models["metric_type"].pk).exists())
         self.assertFalse(m.MetricValue.objects.filter(pk=other_models["metric_value"].pk).exists())
         self.assertFalse(Modification.objects.filter(pk=other_models["modification"].pk).exists())
-        self.assertFalse(m.OpenHEXAWorkspace.objects.filter(pk=other_models["openhexa_workspace"].pk).exists())
+        self.assertFalse(
+            m.OpenHEXAWorkspace.objects_include_deleted.filter(pk=other_models["openhexa_workspace"].pk).exists()
+        )
         self.assertFalse(
             m.OrgUnit.objects.filter(
                 pk__in=[other_models["org_unit_parent"].pk, other_models["org_unit_child"].pk]
             ).exists()
         )
-        self.assertFalse(m.OrgUnitChangeRequest.objects.filter(pk=other_models["org_unit_change_request"].pk).exists())
+        self.assertFalse(
+            m.OrgUnitChangeRequest.objects_include_deleted.filter(
+                pk=other_models["org_unit_change_request"].pk
+            ).exists()
+        )
         self.assertFalse(
             m.OrgUnitChangeRequestConfiguration.objects.filter(
                 pk=other_models["org_unit_change_request_configuration"].pk
@@ -529,7 +535,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(m.Page.objects.filter(pk=other_models["page"].pk).exists())
         self.assertFalse(m.Payment.objects.filter(pk=other_models["payment"].pk).exists())
         self.assertFalse(m.PaymentLot.objects.filter(pk=other_models["payment_lot"].pk).exists())
-        self.assertFalse(m.Planning.objects.filter(pk=other_models["planning"].pk).exists())
+        self.assertFalse(m.Planning.objects_include_deleted.filter(pk=other_models["planning"].pk).exists())
         self.assertFalse(m.PlanningConfig.objects.filter(pk=other_models["planning_config"].pk).exists())
         self.assertFalse(PlanningSamplingResult.objects.filter(pk=other_models["sampling_result"].pk).exists())
         self.assertFalse(m.PotentialPayment.objects.filter(pk=other_models["potential_payment"].pk).exists())
@@ -538,27 +544,31 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(m.ProjectFeatureFlags.objects.filter(pk=other_models["project_feature_flags"].pk).exists())
         self.assertFalse(m.Record.objects.filter(pk=other_models["record"].pk).exists())
         self.assertFalse(m.RecordType.objects.filter(pk=other_models["record_type"].pk).exists())
-        self.assertFalse(m.Report.objects.filter(pk=other_models["report"].pk).exists())
-        self.assertFalse(m.ReportVersion.objects.filter(pk=other_models["report_version"].pk).exists())
+        self.assertFalse(m.Report.objects_include_deleted.filter(pk=other_models["report"].pk).exists())
+        self.assertFalse(m.ReportVersion.objects_include_deleted.filter(pk=other_models["report_version"].pk).exists())
         self.assertFalse(
             m.ReportVersion.objects_include_deleted.filter(pk=other_models["older_report_version"].pk).exists()
         )
         self.assertFalse(m.SourceVersion.objects.filter(pk=source_version.pk).exists())
         self.assertFalse(m.StockItem.objects.filter(pk=other_models["stock_item"].pk).exists())
         self.assertFalse(m.StockItemRule.objects.filter(pk=other_models["stock_item_rule"].pk).exists())
-        self.assertFalse(m.StockKeepingUnit.objects.filter(pk=other_models["stock_keeping_unit"].pk).exists())
+        self.assertFalse(
+            m.StockKeepingUnit.objects_include_deleted.filter(pk=other_models["stock_keeping_unit"].pk).exists()
+        )
         self.assertFalse(
             m.StockKeepingUnitChildren.objects.filter(pk=other_models["stock_keeping_unit_children"].pk).exists()
         )
         self.assertFalse(m.StockLedgerItem.objects.filter(pk=other_models["stock_ledger_item"].pk).exists())
-        self.assertFalse(m.StockRulesVersion.objects.filter(pk=other_models["stock_rules_version"].pk).exists())
+        self.assertFalse(
+            m.StockRulesVersion.objects_include_deleted.filter(pk=other_models["stock_rules_version"].pk).exists()
+        )
         self.assertFalse(m.StorageDevice.objects.filter(pk=other_models["storage_device"].pk).exists())
         self.assertFalse(m.StorageLogEntry.objects.filter(pk=other_models["storage_log_entry"].pk).exists())
         self.assertFalse(m.StoragePassword.objects.filter(pk=other_models["storage_password"].pk).exists())
         self.assertFalse(m.Task.objects.filter(pk=other_models["task"].pk).exists())
         self.assertFalse(m.TaskLog.objects.filter(pk=other_models["task_log"].pk).exists())
         self.assertFalse(
-            m.Team.objects.filter(
+            m.Team.objects_include_deleted.filter(
                 pk__in=[
                     other_models["team"].pk,
                     other_models["team_parent"].pk,
@@ -574,20 +584,28 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertFalse(
             m.ValidationNodeTemplate.objects.filter(pk=other_models["validation_node_template"].pk).exists()
         )
-        self.assertFalse(m.ValidationWorkflow.objects.filter(pk=other_models["validation_workflow"].pk).exists())
-        self.assertFalse(m.Workflow.objects.filter(pk=other_models["workflow"].pk).exists())
+        self.assertFalse(
+            m.ValidationWorkflow.objects_include_deleted.filter(pk=other_models["validation_workflow"].pk).exists()
+        )
+        self.assertFalse(m.Workflow.objects_include_deleted.filter(pk=other_models["workflow"].pk).exists())
         self.assertFalse(m.WorkflowChange.objects.filter(pk=other_models["workflow_change"].pk).exists())
         self.assertFalse(m.WorkflowFollowup.objects.filter(pk=other_models["workflow_followup"].pk).exists())
-        self.assertFalse(m.WorkflowVersion.objects.filter(pk=other_models["workflow_version"].pk).exists())
+        self.assertFalse(
+            m.WorkflowVersion.objects_include_deleted.filter(pk=other_models["workflow_version"].pk).exists()
+        )
 
-        self.assertFalse(m.MissionEntityType.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
-        self.assertFalse(m.MissionForm.objects.filter(pk=other_models["mission_form"].pk).exists())
+        self.assertFalse(
+            m.MissionEntityType.objects_include_deleted.filter(pk=other_models["mission_entity_type"].pk).exists()
+        )
+        self.assertFalse(m.MissionForm.objects_include_deleted.filter(pk=other_models["mission_form"].pk).exists())
         self.assertFalse(
             m.MissionFormThroughForm.objects.filter(
                 pk__in=[x.pk for x in other_models["mission_form_through_forms"]]
             ).exists()
         )
-        self.assertFalse(m.MissionOrgUnitType.objects.filter(pk=other_models["mission_org_unit_type"].pk).exists())
+        self.assertFalse(
+            m.MissionOrgUnitType.objects_include_deleted.filter(pk=other_models["mission_org_unit_type"].pk).exists()
+        )
 
         # Everything below depends on whether `_post_deletion_clean_up` ran, which is
         # exclusive to --account-to-keep mode.
@@ -640,7 +658,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(m.AccountFeatureFlag.objects.filter(pk=other_models["account_feature_flag"].pk).exists())
         self.assertTrue(m.AlgorithmRun.objects.filter(pk=other_models["algorithm_run"].pk).exists())
         self.assertTrue(APIImport.objects.filter(pk=other_models["api_import"].pk).exists())
-        self.assertTrue(Assignment.objects.filter(pk=other_models["assignment"].pk).exists())
+        self.assertTrue(Assignment.objects_include_deleted.filter(pk=other_models["assignment"].pk).exists())
         self.assertTrue(m.BulkCreateUserFile.objects.filter(pk=other_models["bulk_create_user_file"].pk).exists())
         self.assertTrue(m.CommentIaso.objects.filter(pk=other_models["comment_iaso"].pk).exists())
         self.assertTrue(m.DataSource.objects.filter(pk=data_source.pk).exists())
@@ -686,12 +704,18 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(m.MetricValue.objects.filter(pk=other_models["metric_value"].pk).exists())
         self.assertTrue(Modification.objects.filter(pk=other_models["modification"].pk).exists())
         self.assertTrue(m.OpenHEXAInstance.objects.filter(pk=other_models["openhexa_instance"].pk).exists())
-        self.assertTrue(m.OpenHEXAWorkspace.objects.filter(pk=other_models["openhexa_workspace"].pk).exists())
+        self.assertTrue(
+            m.OpenHEXAWorkspace.objects_include_deleted.filter(pk=other_models["openhexa_workspace"].pk).exists()
+        )
         self.assertTrue(m.OrgUnit.objects.filter(pk=other_models["org_unit_parent"].pk).exists())
         self.assertTrue(m.OrgUnit.objects.filter(pk=other_models["org_unit_child"].pk).exists())
-        self.assertTrue(m.OrgUnitChangeRequest.objects.filter(pk=other_models["org_unit_change_request"].pk).exists())
         self.assertTrue(
-            m.OrgUnitChangeRequestConfiguration.objects.filter(
+            m.OrgUnitChangeRequest.objects_include_deleted.filter(
+                pk=other_models["org_unit_change_request"].pk
+            ).exists()
+        )
+        self.assertTrue(
+            m.OrgUnitChangeRequestConfiguration.objects_include_deleted.filter(
                 pk=other_models["org_unit_change_request_configuration"].pk
             ).exists()
         )
@@ -702,7 +726,7 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(m.Page.objects.filter(pk=other_models["page"].pk).exists())
         self.assertTrue(m.Payment.objects.filter(pk=other_models["payment"].pk).exists())
         self.assertTrue(m.PaymentLot.objects.filter(pk=other_models["payment_lot"].pk).exists())
-        self.assertTrue(m.Planning.objects.filter(pk=other_models["planning"].pk).exists())
+        self.assertTrue(m.Planning.objects_include_deleted.filter(pk=other_models["planning"].pk).exists())
         self.assertTrue(m.PlanningConfig.objects.filter(pk=other_models["planning_config"].pk).exists())
         self.assertTrue(PlanningSamplingResult.objects.filter(pk=other_models["sampling_result"].pk).exists())
         self.assertTrue(m.PotentialPayment.objects.filter(pk=other_models["potential_payment"].pk).exists())
@@ -711,25 +735,31 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(m.ProjectFeatureFlags.objects.filter(pk=other_models["project_feature_flags"].pk).exists())
         self.assertTrue(m.Record.objects.filter(pk=other_models["record"].pk).exists())
         self.assertTrue(m.RecordType.objects.filter(pk=other_models["record_type"].pk).exists())
-        self.assertTrue(m.Report.objects.filter(pk=other_models["report"].pk).exists())
-        self.assertTrue(m.ReportVersion.objects.filter(pk=other_models["report_version"].pk).exists())
-        self.assertTrue(m.ReportVersion.objects.filter(pk=other_models["older_report_version"].pk).exists())
+        self.assertTrue(m.Report.objects_include_deleted.filter(pk=other_models["report"].pk).exists())
+        self.assertTrue(m.ReportVersion.objects_include_deleted.filter(pk=other_models["report_version"].pk).exists())
+        self.assertTrue(
+            m.ReportVersion.objects_include_deleted.filter(pk=other_models["older_report_version"].pk).exists()
+        )
         self.assertTrue(m.SourceVersion.objects.filter(pk=source_version.pk).exists())
         self.assertTrue(m.StockItem.objects.filter(pk=other_models["stock_item"].pk).exists())
         self.assertTrue(m.StockItemRule.objects.filter(pk=other_models["stock_item_rule"].pk).exists())
-        self.assertTrue(m.StockKeepingUnit.objects.filter(pk=other_models["stock_keeping_unit"].pk).exists())
+        self.assertTrue(
+            m.StockKeepingUnit.objects_include_deleted.filter(pk=other_models["stock_keeping_unit"].pk).exists()
+        )
         self.assertTrue(
             m.StockKeepingUnitChildren.objects.filter(pk=other_models["stock_keeping_unit_children"].pk).exists()
         )
         self.assertTrue(m.StockLedgerItem.objects.filter(pk=other_models["stock_ledger_item"].pk).exists())
-        self.assertTrue(m.StockRulesVersion.objects.filter(pk=other_models["stock_rules_version"].pk).exists())
+        self.assertTrue(
+            m.StockRulesVersion.objects_include_deleted.filter(pk=other_models["stock_rules_version"].pk).exists()
+        )
         self.assertTrue(m.StorageDevice.objects.filter(pk=other_models["storage_device"].pk).exists())
         self.assertTrue(m.StorageLogEntry.objects.filter(pk=other_models["storage_log_entry"].pk).exists())
         self.assertTrue(m.StoragePassword.objects.filter(pk=other_models["storage_password"].pk).exists())
         self.assertTrue(m.Task.objects.filter(pk=other_models["task"].pk).exists())
         self.assertTrue(m.TaskLog.objects.filter(pk=other_models["task_log"].pk).exists())
         self.assertEqual(
-            m.Team.objects.filter(
+            m.Team.objects_include_deleted.filter(
                 pk__in=[
                     other_models["team"].pk,
                     other_models["team_parent"].pk,
@@ -746,21 +776,29 @@ class DeleteAccountsCommandTestCase(FastFlushTransactionTestCase):
         self.assertTrue(
             m.ValidationNodeTemplate.objects.filter(pk=other_models["validation_node_template"].pk).exists()
         )
-        self.assertTrue(m.ValidationWorkflow.objects.filter(pk=other_models["validation_workflow"].pk).exists())
-        self.assertTrue(m.Workflow.objects.filter(pk=other_models["workflow"].pk).exists())
+        self.assertTrue(
+            m.ValidationWorkflow.objects_include_deleted.filter(pk=other_models["validation_workflow"].pk).exists()
+        )
+        self.assertTrue(m.Workflow.objects_include_deleted.filter(pk=other_models["workflow"].pk).exists())
         self.assertTrue(m.WorkflowChange.objects.filter(pk=other_models["workflow_change"].pk).exists())
         self.assertTrue(m.WorkflowFollowup.objects.filter(pk=other_models["workflow_followup"].pk).exists())
-        self.assertTrue(m.WorkflowVersion.objects.filter(pk=other_models["workflow_version"].pk).exists())
+        self.assertTrue(
+            m.WorkflowVersion.objects_include_deleted.filter(pk=other_models["workflow_version"].pk).exists()
+        )
 
-        self.assertTrue(m.Mission.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
-        self.assertTrue(m.MissionEntityType.objects.filter(pk=other_models["mission_entity_type"].pk).exists())
-        self.assertTrue(m.MissionForm.objects.filter(pk=other_models["mission_form"].pk).exists())
+        self.assertTrue(m.Mission.objects_include_deleted.filter(pk=other_models["mission_entity_type"].pk).exists())
+        self.assertTrue(
+            m.MissionEntityType.objects_include_deleted.filter(pk=other_models["mission_entity_type"].pk).exists()
+        )
+        self.assertTrue(m.MissionForm.objects_include_deleted.filter(pk=other_models["mission_form"].pk).exists())
         self.assertTrue(
             m.MissionFormThroughForm.objects.filter(
                 pk__in=[x.pk for x in other_models["mission_form_through_forms"]]
             ).exists()
         )
-        self.assertTrue(m.MissionOrgUnitType.objects.filter(pk=other_models["mission_org_unit_type"].pk).exists())
+        self.assertTrue(
+            m.MissionOrgUnitType.objects_include_deleted.filter(pk=other_models["mission_org_unit_type"].pk).exists()
+        )
 
         # some models have no FK to Account at all — `_post_deletion_clean_up`
         # wipes them in full whenever it runs, regardless of which account "owns" them in this

@@ -2782,12 +2782,12 @@ class InstancesAPITestCase(TaskAPITestCase):
         response_json = response.json()
         self.assertListEqual(response_json["change_requests"], [])
 
-        m.OrgUnitChangeRequest.objects.create(org_unit=org_unit, new_name="Modified org unit")
+        m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=org_unit, new_name="Modified org unit")
         response = self.client.get(f"/api/instances/{instance_reference.id}/")
         response_json = response.json()
         self.assertListEqual(response_json["change_requests"], [])
         # Test instance with change request linked to it
-        change_request_instance_reference = m.OrgUnitChangeRequest.objects.create(org_unit=org_unit)
+        change_request_instance_reference = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=org_unit)
         change_request_instance_reference.new_reference_instances.add(instance_reference)
         response = self.client.get(f"/api/instances/{instance_reference.id}/")
         response_json = response.json()

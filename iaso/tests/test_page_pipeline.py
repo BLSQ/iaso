@@ -70,7 +70,7 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertNotContains(response, "launchPipelineButton")
 
     def test_button_hidden_without_openhexa_config(self):
-        OpenHEXAWorkspace.objects.all().delete()
+        OpenHEXAWorkspace.objects.all().delete_hard()
         page = self._page(slug="no-openhexa")
         response = self.client.get(f"/pages/{page.slug}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -426,7 +426,7 @@ class PagePipelineButtonTestCase(TestCase):
         self.assertEqual(launch.call_args.kwargs["account_id"], page.account_id)
 
     def test_start_page_pipeline_stops_when_openhexa_is_missing(self):
-        OpenHEXAWorkspace.objects.filter(account=self.account).delete()
+        OpenHEXAWorkspace.objects.filter(account=self.account).delete_hard()
         page = self._page(slug="helpers-no-openhexa")
         with patch("iaso.utils.page_pipeline.launch_page_openhexa_pipeline") as launch:
             with self.assertRaises(PagePipelineError) as raised:

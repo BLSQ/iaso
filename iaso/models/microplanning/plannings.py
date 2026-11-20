@@ -2,20 +2,24 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from typing_extensions import Self
 
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.models.team import Team
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
     IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
     OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
     SoftDeletableModel,
 )
 
 
 class PlanningQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User) -> "PlanningQuerySet":
+    def filter_for_user(self, user: User) -> Self:
         account = getattr(getattr(user, "iaso_profile", None), "account", None)
 
         if not account:
@@ -24,10 +28,22 @@ class PlanningQuerySet(models.QuerySet):
         return self.filter(project__account=account)
 
 
+class DefaultPlanningQuerySet(PlanningQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedPlanningQuerySet(PlanningQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedPlanningQuerySet(PlanningQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
 class Planning(SoftDeletableModel):
-    objects = DefaultSoftDeletableManager.from_queryset(PlanningQuerySet)()
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(PlanningQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultPlanningQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedPlanningQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(IncludeDeletedPlanningQuerySet)()
 
     class Meta:
         ordering = ("name",)

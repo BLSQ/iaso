@@ -47,11 +47,11 @@ class Test(SwaggerTestCaseMixin, APITestCase):
         group_3 = Group.objects.create(name="Group 3", source_version=self.version_1)
         self.ou_1.groups.add(group_1, group_2, group_3)
 
-        self.oucr_1 = OrgUnitChangeRequest.objects.create(
+        self.oucr_1 = OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.ou_1, status=OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.john_wick
         )
 
-        self.oucr_2 = OrgUnitChangeRequest.objects.create(
+        self.oucr_2 = OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.ou_1, status=OrgUnitChangeRequest.Statuses.REJECTED, created_by=self.john_wick
         )
 
@@ -73,7 +73,7 @@ class Test(SwaggerTestCaseMixin, APITestCase):
         self.org_unit_type_2.projects.set([self.project_2])
         self.john_doe.iaso_profile.org_units.set([self.ou_2])
 
-        self.oucr_3 = OrgUnitChangeRequest.objects.create(
+        self.oucr_3 = OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.ou_2, status=OrgUnitChangeRequest.Statuses.REJECTED, created_by=self.john_doe
         )
 

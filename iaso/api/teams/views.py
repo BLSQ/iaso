@@ -40,7 +40,7 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
     is_field_referenced,
 )
-from iaso.models.team import Team, TeamQuerySet, TeamType
+from iaso.models.team import DefaultTeamQuerySet, Team, TeamType
 from iaso.permissions.core_permissions import CORE_TEAMS_PERMISSION
 
 from .filters import (
@@ -111,7 +111,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             return TeamTypeDropdownSerializer
         raise NotImplementedError(f"Serializer not implemented for action: {self.action}.")
 
-    def get_queryset(self) -> TeamQuerySet:
+    def get_queryset(self) -> DefaultTeamQuerySet:
         user = self.request.user
 
         if not user.is_authenticated:
@@ -180,13 +180,13 @@ class TeamViewSet(AuditMixin, ModelViewSet):
             ).prefetch_related(
                 Prefetch(
                     "users",
-                    get_user_model()
+                    queryset=get_user_model()
                     .objects.select_related("iaso_profile")
                     .only("id", "username", "first_name", "last_name", "iaso_profile", "iaso_profile__color"),
                 ),
                 Prefetch(
                     "sub_teams",
-                    Team.objects.filter_for_user(user)
+                    queryset=Team.objects.filter_for_user(user)
                     .only("id", "name", "deleted_at", "color", "parent")
                     .order_by("id"),
                 ),
@@ -204,7 +204,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         return Response(serializer.data)
 
     @staticmethod
-    def _build_team_tree(teams: list[Team] | TeamQuerySet) -> list[dict]:
+    def _build_team_tree(teams: list[Team] | DefaultTeamQuerySet) -> list[dict]:
         # associate each node with its data
         nodes = {team.pk: {**TeamBuildTreeSerializer(team).data, "children": []} for team in teams}
 
@@ -224,7 +224,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     @action(detail=False, methods=["GET"], pagination_class=None)
     def tree(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         queryset = (
-            typing.cast(TeamQuerySet, self.filter_queryset(self.get_queryset())).annotate_with_depth().order_by("id")
+            typing.cast(DefaultTeamQuerySet, self.filter_queryset(self.get_queryset()))
+            .annotate_with_depth()
+            .order_by("id")
         )
         data = self._build_team_tree(queryset)
         return Response(data)

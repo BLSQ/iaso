@@ -59,7 +59,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             new_name="Dueling Peaks",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
@@ -71,7 +71,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
-        cls.second_change_request = m.OrgUnitChangeRequest.objects.create(
+        cls.second_change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             new_name="Serenne",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,

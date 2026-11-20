@@ -13,7 +13,7 @@ def org_unit_change_requests_bulk_approve(
 
     user = task.launcher
 
-    change_requests = OrgUnitChangeRequest.objects.filter(id__in=change_requests_ids)
+    change_requests = OrgUnitChangeRequest.objects_include_deleted.filter(id__in=change_requests_ids)
 
     with transaction.atomic():
         for change_request in change_requests:
@@ -35,7 +35,7 @@ def org_unit_change_requests_bulk_reject(
 
     user = task.launcher
 
-    change_requests = OrgUnitChangeRequest.objects.filter(id__in=change_requests_ids)
+    change_requests = OrgUnitChangeRequest.objects_include_deleted.filter(id__in=change_requests_ids)
 
     with transaction.atomic():
         for change_request in change_requests:

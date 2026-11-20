@@ -14,6 +14,7 @@ from iaso.models.base import UserRole
 from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
@@ -46,6 +47,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
 
     objects = DefaultSoftDeletableManager()
     objects_only_deleted = OnlyDeletedSoftDeletableManager()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager()
 
     def __str__(self):
         return self.name

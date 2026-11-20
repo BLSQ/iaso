@@ -8,14 +8,13 @@ from django.db import models
 
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
     IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
     OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
     SoftDeletableModel,
 )
-
-
-class WorkflowQuerySet(models.QuerySet):
-    pass
 
 
 class Workflow(SoftDeletableModel):
@@ -33,11 +32,11 @@ class Workflow(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+    objects = DefaultSoftDeletableManager()
 
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager()
 
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager()
 
     @property
     def latest_version(self):
@@ -88,6 +87,18 @@ class WorkflowVersionQuerySet(models.QuerySet):
         return queryset
 
 
+class DefaultWorkflowVersionQuerySet(WorkflowVersionQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedWorkflowVersionQuerySet(WorkflowVersionQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedWorkflowVersionQuerySet(WorkflowVersionQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
 class WorkflowVersion(SoftDeletableModel):
     """
     WorkflowVersion has 'workflow' foreign key to the Workflow object.
@@ -116,11 +127,9 @@ class WorkflowVersion(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
-
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
-
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultWorkflowVersionQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedWorkflowVersionQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(IncludeDeletedWorkflowVersionQuerySet)()
 
     @property
     def reference_form(self):

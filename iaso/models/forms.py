@@ -22,8 +22,11 @@ from ..odk import parsing
 from ..utils import slugify_underscore
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
     IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
     OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
     SoftDeletableModel,
 )
 from ..utils.virus_scan.model import VirusScanStatus
@@ -136,6 +139,18 @@ class FormQuerySet(models.QuerySet):
         )
 
 
+class DefaultFormQuerySet(FormQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedFormQuerySet(FormQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedFormQuerySet(FormQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
 class Form(SoftDeletableModel):
     """Metadata about a form
 
@@ -202,11 +217,9 @@ class Form(SoftDeletableModel):
         models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), null=True, blank=True
     )
 
-    objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
-
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
-
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultFormQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedFormQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(IncludeDeletedFormQuerySet)()
 
     legend_threshold = models.JSONField(blank=True, null=True)
 

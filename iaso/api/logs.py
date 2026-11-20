@@ -47,7 +47,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         payments = Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
         return payments.filter(id=obj.id).exists() and user.has_perm(CORE_PAYMENTS_PERMISSION.full_name())
     if isinstance(obj, OrgUnitChangeRequest):
-        change_requests = OrgUnitChangeRequest.objects.filter(
+        change_requests = OrgUnitChangeRequest.objects_include_deleted.filter(
             created_by__iaso_profile__account=user.iaso_profile.account
         )
         return change_requests.filter(id=obj.id).exists()

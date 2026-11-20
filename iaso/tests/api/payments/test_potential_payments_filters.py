@@ -63,7 +63,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         # Create change_requests and associate them with PotentialPayment
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
@@ -72,7 +72,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         change_request1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
         change_request1.save()
 
-        change_request2 = m.OrgUnitChangeRequest.objects.create(
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Bar",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
@@ -98,13 +98,13 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         self.assertEqual(2, len(response.data["results"][0]["change_requests"]))
 
     def test_filter_on_users(self):
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user_with_review_perm,
@@ -119,13 +119,13 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         self.assertEqual(response.data["results"][0]["change_requests"][0]["id"], change_request1.id)
 
     def test_filter_on_user_roles(self):
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user_with_review_perm,
@@ -147,14 +147,14 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             uuid="5879f174-4c53-499c-85de-7a58458c49ef",
             parent=another_parent_org_unit,
         )
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
         )
 
-        change_request2 = m.OrgUnitChangeRequest.objects.create(
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=another_org_unit,
             new_name="Bar",
             created_by=self.user,
@@ -188,13 +188,13 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             org_unit=another_org_unit, instance=another_instance, form=another_form
         )
 
-        change_request1 = m.OrgUnitChangeRequest.objects.create(
+        change_request1 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
         )
-        change_request2 = m.OrgUnitChangeRequest.objects.create(
+        change_request2 = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=another_org_unit,
             new_name="Bar",
             created_by=self.user,
@@ -212,13 +212,13 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         )
 
     def test_select_all_filter(self):
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Bar",
             created_by=self.user,
@@ -247,21 +247,21 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             user=self.user_with_review_perm,
         )
 
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=potential_payment1,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Bar",
             created_by=another_user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=potential_payment2,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="new_name",
             created_by=self.user_with_review_perm,
@@ -312,21 +312,21 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             user=self.user_with_review_perm,
         )
 
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Foo",
             created_by=self.user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=potential_payment1,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="Bar",
             created_by=another_user,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=potential_payment2,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="new_name",
             created_by=self.user_with_review_perm,

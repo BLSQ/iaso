@@ -791,7 +791,7 @@ class ReportWarningSkipPathsTestCase(PyramidBaseTest):
 
         self.assertTrue(any("Ignoring Group ID #" in msg for msg in self._warning_messages(mock_warning)))
         self.assertEqual(
-            m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(),
+            m.OrgUnitChangeRequest.objects_include_deleted.filter(data_source_synchronization=data_source_sync).count(),
             1,
         )
 
@@ -881,6 +881,6 @@ class SynchronizeSourceVersionsAsyncTaskTestCase(IasoTestCase, PyramidBaseTest):
         self.assertIn("not-a-date", self.task.result["message"])
         self.assertIn("stack_trace", self.task.result)
         self.assertEqual(
-            m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(),
+            m.OrgUnitChangeRequest.objects_include_deleted.filter(data_source_synchronization=data_source_sync).count(),
             0,
         )

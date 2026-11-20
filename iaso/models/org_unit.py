@@ -26,7 +26,15 @@ from iaso.models.data_source import SourceVersion
 from ..utils.expressions import ArraySubquery
 from ..utils.gis import simplify_geom
 from ..utils.models.common import get_creator_name
-from ..utils.models.soft_deletable import SoftDeletableModel
+from ..utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
+    IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
+    OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
+    SoftDeletableModel,
+)
 from ..utils.pii import filter_instance_payload
 from .missions import MissionArtefact
 from .project import Project
@@ -721,6 +729,18 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
 
 
+class DefaultOrgUnitChangeRequestQuerySet(OrgUnitChangeRequestQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedOrgUnitChangeRequestQuerySet(OrgUnitChangeRequestQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedOrgUnitChangeRequestQuerySet(OrgUnitChangeRequestQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
 class OrgUnitChangeRequest(SoftDeletableModel):
     """
     A request to change an OrgUnit.
@@ -739,6 +759,12 @@ class OrgUnitChangeRequest(SoftDeletableModel):
         NEW = "new", _("New")
         REJECTED = "rejected", _("Rejected")
         APPROVED = "approved", _("Approved")
+
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultOrgUnitChangeRequestQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedOrgUnitChangeRequestQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
+        IncludeDeletedOrgUnitChangeRequestQuerySet
+    )()
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
@@ -818,8 +844,6 @@ class OrgUnitChangeRequest(SoftDeletableModel):
         related_name="change_requests",
         help_text="The data source synchronization that generated this change request.",
     )
-
-    objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()
 
     class Meta:
         verbose_name = _("Org unit change request")

@@ -425,7 +425,9 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         data_source_sync.create_json_diff()
 
         # Synchronize source versions.
-        change_requests = m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync)
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.filter(
+            data_source_synchronization=data_source_sync
+        )
         self.assertEqual(change_requests.count(), 0)
         self.assertEqual(m.OrgUnit.objects.filter(version=self.source_version_to_update).count(), 2)
 
@@ -436,7 +438,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(m.OrgUnit.objects.filter(version=self.source_version_to_update).count(), 4)
 
         # Change request #1 to update an existing OrgUnit.
-        angola_country_change_request = m.OrgUnitChangeRequest.objects.get(
+        angola_country_change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(
             org_unit=self.angola_country_to_update, data_source_synchronization=data_source_sync
         )
         # Data.
@@ -471,7 +473,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_country_change_request.old_reference_instances.count(), 0)
 
         # Change request #2 to update an existing OrgUnit.
-        angola_region_change_request = m.OrgUnitChangeRequest.objects.get(
+        angola_region_change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(
             org_unit=self.angola_region_to_update, data_source_synchronization=data_source_sync
         )
         # Data.
@@ -501,7 +503,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         # Change request #3 to create a new OrgUnit whose corresponding parent DID exist.
         new_group_c = m.Group.objects.get(name="Group C", source_version=data_source_sync.source_version_to_update)
         new_group_a2 = m.Group.objects.get(name="Group A", source_version=data_source_sync.source_version_to_update)
-        angola_district_change_request = m.OrgUnitChangeRequest.objects.get(
+        angola_district_change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(
             org_unit__source_ref="id-3", data_source_synchronization=data_source_sync
         )
         # Data.
@@ -544,7 +546,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(new_angola_district_org_unit.simplified_geom, self.multi_polygon)
 
         # Change request #4 to create a new OrgUnit whose corresponding parent DID NOT exist.
-        angola_facility_change_request = m.OrgUnitChangeRequest.objects.get(
+        angola_facility_change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(
             org_unit__source_ref="id-4", data_source_synchronization=data_source_sync
         )
         # Data.
@@ -587,7 +589,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         # No change request should have been generated for org units without `source_ref`.
         self.assertEqual(
             0,
-            m.OrgUnitChangeRequest.objects.filter(
+            m.OrgUnitChangeRequest.objects_include_deleted.filter(
                 org_unit=self.angola_facility_without_source_ref_to_compare_with
             ).count(),
         )
@@ -609,7 +611,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         data_source_sync.create_json_diff()
         data_source_sync.synchronize_source_versions()
 
-        angola_facility_change_request = m.OrgUnitChangeRequest.objects.get(
+        angola_facility_change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(
             org_unit__source_ref="id-4", data_source_synchronization=data_source_sync
         )
         self.assertEqual(angola_facility_change_request.new_parent, self.angola_country_to_update)

@@ -9,6 +9,7 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -70,6 +71,7 @@ export const Details: FunctionComponent = () => {
             {isLoading && <LoadingSpinner />}
             {!isLoading && (
                 <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+                    <PiiRestrictedBanner sx={{ mb: 2 }} />
                     <Grid container spacing={2} alignItems="flex-start">
                         <Grid item xs={12} md={4}>
                             <EntityBaseInfo

@@ -146,7 +146,7 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                 meta: content.form
                     ? formatMessage(MESSAGES.importFileMeta, {
                           formName: content.form.name,
-                          versionId: content.form_version?.version_id,
+                          versionId: content.form_version?.version_id ?? '',
                       })
                     : '',
                 mappingsCount: Object.keys(questionMappings).length,
@@ -280,7 +280,7 @@ export const ImportMappingsDialog: FunctionComponent<Props> = ({
                         data-test="confirm-button"
                     >
                         {formatMessage(MESSAGES.applyChanges, {
-                            count: changesCount,
+                            count: `${changesCount}`,
                         })}
                     </Button>
                 )}

@@ -1,31 +1,42 @@
-import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
+import React, {
+    ChangeEvent,
+    FunctionComponent,
+    ReactElement,
+    ReactNode,
+} from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import Box from '@mui/material/Box/Box';
 import ListItemText from '@mui/material/ListItemText/ListItemText';
+import type { Theme } from '@mui/material/styles';
 import useTheme from '@mui/material/styles/useTheme';
 import Switch from '@mui/material/Switch/Switch';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 import { truncateText } from 'bluesquare-components';
 
 type Props = {
     disabled: boolean;
     onChange?: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-    className: string;
+    sx: SxProps<Theme>;
     checked: boolean;
     toolTipTitle: string | ReactElement;
     primaryText: string;
     secondaryText: string;
     size?: 'small' | 'medium' | undefined;
+    warning?: string | ReactNode;
 };
 
 export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
     disabled,
     onChange = () => null,
-    className,
+    sx,
     checked,
     toolTipTitle,
     primaryText,
     secondaryText,
     size = 'small',
+    warning,
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -43,7 +54,7 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                     // @ts-ignore
                     'data-test-column-switch': secondaryText,
                 }}
-                className={className}
+                sx={sx}
             />
             <Tooltip
                 title={toolTipTitle}
@@ -73,6 +84,22 @@ export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
                     secondary={truncateText(secondaryText, 35)}
                 />
             </Tooltip>
+            {warning && (
+                <Tooltip title={warning} placement="top" arrow>
+                    <Box
+                        display="inline-flex"
+                        color="warning.main"
+                        ml={0.5}
+                        flexShrink={0}
+                        role="img"
+                        aria-label={
+                            typeof warning === 'string' ? warning : undefined
+                        }
+                    >
+                        <WarningAmberIcon fontSize="small" aria-hidden />
+                    </Box>
+                </Tooltip>
+            )}
         </>
     );
 };

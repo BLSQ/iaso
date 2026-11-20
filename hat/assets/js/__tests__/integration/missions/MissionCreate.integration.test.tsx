@@ -156,7 +156,7 @@ const addForm = async (formOption: string | RegExp) => {
     await act(async () => {
         await userEvent.click(
             screen.getByRole('combobox', {
-                name: /select a form to add/i,
+                name: /add a form/i,
             }),
         );
     });
@@ -223,7 +223,7 @@ describe('Mission create integration test', () => {
         ).not.toBeChecked();
 
         expect(
-            screen.getByRole('combobox', { name: /select a form to add/i }),
+            screen.getByRole('combobox', { name: /add a form/i }),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('button', {
@@ -239,7 +239,7 @@ describe('Mission create integration test', () => {
 
         // FORM_FILLING by default
         expect(
-            screen.getByRole('combobox', { name: /select a form to add/i }),
+            screen.getByRole('combobox', { name: /add a form/i }),
         ).toBeInTheDocument();
 
         expect(
@@ -261,9 +261,17 @@ describe('Mission create integration test', () => {
             ).toBeVisible();
         });
 
-        expect(screen.getByLabelText(/min cardinality/i)).toBeInTheDocument();
+        expect(
+            screen.getByLabelText(
+                /min (new org units|entities) per assigned org unit/i,
+            ),
+        ).toBeInTheDocument();
 
-        expect(screen.getByLabelText(/max cardinality/i)).toBeInTheDocument();
+        expect(
+            screen.getByLabelText(
+                /max (new org units|entities) per assigned org unit/i,
+            ),
+        ).toBeInTheDocument();
 
         expect(
             screen.queryByRole('combobox', {
@@ -343,7 +351,9 @@ describe('Mission create integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('combobox', { name: /entity type\*/i }),
+                screen.getByRole('combobox', {
+                    name: /entity type to create\*/i,
+                }),
             );
         });
 
@@ -372,7 +382,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /select a form to add/i,
+                    name: /add a form/i,
                 }),
             );
         });
@@ -410,7 +420,7 @@ describe('Mission create integration test', () => {
         await act(async () => {
             await userEvent.click(
                 screen.getByRole('combobox', {
-                    name: /select a form to add/i,
+                    name: /add a form/i,
                 }),
             );
         });
@@ -922,16 +932,22 @@ describe('Mission create integration test', () => {
         });
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
             );
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /max (new org units|entities) per assigned org unit/i,
+                }),
                 '20',
             );
         });
@@ -995,7 +1011,9 @@ describe('Mission create integration test', () => {
 
         await act(async () => {
             await userEvent.clear(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
             );
             await userEvent.type(
                 screen.getByRole('textbox', { name: /name/i }),
@@ -1016,13 +1034,17 @@ describe('Mission create integration test', () => {
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /min cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /min (new org units|entities) per assigned org unit/i,
+                }),
                 '2',
             );
         });
         await act(async () => {
             await userEvent.type(
-                screen.getByRole('textbox', { name: /max cardinality/i }),
+                screen.getByRole('textbox', {
+                    name: /max (new org units|entities) per assigned org unit/i,
+                }),
                 '20',
             );
         });

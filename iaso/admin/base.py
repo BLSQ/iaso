@@ -96,7 +96,6 @@ from ..models import (
     StockRulesVersion,
     StorageDevice,
     StorageLogEntry,
-    StoragePassword,
     Task,
     TaskLease,
     TaskLog,
@@ -203,6 +202,11 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
 
     @admin.display(description="Accounts")
     def get_account_names(self, obj):
+        version = obj.version
+        data_source = getattr(version, "data_source", None)
+        if not version or not data_source:
+            return "-"
+
         accounts = set(
             f"{project.account.name} ({project.account.id})" for project in obj.version.data_source.projects.all()
         )
@@ -932,20 +936,6 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     inlines = [
         StorageLogEntryInline,
     ]
-
-
-@admin.register(StoragePassword)
-class StoragePasswordAdmin(admin.ModelAdmin):
-    fields = (
-        "password",
-        "is_compromised",
-        "project",
-        "created_at",
-        "updated_at",
-    )
-    readonly_fields = ("created_at", "updated_at")
-    list_display = ("project", "password")
-    list_filter = ("project", "is_compromised")
 
 
 @admin.register(Workflow)

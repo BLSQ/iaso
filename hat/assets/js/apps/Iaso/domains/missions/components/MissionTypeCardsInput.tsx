@@ -1,7 +1,4 @@
 import React from 'react';
-import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
-import DescriptionIcon from '@mui/icons-material/Description';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import Box from '@mui/material/Box/Box';
 import ButtonBase from '@mui/material/ButtonBase/ButtonBase';
 import FormLabel from '@mui/material/FormLabel/FormLabel';
@@ -12,21 +9,14 @@ import { useSafeIntl } from 'bluesquare-components';
 import { FormikProps } from 'formik';
 import { FieldInputProps } from 'formik/dist/types';
 import { get } from 'lodash';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { SxStyles } from 'Iaso/types/general';
+import { MISSION_TYPE_OPTIONS } from '../constants';
 import MESSAGES from '../messages';
+import { missionStyles } from './styles';
 
 const styles: SxStyles = {
-    root: {
-        my: 1,
-    },
-    label: {
-        display: 'block',
-        mb: 1.5,
-        fontWeight: 600,
-        color: 'text.primary',
-        fontSize: '0.875rem',
-    },
+    root: missionStyles.fieldRoot,
+    label: missionStyles.fieldLabel,
     required: {
         color: 'error.main',
         ml: 0.25,
@@ -39,11 +29,11 @@ const styles: SxStyles = {
     card: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'start',
+        justifyContent: 'flex-start',
         gap: 0.5,
-        py: 1,
-        px: 1,
+        py: 2,
+        px: 2,
         borderRadius: 1,
         border: '1px solid',
         borderColor: 'divider',
@@ -72,12 +62,15 @@ const styles: SxStyles = {
     },
     icon: {
         fontSize: 20,
+        mr: 0.5,
     },
     cardLabel: {
-        fontWeight: 700,
-        fontSize: '0.75rem',
+        display: 'inline-flex',
+        verticalAlign: 'text-bottom',
         textAlign: 'center',
-        lineHeight: 1.2,
+        fontWeight: 700,
+        fontSize: '0.8125rem',
+        mb: 0.5,
     },
     error: {
         color: 'error.main',
@@ -85,24 +78,6 @@ const styles: SxStyles = {
         mt: 1,
     },
 };
-
-const MISSION_TYPE_OPTIONS = [
-    {
-        value: MissionTypeDa2Enum.enum.FORM_FILLING,
-        Icon: DescriptionIcon,
-        labelMessage: MESSAGES.form,
-    },
-    {
-        value: MissionTypeDa2Enum.enum.ORG_UNIT_AND_FORM,
-        Icon: LocationOnIcon,
-        labelMessage: MESSAGES.orgUnitAndFormChip,
-    },
-    {
-        value: MissionTypeDa2Enum.enum.ENTITY_AND_FORM,
-        Icon: AssignmentIndIcon,
-        labelMessage: MESSAGES.entityAndFormChip,
-    },
-] as const;
 
 type MissionTypeOptionValue = (typeof MISSION_TYPE_OPTIONS)[number]['value'];
 
@@ -157,31 +132,36 @@ export const MissionTypeCardsInput = <TFieldValue, TValues>({
                 aria-labelledby={`${field.name}-label`}
                 sx={styles.group}
             >
-                {MISSION_TYPE_OPTIONS.map(({ value, Icon, labelMessage }) => {
-                    const optionLabel = formatMessage(labelMessage);
-                    const selected = field.value === value;
+                {MISSION_TYPE_OPTIONS.map(
+                    ({ value, Icon, labelMessage, descriptionMessage }) => {
+                        const optionLabel = formatMessage(labelMessage);
+                        const selected = field.value === value;
 
-                    return (
-                        <ButtonBase
-                            key={value}
-                            role="radio"
-                            aria-checked={selected}
-                            aria-label={optionLabel}
-                            onClick={() => handleSelect(value)}
-                            sx={
-                                [
-                                    styles.card,
-                                    selected ? styles.cardSelected : null,
-                                ] as SxProps<Theme>
-                            }
-                        >
-                            <Icon sx={styles.icon} />
-                            <Typography sx={styles.cardLabel}>
-                                {optionLabel}
-                            </Typography>
-                        </ButtonBase>
-                    );
-                })}
+                        return (
+                            <ButtonBase
+                                key={value}
+                                role="radio"
+                                aria-checked={selected}
+                                aria-label={optionLabel}
+                                onClick={() => handleSelect(value)}
+                                sx={
+                                    [
+                                        styles.card,
+                                        selected ? styles.cardSelected : null,
+                                    ] as SxProps<Theme>
+                                }
+                            >
+                                <Typography sx={styles.cardLabel}>
+                                    <Icon sx={styles.icon} />
+                                    {optionLabel}
+                                </Typography>
+                                <Typography variant="caption" textAlign="left">
+                                    {formatMessage(descriptionMessage)}
+                                </Typography>
+                            </ButtonBase>
+                        );
+                    },
+                )}
             </Box>
             {hasError && error && (
                 <Typography sx={styles.error} role="alert">

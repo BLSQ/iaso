@@ -1,0 +1,45 @@
+import React, { FC, useCallback, useState } from 'react';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import { useSafeIntl } from 'bluesquare-components';
+import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
+import MESSAGES from '../../../messages';
+import { BulkAssignDialog } from './BulkAssignDialog';
+import { useAssignableOrgUnits } from './useAssignableOrgUnits';
+
+export const BulkAssignButton: FC = () => {
+    const { formatMessage } = useSafeIntl();
+    const { currentAssignee } = useAssignmentsContext();
+    const { assignableOrgUnitIds } = useAssignableOrgUnits();
+    const [isOpen, setIsOpen] = useState(false);
+    const open = useCallback(() => setIsOpen(true), []);
+    const close = useCallback(() => setIsOpen(false), []);
+
+    const tooltip = currentAssignee
+        ? formatMessage(MESSAGES.bulkAssignTooltip, {
+              member: currentAssignee.name,
+          })
+        : formatMessage(MESSAGES.mapHintPickMember);
+    return (
+        <>
+            <Tooltip title={tooltip}>
+                <span>
+                    <IconButton
+                        size="small"
+                        disabled={
+                            !currentAssignee || !assignableOrgUnitIds.size
+                        }
+                        onClick={open}
+                        aria-label={tooltip}
+                    >
+                        <DoneAllIcon fontSize="small" />
+                    </IconButton>
+                </span>
+            </Tooltip>
+            {isOpen && currentAssignee && (
+                <BulkAssignDialog assignee={currentAssignee} onClose={close} />
+            )}
+        </>
+    );
+};

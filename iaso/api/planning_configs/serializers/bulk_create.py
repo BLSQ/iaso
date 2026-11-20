@@ -96,8 +96,8 @@ class PlanningConfigBulkCreateSerializer(ModelSerializer):
         super().__init__(*args, **kwargs)
         user = getattr(self.context.get("request", None), "user", None)
         if user:
-            self.fields["org_unit_types"].child_relation.queryset = (
-                OrgUnitType.objects.filter_for_user_and_app_id(user, distinct=True).prefetch_related(None).only("id")
-            )  # prefetch_related None to disable the useless one in filter_for_user_and_app_id
+            self.fields["org_unit_types"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
+                user, distinct=True
+            ).only("id")
             self.fields["org_unit_groups"].child_relation.queryset = Group.objects.filter_for_user(user).only("id")
             self.fields["planning"].queryset = Planning.objects.filter_for_user(user).only("id")

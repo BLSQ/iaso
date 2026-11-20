@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Min, Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -318,19 +318,18 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
     @staticmethod
     def _build_org_unit_tree(org_units: OrgUnitQuerySet, serializer: type[serializers.BaseSerializer]) -> list[dict]:
-        # associate each node with its data
-        if not org_units:
+        # Serialized at once: a serializer per org unit rebuilds its fields every time, which is many times slower.
+        serialized = serializer(org_units, many=True).data
+        if not serialized:
             return []
 
-        min_depth = org_units.aggregate(min_depth=Min("path__depth"))["min_depth"]
-
-        nodes = {org_unit.pk: {**serializer(org_unit).data, "children": []} for org_unit in org_units}
+        min_depth = min(item["depth"] for item in serialized)
+        nodes = {item["id"]: {**item, "children": []} for item in serialized}
 
         roots = []
 
-        for org_unit in org_units:
-            node = nodes[org_unit.pk]
-            parent = nodes.get(org_unit.parent_id)
+        for node in nodes.values():
+            parent = nodes.get(node["parent"])
 
             if parent is not None:
                 parent["children"].append(node)

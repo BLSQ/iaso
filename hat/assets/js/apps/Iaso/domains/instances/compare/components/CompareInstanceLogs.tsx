@@ -11,6 +11,7 @@ import {
     useGoBack,
 } from 'bluesquare-components';
 
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { baseUrls } from '../../../../constants/urls';
@@ -160,6 +161,7 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                 goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <Grid
                     container
                     spacing={3}

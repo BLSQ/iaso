@@ -27,6 +27,7 @@ from ..utils.expressions import ArraySubquery
 from ..utils.gis import simplify_geom
 from ..utils.models.common import get_creator_name
 from ..utils.models.soft_deletable import SoftDeletableModel
+from ..utils.pii import filter_instance_payload
 from .missions import MissionArtefact
 from .project import Project
 
@@ -92,18 +93,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
         This might return duplicates if distinct is set to False (default). Set it to True to get distinct values.
         """
-
+        queryset = self
         if user and user.is_anonymous and app_id is None:
             return self.none()
-
-        queryset = self.prefetch_related(
-            "projects",
-            "projects__account",
-            "projects__projectfeatureflags_set",
-            "allow_creating_sub_unit_types",
-            "reference_forms",
-            "sub_unit_types",
-        )
 
         if user and user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
@@ -656,8 +648,13 @@ class OrgUnit(MissionArtefact, TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-    def get_reference_instances_details_for_api(self) -> list:
-        return [instance.as_full_model() for instance in self.reference_instances.all()]
+    def get_reference_instances_details_for_api(self, user) -> list:
+        """`user`: personal data (PII) is filtered out of the submissions according to this user's permissions."""
+
+        return [
+            filter_instance_payload(instance.as_full_model(), instance.form, user)
+            for instance in self.reference_instances.all()
+        ]
 
     def set_extra_fields(self, fields):
         self.extra_fields = self.extra_fields | fields

@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack/Stack';
 import { GreyPageWrapper } from 'Iaso/components/GreyPageWrapper';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
-import { useAssignmentsParams } from '../../hooks/useAssignmentsParams';
+import { PublishedPlanningConfirmationProvider } from './assign/PublishedPlanningConfirmation';
 import { AssignmentsBreadcrumbs } from './AssignmentsBreadcrumbs';
 import { AssignmentsMainPanel } from './mainPanel/AssignmentsMainPanel';
 import { ModeToggle } from './ModeToggle';
@@ -24,28 +24,29 @@ const styles = {
 } satisfies SxStyles;
 
 export const AssignmentsContent: FC = () => {
-    const { mode } = useAssignmentsParams();
-    const { planning } = useAssignmentsContext();
+    const { planning, isAssignMode } = useAssignmentsContext();
     return (
-        <GreyPageWrapper
-            title={<AssignmentsBreadcrumbs />}
-            actions={<ModeToggle />}
-            fillHeight
-        >
-            <Stack gap={2} sx={styles.fill}>
-                {mode === 'assign' && planning.status === 'published' && (
-                    <PublishedPlanningWarning />
-                )}
-                <Stack
-                    direction="row"
-                    alignItems="stretch"
-                    gap={2}
-                    sx={styles.panels}
-                >
-                    <TeamsPanel />
-                    <AssignmentsMainPanel />
+        <PublishedPlanningConfirmationProvider>
+            <GreyPageWrapper
+                title={<AssignmentsBreadcrumbs />}
+                actions={<ModeToggle />}
+                fillHeight
+            >
+                <Stack gap={2} sx={styles.fill}>
+                    {isAssignMode && planning.status === 'published' && (
+                        <PublishedPlanningWarning />
+                    )}
+                    <Stack
+                        direction="row"
+                        alignItems="stretch"
+                        gap={2}
+                        sx={styles.panels}
+                    >
+                        <TeamsPanel />
+                        <AssignmentsMainPanel />
+                    </Stack>
                 </Stack>
-            </Stack>
-        </GreyPageWrapper>
+            </GreyPageWrapper>
+        </PublishedPlanningConfirmationProvider>
     );
 };

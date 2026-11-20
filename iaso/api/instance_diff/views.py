@@ -28,7 +28,7 @@ class InstanceDiffViewSet(CustomPaginationListModelMixin, GenericViewSet):
     pagination_class = InstanceDiffPaginator
 
     def instance_queryset(self, queryset):
-        return queryset.select_related("form_version").prefetch_related(
+        return queryset.select_related("form_version", "form").prefetch_related(
             Prefetch("instancefile_set", InstanceFile.objects.filter(deleted=False), to_attr="active_files")
         )
 

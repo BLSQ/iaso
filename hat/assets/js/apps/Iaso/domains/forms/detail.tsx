@@ -26,7 +26,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { baseUrls } from '../../constants/urls';
-import { useFormState } from '../../hooks/form.js';
+import { useFormState } from '../../hooks/form';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { NO_PERIOD } from '../periods/constants';
@@ -65,6 +65,8 @@ const defaultForm = {
     location_field: '',
     possible_fields: [],
     label_keys: [],
+    non_pii_fields: null,
+    summary_fields: [],
     legend_threshold: null,
     change_request_mode: CR_MODE_NONE,
     validation_workflow: null,
@@ -99,6 +101,8 @@ const formatFormData = (value?: Record<string, any> | null) => {
         location_field: form.location_field,
         possible_fields: form.possible_fields ?? defaultForm.possible_fields,
         label_keys: form.label_keys ?? defaultForm.label_keys,
+        non_pii_fields: form.non_pii_fields ?? defaultForm.non_pii_fields,
+        summary_fields: form.summary_fields ?? defaultForm.summary_fields,
         legend_threshold: form.legend_threshold,
         change_request_mode: form.change_request_mode,
         validation_workflow: form.validation_workflow,
@@ -121,6 +125,8 @@ const getFormWritePayload = (formState: FormDataType): FormWritePayload => ({
     device_field: formState.device_field.value,
     location_field: formState.location_field.value,
     label_keys: formState.label_keys.value,
+    non_pii_fields: formState.non_pii_fields.value,
+    summary_fields: formState.summary_fields.value,
     legend_threshold: formState.legend_threshold?.value,
     change_request_mode: formState.change_request_mode.value,
     validation_workflow: formState.validation_workflow?.value,
@@ -156,6 +162,8 @@ const FormDetail: FunctionComponent = () => {
             'device_field',
             'location_field',
             'label_keys',
+            'non_pii_fields',
+            'summary_fields',
             'possible_fields',
             'legend_threshold',
             'change_request_mode',

@@ -19,6 +19,7 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { sendDhisOuImporterRequest } from '../requests';
+import { Dhis2OuImporterRequest } from '../types/dhis2OuImporter';
 import { VersionDescription } from './VersionDescription';
 
 const initialFormState = sourceCredentials => {
@@ -71,7 +72,7 @@ export const AddTask: FunctionComponent<Props> = ({
 
     const submit = useCallback(
         async (closeDialogCallBack, redirect = false) => {
-            const body = {
+            const body: Dhis2OuImporterRequest = {
                 source_id: sourceId,
                 source_version_number: sourceVersionNumber,
                 force: false,

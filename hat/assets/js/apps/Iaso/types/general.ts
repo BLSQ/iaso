@@ -1,5 +1,6 @@
 import type { Theme } from '@mui/material/styles';
 import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
+import { useSafeIntl } from 'bluesquare-components';
 import { GenericObject, Optional } from './utils';
 
 export type PostArg = {
@@ -91,3 +92,5 @@ export type DjangoError = Error & {
      */
     [key: string]: any;
 };
+
+export type FormatMessage = ReturnType<typeof useSafeIntl>['formatMessage'];

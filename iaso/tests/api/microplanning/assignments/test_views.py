@@ -335,7 +335,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(assignments.count(), 0)
 
         # Verify assignments still exist but are marked as deleted
-        all_assignments = Assignment.objects.filter(planning=self.planning)
+        all_assignments = Assignment.objects_include_deleted.filter(planning=self.planning)
         self.assertEqual(all_assignments.count(), 4)
         for assignment in all_assignments:
             self.assertIsNotNone(assignment.deleted_at)
@@ -393,7 +393,7 @@ class AssignmentAPITestCase(APITestCase):
         # Team1 assignments are (soft) deleted
         team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1, deleted_at__isnull=True)
         self.assertEqual(team1_assignments.count(), 0)
-        all_team1_assignments = Assignment.objects.filter(planning=self.planning, team=self.team1)
+        all_team1_assignments = Assignment.objects_include_deleted.filter(planning=self.planning, team=self.team1)
         self.assertEqual(all_team1_assignments.count(), 3)
         for assignment in all_team1_assignments:
             self.assertIsNotNone(assignment.deleted_at)
@@ -452,7 +452,7 @@ class AssignmentAPITestCase(APITestCase):
         # Verify user1 assignments are soft deleted
         user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user, deleted_at__isnull=True)
         self.assertEqual(user1_assignments.count(), 0)
-        all_user1_assignments = Assignment.objects.filter(planning=self.planning, user=self.user)
+        all_user1_assignments = Assignment.objects_include_deleted.filter(planning=self.planning, user=self.user)
         self.assertEqual(all_user1_assignments.count(), 3)
         for assignment in all_user1_assignments:
             self.assertIsNotNone(assignment.deleted_at)

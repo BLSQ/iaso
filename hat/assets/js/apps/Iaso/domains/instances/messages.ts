@@ -769,7 +769,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent',
     },
     changeRequests: {
-        defaultMessage: 'Change requests',
+        defaultMessage: 'Change Requests',
         id: 'iaso.label.changeRequests',
     },
     new: {
@@ -862,10 +862,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submission',
         id: 'iaso.validationNode.status.submission',
     },
-    featureDisabled: {
-        defaultMessage: 'This feature is disabled for your account',
-        id: 'iaso.label.featureDisabled',
-    },
     moduleDisabled: {
         defaultMessage:
             'The related module(s) are not activated for your account.',
@@ -916,6 +912,10 @@ const MESSAGES = defineMessages({
     showQuestionIds: {
         defaultMessage: 'Show question IDs',
         id: 'iaso.instance.showQuestionIds',
+    },
+    showAllQuestions: {
+        defaultMessage: 'Show all questions and their identifiers',
+        id: 'iaso.instance.showAllQuestions',
     },
     clearSearch: {
         defaultMessage: 'Clear search',
@@ -1025,11 +1025,11 @@ const MESSAGES = defineMessages({
     },
     workflow: {
         id: 'iaso.forms.validationWorkflow',
-        defaultMessage: 'Validation Workflow',
+        defaultMessage: 'Validation workflow',
     },
     validation_status: {
         id: 'iaso.forms.validationStatus',
-        defaultMessage: 'Validation Status',
+        defaultMessage: 'Validation status',
     },
 });
 

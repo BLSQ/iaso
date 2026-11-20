@@ -10,6 +10,7 @@ import {
     useRedirectTo,
 } from 'bluesquare-components';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
@@ -163,6 +164,7 @@ export const Entities: FunctionComponent = () => {
                 </Tabs>
             </TopBar>
             <MainWrapper sx={{ padding: 4 }} navHasTabs={true}>
+                <PiiRestrictedBanner sx={{ mb: 2 }} />
                 <Filters
                     params={params}
                     isFetching={isFetching}

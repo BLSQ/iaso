@@ -149,4 +149,8 @@ export type AssignmentsParams = {
     teamId?: string;
     mode?: AssignmentsMode;
     view?: AssignmentsView;
+    onlyUnassigned?: 'true';
+    focusOrgUnitId?: string;
+    // Key of the member of the selected team that assign mode gives org units to.
+    assignee?: string;
 };

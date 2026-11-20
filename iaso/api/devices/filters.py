@@ -12,7 +12,7 @@ from iaso.models.device import DeviceQuerySet
 
 class DeviceFilter(django_filters.FilterSet):
     search = CharFilter(field_name="installation_id", lookup_expr="icontains")
-    synced = django_filters.BooleanFilter(field_name="last_synced_at", lookup_expr="isnull")
+    synced = django_filters.BooleanFilter(field_name="last_synced_at", lookup_expr="isnull", exclude=True)
     active_before = django_filters.DateFilter(
         field_name="last_synced_at", lookup_expr="lte", input_formats=API_DATE_INPUT_FORMATS
     )

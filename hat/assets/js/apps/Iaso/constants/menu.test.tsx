@@ -1,3 +1,4 @@
+import React from 'react';
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
@@ -5,6 +6,8 @@ import {
     VALIDATION_WORKFLOW_MODULE,
 } from 'Iaso/utils/modules';
 import { currentUserFactory } from '../../../__tests__/factories/users';
+import { PluginsContext } from '../plugins/context';
+import { Plugin } from '../plugins/types';
 import { useCurrentUser, User } from '../utils/usersUtils';
 import { useMenuItems } from './menu';
 
@@ -110,5 +113,53 @@ describe('useMenuItems - MODULE_EMBEDDED_LINKS', () => {
         const { result } = renderUseMenuItems();
 
         expect(getEmbeddedLinksEntry(result.current)).toBeUndefined();
+    });
+});
+
+const renderUseMenuItemsWithPlugins = (menu: any[]) =>
+    renderHook(() => useMenuItems(), {
+        wrapper: ({ children }) => (
+            <PluginsContext.Provider
+                value={{ plugins: [{ menu } as unknown as Plugin] }}
+            >
+                {children}
+            </PluginsContext.Provider>
+        ),
+    });
+
+describe('useMenuItems - plugins', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockUseCurrentUser.mockReturnValue(createMockUser([]));
+    });
+
+    it('adds the sub menu of a plugin item with the key of a basic item to the basic item', () => {
+        const { result } = renderUseMenuItemsWithPlugins([
+            {
+                label: 'Entities',
+                key: 'entities',
+                subMenu: [{ label: 'Plugin page', key: 'plugin-page' }],
+            },
+        ]);
+
+        expect(
+            result.current.filter(item => item.key === 'entities'),
+        ).toHaveLength(1);
+        const entities = result.current.find(item => item.key === 'entities');
+        expect(entities?.subMenu?.map(item => item.key)).toEqual([
+            'types',
+            'list',
+            'duplicates',
+            'duplicate-analyses',
+            'plugin-page',
+        ]);
+    });
+
+    it('adds the other plugin items to the menu', () => {
+        const { result } = renderUseMenuItemsWithPlugins([
+            { label: 'Plugin', key: 'plugin' },
+        ]);
+
+        expect(result.current.map(item => item.key)).toContain('plugin');
     });
 });

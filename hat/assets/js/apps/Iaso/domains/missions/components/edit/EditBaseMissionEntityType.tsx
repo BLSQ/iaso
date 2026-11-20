@@ -5,7 +5,7 @@ import Button from '@mui/material/Button/Button';
 import useTheme from '@mui/material/styles/useTheme';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
 
-import { LinkButton, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import { useApiMicroplanningMissionsUpdate } from 'Iaso/api/missions/endpoints/missions/missions';
@@ -22,11 +22,11 @@ type EditBaseMissionFormProps = {
     data: MissionEntityTypeRetrieve;
     missionId: number;
     save: ReturnType<typeof useApiMicroplanningMissionsUpdate>['mutateAsync'];
-    redirectBackUrl: string;
+    goBack: () => void;
 };
 export const EditBaseMissionEntityType: React.FunctionComponent<
     EditBaseMissionFormProps
-> = ({ data, missionId, save, redirectBackUrl }) => {
+> = ({ data, missionId, save, goBack }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -61,14 +61,14 @@ export const EditBaseMissionEntityType: React.FunctionComponent<
             title={data.name}
             actions={
                 <>
-                    <LinkButton
-                        to={redirectBackUrl}
+                    <Button
+                        onClick={goBack}
                         size={isMobile ? 'small' : 'medium'}
                         color="primary"
                         variant="outlined"
                     >
                         {formatMessage(MESSAGES.cancel)}
-                    </LinkButton>
+                    </Button>
                     <Button
                         variant="contained"
                         size={isMobile ? 'small' : 'medium'}

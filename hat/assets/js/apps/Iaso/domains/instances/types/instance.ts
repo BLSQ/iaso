@@ -62,6 +62,10 @@ export type Instance = {
     period?: string;
     file_content: Record<string, any>;
     form_descriptor: Record<string, unknown>;
+    // questions shown by default in the submission details (see Form.summary_fields)
+    summary_fields?: string[] | null;
+    // questions hidden because they contain personal data the user can't see
+    hidden_fields?: string[];
     last_export_success_at: unknown;
     instance_locks: Lock[];
     can_user_modify: boolean;

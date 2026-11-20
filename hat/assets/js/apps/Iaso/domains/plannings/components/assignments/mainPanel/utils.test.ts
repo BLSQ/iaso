@@ -6,6 +6,7 @@ import {
     getAssigneeColorByOrgUnitId,
     getLevelOrgUnitRows,
     getLevelTreeParams,
+    getOrgUnitsOfLevel,
     getTeamIdByOrgUnitId,
 } from './utils';
 
@@ -181,5 +182,30 @@ describe('getLevelOrgUnitRows', () => {
         }).filter(({ id }) => id === 2);
         expect(row.teamId).toBeUndefined();
         expect(row.below).toBeUndefined();
+    });
+});
+
+describe('getOrgUnitsOfLevel', () => {
+    const makeNode = (id: number, children: LevelOrgUnitNode[] = []) =>
+        ({ id, children }) as unknown as LevelOrgUnitNode;
+    const roots = [
+        makeNode(1, [makeNode(2, [makeNode(4)]), makeNode(3, [makeNode(5)])]),
+    ];
+
+    it('returns the roots for level 0', () => {
+        expect(getOrgUnitsOfLevel(roots, 0).map(({ id }) => id)).toEqual([1]);
+    });
+
+    it('returns the org units one step deeper in the tree per level, across all branches', () => {
+        expect(getOrgUnitsOfLevel(roots, 1).map(({ id }) => id)).toEqual([
+            2, 3,
+        ]);
+        expect(getOrgUnitsOfLevel(roots, 2).map(({ id }) => id)).toEqual([
+            4, 5,
+        ]);
+    });
+
+    it('returns no org units below the deepest level', () => {
+        expect(getOrgUnitsOfLevel(roots, 3)).toEqual([]);
     });
 });

@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import React, {
+    FC,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import Box from '@mui/material/Box/Box';
 import Table from '@mui/material/Table/Table';
 import TableBody from '@mui/material/TableBody/TableBody';
@@ -8,19 +15,15 @@ import TableHead from '@mui/material/TableHead/TableHead';
 import TableRow from '@mui/material/TableRow/TableRow';
 import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, Pagination, useSafeIntl } from 'bluesquare-components';
-import { TeamType } from 'Iaso/domains/teams/constants';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { useAssignmentsParams } from '../../../hooks/useAssignmentsParams';
 import MESSAGES from '../../../messages';
+import { ClearAssignmentsBelowDialog } from '../assign/ClearAssignmentsBelowDialog';
+import { useAssignOnClick } from '../assign/useAssignOnClick';
 import { OrgUnitTableRow } from './OrgUnitTableRow';
-import { useAssignments } from './useAssignments';
-import { useLevelOrgUnits } from './useLevelOrgUnits';
-import {
-    getAssigneeByOrgUnitId,
-    getLevelOrgUnitRows,
-    getTeamIdByOrgUnitId,
-} from './utils';
+import { OrgUnitRow } from './types';
+import { useLevelOrgUnitRows } from './useLevelOrgUnitRows';
 
 const styles = {
     container: {
@@ -58,27 +61,49 @@ const DEFAULT_ROWS_PER_PAGE = 20;
 // Same org units as the map: the level the selected team's members work on.
 export const OrgUnitsTable: FC = () => {
     const { formatMessage } = useSafeIntl();
-    const { planning, tree, selectedTeam, selectedLevel } =
-        useAssignmentsContext();
-    const { parents, isFetching } = useLevelOrgUnits(selectedLevel);
-    const { openTeam } = useAssignmentsParams();
-    const { data: assignments } = useAssignments(`${planning.id}`);
+    const { rows: levelRows, isFetching } = useLevelOrgUnitRows();
+    const { openTeam, onlyUnassigned, focusOrgUnitId } = useAssignmentsParams();
+    const { isAssignMode } = useAssignmentsContext();
+    const focusedOrgUnitId = focusOrgUnitId
+        ? Number(focusOrgUnitId)
+        : undefined;
+    const {
+        assignableOrgUnitIds,
+        toggleAssignment,
+        pendingChange,
+        cancelPendingChange,
+    } = useAssignOnClick();
+    const isRowClickable = (row: OrgUnitRow) =>
+        isAssignMode ? assignableOrgUnitIds.has(row.id) : Boolean(row.teamId);
+    const handleRowClick = useCallback(
+        (row: OrgUnitRow) => {
+            if (isAssignMode) {
+                toggleAssignment(row.id);
+            } else if (row.teamId) {
+                openTeam(row.teamId);
+            }
+        },
+        [isAssignMode, toggleAssignment, openTeam],
+    );
     const rows = useMemo(
         () =>
-            getLevelOrgUnitRows({
-                parents: parents ?? [],
-                assigneeByOrgUnitId: getAssigneeByOrgUnitId(
-                    tree,
-                    assignments ?? [],
-                ),
-                teamIdByOrgUnitId: getTeamIdByOrgUnitId(assignments ?? []),
-                showPoints: selectedTeam.type === TeamType.enum.TEAM_OF_USERS,
-            }),
-        [parents, selectedTeam.type, tree, assignments],
+            onlyUnassigned ? levelRows.filter(row => !row.assignee) : levelRows,
+        [levelRows, onlyUnassigned],
     );
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(DEFAULT_ROWS_PER_PAGE);
+    useEffect(() => setPage(0), [onlyUnassigned]);
+    // Once per found org unit, when its rows are there: paging stays free afterwards.
+    const shownFocusId = useRef<number>();
+    useEffect(() => {
+        if (!focusedOrgUnitId || shownFocusId.current === focusedOrgUnitId)
+            return;
+        const index = rows.findIndex(row => row.id === focusedOrgUnitId);
+        if (index === -1) return;
+        shownFocusId.current = focusedOrgUnitId;
+        setPage(Math.floor(index / rowsPerPage));
+    }, [focusedOrgUnitId, rows, rowsPerPage]);
     // Selecting a team on another level can leave fewer pages than the current one.
     const lastPage = Math.max(0, Math.ceil(rows.length / rowsPerPage) - 1);
     const currentPage = Math.min(page, lastPage);
@@ -140,7 +165,9 @@ export const OrgUnitsTable: FC = () => {
                             <OrgUnitTableRow
                                 key={row.id}
                                 row={row}
-                                onOpenTeam={openTeam}
+                                isFocused={row.id === focusedOrgUnitId}
+                                isClickable={isRowClickable(row)}
+                                onClick={handleRowClick}
                             />
                         ))}
                         {rows.length === 0 && !isFetching && (
@@ -151,7 +178,9 @@ export const OrgUnitsTable: FC = () => {
                                         color="text.secondary"
                                     >
                                         {formatMessage(
-                                            MESSAGES.noOrgUnitsToAssign,
+                                            levelRows.length
+                                                ? MESSAGES.allOrgUnitsAssigned
+                                                : MESSAGES.noOrgUnitsToAssign,
                                         )}
                                     </Typography>
                                 </TableCell>
@@ -171,6 +200,10 @@ export const OrgUnitsTable: FC = () => {
                     selectCount={0}
                 />
             </Box>
+            <ClearAssignmentsBelowDialog
+                pendingChange={pendingChange}
+                onClose={cancelPendingChange}
+            />
         </Box>
     );
 };

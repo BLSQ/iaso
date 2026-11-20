@@ -83,7 +83,7 @@ class TaskSourceViewSet(ModelViewSet):
         if self.action == "deployment_status":
             return Task.objects.select_related("launcher").filter(status__in=DEPLOYMENT_BLOCKING_STATUSES)
         profile = self.request.user.iaso_profile
-        return Task.objects.select_related("created_by", "launcher").filter(account=profile.account)
+        return Task.objects.select_related("created_by", "launcher", "lease").filter(account=profile.account)
 
     def get_permissions(self):
         if self.action in ["retrieve", "relaunch"]:

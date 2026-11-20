@@ -1,6 +1,8 @@
 import React, { FC, useCallback } from 'react';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 import Box from '@mui/material/Box/Box';
+import { amber } from '@mui/material/colors';
+import { alpha } from '@mui/material/styles';
 import TableCell from '@mui/material/TableCell/TableCell';
 import TableRow from '@mui/material/TableRow/TableRow';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
@@ -13,8 +15,12 @@ import { AssigneeCell } from './AssigneeCell';
 import { OrgUnitRow } from './types';
 
 const styles = {
-    openable: {
+    clickable: {
         cursor: 'pointer',
+    },
+    focused: {
+        bgcolor: alpha(amber[600], 0.18),
+        '&.MuiTableRow-hover:hover': { bgcolor: alpha(amber[600], 0.26) },
     },
     name: {
         display: 'flex',
@@ -35,20 +41,25 @@ const styles = {
 
 type Props = {
     row: OrgUnitRow;
-    onOpenTeam: (teamId: number) => void;
+    // Found with "Find an org unit".
+    isFocused: boolean;
+    isClickable: boolean;
+    onClick: (row: OrgUnitRow) => void;
 };
 
-export const OrgUnitTableRow: FC<Props> = ({ row, onOpenTeam }) => {
+export const OrgUnitTableRow: FC<Props> = ({
+    row,
+    isFocused,
+    isClickable,
+    onClick,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const { teamId } = row;
-    const handleClick = useCallback(() => {
-        if (teamId) onOpenTeam(teamId);
-    }, [teamId, onOpenTeam]);
+    const handleClick = useCallback(() => onClick(row), [onClick, row]);
     return (
         <TableRow
             hover
-            onClick={teamId ? handleClick : undefined}
-            sx={teamId ? styles.openable : undefined}
+            onClick={isClickable ? handleClick : undefined}
+            sx={[isClickable && styles.clickable, isFocused && styles.focused]}
         >
             <TableCell>
                 <Box sx={styles.name}>

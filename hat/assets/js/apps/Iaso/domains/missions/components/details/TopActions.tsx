@@ -1,8 +1,8 @@
 import React from 'react';
+import EditIcon from '@mui/icons-material/Edit';
 import Box from '@mui/material/Box/Box';
 import useTheme from '@mui/material/styles/useTheme';
 import useMediaQuery from '@mui/system/useMediaQuery/useMediaQuery';
-
 import { LinkButton, useRedirectTo } from 'bluesquare-components';
 import { useSafeIntl } from 'bluesquare-components';
 import { useApiMicroplanningMissionsDestroy } from 'Iaso/api/missions/endpoints/missions/missions';
@@ -66,10 +66,11 @@ export const TopActions: React.FunctionComponent<TopActionsProps> = ({
                 <Box sx={{ ml: 2, display: 'inline-block' }}>
                     <LinkButton
                         to={`/${baseUrls.missionsEdit}/id/${missionId}/`}
-                        variant="outlined"
+                        variant="contained"
                         color="primary"
                         size={isMobile ? 'small' : 'medium'}
                     >
+                        <EditIcon fontSize="small" sx={{ mr: 1 }} />
                         {formatMessage(MESSAGES.edit)}
                     </LinkButton>
                 </Box>

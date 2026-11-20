@@ -1,8 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
+import { StopTaskConfirmModal } from 'Iaso/domains/tasks/components/StopTaskConfirmModal';
 import { TaskModal } from 'Iaso/domains/tasks/components/TaskModal';
-import { useKillTask, useRelaunchTask } from 'Iaso/domains/tasks/hooks/api';
+import { useRelaunchTask } from 'Iaso/domains/tasks/hooks/api';
 import MESSAGES from 'Iaso/domains/tasks/messages';
 import { Task } from 'Iaso/domains/tasks/types';
 import { useCustomComponentsByKey } from 'Iaso/plugins/hooks/customComponents';
@@ -14,22 +15,24 @@ export type Props = {
 export const TaskActionCell: FunctionComponent<Props> = ({ task }) => {
     const { formatMessage } = useSafeIntl();
     const taskRowActions = useCustomComponentsByKey('tasks.rowAction');
-    const { mutateAsync: killTaskAction } = useKillTask();
+    const [isStopModalOpen, setStopModalOpen] = useState(false);
     const { mutateAsync: relaunchTaskAction } = useRelaunchTask();
     return (
         <section>
             {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(task.status) &&
                 !task.should_be_killed && (
-                    <IconButton
-                        onClick={() =>
-                            killTaskAction({
-                                id: task.id,
-                                should_be_killed: true,
-                            })
-                        }
-                        icon="stop"
-                        tooltipMessage={MESSAGES.killTask}
-                    />
+                    <>
+                        <IconButton
+                            onClick={() => setStopModalOpen(true)}
+                            icon="stop"
+                            tooltipMessage={MESSAGES.killTask}
+                        />
+                        <StopTaskConfirmModal
+                            task={task}
+                            open={isStopModalOpen}
+                            closeDialog={() => setStopModalOpen(false)}
+                        />
+                    </>
                 )}
             {task.status === 'ERRORED' && (
                 <IconButton

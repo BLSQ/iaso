@@ -54,6 +54,6 @@ describe('FormWidgetPaper test', () => {
         expect(screen.getByText('form_name')).toBeInTheDocument();
         expect(screen.getByText(12)).toBeInTheDocument();
         expect(screen.getByText('form_name_3')).toBeInTheDocument();
-        expect(screen.getByTestId('AllInclusiveIcon')).toBeInTheDocument();
+        expect(screen.getByText(/∞/)).toBeInTheDocument();
     });
 });

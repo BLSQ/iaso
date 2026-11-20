@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from fake import fake_person
 from planning_assignments import (
@@ -27,7 +27,7 @@ def create_planning(
     iaso_client, *, name, project_id, mission_id, team_id, org_unit_id, level_type_ids, days, published
 ):
     """`level_type_ids` holds the org unit types of each assignable level below `org_unit_id`."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     planning = iaso_client.post(
         "/api/microplanning/plannings/",
         json={

@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('Iaso/api/reports', () => ({
+vi.mock('Iaso/api/reports/endpoints/reports/reports', () => ({
     useApiReportsCreate: vi.fn(),
     useApiReportsVersionsCreate: vi.fn(),
 }));

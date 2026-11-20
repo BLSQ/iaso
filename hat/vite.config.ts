@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
 import * as esbuild from 'esbuild';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
+import type { Plugin } from 'vite';
 
 import {
     generateCombinedConfig,
@@ -19,6 +20,16 @@ dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const hatDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(hatDir, '..');
 const repoNodeModules = path.resolve(repoRoot, 'node_modules');
+const pdfjsDistDir = fs.existsSync(
+    path.join(repoNodeModules, 'pdfjs-dist/package.json'),
+)
+    ? path.join(repoNodeModules, 'pdfjs-dist')
+    : path.join(repoNodeModules, 'react-pdf/node_modules/pdfjs-dist');
+const pdfWorkerFileName = 'iaso-pdf.worker.min.mjs';
+const pdfWorkerSourcePath = path.join(
+    pdfjsDistDir,
+    'build/pdf.worker.min.mjs',
+);
 
 const LOCALE = 'en';
 
@@ -208,6 +219,27 @@ const djangoBuildStats = (statsFile: string): Plugin => ({
     },
 });
 
+/** Serve/copy pdf.js worker at a stable URL (react-pdf default path breaks under Vite). */
+const pdfWorkerPlugin = (): Plugin => ({
+    name: 'iaso:pdfjs-worker',
+    configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+            if (req.url?.split('?')[0] === `/${pdfWorkerFileName}`) {
+                res.setHeader('Content-Type', 'application/javascript');
+                fs.createReadStream(pdfWorkerSourcePath).pipe(res);
+                return;
+            }
+            next();
+        });
+    },
+    closeBundle() {
+        fs.copyFileSync(
+            pdfWorkerSourcePath,
+            path.join(outDir, pdfWorkerFileName),
+        );
+    },
+});
+
 /** Pre-transform entries on server start (Vite runs optimizeDeps automatically during warmup). */
 const devWarmupPlugin = (): Plugin => ({
     name: 'iaso-dev-warmup',
@@ -304,6 +336,11 @@ export default defineConfig(({ mode, command }) => {
             'process.env.ORVAL_API_BASE_URL': JSON.stringify(
                 process.env.ORVAL_API_BASE_URL ?? '',
             ),
+            ...(command === 'serve' && {
+                'import.meta.env.VITE_PDF_WORKER_URL': JSON.stringify(
+                    `${devOrigin}/${pdfWorkerFileName}`,
+                ),
+            }),
         },
         plugins: [
             ...(liveComponents ? [bluesquareLiveSrcPlugin()] : []),
@@ -333,6 +370,7 @@ export default defineConfig(({ mode, command }) => {
                 },
             }),
             // IasoModules/* imports resolve via aliases (same as vitest).
+            pdfWorkerPlugin(),
             djangoDevStats(),
             devWarmupPlugin(),
             djangoBuildStats(statsFile),
@@ -340,6 +378,7 @@ export default defineConfig(({ mode, command }) => {
         resolve: {
             alias: {
                 'react/jsx-runtime.js': 'react/jsx-runtime',
+                'pdfjs-dist': pdfjsDistDir,
                 Iaso: path.resolve(hatDir, 'assets/js/apps/Iaso'),
                 'IasoModules/plugins/configs': combinedConfigPath,
                 'IasoModules/plugins/keys': pluginKeysPath,
@@ -402,6 +441,8 @@ export default defineConfig(({ mode, command }) => {
                 'leaflet-draw',
                 'react-query',
                 'formik',
+                'react-pdf',
+                'warning',
                 ...(liveComponents ? [] : ['bluesquare-components']),
             ],
             ...(liveComponents ? { exclude: ['bluesquare-components'] } : {}),

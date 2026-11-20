@@ -21,14 +21,11 @@ import { FileScanHeader } from './FileScanHeader';
 import { FileScanStatusOpenButton } from './FileScanStatusOpenButton';
 import MESSAGES from './messages';
 
-// Set the workerSrc for pdfjs to enable the use of Web Workers.
-// Web Workers allow the PDF.js library to process PDF files in a separate thread,
-// keeping the main thread responsive and ensuring smooth UI interactions.
-// Note: The PDF file itself is not transferred to the worker; only the processing is offloaded.
-// This is necessary for the react-pdf library to function correctly.
-if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-}
+// react-pdf resets workerSrc to `pdf.worker.mjs` on import (not valid under Vite).
+const PDF_WORKER_FILE = 'iaso-pdf.worker.min.mjs';
+pdfjs.GlobalWorkerOptions.workerSrc = import.meta.env.DEV
+    ? import.meta.env.VITE_PDF_WORKER_URL
+    : new URL(`./${PDF_WORKER_FILE}`, import.meta.url).href;
 
 type PdfPreviewProps = {
     pdf?: string | { path: string; name: string };

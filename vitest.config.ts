@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'path';
 
 import { configDefaults, defineConfig } from 'vitest/config';
@@ -15,6 +16,12 @@ import {
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 const LIB_PATH: string = path.join(__dirname, './hat');
+const repoNodeModules = path.join(__dirname, 'node_modules');
+const pdfjsDistDir = fs.existsSync(
+    path.join(repoNodeModules, 'pdfjs-dist/package.json'),
+)
+    ? path.join(repoNodeModules, 'pdfjs-dist')
+    : path.join(repoNodeModules, 'react-pdf/node_modules/pdfjs-dist');
 const combinedTranslationsPath = generateCombinedTranslations(LIB_PATH);
 const combinedConfigPath = generateCombinedConfig(LIB_PATH);
 const pluginKeysPath = generatePluginKeysFile(LIB_PATH);
@@ -100,6 +107,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
+            'pdfjs-dist': pdfjsDistDir,
             Iaso: path.resolve(LIB_PATH, 'assets', 'js', 'apps', 'Iaso'),
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,

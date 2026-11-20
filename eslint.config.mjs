@@ -415,6 +415,17 @@ export default defineConfig([
         },
     },
     {
+        files: ['hat/vite.config.ts', 'vitest.config.ts'],
+        languageOptions: {
+            parser: tsParser,
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            globals: {
+                ...globals.node,
+            },
+        },
+    },
+    {
         files: ['**/*.{ts,tsx,js,jsx}'],
         ignores: ['Iaso/api/**'],
         rules: {

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest import mock
 
 from rest_framework import status
@@ -28,7 +28,7 @@ class ExportsTestMixin:
         """The rows of the CODA export (after its two header rows) and its first header row (the steps)."""
         rows = list(self._workbook(CODA_EXPORT_URL, user, params).active.iter_rows(values_only=True))
         headers = rows[1]
-        return [dict(zip(headers, row)) for row in rows[2:]], rows[0]
+        return [dict(zip(headers, row, strict=False)) for row in rows[2:]], rows[0]
 
     def _coda_facilities(self, user, params=None):
         rows, _ = self._coda_rows(user, params)
@@ -142,7 +142,7 @@ class OrgUnitScopeTestCase(ExportsTestMixin, OrgUnitScopeTestData, APITestCase):
         # a visit numbered after the others but dated before them
         journey = Journey.objects.get(beneficiary__entity=self.entity)
         Visit.objects.create(
-            journey=journey, date=datetime(2026, 4, 1, 10, tzinfo=timezone.utc), number=3, org_unit=self.facility
+            journey=journey, date=datetime(2026, 4, 1, 10, tzinfo=UTC), number=3, org_unit=self.facility
         )
         sheets = self._raw_sheets(self.user)
         numbers = [row["number"] for row in sheets["visits"] if row["entity_id"] == self.entity.id]
@@ -172,7 +172,7 @@ class OrgUnitScopeTestCase(ExportsTestMixin, OrgUnitScopeTestData, APITestCase):
             ("health center group name", "health center group id"),
         )
         for row in rows[2:]:
-            row = dict(zip(headers, row))
+            row = dict(zip(headers, row, strict=False))
             group_id, group_name = expected[row["health center name"]]
             self.assertEqual((row["health center group id"], row["health center group name"]), (group_id, group_name))
 

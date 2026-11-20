@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from rest_framework import status
 
@@ -198,7 +198,7 @@ class BeneficiaryNestedDataTestCase(APITestCase):
         )
         cls.visit = Visit.objects.create(
             journey=cls.journey,
-            date=datetime(2026, 5, 1, 12, tzinfo=timezone.utc),
+            date=datetime(2026, 5, 1, 12, tzinfo=UTC),
             muac_size="13.1",
             instance_id=cls.visit_instance.id,
         )

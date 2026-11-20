@@ -35,7 +35,11 @@ class EntityDuplicatesPiiAPITestCase(APITestCase):
         )
         # Form without PII configuration: never filtered.
         cls.open_form = m.Form.objects.create(name="Open", form_id="open", possible_fields=possible_fields)
-        for form in (cls.form, cls.open_form):
+        # Form with a PII configuration but no whitelisted question: every question is personal data.
+        cls.locked_form = m.Form.objects.create(
+            name="Locked", form_id="locked", non_pii_fields=[], possible_fields=possible_fields
+        )
+        for form in (cls.form, cls.open_form, cls.locked_form):
             form.projects.add(cls.project)
             m.FormVersion.objects.create(form=form, version_id="1", form_descriptor={})
 
@@ -62,6 +66,19 @@ class EntityDuplicatesPiiAPITestCase(APITestCase):
         )
         cls.open_duplicate = m.EntityDuplicate.objects.create(
             entity1=cls.open_entity1, entity2=cls.open_entity2, analyze=open_analyze, similarity_score=90
+        )
+
+        cls.locked_entity_type = m.EntityType.objects.create(
+            name="Locked child", account=cls.account, reference_form=cls.locked_form
+        )
+        cls.locked_entity1 = cls.create_entity(cls.locked_entity_type, cls.locked_form, "Mariam", "11.8", "East")
+        cls.locked_entity2 = cls.create_entity(cls.locked_entity_type, cls.locked_form, "Mariama", "11.7", "East")
+        locked_analyze = m.EntityDuplicateAnalyzis.objects.create(
+            algorithm="levenshtein",
+            metadata={"entity_type_id": cls.locked_entity_type.id, "fields": ["first_name", "muac"]},
+        )
+        cls.locked_duplicate = m.EntityDuplicate.objects.create(
+            entity1=cls.locked_entity1, entity2=cls.locked_entity2, analyze=locked_analyze, similarity_score=90
         )
 
         cls.user = cls.create_user_with_profile(
@@ -141,3 +158,29 @@ class EntityDuplicatesPiiAPITestCase(APITestCase):
 
         fields = self.get_detail_fields(self.open_duplicate)
         self.assertEqual(fields["first_name"], ("Fatou", "Fatoumata"))
+
+    def test_form_without_whitelisted_fields_hides_all_pii_without_permission(self):
+        self.client.force_authenticate(self.user)
+
+        for row in (
+            self.find_in_list(self.get_list(), self.locked_duplicate),
+            self.get_duplicate(self.locked_duplicate),
+        ):
+            self.assertNotIn("Mariam", json.dumps(row))
+            # Only the technical keys are left
+            self.assertEqual(row["entity1"]["json"], {"_version": "1"})
+            self.assertEqual(row["entity2"]["json"], {"_version": "1"})
+
+        self.assertEqual(self.get_detail_fields(self.locked_duplicate), {})
+
+    def test_form_without_whitelisted_fields_shows_pii_with_permission(self):
+        self.client.force_authenticate(self.pii_user)
+
+        row = self.get_duplicate(self.locked_duplicate)
+        self.assertEqual(row["entity1"]["json"]["first_name"], "Mariam")
+        self.assertEqual(row["entity2"]["json"]["district"], "East")
+
+        fields = self.get_detail_fields(self.locked_duplicate)
+        self.assertEqual(fields["first_name"], ("Mariam", "Mariama"))
+        self.assertEqual(fields["muac"], ("11.8", "11.7"))
+        self.assertEqual(fields["district"], ("East", "East"))

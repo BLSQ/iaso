@@ -43,3 +43,14 @@ class FilterPiiTestCase(SimpleTestCase):
     def test_jsonlogic_vars(self):
         logic = {"and": [{"==": [{"var": "gender"}, "F"]}, {">": [{"var": ["age__int__"]}, 3]}]}
         self.assertEqual(jsonlogic_vars(logic), {"gender", "age__int__"})
+
+    def test_jsonlogic_vars_include_entities_form_selector(self):
+        """In an entities `fields_search`, the form selector of `some`/`all`/`none` is collected like a question."""
+        logic = {
+            "or": [
+                {"some": [{"var": "form_a"}, {"and": [{"==": [{"var": "gender"}, "F"]}, {">": [{"var": "age"}, 3]}]}]},
+                {"all": [{"var": "form_b"}, {"==": [{"var": ["district", ""]}, "North"]}]},
+                {"none": [{"var": "form_c"}, {"!=": [{"var": "muac"}, "12"]}]},
+            ]
+        }
+        self.assertEqual(jsonlogic_vars(logic), {"gender", "age", "district", "muac", "form_a", "form_b", "form_c"})

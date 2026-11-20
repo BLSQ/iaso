@@ -103,6 +103,7 @@ export const PlanningListActions: FunctionComponent<
                     disabled={cannotDelete}
                     onConfirm={() => deletePlanning(planning.id)}
                     keyName="delete-planning"
+                    Trigger={() => <></>}
                 />
             )}
         </>

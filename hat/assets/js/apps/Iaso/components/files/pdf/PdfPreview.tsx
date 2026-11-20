@@ -17,18 +17,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { useNavigate } from 'react-router-dom';
 import { fileScanResultInfected } from 'Iaso/constants/fileScanResults';
 import { SxStyles } from 'Iaso/types/general';
+import { configurePdfWorker } from './configurePdfWorker';
 import { FileScanHeader } from './FileScanHeader';
 import { FileScanStatusOpenButton } from './FileScanStatusOpenButton';
 import MESSAGES from './messages';
 
-// Set the workerSrc for pdfjs to enable the use of Web Workers.
-// Web Workers allow the PDF.js library to process PDF files in a separate thread,
-// keeping the main thread responsive and ensuring smooth UI interactions.
-// Note: The PDF file itself is not transferred to the worker; only the processing is offloaded.
-// This is necessary for the react-pdf library to function correctly.
-if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-}
+configurePdfWorker(pdfjs);
 
 type PdfPreviewProps = {
     pdf?: string | { path: string; name: string };

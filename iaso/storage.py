@@ -14,10 +14,10 @@ class StaticStorage(S3Boto3Storage):
 
 
 # Azure Blob Storage never compresses responses on the fly (unlike S3 behind CloudFront),
-# so without this static assets are served uncompressed and webpack bundles can be several MB.
+# so without this static assets are served uncompressed and frontend bundles can be several MB.
 COMPRESSIBLE_EXTENSIONS = (".js", ".css", ".svg", ".json", ".txt", ".xml", ".map")
 
-# webpack.prod.js names bundles/fonts/videos with a contenthash (e.g. "common-0a9eef66a245a98d5295.js"),
+# Vite/Rollup prod output uses [name]-[hash].js (hat/vite.config.ts rollupOptions.output);
 # so those filenames change whenever the content does and can be cached forever. Anything else
 # (e.g. Django admin's static files) keeps a fixed name across deploys and can't be cached that long.
 _HASHED_ASSET_RE = re.compile(r"[.-][0-9a-f]{8,}\.[^./]+$")

@@ -33,52 +33,22 @@ The system generates several files in the `hat/assets/js/apps/Iaso/bundle/genera
 - `combinedConfig.js` - Combined configuration for plugins
 - `pluginKeys.js` - Keys for plugin integration
 
-### Module Federation
+### Vite aliases (`IasoModules`)
 
-Iaso exposes these generated files through Webpack's ModuleFederationPlugin:
+Generated translation and plugin bundles are imported via Vite aliases (``hat/vite.config.ts``):
 
-```javascript
-new ModuleFederationPlugin({
-    name: 'IasoModules',
-    filename: 'remoteEntry.js',
-    library: { type: 'self', name: 'IasoModules' },
-    exposes: {
-        './plugins/configs': combinedConfigPath,
-        './plugins/keys': pluginKeysPath,
-        './translations/configs': combinedTranslationsPath,
-        './language/configs': languageConfigsPath,
+```typescript
+resolve: {
+    alias: {
+        'IasoModules/plugins/configs': combinedConfigPath,
+        'IasoModules/plugins/keys': pluginKeysPath,
+        'IasoModules/translations/configs': combinedTranslationsPath,
+        'IasoModules/language/configs': languageConfigsPath,
     },
-    shared: {
-        react: {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-        },
-        'react-dom': {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-        },
-        'react-intl': {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-        },
-        '@mui/material': {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-        },
-        'bluesquare-components': {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-        },
-    },
-});
+},
 ```
 
-Additionally, the webpack configuration includes aliases for these exposed modules:
+Aliases in ``hat/vite.config.ts`` (same pattern):
 
 ```javascript
 resolve: {
@@ -178,7 +148,7 @@ These configuration files are used to:
 
 ### Development Mode
 
-In development (`webpack.dev.js`):
+In development (`hat/vite.config.ts`):
 
 - Translation files are generated on-the-fly when changes are detected
 - Hot Module Replacement (HMR) is enabled for quick development
@@ -186,7 +156,7 @@ In development (`webpack.dev.js`):
 
 ### Production Mode
 
-In production (`webpack.prod.js`):
+In production (`hat/vite.config.ts`):
 
 - Translation files are generated once during the build process
 - Translations are optimized and minified

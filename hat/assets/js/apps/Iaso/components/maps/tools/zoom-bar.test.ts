@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import location from '../../../images/location.svg';
 import square from '../../../images/square.svg';
 
@@ -97,10 +97,6 @@ const button = (element: HTMLElement, className: string): HTMLAnchorElement => {
 };
 
 describe('zoom bar', () => {
-    beforeEach(() => {
-        window.STATIC_URL = '/static/';
-    });
-
     it('renders zoom in, zoom out and box zoom, and skips fit without a callback', () => {
         const { element } = addControl(createMap());
 
@@ -116,7 +112,7 @@ describe('zoom bar', () => {
             button(element, 'leaflet-control-zoom-box')
                 .querySelector('img')
                 ?.getAttribute('src'),
-        ).toBe(`${window.STATIC_URL}${square}`);
+        ).toBe(square);
         expect(
             element.querySelector('.leaflet-control-zoom-fit'),
         ).not.toBeInTheDocument();
@@ -131,9 +127,7 @@ describe('zoom bar', () => {
         const fit = button(element, 'leaflet-control-zoom-fit');
 
         expect(fit.title).toBe('Fit to bounds');
-        expect(fit.querySelector('img')?.getAttribute('src')).toBe(
-            `${window.STATIC_URL}${location}`,
-        );
+        expect(fit.querySelector('img')?.getAttribute('src')).toBe(location);
 
         fit.click();
 

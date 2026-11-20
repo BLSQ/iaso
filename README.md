@@ -420,7 +420,7 @@ The following are some examples:
 The list of the main containers:
 
 - iaso The python backend in [Django](https://www.djangoproject.com/)
-- webpack The JS frontend in react
+- frontend The React frontend (Vite dev server)
 - db [PostgreSQL](https://www.postgresql.org/) database
 
 All the container definitions for development can be found in the
@@ -694,18 +694,17 @@ sequenceDiagram
 ## Old browsers support
 
 You can launch frontend dev server with `OLD_BROWSER=true npm run dev`
-Webpack will compile the frontend for old browsers as it is in prod
+Vite will compile the frontend for old browsers as in prod when `OLD_BROWSER=true`.
 
-## Webpack dev and env variables
+## Vite dev and env variables
 
-You can add your variables in your `.env` file to customise webpack build in development
+You can add your variables in your `.env` file to customise the Vite dev server and build output
 
 ```bash
-cd ..
-WEBPACK_HOST="IP_OR_DOMAIN"
-WEBPACK_PORT="PORT_USED"
-WEBPACK_PROTOCOL="http_OR_https"
-WEBPACK_PATH="PATH_TO_WRITE_BUILD"
+VITE_HOST="IP_OR_DOMAIN"
+VITE_PORT="3000"
+VITE_PROTOCOL="http_OR_https"
+VITE_OUT_DIR="hat/assets/frontend"
 ```
 
 ## Live Bluesquare components
@@ -730,7 +729,7 @@ LIVE_COMPONENTS=true docker compose up
 
 This way the page will reload automatically if you make a change to the bluesquare-components code.
 
-This functionality also works if you launch webpack outside of docker.
+This functionality also works if you launch the Vite dev server outside of Docker.
 
 If you encounter any problem, first check that your repo is on the correct branch and the deps are up-to-date
 
@@ -863,7 +862,7 @@ docker compose up
 ## SASS & SCSS
 
 Scss files are only used to generate the style of the DJango Templates.
-It is not longer part of the webpack app.
+It is no longer part of the main IASO frontend app.
 While editing scss files you have to compile it manually with the command:
 
 - Inside docker: `docker compose exec iaso ./manage.py compile_index_scss`
@@ -1028,21 +1027,19 @@ These are actually exactly the same steps we use on AWS.
 ### Testing prod js assets in development
 
 During local development, by default, the Javascript and CSS will be loaded from
-a webpack server with live reloading of the code. To locally test the compiled
-version as it is in production ( minified and with the same compilation option).
-You can launch docker compose with the `TEST_PROD=true` environment variable
-set.
+a Vite dev server with live reloading of the code. To locally test the compiled
+version as it is in production (minified with the same build options),
+launch docker compose with `TEST_PROD=true` set.
 
-e.g `TEST_PROD=true docker compose up`
+e.g. `TEST_PROD=true docker compose up`
 
-This can be useful to reproduce production only bugs. Please also test with this
-configuration whenever you modify webpack.prod.js to validate your changes.
+This can be useful to reproduce production-only bugs. Also test with this
+configuration when you change `hat/vite.config.ts`.
 
-Alternatively this can be done outside of docker by running:
+Alternatively outside Docker:
 
-1. `npm run webpack-prod` to do the build
-2. Launching the django server with `TEST_PROD`
-   e.g. `TEST_PROD=true python manage.py runserver`.
+1. `npm run build:prod`
+2. Django with `TEST_PROD=true`, e.g. `TEST_PROD=true python manage.py runserver`
 
 # Background tasks & worker
 

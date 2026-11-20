@@ -1,6 +1,6 @@
 # Using Plugins in Iaso Frontend
 
-Iaso uses Webpack's Module Federation to dynamically load plugins at runtime. This guide explains how the plugin system works and how to create new plugins.
+Iaso loads plugins at build time via Vite (generated `IasoModules/*` bundles and aliases in ``hat/vite.config.ts``). This guide explains how the plugin system works and how to create new plugins.
 
 ## Overview
 
@@ -19,7 +19,7 @@ During the build process (both development and production), Iaso:
 1. Scans the `/plugins` directory for valid plugin folders
 2. Looks for plugin configuration files (`config.tsx`)
 3. Generates combined configuration files
-4. Makes these files available through Module Federation
+4. Exposes them as `IasoModules/*` imports resolved by Vite
 
 ### Generated Files
 
@@ -28,27 +28,17 @@ The system generates several files in the `hat/assets/js/apps/Iaso/bundle/genera
 - `combinedPluginConfigs.js` - Combined configurations from all plugins
 - `pluginKeys.js` - List of available plugin identifiers
 
-### Module Federation
+### Vite aliases (`IasoModules`)
 
-Iaso exposes these generated files through Webpack's ModuleFederationPlugin:
+The main app imports generated plugin files through aliases (see ``hat/vite.config.ts``):
 
-```javascript
-new ModuleFederationPlugin({
-    name: 'IasoModules',
-    filename: 'remoteEntry.js',
-    exposes: {
-        './plugins/configs': combinedConfigPath,
-        './plugins/keys': pluginKeysPath,
+```typescript
+resolve: {
+    alias: {
+        'IasoModules/plugins/configs': combinedConfigPath,
+        'IasoModules/plugins/keys': pluginKeysPath,
     },
-    shared: {
-        // Shared dependencies between plugins and main app
-        react: { singleton: true, eager: true },
-        'react-dom': { singleton: true, eager: true },
-        'react-intl': { singleton: true, eager: true },
-        '@mui/material': { singleton: true, eager: true },
-        'bluesquare-components': { singleton: true, eager: true },
-    },
-})
+},
 ```
 
 ## Plugin Structure
@@ -233,7 +223,7 @@ A key that no host screen asks for is never rendered. Adding a slot means render
 
 ### Development Mode
 
-In development (`webpack.dev.js`):
+In development (`hat/vite.config.ts`):
 - Files are generated on-the-fly when changes are detected
 - Hot Module Replacement (HMR) is enabled for quick development
 - Source maps are available for debugging
@@ -241,7 +231,7 @@ In development (`webpack.dev.js`):
 
 ### Production Mode
 
-In production (`webpack.prod.js`):
+In production (`hat/vite.config.ts`):
 - Files are generated once during the build process
 - Code is minified and optimized
 - Dead code elimination is performed

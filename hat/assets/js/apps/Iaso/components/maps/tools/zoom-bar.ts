@@ -142,8 +142,9 @@ const zoomBarExtension: ZoomBarPrototype & ThisType<ZoomBar> = {
             this,
         );
 
+        // Bundler-resolved URLs (not djangoStaticUrl — see Iaso/utils/djangoStaticUrl.ts).
         this._zoomBoxButton = this._createButton(
-            `<img src="${window.STATIC_URL}${square}"/>`,
+            `<img src="${square}"/>`,
             options.zoomBoxTitle,
             `${className}-box`,
             container,
@@ -153,7 +154,7 @@ const zoomBarExtension: ZoomBarPrototype & ThisType<ZoomBar> = {
 
         if (options.fitToBounds) {
             this._fitToBoundsButton = this._createButton(
-                `<img src="${window.STATIC_URL}${location}"/>`,
+                `<img src="${location}"/>`,
                 options.fitToBoundsTitle,
                 `${className}-fit`,
                 container,

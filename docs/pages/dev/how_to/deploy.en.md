@@ -21,9 +21,9 @@ To avoid long/failing deployment, we commit the production assets in the reposit
 ```
 git checkout development
 git pull
-rm hat/assets/webpack/*
-npm run webpack-prod
-git add hat/assets/webpack/
+rm hat/assets/frontend/*
+npm run build:prod
+git add hat/assets/frontend/
 git commit -m 'Committing assets'
 git push
 ```

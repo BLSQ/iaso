@@ -1,44 +1,38 @@
 # Front-end reference
 
-Frontend assets include JS, CSS, translations and images. They are all handled
-by webpack. Most of the structure is taken from this blog post:
-http://owaislone.org/blog/webpack-plus-reactjs-and-django/
+Frontend assets include JS, CSS, translations and images. They are built with
+**Vite** (`hat/vite.config.ts`). Output and bundle statistics live under
+``hat/assets/frontend/``.
 
-Frontend assets are mounted on the pages via the
-`django-webpack-loader <https://github.com/owais/django-webpack-loader>`__
+Django templates mount bundles via ``{% load render_bundle from frontend_bundles %}``
+(``iaso.frontend_bundles`` reads ``bundle-stats*.json`` written by Vite).
 
 
 Build
 =====
 
-The 2 builds, dev and prod
---------------------------
+Dev and prod
+------------
 
-* There are two webpack configuration files: ``webpack.dev.js`` and ``webpack.prod.js``.
+* Dev: ``npm run dev`` (Docker: ``docker compose up frontend`` → ``start_frontend``)
 
-* A JS production build is created inside the docker-file, via ``npm run build``
+* Prod: ``npm run build`` (default Vite production mode; ``build:prod`` is an alias). Dev bundle: ``npm run build:dev``.
 
-* the ``start_dev`` entry point starts a webpack development server, that watches
-  assets, rebuilds and does hot reloading of JS Components.
+* Local prod check: ``npm run preview`` after ``npm run build``.
 
-
-CSS Build
----------
-
-The CSS build is separate, and can contain both ``.sass`` and ``.css`` files.
-They spit out a webpack build called ``styles.css``.
+* Stats files: ``bundle-stats.json`` (dev) / ``bundle-stats-prod.json`` (prod)
 
 
-JS Build
+JS build
 --------
 
-Each page has their own JS entry point (needs to be defined in both webpack files).
-On top of that, they load a common chunk, containing ``react``, ``react-intl`` and other
-stuff that the ``webpack common chunk`` plugin finds is shared between the apps.
+Rollup entry points are declared in ``hat/vite.config.ts`` (`common`, `iaso`,
+`superset`). Add new pages by extending ``rollupOptions.input`` and writing
+stats for Django via the bundle-stats Vite plugin.
 
 
-Including a JS bundle via django-webpack-loader
------------------------------------------------
+Including a JS bundle in a Django template
+----------------------------------------
 
 If we have created a new JS app ``MyCustomApp`` in ``hat/assets/js/apps/``.
 
@@ -63,27 +57,13 @@ Folders and files affected::
         + dashboard/
           . my_custom_app.html
 
-      . webpack.dev.js
-      . webpack.prod.js
+      . vite.config.ts
 
 
 These are the steps to visualize it within the dashboard:
 
-- In ``hat/webpack.dev.js`` include a new ``entry``.
-
-```javascript
-    'my_custom_app': [
-    'webpack-dev-server/client?' + WEBPACK_URL,
-    'webpack/hot/only-dev-server',
-    './assets/js/apps/MyCustomApp/index'
-    ],
-```
-
-- In ``hat/webpack.prod.js`` include a new ``entry``.
-
-```javascript
-    'my_custom_app': './assets/js/apps/MyCustomApp/index',
-```
+- In ``hat/vite.config.ts``, add a Rollup input and extend the django stats plugin
+  entry map (same pattern as ``iaso`` / ``superset``).
 
 - In ``hat/dashboard/views.py`` include a new view.
 
@@ -110,7 +90,7 @@ These are the steps to visualize it within the dashboard:
 ```html
       {% extends 'app.html' %}
       {% load i18n %}
-      {% load render_bundle from webpack_loader %}
+      {% load render_bundle from frontend_bundles %}
 
       {% block header %}
         <h1 class="header__title">{% trans 'My Custom App' %}</h1>
@@ -144,7 +124,7 @@ Testing the production build
       TEST_PROD=true docker compose up
 
 When the setup is run with ``TEST_PROD=true``, it will exit the unneeded containers
-``webpack`` and ``jupyter``. It will also run the webpack build during startup, so
+``frontend`` and ``jupyter``. With ``TEST_PROD=true`` it runs a production build at startup, so
 that there is no need to rebuild the image for that.
 
 JS Unit Testing
@@ -176,7 +156,7 @@ or
 Translations
 ============
 
-Translations are extracted on the first webpack build. Just like the django
+Translations are extracted on the first production Vite build. Just like the django
 translation strings; translations are downloaded for every `Travis CI <https://travis-ci.com>`__
 build, and uploaded on the ``development`` branch.
 

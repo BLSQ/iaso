@@ -253,7 +253,6 @@ INSTALLED_APPS += [
     "rest_framework",
     "rest_framework_api_key",
     "rest_framework_gis",
-    "webpack_loader",
     "django_ltree",
     "hat",
     "hat.sync",
@@ -673,7 +672,7 @@ else:
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
-    os.path.join(BASE_DIR, "hat/assets/webpack"),
+    os.path.join(BASE_DIR, "hat/assets/frontend"),
 ]
 for plugin_name in PLUGINS:
     plugin_name = (plugin_name or "").strip()
@@ -683,17 +682,17 @@ for plugin_name in PLUGINS:
     if os.path.isdir(plugin_static):
         STATICFILES_DIRS.append(plugin_static)
 
-# Javascript/CSS Files:
-WEBPACK_LOADER = {
+# Vite writes bundle-stats*.json; iaso.frontend_bundles renders script/link tags in templates.
+FRONTEND_BUNDLE_LOADER = {
     "DEFAULT": {
         "BUNDLE_DIR_NAME": "",  # used in prod
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,
-            "assets/webpack",
+            "assets/frontend",
             (
-                "webpack-stats.json"
+                "bundle-stats.json"
                 if (DEBUG and not env.bool("TEST_PROD", default=False) and not USE_S3)
-                else "webpack-stats-prod.json"
+                else "bundle-stats-prod.json"
             ),
         ),
     },
@@ -977,8 +976,8 @@ for plugin_name in PLUGINS:
         if hasattr(plugin_settings, "STATICFILES_DIRS"):
             STATICFILES_DIRS.extend(plugin_settings.STATICFILES_DIRS)
 
-        if hasattr(plugin_settings, "WEBPACK_LOADER"):
-            WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
+        if hasattr(plugin_settings, "FRONTEND_BUNDLE_LOADER"):
+            FRONTEND_BUNDLE_LOADER |= plugin_settings.FRONTEND_BUNDLE_LOADER
 
         if hasattr(plugin_settings, "DEFAULT_THROTTLE_RATES"):
             REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update(plugin_settings.DEFAULT_THROTTLE_RATES)

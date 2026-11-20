@@ -126,13 +126,18 @@ Lorsque cette variable est définie, Product Fruits sera activé et seuls le nom
 
 | Nom              | Optionnel | Valeur par défaut | Description                                          |
 | :--------------- | :-------- | :---------------- | :--------------------------------------------------- |
-| `WEBPACK_HOST`   | true      | `localhost`       | Hôte du serveur de développement.                    |
-| `WEBPACK_PORT`   | true      | `3000`            | Port du serveur de développement.                    |
-| `WEBPACK_PROTOCOL` | true      | `http`            | Protocole du serveur de développement.               |
-| `WEBPACK_PATH`   | true      | `./assets/webpack/` | Chemin des fichiers de sortie webpack.               |
-| `WEBPACK_POLL`   | true      | `false`           | Polling des fichiers (nécessaire sous Docker ; plus lent, à laisser désactivé en local). |
+| `VITE_HOST`   | true      | `localhost`       | Hôte du serveur de développement Vite.                    |
+| `VITE_PORT`   | true      | `3000`            | Port du serveur de développement Vite.                    |
+| `VITE_PROTOCOL` | true      | `http`            | Protocole du serveur de développement Vite.               |
+| `VITE_OUT_DIR`   | true      | `hat/assets/frontend` | Répertoire des assets frontend compilés et des bundle stats.               |
+| `VITE_POLL`   | true      | `false`           | Polling des fichiers (nécessaire sous Docker ; plus lent, à laisser désactivé en local). |
 | `OLD_BROWSER`    | true      | `false`           | Active le mode de compatibilité pour les navigateurs plus anciens. |
 | `LIVE_COMPONENTS` | true      | `false`           | Utilise les composants `bluesquare-components` locaux pour le développement. |
+| `ORVAL_API_BASE_URL` | true   | `''`              | URL de base des clients API générés par Orval (injectée via `define` dans `hat/vite.config.ts`). |
+
+### Vite et le `.env` partagé
+
+Django et Vite lisent le **même** `.env` à la racine du dépôt. Voir la section équivalente en anglais dans `env_variables.en.md` (`Vite and the shared .env`) : `envDir`, préfixe `VITE_*`, rôle de `dotenv.config` dans `hat/vite.config.ts`, et [guide Vite env/mode](https://vite.dev/guide/env-and-mode).
 
 ### Paramètres de langue
 

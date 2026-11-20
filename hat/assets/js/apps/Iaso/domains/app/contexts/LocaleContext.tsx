@@ -10,6 +10,8 @@ import moment from 'moment';
 import { loadZodLocale } from 'Iaso/libs/zodUtils';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
+import { loadMomentLocale } from '../utils/momentLocales';
+
 const LocaleContext = createContext({
     locale: moment.locale(),
     setLocale: (_locale: LangOptions) => {
@@ -52,7 +54,9 @@ export const LocaleProvider = ({ children }: { children: React.ReactNode }) => {
         () => ({
             locale,
             setLocale: (newLocale: LangOptions) => {
-                updateMomentLocale(newLocale);
+                void loadMomentLocale(newLocale).finally(() =>
+                    updateMomentLocale(newLocale),
+                );
                 setLocale(newLocale);
             },
         }),

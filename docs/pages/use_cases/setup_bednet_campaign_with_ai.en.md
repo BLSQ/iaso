@@ -166,19 +166,10 @@ The more of these decisions you have already made, the quicker the configuration
 | Stock | the stores tracked, the number of nets per bale | the list of stores |
 | Users | who uses which project, in which area | the list of agents |
 
-You can install the IASO app as soon as the assistant shows the QR codes, but the phone shows
-little until the rest exists:
-
-| After | On the phone |
-|---|---|
-| the projects | the app can be set up with the project's QR code, but shows nothing yet |
-| the forms and the users | an agent logs in, synchronises and sees the forms |
-| the registries and their follow-ups | households and workers can be registered and found again |
-| the stock | the stock forms; balances appear after a first receipt |
-| the mobile reports | the report opens from the app |
-
-The first useful test on a phone is therefore once the users exist, about two thirds into the
-session.
+The assistant shows the QR codes at the end, once every project is fully configured (forms,
+registries and their follow-ups, stock, users and reports): before that, the app would be empty
+or incomplete. It also gives you a sheet of test QR codes (household tickets, nets, bales), since
+you have no real ones yet: print it, or scan it from your screen.
 
 ### Step 6: Test on a phone
 
@@ -194,8 +185,10 @@ session.
 4. **Open the IASO app** on the phone, choose to scan a QR code and scan the QR code of the
    project to test. Accept the permission requests that show up (camera, location…).
 5. **Log in** with the user chosen in point 2.
-6. Follow the test checklist the assistant gives you: register a household, find it again,
-   distribute nets, register a worker, record a stock movement.
+6. Follow the **guided test** the assistant proposes, with the test QR codes: register two
+   households with the test tickets, distribute nets to one of them, register a special group
+   and a worker, record a stock movement. A new campaign has no data, so this is what fills the
+   lists, follow-ups and reports of each project.
 7. Open the mobile reports, with network and then in airplane mode.
 
 !!! note "Where are the stock forms?"

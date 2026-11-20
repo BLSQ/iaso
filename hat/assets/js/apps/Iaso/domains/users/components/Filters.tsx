@@ -12,7 +12,7 @@ import {
     useSafeIntl,
     InputWithInfos,
 } from 'bluesquare-components';
-import { useApiTeamsDropdownList } from 'Iaso/api/teams';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { stringToBoolean } from 'Iaso/utils/dataManipulation';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';

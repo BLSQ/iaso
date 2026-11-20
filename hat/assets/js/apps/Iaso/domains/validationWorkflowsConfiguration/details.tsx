@@ -12,10 +12,9 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    useApiValidationWorkflowsRetrieve,
-    ValidationWorkflowRetrieve,
-} from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsRetrieve } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';

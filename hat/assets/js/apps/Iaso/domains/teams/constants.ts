@@ -2,8 +2,8 @@ import {
     getApiTeamsDropdownListQueryKey,
     getApiTeamsListQueryKey,
     getApiTeamsTreeListQueryKey,
-    Value8edEnum,
-} from 'Iaso/api/teams';
+} from 'Iaso/api/teams/endpoints/teams/teams';
+import { Value8edEnum } from 'Iaso/api/teams/models/value8edEnum.zod';
 
 export { Value8edEnum as TeamType };
 

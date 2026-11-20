@@ -19,7 +19,7 @@ import {
     useApiAccountsUpdate,
 } from 'Iaso/api/accounts/endpoints/account/account';
 import { ApiAccountsUpdateBody } from 'Iaso/api/accounts/models/apiAccountsUpdateBody.zod';
-import { useApiModulesDropdownList } from 'Iaso/api/modules';
+import { useApiModulesDropdownList } from 'Iaso/api/modules/endpoints/modules/modules';
 import Page404 from 'Iaso/components/errors/Page404';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';

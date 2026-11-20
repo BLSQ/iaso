@@ -414,4 +414,21 @@ export default defineConfig([
             'no-process-env': 'off',
         },
     },
+    {
+        files: ['**/*.{ts,tsx,js,jsx}'],
+        ignores: ['Iaso/api/**'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex:                 "^Iaso/api/(?![^/]+/(?:endpoints|models)/(?:[^/]+/(?!index(?:\\.|$))[^/]+|(?!index\\.zod$)[^/]+\\.zod)$).*",
+                            message: 'Import API modules through their endpoint or models files.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
 ]);

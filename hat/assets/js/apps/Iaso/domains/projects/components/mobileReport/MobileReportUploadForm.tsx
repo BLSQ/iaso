@@ -4,10 +4,10 @@ import Button from '@mui/material/Button/Button';
 import Typography from '@mui/material/Typography/Typography';
 import { FilesUpload, useSafeIntl } from 'bluesquare-components';
 import {
-    Report,
     useApiReportsCreate,
     useApiReportsVersionsCreate,
-} from 'Iaso/api/reports';
+} from 'Iaso/api/reports/endpoints/reports/reports';
+import { Report } from 'Iaso/api/reports/models/report.zod';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../../messages';
 

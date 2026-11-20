@@ -9,7 +9,7 @@ import TableContainer from '@mui/material/TableContainer/TableContainer';
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { FieldArrayRenderProps, useFormikContext } from 'formik';
 import { FormikContextType } from 'formik/dist/types';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import {
     useGetFormsDropdownOptions,
     UseGetFormsDropdownParams,

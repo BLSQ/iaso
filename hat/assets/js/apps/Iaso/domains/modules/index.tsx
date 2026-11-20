@@ -4,7 +4,7 @@ import Box from '@mui/material/Box/Box';
 import Grid from '@mui/material/Grid/Grid';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useApiModulesList } from 'Iaso/api/modules';
+import { useApiModulesList } from 'Iaso/api/modules/endpoints/modules/modules';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';

@@ -3,7 +3,7 @@ import Box from '@mui/material/Box/Box';
 import type { Theme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
-import { useApiTeamsList } from 'Iaso/api/teams';
+import { useApiTeamsList } from 'Iaso/api/teams/endpoints/teams/teams';
 import { ColumnsSelectDrawer } from 'Iaso/components/tables/ColumnSelectDrawer';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';

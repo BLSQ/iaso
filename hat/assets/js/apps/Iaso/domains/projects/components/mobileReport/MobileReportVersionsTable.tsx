@@ -10,12 +10,11 @@ import TableHead from '@mui/material/TableHead/TableHead';
 import TableRow from '@mui/material/TableRow/TableRow';
 import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
-import {
-    Report,
-    ReportVersion,
-    useApiReportsPublishCreate,
-} from 'Iaso/api/reports';
-import { convertToDateTimeRfc } from '../../../../components/Cells/DateTimeCell';
+import { useApiReportsPublishCreate } from 'Iaso/api/reports/endpoints/reports/reports';
+import { Report } from 'Iaso/api/reports/models/report.zod';
+
+import { ReportVersion } from 'Iaso/api/reports/models/reportVersion.zod';
+import { convertToDateTimeRfc } from 'Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../messages';
 
 type Props = {

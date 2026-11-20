@@ -17,8 +17,8 @@ import {
 import {
     useApiValidationWorkflowsCreate,
     useApiValidationWorkflowsUpdate,
-    ValidationWorkflowRetrieve,
-} from 'Iaso/api/validationWorkflows';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useAsyncInitialState } from 'Iaso/hooks/useAsyncInitialState';

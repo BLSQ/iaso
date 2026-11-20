@@ -1,10 +1,8 @@
 import React, { FC } from 'react';
 import Box from '@mui/material/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
-import {
-    MissionEntityTypeRetrieve,
-    MissionOrgUnitTypeRetrieve,
-} from 'Iaso/api/missions';
+import { MissionEntityTypeRetrieve } from 'Iaso/api/missions/models/missionEntityTypeRetrieve.zod';
+import { MissionOrgUnitTypeRetrieve } from 'Iaso/api/missions/models/missionOrgUnitTypeRetrieve.zod';
 import { CREATED_TYPE_CONFIG } from '../../constants';
 import MESSAGES from '../../messages';
 import { CreatedTypeMissionType } from '../../types';

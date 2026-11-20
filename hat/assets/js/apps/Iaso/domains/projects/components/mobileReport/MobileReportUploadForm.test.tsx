@@ -33,7 +33,7 @@ vi.mock('bluesquare-components', async importOriginal => ({
 import {
     useApiReportsCreate,
     useApiReportsVersionsCreate,
-} from 'Iaso/api/reports';
+} from 'Iaso/api/reports/endpoints/reports/reports';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { MobileReportUploadForm } from './MobileReportUploadForm';
 

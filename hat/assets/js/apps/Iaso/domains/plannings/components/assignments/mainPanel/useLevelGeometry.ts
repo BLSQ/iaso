@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
-import {
-    OrgUnitBuildTreeWithGeom,
-    useApiMicroplanningPlanningsOrgUnitTreeWithGeomList,
-} from 'Iaso/api/plannings';
+import { useApiMicroplanningPlanningsOrgUnitTreeWithGeomList } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
+import { OrgUnitBuildTreeWithGeom } from 'Iaso/api/plannings/models/orgUnitBuildTreeWithGeom.zod';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import { MapPresence, OrgUnitFeatureProperties } from './types';
 import { getLevelTreeParams } from './utils';

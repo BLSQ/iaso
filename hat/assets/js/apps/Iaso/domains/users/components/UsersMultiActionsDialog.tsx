@@ -26,7 +26,7 @@ import {
 
 import { isEqual } from 'lodash';
 import { UseMutateAsyncFunction } from 'react-query';
-import { useApiTeamsDropdownList } from 'Iaso/api/teams';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 

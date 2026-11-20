@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid/Grid';
 import Stack from '@mui/material/Stack/Stack';
 import Typography from '@mui/material/Typography/Typography';
 import { makeFullModal, useSafeIntl } from 'bluesquare-components';
-import { useApiTeamsDropdownList } from 'Iaso/api/teams';
+import { useApiTeamsDropdownList } from 'Iaso/api/teams/endpoints/teams/teams';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';

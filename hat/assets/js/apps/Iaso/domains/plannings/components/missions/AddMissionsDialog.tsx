@@ -21,10 +21,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { debounce, noop } from 'lodash';
-import {
-    MissionPolymorphicList,
-    useApiMicroplanningMissionsList,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsList } from 'Iaso/api/missions/endpoints/missions/missions';
+import { MissionPolymorphicList } from 'Iaso/api/missions/models/missionPolymorphicList.zod';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { MissionTypeCaption } from 'Iaso/domains/missions/components/chips/MissionTypeCaption';
 import MISSION_MESSAGES from 'Iaso/domains/missions/messages';

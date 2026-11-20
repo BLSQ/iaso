@@ -1,7 +1,7 @@
 import AssignmentIndIcon from '@mui/icons-material/AssignmentIndOutlined';
 import DescriptionIcon from '@mui/icons-material/DescriptionOutlined';
 import LocationOnIcon from '@mui/icons-material/LocationOnOutlined';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import MESSAGES from './messages';
 
 export const MISSION_TYPE_OPTIONS = [

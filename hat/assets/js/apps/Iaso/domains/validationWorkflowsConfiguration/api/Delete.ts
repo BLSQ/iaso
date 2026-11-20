@@ -3,7 +3,7 @@ import { UseMutationResult } from 'react-query';
 import {
     getApiValidationWorkflowsListQueryKey,
     getApiValidationWorkflowsRetrieveQueryKey,
-} from 'Iaso/api/validationWorkflows';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import { deleteRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { API_URL, WF_BASE_QUERYKEY } from '../constants';

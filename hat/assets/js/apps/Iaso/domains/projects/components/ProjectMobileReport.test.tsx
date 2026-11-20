@@ -16,7 +16,7 @@ import {
     useApiReportsPublishCreate,
     useApiReportsVersionsCreate,
     useApiReportsVersionsList,
-} from 'Iaso/api/reports';
+} from 'Iaso/api/reports/endpoints/reports/reports';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';
 import { ProjectMobileReport } from './ProjectMobileReport';
 

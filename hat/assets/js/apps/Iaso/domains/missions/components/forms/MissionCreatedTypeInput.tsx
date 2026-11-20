@@ -1,12 +1,10 @@
 import React, { useCallback } from 'react';
 import { DropdownOptions, useSafeIntl } from 'bluesquare-components';
 import { getIn, FormikProps } from 'formik';
-import {
-    MissionEntityTypeCreateRequest,
-    MissionEntityTypeUpdateRequest,
-    MissionOrgUnitTypeCreateRequest,
-    MissionOrgUnitTypeUpdateRequest,
-} from 'Iaso/api/missions';
+import { MissionEntityTypeCreateRequest } from 'Iaso/api/missions/models/missionEntityTypeCreateRequest.zod';
+import { MissionEntityTypeUpdateRequest } from 'Iaso/api/missions/models/missionEntityTypeUpdateRequest.zod';
+import { MissionOrgUnitTypeCreateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeCreateRequest.zod';
+import { MissionOrgUnitTypeUpdateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeUpdateRequest.zod';
 import { MissionFormsBaseInput } from 'Iaso/domains/missions/components/forms/MissionFormsBaseInput';
 import { CREATED_TYPE_CONFIG } from '../../constants';
 import { CreatedTypeMissionType } from '../../types';

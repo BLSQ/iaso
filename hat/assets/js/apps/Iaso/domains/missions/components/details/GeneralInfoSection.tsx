@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Box from '@mui/material/Box/Box';
 import { useSafeIntl } from 'bluesquare-components';
-import { MissionPolymorphicRetrieve } from 'Iaso/api/missions';
+import { MissionPolymorphicRetrieve } from 'Iaso/api/missions/models/missionPolymorphicRetrieve.zod';
 import MESSAGES from '../../messages';
 import { MissionTypeBadge } from '../MissionTypeBadge';
 import { DetailsSectionTitle } from './DetailsSectionTitle';

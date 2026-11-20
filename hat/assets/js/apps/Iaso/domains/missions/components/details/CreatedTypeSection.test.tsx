@@ -1,10 +1,10 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
 import {
     getApiMicroplanningMissionsRetrieveResponseMissionEntityTypeRetrieveTypedMock,
     getApiMicroplanningMissionsRetrieveResponseMissionOrgUnitTypeRetrieveTypedMock,
 } from 'Iaso/api/missions/endpoints/missions/missions.msw';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { renderWithThemeAndIntlProvider } from '../../../../../../tests/helpers';
 import { CreatedTypeSection } from './CreatedTypeSection';
 

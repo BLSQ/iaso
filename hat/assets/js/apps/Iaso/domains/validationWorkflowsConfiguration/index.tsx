@@ -11,7 +11,7 @@ import {
     UrlParams,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useApiValidationWorkflowsList } from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsList } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';

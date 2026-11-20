@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack/Stack';
 import Tooltip from '@mui/material/Tooltip/Tooltip';
 import Typography from '@mui/material/Typography/Typography';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
-import { MissionPolymorphicList } from 'Iaso/api/missions';
+import { MissionPolymorphicList } from 'Iaso/api/missions/models/missionPolymorphicList.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionInfoCaption } from 'Iaso/domains/missions/components/chips/MissionInfoCaption';
 import { MissionTypeChip } from 'Iaso/domains/missions/components/chips/MissionTypeChip';

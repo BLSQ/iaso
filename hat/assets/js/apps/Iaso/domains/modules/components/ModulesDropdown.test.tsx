@@ -17,7 +17,7 @@ vi.mock('Iaso/api/modules/endpoints/modules/modules', () => ({
 import {
     getApiModulesDropdownListQueryKey,
     useApiModulesDropdownList,
-} from 'Iaso/api/modules';
+} from 'Iaso/api/modules/endpoints/modules/modules';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { renderWithThemeAndIntlProvider } from '../../../../../tests/helpers';

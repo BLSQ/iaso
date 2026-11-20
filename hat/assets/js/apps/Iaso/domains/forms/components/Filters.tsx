@@ -61,15 +61,11 @@ const Filters = ({ params }: Props) => {
         userHasPermission(SUBMISSIONS, currentUser) &&
         userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser);
     const {
-        data: validationWorkflowsData,
+        data: validationWorkflows,
         isFetching: isFetchingValidationWorkflows,
     } = useApiValidationWorkflowsDropdownList(undefined, {
         query: { enabled: canFilterByValidationWorkflow },
     });
-
-    const validationWorkflows = Array.isArray(validationWorkflowsData)
-        ? validationWorkflowsData
-        : validationWorkflowsData?.results;
 
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();

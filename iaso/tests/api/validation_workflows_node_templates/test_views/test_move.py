@@ -187,7 +187,7 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
         self.validation_workflow.refresh_from_db()
         self.assertEqual(self.validation_workflow.dump_nodes(), ["second-node", "first-node", "third-node"])
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             res = self.client.put(
                 reverse(
                     "validation_node_templates-move",
@@ -199,6 +199,26 @@ class ValidationNodeTemplateAPIMoveTestCase(BaseApiTestCase):
                 data={"position": PositionChoices.child_of, "parent_node_templates": [self.first_node.slug]},
             )
             self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_move_first_step_to_first_position_does_nothing(self):
+        self._assert_move_does_nothing(self.first_node, PositionChoices.first)
+
+    def test_move_last_step_to_last_position_does_nothing(self):
+        self._assert_move_does_nothing(self.third_node, PositionChoices.last)
+
+    def _assert_move_does_nothing(self, node, position):
+        self.client.force_authenticate(self.john_wick)
+        # The step is already at this position: the move stops before changing anything
+        with self.assertNumQueries(6):
+            res = self.client.put(
+                reverse(
+                    "validation_node_templates-move",
+                    kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": node.slug},
+                ),
+                data={"position": position},
+            )
+            self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.validation_workflow.dump_nodes(), ["first-node", "second-node", "third-node"])
 
     def test_first_step_cannot_skip_previous_steps(self):
         self.client.force_authenticate(self.john_wick)

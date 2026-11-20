@@ -74,8 +74,6 @@ class ValidationWorkflowRetrieveSerializer(ModelSerializer):
         if not start:
             return []
 
-        next_map = {node.id: list(node.next_node_templates.all()) for node in nodes}
-
         ordered = []
         current = start
 

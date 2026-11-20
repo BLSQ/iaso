@@ -1,3 +1,7 @@
+"""
+Models for iaso/tests/utils/models/test_soft_deletable
+"""
+
 from django.db import models
 
 from iaso.utils.models.soft_deletable import (

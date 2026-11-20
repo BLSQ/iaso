@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils.timezone import now
 
-from iaso.tests.models.models_for_test import TestSoftDeletableModel
+from iaso.tests.base_app.utils.test_models.soft_deletable.models import TestSoftDeletableModel
 
 
 class SoftDeletableManagerTestCase(TestCase):

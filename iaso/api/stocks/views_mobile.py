@@ -1,10 +1,6 @@
-import operator
-
-from functools import reduce
-
 import django_filters
 
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
 from rest_framework import permissions, status
 from rest_framework.request import Request
@@ -86,7 +82,8 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         return (
-            self.filter_on_user_org_units(StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id), user)
+            # Limited to the user's org units: a device doesn't need the stock movements of the other sites
+            StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id)
             .select_related("created_by")
             # Only what `StockLedgerItemMobileSerializer` reads: skips the submission json, the form fields...
             .only(
@@ -108,18 +105,6 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
             .order_by("id")
         )
 
-    @staticmethod
-    def filter_on_user_org_units(queryset, user):
-        """
-        Only the ledger items of the user's org units and their descendants: a device doesn't need the stock
-        movements of the other sites. A user without org units gets the whole project, as for the entities.
-        """
-        profile = getattr(user, "iaso_profile", None)
-        org_units = list(profile.org_units.only("path")) if profile else []
-        if not org_units:
-            return queryset
-        return queryset.filter(reduce(operator.or_, [Q(org_unit__path__descendants=str(ou.path)) for ou in org_units]))
-
     def create(self, request, *args, **kwargs):
         """
         POST to create a `StockLedgerItem`.
@@ -128,9 +113,8 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         # The items already imported are looked for in the whole project, not only in the user's org units: an item
         # of another org unit must not be created twice
-        import_stock_ledger_items(
-            user, app_id, request.data, StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id)
-        )
+        project = Project.objects.get_for_user_and_app_id(user, app_id)
+        import_stock_ledger_items(user, app_id, request.data, StockLedgerItem.objects.filter_for_project(project))
         headers = self.get_success_headers(request.data)
         return Response(request.data, status=status.HTTP_201_CREATED, headers=headers)
 

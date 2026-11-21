@@ -82,6 +82,7 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         return (
+            # Limited to the user's org units: a device doesn't need the stock movements of the other sites
             StockLedgerItem.objects.filter_for_user_and_app_id(user, app_id)
             .select_related("created_by")
             # Only what `StockLedgerItemMobileSerializer` reads: skips the submission json, the form fields...
@@ -110,7 +111,10 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
-        import_stock_ledger_items(user, app_id, request.data, self.get_queryset())
+        # The items already imported are looked for in the whole project, not only in the user's org units: an item
+        # of another org unit must not be created twice
+        project = Project.objects.get_for_user_and_app_id(user, app_id)
+        import_stock_ledger_items(user, app_id, request.data, StockLedgerItem.objects.filter_for_project(project))
         headers = self.get_success_headers(request.data)
         return Response(request.data, status=status.HTTP_201_CREATED, headers=headers)
 

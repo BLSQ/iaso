@@ -835,7 +835,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_update_and_delete_are_not_allowed(self):
+    def test_put_patch_delete_are_not_allowed(self):
         reader = self.create_user_with_profile(
             username="reader", account=self.account, permissions=[CORE_ORG_UNITS_READ_PERMISSION]
         )

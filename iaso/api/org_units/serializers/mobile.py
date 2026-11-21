@@ -64,9 +64,10 @@ class MobileOrgUnitSerializer(ModelSerializer):
     org_unit_type_name = serializers.SerializerMethodField()
     created_at = TimestampField()
     updated_at = TimestampField()
-    latitude = serializers.SerializerMethodField()
-    longitude = serializers.SerializerMethodField()
-    altitude = serializers.SerializerMethodField()
+    latitude = serializers.FloatField(source="location_latitude", read_only=True, allow_null=True)
+    longitude = serializers.FloatField(source="location_longitude", read_only=True, allow_null=True)
+    altitude = serializers.FloatField(source="location_altitude", read_only=True, allow_null=True)
+    groups = serializers.ListField(child=serializers.IntegerField(), source="group_ids", read_only=True)
     geo_json = serializers.JSONField()
 
     @staticmethod
@@ -112,15 +113,3 @@ class MobileOrgUnitSerializer(ModelSerializer):
                 raise NotImplementedError("The serializer requires a valid project in its context.")
 
         return parent_id
-
-    @staticmethod
-    def get_latitude(org_unit: OrgUnit):
-        return org_unit.location.y if org_unit.location else None
-
-    @staticmethod
-    def get_longitude(org_unit: OrgUnit):
-        return org_unit.location.x if org_unit.location else None
-
-    @staticmethod
-    def get_altitude(org_unit: OrgUnit):
-        return org_unit.location.z if org_unit.location else None

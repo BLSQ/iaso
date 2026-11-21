@@ -63,6 +63,8 @@ class MobileOrgUnitViewSet(ModelViewSet):
     """
 
     permission_classes = [AuthenticationEnforcedPermission, HasMobileOrgUnitPermission]
+    # No update or delete: org units are edited through /api/orgunits/ or change requests.
+    http_method_names = ["get", "post", "head", "options"]
     serializer_class = MobileOrgUnitSerializer
     pagination_class = MobileOrgUnitsSetPagination
 

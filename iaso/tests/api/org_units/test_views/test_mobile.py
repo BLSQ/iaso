@@ -31,7 +31,7 @@ from iaso.models import (
     SourceVersion,
     Team,
 )
-from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -753,6 +753,23 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_and_delete_are_not_allowed(self):
+        reader = self.create_user_with_profile(
+            username="reader", account=self.account, permissions=[CORE_ORG_UNITS_READ_PERMISSION]
+        )
+        for user in [self.user, reader]:
+            self.client.force_authenticate(user)
+            url = f"{BASE_URL}{self.goten.id}/?{APP_ID}={BASE_APP_ID}"
+            for method in ["put", "patch", "delete"]:
+                with self.subTest(user=user.username, method=method):
+                    response = getattr(self.client, method)(url, data={"name": "Renamed"}, format="json")
+                    self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
+            response = self.client.get(url)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.goten.refresh_from_db()
+        self.assertEqual(self.goten.name, "Son Goten")
 
     def test_create_org_unit_not_authenticated_project_requires_authentication(self):
         count_before = OrgUnit.objects.count()

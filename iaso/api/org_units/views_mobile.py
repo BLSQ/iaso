@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
 from django.core.cache import cache
-from django.db.models import F
+from django.db.models import F, FloatField, Func, OuterRef
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import Http404, HttpResponseNotFound
@@ -22,10 +22,17 @@ from iaso.api.org_units.utils import Buffer, bbox_merge, import_org_units
 from iaso.api.permission_checks import AuthenticationEnforcedPermission
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import FeatureFlag, OrgUnit, Project
+from iaso.models import FeatureFlag, Group, OrgUnit, Project
+from iaso.utils.expressions import ArraySubquery
 
 
 BUFFER_FOR_POINT = 0.008 * 3  # 0.008 degrees is around 3km at the equator
+
+
+def location_ordinate(function: str) -> Func:
+    return Func(
+        F("location"), function=function, template=f"{function}((%(expressions)s)::geometry)", output_field=FloatField()
+    )
 
 
 @extend_schema(tags=["Mobile", "Org units"])
@@ -97,9 +104,18 @@ class MobileOrgUnitViewSet(ModelViewSet):
                 parent_validation_status=F("parent__validation_status"),
                 parent_org_unit_type_id=F("parent__org_unit_type_id"),
                 org_unit_type_name_annotated=F("org_unit_type__name"),
+                location_latitude=location_ordinate("ST_Y"),
+                location_longitude=location_ordinate("ST_X"),
+                location_altitude=location_ordinate("ST_Z"),
+                group_ids=ArraySubquery(
+                    Group.org_units.through.objects.filter(orgunit_id=OuterRef("pk"))
+                    .order_by("group_id")
+                    .values("group_id")
+                ),
             )
             .order_by("path")
-            .prefetch_related("groups")
+            # Geometries are never read in Python: coordinates and geo_json (shapes=true) are computed in SQL.
+            .defer("geom", "simplified_geom", "catchment", "location")
         )
         if filter_valid_org_units:
             queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)

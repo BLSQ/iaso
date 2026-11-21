@@ -613,6 +613,87 @@ class MobileOrgUnitAPITestCase(APITestCase):
         bbox = j["results"][0]
         self.assertEqual(bbox, {"east": -5.024, "northern": -4.024, "south": -3.976, "west": -4.976})
 
+    def create_belgium_and_burundi(self):
+        common = {"version": self.sw_version_2, "validation_status": OrgUnit.VALIDATION_VALID}
+        belgium = OrgUnit.objects.create(name="Belgium", org_unit_type=self.warriors, **common)
+        brussels = OrgUnit.objects.create(name="Brussels", parent=belgium, org_unit_type=self.super_saiyans, **common)
+        burundi = OrgUnit.objects.create(name="Burundi", org_unit_type=self.warriors, **common)
+        return belgium, brussels, burundi
+
+    def get_mobile_org_units(self, user):
+        self.client.force_authenticate(user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        return self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_orgunits_list_excludes_other_source_versions(self):
+        belgium_v1 = OrgUnit.objects.create(
+            name="Belgium",
+            org_unit_type=self.warriors,
+            version=self.sw_version_1,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cache.clear()
+
+        org_units = self.get_mobile_org_units(self.user)["orgUnits"]
+        self.assertNotIn(belgium_v1.id, [org_unit["id"] for org_unit in org_units])
+
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goten.id},{belgium_v1.id}"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_orgunits_list_cache_is_per_user_roots(self):
+        belgium, brussels, burundi = self.create_belgium_and_burundi()
+        feature_flag, _ = FeatureFlag.objects.get_or_create(code=FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)
+        self.project.feature_flags.add(feature_flag)
+        user_belgium = self.create_user_with_profile(
+            username="belgium", account=self.account, permissions=[CORE_ORG_UNITS_PERMISSION], org_units=[belgium]
+        )
+        user_burundi = self.create_user_with_profile(
+            username="burundi", account=self.account, permissions=[CORE_ORG_UNITS_PERMISSION], org_units=[burundi]
+        )
+        cache.clear()
+
+        # Same app and page, no cache clear in between: each user must get their own pyramid.
+        belgium_response = self.get_mobile_org_units(user_belgium)
+        burundi_response = self.get_mobile_org_units(user_burundi)
+
+        self.assertCountEqual([org_unit["id"] for org_unit in belgium_response["orgUnits"]], [belgium.id, brussels.id])
+        self.assertEqual(belgium_response["roots"], [belgium.id])
+        self.assertCountEqual([org_unit["id"] for org_unit in burundi_response["orgUnits"]], [burundi.id])
+        self.assertEqual(burundi_response["roots"], [burundi.id])
+
+    def test_orgunits_list_ignores_user_roots_without_feature_flag(self):
+        belgium, brussels, burundi = self.create_belgium_and_burundi()
+        user_belgium = self.create_user_with_profile(
+            username="belgium", account=self.account, permissions=[CORE_ORG_UNITS_PERMISSION], org_units=[belgium]
+        )
+        cache.clear()
+
+        response = self.get_mobile_org_units(user_belgium)
+
+        ids = [org_unit["id"] for org_unit in response["orgUnits"]]
+        for org_unit in [belgium, brussels, burundi, self.bardock, self.goten]:
+            self.assertIn(org_unit.id, ids, org_unit.name)
+        self.assertEqual(response["roots"], [belgium.id])
+
+    def test_reference_instances_last_sync(self):
+        old_form = Form.objects.create(name="Belgium census")
+        new_form = Form.objects.create(name="Burundi census")
+        old_instance = Instance.objects.create(form=old_form, org_unit=self.raditz, json={"key": "old"})
+        new_instance = Instance.objects.create(form=new_form, org_unit=self.raditz, json={"key": "new"})
+        Instance.objects.filter(pk=old_instance.pk).update(updated_at="2023-01-01T00:00:00Z")
+        Instance.objects.filter(pk=new_instance.pk).update(updated_at="2023-06-01T00:00:00Z")
+        for instance in [old_instance, new_instance]:
+            OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance, form=instance.form)
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(
+            f"{BASE_URL}{self.raditz.pk}/reference_instances/",
+            data={APP_ID: BASE_APP_ID, "last_sync": "2023-03-01T00:00:00Z"},
+        )
+
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([instance["id"] for instance in data["instances"]], [new_instance.id])
+
     @time_machine.travel("2023-10-26T09:00:00.000Z", tick=False)
     def test_reference_instances(self):
         # Instance 1.

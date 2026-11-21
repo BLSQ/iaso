@@ -100,6 +100,8 @@ class MobileOrgUnitViewSet(ModelViewSet):
             )
             .order_by("path")
             .prefetch_related("groups")
+            # Polygons are never read in Python: geo_json (shapes=true) is computed in SQL below.
+            .defer("geom", "simplified_geom", "catchment")
         )
         if filter_valid_org_units:
             queryset = queryset.filter(validation_status=OrgUnit.VALIDATION_VALID)

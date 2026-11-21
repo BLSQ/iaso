@@ -4,7 +4,9 @@ import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
+from django.db import connection
 from django.db.models import Q
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework import status
 
@@ -249,6 +251,25 @@ class MobileOrgUnitAPITestCase(APITestCase):
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "limit": 25000, "page": 1})
 
         self.assertEqual(response.json()["limit"], 25000)
+
+    def test_orgunits_list_does_not_load_geometry_columns(self):
+        """geo_json is computed in SQL, so the polygon columns must never be loaded into Python"""
+        self.client.force_authenticate(self.user)
+        for shapes in [None, "false", "true"]:
+            params = {APP_ID: BASE_APP_ID} if shapes is None else {APP_ID: BASE_APP_ID, "shapes": shapes}
+            with self.subTest(shapes=shapes), CaptureQueriesContext(connection) as context:
+                response = self.client.get(BASE_URL, data=params)
+                response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+            bardock = self.index_by_id(response_data["orgUnits"])[self.bardock.id]
+            self.assertEqual("geo_json" in bardock, shapes == "true", f"geo_json presence with shapes={shapes}")
+
+            org_unit_queries = [q["sql"] for q in context.captured_queries if 'FROM "iaso_orgunit"' in q["sql"]]
+            self.assertTrue(org_unit_queries, "no org unit query captured")
+            for column in ["geom", "simplified_geom", "catchment"]:
+                for sql in org_unit_queries:
+                    # Django loads geometries as `"table"."column"::bytea`; SQL functions on them are fine
+                    self.assertNotIn(f'"iaso_orgunit"."{column}"::bytea', sql, f"{column} loaded with shapes={shapes}")
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)

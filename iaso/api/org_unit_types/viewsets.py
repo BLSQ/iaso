@@ -150,6 +150,8 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
                 ),
                 "sub_unit_types",
             )
+        elif self.action == "dropdown":
+            queryset = queryset.prefetch_related("sub_unit_types")
 
         project = self.request.query_params.get(PROJECT, None)
         if project:

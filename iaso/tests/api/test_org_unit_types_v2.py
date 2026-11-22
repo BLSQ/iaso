@@ -798,9 +798,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.assertEqual(len(response_json), 5)
         with profiler.report_on_failure("orgunittypes_dropdown.md", title="GET /api/v2/orgunittypes/dropdown/"):
-            # iaso_orgunittype: 1 for the org unit types of the user's account,
-            # + 1 per type (5) for its `sub_unit_types`, not prefetched for this action (N+1)
-            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 6})
+            # iaso_orgunittype: 1 for the org unit types of the user's account, 1 to prefetch their `sub_unit_types`
+            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 2})
 
     def test_num_queries_dropdown_with_source_version(self):
         for org_unit_type in [self.org_unit_type_1, self.org_unit_type_2, self.org_unit_type_3]:
@@ -814,8 +813,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
             title="GET /api/v2/orgunittypes/dropdown/?source_version_id=",
         ):
             # iaso_orgunittype: 1 for the org unit types of the user's account, joined to every org unit of the version,
-            # + 1 per type (3) for its `sub_unit_types`, not prefetched for this action (N+1)
-            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 4})
+            # 1 to prefetch their `sub_unit_types`
+            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 2})
 
     def test_prevent_loop_sub_unit_types(self):
         """Test that `sub_unit_types` is validated to prevent infinite recursion loops."""

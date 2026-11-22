@@ -602,6 +602,71 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response_json = response.json()
         self.assertEqual(len(response_json), 0)
 
+    def create_health_center_in_two_projects(self) -> m.OrgUnitType:
+        """A type shared by 2 projects of the user's account: joining the projects gives it 2 rows."""
+        belgium = m.Project.objects.create(name="Belgium", account=self.ead.account)
+        burundi = m.Project.objects.create(name="Burundi", account=self.ead.account)
+        health_center = m.OrgUnitType.objects.create(name="Health Center", short_name="HC")
+        health_center.projects.set([belgium, burundi])
+        return health_center
+
+    def test_org_unit_types_list_type_in_two_projects_returned_once(self):
+        health_center = self.create_health_center_in_two_projects()
+
+        self.client.force_authenticate(self.jane)
+        response_json = self.assertJSONResponse(self.client.get(self.BASE_URL), status.HTTP_200_OK)
+
+        ids = [org_unit_type["id"] for org_unit_type in response_json["orgUnitTypes"]]
+        self.assertCountEqual(
+            ids,
+            [
+                self.org_unit_type_1.id,
+                self.org_unit_type_2.id,
+                self.org_unit_type_3.id,
+                self.org_unit_type_4.id,
+                self.org_unit_type_5.id,
+                health_center.id,
+            ],
+        )
+        health_center_json = next(out for out in response_json["orgUnitTypes"] if out["id"] == health_center.id)
+        self.assertCountEqual([project["name"] for project in health_center_json["projects"]], ["Belgium", "Burundi"])
+
+    def test_org_unit_type_dropdown_type_in_two_projects_returned_once(self):
+        health_center = self.create_health_center_in_two_projects()
+
+        self.client.force_authenticate(self.jane)
+        response_json = self.assertJSONResponse(self.client.get(f"{self.BASE_URL}dropdown/"), status.HTTP_200_OK)
+
+        self.assertCountEqual(
+            [org_unit_type["id"] for org_unit_type in response_json],
+            [
+                self.org_unit_type_1.id,
+                self.org_unit_type_2.id,
+                self.org_unit_type_3.id,
+                self.org_unit_type_4.id,
+                self.org_unit_type_5.id,
+                health_center.id,
+            ],
+        )
+
+    def test_org_unit_type_dropdown_with_source_version_type_with_several_org_units_returned_once(self):
+        # Joining the org units of the version (x the 2 projects) gives the health center 4 rows in version 1
+        health_center = self.create_health_center_in_two_projects()
+        m.OrgUnit.objects.create(name="Health Center Brussels", version=self.version_1, org_unit_type=health_center)
+        m.OrgUnit.objects.create(name="Health Center Liège", version=self.version_1, org_unit_type=health_center)
+        m.OrgUnit.objects.create(name="Health Center Bujumbura", version=self.version_2, org_unit_type=health_center)
+        m.OrgUnit.objects.create(name="Bujumbura", version=self.version_2, org_unit_type=self.org_unit_type_2)
+
+        self.client.force_authenticate(self.jane)
+        url = f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}="
+        version_1_json = self.assertJSONResponse(self.client.get(f"{url}{self.version_1.id}"), status.HTTP_200_OK)
+        version_2_json = self.assertJSONResponse(self.client.get(f"{url}{self.version_2.id}"), status.HTTP_200_OK)
+
+        self.assertEqual([org_unit_type["id"] for org_unit_type in version_1_json], [health_center.id])
+        self.assertCountEqual(
+            [org_unit_type["id"] for org_unit_type in version_2_json], [health_center.id, self.org_unit_type_2.id]
+        )
+
     def assertValidOrgUnitTypeListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
             list_data=list_data, expected_length=expected_length, results_key="orgUnitTypes", paginated=paginated

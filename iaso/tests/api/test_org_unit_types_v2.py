@@ -10,6 +10,7 @@ from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
 from iaso.models import FeatureFlag
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION
 from iaso.test import APITestCase
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 class ValidateReferenceFormsTestCase(TestCase):
@@ -485,16 +486,20 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
     def test_org_unit_type_dropdown(self):
         # Default path that returns all OUTs to which the user has access
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2, self.org_unit_type_3])
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        response_json = response.json()
         for out in response_json:
             self.assertValidOrgUnitTypeDropdownData(out)
         self.assertEqual(len(response_json), 5)  # The 5 types created in setUpTestData
         types_by_id = {org_unit_type["id"]: org_unit_type for org_unit_type in response_json}
         self.assertEqual(types_by_id[self.org_unit_type_1.id]["short_name"], "Pl")
+        self.assertCountEqual(
+            types_by_id[self.org_unit_type_1.id]["sub_unit_types"], [self.org_unit_type_2.id, self.org_unit_type_3.id]
+        )
+        self.assertEqual(types_by_id[self.org_unit_type_2.id]["sub_unit_types"], [])
 
     def test_org_unit_type_dropdown_with_source_version(self):
         # Let's make sure that some OUTs from the setup account are actually used
@@ -780,6 +785,37 @@ class OrgUnitTypesAPITestCase(APITestCase):
             response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def get_profiled_dropdown(self, query_string: str = "") -> tuple[QueryProfiler, list]:
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2, self.org_unit_type_3])
+        self.client.force_authenticate(self.jane)
+        with QueryProfiler(trace_tables=["iaso_orgunittype", "iaso_orgunittype_sub_unit_types"]) as profiler:
+            response = self.client.get(f"{self.BASE_URL}dropdown/{query_string}")
+        return profiler, self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_num_queries_dropdown(self):
+        profiler, response_json = self.get_profiled_dropdown()
+
+        self.assertEqual(len(response_json), 5)
+        with profiler.report_on_failure("orgunittypes_dropdown.md", title="GET /api/v2/orgunittypes/dropdown/"):
+            # iaso_orgunittype: 1 for the org unit types of the user's account,
+            # + 1 per type (5) for its `sub_unit_types`, not prefetched for this action (N+1)
+            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 6})
+
+    def test_num_queries_dropdown_with_source_version(self):
+        for org_unit_type in [self.org_unit_type_1, self.org_unit_type_2, self.org_unit_type_3]:
+            m.OrgUnit.objects.create(name=org_unit_type.name, version=self.version_1, org_unit_type=org_unit_type)
+
+        profiler, response_json = self.get_profiled_dropdown(f"?{SOURCE_VERSION_ID}={self.version_1.id}")
+
+        self.assertEqual(len(response_json), 3)
+        with profiler.report_on_failure(
+            "orgunittypes_dropdown_source_version.md",
+            title="GET /api/v2/orgunittypes/dropdown/?source_version_id=",
+        ):
+            # iaso_orgunittype: 1 for the org unit types of the user's account, joined to every org unit of the version,
+            # + 1 per type (3) for its `sub_unit_types`, not prefetched for this action (N+1)
+            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 4})
 
     def test_prevent_loop_sub_unit_types(self):
         """Test that `sub_unit_types` is validated to prevent infinite recursion loops."""

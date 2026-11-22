@@ -877,9 +877,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
             "orgunittypes_dropdown_source_version.md",
             title="GET /api/v2/orgunittypes/dropdown/?source_version_id=",
         ):
-            # iaso_orgunittype: 1 for the org unit types of the user's account, joined to every org unit of the version,
-            # 1 to prefetch their `sub_unit_types`
-            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 2})
+            # iaso_orgunittype: 1 for the org unit types of the user's account, 1 to prefetch their `sub_unit_types`
+            # iaso_orgunit: the EXISTS subquery of the first one
+            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 2, "iaso_orgunit": 1})
+            # The org units of the version are checked with an EXISTS, not joined: a JOIN goes through all of them
+            # (x the projects of each type) before the DISTINCT, ~1 s on a version of millions of org units
+            org_unit_types_sql = profiler.queries[0]["sql"]
+            self.assertIn('EXISTS(SELECT 1 AS "a" FROM "iaso_orgunit"', org_unit_types_sql)
+            self.assertNotIn('JOIN "iaso_orgunit" ', org_unit_types_sql)
 
     def test_prevent_loop_sub_unit_types(self):
         """Test that `sub_unit_types` is validated to prevent infinite recursion loops."""

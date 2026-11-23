@@ -100,6 +100,10 @@ class ValidationNodeTemplateCreateSerializer(ModelSerializer):
         position = self.validated_data.pop("position", None)
         parent_node_templates = self.validated_data.pop("parent_node_templates", None)
 
+        # The first step has no previous step to skip: saved as False directly, without a second update
+        if position == PositionChoices.first:
+            self.validated_data["can_skip_previous_nodes"] = False
+
         instance = super().save(**kwargs)
 
         self.validated_data["workflow"].insert_node_template(instance, position, parent_node_templates)

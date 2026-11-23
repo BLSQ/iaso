@@ -126,6 +126,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                 # checking main keys
                 with self.subTest("Checking main top level keys"):
                     for k in [
+                        "id",
                         "name",
                         "slug",
                         "description",
@@ -139,6 +140,7 @@ class ValidationWorkflowAPIRetrieveTestCase(BaseValidationWorkflowAPITestCase):
                     ]:
                         self.assertIn(k, res_data)
 
+                    self.assertEqual(res_data["id"], self.validation_workflow.pk)
                     self.assertEqual(res_data["name"], "Random name")
                     self.assertEqual(res_data["slug"], "random-name")
                     self.assertEqual(res_data["description"], "Random description")

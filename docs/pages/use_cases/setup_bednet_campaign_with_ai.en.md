@@ -2,30 +2,24 @@
 
 *Configure IASO for a mass distribution of insecticide-treated nets (ITNs) with the help of an AI assistant.*
 
-This guide is for campaign coordinators and IT focal points who want to use IASO to plan and
-monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
+This guide is for malaria campaign data managers and IT focal points who want to use IASO to
+plan and monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
 ChatGPT…) does the technical work, asks you questions about your campaign and waits for your
-go-ahead before changing anything in IASO. It makes the campaign configuration quicker,
-especially if most of the campaign decisions are already made.
+go-ahead before changing anything in IASO.
 
-## Before you start
+There are two ways to try it:
 
-| You need | Details |
-|---|---|
-| An **IASO account** | You can create a free trial on [openiaso.com/pricing](https://www.openiaso.com/pricing/). |
-| An **AI assistant** | One that can run Python code and reach your IASO server: Claude or ChatGPT in the browser or in their app, or Claude Code (desktop app or terminal) with Python 3 on your computer. |
-| Your **files and campaign decisions** | Only if you want to test with your real campaign data. Your geographic data (from DHIS2, an Excel file or a GeoPackage file: the assistant imports it for you, or you can [import it yourself](../users/reference/user_guide.md#import-a-pyramid-into-a-data-source)) and the campaign decisions: districts covered, net allocation rule, roles and daily rates of workers, list of stores, list of agents (see the assistant's questions in [step 5](#step-5-answer-the-assistants-questions)). Otherwise, the assistant can propose demo data so you can test the setup first. |
-| An **Android phone** | With the [IASO app from Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=en), to test the mobile projects. |
+- **No campaign data yet?** The assistant sets up a demo configuration, so you can see IASO
+  configured for an ITN campaign.
+- **Campaign data at hand?** Share your files with the assistant: it configures IASO based on
+  them.
+
+## Important to know before you start
 
 !!! tip "Using another AI assistant?"
     This guide has been tested with Claude and ChatGPT. If you run into difficulties with
     another AI assistant, we're happy to collect your feedback:
     [contact us at products@bluesquarehub.com](mailto:products@bluesquarehub.com).
-
-!!! note "Your IASO address"
-    Everything in this guide happens on **[https://app.openiaso.com](https://app.openiaso.com/)**.
-    Trial accounts already have every module the campaign needs (forms, entities, stock
-    management, embedded links, DHIS2 mapping).
 
 !!! warning "Using Claude? Prefer Claude Code"
     If you use Claude, preferably use **Claude Code** (desktop app or terminal) to avoid
@@ -37,40 +31,23 @@ especially if most of the campaign decisions are already made.
 
 ---
 
-## Part 1: Prepare your IASO account
+## Step 1: Create your IASO demo account
 
-### Step 1: Open your IASO account
+Create an IASO demo account on [openiaso.com/pricing](https://www.openiaso.com/pricing/). The
+main user of this account has all the permissions the kit needs: use its credentials
+throughout the test.
 
-1. Go to your IASO account on [app.openiaso.com](https://app.openiaso.com/), or create one on
-   [openiaso.com/pricing](https://www.openiaso.com/pricing/).
-2. Choose the **user for the setup**: the assistant works in IASO as this user. You can use
-   the main user of your newly created account: it already has all the permissions the kit
-   needs (listed in `SKILL.md`, section 1). Ideally, create a dedicated user for the setup.
+## Step 2: Download the kit
 
----
-
-## Part 2: Configure the campaign with the campaign kit
-
-The **IASO campaign kit** is a zip file of instructions, forms, templates and small scripts
-written for an AI assistant. It is not software to install: you give it to the assistant,
-which follows it step by step to build your campaign in IASO. The assistant works in IASO
-with the kit's own scripts and the access key you give it in step 3.
-
-### Step 2: Download the kit
-
-Download the kit in the language you want the assistant to work in, and unzip it on your
-computer:
+Download the IASO campaign kit, a zip file of instructions for the AI assistant:
 
 - **[Campaign kit in English](./setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup.zip)** (zip, 5.6 MB)
-- **[Campaign kit in French](./setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup-fr.zip)** (zip, 6.1 MB)
 
-Both kits contain the same forms, with English and French labels.
-
-### Step 3: Give the kit access to your IASO account
+## Step 3: Give the kit access to your IASO account
 
 The kit needs an **access key** (a "token") to work in your IASO account on your behalf.
 
-1. Open this link and log in with the user for the setup:
+1. Open this link and log in with your main user:
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
 2. The page shows a line like `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copy the long text between
    the second pair of quotes: this is your access key.
@@ -86,12 +63,15 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
     share the zip once it contains the key. Keep the kit with its key in a safe place: you
     need it to come back to the assistant and make changes later (see step 7).
 
-### Step 4: Give the kit to your AI assistant
+## Step 4: Give the kit to your AI assistant
 
-1. Start a new conversation in Claude or ChatGPT and attach the zip with the token saved in the .txt file.
-2. Choose where your geographic data comes from and copy the matching message as it is.
+1. Start a new conversation in Claude or ChatGPT and attach the zip you saved in step 3 (it
+   now contains your access key).
+2. Choose where your geographic data comes from:
 
-**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data. Copy this message, then go directly to [step 5](#step-5-answer-the-assistants-questions) to answer the questions:
+**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers).
+Copy this message, then go to [step 5](#step-5-answer-the-assistants-questions) to answer the
+questions:
 
 > Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 > `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -99,30 +79,9 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 > everything in one summary (demo mode). Confirm with me before each step that writes to
 > IASO, and do not stop before the checklist of § 12c.
 
-If the assistant can't reach IASO, see the tip at the end of this step.
-
-**Option B: Use your own geographic data.** Refer to the [user guide](../users/reference/user_guide.md#data-sources-list) for more details on how to format your GeoPackage or Excel file, or how to connect your DHIS2 instance. To get support from the kit with your data, use one of these messages:
-
-**Your geographic data in an Excel file** (attached to the conversation):
-
-> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
-> `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
-> connector. My org units are in the attached Excel file. Ask me the campaign questions one
-> section at a time. Confirm with me before each step that writes to IASO, and do not stop
-> before the checklist of § 12c.
-
-With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".
-
-**Your geographic data in DHIS2** (already set up on the data source in IASO):
-
-> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
-> `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
-> connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
-> the campaign questions one section at a time. Confirm with me before each step that writes
-> to IASO, and do not stop before the checklist of § 12c.
-
-The assistant works in its own space: ask it to give you as downloads the files it produces
-(QR codes, user passwords, backup).
+**Option B: Use your own geographic data.** Go to
+[Use your own geographic data](#use-your-own-geographic-data) at the bottom of this page to
+get the right message, then continue with [step 5](#step-5-answer-the-assistants-questions).
 
 !!! tip "The assistant can't reach IASO?"
     The kit's scripts need to reach app.openiaso.com over the internet. If the assistant
@@ -142,19 +101,68 @@ The assistant works in its own space: ask it to give you as downloads the files 
 
     Then ask the assistant to try again.
 
-### Step 5: Answer the assistant's questions
+## Step 5: Answer the assistant's questions
 
 The assistant asks its questions one topic at a time (in a demo, it proposes all the answers
-at once, in one summary to approve).
+at once, in one summary to approve). It then builds the campaign step by step, asking for
+your go-ahead each time: geographic data, projects, forms, registries, stock, users,
+dashboards and mobile reports.
 
-Not everything decided yet? You can still test the campaign setup: the assistant can propose
-demo data (demo pyramid, example districts, stores and agents) that you replace later with
-your own.
+The assistant works in its own space: ask it to give you the files it produces (QR codes,
+user passwords, backup) as downloads.
 
-Then the assistant builds the campaign step by step, asking for your go-ahead each time:
-geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.
+## Step 6: Test on a phone
 
-The more of these decisions you have already made, the quicker the configuration:
+1. **Install the IASO app** on an Android phone from
+   [Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=en)
+   (or scan the Play Store QR code the assistant gives you).
+2. **Find the QR codes** in IASO: open the menu and go to **Admin > Projects**. Each mobile
+   app project of the campaign is listed there, with its QR code ready to scan.
+3. **Open the IASO app** on the phone, choose to scan a QR code and scan the QR code of the
+   project to test. Accept the permission requests that show up (camera, location…).
+4. **Log in** with your main user.
+5. Follow the **guided test** the assistant proposes (register households, distribute nets,
+   record a stock movement…).
+
+## Step 7: After the setup
+
+To change something in the campaign configuration, simply ask the AI assistant: go back to
+the conversation where you attached the kit, which still contains your access key.
+
+## Use your own geographic data
+
+Use this option to configure the campaign with your real geographic data. Refer to the
+[user guide](../users/reference/user_guide.md#data-sources-list) for more details on how to
+format your GeoPackage or Excel file, or how to connect your DHIS2 instance. Then, in
+[step 4](#step-4-give-the-kit-to-your-ai-assistant), use one of these messages instead of
+the demo message.
+
+### Your geographic data in an Excel file
+
+Attach the Excel file to the conversation, together with the zip, and copy this message:
+
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
+> `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
+> connector. My org units are in the attached Excel file. Ask me the campaign questions one
+> section at a time. Confirm with me before each step that writes to IASO, and do not stop
+> before the checklist of § 12c.
+
+With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".
+
+### Your geographic data in DHIS2
+
+Your DHIS2 must already be set up on the data source in IASO. Copy this message:
+
+> Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
+> `SKILL.md` and follow it step by step to guide me. Use only the kit's scripts, no IASO
+> connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
+> the campaign questions one section at a time. Confirm with me before each step that writes
+> to IASO, and do not stop before the checklist of § 12c.
+
+### Prepare your campaign decisions
+
+The more of these decisions you have already made, the quicker the configuration. The
+assistant asks about them in [step 5](#step-5-answer-the-assistants-questions):
 
 | Topic | Questions | Prepare |
 |---|---|---|
@@ -165,51 +173,6 @@ The more of these decisions you have already made, the quicker the configuration
 | Workers | the roles, daily rates, who validates attendance | the payment scale |
 | Stock | the stores tracked, the number of nets per bale | the list of stores |
 | Users | who uses which project, in which area | the list of agents |
-
-The assistant shows the QR codes at the end, once every project is fully configured (forms,
-registries and their follow-ups, stock, users and reports): before that, the app would be empty
-or incomplete. It also gives you a sheet of test QR codes (household tickets, nets, bales), since
-you have no real ones yet: print it, or scan it from your screen.
-
-### Step 6: Test on a phone
-
-1. **Install the IASO app** on an Android phone from
-   [Google Play](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&hl=en)
-   (or scan the Play Store QR code the assistant gives you).
-2. **Choose the user to test with**: a test user created by the assistant, or your own
-   user (the assistant offers to add you to the campaign projects). Either way, this user must have the projects you want to test: in IASO, go to
-   **Admin > Users**, edit the user and, in **Projects**, select the projects to test. To try
-   the different projects and switch from one to another, select all of them.
-3. **Find the QR codes** in IASO: open the menu and go to **Admin > Projects**. Each mobile
-   project of the campaign is listed there, with its QR code ready to scan.
-4. **Open the IASO app** on the phone, choose to scan a QR code and scan the QR code of the
-   project to test. Accept the permission requests that show up (camera, location…).
-5. **Log in** with the user chosen in point 2.
-6. Follow the **guided test** the assistant proposes, with the test QR codes: register two
-   households with the test tickets, distribute nets to one of them, register a special group
-   and a worker, record a stock movement. A new campaign has no data, so this is what fills the
-   lists, follow-ups and reports of each project.
-7. Open the mobile reports, with network and then in airplane mode.
-
-!!! note "Where are the stock forms?"
-    On servers that have the stock home screen, the Stock project opens on the stores and their
-    forms. Otherwise, the assistant adds a **Data collection** tab to the Stock project: open
-    it, choose the store, and the stock forms are listed. Without that tab, the stock forms
-    are under **Entities > Update stocks**, then the store, then **Edit** next to its name.
-
-Before training the field teams, ask the assistant to delete the test data and the test
-users.
-
-### Step 7: After the setup
-
-- To change something during the campaign (a question in a form, a new district, a report),
-  simply ask the assistant: come back to it with the kit, which still contains your access
-  key. Forms already used on phones must be changed with
-  care: the kit tells the assistant how.
-- Follow the campaign in the web dashboards (**Pages** menu in IASO) and in the mobile reports.
-  The campaign dashboard and the progress report show the households on a map (base map from
-  Bluesquare's tile server, from OpenStreetMap): in the dashboard, click a row of the table to
-  zoom on that place.
 
 ## Learn more
 

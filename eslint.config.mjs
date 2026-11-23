@@ -409,7 +409,7 @@ export default defineConfig([
     },
     {
         files: lintedJsPaths,
-        ignores: ['Iaso/api/**'],
+        ignores: ['**/Iaso/api/**', '**/Iaso/api/**/*'],
         rules: {
             'no-restricted-imports': [
                 'error',

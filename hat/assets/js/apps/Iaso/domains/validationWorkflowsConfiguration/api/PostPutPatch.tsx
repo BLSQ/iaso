@@ -1,6 +1,7 @@
 import React from 'react';
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import {
+    getApiValidationWorkflowsDropdownListQueryKey,
     getApiValidationWorkflowsListQueryKey,
     getApiValidationWorkflowsRetrieveQueryKey,
 } from 'Iaso/api/validationWorkflows';
@@ -65,11 +66,29 @@ const saveSteps =
         );
     };
 
+// No refetch here: the editor refreshes the workflow once the details and the steps are saved
 export const useSaveSteps = (workflowSlug: string) =>
     useSnackMutation<unknown, unknown, SaveStepsArgs>({
         mutationFn: saveSteps(workflowSlug),
-        invalidateQueryKey: [
-            ...getApiValidationWorkflowsRetrieveQueryKey(workflowSlug),
-            WF_BASE_QUERYKEY,
-        ],
     });
+
+// Queries to refresh after saving the workflow details and steps
+export const useRefreshWorkflow = (workflowSlug: string) => {
+    const queryClient = useQueryClient();
+    return React.useCallback(
+        () =>
+            Promise.all([
+                queryClient.invalidateQueries(
+                    getApiValidationWorkflowsListQueryKey(),
+                ),
+                queryClient.invalidateQueries(
+                    getApiValidationWorkflowsDropdownListQueryKey(),
+                ),
+                queryClient.invalidateQueries(
+                    getApiValidationWorkflowsRetrieveQueryKey(workflowSlug),
+                ),
+                queryClient.invalidateQueries(WF_BASE_QUERYKEY),
+            ]),
+        [queryClient, workflowSlug],
+    );
+};

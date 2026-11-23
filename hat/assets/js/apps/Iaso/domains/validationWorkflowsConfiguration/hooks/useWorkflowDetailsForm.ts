@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 
 export type WorkflowDetailsDraft = {
@@ -31,9 +31,26 @@ export const useWorkflowDetailsForm = (
     const [details, setDetails] =
         useState<WorkflowDetailsDraft>(initialDetails);
 
+    // Server data the details were last taken from
+    const syncedDetails = useRef(initialDetails);
+    // Set after a save: the next server data has to replace the saved details
+    const isSyncRequested = useRef(false);
+
     useEffect(() => {
+        if (syncedDetails.current === initialDetails) return;
+        const hasLocalChanges = !isSameDraft(details, syncedDetails.current);
+
+        const isSameAsServer = isSameDraft(details, initialDetails);
+        if (hasLocalChanges && !isSameAsServer && !isSyncRequested.current)
+            return;
+        syncedDetails.current = initialDetails;
+        isSyncRequested.current = false;
         setDetails(initialDetails);
-    }, [initialDetails]);
+    }, [initialDetails, details]);
+
+    const syncOnNextUpdate = useCallback(() => {
+        isSyncRequested.current = true;
+    }, []);
 
     const isDirty = !isSameDraft(details, initialDetails);
 
@@ -43,10 +60,10 @@ export const useWorkflowDetailsForm = (
         [],
     );
 
-    const reset = useCallback(
-        () => setDetails(initialDetails),
-        [initialDetails],
-    );
+    const reset = useCallback(() => {
+        syncedDetails.current = initialDetails;
+        setDetails(initialDetails);
+    }, [initialDetails]);
 
-    return { details, isDirty, updateDetails, reset };
+    return { details, isDirty, updateDetails, reset, syncOnNextUpdate };
 };

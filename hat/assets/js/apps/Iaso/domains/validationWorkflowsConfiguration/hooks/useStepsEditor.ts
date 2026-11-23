@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
 
@@ -23,11 +23,18 @@ const toDraft = (node: NodeTemplate): StepDraft => ({
 });
 
 const isSameDraft = (a: StepDraft, b: StepDraft): boolean =>
-    a.name === b.name &&
+    a.name.trim() === b.name.trim() &&
     (a.description ?? '') === (b.description ?? '') &&
     Boolean(a.canSkipPreviousNodes) === Boolean(b.canSkipPreviousNodes) &&
     a.roleIds.length === b.roleIds.length &&
     a.roleIds.every(id => b.roleIds.includes(id));
+
+const isSameSteps = (a: StepDraft[], b: StepDraft[]): boolean =>
+    a.length === b.length &&
+    a.every(
+        (step, index) =>
+            step.slug === b[index].slug && isSameDraft(step, b[index]),
+    );
 
 export type StepErrors = Record<string, string | undefined>;
 
@@ -57,10 +64,23 @@ export const useStepsEditor = (nodes: NodeTemplate[]) => {
     const initialSteps = useMemo(() => nodes.map(toDraft), [nodes]);
     const [steps, setSteps] = useState<StepDraft[]>(initialSteps);
 
-    // Server data changed (save, add or delete): start again from it.
+    // Server data the steps were last taken from
+    const syncedSteps = useRef(initialSteps);
+    // Set after a save: the next server data has to replace the saved steps
+    const isSyncRequested = useRef(false);
+
     useEffect(() => {
+        if (syncedSteps.current === initialSteps) return;
+        const hasLocalChanges = !isSameSteps(steps, syncedSteps.current);
+        if (hasLocalChanges && !isSyncRequested.current) return;
+        syncedSteps.current = initialSteps;
+        isSyncRequested.current = false;
         setSteps(initialSteps);
-    }, [initialSteps]);
+    }, [initialSteps, steps]);
+
+    const syncOnNextUpdate = useCallback(() => {
+        isSyncRequested.current = true;
+    }, []);
 
     const isOrderChanged = useMemo(
         () =>
@@ -102,7 +122,10 @@ export const useStepsEditor = (nodes: NodeTemplate[]) => {
         [],
     );
 
-    const reset = useCallback(() => setSteps(initialSteps), [initialSteps]);
+    const reset = useCallback(() => {
+        syncedSteps.current = initialSteps;
+        setSteps(initialSteps);
+    }, [initialSteps]);
 
     return {
         steps,
@@ -112,6 +135,7 @@ export const useStepsEditor = (nodes: NodeTemplate[]) => {
         updateStep,
         moveStep,
         reset,
+        syncOnNextUpdate,
     };
 };
 

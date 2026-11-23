@@ -12,7 +12,7 @@ import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from 'Iaso/types/general';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { useSaveSteps } from '../api/PostPutPatch';
+import { useRefreshWorkflow, useSaveSteps } from '../api/PostPutPatch';
 import {
     getStepErrors,
     NodeTemplate,
@@ -60,9 +60,11 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
     const { mutateAsync: createWorkflow, isLoading: isCreating } =
         useApiValidationWorkflowsCreate();
     const { mutateAsync: updateWorkflow, isLoading: isUpdating } =
-        useApiValidationWorkflowsUpdate();
+        // No refetch after each save: the workflow is refreshed once everything is saved
+        useApiValidationWorkflowsUpdate({ skipInvalidation: true });
     const { mutateAsync: saveSteps, isLoading: isSavingSteps } =
         useSaveSteps(workflowSlug);
+    const refreshWorkflow = useRefreshWorkflow(workflowSlug);
     const isSaving = isCreating || isUpdating || isSavingSteps;
 
     const nameError = detailsForm.details.name.trim()
@@ -80,7 +82,8 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
         Boolean(nameError) || Object.values(stepErrors).some(Boolean);
     const isDirty = detailsForm.isDirty || stepsEditor.isDirty;
 
-    const { reset: resetDetails } = detailsForm;
+    const { reset: resetDetails, syncOnNextUpdate: syncDetailsOnNextUpdate } =
+        detailsForm;
     const { reset: resetSteps } = stepsEditor;
     const handleCancel = useCallback(() => {
         resetDetails();
@@ -98,14 +101,17 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
             });
             return;
         }
-        const requests: Promise<unknown>[] = [];
-        if (detailsForm.isDirty) {
-            requests.push(updateWorkflow({ slug: workflow.slug, data }));
-        }
-        if (stepsEditor.isDirty) {
-            const { isOrderChanged, steps, changedSteps } = stepsEditor;
-            requests.push(
-                saveSteps({
+        // The workflow first, then the steps: a failed save stops the next one
+        let isDetailsSaved = false;
+        let isStepsSaved = false;
+        try {
+            if (detailsForm.isDirty) {
+                await updateWorkflow({ slug: workflow.slug, data });
+                isDetailsSaved = true;
+            }
+            if (stepsEditor.isDirty) {
+                const { isOrderChanged, steps, changedSteps } = stepsEditor;
+                await saveSteps({
                     reorder: isOrderChanged,
                     steps: (isOrderChanged ? steps : changedSteps).map(
                         step => ({
@@ -116,18 +122,32 @@ export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
                             roles_required: step.roleIds,
                         }),
                     ),
-                }),
-            );
+                });
+                isStepsSaved = true;
+            }
+        } finally {
+            // One refetch once both requests are finished: only the saved parts take the server data,
+            // the unsaved changes stay on screen
+            if (isDetailsSaved) {
+                syncDetailsOnNextUpdate();
+            }
+            if (isStepsSaved) {
+                stepsEditor.syncOnNextUpdate();
+            }
+            if (isDetailsSaved || isStepsSaved) {
+                await refreshWorkflow();
+            }
         }
-        await Promise.all(requests);
     }, [
         createWorkflow,
         detailsForm.details,
         detailsForm.isDirty,
         params,
         redirectToReplace,
+        refreshWorkflow,
         saveSteps,
         stepsEditor,
+        syncDetailsOnNextUpdate,
         updateWorkflow,
         workflow,
     ]);

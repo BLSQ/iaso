@@ -1,61 +1,63 @@
-import React, { FunctionComponent } from 'react';
-import { Grid } from '@mui/material';
-import InputComponent from 'Iaso/components/forms/InputComponent';
-import { SearchButton } from 'Iaso/components/SearchButton';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { FiltersPanel, useRedirectTo } from 'bluesquare-components';
+import type {
+    FilterFieldDescriptor,
+    FilterValues,
+} from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
-import { useFilterState } from 'Iaso/hooks/useFilterState';
 import MESSAGES from '../messages';
 
 type Props = { params: Record<string, string> };
+
 const baseUrl = baseUrls.validationWorkflowsConfiguration;
+
 export const Filters: FunctionComponent<Props> = ({ params }) => {
-    const { filters, filtersUpdated, handleChange, handleSearch } =
-        useFilterState({ baseUrl, params, withPagination: true });
+    const redirectTo = useRedirectTo();
     const { data: formsList, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions();
-    return (
-        <Grid container spacing={2}>
-            <Grid item xs={12} sm={3} md={3}>
-                <InputComponent
-                    keyValue="name"
-                    onChange={handleChange}
-                    value={filters.name}
-                    type="search"
-                    label={MESSAGES.search}
-                    onEnterPressed={handleSearch}
-                    clearable
-                />
-            </Grid>
-            <Grid item xs={12} sm={3} md={3}>
-                <InputComponent
-                    keyValue="forms"
-                    onChange={handleChange}
-                    value={filters.forms}
-                    type="select"
-                    options={formsList}
-                    label={MESSAGES.forms}
-                    loading={isFetchingForms}
-                    onEnterPressed={handleSearch}
-                    clearable
-                    multi
-                />
-            </Grid>
 
-            <Grid
-                item
-                xs={12}
-                sm={6}
-                md={6}
-                container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <SearchButton
-                    disabled={!filtersUpdated}
-                    onSearch={handleSearch}
-                />
-            </Grid>
-        </Grid>
+    const values: FilterValues = useMemo(
+        () => ({
+            name: params.name,
+            forms: params.forms,
+        }),
+        [params],
+    );
+
+    const handleApply = useCallback(
+        (next: FilterValues) => {
+            redirectTo(baseUrl, {
+                ...params,
+                page: '1',
+                name: next.name || undefined,
+                forms: next.forms || undefined,
+            });
+        },
+        [params, redirectTo],
+    );
+
+    const fields: FilterFieldDescriptor[] = useMemo(
+        () => [
+            {
+                key: 'name',
+                label: MESSAGES.search,
+                type: 'search',
+            },
+            {
+                key: 'forms',
+                label: MESSAGES.forms,
+                type: 'select',
+                multi: true,
+                clearable: true,
+                options: formsList ?? [],
+                loading: isFetchingForms,
+            },
+        ],
+        [formsList, isFetchingForms],
+    );
+
+    return (
+        <FiltersPanel fields={fields} values={values} onApply={handleApply} />
     );
 };

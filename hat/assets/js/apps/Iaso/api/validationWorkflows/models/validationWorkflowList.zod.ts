@@ -10,10 +10,30 @@ import * as zod from 'zod';
 export const validationWorkflowListSlugRegExp = new RegExp('[-a-zA-Z0-9_]+');
 export const validationWorkflowListNameMax = 256;
 
+export const validationWorkflowListStepsItemSlugRegExp = new RegExp(
+    '[-a-zA-Z0-9_]+',
+);
+export const validationWorkflowListStepsItemNameMax = 256;
+
 export const ValidationWorkflowList = zod.strictObject({
     slug: zod.string().regex(validationWorkflowListSlugRegExp),
     name: zod.string().max(validationWorkflowListNameMax),
     form_count: zod.int(),
+    linked_forms_count: zod
+        .int()
+        .describe('Number of forms using this workflow'),
+    steps: zod.array(
+        zod.strictObject({
+            slug: zod.string().regex(validationWorkflowListStepsItemSlugRegExp),
+            name: zod.string().max(validationWorkflowListStepsItemNameMax),
+            roles_required: zod.array(
+                zod.strictObject({
+                    name: zod.string(),
+                    id: zod.int(),
+                }),
+            ),
+        }),
+    ),
     created_by: zod.string().nullable(),
     updated_by: zod.string().nullable(),
     created_at: zod.iso.datetime({ offset: true }),

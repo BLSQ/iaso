@@ -60,7 +60,10 @@ export const mutationInvalidates = [
         ],
     },
     {
-        onMutations: ['apiValidationWorkflowsCreate'],
+        onMutations: [
+            'apiValidationWorkflowsCreate',
+            'apiValidationWorkflowsDuplicateCreate',
+        ],
         invalidates: [
             'apiValidationWorkflowsList',
             'apiValidationWorkflowsDropdownList',

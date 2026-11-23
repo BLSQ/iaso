@@ -1,28 +1,27 @@
 import { useMemo } from 'react';
 import React from 'react';
+import { Column, Setting, useSafeIntl } from 'bluesquare-components';
 import {
-    Column,
-    IconButton,
-    Setting,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
-import {
-    PaginatedValidationWorkflowListList,
     useApiValidationWorkflowsDestroy,
+    ValidationWorkflowList,
     ValidationWorkflowRetrieve,
 } from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
-import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
-import { NumberCell } from 'Iaso/components/Cells/NumberCell';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
-import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useDeleteNode } from 'Iaso/domains/validationWorkflowsConfiguration/api/Delete';
 import { EditNode } from 'Iaso/domains/validationWorkflowsConfiguration/components/CreateEditNode/CreateEditNode';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { WorkflowActions } from './components/WorkflowActions';
+import {
+    WorkflowLastUpdatedCell,
+    WorkflowNameCell,
+    WorkflowStepsCell,
+} from './components/WorkflowListCells';
 import MESSAGES from './messages';
+
+type WorkflowRow = Setting<ValidationWorkflowList>;
 
 export const useWorkflowsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -32,44 +31,34 @@ export const useWorkflowsTableColumns = (): Column[] => {
     return useMemo(() => {
         const cols: Column[] = [
             {
-                Header: formatMessage(MESSAGES.name),
+                Header: formatMessage(MESSAGES.workflow),
                 id: 'name',
                 accessor: 'name',
+                align: 'left',
                 sortable: true,
+                Cell: ({ row }: WorkflowRow) => (
+                    <WorkflowNameCell workflow={row.original} />
+                ),
             },
             {
-                Header: formatMessage(MESSAGES.created_at),
-                id: 'createdAt',
-                accessor: 'created_at',
-                sortable: true,
-                Cell: DateCell,
+                Header: formatMessage(MESSAGES.stepsColumn),
+                id: 'steps',
+                accessor: 'steps',
+                align: 'left',
+                sortable: false,
+                Cell: ({ row }: WorkflowRow) => (
+                    <WorkflowStepsCell workflow={row.original} />
+                ),
             },
             {
-                Header: formatMessage(MESSAGES.forms),
-                id: 'formCount',
-                accessor: 'form_count',
-                Cell: ({ value }) => <NumberCell value={value} />,
-            },
-            {
-                Header: formatMessage(MESSAGES.updated_at),
-                id: 'updatedAt',
+                Header: formatMessage(MESSAGES.lastUpdated),
+                id: 'updated_at',
                 accessor: 'updated_at',
+                align: 'left',
                 sortable: true,
-                Cell: DateCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.created_by),
-                id: 'createdBy',
-                accessor: 'created_by',
-                sortable: true,
-            },
-            {
-                Header: formatMessage(MESSAGES.updated_by),
-                id: 'updatedBy',
-                accessor: 'updated_by',
-                sortable: true,
-                Cell: ({ value }: { value?: string }) =>
-                    value ?? textPlaceholder,
+                Cell: ({ row }: WorkflowRow) => (
+                    <WorkflowLastUpdatedCell workflow={row.original} />
+                ),
             },
         ];
         if (userHasOneOfPermissions([VALIDATION_WORKFLOWS], user)) {
@@ -77,35 +66,16 @@ export const useWorkflowsTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.actions),
                 id: 'actions',
                 accessor: 'actions',
+                align: 'center',
                 sortable: false,
-                Cell: (
-                    settings: Setting<
-                        NonNullable<
-                            PaginatedValidationWorkflowListList['results']
-                        >[number]
-                    >,
-                ) => {
-                    return (
-                        <>
-                            <IconButton
-                                tooltipMessage={MESSAGES.edit}
-                                icon="edit"
-                                url={`/${baseUrls.validationWorkflowsConfigurationDetail}/slug/${settings.row.original.slug}`}
-                            />
-                            <DeleteModal
-                                key={settings.row.original.slug}
-                                type="icon"
-                                titleMessage={MESSAGES.deleteWorkflow}
-                                onConfirm={() =>
-                                    deleteWorkflow({
-                                        slug: settings.row.original.slug,
-                                    })
-                                }
-                                backdropClick
-                            />
-                        </>
-                    );
-                },
+                Cell: ({ row }: WorkflowRow) => (
+                    <WorkflowActions
+                        workflow={row.original}
+                        onDelete={() =>
+                            deleteWorkflow({ slug: row.original.slug })
+                        }
+                    />
+                ),
             });
         }
         return cols;

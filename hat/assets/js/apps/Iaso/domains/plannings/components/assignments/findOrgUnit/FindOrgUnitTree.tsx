@@ -6,7 +6,7 @@ import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';
-import { useAssignments } from '../mainPanel/useAssignments';
+import { usePlanningAssignments } from '../api/usePlanningAssignments';
 import { getAssigneeByOrgUnitId } from '../mainPanel/utils';
 import { usePlanningOrgUnits } from '../usePlanningOrgUnitTree';
 import { FindOrgUnitTreeRow } from './FindOrgUnitTreeRow';
@@ -52,7 +52,7 @@ export const FindOrgUnitTree: FC<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { planning, tree } = useAssignmentsContext();
-    const { data: assignments } = useAssignments(`${planning.id}`);
+    const { data: assignments } = usePlanningAssignments(planning.id);
     const [search, setSearch] = useState('');
     // Expanded or collapsed by hand, against the default of the roots and the selected branch.
     const [toggledIds, setToggledIds] = useState<Set<number>>(new Set());

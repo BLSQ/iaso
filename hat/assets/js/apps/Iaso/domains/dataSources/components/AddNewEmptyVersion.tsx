@@ -16,7 +16,8 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
     sourceId,
 }) => {
     const [description, setDescription] = useState<string>('');
-    const { mutateAsync: createSourceVersion } = useCreateSourceVersion();
+    const { mutateAsync: createSourceVersion, isLoading } =
+        useCreateSourceVersion();
     const { formatMessage } = useSafeIntl();
 
     const reset = () => {
@@ -39,7 +40,7 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
 
     const titleMessage = formatMessage(MESSAGES.newEmptyVersion);
 
-    const allowConfirm = !createSourceVersion.isLoading;
+    const allowConfirm = !isLoading;
     const onChangeDescription = (_field, value) => {
         setDescription(value);
     };
@@ -57,7 +58,7 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
             allowConfirm={allowConfirm}
             dataTestId="new-empty-version-modal"
         >
-            {createSourceVersion.isLoading && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner />}
             <Grid container spacing={4}>
                 <Grid item>
                     <Typography>

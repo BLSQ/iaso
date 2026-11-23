@@ -1,35 +1,13 @@
-# Configurar una campaña de distribución de mosquiteros con IA
+# Configurar una campaña de distribución de MTI con IA
 
 *Configure IASO para una distribución masiva de mosquiteros tratados con insecticida (MTI) con la ayuda de un asistente de IA.*
 
 Esta guía está dirigida a coordinadores de campaña y responsables informáticos que quieren
-usar IASO para planificar y supervisar una campaña de mosquiteros. No hace falta ser
+usar IASO para planificar y supervisar una campaña de MTI. No hace falta ser
 desarrollador: un asistente de IA (Claude, ChatGPT…) hace el trabajo técnico, le hace
 preguntas sobre su campaña y espera su aprobación antes de cambiar nada en IASO. Hace que la
 configuración de la campaña sea más rápida, sobre todo si la mayoría de las decisiones de la
 campaña ya están tomadas.
-
-La guía tiene dos partes:
-
-1. **[Preparar su cuenta IASO](#parte-1-preparar-su-cuenta-iaso)**: crear o abrir su cuenta
-   y elegir el usuario para la configuración.
-2. **[Configurar la campaña](#parte-2-configurar-la-campana-con-el-kit-de-campana)**: dar el
-   kit de campaña IASO a su asistente de IA y dejar que importe sus datos geográficos y
-   construya las herramientas de la campaña.
-
-## Lo que obtiene al final
-
-| Herramienta | Para | Qué hace |
-|---|---|---|
-| **Proyectos móviles** (hasta seis) | agentes de empadronamiento, agentes de distribución, equipos de grupos especiales, jefes de equipo, gestores de stock, supervisores | registrar los hogares con un ticket QR, distribuir los mosquiteros una sola vez por hogar, registrar a los trabajadores y su asistencia, seguir los movimientos de stock, rellenar las listas de supervisión |
-| **15 formularios listos para usar** | todos los agentes | en inglés y francés, adaptados a su regla de asignación |
-| **Registros** | todos | hogares, grupos especiales (prisiones, campamentos, internados…) y trabajadores, que los agentes vuelven a encontrar en el teléfono |
-| **Seguimiento del stock** | gestores de stock | saldo de mosquiteros de cada almacén, calculado a partir de recepciones, salidas, devoluciones, transferencias y pérdidas |
-| **Paneles web** | equipo de coordinación | avance de la campaña por región, distrito o establecimiento de salud, con un mapa de los hogares; asistencia y hoja de pago de los trabajadores; stock por zona |
-| **Informes móviles** | jefes de equipo, gestores de stock | avance, mapa de hogares, asistencia del equipo y stock, disponibles sin conexión en el teléfono |
-| **Códigos QR** | formadores | para instalar la aplicación IASO y configurarla para cada proyecto en segundos |
-
-![Los proyectos de la campaña en IASO](./setup_bednet_campaign_with_ai_attachments/projects.jpg){ .doc-shot }
 
 ## Antes de empezar
 
@@ -105,48 +83,40 @@ nombre.
 
 ### Paso 4: Dar el kit a su asistente de IA
 
-1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip, junto con su archivo
-   Excel o GeoPackage si tiene uno. (Con Claude Code, ábralo en la carpeta del kit.)
-2. Copie tal cual uno de estos mensajes, según el origen de sus datos geográficos.
+1. Inicie una nueva conversación en Claude o ChatGPT y adjunte el zip.
+2. Elija el origen de sus datos geográficos y copie tal cual el mensaje correspondiente.
 
-**Una demostración, para probar el kit** (la pirámide de demostración del kit y respuestas de
-ejemplo):
+**Opción A: Usar los datos geográficos de demostración** (la pirámide de demostración del kit y respuestas de ejemplo). La mayoría de la gente empieza aquí: no hay nada que preparar, y verá el resultado antes de preparar sus propios datos. Copie este mensaje y vaya directamente al [paso 5](#paso-5-responder-a-las-preguntas-del-asistente) para responder a las preguntas:
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Es una demostración: usa la pirámide de
 > demostración del kit y propón respuestas de ejemplo para todo en un solo resumen (modo
 > demo). Pide mi confirmación antes de cada paso que escriba en IASO, y no te detengas antes
 > de la lista del § 12c.
 
+Si el asistente no consigue acceder a IASO, vea el consejo al final de este paso.
+
+**Opción B: Usar sus propios datos geográficos.** Consulte la [guía de usuario](../users/reference/user_guide.md#lista-de-fuentes-de-datos) para más detalles sobre cómo dar formato a su archivo GeoPackage o Excel, o cómo conectar su instancia de DHIS2. Para obtener la ayuda del kit con sus datos, use uno de estos mensajes:
+
 **Sus datos geográficos en un archivo Excel** (adjunto a la conversación):
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Mis unidades organizativas están en el archivo
 > Excel adjunto. Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación
 > antes de cada paso que escriba en IASO, y no te detengas antes de la lista del § 12c.
 
+Con un archivo GeoPackage, use este mensaje escribiendo «GeoPackage» en lugar de «Excel».
+
 **Sus datos geográficos en DHIS2** (ya configurado en la fuente de datos de IASO):
 
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
+> Aquí tienes un kit para configurar una campaña de distribución de MTI en IASO.
 > Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
 > los scripts del kit, ningún conector IASO. Mis unidades organizativas vienen de nuestro
 > DHIS2, ya configurado en la fuente de datos de IASO. Hazme las preguntas de la campaña una
 > sección a la vez. Pide mi confirmación antes de cada paso que escriba en IASO, y no te
 > detengas antes de la lista del § 12c.
-
-**Sus datos geográficos ya están en IASO**:
-
-> Aquí tienes un kit para configurar una campaña de distribución de mosquiteros en IASO.
-> Descomprímelo si hace falta, lee `SKILL.md` y síguelo paso a paso para guiarme. Usa solo
-> los scripts del kit, ningún conector IASO. Mis unidades organizativas ya están en IASO.
-> Hazme las preguntas de la campaña una sección a la vez. Pide mi confirmación antes de cada
-> paso que escriba en IASO, y no te detengas antes de la lista del § 12c.
-
-Si tiene dudas, empiece por la demostración: construye todo sobre lugares ficticios, y verá el
-resultado antes de preparar sus propios datos. Con un archivo GeoPackage, use el mensaje de
-Excel escribiendo «GeoPackage» en lugar de «Excel».
 
 El asistente trabaja en su propio espacio: pídale que le dé como descargas los archivos que
 produce (códigos QR, contraseñas de los usuarios, copia de seguridad).
@@ -173,8 +143,17 @@ produce (códigos QR, contraseñas de los usuarios, copia de seguridad).
 ### Paso 5: Responder a las preguntas del asistente
 
 El asistente hace sus preguntas un tema a la vez (en una demostración, propone todas las
-respuestas de una vez, en un solo resumen para aprobar). Cuantas más decisiones haya tomado
-ya, más rápida será la configuración:
+respuestas de una vez, en un solo resumen para aprobar).
+
+¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
+asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
+distritos, almacenes y agentes) que luego sustituirá por los suyos.
+
+Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
+datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
+móviles.
+
+Cuantas más decisiones haya tomado ya, más rápida será la configuración:
 
 | Tema | Preguntas | Qué preparar |
 |---|---|---|
@@ -185,14 +164,6 @@ ya, más rápida será la configuración:
 | Trabajadores | las funciones, las tarifas diarias, quién valida la asistencia | la escala de pagos |
 | Stock | los almacenes seguidos, el número de mosquiteros por fardo | la lista de almacenes |
 | Usuarios | quién usa qué proyecto, en qué zona | la lista de agentes |
-
-¿Aún no está todo decidido? Puede probar igualmente la configuración de la campaña: el
-asistente puede proponer datos de demostración (pirámide de demostración, ejemplos de
-distritos, almacenes y agentes) que luego sustituirá por los suyos.
-
-Después, el asistente construye la campaña paso a paso, pidiendo su aprobación cada vez:
-datos geográficos, proyectos, formularios, registros, stock, usuarios, paneles e informes
-móviles.
 
 Puede instalar la aplicación IASO en cuanto el asistente muestre los códigos QR, pero el
 teléfono muestra poco hasta que existe el resto:
@@ -229,10 +200,6 @@ los dos tercios de la sesión.
    stock.
 7. Abra los informes móviles, con red y luego en modo avión.
 
-![Inicio de un proyecto en el teléfono](./setup_bednet_campaign_with_ai_attachments/phone-home.jpg){ width="220" }
-![El informe de avance en la aplicación](./setup_bednet_campaign_with_ai_attachments/phone-report.jpg){ width="220" }
-![El mapa de hogares en el informe de avance](./setup_bednet_campaign_with_ai_attachments/mobile-report-map.jpg){ width="220" }
-
 !!! note "¿Dónde están los formularios de stock?"
     En los servidores que tienen la pantalla de inicio de stock, el proyecto Stock se abre en
     los almacenes y sus formularios. Si no, el asistente añade una pestaña **Data collection**
@@ -253,8 +220,6 @@ de prueba.
   panel de la campaña y el informe de avance muestran los hogares en un mapa (mapa base del
   servidor de teselas de Bluesquare, a partir de OpenStreetMap): en el panel, haga clic en una
   fila de la tabla para acercarse a ese lugar.
-
-![El panel de la campaña](./setup_bednet_campaign_with_ai_attachments/page-dashboard.jpg){ .doc-shot }
 
 ## Más información
 

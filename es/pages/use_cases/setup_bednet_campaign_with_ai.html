@@ -1521,21 +1521,13 @@
 
 
 <h1 id="set-up-an-itn-distribution-campaign-with-ai">Set up an ITN distribution campaign with AI<a class="headerlink" href="#set-up-an-itn-distribution-campaign-with-ai" title="Permanent link">#</a></h1>
+<p>You don't need to be a developer to test this AI-assisted setup. With the demo data, it takes about 10 minutes. You can then submit test data to check the look and feel.</p>
 <h2 id="important-to-know-before-you-start">Important to know before you start<a class="headerlink" href="#important-to-know-before-you-start" title="Permanent link">#</a></h2>
 <div class="admonition tip">
 <p class="admonition-title">Using another AI assistant?</p>
 <p>This guide has been tested with Claude and ChatGPT. If you run into difficulties with
 another AI assistant, we're happy to collect your feedback:
 <a href="mailto:products@bluesquarehub.com">contact us at products@bluesquarehub.com</a>.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Using Claude? Prefer Claude Code</p>
-<p>If you use Claude, preferably use <strong>Claude Code</strong> (desktop app or terminal) to avoid
-limitations. Claude in the browser or in its app can only reach domains on an allowed
-list: with an IASO server other than <strong>app.openiaso.com</strong>, get its domain allowed
-<strong>before</strong> the session (on Team and Enterprise plans, only an owner of your Claude
-organisation can add it: see the
-<a href="#step-4-give-the-kit-to-your-ai-assistant">tip at the end of step 4</a>).</p>
 </div>
 <hr>
 <h2 id="step-1-create-your-iaso-demo-account">Step 1: Create your IASO demo account<a class="headerlink" href="#step-1-create-your-iaso-demo-account" title="Permanent link">#</a></h2>
@@ -1550,11 +1542,11 @@ throughout the test.</p>
 <h2 id="step-3-give-the-kit-access-to-your-iaso-account">Step 3: Give the kit access to your IASO account<a class="headerlink" href="#step-3-give-the-kit-access-to-your-iaso-account" title="Permanent link">#</a></h2>
 <p>The kit needs an <strong>access key</strong> (a "token") to work in your IASO account on your behalf.</p>
 <ol>
+<li>Decompress the ZIP file.</li>
 <li>Open this link and log in with your main user:
    <strong><a href="https://app.openiaso.com/login/?next=/api/apitoken/">https://app.openiaso.com/login/?next=/api/apitoken/</a></strong></li>
 <li>The page shows a line like <code>{"token": "eyJ0eXAiOiJKV1Qi…"}</code>. Copy the long text between
    the second pair of quotes: this is your access key.</li>
-<li>Decompress the ZIP file.</li>
 <li>In the kit folder, open the file <code>iaso_config.txt</code> with a text editor (Notepad,
    TextEdit…).</li>
 <li>Check that the <code>IASO_URL=</code> line says <code>https://app.openiaso.com</code>. Paste your access key
@@ -1570,10 +1562,11 @@ need it to come back to the assistant and make changes later (see step 7).</p>
 <h2 id="step-4-give-the-kit-to-your-ai-assistant">Step 4: Give the kit to your AI assistant<a class="headerlink" href="#step-4-give-the-kit-to-your-ai-assistant" title="Permanent link">#</a></h2>
 <ol>
 <li>Start a new conversation in Claude or ChatGPT and attach the zip you saved in step 3 (it
-   now contains your access key).</li>
+   now contains your access key). With Claude Code, open the kit folder instead of
+   attaching the zip.</li>
 <li>Choose where your geographic data comes from:</li>
 </ol>
-<p><strong>Option A: Use the demo geographic data</strong> (the kit's demo pyramid and example answers).
+<p><strong>Option A: Use the demo geographic data</strong> (a ready-made set of demo places, with example answers).
 Copy this message, then go to <a href="#step-5-answer-the-assistants-questions">step 5</a> to answer the
 questions:</p>
 <blockquote>
@@ -1586,6 +1579,14 @@ IASO, and do not stop before the checklist of § 12c.</p>
 <p><strong>Option B: Use your own geographic data.</strong> Go to
 <a href="#use-your-own-geographic-data">Use your own geographic data</a> at the bottom of this page to
 get the right message, then continue with <a href="#step-5-answer-the-assistants-questions">step 5</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Using Claude? Prefer Claude Code</p>
+<p>If you use Claude, preferably use <strong>Claude Code</strong> (desktop app or terminal) to avoid
+limitations. Claude in the browser or in its app can only reach domains on an allowed
+list: with an IASO server other than <strong>app.openiaso.com</strong>, get its domain allowed
+<strong>before</strong> the session (on Team and Enterprise plans, only an owner of your Claude
+organisation can add it: see the tip below).</p>
+</div>
 <div class="admonition tip">
 <p class="admonition-title">The assistant can't reach IASO?</p>
 <p>The kit's scripts need to reach app.openiaso.com over the internet. If the assistant

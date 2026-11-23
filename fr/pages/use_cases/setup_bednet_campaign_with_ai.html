@@ -1519,21 +1519,13 @@
 
 
 <h1 id="configurer-une-campagne-de-distribution-de-milda-avec-lia">Configurer une campagne de distribution de MILDA avec l'IA<a class="headerlink" href="#configurer-une-campagne-de-distribution-de-milda-avec-lia" title="Permanent link">#</a></h1>
+<p>Pas besoin d'être développeur pour tester cette configuration assistée par IA. Avec les données de démonstration, elle prend environ 10 minutes. Vous pouvez ensuite soumettre des données de test pour juger de l'aspect et du fonctionnement.</p>
 <h2 id="a-savoir-avant-de-commencer">À savoir avant de commencer<a class="headerlink" href="#a-savoir-avant-de-commencer" title="Permanent link">#</a></h2>
 <div class="admonition tip">
 <p class="admonition-title">Vous utilisez un autre assistant IA ?</p>
 <p>Ce guide a été testé avec Claude et ChatGPT. Si vous rencontrez des difficultés avec un
 autre assistant IA, vos retours nous intéressent :
 <a href="mailto:products@bluesquarehub.com">contactez-nous à products@bluesquarehub.com</a>.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Vous utilisez Claude ? Préférez Claude Code</p>
-<p>Si vous utilisez Claude, utilisez de préférence <strong>Claude Code</strong> (application de bureau ou
-terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
-ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
-<strong>app.openiaso.com</strong>, faites autoriser son domaine <strong>avant</strong> la session (sur les offres
-Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
-voir l'<a href="#etape-4-donner-le-kit-a-votre-assistant-ia">astuce à la fin de l'étape 4</a>).</p>
 </div>
 <hr>
 <h2 id="etape-1-creer-votre-compte-de-demonstration-iaso">Étape 1 : Créer votre compte de démonstration IASO<a class="headerlink" href="#etape-1-creer-votre-compte-de-demonstration-iaso" title="Permanent link">#</a></h2>
@@ -1549,11 +1541,11 @@ utilisez ses identifiants pendant tout le test.</p>
 <p>Le kit a besoin d'une <strong>clé d'accès</strong> (un « token ») pour travailler dans votre compte IASO
 en votre nom.</p>
 <ol>
+<li>Décompressez le fichier ZIP.</li>
 <li>Ouvrez ce lien et connectez-vous avec votre utilisateur principal :
    <strong><a href="https://app.openiaso.com/login/?next=/api/apitoken/">https://app.openiaso.com/login/?next=/api/apitoken/</a></strong></li>
 <li>La page affiche une ligne comme <code>{"token": "eyJ0eXAiOiJKV1Qi…"}</code>. Copiez le long texte
    entre la deuxième paire de guillemets : c'est votre clé d'accès.</li>
-<li>Décompressez le fichier ZIP.</li>
 <li>Dans le dossier du kit, ouvrez le fichier <code>iaso_config.txt</code> avec un éditeur de texte
    (Bloc-notes, TextEdit…).</li>
 <li>Vérifiez que la ligne <code>IASO_URL=</code> indique <code>https://app.openiaso.com</code>. Collez votre clé
@@ -1570,11 +1562,12 @@ modifications plus tard (voir l'étape 7).</p>
 <h2 id="etape-4-donner-le-kit-a-votre-assistant-ia">Étape 4 : Donner le kit à votre assistant IA<a class="headerlink" href="#etape-4-donner-le-kit-a-votre-assistant-ia" title="Permanent link">#</a></h2>
 <ol>
 <li>Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip enregistré à
-   l'étape 3 (il contient maintenant votre clé d'accès).</li>
+   l'étape 3 (il contient maintenant votre clé d'accès). Avec Claude Code, ouvrez plutôt le
+   dossier du kit au lieu de joindre le zip.</li>
 <li>Choisissez l'origine de vos données géographiques :</li>
 </ol>
-<p><strong>Option A : Utiliser les données géographiques de démonstration</strong> (pyramide de
-démonstration du kit et réponses d'exemple). Copiez ce message, puis allez à
+<p><strong>Option A : Utiliser les données géographiques de démonstration</strong> (un jeu de lieux de
+démonstration prêt à l'emploi, avec des réponses d'exemple). Copiez ce message, puis allez à
 l'<a href="#etape-5-repondre-aux-questions-de-lassistant">étape 5</a> pour répondre aux questions :</p>
 <blockquote>
 <p>Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
@@ -1587,6 +1580,15 @@ qu'après la liste du § 12c.</p>
 <p><strong>Option B : Utiliser vos propres données géographiques.</strong> Allez à
 <a href="#utiliser-vos-propres-donnees-geographiques">Utiliser vos propres données géographiques</a> en
 bas de cette page pour obtenir le bon message, puis continuez avec l'<a href="#etape-5-repondre-aux-questions-de-lassistant">étape 5</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Vous utilisez Claude ? Préférez Claude Code</p>
+<p>Si vous utilisez Claude, utilisez de préférence <strong>Claude Code</strong> (application de bureau ou
+terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
+ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
+<strong>app.openiaso.com</strong>, faites autoriser son domaine <strong>avant</strong> la session (sur les offres
+Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
+voir l'astuce ci-dessous).</p>
+</div>
 <div class="admonition tip">
 <p class="admonition-title">L'assistant n'arrive pas à joindre IASO ?</p>
 <p>Les scripts du kit doivent accéder à app.openiaso.com par internet. Si l'assistant

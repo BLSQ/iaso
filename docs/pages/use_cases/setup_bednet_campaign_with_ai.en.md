@@ -1,6 +1,6 @@
 # Set up an ITN distribution campaign with AI
 
-With the demo data, the setup takes about 10 minutes. You can then submit test data to check the look and feel.
+You don't need to be a developer to test this AI-assisted setup. With the demo data, it takes about 10 minutes. You can then submit test data to check the look and feel.
 
 ## Important to know before you start
 

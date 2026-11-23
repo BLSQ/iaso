@@ -1,6 +1,6 @@
 # Configurer une campagne de distribution de MILDA avec l'IA
 
-Avec les données de démonstration, la configuration prend environ 10 minutes. Vous pouvez ensuite soumettre des données de test pour juger de l'aspect et du fonctionnement.
+Pas besoin d'être développeur pour tester cette configuration assistée par IA. Avec les données de démonstration, elle prend environ 10 minutes. Vous pouvez ensuite soumettre des données de test pour juger de l'aspect et du fonctionnement.
 
 ## À savoir avant de commencer
 

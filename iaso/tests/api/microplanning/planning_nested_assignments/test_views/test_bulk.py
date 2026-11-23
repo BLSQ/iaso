@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
 
@@ -74,7 +75,7 @@ class NestedPlanningAssignmentBulkAPITestCase(SwaggerTestCaseMixin, APITestCase)
         url = reverse(
             f"planning-nested-assignments-{action}", kwargs={"parent_lookup_pk": planning_pk or self.planning.pk}
         )
-        return self.client.post(url, data=data, format="json")
+        return self.client.put(url, data=data, format="json")
 
     def assign(self, org_units: list[OrgUnit], **assignee) -> Assignment:
         Assignment.objects.bulk_create(
@@ -350,6 +351,8 @@ class NestedPlanningAssignmentBulkAPITestCase(SwaggerTestCaseMixin, APITestCase)
     def test_unassign_num_queries(self):
         self.assign([self.district_a, self.district_b], team=self.team_a)
         self.assign([self.zone_a1], user=self.agent_a)
+
+        ContentType.objects.clear_cache()
 
         with self.assertNumQueries(14):
             # 1-2. user permissions

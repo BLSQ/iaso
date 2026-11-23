@@ -1,19 +1,13 @@
 # Set up an ITN distribution campaign with AI
 
+With the demo data, the setup takes about 10 minutes. You can then submit test data to check the look and feel.
+
 ## Important to know before you start
 
 !!! tip "Using another AI assistant?"
     This guide has been tested with Claude and ChatGPT. If you run into difficulties with
     another AI assistant, we're happy to collect your feedback:
     [contact us at products@bluesquarehub.com](mailto:products@bluesquarehub.com).
-
-!!! warning "Using Claude? Prefer Claude Code"
-    If you use Claude, preferably use **Claude Code** (desktop app or terminal) to avoid
-    limitations. Claude in the browser or in its app can only reach domains on an allowed
-    list: with an IASO server other than **app.openiaso.com**, get its domain allowed
-    **before** the session (on Team and Enterprise plans, only an owner of your Claude
-    organisation can add it: see the
-    [tip at the end of step 4](#step-4-give-the-kit-to-your-ai-assistant)).
 
 ---
 
@@ -33,11 +27,11 @@ Download the IASO campaign kit, a zip file of instructions for the AI assistant:
 
 The kit needs an **access key** (a "token") to work in your IASO account on your behalf.
 
-1. Open this link and log in with your main user:
+1. Decompress the ZIP file.
+2. Open this link and log in with your main user:
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
-2. The page shows a line like `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copy the long text between
+3. The page shows a line like `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copy the long text between
    the second pair of quotes: this is your access key.
-3. Decompress the ZIP file.
 4. In the kit folder, open the file `iaso_config.txt` with a text editor (Notepad,
    TextEdit…).
 5. Check that the `IASO_URL=` line says `https://app.openiaso.com`. Paste your access key
@@ -52,10 +46,11 @@ The kit needs an **access key** (a "token") to work in your IASO account on your
 ## Step 4: Give the kit to your AI assistant
 
 1. Start a new conversation in Claude or ChatGPT and attach the zip you saved in step 3 (it
-   now contains your access key).
+   now contains your access key). With Claude Code, open the kit folder instead of
+   attaching the zip.
 2. Choose where your geographic data comes from:
 
-**Option A: Use the demo geographic data** (the kit's demo pyramid and example answers).
+**Option A: Use the demo geographic data** (a ready-made set of demo places, with example answers).
 Copy this message, then go to [step 5](#step-5-answer-the-assistants-questions) to answer the
 questions:
 
@@ -68,6 +63,13 @@ questions:
 **Option B: Use your own geographic data.** Go to
 [Use your own geographic data](#use-your-own-geographic-data) at the bottom of this page to
 get the right message, then continue with [step 5](#step-5-answer-the-assistants-questions).
+
+!!! warning "Using Claude? Prefer Claude Code"
+    If you use Claude, preferably use **Claude Code** (desktop app or terminal) to avoid
+    limitations. Claude in the browser or in its app can only reach domains on an allowed
+    list: with an IASO server other than **app.openiaso.com**, get its domain allowed
+    **before** the session (on Team and Enterprise plans, only an owner of your Claude
+    organisation can add it: see the tip below).
 
 !!! tip "The assistant can't reach IASO?"
     The kit's scripts need to reach app.openiaso.com over the internet. If the assistant

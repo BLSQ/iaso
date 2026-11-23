@@ -1,19 +1,13 @@
 # Configurer une campagne de distribution de MILDA avec l'IA
 
+Avec les données de démonstration, la configuration prend environ 10 minutes. Vous pouvez ensuite soumettre des données de test pour juger de l'aspect et du fonctionnement.
+
 ## À savoir avant de commencer
 
 !!! tip "Vous utilisez un autre assistant IA ?"
     Ce guide a été testé avec Claude et ChatGPT. Si vous rencontrez des difficultés avec un
     autre assistant IA, vos retours nous intéressent :
     [contactez-nous à products@bluesquarehub.com](mailto:products@bluesquarehub.com).
-
-!!! warning "Vous utilisez Claude ? Préférez Claude Code"
-    Si vous utilisez Claude, utilisez de préférence **Claude Code** (application de bureau ou
-    terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
-    ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
-    **app.openiaso.com**, faites autoriser son domaine **avant** la session (sur les offres
-    Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
-    voir l'[astuce à la fin de l'étape 4](#etape-4-donner-le-kit-a-votre-assistant-ia)).
 
 ---
 
@@ -34,11 +28,11 @@ Téléchargez le kit de campagne IASO, un fichier zip d'instructions pour l'assi
 Le kit a besoin d'une **clé d'accès** (un « token ») pour travailler dans votre compte IASO
 en votre nom.
 
-1. Ouvrez ce lien et connectez-vous avec votre utilisateur principal :
+1. Décompressez le fichier ZIP.
+2. Ouvrez ce lien et connectez-vous avec votre utilisateur principal :
    **[https://app.openiaso.com/login/?next=/api/apitoken/](https://app.openiaso.com/login/?next=/api/apitoken/)**
-2. La page affiche une ligne comme `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copiez le long texte
+3. La page affiche une ligne comme `{"token": "eyJ0eXAiOiJKV1Qi…"}`. Copiez le long texte
    entre la deuxième paire de guillemets : c'est votre clé d'accès.
-3. Décompressez le fichier ZIP.
 4. Dans le dossier du kit, ouvrez le fichier `iaso_config.txt` avec un éditeur de texte
    (Bloc-notes, TextEdit…).
 5. Vérifiez que la ligne `IASO_URL=` indique `https://app.openiaso.com`. Collez votre clé
@@ -54,11 +48,12 @@ en votre nom.
 ## Étape 4 : Donner le kit à votre assistant IA
 
 1. Démarrez une nouvelle conversation dans Claude ou ChatGPT et joignez le zip enregistré à
-   l'étape 3 (il contient maintenant votre clé d'accès).
+   l'étape 3 (il contient maintenant votre clé d'accès). Avec Claude Code, ouvrez plutôt le
+   dossier du kit au lieu de joindre le zip.
 2. Choisissez l'origine de vos données géographiques :
 
-**Option A : Utiliser les données géographiques de démonstration** (pyramide de
-démonstration du kit et réponses d'exemple). Copiez ce message, puis allez à
+**Option A : Utiliser les données géographiques de démonstration** (un jeu de lieux de
+démonstration prêt à l'emploi, avec des réponses d'exemple). Copiez ce message, puis allez à
 l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant) pour répondre aux questions :
 
 > Voici un kit pour configurer une campagne de distribution de MILDA dans IASO.
@@ -71,6 +66,14 @@ l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant) pour répondre aux q
 **Option B : Utiliser vos propres données géographiques.** Allez à
 [Utiliser vos propres données géographiques](#utiliser-vos-propres-donnees-geographiques) en
 bas de cette page pour obtenir le bon message, puis continuez avec l'[étape 5](#etape-5-repondre-aux-questions-de-lassistant).
+
+!!! warning "Vous utilisez Claude ? Préférez Claude Code"
+    Si vous utilisez Claude, utilisez de préférence **Claude Code** (application de bureau ou
+    terminal) pour éviter les limitations. Claude dans le navigateur ou dans son application
+    ne peut joindre que les domaines d'une liste autorisée : avec un serveur IASO autre que
+    **app.openiaso.com**, faites autoriser son domaine **avant** la session (sur les offres
+    Team et Enterprise, seul un propriétaire de votre organisation Claude peut l'ajouter :
+    voir l'astuce ci-dessous).
 
 !!! tip "L'assistant n'arrive pas à joindre IASO ?"
     Les scripts du kit doivent accéder à app.openiaso.com par internet. Si l'assistant

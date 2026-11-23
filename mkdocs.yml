@@ -99,7 +99,7 @@ markdown_extensions:
   - toc:
       permalink: "#" # adds a link to headers
 repo_url: https://github.com/BLSQ/iaso
-edit_uri: edit/main/docs # for the edit on github button
+edit_uri: edit/develop/docs # for the edit on github button
 extra_css:
   - ./stylesheets/extra.css
 extra_javascript:

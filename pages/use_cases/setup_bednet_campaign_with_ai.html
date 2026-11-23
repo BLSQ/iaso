@@ -851,78 +851,86 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
-  <a href="#before-you-start" class="md-nav__link">
-    Before you start
+  <a href="#important-to-know-before-you-start" class="md-nav__link">
+    Important to know before you start
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#part-1-prepare-your-iaso-account" class="md-nav__link">
-    Part 1: Prepare your IASO account
+  <a href="#step-1-create-your-iaso-demo-account" class="md-nav__link">
+    Step 1: Create your IASO demo account
   </a>
-  
-    <nav class="md-nav" aria-label="Part 1: Prepare your IASO account">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-open-your-iaso-account" class="md-nav__link">
-    Step 1: Open your IASO account
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#part-2-configure-the-campaign-with-the-campaign-kit" class="md-nav__link">
-    Part 2: Configure the campaign with the campaign kit
-  </a>
-  
-    <nav class="md-nav" aria-label="Part 2: Configure the campaign with the campaign kit">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#step-2-download-the-kit" class="md-nav__link">
     Step 2: Download the kit
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#step-3-give-the-kit-access-to-your-iaso-account" class="md-nav__link">
     Step 3: Give the kit access to your IASO account
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#step-4-give-the-kit-to-your-ai-assistant" class="md-nav__link">
     Step 4: Give the kit to your AI assistant
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#step-5-answer-the-assistants-questions" class="md-nav__link">
     Step 5: Answer the assistant's questions
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#step-6-test-on-a-phone" class="md-nav__link">
     Step 6: Test on a phone
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#step-7-after-the-setup" class="md-nav__link">
     Step 7: After the setup
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-your-own-geographic-data" class="md-nav__link">
+    Use your own geographic data
+  </a>
+  
+    <nav class="md-nav" aria-label="Use your own geographic data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#your-geographic-data-in-an-excel-file" class="md-nav__link">
+    Your geographic data in an Excel file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-geographic-data-in-dhis2" class="md-nav__link">
+    Your geographic data in DHIS2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-your-campaign-decisions" class="md-nav__link">
+    Prepare your campaign decisions
   </a>
   
 </li>
@@ -1510,49 +1518,23 @@
 
 <h1 id="set-up-an-itn-distribution-campaign-with-ai">Set up an ITN distribution campaign with AI<a class="headerlink" href="#set-up-an-itn-distribution-campaign-with-ai" title="Permanent link">#</a></h1>
 <p><em>Configure IASO for a mass distribution of insecticide-treated nets (ITNs) with the help of an AI assistant.</em></p>
-<p>This guide is for campaign coordinators and IT focal points who want to use IASO to plan and
-monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
+<p>This guide is for malaria campaign data managers and IT focal points who want to use IASO to
+plan and monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
 ChatGPT…) does the technical work, asks you questions about your campaign and waits for your
-go-ahead before changing anything in IASO. It makes the campaign configuration quicker,
-especially if most of the campaign decisions are already made.</p>
-<h2 id="before-you-start">Before you start<a class="headerlink" href="#before-you-start" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th>You need</th>
-<th>Details</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>An <strong>IASO account</strong></td>
-<td>You can create a free trial on <a href="https://www.openiaso.com/pricing/">openiaso.com/pricing</a>.</td>
-</tr>
-<tr>
-<td>An <strong>AI assistant</strong></td>
-<td>One that can run Python code and reach your IASO server: Claude or ChatGPT in the browser or in their app, or Claude Code (desktop app or terminal) with Python 3 on your computer.</td>
-</tr>
-<tr>
-<td>Your <strong>files and campaign decisions</strong></td>
-<td>Only if you want to test with your real campaign data. Your geographic data (from DHIS2, an Excel file or a GeoPackage file: the assistant imports it for you, or you can <a href="../users/reference/user_guide.html#import-a-pyramid-into-a-data-source">import it yourself</a>) and the campaign decisions: districts covered, net allocation rule, roles and daily rates of workers, list of stores, list of agents (see the assistant's questions in <a href="#step-5-answer-the-assistants-questions">step 5</a>). Otherwise, the assistant can propose demo data so you can test the setup first.</td>
-</tr>
-<tr>
-<td>An <strong>Android phone</strong></td>
-<td>With the <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">IASO app from Google Play</a>, to test the mobile projects.</td>
-</tr>
-</tbody>
-</table>
+go-ahead before changing anything in IASO.</p>
+<p>There are two ways to try it:</p>
+<ul>
+<li><strong>No campaign data yet?</strong> The assistant sets up a demo configuration, so you can see IASO
+  configured for an ITN campaign.</li>
+<li><strong>Campaign data at hand?</strong> Share your files with the assistant: it configures IASO based on
+  them.</li>
+</ul>
+<h2 id="important-to-know-before-you-start">Important to know before you start<a class="headerlink" href="#important-to-know-before-you-start" title="Permanent link">#</a></h2>
 <div class="admonition tip">
 <p class="admonition-title">Using another AI assistant?</p>
 <p>This guide has been tested with Claude and ChatGPT. If you run into difficulties with
 another AI assistant, we're happy to collect your feedback:
 <a href="mailto:products@bluesquarehub.com">contact us at products@bluesquarehub.com</a>.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Your IASO address</p>
-<p>Everything in this guide happens on <strong><a href="https://app.openiaso.com/">https://app.openiaso.com</a></strong>.
-Trial accounts already have every module the campaign needs (forms, entities, stock
-management, embedded links, DHIS2 mapping).</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Using Claude? Prefer Claude Code</p>
@@ -1564,33 +1546,19 @@ organisation can add it: see the
 <a href="#step-4-give-the-kit-to-your-ai-assistant">tip at the end of step 4</a>).</p>
 </div>
 <hr>
-<h2 id="part-1-prepare-your-iaso-account">Part 1: Prepare your IASO account<a class="headerlink" href="#part-1-prepare-your-iaso-account" title="Permanent link">#</a></h2>
-<h3 id="step-1-open-your-iaso-account">Step 1: Open your IASO account<a class="headerlink" href="#step-1-open-your-iaso-account" title="Permanent link">#</a></h3>
-<ol>
-<li>Go to your IASO account on <a href="https://app.openiaso.com/">app.openiaso.com</a>, or create one on
-   <a href="https://www.openiaso.com/pricing/">openiaso.com/pricing</a>.</li>
-<li>Choose the <strong>user for the setup</strong>: the assistant works in IASO as this user. You can use
-   the main user of your newly created account: it already has all the permissions the kit
-   needs (listed in <code>SKILL.md</code>, section 1). Ideally, create a dedicated user for the setup.</li>
-</ol>
-<hr>
-<h2 id="part-2-configure-the-campaign-with-the-campaign-kit">Part 2: Configure the campaign with the campaign kit<a class="headerlink" href="#part-2-configure-the-campaign-with-the-campaign-kit" title="Permanent link">#</a></h2>
-<p>The <strong>IASO campaign kit</strong> is a zip file of instructions, forms, templates and small scripts
-written for an AI assistant. It is not software to install: you give it to the assistant,
-which follows it step by step to build your campaign in IASO. The assistant works in IASO
-with the kit's own scripts and the access key you give it in step 3.</p>
-<h3 id="step-2-download-the-kit">Step 2: Download the kit<a class="headerlink" href="#step-2-download-the-kit" title="Permanent link">#</a></h3>
-<p>Download the kit in the language you want the assistant to work in, and unzip it on your
-computer:</p>
+<h2 id="step-1-create-your-iaso-demo-account">Step 1: Create your IASO demo account<a class="headerlink" href="#step-1-create-your-iaso-demo-account" title="Permanent link">#</a></h2>
+<p>Create an IASO demo account on <a href="https://www.openiaso.com/pricing/">openiaso.com/pricing</a>. The
+main user of this account has all the permissions the kit needs: use its credentials
+throughout the test.</p>
+<h2 id="step-2-download-the-kit">Step 2: Download the kit<a class="headerlink" href="#step-2-download-the-kit" title="Permanent link">#</a></h2>
+<p>Download the IASO campaign kit, a zip file of instructions for the AI assistant:</p>
 <ul>
 <li><strong><a href="setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup.zip">Campaign kit in English</a></strong> (zip, 5.6 MB)</li>
-<li><strong><a href="setup_bednet_campaign_with_ai_attachments/iaso-campaign-setup-fr.zip">Campaign kit in French</a></strong> (zip, 6.1 MB)</li>
 </ul>
-<p>Both kits contain the same forms, with English and French labels.</p>
-<h3 id="step-3-give-the-kit-access-to-your-iaso-account">Step 3: Give the kit access to your IASO account<a class="headerlink" href="#step-3-give-the-kit-access-to-your-iaso-account" title="Permanent link">#</a></h3>
+<h2 id="step-3-give-the-kit-access-to-your-iaso-account">Step 3: Give the kit access to your IASO account<a class="headerlink" href="#step-3-give-the-kit-access-to-your-iaso-account" title="Permanent link">#</a></h2>
 <p>The kit needs an <strong>access key</strong> (a "token") to work in your IASO account on your behalf.</p>
 <ol>
-<li>Open this link and log in with the user for the setup:
+<li>Open this link and log in with your main user:
    <strong><a href="https://app.openiaso.com/login/?next=/api/apitoken/">https://app.openiaso.com/login/?next=/api/apitoken/</a></strong></li>
 <li>The page shows a line like <code>{"token": "eyJ0eXAiOiJKV1Qi…"}</code>. Copy the long text between
    the second pair of quotes: this is your access key.</li>
@@ -1607,12 +1575,15 @@ computer:</p>
 share the zip once it contains the key. Keep the kit with its key in a safe place: you
 need it to come back to the assistant and make changes later (see step 7).</p>
 </div>
-<h3 id="step-4-give-the-kit-to-your-ai-assistant">Step 4: Give the kit to your AI assistant<a class="headerlink" href="#step-4-give-the-kit-to-your-ai-assistant" title="Permanent link">#</a></h3>
+<h2 id="step-4-give-the-kit-to-your-ai-assistant">Step 4: Give the kit to your AI assistant<a class="headerlink" href="#step-4-give-the-kit-to-your-ai-assistant" title="Permanent link">#</a></h2>
 <ol>
-<li>Start a new conversation in Claude or ChatGPT and attach the zip with the token saved in the .txt file.</li>
-<li>Choose where your geographic data comes from and copy the matching message as it is.</li>
+<li>Start a new conversation in Claude or ChatGPT and attach the zip you saved in step 3 (it
+   now contains your access key).</li>
+<li>Choose where your geographic data comes from:</li>
 </ol>
-<p><strong>Option A: Use the demo geographic data</strong> (the kit's demo pyramid and example answers). Most people start here: there is nothing to prepare, and you see the result before preparing your own data. Copy this message, then go directly to <a href="#step-5-answer-the-assistants-questions">step 5</a> to answer the questions:</p>
+<p><strong>Option A: Use the demo geographic data</strong> (the kit's demo pyramid and example answers).
+Copy this message, then go to <a href="#step-5-answer-the-assistants-questions">step 5</a> to answer the
+questions:</p>
 <blockquote>
 <p>Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
 <code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
@@ -1620,27 +1591,9 @@ connector. This is a demo: use the kit's demo pyramid and propose placeholder an
 everything in one summary (demo mode). Confirm with me before each step that writes to
 IASO, and do not stop before the checklist of § 12c.</p>
 </blockquote>
-<p>If the assistant can't reach IASO, see the tip at the end of this step.</p>
-<p><strong>Option B: Use your own geographic data.</strong> Refer to the <a href="../users/reference/user_guide.html#data-sources-list">user guide</a> for more details on how to format your GeoPackage or Excel file, or how to connect your DHIS2 instance. To get support from the kit with your data, use one of these messages:</p>
-<p><strong>Your geographic data in an Excel file</strong> (attached to the conversation):</p>
-<blockquote>
-<p>Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
-<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
-connector. My org units are in the attached Excel file. Ask me the campaign questions one
-section at a time. Confirm with me before each step that writes to IASO, and do not stop
-before the checklist of § 12c.</p>
-</blockquote>
-<p>With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".</p>
-<p><strong>Your geographic data in DHIS2</strong> (already set up on the data source in IASO):</p>
-<blockquote>
-<p>Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
-<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
-connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
-the campaign questions one section at a time. Confirm with me before each step that writes
-to IASO, and do not stop before the checklist of § 12c.</p>
-</blockquote>
-<p>The assistant works in its own space: ask it to give you as downloads the files it produces
-(QR codes, user passwords, backup).</p>
+<p><strong>Option B: Use your own geographic data.</strong> Go to
+<a href="#use-your-own-geographic-data">Use your own geographic data</a> at the bottom of this page to
+get the right message, then continue with <a href="#step-5-answer-the-assistants-questions">step 5</a>.</p>
 <div class="admonition tip">
 <p class="admonition-title">The assistant can't reach IASO?</p>
 <p>The kit's scripts need to reach app.openiaso.com over the internet. If the assistant
@@ -1660,15 +1613,57 @@ allowed to reach that address:</p>
 </ul>
 <p>Then ask the assistant to try again.</p>
 </div>
-<h3 id="step-5-answer-the-assistants-questions">Step 5: Answer the assistant's questions<a class="headerlink" href="#step-5-answer-the-assistants-questions" title="Permanent link">#</a></h3>
+<h2 id="step-5-answer-the-assistants-questions">Step 5: Answer the assistant's questions<a class="headerlink" href="#step-5-answer-the-assistants-questions" title="Permanent link">#</a></h2>
 <p>The assistant asks its questions one topic at a time (in a demo, it proposes all the answers
-at once, in one summary to approve).</p>
-<p>Not everything decided yet? You can still test the campaign setup: the assistant can propose
-demo data (demo pyramid, example districts, stores and agents) that you replace later with
-your own.</p>
-<p>Then the assistant builds the campaign step by step, asking for your go-ahead each time:
-geographic data, projects, forms, registries, stock, users, dashboards and mobile reports.</p>
-<p>The more of these decisions you have already made, the quicker the configuration:</p>
+at once, in one summary to approve). It then builds the campaign step by step, asking for
+your go-ahead each time: geographic data, projects, forms, registries, stock, users,
+dashboards and mobile reports.</p>
+<p>The assistant works in its own space: ask it to give you the files it produces (QR codes,
+user passwords, backup) as downloads.</p>
+<h2 id="step-6-test-on-a-phone">Step 6: Test on a phone<a class="headerlink" href="#step-6-test-on-a-phone" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Install the IASO app</strong> on an Android phone from
+   <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">Google Play</a>
+   (or scan the Play Store QR code the assistant gives you).</li>
+<li><strong>Find the QR codes</strong> in IASO: open the menu and go to <strong>Admin &gt; Projects</strong>. Each mobile
+   app project of the campaign is listed there, with its QR code ready to scan.</li>
+<li><strong>Open the IASO app</strong> on the phone, choose to scan a QR code and scan the QR code of the
+   project to test. Accept the permission requests that show up (camera, location…).</li>
+<li><strong>Log in</strong> with your main user.</li>
+<li>Follow the <strong>guided test</strong> the assistant proposes (register households, distribute nets,
+   record a stock movement…).</li>
+</ol>
+<h2 id="step-7-after-the-setup">Step 7: After the setup<a class="headerlink" href="#step-7-after-the-setup" title="Permanent link">#</a></h2>
+<p>To change something in the campaign configuration, simply ask the AI assistant: go back to
+the conversation where you attached the kit, which still contains your access key.</p>
+<h2 id="use-your-own-geographic-data">Use your own geographic data<a class="headerlink" href="#use-your-own-geographic-data" title="Permanent link">#</a></h2>
+<p>Use this option to configure the campaign with your real geographic data. Refer to the
+<a href="../users/reference/user_guide.html#data-sources-list">user guide</a> for more details on how to
+format your GeoPackage or Excel file, or how to connect your DHIS2 instance. Then, in
+<a href="#step-4-give-the-kit-to-your-ai-assistant">step 4</a>, use one of these messages instead of
+the demo message.</p>
+<h3 id="your-geographic-data-in-an-excel-file">Your geographic data in an Excel file<a class="headerlink" href="#your-geographic-data-in-an-excel-file" title="Permanent link">#</a></h3>
+<p>Attach the Excel file to the conversation, together with the zip, and copy this message:</p>
+<blockquote>
+<p>Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
+<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
+connector. My org units are in the attached Excel file. Ask me the campaign questions one
+section at a time. Confirm with me before each step that writes to IASO, and do not stop
+before the checklist of § 12c.</p>
+</blockquote>
+<p>With a GeoPackage file, use this message and say "GeoPackage" instead of "Excel".</p>
+<h3 id="your-geographic-data-in-dhis2">Your geographic data in DHIS2<a class="headerlink" href="#your-geographic-data-in-dhis2" title="Permanent link">#</a></h3>
+<p>Your DHIS2 must already be set up on the data source in IASO. Copy this message:</p>
+<blockquote>
+<p>Here is a kit to set up an ITN distribution campaign in IASO. Unzip it if needed, read
+<code>SKILL.md</code> and follow it step by step to guide me. Use only the kit's scripts, no IASO
+connector. My org units come from our DHIS2, already set up on the IASO data source. Ask me
+the campaign questions one section at a time. Confirm with me before each step that writes
+to IASO, and do not stop before the checklist of § 12c.</p>
+</blockquote>
+<h3 id="prepare-your-campaign-decisions">Prepare your campaign decisions<a class="headerlink" href="#prepare-your-campaign-decisions" title="Permanent link">#</a></h3>
+<p>The more of these decisions you have already made, the quicker the configuration. The
+assistant asks about them in <a href="#step-5-answer-the-assistants-questions">step 5</a>:</p>
 <table>
 <thead>
 <tr>
@@ -1715,50 +1710,6 @@ geographic data, projects, forms, registries, stock, users, dashboards and mobil
 </tr>
 </tbody>
 </table>
-<p>The assistant shows the QR codes at the end, once every project is fully configured (forms,
-registries and their follow-ups, stock, users and reports): before that, the app would be empty
-or incomplete. It also gives you a sheet of test QR codes (household tickets, nets, bales), since
-you have no real ones yet: print it, or scan it from your screen.</p>
-<h3 id="step-6-test-on-a-phone">Step 6: Test on a phone<a class="headerlink" href="#step-6-test-on-a-phone" title="Permanent link">#</a></h3>
-<ol>
-<li><strong>Install the IASO app</strong> on an Android phone from
-   <a href="https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&amp;hl=en">Google Play</a>
-   (or scan the Play Store QR code the assistant gives you).</li>
-<li><strong>Choose the user to test with</strong>: a test user created by the assistant, or your own
-   user (the assistant offers to add you to the campaign projects). Either way, this user must have the projects you want to test: in IASO, go to
-   <strong>Admin &gt; Users</strong>, edit the user and, in <strong>Projects</strong>, select the projects to test. To try
-   the different projects and switch from one to another, select all of them.</li>
-<li><strong>Find the QR codes</strong> in IASO: open the menu and go to <strong>Admin &gt; Projects</strong>. Each mobile
-   project of the campaign is listed there, with its QR code ready to scan.</li>
-<li><strong>Open the IASO app</strong> on the phone, choose to scan a QR code and scan the QR code of the
-   project to test. Accept the permission requests that show up (camera, location…).</li>
-<li><strong>Log in</strong> with the user chosen in point 2.</li>
-<li>Follow the <strong>guided test</strong> the assistant proposes, with the test QR codes: register two
-   households with the test tickets, distribute nets to one of them, register a special group
-   and a worker, record a stock movement. A new campaign has no data, so this is what fills the
-   lists, follow-ups and reports of each project.</li>
-<li>Open the mobile reports, with network and then in airplane mode.</li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Where are the stock forms?</p>
-<p>On servers that have the stock home screen, the Stock project opens on the stores and their
-forms. Otherwise, the assistant adds a <strong>Data collection</strong> tab to the Stock project: open
-it, choose the store, and the stock forms are listed. Without that tab, the stock forms
-are under <strong>Entities &gt; Update stocks</strong>, then the store, then <strong>Edit</strong> next to its name.</p>
-</div>
-<p>Before training the field teams, ask the assistant to delete the test data and the test
-users.</p>
-<h3 id="step-7-after-the-setup">Step 7: After the setup<a class="headerlink" href="#step-7-after-the-setup" title="Permanent link">#</a></h3>
-<ul>
-<li>To change something during the campaign (a question in a form, a new district, a report),
-  simply ask the assistant: come back to it with the kit, which still contains your access
-  key. Forms already used on phones must be changed with
-  care: the kit tells the assistant how.</li>
-<li>Follow the campaign in the web dashboards (<strong>Pages</strong> menu in IASO) and in the mobile reports.
-  The campaign dashboard and the progress report show the households on a map (base map from
-  Bluesquare's tile server, from OpenStreetMap): in the dashboard, click a row of the table to
-  zoom on that place.</li>
-</ul>
 <h2 id="learn-more">Learn more<a class="headerlink" href="#learn-more" title="Permanent link">#</a></h2>
 <ul>
 <li>The kit contains a detailed guide (<code>GUIDE.html</code>) with the campaign phase by phase and

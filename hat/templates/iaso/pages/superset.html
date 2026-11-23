@@ -13,7 +13,7 @@
         {{ config|json_script:'config' }}
         <script type="module">
             async function fetchGuestTokenFromBackend(dashboardId) {
-                response = await fetch('/api/superset/token/', {
+                const response = await fetch('/api/superset/token/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

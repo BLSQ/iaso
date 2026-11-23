@@ -1,19 +1,5 @@
 # Set up an ITN distribution campaign with AI
 
-*Configure IASO for a mass distribution of insecticide-treated nets (ITNs) with the help of an AI assistant.*
-
-This guide is for malaria campaign data managers and IT focal points who want to use IASO to
-plan and monitor an ITN campaign. You don't need to be a developer: an AI assistant (Claude,
-ChatGPT…) does the technical work, asks you questions about your campaign and waits for your
-go-ahead before changing anything in IASO.
-
-There are two ways to try it:
-
-- **No campaign data yet?** The assistant sets up a demo configuration, so you can see IASO
-  configured for an ITN campaign.
-- **Campaign data at hand?** Share your files with the assistant: it configures IASO based on
-  them.
-
 ## Important to know before you start
 
 !!! tip "Using another AI assistant?"

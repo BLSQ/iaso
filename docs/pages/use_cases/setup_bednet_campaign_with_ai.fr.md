@@ -1,20 +1,5 @@
 # Configurer une campagne de distribution de MILDA avec l'IA
 
-*Configurez IASO pour une distribution de masse de moustiquaires imprégnées d'insecticide à longue durée d'action (MILDA) avec l'aide d'un assistant IA.*
-
-Ce guide s'adresse aux gestionnaires de données de campagnes de lutte contre le paludisme et
-aux points focaux informatiques qui veulent utiliser IASO pour planifier et suivre une
-campagne MILDA. Pas besoin d'être développeur : un assistant IA (Claude, ChatGPT…) fait le
-travail technique, vous pose des questions sur votre campagne et attend votre accord avant de
-modifier quoi que ce soit dans IASO.
-
-Il y a deux façons de l'essayer :
-
-- **Pas encore de données de campagne ?** L'assistant configure une démonstration, pour que
-  vous voyiez IASO configuré pour une campagne MILDA.
-- **Des données de campagne sous la main ?** Partagez vos fichiers avec l'assistant : il
-  configure IASO à partir de ceux-ci.
-
 ## À savoir avant de commencer
 
 !!! tip "Vous utilisez un autre assistant IA ?"

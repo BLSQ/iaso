@@ -237,6 +237,7 @@ export type FormsParams = {
     planning?: string;
     projectsIds?: string;
     orgUnitTypeIds?: string;
+    validationWorkflowIds?: string;
     fields?: string;
     orgUnitId: string;
 };

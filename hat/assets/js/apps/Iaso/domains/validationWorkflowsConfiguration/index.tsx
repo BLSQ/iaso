@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Add from '@mui/icons-material/Add';
 import { Box, Paper, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -55,19 +55,25 @@ const styles = {
 } satisfies SxStyles;
 
 // The table centres its column labels whatever the column `align`: keep them left like the
-// cells, except the actions column (always the last one) which stays centred
+// cells, except the actions column (always the last one) which stays centred.
+// Built once, so the table styles are not recomputed on each render
 const getTableStyles = (hasActions: boolean) => ({
     [`& .MuiTableHead-root .MuiTableCell-root${hasActions ? ':not(:last-of-type)' : ''}`]:
         {
             textAlign: 'left !important',
         },
 });
+const tableStyles = {
+    withActions: getTableStyles(true),
+    withoutActions: getTableStyles(false),
+};
 
 const defaults = {
     order: 'name',
     pageSize: 20,
     page: 1,
 };
+const defaultSorted = getOrderArray(defaults.order);
 
 export const ValidationWorkflowsConfiguration = () => {
     const params: ParamsWithAccountId & Partial<UrlParams> = useParamsObject(
@@ -80,13 +86,18 @@ export const ValidationWorkflowsConfiguration = () => {
 
     const { data: workflows, isLoading: isLoadingWorkflows } =
         useApiValidationWorkflowsList({
-            limit: limit ? parseInt(limit) : undefined,
-            page: page ? parseInt(page) : undefined,
+            limit: limit ? parseInt(limit, 10) : undefined,
+            page: page ? parseInt(page, 10) : undefined,
             ...apiParams,
         });
 
-    const columns = useWorkflowsTableColumns();
+    const count = workflows?.count ?? 0;
+    const columns = useWorkflowsTableColumns({ params: safeParams, count });
     const hasActions = columns.some(column => column.id === 'actions');
+    const extraProps = useMemo(
+        () => ({ loading: isLoadingWorkflows, params }),
+        [isLoadingWorkflows, params],
+    );
     return (
         <>
             <TopBar title={formatMessage(MESSAGES.validationWorkflows)} />
@@ -116,23 +127,26 @@ export const ValidationWorkflowsConfiguration = () => {
                 >
                     {formatMessage(MESSAGES.listDescription)}
                 </Typography>
-                <Paper sx={getTableStyles(hasActions)}>
-                    <TableToolbar count={workflows?.count} />
+                <Paper
+                    sx={
+                        hasActions
+                            ? tableStyles.withActions
+                            : tableStyles.withoutActions
+                    }
+                >
+                    <TableToolbar count={count} />
                     <TableWithDeepLink
                         marginTop={false}
                         elevation={0}
                         baseUrl={baseUrls.validationWorkflowsConfiguration}
-                        defaultSorted={getOrderArray(defaults.order)}
+                        defaultSorted={defaultSorted}
                         columns={columns}
                         params={params}
                         data={workflows?.results ?? []}
-                        count={workflows?.count}
+                        count={count}
                         showCount={false}
                         pages={workflows?.pages ?? 0}
-                        extraProps={{
-                            loading: isLoadingWorkflows,
-                            params,
-                        }}
+                        extraProps={extraProps}
                     />
                 </Paper>
             </MainWrapper>

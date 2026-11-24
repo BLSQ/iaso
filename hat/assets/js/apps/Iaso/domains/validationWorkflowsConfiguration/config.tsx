@@ -1,5 +1,4 @@
-import { useMemo } from 'react';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Column, Setting, useSafeIntl } from 'bluesquare-components';
 import {
     useApiValidationWorkflowsDestroy,
@@ -8,6 +7,8 @@ import {
 } from 'Iaso/api/validationWorkflows';
 import { BreakWordCell } from 'Iaso/components/Cells/BreakWordCell';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
+import { useDeleteTableRow } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useDeleteNode } from 'Iaso/domains/validationWorkflowsConfiguration/api/Delete';
 import { EditNode } from 'Iaso/domains/validationWorkflowsConfiguration/components/CreateEditNode/CreateEditNode';
@@ -23,10 +24,36 @@ import MESSAGES from './messages';
 
 type WorkflowRow = Setting<ValidationWorkflowList>;
 
-export const useWorkflowsTableColumns = (): Column[] => {
+type WorkflowsTableColumnsArgs = {
+    // Url params with the defaults applied: used to go back one page when the last row of a page is deleted
+    params: Record<string, any>;
+    count: number;
+};
+
+export const useWorkflowsTableColumns = ({
+    params,
+    count,
+}: WorkflowsTableColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
     const user = useCurrentUser();
-    const { mutateAsync: deleteWorkflow } = useApiValidationWorkflowsDestroy();
+    // A boolean rather than the user object, so the columns are not rebuilt when the user is refetched
+    const canEdit = userHasOneOfPermissions([VALIDATION_WORKFLOWS], user);
+    const onDeleteSuccess = useDeleteTableRow({
+        params,
+        count,
+        baseUrl: baseUrls.validationWorkflowsConfiguration,
+    });
+    const { mutate: deleteWorkflow } = useApiValidationWorkflowsDestroy({
+        mutation: {
+            onSuccess: onDeleteSuccess,
+            // Without it, the default "Saved successfully" message is shown
+            meta: { snackSuccessMessage: MESSAGES.deleteSuccess },
+        },
+    });
+    const handleDelete = useCallback(
+        (slug: string) => deleteWorkflow({ slug }),
+        [deleteWorkflow],
+    );
 
     return useMemo(() => {
         const cols: Column[] = [
@@ -61,7 +88,7 @@ export const useWorkflowsTableColumns = (): Column[] => {
                 ),
             },
         ];
-        if (userHasOneOfPermissions([VALIDATION_WORKFLOWS], user)) {
+        if (canEdit) {
             cols.push({
                 Header: formatMessage(MESSAGES.actions),
                 id: 'actions',
@@ -71,15 +98,13 @@ export const useWorkflowsTableColumns = (): Column[] => {
                 Cell: ({ row }: WorkflowRow) => (
                     <WorkflowActions
                         workflow={row.original}
-                        onDelete={() =>
-                            deleteWorkflow({ slug: row.original.slug })
-                        }
+                        onDelete={handleDelete}
                     />
                 ),
             });
         }
         return cols;
-    }, [formatMessage, user, deleteWorkflow]);
+    }, [formatMessage, canEdit, handleDelete]);
 };
 
 export const useWorkflowNodesColumns = (

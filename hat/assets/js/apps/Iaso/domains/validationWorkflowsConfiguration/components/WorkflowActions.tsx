@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import Delete from '@mui/icons-material/Delete';
 import Edit from '@mui/icons-material/Edit';
 import FileCopy from '@mui/icons-material/FileCopy';
@@ -13,8 +18,12 @@ import MESSAGES from '../messages';
 
 type Props = {
     workflow: ValidationWorkflowList;
-    onDelete: () => void;
+    onDelete: (slug: string) => void;
 };
+
+// The dialog is opened from the menu: it has no trigger of its own.
+// Defined once, an inline component would be a new type (so remounted) on each render
+const NoTrigger = () => null;
 
 // Same row actions as the forms list: edit inline, the rest in the ⋮ menu
 export const WorkflowActions: FunctionComponent<Props> = ({
@@ -28,15 +37,20 @@ export const WorkflowActions: FunctionComponent<Props> = ({
         useApiValidationWorkflowsDuplicateCreate({
             mutation: {
                 // Open the copy so it can be edited and linked to forms
-                onSuccess: ({ slug }) =>
+                onSuccess: copy =>
                     redirectTo(
                         baseUrls.validationWorkflowsConfigurationDetail,
-                        {
-                            slug,
-                        },
+                        { slug: copy.slug },
                     ),
             },
         });
+
+    const { slug } = workflow;
+    const handleDelete = useCallback(() => onDelete(slug), [onDelete, slug]);
+    const openDeleteDialog = useCallback(
+        () => setDeleteDialogKey(key => key + 1),
+        [],
+    );
 
     const actions: TableAction[] = useMemo(
         () => [
@@ -44,7 +58,7 @@ export const WorkflowActions: FunctionComponent<Props> = ({
                 key: 'edit',
                 label: MESSAGES.edit,
                 icon: <Edit />,
-                href: `/${baseUrls.validationWorkflowsConfigurationDetail}/slug/${workflow.slug}`,
+                href: `/${baseUrls.validationWorkflowsConfigurationDetail}/slug/${slug}`,
             },
             {
                 key: 'duplicate',
@@ -52,7 +66,7 @@ export const WorkflowActions: FunctionComponent<Props> = ({
                 icon: <FileCopy />,
                 menu: true,
                 disabled: isDuplicating,
-                onClick: () => duplicateWorkflow({ slug: workflow.slug }),
+                onClick: () => duplicateWorkflow({ slug }),
             },
             { type: 'divider' },
             {
@@ -61,10 +75,10 @@ export const WorkflowActions: FunctionComponent<Props> = ({
                 icon: <Delete />,
                 menu: true,
                 color: 'error.main',
-                onClick: () => setDeleteDialogKey(key => key + 1),
+                onClick: openDeleteDialog,
             },
         ],
-        [workflow.slug, duplicateWorkflow, isDuplicating],
+        [slug, duplicateWorkflow, isDuplicating, openDeleteDialog],
     );
 
     return (
@@ -75,8 +89,8 @@ export const WorkflowActions: FunctionComponent<Props> = ({
                     key={deleteDialogKey}
                     defaultOpen
                     titleMessage={MESSAGES.deleteWorkflow}
-                    onConfirm={onDelete}
-                    Trigger={() => <></>}
+                    onConfirm={handleDelete}
+                    Trigger={NoTrigger}
                 />
             )}
         </>

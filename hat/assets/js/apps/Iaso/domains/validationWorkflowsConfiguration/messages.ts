@@ -49,6 +49,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.submissions.label.deleteWorkflow',
         defaultMessage: 'Delete workflow',
     },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
     duplicate: {
         id: 'iaso.workflows.duplicate',
         defaultMessage: 'Duplicate',

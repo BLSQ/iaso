@@ -53,33 +53,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.addInstancesValidationWorkflow',
         defaultMessage: 'Add validation workflow',
     },
-    infos: {
-        defaultMessage: 'Informations',
-        id: 'iaso.instance.infos',
-    },
-    steps: {
-        id: 'iaso.form.label.steps',
-        defaultMessage: 'step(s)',
-    },
     canSkipPreviousNodes: {
         id: 'iaso.workflows.label.canSkipPreviousNodes',
-        defaultMessage: 'Can skip previous steps',
-    },
-    saveOrder: {
-        id: 'iaso.workflows.saveOrder',
-        defaultMessage: 'Save order',
-    },
-    resetOrder: {
-        id: 'iaso.workflows.resetOrder',
-        defaultMessage: 'Reset order',
+        defaultMessage: 'Can skip previous validation step(s)',
     },
     deleteNodeQuestion: {
         id: 'iaso.workflows.label.deleteNodeQuestion',
         defaultMessage: 'Delete step?',
-    },
-    color: {
-        defaultMessage: 'Color',
-        id: 'iaso.label.color',
     },
     description: {
         id: 'iaso.form.label.description',
@@ -100,6 +80,72 @@ const MESSAGES = defineMessages({
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
+    },
+    validationSteps: {
+        id: 'iaso.workflows.validationSteps',
+        defaultMessage: 'Validation steps',
+    },
+    addStep: {
+        id: 'iaso.workflows.addStep',
+        defaultMessage: 'Add step',
+    },
+    stepName: {
+        id: 'iaso.workflows.stepName',
+        defaultMessage: 'Step name',
+    },
+    validatedByUserRole: {
+        id: 'iaso.workflows.validatedByUserRole',
+        defaultMessage: 'Validated by user role',
+    },
+    noSteps: {
+        id: 'iaso.workflows.noSteps',
+        defaultMessage: 'No steps yet',
+    },
+    duplicateStepName: {
+        id: 'iaso.workflows.duplicateStepName',
+        defaultMessage: 'Step names must be unique',
+    },
+    linkedForms: {
+        id: 'iaso.workflows.linkedForms',
+        defaultMessage:
+            '{count, plural, one {# form linked to this workflow:} other {# forms linked to this workflow:}}',
+    },
+    noLinkedForms: {
+        id: 'iaso.workflows.noLinkedForms',
+        defaultMessage: 'No form linked to this workflow',
+    },
+    validationWorkflows: {
+        id: 'iaso.workflows.instance.validationWorkflow.label',
+        defaultMessage: 'Validation workflows',
+    },
+    goToAllForms: {
+        id: 'iaso.workflows.goToAllForms',
+        defaultMessage: 'Go to all forms',
+    },
+    workflowDetails: {
+        id: 'iaso.workflows.workflowDetails',
+        defaultMessage: 'Workflow details',
+    },
+    workflowName: {
+        id: 'iaso.workflows.workflowName',
+        defaultMessage: 'Workflow name',
+    },
+    formsHelp: {
+        id: 'iaso.workflows.formsHelp',
+        defaultMessage: 'Submissions of these forms follow this workflow.',
+    },
+    createdByOn: {
+        id: 'iaso.workflows.createdByOn',
+        defaultMessage: 'Created by {name} on {date}',
+    },
+    updatedOn: {
+        id: 'iaso.workflows.updatedOn',
+        defaultMessage: 'Updated {date}',
+    },
+    stepsOrderHelp: {
+        id: 'iaso.workflows.stepsOrderHelp',
+        defaultMessage:
+            'Steps run from top to bottom. Step 1 is the first validator; the submission moves to the next step once it is approved.',
     },
 });
 

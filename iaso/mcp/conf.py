@@ -49,8 +49,8 @@ def apply(settings: MutableMapping[str, Any]) -> None:
         axes_idx = middleware.index("axes.middleware.AxesMiddleware")
     except ValueError:
         axes_idx = len(middleware)
-    middleware.insert(axes_idx, "oauth2_provider.middleware.OAuth2TokenMiddleware")
-    settings["AUTHENTICATION_BACKENDS"].append("oauth2_provider.backends.OAuth2Backend")
+    middleware.insert(axes_idx, "iaso.mcp.auth.McpOAuth2TokenMiddleware")
+    settings["AUTHENTICATION_BACKENDS"].append("iaso.mcp.auth.McpOAuth2Backend")
     settings["LOGOUT_NEXT_ALLOWED_PATHS"] = list(settings["LOGOUT_NEXT_ALLOWED_PATHS"]) + list(LOGOUT_NEXT_PATHS)
     settings["OAUTH2_PROVIDER"] = {
         "SCOPES": {"iaso:mcp": "Access the IASO MCP server"},

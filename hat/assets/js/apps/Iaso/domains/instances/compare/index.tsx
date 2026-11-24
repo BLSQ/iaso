@@ -5,8 +5,10 @@ import type { Theme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
+import { PiiRestrictedBanner } from '../../../components/PiiRestrictedBanner';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { useGetInstances } from '../hooks/requests/useGetInstance';
 import InstanceDetail from './components/InstanceDetail';
 import MESSAGES from './messages';
 
@@ -31,6 +33,10 @@ export const CompareSubmissions: FunctionComponent = () => {
         }
         return 12;
     }, [instanceIds]);
+    const instances = useGetInstances(instanceIds);
+    const hasHiddenFields = instances.some(
+        ({ data }) => (data?.hidden_fields ?? []).length > 0,
+    );
     return (
         <>
             <TopBar
@@ -39,6 +45,7 @@ export const CompareSubmissions: FunctionComponent = () => {
                 goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <PiiRestrictedBanner show={hasHiddenFields} sx={{ mb: 2 }} />
                 <Grid container spacing={4}>
                     {instanceIds.map((instanceId: string) => (
                         <Grid

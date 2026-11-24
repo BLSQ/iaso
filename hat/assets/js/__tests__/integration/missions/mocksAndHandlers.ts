@@ -31,14 +31,15 @@ export const getCustomFormOptionsMockHandler = (
                         : 0)(),
             );
 
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : formOptionsMock,
-                { status: 200 },
-            );
+            let body: typeof formOptionsMock | FormsDropdownOptions[] =
+                formOptionsMock;
+            if (typeof overrideResponse === 'function') {
+                body = await overrideResponse(info);
+            } else if (overrideResponse !== undefined) {
+                body = overrideResponse;
+            }
+
+            return HttpResponse.json(body, { status: 200 });
         },
         options,
     );
@@ -70,14 +71,15 @@ export const getCustomOUTOptionsMockHandler = (
                         : 0)(),
             );
 
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : orgUnitTypesMock,
-                { status: 200 },
-            );
+            let body: typeof orgUnitTypesMock | OrgUnitTypeDropdownOption[] =
+                orgUnitTypesMock;
+            if (typeof overrideResponse === 'function') {
+                body = await overrideResponse(info);
+            } else if (overrideResponse !== undefined) {
+                body = overrideResponse;
+            }
+
+            return HttpResponse.json(body, { status: 200 });
         },
         options,
     );
@@ -112,14 +114,14 @@ export const getCustomEntityTypeOptionsMockHandler = (
                         : 0)(),
             );
 
-            return HttpResponse.json(
-                overrideResponse !== undefined
-                    ? typeof overrideResponse === 'function'
-                        ? await overrideResponse(info)
-                        : overrideResponse
-                    : entityTypesMock,
-                { status: 200 },
-            );
+            let body: typeof entityTypesMock | EntityType[] = entityTypesMock;
+            if (typeof overrideResponse === 'function') {
+                body = await overrideResponse(info);
+            } else if (overrideResponse !== undefined) {
+                body = overrideResponse;
+            }
+
+            return HttpResponse.json(body, { status: 200 });
         },
         options,
     );

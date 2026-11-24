@@ -280,6 +280,7 @@
     "iaso.entities.dialog.restoreTitle": "Êtes-vous certain de vouloir restaurer cette entité ?",
     "iaso.entities.deleted": "Supprimée",
     "iaso.entities.deletedEntity": "Cette entité et ses soumissions sont supprimées.",
+    "iaso.entities.moreActions": "Plus d’actions",
     "iaso.entities.restoreError": "Une erreur est survenue en restaurant l'entité",
     "iaso.entities.restoreSuccess": "Entité restaurée",
     "iaso.entities.showDeleted": "Afficher les entités supprimées",

@@ -8,7 +8,11 @@ import { ENTITIES_WRITE } from '../../../utils/permissions';
 import { useGetEntitiesApiParams } from '../hooks/requests';
 import MESSAGES from '../messages';
 import { Entity } from '../types/entity';
-import { EntityActions, EntityDeleteRestoreAction } from './EntityActions';
+import {
+    EntityActions,
+    EntityActionsMenu,
+    EntityRestoreButton,
+} from './EntityActions';
 
 const mocks = vi.hoisted(() => ({
     userHasPermission: vi.fn(),
@@ -121,25 +125,97 @@ describe('EntityActions', () => {
         );
         expect(mocks.deleteEntity).not.toHaveBeenCalled();
     });
+});
 
-    it('calls onDeleted once deleted from the details page', async () => {
+describe('Entity details actions', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mocks.userHasPermission.mockImplementation(
+            permission => permission === ENTITIES_WRITE,
+        );
+    });
+
+    const openMenu = () =>
+        userEvent.click(
+            screen.getByRole('button', {
+                name: MESSAGES.moreActions.defaultMessage,
+            }),
+        );
+
+    it('deletes from the card menu and calls onDeleted', async () => {
         const user = userEvent.setup();
         const onDeleted = vi.fn();
         renderWithThemeAndIntlProvider(
-            <EntityDeleteRestoreAction
-                entity={activeEntity}
-                type="button"
-                onDeleted={onDeleted}
-            />,
+            <EntityActionsMenu entity={activeEntity} onDeleted={onDeleted} />,
         );
         expect(mocks.useSoftDeleteEntity).toHaveBeenCalledWith(onDeleted);
 
-        await user.click(screen.getByRole('button', { name: 'Delete' }));
-        await getDialog();
+        await openMenu();
+        await user.click(
+            screen.getByRole('menuitem', {
+                name: MESSAGES.delete.defaultMessage,
+            }),
+        );
+        // The menu closes, the confirmation stays open
+        const dialog = await getDialog();
+        expect(dialog).toHaveTextContent(
+            MESSAGES.deleteEntityText.defaultMessage,
+        );
+        expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
+        expect(mocks.deleteEntity).not.toHaveBeenCalled();
+
         await user.click(screen.getByRole('button', { name: /yes/i }));
         await waitFor(() =>
             expect(mocks.deleteEntity).toHaveBeenCalledWith(activeEntity.id),
         );
+    });
+
+    it('has no card menu on a deleted entity or without permission', () => {
+        const { unmount } = renderWithThemeAndIntlProvider(
+            <EntityActionsMenu entity={deletedEntity} />,
+        );
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        unmount();
+
+        mocks.userHasPermission.mockReturnValue(false);
+        renderWithThemeAndIntlProvider(
+            <EntityActionsMenu entity={activeEntity} />,
+        );
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('restores a deleted entity from its banner button', async () => {
+        const user = userEvent.setup();
+        renderWithThemeAndIntlProvider(
+            <EntityRestoreButton entity={deletedEntity} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', {
+                name: MESSAGES.restore.defaultMessage,
+            }),
+        );
+        const dialog = await getDialog();
+        expect(dialog).toHaveTextContent(MESSAGES.restoreText.defaultMessage);
+
+        await user.click(screen.getByRole('button', { name: /yes/i }));
+        await waitFor(() =>
+            expect(mocks.restoreEntity).toHaveBeenCalledWith(deletedEntity.id),
+        );
+    });
+
+    it('has no restore button on an active entity or without permission', () => {
+        const { unmount } = renderWithThemeAndIntlProvider(
+            <EntityRestoreButton entity={activeEntity} />,
+        );
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+        unmount();
+
+        mocks.userHasPermission.mockReturnValue(false);
+        renderWithThemeAndIntlProvider(
+            <EntityRestoreButton entity={deletedEntity} />,
+        );
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
 });
 

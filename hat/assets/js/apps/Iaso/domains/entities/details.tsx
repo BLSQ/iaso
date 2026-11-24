@@ -16,7 +16,7 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { EntityDeleteRestoreAction } from './components/EntityActions';
+import { EntityRestoreButton } from './components/EntityActions';
 import { EntityBaseInfo } from './components/EntityBaseInfo';
 import { useEntitiesDetailsColumns } from './config';
 import { useGetEntity, useGetSubmissions } from './hooks/requests';
@@ -79,17 +79,11 @@ export const Details: FunctionComponent = () => {
                             severity="warning"
                             sx={{ mb: 2 }}
                             data-testid="entity-deleted-alert"
+                            action={<EntityRestoreButton entity={entity} />}
                         >
                             {formatMessage(MESSAGES.deletedEntity)}
                         </Alert>
                     )}
-                    <Box display="flex" justifyContent="flex-end" mb={2}>
-                        <EntityDeleteRestoreAction
-                            entity={entity}
-                            type="button"
-                            onDeleted={goBack}
-                        />
-                    </Box>
                     <Grid container spacing={2} alignItems="flex-start">
                         <Grid item xs={12} md={4}>
                             <EntityBaseInfo
@@ -99,6 +93,8 @@ export const Details: FunctionComponent = () => {
                                     !entity.deleted_at && duplicates.length > 0
                                 }
                                 duplicateUrl={duplicateUrl}
+                                withActionsMenu
+                                onDeleted={goBack}
                             />
                         </Grid>
 

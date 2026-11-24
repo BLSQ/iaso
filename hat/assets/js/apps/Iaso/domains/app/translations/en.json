@@ -278,6 +278,7 @@
     "iaso.entities.dialog.restoreTitle": "Are you sure you want to restore this entity?",
     "iaso.entities.deleted": "Deleted",
     "iaso.entities.deletedEntity": "This entity and its submissions are deleted.",
+    "iaso.entities.moreActions": "More actions",
     "iaso.entities.restoreError": "An error occurred while restoring the entity",
     "iaso.entities.restoreSuccess": "Entity restored",
     "iaso.entities.showDeleted": "Show deleted entities",

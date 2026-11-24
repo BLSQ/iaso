@@ -48,6 +48,7 @@ type ApiParams = {
     tab: string;
     fields_search?: string;
     cursor?: string;
+    deletion_status?: 'all';
 };
 
 type GetAPiParams = {
@@ -78,6 +79,9 @@ export const useGetEntitiesApiParams = (
         tab: params.tab || 'list',
         fields_search: params.fieldsSearch,
     };
+    if (params.showDeleted === 'true') {
+        apiParams.deletion_status = 'all';
+    }
     if (cursorPagination) {
         apiParams.cursor = params.cursor || 'null';
     }
@@ -189,6 +193,13 @@ export const useGetEntityTypesDropdown = (): UseQueryResult<
         },
     });
 
+const ENTITY_QUERY_KEYS = [
+    ['entities'],
+    ['entities-count'],
+    ['entitiesLocations'],
+    ['entity'],
+];
+
 export const useSoftDeleteEntity = (
     onSuccess: (data: any) => void = _data => {},
 ): UseMutationResult =>
@@ -196,7 +207,19 @@ export const useSoftDeleteEntity = (
         mutationFn: entityId => deleteRequest(`/api/entities/${entityId}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
-        invalidateQueryKey: ['entities'],
+        invalidateQueryKey: ENTITY_QUERY_KEYS,
+        options: { onSuccess },
+    });
+
+export const useRestoreEntity = (
+    onSuccess: (data: any) => void = _data => {},
+): UseMutationResult =>
+    useSnackMutation({
+        mutationFn: entityId =>
+            postRequest(`/api/entities/${entityId}/restore/`, {}),
+        snackSuccessMessage: MESSAGES.restoreSuccess,
+        snackErrorMsg: MESSAGES.restoreError,
+        invalidateQueryKey: [...ENTITY_QUERY_KEYS, ['submissionsForEntity']],
         options: { onSuccess },
     });
 

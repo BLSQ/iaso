@@ -22,7 +22,7 @@ import {
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
-import { useSoftDeleteEntity } from '../../hooks/requests';
+import { useDiscardDuplicateEntity } from '../hooks/api/useDiscardDuplicateEntity';
 import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
 import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
 import MESSAGES from '../messages';
@@ -93,8 +93,14 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
         successSnackBar,
         onSuccess,
     );
-    const { mutate: softDeleteEntity, isLoading: isDeleting } =
-        useSoftDeleteEntity(onSuccess);
+    const { mutate: discardDuplicateEntity, isLoading: isDeleting } =
+        useDiscardDuplicateEntity(onSuccess);
+    const softDeleteEntity = (entityId: number) =>
+        discardDuplicateEntity({
+            entity1_id: entityIds[0],
+            entity2_id: entityIds[1],
+            entity_to_discard_id: entityId,
+        });
     const { mutateAsync: ignoreDuplicate, isLoading: isIgnoring } =
         useIgnoreDuplicate(onSuccess);
     return (

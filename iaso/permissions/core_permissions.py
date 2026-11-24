@@ -97,7 +97,22 @@ CORE_DATA_TASKS_PERMISSION = CorePermission(
     codename="iaso_data_tasks", label=_("Tâches"), module=MODULE_DEFAULT, ui_group=PERMISSION_GROUP_ADMIN
 )
 CORE_ENTITIES_PERMISSION = CorePermission(
-    codename="iaso_entities", label=_("Entities"), module=MODULE_ENTITIES, ui_group=PERMISSION_GROUP_ENTITIES
+    codename="iaso_entities",
+    label=_("Entities"),
+    module=MODULE_ENTITIES,
+    ui_group=PERMISSION_GROUP_ENTITIES,
+    ui_category="iaso_entities_permissions",
+    ui_type_in_category="read",
+    ui_order_in_category=1,
+)
+CORE_ENTITIES_WRITE_PERMISSION = CorePermission(
+    codename="iaso_entities_write",
+    label=_("Write entities"),
+    module=MODULE_ENTITIES,
+    ui_group=PERMISSION_GROUP_ENTITIES,
+    ui_category="iaso_entities_permissions",
+    ui_type_in_category="write",
+    ui_order_in_category=2,
 )
 CORE_ENTITY_TYPE_WRITE_PERMISSION = CorePermission(
     codename="iaso_entity_type_write",

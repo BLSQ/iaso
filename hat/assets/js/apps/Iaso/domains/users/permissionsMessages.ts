@@ -232,6 +232,10 @@ const PERMISSIONS_MESSAGES: PermissionsMessages = defineMessages({
         defaultMessage:
             'Manage entities - An entity is an item that is not attached to one fixed place in the pyramid (it can be individual people, or any item that are being moved from an org unit to another)',
     },
+    iaso_entities_write: {
+        id: 'iaso.permissions.iaso_entities_write',
+        defaultMessage: 'Entities - Write',
+    },
     iaso_entity_type_write: {
         id: 'iaso.permissions.iaso_entity_type_write',
         defaultMessage: 'Entity types management',
@@ -595,6 +599,15 @@ const PERMISSIONS_MESSAGES: PermissionsMessages = defineMessages({
     iaso_source_permissions_tooltip: {
         id: 'iaso.permissions.readEdit.tooltip.source_permissions',
         defaultMessage: 'View and edit geo data sources',
+    },
+    iaso_entities_permissions: {
+        id: 'iaso.permissions.readEdit.entities_permissions',
+        defaultMessage: 'Entities',
+    },
+    iaso_entities_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.entities_permissions',
+        defaultMessage:
+            'Read: view entities. Write: delete and restore entities, with their submissions',
     },
     iaso_entity_duplicate_permissions: {
         id: 'iaso.permissions.readEdit.entity_duplicate_permissions',

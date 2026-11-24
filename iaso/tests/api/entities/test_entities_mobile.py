@@ -653,6 +653,49 @@ class MobileEntityAPITestCase(SwaggerTestCaseMixin, EntityAPITestCase):
         response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(response_json["count"], 1)
 
+    def test_entity_deleted_then_restored_from_web_is_synced(self):
+        """Check that restored entities are brought back in an incremental sync (`limit_date`)"""
+        m.FormVersion.objects.create(form=self.form_1, version_id="1")
+        now = timezone.now()
+        old_date = now - datetime.timedelta(days=10)
+        limit_date_str = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+
+        instance = self.create_form_instance(
+            project=self.project, org_unit=self.ou_country, form=self.form_1, json={"_version": "1"}
+        )
+        entity = m.Entity.objects.create(
+            name="entity", entity_type=self.entity_type, attributes=instance, account=self.account
+        )
+        instance.entity = entity
+        instance.save()
+        m.Instance.objects.filter(pk=instance.pk).update(updated_at=old_date)
+
+        def synced_uuids(**params):
+            self.client.force_authenticate(self.yoda)
+            response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id, **params})
+            return [e["id"] for e in self.assertJSONResponse(response, status.HTTP_200_OK)["results"]]
+
+        def deleted_uuids():
+            self.client.force_authenticate(self.yoda)
+            response = self.client.get("/api/mobile/entities/deleted/", {"app_id": self.project.app_id})
+            return [e["uuid"] for e in self.assertJSONResponse(response, status.HTTP_200_OK)["results"]]
+
+        self.assertEqual(synced_uuids(limit_date=limit_date_str), [])
+        self.assertEqual(synced_uuids(), [str(entity.uuid)])
+
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+        # Deleting an entity from the web removes it from the mobile sync and lists it as deleted.
+        self.assertEqual(synced_uuids(), [])
+        self.assertEqual(deleted_uuids(), [str(entity.uuid)])
+
+        self.client.force_authenticate(self.entity_writer)
+        response = self.client.post(f"/api/entities/{entity.id}/restore/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        # When restored they show up as their submissions have been updated.
+        self.assertEqual(synced_uuids(limit_date=limit_date_str), [str(entity.uuid)])
+        self.assertEqual(deleted_uuids(), [])
+
     def test_get_entities_by_type_ignores_soft_deleted_instances(self):
         self.client.force_authenticate(self.yoda)
 

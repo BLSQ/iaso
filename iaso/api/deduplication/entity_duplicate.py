@@ -17,13 +17,13 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
 
-from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
+from hat.audit.models import ENTITY_DUPLICATE_DISCARD, ENTITY_DUPLICATE_MERGE, log_modification
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.deduplication.serializers import BulkIgnoreRequestSerializer
 from iaso.api.workflows.serializers import find_question_by_name
@@ -171,6 +171,7 @@ class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
     entity2_id = serializers.IntegerField(required=True)
     new_entity_id = serializers.IntegerField(required=False)
     ignored = serializers.BooleanField(required=False, default=False)
+    deleted_entity_id = serializers.IntegerField(required=False)
 
 
 def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: dict):
@@ -315,12 +316,46 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: dict, current_user: User):
     return new_entity
 
 
-class EntityDuplicatePostSerializer(serializers.Serializer):
+# Account feature flag: duplicates are resolved by soft deleting one of the two entities, instead of merging them
+ENTITY_DUPLICATES_SOFT_DELETE = "ENTITY_DUPLICATES_SOFT_DELETE"
+
+
+def account_soft_deletes_duplicates(account) -> bool:
+    return account.feature_flags.filter(code=ENTITY_DUPLICATES_SOFT_DELETE).exists()
+
+
+def lock_pending_duplicate(account, e1: Entity, e2: Entity) -> EntityDuplicate:
+    """
+    Lock both entities and their duplicate pair until the end of the transaction, so that two concurrent
+    decisions (merge, ignore, soft delete) on the same entities can't both apply.
+    Raise a ValidationError if an entity is already deleted or the pair isn't pending anymore.
+    """
+    entity_ids = sorted([e1.pk, e2.pk])
+    entities = list(
+        Entity.objects_include_deleted.filter(account=account).select_for_update().filter(pk__in=entity_ids)
+    )
+    for entity in entities:
+        if entity.deleted_at is not None:
+            raise serializers.ValidationError(f"Entity {entity.pk} was already merged or deleted")
+
+    try:
+        ed = EntityDuplicate.objects.filter_for_account(account).select_for_update().get(entity1=e1, entity2=e2)
+    except EntityDuplicate.DoesNotExist:
+        try:
+            ed = EntityDuplicate.objects.filter_for_account(account).select_for_update().get(entity2=e1, entity1=e2)
+        except EntityDuplicate.DoesNotExist:
+            raise serializers.ValidationError("This duplicate does not exist for your account")
+
+    if ed.validation_status != ValidationStatus.PENDING:
+        raise serializers.ValidationError("This duplicate has already been validated or ignored")
+    return ed
+
+
+class EntityDuplicatePairSerializer(serializers.Serializer):
+    """The two entities of a duplicate pair."""
+
     entity1_id = serializers.IntegerField(required=True)
     entity2_id = serializers.IntegerField(required=True)
-    merge = serializers.DictField(child=serializers.IntegerField(), required=False)
-    ignore = serializers.BooleanField(required=False, default=False)
-    reason = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate(self, data):
         request = self.context.get("request")
@@ -333,7 +368,7 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         try:
             entity1 = Entity.objects_include_deleted.get(pk=data["entity1_id"], account=account)
         except Entity.DoesNotExist:
-            logger.exception(f"Entity merge failed: entity 1 does not exist: {data}")
+            logger.exception(f"Entity duplicate decision failed: entity 1 does not exist: {data}")
             raise serializers.ValidationError("Entity 1 does not exist")
 
         if entity1.deleted_at is not None:
@@ -342,80 +377,115 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         try:
             entity2 = Entity.objects_include_deleted.get(pk=data["entity2_id"], account=account)
         except Entity.DoesNotExist:
-            logger.exception(f"Entity merge failed: entity 2 does not exist: {data}")
+            logger.exception(f"Entity duplicate decision failed: entity 2 does not exist: {data}")
             raise serializers.ValidationError("Entity 2 does not exist")
 
         if entity2.deleted_at is not None:
             raise serializers.ValidationError("Entity 2 is already deleted or merged")
 
         if entity1.entity_type != entity2.entity_type:
-            logger.exception(f"Entity merge failed: Entities must be of the same type: {data}")
+            logger.exception(f"Entity duplicate decision failed: Entities must be of the same type: {data}")
             raise serializers.ValidationError("Entities must be of the same type")
 
-        if data["ignore"] == False:  # merge the duplicates
-            etype = entity1.entity_type
-            ref_form = etype.reference_form
-            possible_fields = ref_form.possible_fields
+        return {**data, "entity1": entity1, "entity2": entity2}
 
-            for kk, vv in data["merge"].items():
-                if vv != data["entity1_id"] and vv != data["entity2_id"]:
-                    raise serializers.ValidationError("The merge must be done with one of the two entities")
 
-                the_q = find_question_by_name(kk, possible_fields)
+class EntityDuplicatePostSerializer(EntityDuplicatePairSerializer):
+    """
+    Resolve a pending duplicate pair, depending on `action`:
+    - `merge`: merge both entities into a new one (`merge` picks, per field, the entity to take the value from).
+    - `ignore`: they aren't duplicates (optional `reason`).
+    - `discard_entity`: soft delete one of the two (`entity_to_discard_id`) with all its submissions.
+    """
 
-                if the_q is None:
-                    raise serializers.ValidationError(f"Question {kk} does not exist in the reference form")
+    MERGE = "merge"
+    IGNORE = "ignore"
+    DISCARD_ENTITY = "discard_entity"
+
+    action = serializers.ChoiceField(choices=[MERGE, IGNORE, DISCARD_ENTITY], required=False)
+    merge = serializers.DictField(child=serializers.IntegerField(), required=False)
+    ignore = serializers.BooleanField(required=False, default=False)
+    reason = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    entity_to_discard_id = serializers.IntegerField(required=False)
+
+    def validate(self, data):
+        data = super().validate(data)
+        account = self.context.get("request").user.iaso_profile.account
+        soft_deletes = account_soft_deletes_duplicates(account)
+
+        action = data.get("action")
+        if action is None:  # default for older clients
+            action = self.IGNORE if data["ignore"] else self.MERGE
+        elif data["ignore"] and action != self.IGNORE:
+            raise serializers.ValidationError("`ignore: true` can only be used with the `ignore` action")
+
+        if action != self.MERGE and "merge" in data:
+            raise serializers.ValidationError("`merge` can only be used with the `merge` action")
+        if action != self.DISCARD_ENTITY and "entity_to_discard_id" in data:
+            raise serializers.ValidationError(
+                "`entity_to_discard_id` can only be used with the `discard_entity` action"
+            )
+
+        if action == self.MERGE:
+            if soft_deletes:
+                raise PermissionDenied("Duplicates are soft deleted instead of merged for this account.")
+            if "merge" not in data:
+                raise serializers.ValidationError("`merge` is required to merge entities")
+            self.check_merge_definition(data)
+        elif action == self.DISCARD_ENTITY:
+            if not soft_deletes:
+                raise PermissionDenied("This feature is disabled for your account.")
+            if data.get("entity_to_discard_id") not in (data["entity1_id"], data["entity2_id"]):
+                raise serializers.ValidationError("`entity_to_discard_id` must be one of the two entities")
 
         return {
-            "entity1": entity1,
-            "entity2": entity2,
-            "merge": data.get("merge", None),
-            "ignore": data.get("ignore", False),
-            "reason": data.get("reason", ""),
+            "action": action,
+            "entity1": data["entity1"],
+            "entity2": data["entity2"],
+            "merge": data.get("merge"),
+            "reason": data.get("reason") or "",
+            "entity_to_discard_id": data.get("entity_to_discard_id"),
         }
+
+    def check_merge_definition(self, data):
+        possible_fields = data["entity1"].entity_type.reference_form.possible_fields
+        for kk, vv in data["merge"].items():
+            if vv != data["entity1_id"] and vv != data["entity2_id"]:
+                raise serializers.ValidationError("The merge must be done with one of the two entities")
+            if find_question_by_name(kk, possible_fields) is None:
+                raise serializers.ValidationError(f"Question {kk} does not exist in the reference form")
 
     def create(self, validated_data):
         e1 = validated_data["entity1"]
         e2 = validated_data["entity2"]
         user = self.context.get("request").user
-        account = user.iaso_profile.account
 
-        # acquire row-level lock on the EntityDuplicate and both Entities during merging.
-        entity_ids = sorted([e1.pk, e2.pk])
-        entities = list(
-            Entity.objects_include_deleted.filter(account=account).select_for_update().filter(pk__in=entity_ids)
-        )
-        for entity in entities:
-            if entity.deleted_at is not None:
-                raise serializers.ValidationError(f"Entity {entity.pk} was already merged or deleted")
+        # acquire row-level lock on the EntityDuplicate and both Entities
+        ed = lock_pending_duplicate(user.iaso_profile.account, e1, e2)
 
-        try:
-            ed = EntityDuplicate.objects.filter_for_account(account).select_for_update().get(entity1=e1, entity2=e2)
-        except EntityDuplicate.DoesNotExist:
-            try:
-                ed = EntityDuplicate.objects.filter_for_account(account).select_for_update().get(entity2=e1, entity1=e2)
-            except EntityDuplicate.DoesNotExist:
-                raise serializers.ValidationError("This duplicate does not exist for your account")
+        if validated_data["action"] == self.IGNORE:
+            return self.ignore_duplicate(ed, e1, e2, validated_data["reason"])
+        if validated_data["action"] == self.DISCARD_ENTITY:
+            return self.discard_entity(e1, e2, validated_data["entity_to_discard_id"], user)
+        return self.merge_duplicate(ed, e1, e2, validated_data["merge"], user)
 
-        if ed.validation_status != ValidationStatus.PENDING:
-            raise serializers.ValidationError("This duplicate has already been validated or ignored")
+    @staticmethod
+    def ignore_duplicate(ed, e1, e2, reason):
+        ed.validation_status = ValidationStatus.IGNORED
+        ed.metadata["ignored_reason"] = reason
+        ed.save()
+        return {"ignored": True, "entity1_id": e1.pk, "entity2_id": e2.pk}
 
-        if validated_data["ignore"]:
-            ed.validation_status = ValidationStatus.IGNORED
-            ed.metadata["ignored_reason"] = validated_data["reason"]
-            ed.save()
+    @staticmethod
+    def discard_entity(e1, e2, entity_to_discard_id, user):
+        entity = e1 if entity_to_discard_id == e1.pk else e2
+        # Also removes the pending pairs of the entity, this one included
+        entity.soft_delete_with_instances_and_pending_duplicates(audit_source=ENTITY_DUPLICATE_DISCARD, user=user)
+        return {"deleted_entity_id": entity.pk, "entity1_id": e1.pk, "entity2_id": e2.pk}
 
-            return {
-                "ignored": True,
-                "entity1_id": validated_data["entity1"].pk,
-                "entity2_id": validated_data["entity2"].pk,
-            }
-        # Actualy merge the entities
-        e1 = validated_data["entity1"]
-        e2 = validated_data["entity2"]
-
-        current_user = self.context.get("request").user
-        new_entity = merge_entities(e1, e2, validated_data["merge"], current_user)
+    @staticmethod
+    def merge_duplicate(ed, e1, e2, merge_def, current_user):
+        new_entity = merge_entities(e1, e2, merge_def, current_user)
 
         # Leave audit trail from both entity reference forms to the new merged one
         log_modification(
@@ -465,11 +535,7 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
             else:
                 duplicate.save()
 
-        return {
-            "new_entity_id": new_entity.pk,
-            "entity1_id": validated_data["entity1"].pk,
-            "entity2_id": validated_data["entity2"].pk,
-        }
+        return {"new_entity_id": new_entity.pk, "entity1_id": e1.pk, "entity2_id": e2.pk}
 
 
 duplicate_detail_entities_param = OpenApiParameter(
@@ -488,7 +554,7 @@ class EntityDuplicateViewSet(ModelViewSet):
 
     - `GET /api/entityduplicates/` retrieve potentially duplicated entities
     - `GET /api/entityduplicates/<pk>/` retrieve details about a potential duplicate
-    - `POST /api/entityduplicates/` merge duplicate entities or ignore the match
+    - `POST /api/entityduplicates/` merge duplicate entities, ignore the match, or discard one of the entities
     """
 
     filter_backends = [
@@ -513,6 +579,12 @@ class EntityDuplicateViewSet(ModelViewSet):
     ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
     permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_DUPLICATES_READ_PERMISSION)]
     serializer_class = EntityDuplicateSerializer
+
+    def get_permissions(self):
+        perms = super().get_permissions()
+        if self.action == "create":  # merge or ignore
+            perms.append(HasPermission(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION)())
+        return perms
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
@@ -661,25 +733,27 @@ class EntityDuplicateViewSet(ModelViewSet):
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/
-        one
         {
             "entity1_id": Int,
             "entity2_id": Int,
+            "action": "merge" | "ignore" | "discard_entity",
+            // action "merge": the entity to take each field's value from
             "merge": {
                 "key1": "entity1_id",
-                "key2": "entity1_id",
-                "key3": "entity2_id",
+                "key2": "entity2_id",
                 ...
             },
-            "ignore": true | false,
-            "reason": "optional reason"
+            // action "ignore"
+            "reason": "optional reason",
+            // action "discard_entity": one of the two entities
+            "entity_to_discard_id": Int
         }
-        in the body
-        Provides an API to merge duplicate entities or to ignore the match
 
         When merging, a new entity is created with merged attributes and a full set of copied Instances.
+        Discarding soft deletes the entity with all its submissions.
 
-        This is used when the ENTITY_DUPLICATES_SOFT_DELETE feature flag is disabled.
+        The ENTITY_DUPLICATES_SOFT_DELETE feature flag decides between merge (without the flag) and
+        discard_entity (with it).
         """
 
         serializer = EntityDuplicatePostSerializer(data=request.data, context={"request": request})

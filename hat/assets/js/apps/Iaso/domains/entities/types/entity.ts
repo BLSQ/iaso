@@ -37,4 +37,5 @@ export type Entity = {
     latitude?: number;
     longitude?: number;
     nfc_cards?: number;
+    deleted_at?: string | null;
 };

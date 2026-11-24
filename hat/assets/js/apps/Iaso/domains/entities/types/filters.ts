@@ -7,6 +7,7 @@ export type Filters = {
     locationLimit?: string;
     groups?: string;
     search?: string;
+    showDeleted?: string;
     submitterId?: string;
     submitterTeamId?: string;
 };

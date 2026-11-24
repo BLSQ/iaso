@@ -35,7 +35,8 @@ class DeletionFilterBackend(filters.BaseFilterBackend):
         # by default in list view filter deleted record
         # but don't outside of list view
         # otherwise we can't access, and undelete deleted object
-        default_filter = "active" if view.action == "list" else "all"
+        is_collection = view.action == "list" or getattr(view, "detail", None) is False
+        default_filter = "active" if is_collection else "all"
         query_param = request.query_params.get("deletion_status", default_filter)
 
         if query_param == "deleted":

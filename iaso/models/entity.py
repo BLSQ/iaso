@@ -20,9 +20,10 @@ import uuid
 from copy import copy
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Exists, OuterRef, Prefetch
 
 from iaso.models import Account, Instance, OrgUnit, Project
@@ -396,6 +397,7 @@ class Entity(SoftDeletableModel):
             "account": self.account.as_dict(),
         }
 
+    @transaction.atomic
     def soft_delete_with_instances_and_pending_duplicates(self, audit_source, user):
         """
         This method does a proper soft-deletion of the entity:
@@ -411,12 +413,57 @@ class Entity(SoftDeletableModel):
         log_modification(original, self, audit_source, user=user)
 
         for instance in set(filter(None, [self.attributes] + list(self.instances.all()))):
+            if instance.deleted:
+                # Already deleted: skip it, so that `restore_with_instances` doesn't restore it.
+                continue
             original = copy(instance)
             instance.soft_delete()
             log_modification(original, instance, audit_source, user=user)
 
         self.duplicates1.filter(validation_status=ValidationStatus.PENDING).delete()
         self.duplicates2.filter(validation_status=ValidationStatus.PENDING).delete()
+
+        return self
+
+    @transaction.atomic
+    def restore_with_instances(self, audit_source, user):
+        """
+        Undo `soft_delete_with_instances_and_pending_duplicates`:
+        - restore the entity
+        - restore the submissions that were soft-deleted together with it
+
+        Submissions are restored if their soft-deletion was logged at or after the entity's
+        `deleted_at`, or if they were created after it. This is because we want to include submissions that were
+        deleted on importation (because they were part of a deleted entity). On the other hand, a submission deleted
+        on its own before the entity was deleted stays deleted.
+        """
+        from hat.audit.models import Modification, log_modification
+
+        deleted_at = self.deleted_at
+        deleted_instances = {
+            instance.pk: instance
+            for instance in filter(None, [self.attributes] + list(self.instances.filter(deleted=True)))
+            if instance.deleted
+        }
+        deleted_with_entity_ids = set(
+            Modification.objects.filter(
+                content_type=ContentType.objects.get_for_model(Instance),
+                object_id__in=[str(pk) for pk in deleted_instances],
+                created_at__gte=deleted_at,
+            ).values_list("object_id", flat=True)
+        )
+
+        original = copy(self)
+        self.restore()
+        log_modification(original, self, audit_source, user=user)
+
+        for pk, instance in deleted_instances.items():
+            uploaded_after_deletion = instance.created_at >= deleted_at
+            if str(pk) not in deleted_with_entity_ids and not uploaded_after_deletion:
+                continue
+            original = copy(instance)
+            instance.restore()
+            log_modification(original, instance, audit_source, user=user)
 
         return self
 

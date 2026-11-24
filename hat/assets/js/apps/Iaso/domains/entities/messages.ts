@@ -157,6 +157,40 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Update entity',
         id: 'iaso.entities.update',
     },
+    deleteEntityText: {
+        id: 'iaso.entities.dialog.deleteText',
+        defaultMessage:
+            'The entity and all its submissions will be deleted, and removed from the mobile app at the next sync. They can be restored from the entity list, with "Show deleted entities".',
+    },
+    restoreTitle: {
+        id: 'iaso.entities.dialog.restoreTitle',
+        defaultMessage: 'Are you sure you want to restore this entity?',
+    },
+    restoreText: {
+        id: 'iaso.entities.dialog.restoreText',
+        defaultMessage:
+            'The entity and the submissions deleted with it will be restored. They will be sent back to the mobile app at the next sync.',
+    },
+    restoreSuccess: {
+        id: 'iaso.entities.restoreSuccess',
+        defaultMessage: 'Entity restored',
+    },
+    restoreError: {
+        id: 'iaso.entities.restoreError',
+        defaultMessage: 'An error occurred while restoring the entity',
+    },
+    showDeleted: {
+        id: 'iaso.entities.showDeleted',
+        defaultMessage: 'Show deleted entities',
+    },
+    deleted: {
+        id: 'iaso.entities.deleted',
+        defaultMessage: 'Deleted',
+    },
+    deletedEntity: {
+        id: 'iaso.entities.deletedEntity',
+        defaultMessage: 'This entity and its submissions are deleted.',
+    },
     deleteTitle: {
         id: 'iaso.entities.dialog.deleteTitle',
         defaultMessage: 'Are you sure you want to delete this entity?',

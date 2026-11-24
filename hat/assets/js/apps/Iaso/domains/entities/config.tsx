@@ -1,9 +1,8 @@
 import React, { ReactElement, useMemo } from 'react';
 
-import FileCopyIcon from '@mui/icons-material/FileCopy';
+import Chip from '@mui/material/Chip/Chip';
 import {
     Column,
-    IconButton as IconButtonComponent,
     IntlFormatMessage,
     IntlMessage,
     LinkWithLocation,
@@ -26,6 +25,7 @@ import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { formatLabel } from '../instances/utils';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { useFilterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { EntityActions } from './components/EntityActions';
 import { useGetType } from './entityTypes/hooks/requests/entitiyTypes';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 import MESSAGES from './messages';
@@ -46,6 +46,21 @@ export const useStaticColumns = (): Array<Column> => {
                 Header: formatMessage(MESSAGES.id),
                 id: 'uuid',
                 accessor: 'uuid',
+                Cell: settings => (
+                    <>
+                        {settings.row.original.uuid}
+                        {settings.row.original.deleted_at && (
+                            <Chip
+                                label={formatMessage(MESSAGES.deleted)}
+                                color="error"
+                                size="small"
+                                variant="outlined"
+                                sx={{ ml: 1 }}
+                                data-testid="entity-deleted-chip"
+                            />
+                        )}
+                    </>
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.lastVisit),
@@ -158,25 +173,9 @@ export const useColumns = (
             accessor: 'actions',
             resizable: false,
             sortable: false,
-            Cell: (settings): ReactElement => {
-                // TODO: limit to user permissions
-                return (
-                    <>
-                        <IconButtonComponent
-                            url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.see}
-                        />
-                        {settings.row.original.has_duplicates && (
-                            <IconButtonComponent
-                                url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
-                                overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicate}
-                            />
-                        )}
-                    </>
-                );
-            },
+            Cell: (settings): ReactElement => (
+                <EntityActions entity={settings.row.original} />
+            ),
         });
         return cols;
     }, [

@@ -132,6 +132,13 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             org_units=[cls.another_orgunit],
         )
 
+        cls.other_account = m.Account.objects.create(name="Other account")
+        cls.user_other_account_rw = cls.create_user_with_profile(
+            username="user_other_account_rw",
+            account=cls.other_account,
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
+        )
+
         cls.default_form = m.Form.objects.create(name="Default Form", period_type=m.MONTH, single_per_period=True)
 
         default_form_file_mock = mock.MagicMock(spec=File)
@@ -690,6 +697,68 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(response.data["results"], [])
 
+    def _create_analysis_in_default_account(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom", "age__int__"],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+        data = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        return m.EntityDuplicateAnalyzis.objects.get(pk=data["analyze_id"])
+
+    def test_partial_update_analyze_of_other_account(self):
+        analyze = self._create_analysis_in_default_account()
+        self.assertEqual(analyze.task.status, base.QUEUED)
+
+        self.client.force_authenticate(self.user_other_account_rw)
+        response = self.client.patch(
+            f"/api/entityduplicates_analyzes/{analyze.pk}/", data={"status": base.KILLED}, format="json"
+        )
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+        analyze.task.refresh_from_db()
+        self.assertEqual(analyze.task.status, base.QUEUED)
+
+    def test_delete_analyze_of_other_account(self):
+        analyze = self._create_analysis_in_default_account()
+        TestTaskService().run_all()
+        duplicates_count = m.EntityDuplicate.objects.filter(analyze=analyze).count()
+        self.assertGreater(duplicates_count, 0)
+
+        self.client.force_authenticate(self.user_other_account_rw)
+        response = self.client.delete(f"/api/entityduplicates_analyzes/{analyze.pk}/", format="json")
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+        self.assertTrue(m.EntityDuplicateAnalyzis.objects.filter(pk=analyze.pk).exists())
+        self.assertEqual(m.EntityDuplicate.objects.filter(analyze=analyze).count(), duplicates_count)
+
+    def test_analyze_with_entity_type_of_other_account(self):
+        self.client.force_authenticate(self.user_other_account_rw)
+        tasks_count = m.Task.objects.count()
+        analyses_count = m.EntityDuplicateAnalyzis.objects.count()
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+
+        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Entity type does not exist.", str(data))
+        self.assertEqual(m.Task.objects.count(), tasks_count)
+        self.assertEqual(m.EntityDuplicateAnalyzis.objects.count(), analyses_count)
+
     def test_analyzes_with_various_field_types(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
         # Create two entities with various field types
@@ -937,6 +1006,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         """
         Test the validation logic in `AnalyzePostBodySerializer.validate()`.
         """
+        context = {"request": mock.Mock(user=self.user_with_default_ou_rw)}
 
         # Test valid data.
         data = {
@@ -945,7 +1015,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "fields": ["Prenom", "Nom", "age__int__"],
             "parameters": [],
         }
-        serializer = AnalyzePostBodySerializer(data=data)
+        serializer = AnalyzePostBodySerializer(data=data, context=context)
         self.assertTrue(serializer.is_valid())
         validated_data = serializer.validated_data
         self.assertEqual(validated_data["algorithm"], "levenshtein")
@@ -953,7 +1023,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         # Test EntityType does not exist.
         data = {"algorithm": "levenshtein", "entity_type_id": "99999", "fields": ["Prenom"], "parameters": []}
-        serializer = AnalyzePostBodySerializer(data=data)
+        serializer = AnalyzePostBodySerializer(data=data, context=context)
         self.assertFalse(serializer.is_valid())
         self.assertIn("Entity type does not exist.", str(serializer.errors))
 
@@ -964,7 +1034,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "fields": ["Prenom", "non_existent_field"],
             "parameters": [],
         }
-        serializer = AnalyzePostBodySerializer(data=data)
+        serializer = AnalyzePostBodySerializer(data=data, context=context)
         self.assertFalse(serializer.is_valid())
         self.assertIn("Field `non_existent_field` does not exist on reference form.", str(serializer.errors))
 
@@ -983,7 +1053,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "fields": ["Prenom", "unsupported_field"],
             "parameters": [],
         }
-        serializer = AnalyzePostBodySerializer(data=data)
+        serializer = AnalyzePostBodySerializer(data=data, context=context)
         self.assertFalse(serializer.is_valid())
         self.assertIn("Field `unsupported_field` has an unsupported type `select one`.", str(serializer.errors))
 

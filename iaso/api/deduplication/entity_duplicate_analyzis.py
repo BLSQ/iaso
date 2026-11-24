@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, permissions, serializers, status
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 import iaso.models.base as base
@@ -34,9 +35,10 @@ class AnalyzePostBodySerializer(serializers.Serializer):
     def validate(self, data):
         data = super().validate(data)
 
+        account = self.context["request"].user.iaso_profile.account
         try:
-            e_type = EntityType.objects.select_related("reference_form").get(pk=data["entity_type_id"])
-        except EntityType.DoesNotExist:
+            e_type = EntityType.objects.select_related("reference_form").get(pk=data["entity_type_id"], account=account)
+        except (EntityType.DoesNotExist, ValueError):
             raise serializers.ValidationError("Entity type does not exist.")
 
         possible_fields = e_type.reference_form.possible_fields
@@ -155,10 +157,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         if not request.user.has_perm(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            eda = EntityDuplicateAnalyzis.objects.get(pk=pk)
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        eda = get_object_or_404(self.get_queryset(), pk=pk)
 
         if eda.task.status == base.KILLED and request.data["status"] == base.QUEUED:
             eda.task.status = base.QUEUED
@@ -186,12 +185,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         if not request.user.has_perm(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            obj = EntityDuplicateAnalyzis.objects.get(pk=pk)
-
-        except EntityDuplicateAnalyzis.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
+        obj = get_object_or_404(self.get_queryset(), pk=pk)
         obj.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -216,7 +210,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         if not request.user.has_perm(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        serializer = AnalyzePostBodySerializer(data=request.data)
+        serializer = AnalyzePostBodySerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
         data = serializer.validated_data

@@ -178,7 +178,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     def dropdown(self, request, *args):
         queryset = self.get_queryset()
 
-        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset)
+        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset, request=request)
         if not filterset.is_valid():
             return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
         queryset = filterset.qs

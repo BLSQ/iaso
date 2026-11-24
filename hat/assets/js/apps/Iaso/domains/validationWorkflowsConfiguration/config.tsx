@@ -7,10 +7,9 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    PaginatedValidationWorkflowListList,
-    useApiValidationWorkflowsDestroy,
-} from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsDestroy } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+import { PaginatedValidationWorkflowListList } from 'Iaso/api/validationWorkflows/models/paginatedValidationWorkflowListList.zod';
+
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from 'Iaso/components/Cells/NumberCell';
 import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';

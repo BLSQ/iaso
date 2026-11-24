@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle/DialogTitle';
+import IconButton from '@mui/material/IconButton/IconButton';
 import { useSafeIntl } from 'bluesquare-components';
 import { PiiRestrictedBanner } from 'Iaso/components/PiiRestrictedBanner';
 import MESSAGES from '../../messages';

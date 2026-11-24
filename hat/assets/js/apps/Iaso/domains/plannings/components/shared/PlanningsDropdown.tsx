@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import {
-    ApiMicroplanningPlanningsDropdownListParams,
-    useApiMicroplanningPlanningsDropdownList,
-} from 'Iaso/api/plannings';
+import { useApiMicroplanningPlanningsDropdownList } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
+import { ApiMicroplanningPlanningsDropdownListParams } from 'Iaso/api/plannings/models/apiMicroplanningPlanningsDropdownListParams.zod';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { userHasPermission } from 'Iaso/domains/users/utils';
 import { PLANNING_READ } from 'Iaso/utils/permissions';

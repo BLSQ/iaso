@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Alert, AlertTitle, SxProps, Theme } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import AlertTitle from '@mui/material/AlertTitle/AlertTitle';
+import type { SxProps, Theme } from '@mui/material/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import { useCurrentUser } from '../utils/usersUtils';

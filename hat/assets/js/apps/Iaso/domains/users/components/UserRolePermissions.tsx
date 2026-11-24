@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import {
-    CheckCircleOutlineOutlined as CheckedIcon,
-    HighlightOffOutlined as NotCheckedIcon,
-} from '@mui/icons-material';
-import { Stack, Typography } from '@mui/material';
+import CheckedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import NotCheckedIcon from '@mui/icons-material/HighlightOffOutlined';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { Permission } from '../../userRoles/types/userRoles';
 import { usePermissionsMessages } from '../permissionsMessages';

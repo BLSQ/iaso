@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Block, CheckCircle, RadioButtonUnchecked } from '@mui/icons-material';
+import Block from '@mui/icons-material/Block';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import RadioButtonUnchecked from '@mui/icons-material/RadioButtonUnchecked';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../types/general';
 import { QUESTION_STATUS_MESSAGES } from '../config';

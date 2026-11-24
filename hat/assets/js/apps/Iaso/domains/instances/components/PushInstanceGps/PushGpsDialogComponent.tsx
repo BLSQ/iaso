@@ -5,7 +5,8 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     LoadingSpinner,

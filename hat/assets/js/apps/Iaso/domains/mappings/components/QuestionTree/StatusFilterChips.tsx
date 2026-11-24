@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { DoneAll, VisibilityOff } from '@mui/icons-material';
-import { Box, Chip } from '@mui/material';
+import DoneAll from '@mui/icons-material/DoneAll';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../types/general';
 import { STATUS_FILTER_MESSAGES } from '../../config';

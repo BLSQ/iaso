@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { TableCell, TableRow, Radio, useTheme } from '@mui/material';
+import Radio from '@mui/material/Radio/Radio';
+import useTheme from '@mui/material/styles/useTheme';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { IconButton } from 'bluesquare-components';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
 import { SubTeam, User } from 'Iaso/domains/teams/types/team';

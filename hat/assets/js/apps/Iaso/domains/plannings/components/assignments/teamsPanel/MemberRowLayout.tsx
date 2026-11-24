@@ -1,7 +1,10 @@
 import React, { ReactNode, forwardRef } from 'react';
 import PersonIcon from '@mui/icons-material/Person';
-import { Box, Tooltip, Typography, alpha } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { amber } from '@mui/material/colors';
+import { alpha } from '@mui/material/styles';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';

@@ -1,7 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Alert, Box, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { useApiReportsList, useApiReportsVersionsList } from 'Iaso/api/reports';
+import {
+    useApiReportsList,
+    useApiReportsVersionsList,
+} from 'Iaso/api/reports/endpoints/reports/reports';
 import MESSAGES from '../messages';
 import { CurrentMobileReport } from './mobileReport/CurrentMobileReport';
 import { MobileReportUploadForm } from './mobileReport/MobileReportUploadForm';

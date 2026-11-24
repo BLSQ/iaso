@@ -4,7 +4,7 @@ import {
     getApiValidationWorkflowsDropdownListQueryKey,
     getApiValidationWorkflowsListQueryKey,
     getApiValidationWorkflowsRetrieveQueryKey,
-} from 'Iaso/api/validationWorkflows';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import {
     ValidationNodeTemplateCreateBody,
     ValidationNodeTemplateUpdateBody,

@@ -40,10 +40,7 @@ vi.mock('bluesquare-components', async () => {
         if (action.children) {
             return (
                 <React.Fragment key={action.key}>
-                    <button
-                        type="button"
-                        data-testid={`action-${action.key}`}
-                    >
+                    <button type="button" data-testid={`action-${action.key}`}>
                         {labelText(action.label)}
                     </button>
                     {action.children.map(renderAction)}

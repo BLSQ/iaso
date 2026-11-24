@@ -1,16 +1,14 @@
 import React, { Dispatch, FunctionComponent } from 'react';
-import {
-    Table,
-    Paper,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-    Box,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Paper from '@mui/material/Paper/Paper';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TableRow from '@mui/material/TableRow/TableRow';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { TeamRetrieve } from 'Iaso/api/teams';
+import { TeamRetrieve } from 'Iaso/api/teams/models/teamRetrieve.zod';
 import MESSAGES from 'Iaso/domains/assignments/messages';
 import { useSaveTeam } from 'Iaso/domains/teams/hooks/requests/useSaveTeam';
 import { SubTeam } from 'Iaso/domains/teams/types/team';

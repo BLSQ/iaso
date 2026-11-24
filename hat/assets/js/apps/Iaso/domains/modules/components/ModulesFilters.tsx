@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Grid } from '@mui/material';
-import { ApiModulesListParams } from 'Iaso/api/modules';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import { ApiModulesListParams } from 'Iaso/api/modules/models/apiModulesListParams.zod';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useFilterState } from 'Iaso/hooks/useFilterState';

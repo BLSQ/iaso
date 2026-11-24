@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Block, Delete } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/material';
+import Block from '@mui/icons-material/Block';
+import Delete from '@mui/icons-material/Delete';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Typography from '@mui/material/Typography/Typography';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { SxStyles } from '../../../types/general';

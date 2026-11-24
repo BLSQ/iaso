@@ -4,15 +4,14 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { NavigateBefore, NavigateNext } from '@mui/icons-material';
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    IconButton,
-} from '@mui/material';
+import NavigateBefore from '@mui/icons-material/NavigateBefore';
+import NavigateNext from '@mui/icons-material/NavigateNext';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Dialog from '@mui/material/Dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions/DialogActions';
+import DialogContent from '@mui/material/DialogContent/DialogContent';
+import IconButton from '@mui/material/IconButton/IconButton';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { useNavigate } from 'react-router-dom';

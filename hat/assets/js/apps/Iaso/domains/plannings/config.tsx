@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Checkbox } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
 import {
     Column,
     formatThousand,
@@ -15,7 +15,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { getColor, useGetColors } from 'Iaso/hooks/useGetColors';
 import { ProjectChip } from '../projects/components/ProjectChip';
 import { TeamChip } from '../teams/components/TeamChip';
-import { ActionsCell } from './components/list/ActionsCell';
+import { PlanningListActions } from './components/list/PlanningListActions';
 import { ViewSamplingResultDialog } from './components/sampling/SamplingResultDialog';
 import { DeprecatedPlanningChip } from './components/shared/DeprecatedPlanningChip';
 import { PlanningStatusChip } from './components/shared/PlanningStatusChip';
@@ -147,7 +147,7 @@ export const usePlanningColumns = (params: any, count: number): Column[] => {
                 resizable: false,
                 sortable: false,
                 Cell: (settings: Setting<Planning>) => (
-                    <ActionsCell
+                    <PlanningListActions
                         {...settings}
                         deletePlanning={deletePlanning}
                     />

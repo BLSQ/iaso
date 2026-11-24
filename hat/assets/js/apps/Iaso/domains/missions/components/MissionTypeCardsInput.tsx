@@ -1,6 +1,10 @@
 import React from 'react';
-import { Box, ButtonBase, FormLabel, Typography } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import ButtonBase from '@mui/material/ButtonBase/ButtonBase';
+import FormLabel from '@mui/material/FormLabel/FormLabel';
+import type { Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography/Typography';
+import type { SxProps } from '@mui/system/styleFunctionSx/styleFunctionSx';
 import { useSafeIntl } from 'bluesquare-components';
 import { FormikProps } from 'formik';
 import { FieldInputProps } from 'formik/dist/types';

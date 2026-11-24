@@ -1,11 +1,11 @@
 import React from 'react';
-import { Stack } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
 import {
     LoadingSpinner,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useApiMicroplanningMissionsRetrieve } from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsRetrieve } from 'Iaso/api/missions/endpoints/missions/missions';
 import Page404 from 'Iaso/components/errors/Page404';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';

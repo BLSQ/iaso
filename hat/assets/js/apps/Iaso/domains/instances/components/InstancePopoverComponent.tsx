@@ -1,10 +1,10 @@
 import React from 'react';
 
 import Info from '@mui/icons-material/InfoOutlined';
-import { Button } from '@mui/material';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button/Button';
 import Popover from '@mui/material/Popover';
-import { makeStyles } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';

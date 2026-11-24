@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
+import Alert from '@mui/material/Alert/Alert';
+import AlertTitle from '@mui/material/AlertTitle/AlertTitle';
+import Box from '@mui/material/Box/Box';
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useTaskResultFile } from '../hooks/useTaskResultFile';

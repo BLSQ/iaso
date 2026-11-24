@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import { hasLocation } from '../../../utils/map/mapUtils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';

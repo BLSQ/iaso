@@ -1,16 +1,14 @@
 import React, { ChangeEvent, FC, useCallback, useMemo, useState } from 'react';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
-import {
-    Box,
-    Button,
-    Checkbox,
-    List,
-    ListItemButton,
-    Stack,
-    TextField,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
+import List from '@mui/material/List/List';
+import ListItemButton from '@mui/material/ListItemButton/ListItemButton';
+import Stack from '@mui/material/Stack/Stack';
+import TextField from '@mui/material/TextField/TextField';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { ColorBadge } from 'Iaso/components/ColorBadge';
 import { SxStyles } from 'Iaso/types/general';

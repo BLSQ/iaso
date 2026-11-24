@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { TableCell, TableRow } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../forms/messages';
 import { LinkValue } from './LinkValue';

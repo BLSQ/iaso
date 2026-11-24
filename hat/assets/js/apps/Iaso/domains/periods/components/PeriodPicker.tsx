@@ -4,7 +4,10 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import FormHelperText from '@mui/material/FormHelperText/FormHelperText';
+import FormLabel from '@mui/material/FormLabel/FormLabel';
+import Grid from '@mui/material/Grid/Grid';
 
 import Typography from '@mui/material/Typography';
 import { DatePicker } from 'bluesquare-components';

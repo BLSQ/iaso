@@ -1,21 +1,19 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-    Box,
-    Checkbox,
-    IconButton,
-    InputAdornment,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TablePagination,
-    TableRow,
-    TextField,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
+import IconButton from '@mui/material/IconButton/IconButton';
+import InputAdornment from '@mui/material/InputAdornment/InputAdornment';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableHead from '@mui/material/TableHead/TableHead';
+import TablePagination from '@mui/material/TablePagination/TablePagination';
+import TableRow from '@mui/material/TableRow/TableRow';
+import TextField from '@mui/material/TextField/TextField';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import {
     ConfirmCancelModal,
     LoadingSpinner,
@@ -23,10 +21,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { debounce, noop } from 'lodash';
-import {
-    MissionPolymorphicList,
-    useApiMicroplanningMissionsList,
-} from 'Iaso/api/missions';
+import { useApiMicroplanningMissionsList } from 'Iaso/api/missions/endpoints/missions/missions';
+import { MissionPolymorphicList } from 'Iaso/api/missions/models/missionPolymorphicList.zod';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { MissionTypeCaption } from 'Iaso/domains/missions/components/chips/MissionTypeCaption';
 import MISSION_MESSAGES from 'Iaso/domains/missions/messages';

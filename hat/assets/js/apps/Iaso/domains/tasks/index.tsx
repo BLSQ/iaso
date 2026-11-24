@@ -1,7 +1,8 @@
 import React from 'react';
 import Autorenew from '@mui/icons-material/Autorenew';
-import { Box, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';

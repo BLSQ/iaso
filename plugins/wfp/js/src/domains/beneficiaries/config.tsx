@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { ChipList, Column, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from 'Iaso/components/Cells/DateTimeCell';
 import { Actions, ActionsProps } from './components/Actions';

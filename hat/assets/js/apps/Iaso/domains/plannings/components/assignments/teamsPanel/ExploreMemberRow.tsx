@@ -1,6 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Tooltip } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../../messages';

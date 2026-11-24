@@ -1,5 +1,8 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Box, Divider, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Divider from '@mui/material/Divider/Divider';
+import Paper from '@mui/material/Paper/Paper';
+import Typography from '@mui/material/Typography/Typography';
 import { SxStyles } from '../../../../types/general';
 
 const styles: SxStyles = {

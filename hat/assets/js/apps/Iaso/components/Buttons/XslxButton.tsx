@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Button from '@mui/material/Button/Button';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import ExcellSvg from '../svg/ExcellSvgComponent';
 
 type Props = {

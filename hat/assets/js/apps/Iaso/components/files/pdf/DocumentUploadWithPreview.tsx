@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Grid } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
 import { FilesUpload, IconButton, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { PdfPreview } from './PdfPreview';

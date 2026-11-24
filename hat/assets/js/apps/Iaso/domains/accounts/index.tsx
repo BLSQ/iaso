@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { commonStyles, UrlParams, useSafeIntl } from 'bluesquare-components';
-import { useApiAccountsList } from 'Iaso/api/accounts';
+import { useApiAccountsList } from 'Iaso/api/accounts/endpoints/account/account';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';

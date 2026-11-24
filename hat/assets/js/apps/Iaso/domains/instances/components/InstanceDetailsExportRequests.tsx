@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Divider, Link } from '@mui/material';
+import Divider from '@mui/material/Divider/Divider';
+import Link from '@mui/material/Link/Link';
 import {
     textPlaceholder,
     IconButton as IconButtonComponent,

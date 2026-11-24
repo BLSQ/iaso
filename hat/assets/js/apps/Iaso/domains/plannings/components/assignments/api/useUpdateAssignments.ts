@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import {
-    PaginatedAssignmentOrgUnitListOutput,
     apiMicroplanningPlanningsAssignmentsAssignCreate,
     apiMicroplanningPlanningsAssignmentsUnassignCreate,
-} from 'Iaso/api/assignments';
+} from 'Iaso/api/assignments/endpoints/assignments/assignments';
+import { PaginatedAssignmentOrgUnitListOutput } from 'Iaso/api/assignments/models/paginatedAssignmentOrgUnitList.zod';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 import { Assignment } from '../mainPanel/types';
 import {

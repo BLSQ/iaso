@@ -407,4 +407,28 @@ export default defineConfig([
             'no-process-env': 'off',
         },
     },
+    {
+        files: lintedJsPaths,
+        ignores: ['**/Iaso/api/**', '**/Iaso/api/**/*'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        // as recommended by mui itself : https://mui.com/material-ui/guides/minimizing-bundle-size/?#enforce-best-practices-with-eslint
+                        { "regex": "^@mui/[^/]+$" },
+                        {
+                          regex: "^\\.\\.?/.*Iaso/api(?:/|$)",
+                          message:
+                            "Do not use relative imports for 'Iaso/api'. Use the 'Iaso/api/...' alias instead.",
+                        },
+                        {
+                            regex: "^Iaso/api/(?![^/]+/(?:endpoints|models)/(?:[^/]+/(?!index(?:\\.|$))[^/]+|(?!index\\.zod$)[^/]+\\.zod)$).*",
+                            message: 'Import API modules through their endpoint or models files.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
 ]);

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 
-import { Box } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import { TruncatedTreeview } from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
 import { OrgUnit } from '../../types/orgUnit';

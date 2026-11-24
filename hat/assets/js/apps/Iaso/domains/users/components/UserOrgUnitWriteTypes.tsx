@@ -1,9 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Box, Stack, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Stack from '@mui/material/Stack/Stack';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import InputComponent from '../../../components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import MESSAGES from '../messages';
 import { UserDialogData } from '../types';

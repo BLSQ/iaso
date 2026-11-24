@@ -1,10 +1,10 @@
 import { UseQueryResult } from 'react-query';
 import {
-    AssignmentOrgUnitOutput,
-    PaginatedAssignmentOrgUnitListOutput,
     getApiMicroplanningPlanningsAssignmentsOrgUnitsListQueryKey,
     useApiMicroplanningPlanningsAssignmentsOrgUnitsList,
-} from 'Iaso/api/assignments';
+} from 'Iaso/api/assignments/endpoints/assignments/assignments';
+import { AssignmentOrgUnitOutput } from 'Iaso/api/assignments/models/assignmentOrgUnit.zod';
+import { PaginatedAssignmentOrgUnitListOutput } from 'Iaso/api/assignments/models/paginatedAssignmentOrgUnitList.zod';
 import { Assignment } from '../mainPanel/types';
 
 // The page colours every org unit of the planning, so it loads all assignments at once.

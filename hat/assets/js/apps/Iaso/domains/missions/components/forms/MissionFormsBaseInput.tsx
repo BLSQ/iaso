@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldArray } from 'formik';
-import { MissionTypeDa2Enum } from 'Iaso/api/missions';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { UseGetFormsDropdownParams } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { FORMS_SECTION_MESSAGES } from '../../constants';
 import { MissionFormsFieldArray } from './MissionFormsFieldArray';

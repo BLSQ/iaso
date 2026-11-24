@@ -6,7 +6,8 @@ import React, {
 } from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import { Grid, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid/Grid';
+import Typography from '@mui/material/Typography/Typography';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent, {
     InputComponentType,

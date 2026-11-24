@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Chip, Typography } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Chip from '@mui/material/Chip/Chip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { SxStyles } from 'Iaso/types/general';

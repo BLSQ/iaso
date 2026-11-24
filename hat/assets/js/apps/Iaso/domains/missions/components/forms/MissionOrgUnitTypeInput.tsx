@@ -1,10 +1,8 @@
 import React, { useMemo } from 'react';
 import { FormikProps } from 'formik/dist/types';
-import {
-    MissionOrgUnitTypeCreateRequest,
-    MissionOrgUnitTypeUpdateRequest,
-    MissionTypeDa2Enum,
-} from 'Iaso/api/missions';
+import { MissionOrgUnitTypeCreateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeCreateRequest.zod';
+import { MissionOrgUnitTypeUpdateRequest } from 'Iaso/api/missions/models/missionOrgUnitTypeUpdateRequest.zod';
+import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.zod';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { MissionCreatedTypeInput } from './MissionCreatedTypeInput';
 

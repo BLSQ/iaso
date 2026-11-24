@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Button, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Button from '@mui/material/Button/Button';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';

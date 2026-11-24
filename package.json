@@ -11,7 +11,9 @@
     "packageManager": "npm@11.19.0",
     "scripts": {
         "show-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\"",
+        "show-lint-problems-plugins": "eslint \"./plugins/**/js/**/*.{js,jsx,ts,tsx}\"",
         "fix-lint": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
+        "fix-lint-plugins": "eslint \"./plugins/**/js/**/*.{js,jsx,ts,tsx}\" --cache --fix",
         "fix-lint-pre-commit": "eslint --cache --fix",
         "export-lint-problems": "eslint \"./hat/assets/js/**/*.{js,jsx,ts,tsx}\" -f html -o ./hat/assets/js/lintErrors.html",
         "orval": "orval",
@@ -149,6 +151,7 @@
         "@vitejs/plugin-react": "^5.1.4",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/eslint-plugin": "^1.6.7",
+        "@vitest/ui": "^4.1.8",
         "babel-loader": "^9.1.3",
         "canvas": "^3.1.2",
         "clean-webpack-plugin": "^4.0.0",

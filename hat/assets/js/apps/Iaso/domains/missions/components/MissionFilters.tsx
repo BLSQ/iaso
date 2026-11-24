@@ -1,13 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
 import Add from '@mui/icons-material/Add';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import {
     commonStyles,
     LinkButton,
     theme,
     useSafeIntl,
 } from 'bluesquare-components';
-import type { ApiMicroplanningMissionsListParams } from 'Iaso/api/missions';
+import type { ApiMicroplanningMissionsListParams } from 'Iaso/api/missions/models/apiMicroplanningMissionsListParams.zod';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';

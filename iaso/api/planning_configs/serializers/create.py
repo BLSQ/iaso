@@ -1,14 +1,14 @@
 from typing import Any
 
-from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
 from iaso.api.common import ModelSerializer
+from iaso.api.common.serializer_fields import IasoPrimaryKeyRelatedField
 from iaso.models import Group, OrgUnitType, Planning, PlanningConfig
 
 
 class PlanningConfigCreateSerializer(ModelSerializer):
-    org_unit_types = PrimaryKeyRelatedField(
+    org_unit_types = IasoPrimaryKeyRelatedField(
         queryset=OrgUnitType.objects.none(),
         write_only=True,
         required=False,
@@ -16,7 +16,7 @@ class PlanningConfigCreateSerializer(ModelSerializer):
         allow_empty=True,
         many=True,
     )
-    org_unit_groups = PrimaryKeyRelatedField(
+    org_unit_groups = IasoPrimaryKeyRelatedField(
         queryset=Group.objects.none(), write_only=True, required=False, allow_null=True, allow_empty=True, many=True
     )
 

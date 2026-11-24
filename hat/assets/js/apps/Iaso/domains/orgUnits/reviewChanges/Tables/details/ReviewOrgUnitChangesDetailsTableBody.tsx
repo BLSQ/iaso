@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { TableBody } from '@mui/material';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { HighlightFields } from '../../Components/HighlightFieldsChanges';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';

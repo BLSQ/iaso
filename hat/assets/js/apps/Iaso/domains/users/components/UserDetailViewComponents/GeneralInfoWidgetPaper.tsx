@@ -1,5 +1,6 @@
 import React from 'react';
-import { Table, TableBody } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { ColorBadge } from 'Iaso/components/ColorBadge';

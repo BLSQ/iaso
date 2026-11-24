@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useState } from 'react';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
-import { IconButton, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 import { useSafeIntl } from 'bluesquare-components';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';
 import MESSAGES from '../../../messages';

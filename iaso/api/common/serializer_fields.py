@@ -1,11 +1,18 @@
+from __future__ import annotations
+
 import json
 import re
 
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from datetime import date, datetime, timezone
+from typing import Any
 
 import pytz
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import models
+from django.db.models import QuerySet
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.types import OpenApiTypes
@@ -128,6 +135,13 @@ class CommaSeparatedMultipleChoiceField(serializers.MultipleChoiceField):
         return split_comma_separated_string_from_query_params(dictionary, self.field_name)
 
 
+class CommaSeparatedListField(serializers.ListField):
+    """List given as a single query param, separated by ',' (e.g. `?ids=1,2,3`)"""
+
+    def get_value(self, dictionary):
+        return split_comma_separated_string_from_query_params(dictionary, self.field_name)
+
+
 class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):
     """
     This field purpose is to make the classic PrimaryKeyRelatedField work with multipart/form-data in case of many=True
@@ -198,3 +212,102 @@ class CurrentAccountDefault:
             return serializer_field.context["request"].user.iaso_profile.account
         except (KeyError, ValueError):
             return None
+
+
+class BaseQueryOptimizedRelatedFieldMixin(ABC):
+    @abstractmethod
+    def set_queryset_cache(self, data: Sequence[Any]) -> None: ...
+
+    @abstractmethod
+    def normalize_pk(self, data: Any) -> Any: ...
+
+    @abstractmethod
+    def to_internal_value(self, data: Any) -> models.Model: ...
+
+    @abstractmethod
+    def get_queryset_for_cache(self, data: Sequence[Any]) -> QuerySet: ...
+
+    @classmethod
+    def many_init(cls, *args: Any, **kwargs: Any) -> ManyRelatedField:
+        list_kwargs = {"child_relation": cls(*args, **kwargs)}
+        for key in kwargs:
+            if key in MANY_RELATION_KWARGS:
+                list_kwargs[key] = kwargs[key]
+        return IasoManyRelatedField(**list_kwargs)
+
+
+class IasoManyRelatedField(ManyRelatedField):
+    parent_optimized_list = False
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        parent_optimized_list = kwargs.pop("parent_optimized_list", False)
+        super().__init__(*args, **kwargs)
+        if not isinstance(self.child_relation, BaseQueryOptimizedRelatedFieldMixin):
+            raise ValueError
+        self.parent_optimized_list = parent_optimized_list
+
+    def to_internal_value(self, data) -> models.Model:
+        if isinstance(data, str) or not hasattr(data, "__iter__"):
+            self.fail("not_a_list", input_type=type(data).__name__)
+        if not self.allow_empty and len(data) == 0:
+            self.fail("empty")
+
+        if not self.parent_optimized_list:
+            # do not reset the queryset_cache if it has already been set, mostly happens in case of that field being in a list serializer
+            self.child_relation.set_queryset_cache(data)
+
+        return [self.child_relation.to_internal_value(item) for item in data]
+
+
+class IasoPrimaryKeyRelatedField(BaseQueryOptimizedRelatedFieldMixin, serializers.PrimaryKeyRelatedField):
+    _queryset_cache: dict[int, models.Model]
+
+    def set_queryset_cache(self, data: Any) -> None:
+        self._queryset_cache = {instance.pk: instance for instance in self.get_queryset_for_cache(data)}
+
+    def normalize_pk(self, data: Any) -> Any:
+        if self.pk_field is not None:
+            return self.pk_field.to_internal_value(data)
+        return data
+
+    def get_queryset_for_cache(self, data: Sequence[int]) -> QuerySet:
+        return self.get_queryset().filter(pk__in=data)
+
+    def to_internal_value(self, data: Any) -> models.Model:
+        if not hasattr(self, "_queryset_cache"):
+            return serializers.PrimaryKeyRelatedField.to_internal_value(self, data)
+
+        data = self.normalize_pk(data)
+
+        try:
+            return self._queryset_cache[data]
+        except KeyError:
+            self.fail("does_not_exist", pk_value=data)
+
+
+class IasoSlugRelatedField(BaseQueryOptimizedRelatedFieldMixin, serializers.SlugRelatedField):
+    _queryset_cache: dict[str, models.Model]
+
+    def set_queryset_cache(self, data: Sequence[str]) -> None:
+        if not self.slug_field:
+            return
+
+        self._queryset_cache = {
+            getattr(instance, self.slug_field): instance for instance in self.get_queryset_for_cache(data)
+        }
+
+    def get_queryset_for_cache(self, data: Sequence[str]) -> QuerySet:
+        return self.get_queryset().filter(**{f"{self.slug_field}__in": data})
+
+    @staticmethod
+    def normalize_pk(data: Any) -> Any:
+        return data
+
+    def to_internal_value(self, data: Any) -> models.Model:
+        if not hasattr(self, "_queryset_cache"):
+            return serializers.SlugRelatedField.to_internal_value(self, data)
+
+        try:
+            return self._queryset_cache[data]
+        except KeyError:
+            self.fail("does_not_exist", slug_name=self.slug_field, value=smart_str(data))

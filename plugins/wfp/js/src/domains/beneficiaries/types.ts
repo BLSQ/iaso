@@ -56,7 +56,7 @@ export type Filters = {
     programme?: string;
     org_unit_group?: string;
     facility?: string;
-    q?: string;
+    search?: string;
     visit_date_after?: string;
     visit_date_before?: string;
 };

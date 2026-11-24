@@ -256,7 +256,17 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         ]
         self.assertValidBody(data)
 
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(10):
+            # 1. PLANNING FK QUERYSET
+            # 2. VALIDATE OUT
+            # 3. VALIDATE GROUP
+            # 4. CHECK UNIQUENESS CONSTRAINT (PLANNING-LEVEL) - FIRST ITEM
+            # 5. CHECK UNIQUENESS CONSTRAINT (PLANNING-LEVEL) - SECOND ITEM
+            # 6. SAVEPOINT
+            # 7. INSERT PLANNING CONFIG
+            # 8. INSERT PLANNING CONFIG - OUT
+            # 9. INSERT PLANNING CONFIG - OUG
+            # 10. RELEASE
             res = self.client.post(reverse("planning_configs-bulk-create"), data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_201_CREATED)

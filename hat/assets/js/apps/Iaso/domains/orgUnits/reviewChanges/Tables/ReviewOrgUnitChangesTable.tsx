@@ -7,7 +7,8 @@ import React, {
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import EditIcon from '@mui/icons-material/Settings';
-import { Box, Theme } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import type { Theme } from '@mui/material/styles';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import Color from 'color';

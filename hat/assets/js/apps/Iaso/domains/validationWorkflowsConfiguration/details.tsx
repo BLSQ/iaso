@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGoBack, useSafeIntl } from 'bluesquare-components';
-import { useApiValidationWorkflowsRetrieve } from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsRetrieve } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';

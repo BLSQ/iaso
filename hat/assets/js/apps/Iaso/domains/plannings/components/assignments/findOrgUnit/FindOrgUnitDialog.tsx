@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useState } from 'react';
-import { Stack } from '@mui/material';
+import Stack from '@mui/material/Stack/Stack';
 import { ConfirmCancelModal } from 'bluesquare-components';
 import MESSAGES from '../../../messages';
 import { FindOrgUnitTree } from './FindOrgUnitTree';

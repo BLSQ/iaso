@@ -1,5 +1,5 @@
 import React, { FC, useCallback } from 'react';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography/Typography';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../messages';
 import { PendingAssignmentChange } from './useAssignOnClick';

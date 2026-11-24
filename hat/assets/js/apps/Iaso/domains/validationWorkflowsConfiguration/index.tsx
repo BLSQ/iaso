@@ -1,14 +1,17 @@
 import React from 'react';
 import Add from '@mui/icons-material/Add';
-import { Box, Grid, Theme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import type { Theme } from '@mui/material/styles';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LinkButton,
     UrlParams,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useApiValidationWorkflowsList } from 'Iaso/api/validationWorkflows';
+import { useApiValidationWorkflowsList } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { SimpleTableWithDeepLink } from 'Iaso/components/tables/SimpleTableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';

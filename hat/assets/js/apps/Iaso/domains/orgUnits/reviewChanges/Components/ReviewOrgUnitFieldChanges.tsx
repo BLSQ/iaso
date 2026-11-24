@@ -1,5 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import Table from '@mui/material/Table/Table';
+import TableBody from '@mui/material/TableBody/TableBody';
+import TableCell from '@mui/material/TableCell/TableCell';
+import TableRow from '@mui/material/TableRow/TableRow';
 import { useSafeIntl } from 'bluesquare-components';
 import { Accordion } from 'Iaso/components/Accordion/Accordion';
 import { AccordionDetails } from 'Iaso/components/Accordion/AccordionDetails';

@@ -9,21 +9,19 @@ import SearchIcon from '@mui/icons-material/Search';
 import TableRowsIcon from '@mui/icons-material/TableRows';
 import TranslateIcon from '@mui/icons-material/Translate';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import {
-    Box,
-    Button,
-    FormControlLabel,
-    IconButton,
-    InputAdornment,
-    MenuItem,
-    Paper,
-    Switch,
-    TextField,
-    ToggleButton,
-    ToggleButtonGroup,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import FormControlLabel from '@mui/material/FormControlLabel/FormControlLabel';
+import IconButton from '@mui/material/IconButton/IconButton';
+import InputAdornment from '@mui/material/InputAdornment/InputAdornment';
+import MenuItem from '@mui/material/MenuItem/MenuItem';
+import Paper from '@mui/material/Paper/Paper';
+import Switch from '@mui/material/Switch/Switch';
+import TextField from '@mui/material/TextField/TextField';
+import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { ErrorBoundary, useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

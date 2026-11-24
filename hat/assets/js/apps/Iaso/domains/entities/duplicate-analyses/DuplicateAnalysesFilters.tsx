@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
-import { Box, Grid } from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import InputComponent from 'Iaso/components/forms/InputComponent';

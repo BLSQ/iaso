@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import Edit from '@mui/icons-material/Edit';
-import { Box, Grid, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box/Box';
+import Grid from '@mui/material/Grid/Grid';
+import Tab from '@mui/material/Tab/Tab';
+import Tabs from '@mui/material/Tabs/Tabs';
+import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import {
     commonStyles,
     LinkButton,
@@ -10,12 +13,12 @@ import {
     useSafeIntl,
     useTabs,
 } from 'bluesquare-components';
-import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags';
+import { useApiAccountFeatureFlagsDropdownList } from 'Iaso/api/accountFeatureFlags/endpoints/account-feature-flags/account-feature-flags';
 import {
     useApiAccountsAiApiKeyRetrieve,
     useApiAccountsRetrieve,
-} from 'Iaso/api/accounts';
-import { useApiModulesDropdownList } from 'Iaso/api/modules';
+} from 'Iaso/api/accounts/endpoints/account/account';
+import { useApiModulesDropdownList } from 'Iaso/api/modules/endpoints/modules/modules';
 import Page404 from 'Iaso/components/errors/Page404';
 import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from 'Iaso/components/nav/TopBarComponent';

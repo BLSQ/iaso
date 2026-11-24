@@ -1,6 +1,7 @@
 import React, { FC, useMemo } from 'react';
-import { Theme, useTheme } from '@mui/material';
 import { amber } from '@mui/material/colors';
+import type { Theme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import { FeatureCollection } from 'geojson';
 import {
     CircleLayerSpecification,

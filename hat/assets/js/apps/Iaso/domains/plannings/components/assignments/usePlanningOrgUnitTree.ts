@@ -3,7 +3,7 @@ import { useQueryClient } from 'react-query';
 import {
     getApiMicroplanningPlanningsOrgUnitTreeListQueryKey,
     useApiMicroplanningPlanningsOrgUnitTreeList,
-} from 'Iaso/api/plannings';
+} from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
 import { useAssignmentsContext } from '../../contexts/AssignmentsContext';
 import { LoadedOrgUnits, indexTree } from './findOrgUnit/utils';
 import { LevelOrgUnitNode } from './mainPanel/types';

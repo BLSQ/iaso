@@ -11,6 +11,10 @@ export const paginatedValidationWorkflowListListResultsItemSlugRegExp =
     new RegExp('[-a-zA-Z0-9_]+');
 export const paginatedValidationWorkflowListListResultsItemNameMax = 256;
 
+export const paginatedValidationWorkflowListListResultsItemStepsItemSlugRegExp =
+    new RegExp('[-a-zA-Z0-9_]+');
+export const paginatedValidationWorkflowListListResultsItemStepsItemNameMax = 256;
+
 export const PaginatedValidationWorkflowListList = zod.strictObject({
     count: zod.int().optional(),
     has_next: zod.boolean().optional(),
@@ -30,6 +34,29 @@ export const PaginatedValidationWorkflowListList = zod.strictObject({
                     .string()
                     .max(paginatedValidationWorkflowListListResultsItemNameMax),
                 form_count: zod.int(),
+                linked_forms_count: zod
+                    .int()
+                    .describe('Number of forms using this workflow'),
+                steps: zod.array(
+                    zod.strictObject({
+                        slug: zod
+                            .string()
+                            .regex(
+                                paginatedValidationWorkflowListListResultsItemStepsItemSlugRegExp,
+                            ),
+                        name: zod
+                            .string()
+                            .max(
+                                paginatedValidationWorkflowListListResultsItemStepsItemNameMax,
+                            ),
+                        roles_required: zod.array(
+                            zod.strictObject({
+                                name: zod.string(),
+                                id: zod.int(),
+                            }),
+                        ),
+                    }),
+                ),
                 created_by: zod.string().nullable(),
                 updated_by: zod.string().nullable(),
                 created_at: zod.iso.datetime({ offset: true }),

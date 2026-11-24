@@ -41,9 +41,21 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
     deleteWorkflow: {
         id: 'iaso.submissions.label.deleteWorkflow',
         defaultMessage: 'Delete workflow',
+    },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
+    duplicate: {
+        id: 'iaso.workflows.duplicate',
+        defaultMessage: 'Duplicate',
     },
     search: {
         defaultMessage: 'Search',
@@ -100,6 +112,41 @@ const MESSAGES = defineMessages({
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
+    },
+    validationWorkflows: {
+        id: 'iaso.workflows.instance.validationWorkflow.label',
+        defaultMessage: 'Validation workflows',
+    },
+    listDescription: {
+        id: 'iaso.workflows.listDescription',
+        defaultMessage:
+            'A workflow sets the validation steps. Link it to one or more forms; their submissions then follow it.',
+    },
+    createWorkflow: {
+        id: 'iaso.workflows.createWorkflow',
+        defaultMessage: 'Create workflow',
+    },
+    workflow: {
+        id: 'iaso.workflows.workflow',
+        defaultMessage: 'Workflow',
+    },
+    linkedFormsCount: {
+        id: 'iaso.workflows.linkedFormsCount',
+        defaultMessage:
+            '{count, plural, =0 {No form linked} one {# form linked} other {# forms linked}}',
+    },
+    stepsColumn: {
+        id: 'iaso.workflows.steps',
+        defaultMessage: 'Steps',
+    },
+    stepsCount: {
+        id: 'iaso.workflows.stepsCount',
+        defaultMessage:
+            '{count, plural, =0 {No step} one {# step} other {# steps}}',
+    },
+    lastUpdated: {
+        id: 'iaso.workflows.instance.lastUpdatedAt.label',
+        defaultMessage: 'Last updated',
     },
 });
 

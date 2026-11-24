@@ -31,6 +31,7 @@ import type {
     PatchedValidationWorkflowUpdateRequest,
     ValidationWorkflowCreate,
     ValidationWorkflowCreateRequest,
+    ValidationWorkflowDuplicate,
     ValidationWorkflowRetrieve,
     ValidationWorkflowUpdate,
     ValidationWorkflowUpdateRequest,
@@ -1022,6 +1023,132 @@ export const useApiValidationWorkflowsDestroy = <
     const backupQueryClient = useQueryClient();
     return useMutation(
         useApiValidationWorkflowsDestroyMutationOptions(
+            backupQueryClient,
+            options,
+        ),
+    );
+};
+export const getApiValidationWorkflowsDuplicateCreateUrl = (slug: string) => {
+    return `${process.env.ORVAL_API_BASE_URL}/api/validation-workflows/${slug}/duplicate/`;
+};
+
+export const apiValidationWorkflowsDuplicateCreate = async (
+    slug: string,
+    options?: Parameters<typeof customFetchInstance>[1],
+): Promise<ValidationWorkflowDuplicate> => {
+    return customFetchInstance<ValidationWorkflowDuplicate>(
+        getApiValidationWorkflowsDuplicateCreateUrl(slug),
+        {
+            credentials: 'same-origin',
+            ...options,
+            method: 'POST',
+        },
+    );
+};
+
+export const getApiValidationWorkflowsDuplicateCreateMutationKey = () =>
+    ['apiValidationWorkflowsDuplicateCreate'] as const;
+
+export const useApiValidationWorkflowsDuplicateCreateMutationOptions = <
+    TError = unknown,
+    TContext = unknown,
+>(
+    queryClient: QueryClient,
+    options?: {
+        mutation?: UseMutationOptions<
+            Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>,
+            TError,
+            ApiValidationWorkflowsDuplicateCreateMutationVariables,
+            TContext
+        >;
+        skipInvalidation?: boolean;
+        request?: SecondParameter<typeof customFetchInstance>;
+    },
+): UseMutationOptions<
+    Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>,
+    TError,
+    ApiValidationWorkflowsDuplicateCreateMutationVariables,
+    TContext
+> => {
+    const mutationKey = getApiValidationWorkflowsDuplicateCreateMutationKey();
+    const { mutation: mutationOptions, request: requestOptions } = options
+        ? options.mutation &&
+          'mutationKey' in options.mutation &&
+          options.mutation.mutationKey
+            ? options
+            : { ...options, mutation: { ...options.mutation, mutationKey } }
+        : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+        Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>,
+        ApiValidationWorkflowsDuplicateCreateMutationVariables
+    > = props => {
+        const { slug } = props ?? {};
+
+        return apiValidationWorkflowsDuplicateCreate(slug, requestOptions);
+    };
+
+    const onSuccess = (
+        data: Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>,
+        variables: ApiValidationWorkflowsDuplicateCreateMutationVariables,
+        context: TContext | undefined,
+    ) => {
+        if (!options?.skipInvalidation) {
+            queryClient.invalidateQueries({
+                predicate: query =>
+                    [
+                        getApiValidationWorkflowsListQueryKey(),
+                        getApiValidationWorkflowsDropdownListQueryKey(),
+                    ].some(queryKey =>
+                        queryClient
+                            .getQueryCache()
+                            .findAll(queryKey)
+                            .includes(query),
+                    ),
+            });
+        }
+        mutationOptions?.onSuccess?.(data, variables, context);
+    };
+
+    const customOptions = useCustomMutationOptions({
+        ...mutationOptions,
+        mutationFn,
+        onSuccess,
+    });
+
+    return customOptions;
+};
+
+export type ApiValidationWorkflowsDuplicateCreateMutationResult = NonNullable<
+    Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>
+>;
+
+export type ApiValidationWorkflowsDuplicateCreateMutationError = unknown;
+export type ApiValidationWorkflowsDuplicateCreateMutationVariables = {
+    slug: string;
+};
+
+export const useApiValidationWorkflowsDuplicateCreate = <
+    TError = unknown,
+    TContext = unknown,
+>(options?: {
+    mutation?: UseMutationOptions<
+        Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>,
+        TError,
+        ApiValidationWorkflowsDuplicateCreateMutationVariables,
+        TContext
+    >;
+    skipInvalidation?: boolean;
+    request?: SecondParameter<typeof customFetchInstance>;
+}): UseMutationResult<
+    Awaited<ReturnType<typeof apiValidationWorkflowsDuplicateCreate>>,
+    TError,
+    ApiValidationWorkflowsDuplicateCreateMutationVariables,
+    TContext
+> => {
+    const backupQueryClient = useQueryClient();
+    return useMutation(
+        useApiValidationWorkflowsDuplicateCreateMutationOptions(
             backupQueryClient,
             options,
         ),

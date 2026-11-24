@@ -16,6 +16,7 @@ import type {
     PaginatedValidationWorkflowDropdownList,
     PaginatedValidationWorkflowListList,
     ValidationWorkflowCreate,
+    ValidationWorkflowDuplicate,
     ValidationWorkflowRetrieve,
     ValidationWorkflowUpdate,
 } from '../../models';
@@ -104,6 +105,21 @@ export const getApiValidationWorkflowsListResponseMock = (
             slug: faker.helpers.fromRegExp('[-a-zA-Z0-9_]+'),
             name: faker.string.alpha({ length: { min: 10, max: 256 } }),
             form_count: faker.number.int(),
+            linked_forms_count: faker.number.int(),
+            steps: Array.from(
+                { length: faker.number.int({ min: 1, max: 10 }) },
+                (_, i) => i + 1,
+            ).map(() => ({
+                slug: faker.helpers.fromRegExp('[-a-zA-Z0-9_]+'),
+                name: faker.string.alpha({ length: { min: 10, max: 256 } }),
+                roles_required: Array.from(
+                    { length: faker.number.int({ min: 1, max: 10 }) },
+                    (_, i) => i + 1,
+                ).map(() => ({
+                    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
+                    id: faker.number.int(),
+                })),
+            })),
             created_by: faker.helpers.arrayElement([
                 faker.string.alpha({ length: { min: 10, max: 20 } }),
                 null,
@@ -195,6 +211,16 @@ export const getApiValidationWorkflowsPartialUpdateResponseMock = (
     overrideResponse: Partial<Extract<ValidationWorkflowUpdate, object>> = {},
 ): ValidationWorkflowUpdate => ({
     slug: faker.helpers.fromRegExp('[-a-zA-Z0-9_]+'),
+    ...overrideResponse,
+});
+
+export const getApiValidationWorkflowsDuplicateCreateResponseMock = (
+    overrideResponse: Partial<
+        Extract<ValidationWorkflowDuplicate, object>
+    > = {},
+): ValidationWorkflowDuplicate => ({
+    slug: faker.helpers.fromRegExp('[-a-zA-Z0-9_]+'),
+    name: faker.string.alpha({ length: { min: 10, max: 20 } }),
     ...overrideResponse,
 });
 
@@ -444,6 +470,39 @@ export const getApiValidationWorkflowsDestroyMockHandler = (
     );
 };
 
+export const getApiValidationWorkflowsDuplicateCreateMockHandler = (
+    overrideResponse?:
+        | ValidationWorkflowDuplicate
+        | ((
+              info: Parameters<Parameters<typeof http.post>[1]>[0],
+          ) =>
+              | Promise<ValidationWorkflowDuplicate>
+              | ValidationWorkflowDuplicate),
+    options?: RequestHandlerOptions,
+) => {
+    return http.post(
+        '*/api/validation-workflows/:slug/duplicate/',
+        async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+            await delay(
+                (() =>
+                    process.env?.MSW_DELAY
+                        ? parseInt(process.env.MSW_DELAY)
+                        : 0)(),
+            );
+
+            return HttpResponse.json(
+                overrideResponse !== undefined
+                    ? typeof overrideResponse === 'function'
+                        ? await overrideResponse(info)
+                        : overrideResponse
+                    : getApiValidationWorkflowsDuplicateCreateResponseMock(),
+                { status: 201 },
+            );
+        },
+        options,
+    );
+};
+
 export const getApiValidationWorkflowsDropdownListMockHandler = (
     overrideResponse?:
         | PaginatedValidationWorkflowDropdownList
@@ -484,5 +543,6 @@ export const getValidationWorkflowsMock = () => [
     getApiValidationWorkflowsUpdateMockHandler(),
     getApiValidationWorkflowsPartialUpdateMockHandler(),
     getApiValidationWorkflowsDestroyMockHandler(),
+    getApiValidationWorkflowsDuplicateCreateMockHandler(),
     getApiValidationWorkflowsDropdownListMockHandler(),
 ];

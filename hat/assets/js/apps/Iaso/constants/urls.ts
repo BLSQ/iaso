@@ -566,6 +566,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'mode',
             'view',
             'onlyUnassigned',
+            'onlyAssignable',
             'focusOrgUnitId',
             'assignee',
         ],

@@ -1,6 +1,7 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, MouseEvent, useCallback } from 'react';
 import LocationOffIcon from '@mui/icons-material/LocationOff';
 import Box from '@mui/material/Box/Box';
+import Checkbox from '@mui/material/Checkbox/Checkbox';
 import { amber } from '@mui/material/colors';
 import { alpha } from '@mui/material/styles';
 import TableCell from '@mui/material/TableCell/TableCell';
@@ -17,6 +18,9 @@ import { OrgUnitRow } from './types';
 const styles = {
     clickable: {
         cursor: 'pointer',
+    },
+    dimmed: {
+        opacity: 0.5,
     },
     focused: {
         bgcolor: alpha(amber[600], 0.18),
@@ -39,12 +43,21 @@ const styles = {
     },
 } satisfies SxStyles;
 
+type RowSelection = {
+    isSelectable: boolean;
+    isSelected: boolean;
+    onToggle: (orgUnitId: number) => void;
+};
+
+const stopPropagation = (event: MouseEvent) => event.stopPropagation();
+
 type Props = {
     row: OrgUnitRow;
     // Found with "Find an org unit".
     isFocused: boolean;
     isClickable: boolean;
     onClick: (row: OrgUnitRow) => void;
+    selection?: RowSelection;
 };
 
 export const OrgUnitTableRow: FC<Props> = ({
@@ -52,15 +65,37 @@ export const OrgUnitTableRow: FC<Props> = ({
     isFocused,
     isClickable,
     onClick,
+    selection,
 }) => {
     const { formatMessage } = useSafeIntl();
     const handleClick = useCallback(() => onClick(row), [onClick, row]);
+    const onToggle = selection?.onToggle;
+    const handleToggle = useCallback(
+        () => onToggle?.(row.id),
+        [onToggle, row.id],
+    );
+    const isDimmed = selection ? !selection.isSelectable : false;
     return (
         <TableRow
             hover
             onClick={isClickable ? handleClick : undefined}
-            sx={[isClickable && styles.clickable, isFocused && styles.focused]}
+            sx={[
+                isClickable && styles.clickable,
+                isFocused && styles.focused,
+                isDimmed && styles.dimmed,
+            ]}
         >
+            {selection && (
+                <TableCell padding="checkbox" onClick={stopPropagation}>
+                    <Checkbox
+                        size="small"
+                        checked={selection.isSelected}
+                        disabled={!selection.isSelectable}
+                        onChange={handleToggle}
+                        inputProps={{ 'aria-label': row.name }}
+                    />
+                </TableCell>
+            )}
             <TableCell>
                 <Box sx={styles.name}>
                     <Typography variant="body2">{row.name}</Typography>

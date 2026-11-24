@@ -122,3 +122,17 @@ export const getTeamIdByOrgUnitId = (
             team ? [[org_unit, team]] : [],
         ),
     );
+
+export type AssignmentProgress = { assigned: number; total: number };
+
+// Counts the org units the selected team's members can be given, wherever the table rows come from.
+export const getAssignmentProgress = (
+    rows: OrgUnitRow[],
+    assignableOrgUnitIds: Set<number>,
+): AssignmentProgress => {
+    const teamRows = rows.filter(row => assignableOrgUnitIds.has(row.id));
+    return {
+        assigned: teamRows.filter(row => row.assignee).length,
+        total: teamRows.length,
+    };
+};

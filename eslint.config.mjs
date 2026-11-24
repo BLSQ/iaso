@@ -392,8 +392,11 @@ export default defineConfig([
         rules: {
             // Orval-generated files: disable rules that fire on generated code.
             // eslint-disable in orval headers breaks models/index.ts merge (orval #346).
+            // no-continue: orval's withQueryKey helper uses continue. Can be fixed
+            // later in the generator; silencing it here keeps CI clean.
             'max-len': 'off',
             'no-nested-ternary': 'off',
+            'no-continue': 'off',
         },
     },
     {

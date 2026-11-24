@@ -1,5 +1,8 @@
 import React, { FC } from 'react';
-import { LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
+import LinearProgress from '@mui/material/LinearProgress/LinearProgress';
+import Stack from '@mui/material/Stack/Stack';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

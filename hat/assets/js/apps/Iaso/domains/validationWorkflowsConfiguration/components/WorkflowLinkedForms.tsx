@@ -1,13 +1,15 @@
 import React, { FC } from 'react';
 import LinkIcon from '@mui/icons-material/Link';
-import { Box, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import {
     ChipList,
     LinkWithLocation,
     makeRedirectionUrl,
     useSafeIntl,
 } from 'bluesquare-components';
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { SxStyles } from 'Iaso/types/general';

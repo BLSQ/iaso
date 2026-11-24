@@ -1,7 +1,10 @@
 import React, { FC } from 'react';
-import { Box, Divider, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import { convertToDate } from 'Iaso/components/Cells/DateTimeCell';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';

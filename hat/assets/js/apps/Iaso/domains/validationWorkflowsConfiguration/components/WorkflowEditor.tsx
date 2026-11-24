@@ -1,11 +1,12 @@
 import React, { FC, useCallback, useMemo } from 'react';
-import { Box, Button } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import {
     useApiValidationWorkflowsCreate,
     useApiValidationWorkflowsUpdate,
-    ValidationWorkflowRetrieve,
-} from 'Iaso/api/validationWorkflows';
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';

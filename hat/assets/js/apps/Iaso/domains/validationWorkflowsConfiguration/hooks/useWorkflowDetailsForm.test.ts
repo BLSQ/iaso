@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import { useWorkflowDetailsForm } from './useWorkflowDetailsForm';
 
 const workflow = (

@@ -804,6 +804,9 @@ This will return the new captcha identifier, as well as a path to visualize it.
 
 # Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute, including the
+required DCO sign-off on every commit.
+
 If you are not using the Docker container for development, please ensure that
 you are using the supported Python version on your local machine. At the time of
 writing, the supported version is 3.9, but it's always a good idea to check the

@@ -34,3 +34,8 @@ jobs:
     uses: BLSQ/iaso-ci/.github/workflows/tests.yml@main
     with:
       iaso_branch: ${{ github.head_ref || github.ref_name }}
+
+  dco:
+    uses: BLSQ/iaso-ci/.github/workflows/dco.yml@main
+    permissions:
+      contents: read

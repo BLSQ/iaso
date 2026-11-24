@@ -2,6 +2,7 @@
 import base64
 import binascii
 import datetime
+import logging
 
 from typing import Any, Optional, Union
 
@@ -34,6 +35,9 @@ from .common import (
 )
 from .common.query import Decode, Encode
 from .instances.views import FileFormatEnum, find_entity
+
+
+logger = logging.getLogger(__name__)
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -412,52 +416,58 @@ def import_storage_logs(data, user):
         # We receive an array of logs, we'll process them one by one
         log_id = log_data["id"]
 
-        try:
-            StorageLogEntry.objects.get(id=log_id)
+        if StorageLogEntry.objects.filter(id=log_id).exists():
             # That log entry already exists, skip it
-        except StorageLogEntry.DoesNotExist:
-            # New log entry, we continue
-            storage_id = log_data["storage_id"]
-            storage_type = log_data["storage_type"]
-            operation_type = log_data["operation_type"]
+            continue
 
-            if storage_type not in [c[1] for c in StorageDevice.STORAGE_TYPE_CHOICES]:
-                raise ValueError(f"Invalid storage type: {storage_type}")
+        # New log entry, we continue
+        storage_id = log_data["storage_id"]
+        storage_type = log_data["storage_type"]
+        operation_type = log_data["operation_type"]
 
-            if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
-                raise ValueError(f"Invalid operation type: {operation_type}")
+        if storage_type not in [c[1] for c in StorageDevice.STORAGE_TYPE_CHOICES]:
+            raise ValueError(f"Invalid storage type: {storage_type}")
 
-            performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
+        if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
+            raise ValueError(f"Invalid operation type: {operation_type}")
 
-            concerned_instances = Instance.objects.none()
-            if "instances" in log_data:
-                concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
+        performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
 
-            concerned_orgunit = None
-            if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
-                concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
+        concerned_instances = Instance.objects.none()
+        if "instances" in log_data:
+            concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 
-            account = user.iaso_profile.account
-            concerned_entity = None
-            entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
-            if entity_id:
+        concerned_orgunit = None
+        if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
+            concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
+
+        account = user.iaso_profile.account
+        concerned_entity = None
+        entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
+        if entity_id:
+            try:
                 concerned_entity = find_entity(account, entity_id)
+            except Entity.DoesNotExist as e:
+                # It happens that the mobile app sends instances without their `entityUuid` property.
+                # This blocks the import and cannot be fixed here. Therefore, it's best to ignore and log the error
+                logger.exception(msg=f"Entity with id {entity_id} not found", exc_info=e)
+                continue
 
-            # 1. Create the storage device, if needed
-            device, _ = StorageDevice.objects.get_or_create(
-                account=account, customer_chosen_id=storage_id, type=storage_type
-            )
+        # 1. Create the storage device, if needed
+        device, _ = StorageDevice.objects.get_or_create(
+            account=account, customer_chosen_id=storage_id, type=storage_type
+        )
 
-            StorageLogEntry.objects.create_and_update_device(
-                log_id=log_id,
-                device=device,
-                operation_type=operation_type,
-                performed_at=performed_at,
-                user=user,
-                concerned_orgunit=concerned_orgunit,
-                concerned_entity=concerned_entity,
-                concerned_instances=concerned_instances,
-            )
+        StorageLogEntry.objects.create_and_update_device(
+            log_id=log_id,
+            device=device,
+            operation_type=operation_type,
+            performed_at=performed_at,
+            user=user,
+            concerned_orgunit=concerned_orgunit,
+            concerned_entity=concerned_entity,
+            concerned_instances=concerned_instances,
+        )
 
 
 def logs_for_device_generate_export(

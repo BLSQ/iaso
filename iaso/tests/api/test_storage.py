@@ -435,8 +435,7 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
         api_import = APIImport.objects.filter(import_type="storageLog").first()
-        self.assertTrue(api_import.has_problem)
-        self.assertIn("Entity.DoesNotExist", api_import.exception)
+        self.assertFalse(api_import.has_problem)
 
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)

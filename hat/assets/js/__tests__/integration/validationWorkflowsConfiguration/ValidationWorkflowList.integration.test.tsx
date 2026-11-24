@@ -10,9 +10,13 @@ import { IntlProvider } from 'react-intl';
 import { Route, Routes } from 'react-router';
 import { MemoryRouter } from 'react-router-dom';
 import { expect, describe, vi } from 'vitest';
-import { ApiValidationWorkflowsListParams } from 'Iaso/api/validationWorkflows';
+import {
+    ApiValidationWorkflowsListParams,
+    ValidationWorkflowList,
+} from 'Iaso/api/validationWorkflows';
 import {
     getApiValidationWorkflowsDestroyMockHandler,
+    getApiValidationWorkflowsDuplicateCreateMockHandler,
     getApiValidationWorkflowsListMockHandler,
     getApiValidationWorkflowsListResponseMock,
 } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows.msw';
@@ -57,6 +61,51 @@ vi.mock('Iaso/domains/users/utils', async () => {
 });
 
 const mockDelete = vi.fn();
+const mockDuplicate = vi.fn();
+
+const HEADING = 'Validation workflows';
+
+const malariaCheck: ValidationWorkflowList = {
+    slug: 'malaria-check',
+    name: 'Malaria check',
+    form_count: 1,
+    linked_forms_count: 1,
+    steps: [
+        {
+            slug: 'data-entry',
+            name: 'Data entry',
+            roles_required: [{ id: 1, name: 'Data manager' }],
+        },
+        { slug: 'final-approval', name: 'Final approval', roles_required: [] },
+    ],
+    created_by: 'Alice',
+    updated_by: 'Bob',
+    created_at: '2026-01-10T10:00:00Z',
+    updated_at: '2026-02-10T10:00:00Z',
+};
+
+const vaccinationReview: ValidationWorkflowList = {
+    slug: 'vaccination-review',
+    name: 'Vaccination review',
+    form_count: 0,
+    linked_forms_count: 0,
+    steps: [],
+    created_by: 'Carol',
+    updated_by: null,
+    created_at: '2026-01-10T10:00:00Z',
+    updated_at: '2026-01-10T10:00:00Z',
+};
+
+const listResponse = (results: ValidationWorkflowList[]) =>
+    getApiValidationWorkflowsListResponseMock({
+        count: results.length,
+        has_next: false,
+        has_previous: false,
+        limit: 20,
+        pages: 1,
+        page: 1,
+        results,
+    });
 
 const handlers = [
     getApiValidationWorkflowsListMockHandler(),
@@ -64,11 +113,33 @@ const handlers = [
         mockDelete(info.params);
         throw new HttpResponse(null, { status: 204 });
     }),
+    getApiValidationWorkflowsDuplicateCreateMockHandler(async info => {
+        mockDuplicate(info.params);
+        return { slug: 'malaria-check-copy', name: 'Malaria check (copy)' };
+    }),
 ];
 
 const server = setupServer(...handlers);
 
 const previousDefaults = TestingQueryClient.getDefaultOptions();
+
+const renderList = () =>
+    renderWithThemeAndIntlProvider(
+        <MemoryRouter>
+            <ValidationWorkflowsConfiguration />
+        </MemoryRouter>,
+    );
+
+const waitForLoaded = () =>
+    waitFor(() => {
+        expect(screen.queryByRole('progressbar')).toBeNull();
+    });
+
+const openRowMenu = async (user: ReturnType<typeof userEvent.setup>) => {
+    await act(async () => {
+        await user.click(screen.getByRole('button', { name: 'More actions' }));
+    });
+};
 
 describe('Validation workflow list UI integration test', () => {
     beforeAll(() => {
@@ -105,16 +176,10 @@ describe('Validation workflow list UI integration test', () => {
 
     it('displays a spinner while loading', async () => {
         vi.stubEnv('MSW_DELAY', '1000000');
-        renderWithThemeAndIntlProvider(
-            <MemoryRouter>
-                <ValidationWorkflowsConfiguration />
-            </MemoryRouter>,
-        );
+        renderList();
 
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
+            screen.getByRole('heading', { name: HEADING }),
         ).toBeInTheDocument();
 
         await waitFor(() => {
@@ -124,240 +189,161 @@ describe('Validation workflow list UI integration test', () => {
     });
 
     it("displays no results when there isn't any", async () => {
-        const data = getApiValidationWorkflowsListResponseMock({
-            count: 0,
-            has_next: false,
-            has_previous: false,
-            limit: 10,
-            pages: 1,
-            page: 1,
-            results: [],
-        });
-        server.use(getApiValidationWorkflowsListMockHandler(data));
-
-        renderWithThemeAndIntlProvider(
-            <MemoryRouter>
-                <ValidationWorkflowsConfiguration />
-            </MemoryRouter>,
-        );
+        server.use(getApiValidationWorkflowsListMockHandler(listResponse([])));
+        renderList();
 
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
+            screen.getByRole('heading', { name: HEADING }),
         ).toBeInTheDocument();
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
-        });
+        await waitForLoaded();
         expect(screen.getByText('No result')).toBeInTheDocument();
     });
 
-    it('displays results correctly', async () => {
-        const data = getApiValidationWorkflowsListResponseMock({
-            count: 6,
-            has_next: false,
-            has_previous: false,
-            limit: 10,
-            pages: 1,
-            page: 1,
-        });
+    it('displays the description of the page', () => {
+        renderList();
 
-        expect(data?.results?.length ?? 0).toBeGreaterThan(0);
-        server.use(getApiValidationWorkflowsListMockHandler(data));
-
-        renderWithThemeAndIntlProvider(
-            <MemoryRouter>
-                <ValidationWorkflowsConfiguration />
-            </MemoryRouter>,
-        );
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
+            screen.getByText(/A workflow sets the validation steps/),
         ).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
-            expect(screen.queryByText('No result')).toBeNull();
-        });
-
-        expect(screen.getByText(`${data.count} result(s)`)).toBeInTheDocument();
-
-        data?.results?.forEach(validationWorkflow => {
-            expect(
-                screen.getByRole('cell', { name: validationWorkflow.name }),
-            ).toBeInTheDocument();
-
-            const expectedValues = [
-                validationWorkflow.created_by,
-                validationWorkflow.updated_by,
-            ].filter(Boolean);
-
-            expectedValues.forEach(value => {
-                expect(
-                    screen.getByRole('cell', { name: String(value) }),
-                ).toBeInTheDocument();
-            });
-            expect(
-                screen.getByRole('cell', {
-                    name: validationWorkflow.form_count.toLocaleString(),
-                }),
-            ).toBeInTheDocument();
-        });
     });
 
-    it('displays edit and delete button if superuser or has permission', async () => {
-        const returnData = getApiValidationWorkflowsListResponseMock({
-            count: 6,
-            has_next: false,
-            has_previous: false,
-            limit: 10,
-            pages: 1,
-            page: 1,
-        });
-
-        const data = {
-            ...returnData,
-            count: 1,
-            results: returnData?.results?.slice(0, 1),
-        };
-
-        server.use(getApiValidationWorkflowsListMockHandler(data));
-
-        expect(data?.results?.length).toBe(1);
-
-        mockUserHasOneOfPermissions.mockReturnValue(true);
-
-        const { rerender } = renderWithThemeAndIntlProvider(
-            <MemoryRouter>
-                <ValidationWorkflowsConfiguration />
-            </MemoryRouter>,
+    it('displays results correctly', async () => {
+        server.use(
+            getApiValidationWorkflowsListMockHandler(
+                listResponse([malariaCheck, vaccinationReview]),
+            ),
         );
+        renderList();
+        await waitForLoaded();
 
+        expect(screen.getByText('2 result(s)')).toBeInTheDocument();
+
+        // Name cell: link to the workflow and number of linked forms
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
-        ).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
-        });
-        expect(screen.queryByText('No result')).toBeNull();
-
-        expect(
-            screen.getByText(`${data?.count} result(s)`),
-        ).toBeInTheDocument();
-
-        expect(screen.getByTestId('DeleteIcon')).toBeInTheDocument();
-        expect(screen.getByTestId('SettingsIcon')).toBeInTheDocument();
-
-        expect(screen.getByRole('link', { name: '' })).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: '' })).toHaveAttribute(
-            'href',
-            `/validation-workflows/configuration/detail/slug/${data?.results?.[0]?.slug}`,
-        );
-
-        expect(
-            screen.getByTestId('SettingsIcon').parentElement,
+            screen.getByRole('link', { name: 'Malaria check' }),
         ).toHaveAttribute(
             'href',
-            `/validation-workflows/configuration/detail/slug/${data?.results?.[0]?.slug}`,
+            '/validation-workflows/configuration/detail/slug/malaria-check',
         );
+        expect(screen.getByText('1 form linked')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Vaccination review' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('No form linked')).toBeInTheDocument();
+
+        // Steps cell: number of steps, then each step by its roles, or its name without roles
+        expect(screen.getByText('2 steps')).toBeInTheDocument();
+        expect(
+            screen.getByText('Data manager → Final approval'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('No step')).toBeInTheDocument();
+
+        // Last updated cell: last editor, or the creator when never updated
+        expect(screen.getByText('Bob')).toBeInTheDocument();
+        expect(screen.getByText('Carol')).toBeInTheDocument();
+        expect(screen.queryByText('Alice')).toBeNull();
+    });
+
+    it('displays the row actions only with the permission', async () => {
+        server.use(
+            getApiValidationWorkflowsListMockHandler(
+                listResponse([malariaCheck]),
+            ),
+        );
+        mockUserHasOneOfPermissions.mockReturnValue(true);
+
+        const { rerender } = renderList();
+        await waitForLoaded();
+
+        expect(
+            screen.getByRole('columnheader', { name: 'Action(s)' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
+            'href',
+            '/validation-workflows/configuration/detail/slug/malaria-check',
+        );
+        expect(
+            screen.getByRole('button', { name: 'More actions' }),
+        ).toBeInTheDocument();
 
         mockUserHasOneOfPermissions.mockReturnValue(false);
-
         rerender(
             <MemoryRouter>
                 <ValidationWorkflowsConfiguration />
             </MemoryRouter>,
         );
-
-        expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
-        ).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
-        });
-
-        expect(screen.queryByText('No result')).toBeNull();
+        await waitForLoaded();
 
         expect(screen.getByText('1 result(s)')).toBeInTheDocument();
-
-        expect(screen.queryByTestId('DeleteIcon')).toBeNull();
-        expect(screen.queryByTestId('SettingsIcon')).toBeNull();
+        expect(
+            screen.queryByRole('columnheader', { name: 'Action(s)' }),
+        ).toBeNull();
+        expect(screen.queryByRole('link', { name: 'Edit' })).toBeNull();
+        expect(
+            screen.queryByRole('button', { name: 'More actions' }),
+        ).toBeNull();
     });
 
     it('calls delete upon confirming', async () => {
-        const returnData = getApiValidationWorkflowsListResponseMock({
-            count: 6,
-            has_next: false,
-            has_previous: false,
-            limit: 10,
-            pages: 1,
-            page: 1,
-        });
-
-        const data = {
-            ...returnData,
-            count: 1,
-            results: returnData?.results?.slice(0, 1),
-        };
-
-        server.use(getApiValidationWorkflowsListMockHandler(data));
-
-        expect(data?.results?.length).toBe(1);
-
-        const userEventStp = userEvent.setup();
+        server.use(
+            getApiValidationWorkflowsListMockHandler(
+                listResponse([malariaCheck]),
+            ),
+        );
+        const user = userEvent.setup();
         mockUserHasOneOfPermissions.mockReturnValue(true);
 
-        renderWithThemeAndIntlProvider(
-            <MemoryRouter>
-                <ValidationWorkflowsConfiguration />
-            </MemoryRouter>,
-        );
+        renderList();
+        await waitForLoaded();
 
-        expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
-        ).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
-        });
-
-        expect(screen.queryByText('No result')).toBeNull();
-
-        expect(screen.getByText(`${data.count} result(s)`)).toBeInTheDocument();
-
-        expect(screen.getByTestId('DeleteIcon')).toBeInTheDocument();
-        expect(screen.getByTestId('SettingsIcon')).toBeInTheDocument();
-
+        await openRowMenu(user);
         await act(async () => {
-            await userEventStp.click(screen.getByTestId('DeleteIcon'));
+            await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
         });
 
         const modal = await screen.findByRole('dialog');
-        expect(modal).toBeInTheDocument();
+        expect(within(modal).getByText(/delete workflow/i)).toBeInTheDocument();
 
-        expect(screen.getByText(/delete workflow/i)).toBeInTheDocument();
-
-        const saveButton = within(modal).getByRole('button', { name: /yes/i });
         await act(async () => {
-            await userEventStp.click(saveButton);
+            await user.click(
+                within(modal).getByRole('button', { name: /yes/i }),
+            );
         });
 
         await waitFor(() => {
             expect(mockDelete).toHaveBeenCalledWith(
-                expect.objectContaining({ slug: data?.results?.[0]?.slug }),
+                expect.objectContaining({ slug: 'malaria-check' }),
+            );
+        });
+        await waitFor(() => {
+            expect(screen.queryByRole('dialog')).toBeNull();
+        });
+    });
+
+    it('duplicates a workflow from the row menu', async () => {
+        server.use(
+            getApiValidationWorkflowsListMockHandler(
+                listResponse([malariaCheck]),
+            ),
+        );
+        const user = userEvent.setup();
+        mockUserHasOneOfPermissions.mockReturnValue(true);
+
+        renderList();
+        await waitForLoaded();
+
+        await openRowMenu(user);
+        await act(async () => {
+            await user.click(
+                screen.getByRole('menuitem', { name: 'Duplicate' }),
             );
         });
 
-        expect(screen.queryByRole('dialog')).toBeNull();
+        await waitFor(() => {
+            expect(mockDuplicate).toHaveBeenCalledWith(
+                expect.objectContaining({ slug: 'malaria-check' }),
+            );
+        });
     });
 
     it('uses the correct parameters for searching', async () => {
@@ -371,21 +357,13 @@ describe('Validation workflow list UI integration test', () => {
             isFetching: false,
         });
         const mockList = vi.fn();
-        const data = getApiValidationWorkflowsListResponseMock({
-            count: 6,
-            has_next: false,
-            has_previous: false,
-            limit: 10,
-            pages: 1,
-            page: 1,
-        });
-
         server.use(
-            getApiValidationWorkflowsListMockHandler(async _info => {
-                mockList(_info);
-                return getApiValidationWorkflowsListResponseMock(data);
+            getApiValidationWorkflowsListMockHandler(async info => {
+                mockList(info);
+                return listResponse([malariaCheck]);
             }),
         );
+        const user = userEvent.setup();
 
         renderWithThemeAndIntlProvider(
             <MemoryRouter
@@ -407,8 +385,14 @@ describe('Validation workflow list UI integration test', () => {
             expect(mockList).toHaveBeenCalledTimes(1);
         });
 
+        // The filters are edited in a drawer, opened from the filter bar
         await act(async () => {
-            await userEvent.type(
+            await user.click(
+                screen.getByRole('button', { name: 'Add filters' }),
+            );
+        });
+        await act(async () => {
+            await user.type(
                 screen.getByRole('textbox', { name: /search/i }),
                 'something',
             );
@@ -419,24 +403,14 @@ describe('Validation workflow list UI integration test', () => {
                 nameOption: 'form 1',
             });
         });
-
         await act(async () => {
             await selectFromComboBoxWithAsync({
                 nameComboBox: /forms/i,
                 nameOption: 'form 2',
             });
         });
-        const searchButton = screen.getByTestId('search-button');
-        await waitFor(() => {
-            expect(searchButton).not.toBeDisabled();
-        });
-
         await act(async () => {
-            await userEvent.click(searchButton);
-        });
-
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
+            await user.click(screen.getByRole('button', { name: /apply/i }));
         });
 
         await waitFor(() => {
@@ -444,14 +418,12 @@ describe('Validation workflow list UI integration test', () => {
         });
 
         const lastCall = mockList.mock.lastCall?.[0];
-
         const url = new URL(lastCall.request.url);
 
         expect(url.searchParams.get('name')).toBe('something');
         expect(url.searchParams.get('forms')).toBe('1,2');
 
         const raw = Object.fromEntries(url.searchParams.entries());
-
         const params = {
             ...raw,
             forms: raw.forms?.split(',').map(Number),
@@ -474,9 +446,8 @@ describe('Validation workflow list UI integration test', () => {
         );
 
         expect(
-            screen.getByRole('link', { name: 'Create' }),
-        ).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'Create' })).toHaveAttribute(
+            screen.getByRole('link', { name: 'Create workflow' }),
+        ).toHaveAttribute(
             'href',
             '/validation-workflows/configuration/detail/',
         );
@@ -537,9 +508,7 @@ describe.todo('Validation workflow list accessibility', () => {
         );
 
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
+            screen.getByRole('heading', { name: HEADING }),
         ).toBeInTheDocument();
         expect(screen.queryByText('No result')).toBeNull();
 
@@ -557,9 +526,7 @@ describe.todo('Validation workflow list accessibility', () => {
         );
 
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
+            screen.getByRole('heading', { name: HEADING }),
         ).toBeInTheDocument();
         expect(screen.queryByText('No result')).toBeNull();
         const results = await axe(container);
@@ -587,9 +554,7 @@ describe.todo('Validation workflow list accessibility', () => {
         );
 
         expect(
-            screen.getByRole('heading', {
-                name: 'Configure validation workflows',
-            }),
+            screen.getByRole('heading', { name: HEADING }),
         ).toBeInTheDocument();
         expect(screen.getByText('No result')).toBeInTheDocument();
         const results = await axe(container);

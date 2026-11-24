@@ -151,7 +151,8 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
                 "sub_unit_types",
             )
         elif self.action == "dropdown":
-            queryset = queryset.prefetch_related("sub_unit_types")
+            # The dropdown serializer only outputs the ids of `sub_unit_types`
+            queryset = queryset.prefetch_related(Prefetch("sub_unit_types", queryset=OrgUnitType.objects.only("id")))
 
         project = self.request.query_params.get(PROJECT, None)
         if project:

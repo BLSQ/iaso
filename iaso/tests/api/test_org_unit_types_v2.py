@@ -865,6 +865,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
         with profiler.report_on_failure("orgunittypes_dropdown.md", title="GET /api/v2/orgunittypes/dropdown/"):
             # iaso_orgunittype: 1 for the org unit types of the user's account, 1 to prefetch their `sub_unit_types`
             profiler.assertLessEqualQueryCount({"iaso_orgunittype": 2})
+            # Only the ids of `sub_unit_types` are serialized, the prefetch doesn't load the other columns
+            sub_unit_types_sql = profiler.queries[1]["sql"]
+            self.assertIn('"iaso_orgunittype"."id" FROM "iaso_orgunittype"', sub_unit_types_sql)
+            self.assertNotIn('"iaso_orgunittype"."name"', sub_unit_types_sql)
 
     def test_num_queries_dropdown_with_source_version(self):
         for org_unit_type in [self.org_unit_type_1, self.org_unit_type_2, self.org_unit_type_3]:

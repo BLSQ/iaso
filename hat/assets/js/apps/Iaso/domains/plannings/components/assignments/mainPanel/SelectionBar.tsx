@@ -4,14 +4,12 @@ import LibraryAddCheckIcon from '@mui/icons-material/LibraryAddCheck';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import SelectAllIcon from '@mui/icons-material/SelectAll';
-import {
-    Box,
-    Button,
-    IconButton,
-    Stack,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import Box from '@mui/material/Box/Box';
+import Button from '@mui/material/Button/Button';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Stack from '@mui/material/Stack/Stack';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Typography from '@mui/material/Typography/Typography';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
 import { useAssignmentsContext } from '../../../contexts/AssignmentsContext';

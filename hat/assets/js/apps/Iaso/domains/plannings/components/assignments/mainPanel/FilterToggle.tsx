@@ -1,5 +1,6 @@
 import React, { FC, ReactElement } from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton/IconButton';
+import Tooltip from '@mui/material/Tooltip/Tooltip';
 
 type Props = {
     isOn: boolean;

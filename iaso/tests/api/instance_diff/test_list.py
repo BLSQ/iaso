@@ -4,10 +4,11 @@ from uuid import uuid4
 from django.urls import reverse
 from rest_framework import status
 
-from hat.audit.models import log_modification, serialize_instance
-from iaso.models import Account, DataSource, Form, OrgUnit, Project, SourceVersion
+from hat.audit.models import INSTANCE_API, log_modification, serialize_instance
+from iaso.models import Account, DataSource, Form, Instance, OrgUnit, Project, SourceVersion
 from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
+from iaso.tests.api.instance_diff.common import NEW_JSON, PII_CASES, BaseInstanceDiffPiiTestCase
 
 
 class InstanceDiffAPITestCase(SwaggerTestCaseMixin, APITestCase):
@@ -196,3 +197,42 @@ class InstanceDiffAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 {"op": "move", "from": "/new_field_created_by", "path": "/created_by"},
             ],
         )
+
+
+class InstanceDiffListPiiTestCase(BaseInstanceDiffPiiTestCase):
+    def get_modifications(self, user, instance):
+        self.client.force_authenticate(user)
+        response = self.client.get(reverse("instances_diff-list", kwargs={"instance_id": instance.id}))
+        return self.assertJSONResponse(response, status.HTTP_200_OK)["results"]
+
+    def get_modification(self, user, instance):
+        """The single modification of the submission, as returned to this user."""
+        modifications = self.get_modifications(user, instance)
+        self.assertEqual(len(modifications), 1)
+        return modifications[0]
+
+    def test_pii_filtering(self):
+        for case in PII_CASES:
+            with self.subTest(case.name):
+                modification = self.get_modification(getattr(self, case.user), getattr(self, case.instance))
+                self.assertVisibility(modification, case.visibility)
+
+    def test_whitelist_is_case_insensitive(self):
+        Form.objects.filter(id=self.whitelist_form.id).update(non_pii_fields=["MUAC", "District", "PHOTO", "Size"])
+        self.assertSeesWhitelistedFieldsOnly(self.get_modification(self.user, self.whitelist_instance))
+
+    def test_superuser_sees_pii(self):
+        superuser = self.create_user_with_profile(username="superuser", account=self.account, is_superuser=True)
+        self.assertSeesEverything(self.get_modification(superuser, self.no_whitelist_instance))
+
+    def test_every_modification_of_the_page_is_filtered(self):
+        original = Instance.objects.get(id=self.whitelist_instance.id)
+        self.whitelist_instance.json = {**NEW_JSON, "first_name": "Amina Sow"}
+        self.whitelist_instance.save()
+        log_modification(original, self.whitelist_instance, INSTANCE_API, user=self.pii_user)
+
+        modifications = self.get_modifications(self.user, self.whitelist_instance)
+        self.assertEqual(len(modifications), 2)
+        for modification in modifications:
+            self.assertNoPii(modification)
+            self.assertEqual(list(modification["files"].keys()), ["child.jpg"])

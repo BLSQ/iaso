@@ -321,13 +321,6 @@ export default defineConfig([
             'no-continue': 'warn',
             'no-nested-ternary': 'warn',
             'no-prototype-builtins': 'warn',
-            // as recommended by mui itself : https://mui.com/material-ui/guides/minimizing-bundle-size/?#enforce-best-practices-with-eslint
-            "no-restricted-imports": [
-              "error",
-              {
-                "patterns": [{ "regex": "^@mui/[^/]+$" }]
-              }
-            ],
             'no-restricted-syntax': 'warn',
             'no-tabs': 'off',
             'no-this-before-super': 'warn',
@@ -426,15 +419,22 @@ export default defineConfig([
         },
     },
     {
-        files: ['**/*.{ts,tsx,js,jsx}'],
-        ignores: ['Iaso/api/**'],
+        files: lintedJsPaths,
+        ignores: ['**/Iaso/api/**', '**/Iaso/api/**/*'],
         rules: {
             'no-restricted-imports': [
                 'error',
                 {
                     patterns: [
+                        // as recommended by mui itself : https://mui.com/material-ui/guides/minimizing-bundle-size/?#enforce-best-practices-with-eslint
+                        { "regex": "^@mui/[^/]+$" },
                         {
-                            regex:                 "^Iaso/api/(?![^/]+/(?:endpoints|models)/(?:[^/]+/(?!index(?:\\.|$))[^/]+|(?!index\\.zod$)[^/]+\\.zod)$).*",
+                          regex: "^\\.\\.?/.*Iaso/api(?:/|$)",
+                          message:
+                            "Do not use relative imports for 'Iaso/api'. Use the 'Iaso/api/...' alias instead.",
+                        },
+                        {
+                            regex: "^Iaso/api/(?![^/]+/(?:endpoints|models)/(?:[^/]+/(?!index(?:\\.|$))[^/]+|(?!index\\.zod$)[^/]+\\.zod)$).*",
                             message: 'Import API modules through their endpoint or models files.',
                         },
                     ],

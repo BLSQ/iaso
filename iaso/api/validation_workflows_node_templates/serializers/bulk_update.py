@@ -23,6 +23,11 @@ class ValidationNodeTemplateBulkUpdateListSerializer(BulkUpdateListSerializer):
     def update(
         self, instances: list[ValidationNodeTemplate], validated_data: list[dict]
     ) -> list[ValidationNodeTemplate]:
+        # All the steps are provided in their new order: the first one becomes the starting step,
+        # which has no previous step to skip
+        if validated_data:
+            validated_data[0]["can_skip_previous_nodes"] = False
+
         rtn_instances = cast(list[ValidationNodeTemplate], super().update(instances, validated_data))
 
         instances = {x.slug: x for x in rtn_instances}

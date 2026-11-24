@@ -1,0 +1,239 @@
+import React, { FC } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import Box from '@mui/material/Box';
+import { useSafeIntl } from 'bluesquare-components';
+import { DeleteModal } from 'Iaso/components/DeleteRestoreModals/DeleteModal';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import { SxStyles } from 'Iaso/types/general';
+import { DropdownOptions } from 'Iaso/types/utils';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
+import { StepDraft } from '../../hooks/useStepsEditor';
+import MESSAGES from '../../messages';
+
+const styles = {
+    row: {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: { xs: 1, sm: 2 },
+        p: { xs: 1.5, sm: 2 },
+        mb: 1.5,
+        border: theme => `1px solid ${theme.palette.divider}`,
+        borderRadius: 1,
+        backgroundColor: 'background.paper',
+    },
+    rowDragging: {
+        zIndex: 1,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+
+    rail: {
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: 'center',
+        gap: { xs: 0.5, sm: 2 },
+        flexShrink: 0,
+    },
+    handle: {
+        display: 'flex',
+        alignItems: 'center',
+        height: 40,
+        color: 'text.disabled',
+        cursor: 'grab',
+        touchAction: 'none',
+        '&:hover': { color: 'text.secondary' },
+    },
+    handleDisabled: {
+        cursor: 'default',
+        visibility: 'hidden',
+    },
+    order: {
+        flexShrink: 0,
+        width: 28,
+        height: 28,
+        mt: '6px',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '0.8rem',
+        color: 'text.secondary',
+        backgroundColor: 'grey.100',
+        border: theme => `1px solid ${theme.palette.divider}`,
+    },
+    fields: {
+        flex: 1,
+        minWidth: 0,
+    },
+    fieldsRow: {
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        gap: 2,
+    },
+    field: {
+        flex: 1,
+        minWidth: 0,
+    },
+    descriptionField: {
+        flex: 2,
+        minWidth: 0,
+    },
+    skipCheckbox: {
+        mt: 1,
+    },
+    delete: {
+        mt: '2px',
+    },
+} satisfies SxStyles;
+
+type Props = {
+    step: StepDraft;
+    index: number;
+    roleOptions: DropdownOptions<number>[];
+    isLoadingRoles: boolean;
+    error?: string;
+    isLocked: boolean;
+    isDeleteDisabled: boolean;
+    readOnly: boolean;
+    onChange: (slug: string, changes: Partial<StepDraft>) => void;
+    onDelete: (slug: string) => void;
+};
+
+export const StepRow: FC<Props> = ({
+    step,
+    index,
+    roleOptions,
+    isLoadingRoles,
+    error,
+    isLocked,
+    isDeleteDisabled,
+    readOnly,
+    onChange,
+    onDelete,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        setActivatorNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: step.slug, disabled: isLocked });
+
+    return (
+        <Box
+            ref={setNodeRef}
+            sx={[styles.row, isDragging && styles.rowDragging]}
+            style={{
+                transform: CSS.Translate.toString(transform),
+                transition,
+            }}
+            data-test={`step-row-${step.slug}`}
+        >
+            <Box sx={styles.rail}>
+                <Box
+                    ref={setActivatorNodeRef}
+                    sx={[styles.handle, isLocked && styles.handleDisabled]}
+                    {...attributes}
+                    {...listeners}
+                >
+                    <DragIndicatorIcon fontSize="small" />
+                </Box>
+                <Box sx={styles.order}>{index + 1}</Box>
+            </Box>
+            <Box sx={styles.fields}>
+                <Box sx={styles.fieldsRow}>
+                    <Box sx={styles.field}>
+                        <InputComponent
+                            keyValue={`name_${step.slug}`}
+                            type="text"
+                            withMarginTop={false}
+                            disabled={readOnly}
+                            labelString={formatMessage(MESSAGES.stepName)}
+                            value={step.name}
+                            onChange={(_keyValue, value) =>
+                                onChange(step.slug, { name: value ?? '' })
+                            }
+                            errors={error ? [error] : []}
+                            required
+                        />
+                    </Box>
+                    <Box sx={styles.field}>
+                        <InputComponent
+                            keyValue={`roles_required_${step.slug}`}
+                            type="select"
+                            multi
+                            clearable
+                            withMarginTop={false}
+                            disabled={readOnly}
+                            value={step.roleIds}
+                            options={roleOptions}
+                            loading={isLoadingRoles}
+                            labelString={formatMessage(
+                                MESSAGES.validatedByUserRole,
+                            )}
+                            onChange={(_keyValue, value) =>
+                                onChange(step.slug, {
+                                    roleIds: commaSeparatedIdsToArray(value),
+                                })
+                            }
+                        />
+                    </Box>
+                    <Box sx={styles.descriptionField}>
+                        <InputComponent
+                            keyValue={`description_${step.slug}`}
+                            type="text"
+                            withMarginTop={false}
+                            disabled={readOnly}
+                            labelString={formatMessage(MESSAGES.description)}
+                            value={step.description ?? ''}
+                            onChange={(_keyValue, value) =>
+                                onChange(step.slug, {
+                                    description: value ?? '',
+                                })
+                            }
+                        />
+                    </Box>
+                </Box>
+                {/* The first step has no previous step to skip */}
+                {index > 0 && (
+                    <Box sx={styles.skipCheckbox}>
+                        <InputComponent
+                            keyValue={`can_skip_previous_nodes_${step.slug}`}
+                            type="checkbox"
+                            withMarginTop={false}
+                            disabled={readOnly}
+                            labelString={formatMessage(
+                                MESSAGES.canSkipPreviousNodes,
+                            )}
+                            value={Boolean(step.canSkipPreviousNodes)}
+                            onChange={(_keyValue, value) =>
+                                onChange(step.slug, {
+                                    canSkipPreviousNodes: Boolean(value),
+                                })
+                            }
+                        />
+                    </Box>
+                )}
+            </Box>
+            {!isLocked && (
+                <Box sx={styles.delete}>
+                    <DeleteModal
+                        type="icon"
+                        titleMessage={MESSAGES.deleteNodeQuestion}
+                        onConfirm={() => onDelete(step.slug)}
+                        iconProps={{
+                            color: 'error',
+                            disabled: isDeleteDisabled,
+                        }}
+                        backdropClick
+                    />
+                </Box>
+            )}
+        </Box>
+    );
+};

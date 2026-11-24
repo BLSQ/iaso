@@ -1,0 +1,197 @@
+import React, { FC, useCallback, useMemo } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
+import {
+    useApiValidationWorkflowsCreate,
+    useApiValidationWorkflowsUpdate,
+} from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
+import { baseUrls } from 'Iaso/constants/urls';
+import { userHasOneOfPermissions } from 'Iaso/domains/users/utils';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
+import { SxStyles } from 'Iaso/types/general';
+import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { useRefreshWorkflow, useSaveSteps } from '../api/PostPutPatch';
+import {
+    getStepErrors,
+    NodeTemplate,
+    useStepsEditor,
+} from '../hooks/useStepsEditor';
+import { useWorkflowDetailsForm } from '../hooks/useWorkflowDetailsForm';
+import MESSAGES from '../messages';
+import { StepsEditor } from './StepsEditor/StepsEditor';
+import { WorkflowDetails } from './WorkflowDetails';
+
+const styles = {
+    footer: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: 2,
+        px: 2,
+        py: 1.5,
+    },
+} satisfies SxStyles;
+
+const NO_NODES: NodeTemplate[] = [];
+
+type Props = {
+    workflow?: ValidationWorkflowRetrieve;
+    isLoading: boolean;
+};
+
+export const WorkflowEditor: FC<Props> = ({ workflow, isLoading }) => {
+    const { formatMessage } = useSafeIntl();
+    const params = useParamsObject(
+        baseUrls.validationWorkflowsConfigurationDetail,
+    );
+    const redirectToReplace = useRedirectToReplace();
+    const workflowSlug = workflow?.slug ?? '';
+    const currentUser = useCurrentUser();
+    // Without the permission the page is read only: no field, step or save action
+    const canEdit = userHasOneOfPermissions(
+        [VALIDATION_WORKFLOWS],
+        currentUser,
+    );
+
+    const detailsForm = useWorkflowDetailsForm(workflow);
+    const stepsEditor = useStepsEditor(workflow?.node_templates ?? NO_NODES);
+
+    const { mutateAsync: createWorkflow, isLoading: isCreating } =
+        useApiValidationWorkflowsCreate();
+    const { mutateAsync: updateWorkflow, isLoading: isUpdating } =
+        // No refetch after each save: the workflow is refreshed once everything is saved
+        useApiValidationWorkflowsUpdate({ skipInvalidation: true });
+    const { mutateAsync: saveSteps, isLoading: isSavingSteps } =
+        useSaveSteps(workflowSlug);
+    const refreshWorkflow = useRefreshWorkflow(workflowSlug);
+    const isSaving = isCreating || isUpdating || isSavingSteps;
+
+    const nameError = detailsForm.details.name.trim()
+        ? undefined
+        : formatMessage(MESSAGES.requiredField);
+    const stepErrors = useMemo(
+        () =>
+            getStepErrors(stepsEditor.steps, {
+                required: formatMessage(MESSAGES.requiredField),
+                duplicate: formatMessage(MESSAGES.duplicateStepName),
+            }),
+        [stepsEditor.steps, formatMessage],
+    );
+    const hasErrors =
+        Boolean(nameError) || Object.values(stepErrors).some(Boolean);
+    const isDirty = detailsForm.isDirty || stepsEditor.isDirty;
+
+    const { reset: resetDetails, syncOnNextUpdate: syncDetailsOnNextUpdate } =
+        detailsForm;
+    const { reset: resetSteps } = stepsEditor;
+    const handleCancel = useCallback(() => {
+        resetDetails();
+        resetSteps();
+    }, [resetDetails, resetSteps]);
+
+    const handleSave = useCallback(async () => {
+        const { name, description, formIds } = detailsForm.details;
+        const data = { name: name.trim(), description, forms: formIds };
+        if (!workflow) {
+            const created = await createWorkflow({ data });
+            redirectToReplace(baseUrls.validationWorkflowsConfigurationDetail, {
+                ...params,
+                slug: created.slug,
+            });
+            return;
+        }
+        // The workflow first, then the steps: a failed save stops the next one
+        let isDetailsSaved = false;
+        let isStepsSaved = false;
+        try {
+            if (detailsForm.isDirty) {
+                await updateWorkflow({ slug: workflow.slug, data });
+                isDetailsSaved = true;
+            }
+            if (stepsEditor.isDirty) {
+                const { isOrderChanged, steps, changedSteps } = stepsEditor;
+                await saveSteps({
+                    reorder: isOrderChanged,
+                    steps: (isOrderChanged ? steps : changedSteps).map(
+                        step => ({
+                            slug: step.slug,
+                            name: step.name.trim(),
+                            description: step.description,
+                            can_skip_previous_nodes: step.canSkipPreviousNodes,
+                            roles_required: step.roleIds,
+                        }),
+                    ),
+                });
+                isStepsSaved = true;
+            }
+        } finally {
+            // One refetch once both requests are finished: only the saved parts take the server data,
+            // the unsaved changes stay on screen
+            if (isDetailsSaved) {
+                syncDetailsOnNextUpdate();
+            }
+            if (isStepsSaved) {
+                stepsEditor.syncOnNextUpdate();
+            }
+            if (isDetailsSaved || isStepsSaved) {
+                await refreshWorkflow();
+            }
+        }
+    }, [
+        createWorkflow,
+        detailsForm.details,
+        detailsForm.isDirty,
+        params,
+        redirectToReplace,
+        refreshWorkflow,
+        saveSteps,
+        stepsEditor,
+        syncDetailsOnNextUpdate,
+        updateWorkflow,
+        workflow,
+    ]);
+
+    return (
+        <>
+            <WorkflowDetails
+                workflow={workflow}
+                details={detailsForm.details}
+                nameError={nameError}
+                isLoading={isLoading}
+                readOnly={!canEdit}
+                onChange={detailsForm.updateDetails}
+            />
+            <StepsEditor
+                workflow={workflow}
+                isLoading={isLoading || isSaving}
+                editor={stepsEditor}
+                errors={stepErrors}
+                hasUnsavedChanges={isDirty}
+                readOnly={!canEdit}
+                footer={
+                    canEdit && (
+                        <Box sx={styles.footer}>
+                            <Button
+                                onClick={handleCancel}
+                                disabled={!isDirty || isSaving}
+                                data-test="cancel-workflow"
+                            >
+                                {formatMessage(MESSAGES.cancel)}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                onClick={handleSave}
+                                disabled={!isDirty || hasErrors || isSaving}
+                                data-test="save-workflow"
+                            >
+                                {formatMessage(MESSAGES.save)}
+                            </Button>
+                        </Box>
+                    )
+                }
+            />
+        </>
+    );
+};

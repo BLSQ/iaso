@@ -150,6 +150,9 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
                 ),
                 "sub_unit_types",
             )
+        elif self.action == "dropdown":
+            # The dropdown serializer only outputs the ids of `sub_unit_types`
+            queryset = queryset.prefetch_related(Prefetch("sub_unit_types", queryset=OrgUnitType.objects.only("id")))
 
         project = self.request.query_params.get(PROJECT, None)
         if project:
@@ -175,7 +178,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     def dropdown(self, request, *args):
         queryset = self.get_queryset()
 
-        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset)
+        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset, request=request)
         if not filterset.is_valid():
             return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
         queryset = filterset.qs

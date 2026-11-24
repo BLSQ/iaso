@@ -10,6 +10,7 @@ from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
 from iaso.models import FeatureFlag
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_TYPES_PERMISSION
 from iaso.test import APITestCase
+from iaso.tests.utils.query_profiler import QueryProfiler
 
 
 class ValidateReferenceFormsTestCase(TestCase):
@@ -52,11 +53,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
         ghi = m.Account.objects.create(name="Global Health Initiative", default_version=cls.version_1)
         cls.ead = ead = m.Project.objects.create(name="End All Diseases", account=ghi)
         cls.esd = esd = m.Project.objects.create(name="End Some Diseases", account=ghi)
+        data_source_1.projects.set([ead, esd])
+        cls.version_1_2 = m.SourceVersion.objects.create(number=2, data_source=data_source_1)
         cls.data_source_2 = data_source_2 = m.DataSource.objects.create(name="DataSource2")
         cls.version_2 = m.SourceVersion.objects.create(number=1, data_source=data_source_2)
 
         wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=cls.version_2)
         cls.wrong_project = wrong_project = m.Project.objects.create(name="End No Diseases", account=wha)
+        data_source_2.projects.set([wrong_project])
 
         cls.jane = cls.create_user_with_profile(
             username="janedoe",
@@ -485,16 +489,20 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
     def test_org_unit_type_dropdown(self):
         # Default path that returns all OUTs to which the user has access
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2, self.org_unit_type_3])
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        response_json = response.json()
         for out in response_json:
             self.assertValidOrgUnitTypeDropdownData(out)
         self.assertEqual(len(response_json), 5)  # The 5 types created in setUpTestData
         types_by_id = {org_unit_type["id"]: org_unit_type for org_unit_type in response_json}
         self.assertEqual(types_by_id[self.org_unit_type_1.id]["short_name"], "Pl")
+        self.assertCountEqual(
+            types_by_id[self.org_unit_type_1.id]["sub_unit_types"], [self.org_unit_type_2.id, self.org_unit_type_3.id]
+        )
+        self.assertEqual(types_by_id[self.org_unit_type_2.id]["sub_unit_types"], [])
 
     def test_org_unit_type_dropdown_with_source_version(self):
         # Let's make sure that some OUTs from the setup account are actually used
@@ -510,7 +518,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
         m.OrgUnit.objects.create(
             name="OUT 3",
-            version=self.version_2,
+            version=self.version_1_2,
             org_unit_type=self.org_unit_type_3,
         )
 
@@ -525,7 +533,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             self.assertIn(out["id"], [self.org_unit_type_1.id, self.org_unit_type_2.id])
 
         # Now let's try with the other version
-        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_2.id}")
+        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_1_2.id}")
         self.assertJSONResponse(response, status.HTTP_200_OK)
         response_json = response.json()
 
@@ -540,9 +548,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response = self.client.get(
             f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={probably_not_a_valid_source_version_id}"
         )
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(len(response_json), 0)  # Because no OU was created with that version
+        response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(response_json, SOURCE_VERSION_ID)
 
     def test_org_unit_type_dropdown_with_source_version_error_version_wrong_account(self):
         # First, let's create a parallel account/project/....
@@ -590,12 +597,81 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response_json = response.json()
         self.assertEqual(len(response_json), 3)  # Because 3 OU were created above
 
-        # Now let's make sure that nothing is returned for the setup source version and the new user because it's the wrong account
+        # The setup source version belongs to another account than the new user's: rejected, not silently emptied
         self.client.force_authenticate(new_user)
         response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_1.id}")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        response_json = response.json()
-        self.assertEqual(len(response_json), 0)
+        response_json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(response_json, SOURCE_VERSION_ID)
+
+        # The new user still gets the types of their own version
+        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={new_source_version.id}")
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertCountEqual([out["id"] for out in response_json], [new_out_1.id, new_out_2.id])
+
+    def create_health_center_in_two_projects(self) -> m.OrgUnitType:
+        """A type shared by 2 projects of the user's account: joining the projects gives it 2 rows."""
+        belgium = m.Project.objects.create(name="Belgium", account=self.ead.account)
+        burundi = m.Project.objects.create(name="Burundi", account=self.ead.account)
+        health_center = m.OrgUnitType.objects.create(name="Health Center", short_name="HC")
+        health_center.projects.set([belgium, burundi])
+        return health_center
+
+    def test_org_unit_types_list_type_in_two_projects_returned_once(self):
+        health_center = self.create_health_center_in_two_projects()
+
+        self.client.force_authenticate(self.jane)
+        response_json = self.assertJSONResponse(self.client.get(self.BASE_URL), status.HTTP_200_OK)
+
+        ids = [org_unit_type["id"] for org_unit_type in response_json["orgUnitTypes"]]
+        self.assertCountEqual(
+            ids,
+            [
+                self.org_unit_type_1.id,
+                self.org_unit_type_2.id,
+                self.org_unit_type_3.id,
+                self.org_unit_type_4.id,
+                self.org_unit_type_5.id,
+                health_center.id,
+            ],
+        )
+        health_center_json = next(out for out in response_json["orgUnitTypes"] if out["id"] == health_center.id)
+        self.assertCountEqual([project["name"] for project in health_center_json["projects"]], ["Belgium", "Burundi"])
+
+    def test_org_unit_type_dropdown_type_in_two_projects_returned_once(self):
+        health_center = self.create_health_center_in_two_projects()
+
+        self.client.force_authenticate(self.jane)
+        response_json = self.assertJSONResponse(self.client.get(f"{self.BASE_URL}dropdown/"), status.HTTP_200_OK)
+
+        self.assertCountEqual(
+            [org_unit_type["id"] for org_unit_type in response_json],
+            [
+                self.org_unit_type_1.id,
+                self.org_unit_type_2.id,
+                self.org_unit_type_3.id,
+                self.org_unit_type_4.id,
+                self.org_unit_type_5.id,
+                health_center.id,
+            ],
+        )
+
+    def test_org_unit_type_dropdown_with_source_version_type_with_several_org_units_returned_once(self):
+        # Joining the org units of the version (x the 2 projects) gives the health center 4 rows in version 1
+        health_center = self.create_health_center_in_two_projects()
+        m.OrgUnit.objects.create(name="Health Center Brussels", version=self.version_1, org_unit_type=health_center)
+        m.OrgUnit.objects.create(name="Health Center Liège", version=self.version_1, org_unit_type=health_center)
+        m.OrgUnit.objects.create(name="Health Center Bujumbura", version=self.version_1_2, org_unit_type=health_center)
+        m.OrgUnit.objects.create(name="Bujumbura", version=self.version_1_2, org_unit_type=self.org_unit_type_2)
+
+        self.client.force_authenticate(self.jane)
+        url = f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}="
+        version_1_json = self.assertJSONResponse(self.client.get(f"{url}{self.version_1.id}"), status.HTTP_200_OK)
+        version_2_json = self.assertJSONResponse(self.client.get(f"{url}{self.version_1_2.id}"), status.HTTP_200_OK)
+
+        self.assertEqual([org_unit_type["id"] for org_unit_type in version_1_json], [health_center.id])
+        self.assertCountEqual(
+            [org_unit_type["id"] for org_unit_type in version_2_json], [health_center.id, self.org_unit_type_2.id]
+        )
 
     def assertValidOrgUnitTypeListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
@@ -780,6 +856,53 @@ class OrgUnitTypesAPITestCase(APITestCase):
             response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def get_profiled_dropdown(self, query_string: str = "") -> tuple[QueryProfiler, list]:
+        self.org_unit_type_1.sub_unit_types.set([self.org_unit_type_2, self.org_unit_type_3])
+        self.client.force_authenticate(self.jane)
+        with QueryProfiler(trace_tables=["iaso_orgunittype", "iaso_orgunittype_sub_unit_types"]) as profiler:
+            response = self.client.get(f"{self.BASE_URL}dropdown/{query_string}")
+        return profiler, self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_num_queries_dropdown(self):
+        profiler, response_json = self.get_profiled_dropdown()
+
+        self.assertEqual(len(response_json), 5)
+        with profiler.report_on_failure("orgunittypes_dropdown.md", title="GET /api/v2/orgunittypes/dropdown/"):
+            # iaso_orgunittype: 1 for the org unit types of the user's account, 1 to prefetch their `sub_unit_types`
+            profiler.assertLessEqualQueryCount({"iaso_orgunittype": 2})
+            # Only the ids of `sub_unit_types` are serialized, the prefetch doesn't load the other columns
+            sub_unit_types_sql = profiler.queries[1]["sql"]
+            self.assertIn('"iaso_orgunittype"."id" FROM "iaso_orgunittype"', sub_unit_types_sql)
+            self.assertNotIn('"iaso_orgunittype"."name"', sub_unit_types_sql)
+
+    def test_num_queries_dropdown_with_source_version(self):
+        for org_unit_type in [self.org_unit_type_1, self.org_unit_type_2, self.org_unit_type_3]:
+            m.OrgUnit.objects.create(name=org_unit_type.name, version=self.version_1, org_unit_type=org_unit_type)
+
+        profiler, response_json = self.get_profiled_dropdown(f"?{SOURCE_VERSION_ID}={self.version_1.id}")
+
+        self.assertEqual(len(response_json), 3)
+        with profiler.report_on_failure(
+            "orgunittypes_dropdown_source_version.md",
+            title="GET /api/v2/orgunittypes/dropdown/?source_version_id=",
+        ):
+            # iaso_sourceversion: 1 to check that the version belongs to the user's account
+            # iaso_project: the EXISTS subquery of that check
+            # iaso_orgunittype: 1 for the org unit types of the user's account, 1 to prefetch their `sub_unit_types`
+            # iaso_orgunit: the EXISTS subquery of the org unit types one
+            profiler.assertLessEqualQueryCount(
+                {"iaso_sourceversion": 1, "iaso_project": 1, "iaso_orgunittype": 2, "iaso_orgunit": 1}
+            )
+            # The account of the version is checked with an EXISTS on its projects, not a DISTINCT over their join
+            source_version_sql = profiler.queries_for_table("iaso_sourceversion")[0]["sql"]
+            self.assertIn('EXISTS(SELECT 1 AS "a" FROM "iaso_project"', source_version_sql)
+            self.assertNotIn("DISTINCT", source_version_sql)
+            # The org units of the version are checked with an EXISTS, not joined: a JOIN goes through all of them
+            # (x the projects of each type) before the DISTINCT, ~1 s on a version of millions of org units
+            org_unit_types_sql = profiler.queries_for_table("iaso_orgunittype")[0]["sql"]
+            self.assertIn('EXISTS(SELECT 1 AS "a" FROM "iaso_orgunit"', org_unit_types_sql)
+            self.assertNotIn('JOIN "iaso_orgunit" ', org_unit_types_sql)
 
     def test_prevent_loop_sub_unit_types(self):
         """Test that `sub_unit_types` is validated to prevent infinite recursion loops."""

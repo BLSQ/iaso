@@ -696,6 +696,10 @@ msgstr "Impossible de créer une boucle dans l’arborescence des équipes"
 msgid "Org unit IDs (comma-separated)"
 msgstr "IDs des unités organisationnelles (séparés par des virgules)"
 
+#: iaso/api/validation_workflows_node_templates/serializers/update.py
+msgid "The first step can't skip previous steps."
+msgstr "La première étape ne peut pas ignorer les étapes précédentes."
+
 #: iaso/auth/forms.py
 msgid "Too many login attempts. Please try again later."
 msgstr "Trop de tentatives de connexion. Veuillez réessayer plus tard."

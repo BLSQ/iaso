@@ -17,11 +17,16 @@ import type {
 } from 'bluesquare-components';
 
 import { useApiMicroplanningPlanningsDropdownList } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
+import { useApiValidationWorkflowsDropdownList } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningsDropdown } from 'Iaso/domains/plannings/components/shared/PlanningsDropdown';
-import { userHasPermission } from 'Iaso/domains/users/utils';
-import { PLANNING_READ } from 'Iaso/utils/permissions';
+import {
+    userHasAccessToModule,
+    userHasPermission,
+} from 'Iaso/domains/users/utils';
+import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
+import { PLANNING_READ, SUBMISSIONS } from 'Iaso/utils/permissions';
 import * as Permission from 'Iaso/utils/permissions';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
@@ -53,6 +58,16 @@ const Filters = ({ params }: Props) => {
         },
     );
 
+    const canFilterByValidationWorkflow =
+        userHasPermission(SUBMISSIONS, currentUser) &&
+        userHasAccessToModule(VALIDATION_WORKFLOW_MODULE, currentUser);
+    const {
+        data: validationWorkflows,
+        isFetching: isFetchingValidationWorkflows,
+    } = useApiValidationWorkflowsDropdownList(undefined, {
+        query: { enabled: canFilterByValidationWorkflow },
+    });
+
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -70,6 +85,7 @@ const Filters = ({ params }: Props) => {
             projectsIds: params.projectsIds,
             orgUnitTypeIds: params.orgUnitTypeIds,
             planning: params.planning,
+            validationWorkflowIds: params.validationWorkflowIds,
             onlyDeleted: params.onlyDeleted === '1',
         }),
         [params],
@@ -84,6 +100,7 @@ const Filters = ({ params }: Props) => {
                 projectsIds: next.projectsIds || undefined,
                 orgUnitTypeIds: next.orgUnitTypeIds || undefined,
                 planning: next.planning || undefined,
+                validationWorkflowIds: next.validationWorkflowIds || undefined,
                 onlyDeleted: next.onlyDeleted ? '1' : undefined,
             });
         },
@@ -135,6 +152,16 @@ const Filters = ({ params }: Props) => {
                 ),
             },
             {
+                key: 'validationWorkflowIds',
+                label: MESSAGES.validationWorkflow,
+                type: 'select',
+                multi: true,
+                clearable: true,
+                visible: canFilterByValidationWorkflow,
+                options: validationWorkflows ?? [],
+                loading: isFetchingValidationWorkflows,
+            },
+            {
                 key: 'onlyDeleted',
                 label: MESSAGES.onlyDeleted,
                 type: 'checkbox',
@@ -148,6 +175,9 @@ const Filters = ({ params }: Props) => {
             isFetchingOuTypes,
             hasPlanningPermission,
             plannings,
+            canFilterByValidationWorkflow,
+            validationWorkflows,
+            isFetchingValidationWorkflows,
         ],
     );
 

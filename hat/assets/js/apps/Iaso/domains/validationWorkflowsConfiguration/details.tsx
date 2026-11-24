@@ -1,52 +1,23 @@
-import React, { useCallback } from 'react';
-import Box from '@mui/material/Box/Box';
-import Button from '@mui/material/Button/Button';
-import Grid from '@mui/material/Grid/Grid';
-import type { Theme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles/makeStyles';
-import {
-    ColumnWithAccessor,
-    commonStyles,
-    LoadingSpinner,
-    SortableTable,
-    useGoBack,
-    useSafeIntl,
-} from 'bluesquare-components';
+import React from 'react';
+import { useGoBack, useSafeIntl } from 'bluesquare-components';
 import { useApiValidationWorkflowsRetrieve } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useSaveNodeOrder } from 'Iaso/domains/validationWorkflowsConfiguration/api/PostPutPatch';
-import { useWorkflowNodesColumns } from 'Iaso/domains/validationWorkflowsConfiguration/config';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
-import { AddNode } from './components/CreateEditNode/CreateEditNode';
-import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { useSortableTableState } from './hooks/useSortableTableState';
+import { SxStyles } from 'Iaso/types/general';
+import { MainWrapper } from '../../components/MainWrapper';
+import { WorkflowBreadcrumbs } from './components/WorkflowBreadcrumbs';
+import { WorkflowEditor } from './components/WorkflowEditor';
+import { WorkflowLinkedForms } from './components/WorkflowLinkedForms';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles((theme: Theme) => {
-    return {
-        ...commonStyles(theme),
-        count: {
-            height: theme.spacing(8),
-            display: 'flex',
-            justifyContent: 'flex-end',
-            position: 'absolute',
-            alignItems: 'center',
-            paddingRight: theme.spacing(2),
-            top: 0,
-            right: 0,
-        },
-        titleRow: { fontWeight: 'bold' },
-        infoPaper: {
-            width: '100%',
-            position: 'relative',
-        },
-        infoPaperBox: { minHeight: '100px' },
-    };
-});
+const styles = {
+    root: {
+        backgroundColor: theme => theme.palette.primary.background,
+        padding: { xs: 2, md: 4 },
+    },
+} satisfies SxStyles;
 
 export const ValidationWorkflowConfigurationDetail = () => {
     const params = useParamsObject(
@@ -54,110 +25,20 @@ export const ValidationWorkflowConfigurationDetail = () => {
     );
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
     const { data: workflow, isFetching: isLoading } =
         useApiValidationWorkflowsRetrieve(params.slug);
 
-    const {
-        items,
-        handleSortChange,
-        handleResetOrder,
-        isOrderChanged,
-        setIsOrderChanged,
-    } = useSortableTableState<
-        NonNullable<ValidationWorkflowRetrieve['node_templates']>[number]
-    >(workflow?.node_templates ?? []);
-    const { mutateAsync: saveOrder } = useSaveNodeOrder(params.slug);
-    const saveItems = useCallback(() => {
-        const itemsForApi = items.map(item => ({
-            ...item,
-            roles_required: item.roles_required?.map(role => role.id),
-        }));
-        return saveOrder(itemsForApi).then(() => setIsOrderChanged(false));
-    }, [items, saveOrder, setIsOrderChanged]);
-    const columns = useWorkflowNodesColumns(
-        workflow?.slug,
-        workflow?.has_processes,
-    );
     const title = workflow?.name
         ? `${formatMessage(MESSAGES.configureInstancesValidation)}: ${workflow.name}`
         : formatMessage(MESSAGES.addInstancesValidationWorkflow);
     return (
         <>
             <TopBar title={title} goBack={goBack} displayBackButton />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                <Box mb={2}>
-                    <Grid container spacing={2}>
-                        <Grid container item xs={12} md={8} lg={6}>
-                            <WidgetPaper
-                                className={classes.infoPaper}
-                                title={formatMessage(MESSAGES.infos)}
-                                sx={{ position: 'relative' }}
-                            >
-                                <Box className={classes.infoPaperBox}>
-                                    {isLoading && <LoadingSpinner absolute />}
-                                    <WorkflowBaseInfo workflow={workflow} />
-                                </Box>
-                            </WidgetPaper>
-                        </Grid>
-                    </Grid>
-                </Box>
-                <WidgetPaper
-                    className={classes.infoPaper}
-                    title={formatMessage(MESSAGES.steps)}
-                >
-                    <Box className={classes.count}>
-                        {`${(workflow?.node_templates ?? []).length} `}
-                        {formatMessage(MESSAGES.steps)}
-                    </Box>
-                    <SortableTable
-                        items={items}
-                        onChange={newItems =>
-                            handleSortChange(
-                                newItems as NonNullable<
-                                    ValidationWorkflowRetrieve['node_templates']
-                                >[number][],
-                            )
-                        }
-                        columns={columns as ColumnWithAccessor[]}
-                        disabled={workflow?.has_processes}
-                    />
-                    {!workflow?.has_processes && (
-                        <Box m={2} textAlign="right">
-                            <Box display="inline-block" mr={2}>
-                                <Button
-                                    color="primary"
-                                    disabled={!isOrderChanged}
-                                    data-test="reset-follow-up-order"
-                                    onClick={handleResetOrder}
-                                    variant="contained"
-                                >
-                                    {formatMessage(MESSAGES.resetOrder)}
-                                </Button>
-                            </Box>
-
-                            <Box display="inline-block" mr={2}>
-                                <Button
-                                    color="primary"
-                                    disabled={!isOrderChanged}
-                                    data-test="save-follow-up-order"
-                                    onClick={saveItems}
-                                    variant="contained"
-                                >
-                                    {formatMessage(MESSAGES.saveOrder)}
-                                </Button>
-                            </Box>
-
-                            <AddNode
-                                workflowSlug={workflow?.slug ?? ''}
-                                iconProps={{
-                                    disabled: !Boolean(workflow?.slug),
-                                }}
-                            />
-                        </Box>
-                    )}
-                </WidgetPaper>
-            </Box>
+            <MainWrapper sx={styles.root}>
+                <WorkflowBreadcrumbs workflowName={workflow?.name} />
+                {workflow && <WorkflowLinkedForms workflow={workflow} />}
+                <WorkflowEditor workflow={workflow} isLoading={isLoading} />
+            </MainWrapper>
         </>
     );
 };

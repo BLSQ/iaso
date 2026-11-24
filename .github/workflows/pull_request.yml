@@ -36,6 +36,6 @@ jobs:
       iaso_branch: ${{ github.head_ref || github.ref_name }}
 
   dco:
-    uses: BLSQ/iaso-ci/.github/workflows/dco.yml@IA-5660_require-dco-for-external-contribs
+    uses: BLSQ/iaso-ci/.github/workflows/dco.yml@main
     permissions:
       contents: read

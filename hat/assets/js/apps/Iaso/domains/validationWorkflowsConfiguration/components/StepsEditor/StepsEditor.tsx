@@ -15,9 +15,12 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { Box, Divider, Paper, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 import { useGetUserRolesDropDown } from 'Iaso/domains/userRoles/hooks/requests/useGetUserRoles';
 import { SxStyles } from 'Iaso/types/general';
 import { useDeleteNode } from '../../api/Delete';

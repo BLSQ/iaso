@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows';
+import { ValidationWorkflowRetrieve } from 'Iaso/api/validationWorkflows/models/validationWorkflowRetrieve.zod';
 
 export type WorkflowDetailsDraft = {
     name: string;

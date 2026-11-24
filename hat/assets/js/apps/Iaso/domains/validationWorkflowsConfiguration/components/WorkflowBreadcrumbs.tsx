@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { Breadcrumbs, Typography } from '@mui/material';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Typography from '@mui/material/Typography';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
 import { SxStyles } from 'Iaso/types/general';

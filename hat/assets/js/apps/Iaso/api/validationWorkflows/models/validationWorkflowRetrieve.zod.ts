@@ -22,6 +22,7 @@ export const validationWorkflowRetrieveNodeTemplatesItemNameMax = 256;
 export const validationWorkflowRetrieveNodeTemplatesItemDescriptionMax = 1024;
 
 export const ValidationWorkflowRetrieve = zod.strictObject({
+    id: zod.int(),
     slug: zod.string().regex(validationWorkflowRetrieveSlugRegExp),
     name: zod.string().max(validationWorkflowRetrieveNameMax),
     description: zod

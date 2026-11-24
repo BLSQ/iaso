@@ -26,11 +26,11 @@ import type {
     ApiValidationWorkflowsDropdownListParams,
     ApiValidationWorkflowsListParams,
     PaginatedMobileValidationWorkflowListList,
-    PaginatedValidationWorkflowDropdownList,
     PaginatedValidationWorkflowListList,
     PatchedValidationWorkflowUpdateRequest,
     ValidationWorkflowCreate,
     ValidationWorkflowCreateRequest,
+    ValidationWorkflowDropdown,
     ValidationWorkflowRetrieve,
     ValidationWorkflowUpdate,
     ValidationWorkflowUpdateRequest,
@@ -1051,8 +1051,8 @@ export const getApiValidationWorkflowsDropdownListUrl = (
 export const apiValidationWorkflowsDropdownList = async (
     params?: ApiValidationWorkflowsDropdownListParams,
     options?: Parameters<typeof customFetchInstance>[1],
-): Promise<PaginatedValidationWorkflowDropdownList> => {
-    return customFetchInstance<PaginatedValidationWorkflowDropdownList>(
+): Promise<ValidationWorkflowDropdown[]> => {
+    return customFetchInstance<ValidationWorkflowDropdown[]>(
         getApiValidationWorkflowsDropdownListUrl(params),
         {
             credentials: 'same-origin',

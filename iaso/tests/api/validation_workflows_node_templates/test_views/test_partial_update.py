@@ -51,6 +51,12 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             can_skip_previous_nodes=True,
         )
 
+        # A step before it: the first step can't skip previous steps
+        self.previous_node = ValidationNodeTemplate.objects.create(
+            name="Previous node", workflow=self.validation_workflow
+        )
+        self.node.previous_node_templates.add(self.previous_node)
+
     def test_check_validation_workflow_parent_slug_access(self):
         self.client.force_authenticate(self.john_wick)
         res = self.client.patch(
@@ -262,3 +268,19 @@ class ValidationTemplateAPIPartialUpdateTestCase(BaseApiTestCase):
             data={"name": "test", "roles_required": [self.user_role.pk]},
         )
         self.assertJSONResponse(res, status.HTTP_404_NOT_FOUND)
+
+    def test_first_step_cannot_skip_previous_steps(self):
+        self.client.force_authenticate(self.john_wick)
+        url = reverse(
+            "validation_node_templates-detail",
+            kwargs={"parent_lookup_workflow__slug": self.validation_workflow.slug, "slug": self.previous_node.slug},
+        )
+
+        res = self.client.patch(url, data={"can_skip_previous_nodes": True})
+        res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
+        self.assertHasError(res_data, "can_skip_previous_nodes", "The first step can't skip previous steps.")
+        self.previous_node.refresh_from_db()
+        self.assertFalse(self.previous_node.can_skip_previous_nodes)
+
+        res = self.client.patch(url, data={"can_skip_previous_nodes": False})
+        self.assertJSONResponse(res, status.HTTP_200_OK)

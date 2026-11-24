@@ -1,70 +1,94 @@
 import React from 'react';
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import {
+    getApiValidationWorkflowsDropdownListQueryKey,
     getApiValidationWorkflowsListQueryKey,
     getApiValidationWorkflowsRetrieveQueryKey,
 } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import {
-    ValidationNodeTemplateBulkUpdateBody,
     ValidationNodeTemplateCreateBody,
     ValidationNodeTemplateUpdateBody,
 } from 'Iaso/domains/validationWorkflowsConfiguration/types/validationNodeTemplates';
 import { postRequest, putRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { API_URL, WF_BASE_QUERYKEY } from '../constants';
+import { getNodeTemplatesUrl, WF_BASE_QUERYKEY } from '../constants';
 
 const saveNode = async ({
     workflowSlug,
-    slug,
     body,
 }: {
     workflowSlug: string;
-    slug?: string;
-    body: ValidationNodeTemplateCreateBody | ValidationNodeTemplateUpdateBody;
-}) => {
-    if (!!slug) {
-        return putRequest(
-            `${API_URL}${workflowSlug}/node-templates/${slug}/`,
-            body as ValidationNodeTemplateUpdateBody,
-        );
-    }
-    return postRequest(
-        `${API_URL}${workflowSlug}/node-templates/`,
-        body as ValidationNodeTemplateCreateBody,
-    );
-};
+    body: ValidationNodeTemplateCreateBody;
+}) => postRequest(getNodeTemplatesUrl(workflowSlug), body);
 
-export const useSaveNode = (nodeSlug?: string): UseMutationResult<any, any> => {
-    const queryKey = React.useMemo(() => {
-        return [
+// Queries to refresh after adding or deleting a step
+export const useNodeInvalidationQueryKey = (workflowSlug?: string) =>
+    React.useMemo(
+        () => [
             ...getApiValidationWorkflowsListQueryKey(),
-            ...(nodeSlug
-                ? getApiValidationWorkflowsRetrieveQueryKey(nodeSlug)
+            ...(workflowSlug
+                ? getApiValidationWorkflowsRetrieveQueryKey(workflowSlug)
                 : []),
-        ] as string[];
-    }, [nodeSlug]);
-    const invalidateQueryKey = [...queryKey, WF_BASE_QUERYKEY];
+            WF_BASE_QUERYKEY,
+        ],
+        [workflowSlug],
+    ) as string[];
+
+export const useSaveNode = (
+    workflowSlug?: string,
+): UseMutationResult<any, any> => {
+    const invalidateQueryKey = useNodeInvalidationQueryKey(workflowSlug);
     return useSnackMutation({
         mutationFn: saveNode,
         invalidateQueryKey: invalidateQueryKey,
     });
 };
 
-const saveNodeOrder =
-    (slug: string) => (body: ValidationNodeTemplateBulkUpdateBody) => {
-        return putRequest(`${API_URL}${slug}/node-templates/bulk/`, body);
+type SaveStepsArgs = {
+    steps: Array<ValidationNodeTemplateUpdateBody & { slug: string }>;
+    // Bulk update rewrites the whole chain, so it is only used to reorder.
+    reorder: boolean;
+};
+
+const saveSteps =
+    (workflowSlug: string) =>
+    ({ steps, reorder }: SaveStepsArgs): Promise<unknown> => {
+        if (reorder) {
+            return putRequest(
+                `${getNodeTemplatesUrl(workflowSlug)}bulk/`,
+                steps,
+            );
+        }
+        return Promise.all(
+            steps.map(({ slug, ...body }) =>
+                putRequest(getNodeTemplatesUrl(workflowSlug, slug), body),
+            ),
+        );
     };
 
-export const useSaveNodeOrder = (
-    slug: string,
-    invalidateQueryKey?: string[],
-) => {
-    return useSnackMutation<
-        unknown,
-        unknown,
-        ValidationNodeTemplateBulkUpdateBody
-    >({
-        mutationFn: saveNodeOrder(slug),
-        invalidateQueryKey: [...(invalidateQueryKey ?? []), WF_BASE_QUERYKEY],
+// No refetch here: the editor refreshes the workflow once the details and the steps are saved
+export const useSaveSteps = (workflowSlug: string) =>
+    useSnackMutation<unknown, unknown, SaveStepsArgs>({
+        mutationFn: saveSteps(workflowSlug),
     });
+
+// Queries to refresh after saving the workflow details and steps
+export const useRefreshWorkflow = (workflowSlug: string) => {
+    const queryClient = useQueryClient();
+    return React.useCallback(
+        () =>
+            Promise.all([
+                queryClient.invalidateQueries(
+                    getApiValidationWorkflowsListQueryKey(),
+                ),
+                queryClient.invalidateQueries(
+                    getApiValidationWorkflowsDropdownListQueryKey(),
+                ),
+                queryClient.invalidateQueries(
+                    getApiValidationWorkflowsRetrieveQueryKey(workflowSlug),
+                ),
+                queryClient.invalidateQueries(WF_BASE_QUERYKEY),
+            ]),
+        [queryClient, workflowSlug],
+    );
 };

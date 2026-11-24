@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import typing
+
 from typing import Any
 
-from django.contrib.postgres.expressions import ArraySubquery
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
@@ -14,6 +15,7 @@ from iaso.api.common.serializer_fields import IasoPrimaryKeyRelatedField
 from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.models import Assignment, OrgUnit, Planning
 from iaso.models.microplanning.assignments import AssignmentQuerySet
+from iaso.models.microplanning.planning_configs import PlanningConfigQuerySet
 from iaso.models.org_unit import OrgUnitQuerySet
 
 
@@ -29,7 +31,7 @@ class UnassignInputSerializer(ModelSerializer):
         """Org units below the planning target geography that its configs keep in the planning tree."""
         root = planning.org_unit
         root_level = len(str(root.path).split("."))
-        configs = planning.configs.prefetch_related("org_unit_types", "org_unit_groups")
+        configs = typing.cast(PlanningConfigQuerySet, planning.configs.all())
         return (
             PlanningOrgUnitTreeQuerySetBuilder()
             .build_queryset(
@@ -57,7 +59,7 @@ class UnassignInputSerializer(ModelSerializer):
             return queryset
 
         org_units = self.validated_data["org_unit_ids"]
-        paths = ArraySubquery(OrgUnit.objects.filter(id__in=[ou.id for ou in org_units]).values("path"))
+        paths = [ou.path for ou in org_units]
         return queryset.filter(
             Q(org_unit__in=self.validated_data["org_unit_ids"])
             | (Q(org_unit__path__descendants=paths) & ~Q(org_unit__in=self.validated_data["org_unit_ids"]))
@@ -77,6 +79,13 @@ class ListUnassignSerializer(ListQueryOptimizedSerializer):
 
         instances.bulk_update(instances, fields=fields, batch_size=1000)
         return instances
+
+    def validate(self, attrs: Any) -> Any:
+        now = timezone.now()
+
+        for v in attrs:
+            v["deleted_at"] = v["updated_at"] = now
+        return attrs
 
     @override
     def to_representation(self, data: AssignmentQuerySet) -> dict[str, Any]:

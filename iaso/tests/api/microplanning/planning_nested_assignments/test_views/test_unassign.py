@@ -163,18 +163,19 @@ class NestedPlanningAssignmentBulkAPITestCase(SwaggerTestCaseMixin, APITestCase)
 
         ContentType.objects.clear_cache()
 
-        with self.assertNumQueries(14):
-            # 1. select planning instance
-            # 2. Org unit validation (restriction filter for user)
-            # 3. planning config
-            # 4. recursive CTE
-            # 5. select assignments to update (filter_queryset)
-            # 6. savepoint
-            # 7. select assignments to update
-            # 8. update
-            # 9. audit - select content type
-            # 10. insert into audit
-            # 11. release savepoint
+        with self.assertNumQueries(13):
+            # 1-2 permissions
+            # 3. select planning instance
+            # 4. prefetch planning configs
+            # 5. prefetch assignments
+            # 6. Org unit validation (restriction filter for user)
+            # 7. recursive CTE
+            # 8. savepoint
+            # 9. select assignments to update
+            # 10. update
+            # 11. audit - select content type
+            # 12. insert into audit
+            # 13. release savepoint
             res = self.put(data)
 
         res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
@@ -242,3 +243,19 @@ class NestedPlanningAssignmentBulkAPITestCase(SwaggerTestCaseMixin, APITestCase)
             modification.source,
             f"API PUT {url}",
         )
+
+    def test_unassign_does_not_take_into_account_soft_deleted_assignments(self):
+        self.client.force_authenticate(self.superuser)
+        objs = self.assign([self.district_a], team=self.team_a)
+
+        for obj in objs:
+            obj.delete()
+            self.assertSoftDeleted(obj)
+
+        data = {"org_unit_ids": [self.district_a.pk]}
+
+        self.assertValidBody(data)
+        res = self.put(data)
+        res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+        self.assertValidResponse(res_data)
+        self.assertEqual(res_data["deleted"], [])

@@ -139,7 +139,22 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, AuditMixin, Generic
                 )
             )
         if self.action in ["assign", "unassign"]:
-            return qs.select_related("org_unit")
+            return (
+                qs.select_related("org_unit")
+                .prefetch_related(
+                    Prefetch(
+                        "configs",
+                        queryset=PlanningConfig.objects.prefetch_related(
+                            "org_unit_types",
+                            "org_unit_groups",
+                        ),
+                    ),
+                    Prefetch("assignment_set", queryset=Assignment.objects.all()),
+                )
+                .only(
+                    "id", "org_unit", "org_unit__id", "org_unit__path", "team", "team__id", "team__path", "team__parent"
+                )
+            )
         return qs
 
     def get_queryset(self) -> AssignmentQuerySet | TeamQuerySet | QuerySet[Assignment]:
@@ -155,7 +170,7 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, AuditMixin, Generic
             )
 
         if self.action in ["assign", "unassign"]:
-            return parent.assignment_set.filter(deleted_at__isnull=True)
+            return parent.assignment_set.all()  # cannot apply .only because of audit
 
         if self.action == "teams":
             configs = parent.configs.all()
@@ -294,9 +309,9 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, AuditMixin, Generic
     def unassign(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         instances = typing.cast(AssignmentQuerySet, self.get_queryset())
 
-        instances = UnassignInputSerializer(
-            instances, data=request.data, context=self.get_serializer_context()
-        ).filter_queryset(instances)
+        instances = UnassignInputSerializer(data=request.data, context=self.get_serializer_context()).filter_queryset(
+            instances
+        )
 
         with transaction.atomic():
             old_values = self.audit_serializer(instances, many=True).data

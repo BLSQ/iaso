@@ -4,7 +4,9 @@ import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
+from django.db import connection
 from django.db.models import Q
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from rest_framework import status
 
@@ -29,7 +31,7 @@ from iaso.models import (
     SourceVersion,
     Team,
 )
-from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -250,9 +252,56 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(response.json()["limit"], 25000)
 
+    def test_orgunits_list_does_not_load_geometry_columns(self):
+        """geo_json and coordinates are computed in SQL, so geometry columns must never be loaded into Python"""
+        self.client.force_authenticate(self.user)
+        for shapes in [None, "false", "true"]:
+            params = {APP_ID: BASE_APP_ID} if shapes is None else {APP_ID: BASE_APP_ID, "shapes": shapes}
+            with self.subTest(shapes=shapes), CaptureQueriesContext(connection) as context:
+                response = self.client.get(BASE_URL, data=params)
+                response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+            bardock = self.index_by_id(response_data["orgUnits"])[self.bardock.id]
+            self.assertEqual("geo_json" in bardock, shapes == "true", f"geo_json presence with shapes={shapes}")
+
+            org_unit_queries = [q["sql"] for q in context.captured_queries if 'FROM "iaso_orgunit"' in q["sql"]]
+            self.assertTrue(org_unit_queries, "no org unit query captured")
+            for column in ["geom", "simplified_geom", "catchment", "location"]:
+                for sql in org_unit_queries:
+                    # Django loads geometries as `"table"."column"::bytea`; SQL functions on them are fine
+                    self.assertNotIn(f'"iaso_orgunit"."{column}"::bytea', sql, f"{column} loaded with shapes={shapes}")
+
+    def test_orgunits_list_coordinates_and_groups(self):
+        self.goten.location = Point(4.35, 50.85, 13.5, srid=4326)  # Brussels
+        self.goten.save()
+        belgium = Group.objects.create(name="Belgium", source_version=self.sw_version_2)
+        self.raditz.groups.set([belgium, self.group_2])
+
+        self.client.force_authenticate(self.user)
+        expected_ids = [self.bardock.id, self.raditz.id, self.gohan.id, self.goten.id]
+        request_variants = {
+            "full list": {},
+            "paginated": {LIMIT: 10, PAGE: 1},
+            "with shapes": {"shapes": "true"},
+            "by ids": {IDS: ",".join(str(ou_id) for ou_id in expected_ids)},
+        }
+        for variant, params in request_variants.items():
+            with self.subTest(variant):
+                cache.clear()
+                response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, **params})
+                org_units = self.index_by_id(self.assertJSONResponse(response, status.HTTP_200_OK)["orgUnits"])
+                self.assertCountEqual(org_units.keys(), expected_ids)
+
+                goten = org_units[self.goten.id]
+                self.assertEqual((goten["latitude"], goten["longitude"], goten["altitude"]), (50.85, 4.35, 13.5))
+                bardock = org_units[self.bardock.id]
+                self.assertEqual((bardock["latitude"], bardock["longitude"], bardock["altitude"]), (None, None, None))
+                self.assertEqual(org_units[self.raditz.id]["groups"], sorted([belgium.id, self.group_2.id]))
+                self.assertEqual(org_units[self.gohan.id]["groups"], [])
+
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(13):
             # 1. SELECT "iaso_project" (permission / app lookup by app_id)
             # 2. SELECT "iaso_account"
             # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
@@ -260,14 +309,13 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
             #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
             # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
-            # 7. SELECT "iaso_orgunit" … (main list + parent/org_unit_type joins for annotations)
-            # 8. Prefetch org units → groups (M2M)
-            # 9. Retrieve valid project unit type IDs (M2M via valid_org_unit_type_ids cached_property)
-            # 10. SELECT COUNT(*) FROM "django_cache_table"
-            # 11. SAVEPOINT (atomic cache write)
-            # 12. SELECT "django_cache_table" (cache key)
-            # 13. INSERT "django_cache_table"
-            # 14. RELEASE SAVEPOINT
+            # 7. SELECT "iaso_orgunit" … (main list + coordinates + group ids subquery, parent/org_unit_type joins for annotations)
+            # 8. Retrieve valid project unit type IDs (M2M via valid_org_unit_type_ids cached_property)
+            # 9. SELECT COUNT(*) FROM "django_cache_table"
+            # 10. SAVEPOINT (atomic cache write)
+            # 11. SELECT "django_cache_table" (cache key)
+            # 12. INSERT "django_cache_table"
+            # 13. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
@@ -302,7 +350,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.validation_status = OrgUnit.VALIDATION_VALID
         self.goku.save()
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(13):
             # 1. SELECT "iaso_project" (permission / app lookup by app_id)
             # 2. SELECT "iaso_account"
             # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
@@ -310,14 +358,13 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
             #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
             # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
-            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 7. SELECT "iaso_orgunit" … (main list + coordinates + group ids subquery, parent + org unit type)
             # 8. Prefetch org unit types → projects (M2M)
-            # 9. Prefetch org units → groups
-            # 10. SELECT COUNT(*) FROM "django_cache_table"
-            # 11. SAVEPOINT (atomic cache write)
-            # 12. SELECT "django_cache_table" (cache key)
-            # 13. INSERT "django_cache_table"
-            # 14. RELEASE SAVEPOINT
+            # 9. SELECT COUNT(*) FROM "django_cache_table"
+            # 10. SAVEPOINT (atomic cache write)
+            # 11. SELECT "django_cache_table" (cache key)
+            # 12. INSERT "django_cache_table"
+            # 13. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
@@ -360,7 +407,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.goku.org_unit_type = self.nameks
         self.goku.save()
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(13):
             # 1. SELECT "iaso_project" (permission / app lookup by app_id)
             # 2. SELECT "iaso_account"
             # 3. SELECT "iaso_orgunit" … profile roots (org_units M2M)
@@ -368,14 +415,13 @@ class MobileOrgUnitAPITestCase(APITestCase):
             # 5. SELECT "iaso_project" LEFT JOIN "iaso_account" + "iaso_sourceversion"
             #    (Project.get_for_user_and_app_id — select_related avoids extra account/version queries)
             # 6. SELECT EXISTS "iaso_featureflag" (LIMIT_OU_DOWNLOAD_TO_ROOTS)
-            # 7. SELECT "iaso_orgunit" … (main list + parent + org unit type)
+            # 7. SELECT "iaso_orgunit" … (main list + coordinates + group ids subquery, parent + org unit type)
             # 8. Prefetch org unit types → projects (M2M)
-            # 9. Prefetch org units → groups
-            # 10. SELECT COUNT(*) FROM "django_cache_table"
-            # 11. SAVEPOINT (atomic cache write)
-            # 12. SELECT "django_cache_table" (cache key)
-            # 13. INSERT "django_cache_table"
-            # 14. RELEASE SAVEPOINT
+            # 9. SELECT COUNT(*) FROM "django_cache_table"
+            # 10. SAVEPOINT (atomic cache write)
+            # 11. SELECT "django_cache_table" (cache key)
+            # 12. INSERT "django_cache_table"
+            # 13. RELEASE SAVEPOINT
             response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual([self.raditz.id, self.goku.id], response_data["roots"])
@@ -567,6 +613,87 @@ class MobileOrgUnitAPITestCase(APITestCase):
         bbox = j["results"][0]
         self.assertEqual(bbox, {"east": -5.024, "northern": -4.024, "south": -3.976, "west": -4.976})
 
+    def create_belgium_and_burundi(self):
+        common = {"version": self.sw_version_2, "validation_status": OrgUnit.VALIDATION_VALID}
+        belgium = OrgUnit.objects.create(name="Belgium", org_unit_type=self.warriors, **common)
+        brussels = OrgUnit.objects.create(name="Brussels", parent=belgium, org_unit_type=self.super_saiyans, **common)
+        burundi = OrgUnit.objects.create(name="Burundi", org_unit_type=self.warriors, **common)
+        return belgium, brussels, burundi
+
+    def get_mobile_org_units(self, user):
+        self.client.force_authenticate(user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        return self.assertJSONResponse(response, status.HTTP_200_OK)
+
+    def test_orgunits_list_excludes_other_source_versions(self):
+        belgium_v1 = OrgUnit.objects.create(
+            name="Belgium",
+            org_unit_type=self.warriors,
+            version=self.sw_version_1,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+        cache.clear()
+
+        org_units = self.get_mobile_org_units(self.user)["orgUnits"]
+        self.assertNotIn(belgium_v1.id, [org_unit["id"] for org_unit in org_units])
+
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goten.id},{belgium_v1.id}"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_orgunits_list_cache_is_per_user_roots(self):
+        belgium, brussels, burundi = self.create_belgium_and_burundi()
+        feature_flag, _ = FeatureFlag.objects.get_or_create(code=FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)
+        self.project.feature_flags.add(feature_flag)
+        user_belgium = self.create_user_with_profile(
+            username="belgium", account=self.account, permissions=[CORE_ORG_UNITS_PERMISSION], org_units=[belgium]
+        )
+        user_burundi = self.create_user_with_profile(
+            username="burundi", account=self.account, permissions=[CORE_ORG_UNITS_PERMISSION], org_units=[burundi]
+        )
+        cache.clear()
+
+        # Same app and page, no cache clear in between: each user must get their own pyramid.
+        belgium_response = self.get_mobile_org_units(user_belgium)
+        burundi_response = self.get_mobile_org_units(user_burundi)
+
+        self.assertCountEqual([org_unit["id"] for org_unit in belgium_response["orgUnits"]], [belgium.id, brussels.id])
+        self.assertEqual(belgium_response["roots"], [belgium.id])
+        self.assertCountEqual([org_unit["id"] for org_unit in burundi_response["orgUnits"]], [burundi.id])
+        self.assertEqual(burundi_response["roots"], [burundi.id])
+
+    def test_orgunits_list_ignores_user_roots_without_feature_flag(self):
+        belgium, brussels, burundi = self.create_belgium_and_burundi()
+        user_belgium = self.create_user_with_profile(
+            username="belgium", account=self.account, permissions=[CORE_ORG_UNITS_PERMISSION], org_units=[belgium]
+        )
+        cache.clear()
+
+        response = self.get_mobile_org_units(user_belgium)
+
+        ids = [org_unit["id"] for org_unit in response["orgUnits"]]
+        for org_unit in [belgium, brussels, burundi, self.bardock, self.goten]:
+            self.assertIn(org_unit.id, ids, org_unit.name)
+        self.assertEqual(response["roots"], [belgium.id])
+
+    def test_reference_instances_last_sync(self):
+        old_form = Form.objects.create(name="Belgium census")
+        new_form = Form.objects.create(name="Burundi census")
+        old_instance = Instance.objects.create(form=old_form, org_unit=self.raditz, json={"key": "old"})
+        new_instance = Instance.objects.create(form=new_form, org_unit=self.raditz, json={"key": "new"})
+        Instance.objects.filter(pk=old_instance.pk).update(updated_at="2023-01-01T00:00:00Z")
+        Instance.objects.filter(pk=new_instance.pk).update(updated_at="2023-06-01T00:00:00Z")
+        for instance in [old_instance, new_instance]:
+            OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance, form=instance.form)
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(
+            f"{BASE_URL}{self.raditz.pk}/reference_instances/",
+            data={APP_ID: BASE_APP_ID, "last_sync": "2023-03-01T00:00:00Z"},
+        )
+
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual([instance["id"] for instance in data["instances"]], [new_instance.id])
+
     @time_machine.travel("2023-10-26T09:00:00.000Z", tick=False)
     def test_reference_instances(self):
         # Instance 1.
@@ -707,6 +834,23 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_put_patch_delete_are_not_allowed(self):
+        reader = self.create_user_with_profile(
+            username="reader", account=self.account, permissions=[CORE_ORG_UNITS_READ_PERMISSION]
+        )
+        for user in [self.user, reader]:
+            self.client.force_authenticate(user)
+            url = f"{BASE_URL}{self.goten.id}/?{APP_ID}={BASE_APP_ID}"
+            for method in ["put", "patch", "delete"]:
+                with self.subTest(user=user.username, method=method):
+                    response = getattr(self.client, method)(url, data={"name": "Renamed"}, format="json")
+                    self.assertJSONResponse(response, status.HTTP_405_METHOD_NOT_ALLOWED)
+            response = self.client.get(url)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.goten.refresh_from_db()
+        self.assertEqual(self.goten.name, "Son Goten")
 
     def test_create_org_unit_not_authenticated_project_requires_authentication(self):
         count_before = OrgUnit.objects.count()

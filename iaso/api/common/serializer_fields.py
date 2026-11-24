@@ -243,6 +243,7 @@ class IasoManyRelatedField(ManyRelatedField):
         self.parent_optimized_list = parent_optimized_list
 
     def to_internal_value(self, data) -> models.Model:
+        """TODO: update me when you upgrade DRF - make sure the implementation is the same as the current DRF one"""
         if isinstance(data, str) or not hasattr(data, "__iter__"):
             self.fail("not_a_list", input_type=type(data).__name__)
         if not self.allow_empty and len(data) == 0:

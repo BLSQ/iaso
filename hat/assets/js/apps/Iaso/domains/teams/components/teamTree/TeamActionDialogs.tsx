@@ -1,11 +1,13 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useMemo, useState } from 'react';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { noop } from 'lodash';
 import { DeleteRestoreModal } from 'Iaso/components/DeleteRestoreModals/DeleteRestoreModal';
+import { UserAsyncSelect } from 'Iaso/components/filters/UserAsyncSelect';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { CreateEditTeam } from 'Iaso/domains/teams/components/CreateEditTeam';
 import TEAM_MESSAGES from 'Iaso/domains/teams/messages';
 import { Team, TeamTreeNode } from 'Iaso/domains/teams/types/team';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { getDisplayName } from 'Iaso/utils/usersUtils';
 import MESSAGES from './messages';
 import { DraggedItem, HierarchyDialog } from './types';
@@ -104,6 +106,54 @@ export const MoveToDialog: FC<MoveProps> = ({
     );
 };
 
+type AddUsersProps = {
+    team: TeamTreeNode;
+    onConfirm: (userIds: number[]) => void;
+    closeDialog: () => void;
+};
+
+export const AddTeamUsersDialog: FC<AddUsersProps> = ({
+    team,
+    onConfirm,
+    closeDialog,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const [selectedUserIds, setSelectedUserIds] = useState<string>();
+    const teamUserIds = useMemo(
+        () => team.users.map(({ id }) => id),
+        [team.users],
+    );
+    const handleChange = useCallback(
+        (_key: string, value: unknown) =>
+            setSelectedUserIds(value as string | undefined),
+        [],
+    );
+    const userIds: number[] = commaSeparatedIdsToArray(selectedUserIds);
+    return (
+        <ConfirmCancelModal
+            {...DIALOG_DEFAULTS}
+            id="add-team-users-dialog"
+            dataTestId="add-team-users-dialog"
+            closeDialog={closeDialog}
+            onConfirm={() => onConfirm(userIds)}
+            allowConfirm={userIds.length > 0}
+            titleMessage={formatMessage(MESSAGES.addTeamUsers, {
+                name: team.name,
+            })}
+            confirmMessage={TEAM_MESSAGES.save}
+        >
+            <UserAsyncSelect
+                keyValue="users"
+                handleChange={handleChange}
+                filterUsers={selectedUserIds}
+                excludedUserIds={teamUserIds}
+                label={TEAM_MESSAGES.users}
+                multi
+            />
+        </ConfirmCancelModal>
+    );
+};
+
 type DeleteProps = {
     team: TeamTreeNode;
     onConfirm: () => void;
@@ -136,6 +186,7 @@ type HierarchyDialogsProps = {
     projectId?: number;
     onMove: (item: DraggedItem, target: TeamTreeNode) => void;
     onRename: (team: TeamTreeNode, name: string) => void;
+    onAddUsers: (team: TeamTreeNode, userIds: number[]) => void;
     onDelete: (variables: { id: number }) => void;
     onTeamCreated: (team: Team) => void;
     closeDialog: () => void;
@@ -147,6 +198,7 @@ export const HierarchyDialogs: FC<HierarchyDialogsProps> = ({
     projectId,
     onMove,
     onRename,
+    onAddUsers,
     onDelete,
     onTeamCreated,
     closeDialog,
@@ -171,6 +223,14 @@ export const HierarchyDialogs: FC<HierarchyDialogsProps> = ({
                 <RenameTeamDialog
                     team={dialog.team}
                     onConfirm={name => onRename(dialog.team, name)}
+                    closeDialog={closeDialog}
+                />
+            );
+        case 'addUsers':
+            return (
+                <AddTeamUsersDialog
+                    team={dialog.team}
+                    onConfirm={userIds => onAddUsers(dialog.team, userIds)}
                     closeDialog={closeDialog}
                 />
             );

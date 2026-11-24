@@ -6,6 +6,7 @@ import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import EditIcon from '@mui/icons-material/Edit';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import IconButton from '@mui/material/IconButton/IconButton';
 import Typography from '@mui/material/Typography/Typography';
@@ -13,7 +14,11 @@ import { useSafeIntl } from 'bluesquare-components';
 import { numericValues } from 'Iaso/domains/instances/utils/intl';
 import { TeamType } from 'Iaso/domains/teams/constants';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
-import { canHaveSubTeams, getToggledType } from 'Iaso/domains/teams/utils';
+import {
+    canHaveSubTeams,
+    canHaveUsers,
+    getToggledType,
+} from 'Iaso/domains/teams/utils';
 import { SxStyles } from 'Iaso/types/general';
 import { DragHandle } from './DragHandle';
 import { HierarchyRowLayout } from './HierarchyRowLayout';
@@ -151,12 +156,17 @@ export const EditableTeamRow: FC<EditableTeamRowProps> = ({
             icon: <EditIcon fontSize="small" />,
             onClick: () => onAction({ kind: 'rename', team }),
         },
-        {
+        canHaveSubTeams(team) && {
             key: 'addSubTeam',
             label: formatMessage(MESSAGES.addSubTeam),
             icon: <GroupAddIcon fontSize="small" />,
-            disabled: !canHaveSubTeams(team),
             onClick: () => onAction({ kind: 'addSubTeam', team }),
+        },
+        canHaveUsers(team) && {
+            key: 'addUsers',
+            label: formatMessage(MESSAGES.addUsers),
+            icon: <PersonAddIcon fontSize="small" />,
+            onClick: () => onAction({ kind: 'addUsers', team }),
         },
         {
             key: 'changeType',

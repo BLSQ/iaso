@@ -14,12 +14,17 @@ import TEAM_MESSAGES from 'Iaso/domains/teams/messages';
 import { TeamTreeNode } from 'Iaso/domains/teams/types/team';
 import { collectTeamTreeNodes, mapTeamTree } from 'Iaso/domains/teams/utils';
 import { useCustomMutationOptions } from '../../../../../../orval/mutator/custom-mutation-options';
+import MESSAGES from './messages';
 
-const userIds = (team: TeamTreeNode) => team.users.map(user => user.id);
+const userIdsOf = (team: TeamTreeNode) => team.users.map(user => user.id);
 
 type TeamChanges = Pick<Partial<TeamTreeNode>, 'name' | 'type' | 'parent'>;
 type UpdateTeamVariables = { id: number; data?: PatchedTeamUpdateRequest };
 type DeleteTeamVariables = { id: number };
+type AddTeamUsersVariables = {
+    team: TeamTreeNode;
+    userIds: number[];
+};
 type MoveUserVariables = {
     userId: number;
     from: TeamTreeNode;
@@ -75,6 +80,13 @@ const applyMoveUser = (
     });
 };
 
+// Other team lists and dropdowns don't refetch on their own.
+const useInvalidateTeams = () => {
+    const queryClient = useQueryClient();
+    return () =>
+        TEAM_QUERY_KEYS.forEach(key => queryClient.invalidateQueries(key));
+};
+
 // Updates the cached hierarchy right away so drag & drop feels instant, and rolls back on error.
 const useOptimisticHierarchyUpdate = <Variables>(
     rootTeamId: number | undefined,
@@ -85,6 +97,7 @@ const useOptimisticHierarchyUpdate = <Variables>(
 ) => {
     const queryClient = useQueryClient();
     const queryKey = getTeamTreeQueryKey(rootTeamId);
+    const invalidateTeams = useInvalidateTeams();
     return {
         onMutate: async (variables: Variables) => {
             await queryClient.cancelQueries(queryKey);
@@ -108,9 +121,7 @@ const useOptimisticHierarchyUpdate = <Variables>(
                 queryClient.setQueryData(queryKey, context.previous);
             }
         },
-        // Other team lists and dropdowns don't refetch on their own.
-        onSettled: () =>
-            TEAM_QUERY_KEYS.forEach(key => queryClient.invalidateQueries(key)),
+        onSettled: invalidateTeams,
     };
 };
 
@@ -141,14 +152,29 @@ export const useMoveUser = (rootTeamId?: number) =>
                 // Add before removing so a failure never leaves the user without a team.
                 if (to) {
                     await apiTeamsPartialUpdate(to.id, {
-                        users: [...userIds(to), userId],
+                        users: [...userIdsOf(to), userId],
                     });
                 }
                 return apiTeamsPartialUpdate(from.id, {
-                    users: userIds(from).filter(id => id !== userId),
+                    users: userIdsOf(from).filter(id => id !== userId),
                 });
             },
             ...useOptimisticHierarchyUpdate(rootTeamId, applyMoveUser),
             meta: { showSuccessSnackBar: false },
         }),
     );
+
+// Not optimistic: the tree needs user details the dropdown doesn't return.
+export const useAddTeamUsers = () => {
+    const invalidateTeams = useInvalidateTeams();
+    return useMutation(
+        useCustomMutationOptions({
+            mutationFn: ({ team, userIds }: AddTeamUsersVariables) =>
+                apiTeamsPartialUpdate(team.id, {
+                    users: [...userIdsOf(team), ...userIds],
+                }),
+            onSettled: invalidateTeams,
+            meta: { snackSuccessMessage: MESSAGES.addTeamUsersSuccess },
+        }),
+    );
+};

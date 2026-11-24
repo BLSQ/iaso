@@ -15,6 +15,7 @@ import {
     HierarchyRow,
 } from './types';
 import {
+    useAddTeamUsers,
     useDeleteHierarchyTeam,
     useMoveUser,
     useUpdateTeam,
@@ -43,6 +44,7 @@ export const TeamTreeEditor: FC<Props> = ({
     const { mutate: updateTeam } = useUpdateTeam(rootTeamId);
     const { mutate: moveUser } = useMoveUser(rootTeamId);
     const { mutate: deleteTeam } = useDeleteHierarchyTeam(rootTeamId);
+    const { mutate: addTeamUsers } = useAddTeamUsers();
     const [dialog, setDialog] = useState<HierarchyDialog>();
 
     const moveItem = useCallback(
@@ -60,6 +62,13 @@ export const TeamTreeEditor: FC<Props> = ({
         (team: TeamTreeNode, name: string) =>
             updateTeam({ id: team.id, data: { name } }),
         [updateTeam],
+    );
+    const addUsers = useCallback(
+        (team: TeamTreeNode, userIds: number[]) => {
+            addTeamUsers({ team, userIds });
+            expandTeam(team.id);
+        },
+        [addTeamUsers, expandTeam],
     );
     const openRootCreateDialog = useCallback(
         () => setDialog({ kind: 'create', parent: tree }),
@@ -89,6 +98,7 @@ export const TeamTreeEditor: FC<Props> = ({
                     moveUser({ userId: action.user.id, from: action.team });
                     break;
                 case 'rename':
+                case 'addUsers':
                 case 'delete':
                 case 'move':
                     setDialog(action);
@@ -124,6 +134,7 @@ export const TeamTreeEditor: FC<Props> = ({
                     projectId={projectId}
                     onMove={moveItem}
                     onRename={renameTeam}
+                    onAddUsers={addUsers}
                     onDelete={deleteTeam}
                     onTeamCreated={handleTeamCreated}
                     closeDialog={closeDialog}

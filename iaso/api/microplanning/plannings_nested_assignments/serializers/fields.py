@@ -5,7 +5,6 @@ from typing import Any
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Model
 from rest_framework import serializers
-from rest_framework.relations import MANY_RELATION_KWARGS
 
 
 class BulkManyRelatedField(serializers.ManyRelatedField):
@@ -38,12 +37,3 @@ class BulkManyRelatedField(serializers.ManyRelatedField):
             return model._meta.pk.to_python(item)
         except DjangoValidationError:
             child.fail("incorrect_type", data_type=type(item).__name__)
-
-
-class BulkPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
-    """`PrimaryKeyRelatedField` whose `many=True` variant is a `BulkManyRelatedField`."""
-
-    @classmethod
-    def many_init(cls, *args: Any, **kwargs: Any) -> BulkManyRelatedField:
-        list_kwargs = {key: value for key, value in kwargs.items() if key in MANY_RELATION_KWARGS}
-        return BulkManyRelatedField(child_relation=cls(*args, **kwargs), **list_kwargs)

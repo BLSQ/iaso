@@ -77,7 +77,7 @@ class ListUnassignSerializer(ListQueryOptimizedSerializer):
             for field, value in data.items():
                 setattr(obj, field, value)
 
-        instances.bulk_update(instances, fields=fields, batch_size=1000)
+        instances.select_for_update().bulk_update(instances, fields=fields, batch_size=1000)
         return instances
 
     def validate(self, attrs: Any) -> Any:

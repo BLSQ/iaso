@@ -1,5 +1,4 @@
 import React, { FC, useCallback } from 'react';
-import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -18,6 +17,7 @@ import { SxStyles } from 'Iaso/types/general';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { planningPanelStyles } from '../shared/styles';
+import { EditMissionDialog } from './EditMissionDialog';
 
 export type MissionLinkStatus = 'linked' | 'added' | 'unlinked';
 
@@ -97,16 +97,7 @@ export const MissionItem: FC<Props> = ({ mission, status }) => {
                     </IconButton>
                     {!isReadOnly && (
                         <>
-                            <IconButton
-                                size="small"
-                                component={LinkWithLocation}
-                                to={`/${baseUrls.missionsEdit}/id/${mission.id}`}
-                            >
-                                <CreateOutlinedIcon
-                                    color="primary"
-                                    sx={planningPanelStyles.smallIcon}
-                                />
-                            </IconButton>
+                            <EditMissionDialog missionId={mission.id} />
                             {isUnlinked ? (
                                 <Tooltip
                                     title={formatMessage(

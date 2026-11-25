@@ -1663,6 +1663,7 @@
     "iaso.plannings.label.mapExploreHintTeams": "Explorer : chaque unité d'organisation est colorée selon la sous-équipe à laquelle elle est assignée. Cliquez dessus pour ouvrir la sous-équipe et voir comment sa zone est répartie. Passez en mode Assigner pour modifier les assignations.",
     "iaso.plannings.label.mapExploreHintUsers": "Explorer : chaque unité d'organisation est colorée selon l'utilisateur auquel elle est assignée. Passez en mode Assigner pour modifier les assignations.",
     "iaso.plannings.label.mapHintNoMember": "Cette équipe n'a aucun membre. Ajoutez des membres dans la hiérarchie d'équipes du planning.",
+    "iaso.plannings.label.missionSavedIndependently": "Les modifications sont enregistrées directement sur la mission, indépendamment de ce planning, et s'appliquent à tous les plannings qui l'utilisent.",
     "iaso.plannings.label.mixedOrgUnitTypeDepths": "Les types d'unités d'organisation d'un niveau doivent être à la même profondeur",
     "iaso.plannings.label.newPlanning": "Nouveau planning",
     "iaso.plannings.label.noMissionLinked": "Aucune mission liée pour le moment",

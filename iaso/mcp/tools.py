@@ -107,7 +107,7 @@ def list_org_units(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of org units. validation_status: NEW, VALID, REJECTED."""
+    """List one page of org units. validation_status: NEW, VALID, REJECTED. source_id: data source id."""
     limit = clamp_limit(limit)
     response = get_client().org_units_list_page(
         page=page,
@@ -116,8 +116,8 @@ def list_org_units(
             search=search,
             validation_status=validation_status,
             parent_id=parent_id,
-            org_unit_type_id=org_unit_type_id,
-            source_id=source_id,
+            orgUnitTypeId=org_unit_type_id,
+            source=source_id,
         ),
     )
     return {
@@ -175,12 +175,12 @@ def list_forms(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of forms."""
+    """List one page of forms. org_unit_id: forms with submissions on that org unit."""
     limit = clamp_limit(limit)
     response = get_client().forms_list_page(
         page=page,
         limit=limit,
-        **_filters(search=search, org_unit_id=org_unit_id, org_unit_type_id=org_unit_type_id),
+        **_filters(search=search, orgUnitId=org_unit_id, orgUnitTypeId=org_unit_type_id),
     )
     return {**page_meta(response), "forms": [slim_form(item) for item in response.get("forms") or []]}
 

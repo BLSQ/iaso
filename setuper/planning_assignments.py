@@ -91,7 +91,7 @@ def assign(iaso_client, planning_id: int, pairs: list[tuple[OrgUnitNode, Assigne
     for org_unit, assignee in pairs:
         org_unit_ids_by_assignee[(assignee.team_id, assignee.user_id)].append(org_unit.id)
     for (team_id, user_id), org_unit_ids in org_unit_ids_by_assignee.items():
-        iaso_client.post(
+        iaso_client.put(
             f"/api/microplanning/plannings/{planning_id}/assignments/assign/",
             json={"org_unit_ids": org_unit_ids, "team": team_id, "user": user_id},
         )

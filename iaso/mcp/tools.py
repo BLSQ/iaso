@@ -67,7 +67,12 @@ def _write_target() -> dict[str, Any]:
 
 
 def _filters(**kwargs: Any) -> dict[str, Any]:
-    return {key: value for key, value in kwargs.items() if value is not None}
+    """Drop unset filters; booleans as "true"/"false", the form the API compares against."""
+    return {
+        key: str(value).lower() if isinstance(value, bool) else value
+        for key, value in kwargs.items()
+        if value is not None
+    }
 
 
 @tool()
@@ -237,12 +242,12 @@ def list_instances(
         page=page,
         limit=limit,
         **_filters(
-            org_unit_id=org_unit_id,
+            orgUnitId=org_unit_id,
             form_id=form_id,
             org_unit_status=org_unit_status,
             status=status,
             search=search,
-            show_deleted=show_deleted,
+            showDeleted=show_deleted,
         ),
     )
     return {
@@ -269,24 +274,23 @@ def list_instance_files(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of instances (attachments live on instance detail)."""
+    """List one page of submission attachments (files)."""
     limit = clamp_limit(limit)
     response = get_client().instance_files_list_page(
         page=page,
         limit=limit,
         **_filters(
             form_id=form_id,
-            org_unit_id=org_unit_id,
+            orgUnitId=org_unit_id,
             search=search,
             image_only=image_only,
             video_only=video_only,
             document_only=document_only,
         ),
     )
-    items = response.get("results") or response.get("instances") or []
     return {
         **page_meta(response),
-        "instance_files": [slim_instance_file(item) if "file" in item else slim_instance(item) for item in items],
+        "instance_files": [slim_instance_file(item) for item in response.get("results") or []],
     }
 
 
@@ -297,7 +301,7 @@ def count_instance_files(
     search: str | None = None,
 ) -> dict[str, Any]:
     """Return instance counts for the given filters."""
-    return dict(get_client().instance_files_count(**_filters(form_id=form_id, org_unit_id=org_unit_id, search=search)))
+    return dict(get_client().instance_files_count(**_filters(form_id=form_id, orgUnitId=org_unit_id, search=search)))
 
 
 @tool()

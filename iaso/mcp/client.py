@@ -228,7 +228,7 @@ class IasoClient:
         return self.transport.request("GET", f"instances/{instance_id}/")
 
     def instance_files_list_page(self, page: int = 1, limit: int = 10, **filters: Any) -> dict[str, Any]:
-        return self._list_page("instances/", page, limit, **filters)
+        return self._list_page("instances/attachments/", page, limit, **filters)
 
     def instance_files_count(self, **filters: Any) -> dict[str, Any]:
         page = self.instances_list_page(page=1, limit=1, **filters)

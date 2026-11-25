@@ -196,7 +196,7 @@ def sheet_columns(kind: str, physiology_status: str) -> list[tuple[str, typing.C
     return [column for column in COLUMNS[kind] if column[0] != hidden]
 
 
-def kind_of(programme_type: typing.Optional[str]) -> str:
+def kind_of(programme_type: str | None) -> str:
     """The kind of beneficiaries (and so of columns) of a programme type: PBWG for "PLW", else U5."""
     return PBWG if programme_type == "PLW" else U5
 
@@ -230,9 +230,7 @@ def _physiology_statuses(kind: str) -> list[str]:
     return list(PHYSIOLOGY_STATUS_LABELS) if kind == PBWG else [""]
 
 
-def expected_sheets(
-    account, programme: typing.Optional[str] = None, entity_type_id: typing.Optional[int] = None
-) -> list[Sheet]:
+def expected_sheets(account, programme: str | None = None, entity_type_id: int | None = None) -> list[Sheet]:
     """The sheets shown even without data: for each entity type of the ETL of the account, one per programme of its
     country (see `programmes_by_country`) and per physiology status for the women.
 

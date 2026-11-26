@@ -231,6 +231,18 @@ class OrgUnitOptionsToolTest(ListToolTestCase):
         self.assertAncestors(mechelen)
         self.assertEqual(set(mechelen), set(ORG_UNIT_SLIM_FIELDS) | {"ancestors"}, "ancestors alone")
 
+    def test_list_org_units_with_ancestors_query_count_independent_of_rows(self):
+        def query_count():
+            with CaptureQueriesContext(connection) as queries:
+                self.call("list_org_units", org_unit_type_id=self.city.id, with_ancestors=True)
+            return len(queries)
+
+        one_city = query_count()
+        self._org_unit("Liège city", self.city, self.version, parent=self.liege)
+        self._org_unit("Antwerp city", self.city, self.version, parent=self.antwerp)
+
+        self.assertEqual(query_count(), one_city, "the API prefetches the parents: no query per row")
+
     def test_root_has_no_ancestors(self):
         belgium = self.call("list_org_units", search="Belgium", with_ancestors=True)["org_units"][0]
 

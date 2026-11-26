@@ -946,12 +946,12 @@ wheels = [
 
 [[package]]
 name = "django-json-widget"
-version = "1.1.1"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "future" },
+sdist = { url = "https://files.pythonhosted.org/packages/23/bb/49d664b3e16d34be4ca28aacacc55081873102df29cbfdf0518ab2307512/django_json_widget-2.2.0.tar.gz", hash = "sha256:2a98dd61264854de39870807d1f6a8cef20e483b7f387f20d65852ca33a7cf74", size = 401687, upload-time = "2026-11-13T19:30:10.463Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3a/f5/fa7df533cfbb8d8bc59c5acb44a3df2dcd1ebcee790241daea4b2fac9799/django_json_widget-2.2.0-py2.py3-none-any.whl", hash = "sha256:0e8f54c1a18c3ac33720c2fd3a3a884fc5b881a87cc34c57f21a9beef5f42035", size = 295381, upload-time = "2026-11-13T19:30:07.333Z" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/13/f256f113ab2a0828e0c5992d2f2b7c6fd377ee9e9918d6d7cb14a1b2e706/django-json-widget-1.1.1.tar.gz", hash = "sha256:ec948a4c379687f9c854748ba540fdbeb1b1730846ca953f186818521de7e696", size = 249526, upload-time = "2021-02-17T15:21:35.976Z" }
 
 [[package]]
 name = "django-lazy-services"
@@ -1572,15 +1572,6 @@ wheels = [
 ]
 
 [[package]]
-name = "future"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a7/b2/4140c69c6a66432916b26158687e821ba631a4c9273c474343badf84d3ba/future-1.0.0.tar.gz", hash = "sha256:bd2968309307861edae1458a4f8a4f3598c03be43b97521076aebf5d94c07b05", size = 1228490, upload-time = "2024-02-21T11:52:38.461Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/71/ae30dadffc90b9006d77af76b393cb9dfbfc9629f339fc1574a1c52e6806/future-1.0.0-py3-none-any.whl", hash = "sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216", size = 491326, upload-time = "2024-02-21T11:52:35.956Z" },
-]
-
-[[package]]
 name = "geographiclib"
 version = "2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2040,7 +2031,7 @@ requires-dist = [
     { name = "django-cte", specifier = "==5.0.1" },
     { name = "django-extensions", specifier = "==4.1" },
     { name = "django-filter", specifier = "==26.2" },
-    { name = "django-json-widget", specifier = "==1.1.1" },
+    { name = "django-json-widget", specifier = "==2.2.0" },
     { name = "django-lazy-services", specifier = "==0.0.3" },
     { name = "django-ltree", specifier = "==0.5.3" },
     { name = "django-oauth-toolkit", specifier = "==2.4.0" },

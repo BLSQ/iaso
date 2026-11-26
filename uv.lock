@@ -819,15 +819,15 @@ wheels = [
 
 [[package]]
 name = "django-axes"
-version = "8.0.0"
+version = "9.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/bf/ce259e79cf66cdd1aa7b1968af04a036cf39737c3ff69ced3a39808cd40d/django_axes-8.0.0.tar.gz", hash = "sha256:f95b6ae67fd77d44cc688818cef174914c4ad98c48daf65020b6f03f37220e45", size = 249419, upload-time = "2025-05-10T11:17:43.657Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3b/31/0b17d2c059493b201ab4c2fbc914324c7411962947e9e5c532838ea4c853/django_axes-9.1.0.tar.gz", hash = "sha256:cb28091b39a5d6d291ca049f2329f06f08c70dbba78627a42b59ae1e2defb906", size = 267235, upload-time = "2026-11-22T19:07:47.602Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/4b/8862d6d326411fe18854db98305dc292b694d84b2b91398c33a792b7e772/django_axes-8.0.0-py3-none-any.whl", hash = "sha256:7ddc55f21b704b7e9b3e793a75deac01ff16cb67f561649b04336e1e96980035", size = 68884, upload-time = "2025-05-10T11:17:41.351Z" },
+    { url = "https://files.pythonhosted.org/packages/35/58/6f94a0350cf0a9df9bb7288c48d446ef42e88b04f028cca29a0afe250363/django_axes-9.1.0-py3-none-any.whl", hash = "sha256:45898b0ab88b8a429d8cca0fac72fd3b000bd53989a4ee41e62fa9350fea2045", size = 79620, upload-time = "2026-11-22T19:07:45.765Z" },
 ]
 
 [[package]]
@@ -2031,7 +2031,7 @@ requires-dist = [
     { name = "django-allauth", specifier = "==0.54.0" },
     { name = "django-appconf", specifier = "==1.2.0" },
     { name = "django-autoslug", specifier = "==1.9.9" },
-    { name = "django-axes", specifier = "==8.0.0" },
+    { name = "django-axes", specifier = "==9.1.0" },
     { name = "django-celery-beat", specifier = "==2.8.1" },
     { name = "django-celery-results", specifier = "==2.5.1" },
     { name = "django-contrib-comments", specifier = "==2.2.0" },

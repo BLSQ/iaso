@@ -18,7 +18,7 @@ dependencies = [
     "django-allauth==0.54.0", # https://github.com/pennersr/django-allauth/tags
     "django-appconf==1.2.0", # https://github.com/django-compressor/django-appconf
     "django-autoslug==1.9.9", # https://github.com/justinmayer/django-autoslug
-    "django-axes==8.0.0", # https://github.com/jazzband/django-axes/tags
+    "django-axes==9.1.0", # https://github.com/jazzband/django-axes/tags
     "django-celery-beat==2.8.1", # https://github.com/celery/django-celery-beat/tags
     "django-celery-results==2.5.1", # https://github.com/celery/django-celery-results/tags
     "django-contrib-comments==2.2.0", # https://github.com/django/django-contrib-comments/tags

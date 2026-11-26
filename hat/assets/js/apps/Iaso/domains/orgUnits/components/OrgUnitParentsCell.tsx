@@ -20,7 +20,9 @@ export const OrgUnitParentsCell: FunctionComponent<Props> = ({ orgUnit }) => {
             arrow
             title={parents.map(parent => (
                 <Box key={parent.id}>
-                    {parent.name} ({parent.org_unit_type_name})
+                    {parent.name || textPlaceholder}
+                    {parent.org_unit_type_name &&
+                        ` (${parent.org_unit_type_name})`}
                 </Box>
             ))}
         >

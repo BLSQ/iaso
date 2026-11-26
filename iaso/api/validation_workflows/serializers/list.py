@@ -13,6 +13,7 @@ class ValidationWorkflowListStepSerializer(ModelSerializer):
     class Meta:
         model = ValidationNodeTemplate
         fields = ["slug", "name", "roles_required"]
+        read_only_fields = fields
 
 
 class ValidationWorkflowListSerializer(ModelSerializer):
@@ -35,8 +36,9 @@ class ValidationWorkflowListSerializer(ModelSerializer):
             "created_at",
             "updated_at",
         ]
+        read_only_fields = fields
         extra_kwargs = {"slug": {"required": True}}
 
-    @extend_schema_field(ValidationWorkflowListStepSerializer(many=True))
+    @extend_schema_field(ValidationWorkflowListStepSerializer(many=True, allow_empty=True))
     def get_steps(self, obj):
         return ValidationWorkflowListStepSerializer(get_ordered_node_templates(obj), many=True).data

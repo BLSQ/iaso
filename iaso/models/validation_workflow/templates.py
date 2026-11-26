@@ -90,6 +90,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
                 for (prev, nxt) in zip(previous_nodes, next_nodes)
             ],
             ignore_conflicts=True,
+            batch_size=100,
         )
 
         q_delete = Q()
@@ -290,23 +291,36 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         copy = self._create_duplicate_workflow(user)
 
         nodes = list(self.node_templates.all())
-        new_nodes_by_old_id = {}
-        for node in nodes:
-            new_node = ValidationNodeTemplate.objects.create(
-                workflow=copy,
-                name=node.name,
-                description=node.description,
-                can_skip_previous_nodes=node.can_skip_previous_nodes,
-            )
-            new_node.roles_required.set(node.roles_required.all())
-            new_nodes_by_old_id[node.id] = new_node
-
-        through_table = ValidationNodeTemplate.next_node_templates.through
-        through_table.objects.bulk_create(
+        new_nodes = ValidationNodeTemplate.objects.bulk_create(
             [
-                through_table(
-                    from_validationnodetemplate_id=new_nodes_by_old_id[node.id].id,
-                    to_validationnodetemplate_id=new_nodes_by_old_id[next_node.id].id,
+                ValidationNodeTemplate(
+                    workflow=copy,
+                    name=node.name,
+                    # Already unique within the original workflow, so also within the (empty) copy
+                    slug=node.slug,
+                    description=node.description,
+                    can_skip_previous_nodes=node.can_skip_previous_nodes,
+                )
+                for node in nodes
+            ]
+        )
+        new_node_id_by_old_id = {node.id: new_node.id for node, new_node in zip(nodes, new_nodes)}
+
+        roles_through = ValidationNodeTemplate.roles_required.through
+        roles_through.objects.bulk_create(
+            [
+                roles_through(validationnodetemplate_id=new_node_id_by_old_id[node.id], userrole_id=role.id)
+                for node in nodes
+                for role in node.roles_required.all()
+            ]
+        )
+
+        next_through = ValidationNodeTemplate.next_node_templates.through
+        next_through.objects.bulk_create(
+            [
+                next_through(
+                    from_validationnodetemplate_id=new_node_id_by_old_id[node.id],
+                    to_validationnodetemplate_id=new_node_id_by_old_id[next_node.id],
                 )
                 for node in nodes
                 for next_node in node.next_node_templates.all()

@@ -1,7 +1,9 @@
 from unittest import mock
 
 from django.contrib.auth.models import Group
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
+from django.db.models import Prefetch
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
@@ -110,10 +112,17 @@ class ValidationWorkflowAPIDuplicateTestCase(BaseValidationWorkflowAPITestCase):
         names = [self.duplicate(self.validation_workflow.slug).json()["name"] for _ in range(3)]
         self.assertEqual(names, ["Random name (copy)", "Random name (copy 2)", "Random name (copy 3)"])
 
-        # A deleted copy frees its name
-        ValidationWorkflow.objects.get(account=self.account, name="Random name (copy)").delete()
+    def test_duplicate_names_does_not_include_soft_deleted_ones(self):
+        ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account).delete()
+        ValidationWorkflow.objects.create(name="Random name (copy 2)", account=self.account)
+        self.client.force_authenticate(self.john_wick)
+
+        # The soft deleted copy frees its name
         res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
         self.assertEqual(res_data["name"], "Random name (copy)")
+        self.assertEqual(
+            ValidationWorkflow.objects_only_deleted.filter(account=self.account, name="Random name (copy)").count(), 1
+        )
 
     def test_duplicate_name_single_query(self):
         ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account)
@@ -160,6 +169,69 @@ class ValidationWorkflowAPIDuplicateTestCase(BaseValidationWorkflowAPITestCase):
 
         res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
         self.assertEqual(res_data["name"], "a" * 249 + " (copy)")
+
+    def test_duplicate_steps_are_bulk_inserted(self):
+        workflow = ValidationWorkflow.objects.prefetch_related(
+            Prefetch(
+                "node_templates",
+                ValidationNodeTemplate.objects.prefetch_related("roles_required", "next_node_templates"),
+            )
+        ).get(pk=self.validation_workflow.pk)
+
+        with CaptureQueriesContext(connection) as ctx:
+            workflow.duplicate(self.john_wick)
+
+        inserts = [q["sql"].split(" (")[0] for q in ctx.captured_queries if q["sql"].startswith("INSERT")]
+        # One insert per table, whatever the number of steps
+        self.assertEqual(
+            sorted(inserts),
+            [
+                'INSERT INTO "iaso_validationnodetemplate"',
+                'INSERT INTO "iaso_validationnodetemplate_next_node_templates"',
+                'INSERT INTO "iaso_validationnodetemplate_roles_required"',
+                'INSERT INTO "iaso_validationworkflow"',
+            ],
+        )
+
+    DUPLICATE_NUM_QUERIES = 19
+
+    def add_steps(self, count):
+        """Appends `count` steps, each with a required role, after the last step of the workflow."""
+        previous = self.third_node
+        for index in range(count):
+            node = ValidationNodeTemplate.objects.create(name=f"Extra node {index}", workflow=self.validation_workflow)
+            node.roles_required.add(self.user_role)
+            previous.next_node_templates.add(node)
+            previous = node
+
+    def test_duplicate_num_queries(self):
+        self.client.force_authenticate(self.john_wick)
+
+        with self.assertNumQueries(self.DUPLICATE_NUM_QUERIES):
+            self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
+
+    def test_duplicate_num_queries_does_not_grow_with_existing_copies(self):
+        ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account)
+        for index in range(2, 21):
+            ValidationWorkflow.objects.create(name=f"Random name (copy {index})", account=self.account)
+        self.client.force_authenticate(self.john_wick)
+
+        with self.assertNumQueries(self.DUPLICATE_NUM_QUERIES):
+            res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
+        self.assertEqual(res_data["name"], "Random name (copy 21)")
+
+    def test_duplicate_num_queries_per_step(self):
+        self.add_steps(5)
+        self.client.force_authenticate(self.john_wick)
+
+        # Steps, roles and links are bulk inserted, so the only per-step query left is the slug uniqueness
+        # check that the slug field's pre_save runs for each row, even within bulk_create
+        with self.assertNumQueries(self.DUPLICATE_NUM_QUERIES + 5):
+            res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
+
+        copy = ValidationWorkflow.objects.get(slug=res_data["slug"], account=self.account)
+        self.assertEqual(copy.node_templates.count(), 8)
+        self.assertEqual(copy.node_templates.filter(roles_required=self.user_role).count(), 6)
 
     def test_duplicate_without_steps(self):
         self.validation_workflow.node_templates.all().delete()

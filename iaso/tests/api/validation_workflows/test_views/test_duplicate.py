@@ -1,4 +1,7 @@
+from unittest import mock
+
 from django.contrib.auth.models import Group
+from django.db import IntegrityError
 from django.urls import reverse
 from rest_framework import status
 
@@ -111,6 +114,44 @@ class ValidationWorkflowAPIDuplicateTestCase(BaseValidationWorkflowAPITestCase):
         ValidationWorkflow.objects.get(account=self.account, name="Random name (copy)").delete()
         res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
         self.assertEqual(res_data["name"], "Random name (copy)")
+
+    def test_duplicate_name_single_query(self):
+        ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account)
+        for index in range(2, 21):
+            ValidationWorkflow.objects.create(name=f"Random name (copy {index})", account=self.account)
+        # Not copies of this workflow: must not be counted as taken
+        ValidationWorkflow.objects.create(name="Random name (copy 21) extra", account=self.account_2)
+        ValidationWorkflow.objects.create(name="Random name (copy 21)", account=self.account_2)
+
+        with self.assertNumQueries(1):
+            self.assertEqual(self.validation_workflow.get_duplicate_name(), "Random name (copy 21)")
+
+    def test_duplicate_retries_on_concurrent_copy(self):
+        # Simulates another user creating "Random name (copy)" between the name computation and the insert
+        ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account)
+        self.client.force_authenticate(self.john_wick)
+
+        with mock.patch.object(
+            ValidationWorkflow,
+            "get_duplicate_name",
+            side_effect=["Random name (copy)", "Random name (copy 2)"],
+        ):
+            res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
+
+        self.assertEqual(res_data["name"], "Random name (copy 2)")
+        self.assertEqual(
+            ValidationWorkflow.objects.get(slug=res_data["slug"]).dump_nodes(),
+            ["first-node", "second-node", "third-node"],
+        )
+
+    def test_duplicate_gives_up_after_max_attempts(self):
+        ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account)
+
+        with mock.patch.object(ValidationWorkflow, "get_duplicate_name", return_value="Random name (copy)"):
+            with self.assertRaises(IntegrityError):
+                self.validation_workflow.duplicate(self.john_wick)
+
+        self.assertEqual(ValidationWorkflow.objects.filter(account=self.account, name="Random name (copy)").count(), 1)
 
     def test_duplicate_long_name(self):
         self.validation_workflow.name = "a" * 256

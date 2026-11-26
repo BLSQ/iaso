@@ -6,7 +6,7 @@ Each workflow is made of multiple nodes or tasks.
 
 from autoslug import AutoSlugField
 from django.contrib.auth import get_user_model
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 
 from iaso.models import Instance
@@ -232,18 +232,53 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             ignore_conflicts=True,
         )
 
+    DUPLICATE_MAX_ATTEMPTS = 5
+    # Length of the longest copy suffix we support, " (copy 99999999999)"
+    DUPLICATE_MAX_SUFFIX_LENGTH = 20
+
     def get_duplicate_name(self):
         """
         First free name among "<name> (copy)", "<name> (copy 2)", ... in the account.
+        The existing copies are fetched in a single query, the free name is then picked in Python.
         """
-        suffix = " (copy)"
+        max_length = self._meta.get_field("name").max_length
+
+        def candidate(index):
+            suffix = " (copy)" if index == 1 else f" (copy {index})"
+            return f"{self.name[: max_length - len(suffix)]}{suffix}"
+
+        # The name is truncated to fit the suffix, more as the suffix grows ("(copy)", "(copy 2)", "(copy 100)"),
+        # so match on a prefix that every copy keeps whatever its suffix. The regex then keeps only names
+        # ending in "(copy)" or "(copy N)". This is a superset: the exact match is done in Python below.
+        taken = set(
+            ValidationWorkflow.objects.filter(
+                account_id=self.account_id,
+                name__startswith=self.name[: max_length - self.DUPLICATE_MAX_SUFFIX_LENGTH],
+                name__regex=r" \(copy( [0-9]+)?\)$",
+            ).values_list("name", flat=True)
+        )
         index = 1
-        while True:
-            name = f"{self.name[: self._meta.get_field('name').max_length - len(suffix)]}{suffix}"
-            if not ValidationWorkflow.objects.filter(account_id=self.account_id, name=name).exists():
-                return name
+        while candidate(index) in taken:
             index += 1
-            suffix = f" (copy {index})"
+        return candidate(index)
+
+    def _create_duplicate_workflow(self, user):
+        """
+        Two users duplicating the same workflow at the same time may compute the same name (or slug):
+        the second insert then violates a unique constraint, so we retry with a freshly computed name.
+        """
+        for attempt in range(self.DUPLICATE_MAX_ATTEMPTS):
+            try:
+                with transaction.atomic():  # savepoint, so the outer transaction survives a failed insert
+                    return ValidationWorkflow.objects.create(
+                        name=self.get_duplicate_name(),
+                        description=self.description,
+                        account_id=self.account_id,
+                        created_by=user,
+                    )
+            except IntegrityError:
+                if attempt == self.DUPLICATE_MAX_ATTEMPTS - 1:
+                    raise
 
     @transaction.atomic
     def duplicate(self, user):
@@ -251,12 +286,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         Copy of the workflow with its steps, their required roles and their order.
         Linked forms are not copied (a form belongs to a single workflow), so the copy has no processes.
         """
-        copy = ValidationWorkflow.objects.create(
-            name=self.get_duplicate_name(),
-            description=self.description,
-            account_id=self.account_id,
-            created_by=user,
-        )
+        copy = self._create_duplicate_workflow(user)
 
         nodes = list(self.node_templates.prefetch_related("roles_required", "next_node_templates"))
         new_nodes_by_old_id = {}

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from iaso import models as m
@@ -91,6 +93,52 @@ class ListOrgUnitsToolTest(ListToolTestCase):
 
     def test_filters_on_parent_id(self):
         self.assertOrgUnits(self.call("list_org_units", parent_id=self.belgium.id), ["Antwerp", "Liège"])
+
+    def test_skips_instances_count(self):
+        self.create_form_instance(form=self.province_form, project=self.project, org_unit=self.antwerp)
+
+        with CaptureQueriesContext(connection) as queries:
+            result = self.call("list_org_units", parent_id=self.belgium.id)
+
+        antwerp = next(org_unit for org_unit in result["org_units"] if org_unit["name"] == "Antwerp")
+        self.assertEqual(
+            antwerp,
+            {
+                "id": self.antwerp.id,
+                "name": "Antwerp",
+                "validation_status": "VALID",
+                "parent_id": self.belgium.id,
+                "parent_name": "Belgium",
+                "org_unit_type_id": self.province.id,
+                "org_unit_type_name": "Province",
+                "source": "Belgium source",
+            },
+        )
+        instance_queries = [query["sql"] for query in queries if "iaso_instance" in query["sql"]]
+        self.assertEqual(instance_queries, [], "list_org_units should not count instances")
+
+    def test_get_org_unit_skips_instances_count(self):
+        self.create_form_instance(form=self.province_form, project=self.project, org_unit=self.antwerp)
+
+        with CaptureQueriesContext(connection) as queries:
+            antwerp = call_tool("get_org_unit", {"org_unit_id": self.antwerp.id}, self.user)
+
+        self.assertEqual(
+            antwerp,
+            {
+                "id": self.antwerp.id,
+                "name": "Antwerp",
+                "validation_status": "VALID",
+                "parent_id": self.belgium.id,
+                "parent_name": "Belgium",
+                "org_unit_type_id": self.province.id,
+                "org_unit_type_name": "Province",
+                "source": "Belgium source",
+            },
+        )
+        # the detail always loads reference_instances, only the descendants' instance count must go
+        count_queries = [query["sql"] for query in queries if 'COUNT("iaso_instance"' in query["sql"]]
+        self.assertEqual(count_queries, [], "get_org_unit should not count instances")
 
 
 class ListFormsToolTest(ListToolTestCase):

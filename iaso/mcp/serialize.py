@@ -21,19 +21,22 @@ def page_meta(response: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# The fields the org unit tools return, sent as `fields`: the API then skips instances_count
+# (list: a join of every org unit to its instances, detail: all the descendants) and the fields dropped here.
+ORG_UNIT_SLIM_FIELDS = [
+    "id",
+    "name",
+    "validation_status",
+    "parent_id",
+    "parent_name",
+    "org_unit_type_id",
+    "org_unit_type_name",
+    "source",
+]
+
+
 def slim_org_unit(item: dict[str, Any]) -> dict[str, Any]:
-    org_unit_type = item.get("org_unit_type") or {}
-    return {
-        "id": item.get("id"),
-        "name": item.get("name"),
-        "validation_status": item.get("validation_status"),
-        "parent_id": item.get("parent_id"),
-        "parent_name": item.get("parent_name"),
-        "org_unit_type_id": item.get("org_unit_type_id") or org_unit_type.get("id"),
-        "org_unit_type_name": item.get("org_unit_type_name") or org_unit_type.get("name"),
-        "source": item.get("source"),
-        "instances_count": item.get("instances_count"),
-    }
+    return {field: item.get(field) for field in ORG_UNIT_SLIM_FIELDS}
 
 
 def slim_form(item: dict[str, Any]) -> dict[str, Any]:

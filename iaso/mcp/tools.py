@@ -31,6 +31,7 @@ from iaso.mcp.raw import (
 from iaso.mcp.reattach import apply_plan, plan_reattach, summarize_plan
 from iaso.mcp.recipes.fill_account.apply import connection_prompt, current_account
 from iaso.mcp.serialize import (
+    ORG_UNIT_SLIM_FIELDS,
     clamp_limit,
     page_meta,
     slim_form,
@@ -112,11 +113,16 @@ def list_org_units(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of org units. validation_status: NEW, VALID, REJECTED. source_id: data source id."""
+    """List one page of org units: id, name, validation_status, parent_id, parent_name, org_unit_type_id,
+    org_unit_type_name, source. No geometry: iaso_raw GET orgunits/<id>/ for the full detail.
+
+    validation_status: NEW, VALID, REJECTED, a comma-separated list or all (default VALID). source_id: data source id.
+    """
     limit = clamp_limit(limit)
     response = get_client().org_units_list_page(
         page=page,
         limit=limit,
+        fields=",".join(ORG_UNIT_SLIM_FIELDS),
         **_filters(
             search=search,
             validation_status=validation_status,
@@ -133,8 +139,8 @@ def list_org_units(
 
 @tool()
 def get_org_unit(org_unit_id: int) -> dict[str, Any]:
-    """Retrieve one org unit by id (slim fields, no geometry)."""
-    detail = get_client().org_units_retrieve(org_unit_id=org_unit_id)
+    """Retrieve one org unit by id: the list_org_units fields. No geometry: iaso_raw GET orgunits/<id>/."""
+    detail = get_client().org_units_retrieve(org_unit_id=org_unit_id, fields=",".join(ORG_UNIT_SLIM_FIELDS))
     return slim_org_unit(dict(detail))
 
 

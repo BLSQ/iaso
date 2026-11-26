@@ -1562,7 +1562,7 @@
     "iaso.permissions.readEdit.all": "Toutes",
     "iaso.permissions.readEdit.basic": "Basique",
     "iaso.permissions.readEdit.entities_permissions": "Entités",
-    "iaso.permissions.readEdit.tooltip.entities_permissions": "Lecture : voir les entités - Une entité est un élément qui n’est pas lié à un endroit fixe dans la pyramide (ex: individus, éléments qui ont vocation à bouger d’un endroit à l’autre, etc.). Écriture : aussi supprimer et restaurer des entités, avec leurs soumissions",
+    "iaso.permissions.readEdit.tooltip.entities_permissions": "Lecture : voir les entités. Écriture : supprimer et restaurer des entités, avec leurs soumissions",
     "iaso.permissions.readEdit.entity_duplicate_permissions": "Doublons d’entités",
     "iaso.permissions.readEdit.full": "Complète",
     "iaso.permissions.readEdit.geo_limited": "Géo-limité",

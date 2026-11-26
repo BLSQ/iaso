@@ -4,6 +4,7 @@ import io
 import json
 import uuid
 
+from copy import copy
 from datetime import timedelta
 
 import pytz
@@ -14,7 +15,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
-from hat.audit.models import ENTITY_API, Modification
+from hat.audit.models import ENTITY_API, INSTANCE_API, Modification, log_modification
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
@@ -1874,6 +1875,13 @@ class WebEntityAPITestCase(EntityAPITestCase):
         response = self.client.patch(f"/api/entities/{entity.id}/", data={"name": "new"}, format="json")
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
+    def _delete_submission_on_its_own(self, instance):
+        """Delete a submission as the submissions API does: soft delete, with an audit log entry."""
+        original = copy(instance)
+        instance.soft_delete()
+        log_modification(original, instance, INSTANCE_API, user=self.entity_writer)
+        return instance
+
     def test_restore_entity(self):
         """
         POST /api/entities/pk/restore/
@@ -1881,8 +1889,9 @@ class WebEntityAPITestCase(EntityAPITestCase):
         Restores the entity and the submissions deleted with it, not the ones deleted before.
         """
         entity, instances = self._create_entity_with_instances(nb_extra_instances=2)
-        deleted_before = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, entity=entity)
-        deleted_before.soft_delete()
+        deleted_before = self._delete_submission_on_its_own(
+            Instance.objects.create(org_unit=self.ou_country, form=self.form_1, entity=entity)
+        )
         self.client.force_authenticate(self.entity_writer)
         self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
 
@@ -1902,6 +1911,30 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(Modification.objects.filter(source=ENTITY_API, user=self.entity_writer).count(), 8)
         data = self.assertJSONResponse(self.client.get("/api/entities/"), status.HTTP_200_OK)
         self.assertEqual([e["id"] for e in data["result"]], [entity.id])
+
+    def test_restore_entity_only_looks_at_audit_entries_of_submissions(self):
+        """Restoring an entity ignores audit entries of other objects with the same id as a submission"""
+        deleted_before = self._delete_submission_on_its_own(
+            Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        )
+        self.assertFalse(Entity.objects_include_deleted.filter(pk=deleted_before.pk).exists())
+        reference = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity = Entity.objects.create(
+            pk=deleted_before.pk, entity_type=self.entity_type, attributes=reference, account=self.account
+        )
+        Instance.objects.filter(pk__in=[reference.pk, deleted_before.pk]).update(entity=entity)
+
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+        # The entity's deletion entry has the same object id as the submission deleted before
+        self.assertTrue(Modification.objects.filter(object_id=str(entity.pk), source=ENTITY_API).exists())
+
+        self.assertJSONResponse(self.client.post(f"/api/entities/{entity.id}/restore/"), status.HTTP_200_OK)
+
+        reference.refresh_from_db()
+        self.assertFalse(reference.deleted)
+        deleted_before.refresh_from_db()
+        self.assertTrue(deleted_before.deleted)
 
     def test_restore_entity_with_submission_uploaded_after_deletion(self):
         """

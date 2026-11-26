@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from unittest import mock
+
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.mcp.client import DjangoUserTransport
 from iaso.mcp.protocol import call_tool
+from iaso.mcp.serialize import ORG_UNIT_SLIM_FIELDS
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_PERMISSION
 from iaso.test import TestCase
 
@@ -139,6 +144,161 @@ class ListOrgUnitsToolTest(ListToolTestCase):
         # the detail always loads reference_instances, only the descendants' instance count must go
         count_queries = [query["sql"] for query in queries if 'COUNT("iaso_instance"' in query["sql"]]
         self.assertEqual(count_queries, [], "get_org_unit should not count instances")
+
+
+class OrgUnitOptionsToolTest(ListToolTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.city = cls.create_org_unit_type("City", [cls.project])
+        shape = MultiPolygon(Polygon(((4.4, 51.0), (4.5, 51.0), (4.5, 51.1), (4.4, 51.0))))
+        cls.mechelen = m.OrgUnit.objects.create(
+            name="Mechelen",
+            code="MEC",
+            org_unit_type=cls.city,
+            version=cls.version,
+            parent=cls.antwerp,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            location=Point(4.48, 51.03, 7),
+            geom=shape,
+            simplified_geom=shape,
+        )
+        cls.create_form_instance(form=cls.province_form, project=cls.project, org_unit=cls.mechelen)
+
+    def assertAncestors(self, org_unit):
+        self.assertEqual(
+            org_unit["ancestors"],
+            [
+                {
+                    "id": self.antwerp.id,
+                    "name": "Antwerp",
+                    "org_unit_type_id": self.province.id,
+                    "org_unit_type_name": "Province",
+                },
+                {
+                    "id": self.belgium.id,
+                    "name": "Belgium",
+                    "org_unit_type_id": self.country.id,
+                    "org_unit_type_name": "Country",
+                },
+            ],
+            "ancestors from the direct parent to the root",
+        )
+
+    def assertNoHeavyFields(self, org_unit, fields):
+        for field in fields:
+            self.assertNotIn(field, org_unit, f"{field} returned without being asked")
+
+    def test_list_org_units_with_most_details(self):
+        with CaptureQueriesContext(connection) as queries:
+            result = self.call("list_org_units", search="Mechelen", with_most_details=True)
+
+        mechelen = result["org_units"][0]
+        self.assertEqual(
+            {field: mechelen[field] for field in ["code", "latitude", "longitude", "altitude", "has_geo_json"]},
+            {"code": "MEC", "latitude": 51.03, "longitude": 4.48, "altitude": 7, "has_geo_json": True},
+        )
+        self.assertNoHeavyFields(mechelen, ["instances_count", "parent", "ancestors"])
+        instance_queries = [query["sql"] for query in queries if "iaso_instance" in query["sql"]]
+        self.assertEqual(instance_queries, [], "list_org_units should not count instances")
+
+    def test_list_org_units_with_ancestors(self):
+        mechelen = self.call("list_org_units", search="Mechelen", with_ancestors=True)["org_units"][0]
+
+        self.assertAncestors(mechelen)
+        self.assertEqual(set(mechelen), set(ORG_UNIT_SLIM_FIELDS) | {"ancestors"}, "ancestors alone")
+
+    def test_root_has_no_ancestors(self):
+        belgium = self.call("list_org_units", search="Belgium", with_ancestors=True)["org_units"][0]
+
+        self.assertEqual(belgium["ancestors"], [])
+
+    def test_get_org_unit_with_ancestors(self):
+        mechelen = call_tool("get_org_unit", {"org_unit_id": self.mechelen.id, "with_ancestors": True}, self.user)
+
+        self.assertAncestors(mechelen)
+        self.assertEqual(set(mechelen), set(ORG_UNIT_SLIM_FIELDS) | {"ancestors"}, "ancestors alone")
+
+    def test_get_org_unit_with_most_details(self):
+        with CaptureQueriesContext(connection) as queries:
+            mechelen = call_tool(
+                "get_org_unit", {"org_unit_id": self.mechelen.id, "with_most_details": True}, self.user
+            )
+
+        self.assertEqual(
+            {field: mechelen[field] for field in ["code", "latitude", "longitude", "altitude", "version_id"]},
+            {"code": "MEC", "latitude": 51.03, "longitude": 4.48, "altitude": 7, "version_id": self.version.id},
+        )
+        self.assertNoHeavyFields(
+            mechelen, ["instances_count", "reference_instances", "catchment", "parent", "geo_json", "ancestors"]
+        )
+        count_queries = [query["sql"] for query in queries if 'COUNT("iaso_instance"' in query["sql"]]
+        self.assertEqual(count_queries, [], "get_org_unit should not count instances")
+
+    def test_get_org_unit_with_geo_json(self):
+        mechelen = call_tool("get_org_unit", {"org_unit_id": self.mechelen.id, "with_geo_json": True}, self.user)
+
+        geometry = mechelen["geo_json"]["features"][0]["geometry"]
+        self.assertEqual(geometry["type"], "MultiPolygon")
+        self.assertEqual(geometry["coordinates"], [[[[4.4, 51.0], [4.5, 51.0], [4.5, 51.1], [4.4, 51.0]]]])
+        self.assertEqual(
+            set(mechelen), set(ORG_UNIT_SLIM_FIELDS) | {"geo_json"}, "geo_json alone, without the other details"
+        )
+
+    def test_get_org_unit_with_all_options(self):
+        arguments = {
+            "org_unit_id": self.mechelen.id,
+            "with_most_details": True,
+            "with_ancestors": True,
+            "with_geo_json": True,
+        }
+        mechelen = call_tool("get_org_unit", arguments, self.user)
+
+        self.assertEqual(mechelen["geo_json"]["features"][0]["geometry"]["type"], "MultiPolygon")
+        self.assertEqual(mechelen["code"], "MEC")
+        self.assertAncestors(mechelen)
+
+    def test_slim_by_default(self):
+        listed = self.call("list_org_units", search="Mechelen")["org_units"][0]
+        detail = call_tool("get_org_unit", {"org_unit_id": self.mechelen.id}, self.user)
+
+        for org_unit in [listed, detail]:
+            self.assertEqual(set(org_unit), set(ORG_UNIT_SLIM_FIELDS))
+
+    def requested_fields(self, tool_name, **arguments):
+        """The `fields` param the tool sends to the API: what the API computes, whatever the tool returns."""
+        with mock.patch.object(
+            DjangoUserTransport, "request", autospec=True, side_effect=DjangoUserTransport.request
+        ) as request:
+            call_tool(tool_name, arguments, self.user)
+        return set(request.call_args.kwargs["params"]["fields"].split(","))
+
+    def test_requests_only_the_needed_fields(self):
+        heavy_fields = {"instances_count", "reference_instances", "catchment"}
+        cases = [
+            ("list_org_units", {}, set()),
+            ("list_org_units", {"with_ancestors": True}, {"parent"}),
+            ("get_org_unit", {"org_unit_id": self.mechelen.id}, set()),
+            ("get_org_unit", {"org_unit_id": self.mechelen.id, "with_ancestors": True}, {"parent"}),
+            ("get_org_unit", {"org_unit_id": self.mechelen.id, "with_geo_json": True}, {"geo_json"}),
+        ]
+        for tool_name, arguments, extra_fields in cases:
+            with self.subTest(tool_name, **arguments):
+                self.assertEqual(
+                    self.requested_fields(tool_name, **arguments), set(ORG_UNIT_SLIM_FIELDS) | extra_fields
+                )
+
+        for tool_name, arguments in [
+            ("list_org_units", {"with_most_details": True}),
+            ("get_org_unit", {"org_unit_id": self.mechelen.id, "with_most_details": True}),
+        ]:
+            with self.subTest(tool_name, **arguments):
+                fields = self.requested_fields(tool_name, **arguments)
+                self.assertIn("code", fields)
+                self.assertFalse(
+                    fields & (heavy_fields | {"parent", "geo_json"}),
+                    f"requested {fields & (heavy_fields | {'parent', 'geo_json'})}",
+                )
 
 
 class ListFormsToolTest(ListToolTestCase):

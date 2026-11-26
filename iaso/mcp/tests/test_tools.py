@@ -10,7 +10,7 @@ from django.utils import timezone
 from iaso import models as m
 from iaso.mcp.client import DjangoUserTransport
 from iaso.mcp.protocol import call_tool
-from iaso.mcp.serialize import ORG_UNIT_SLIM_FIELDS
+from iaso.mcp.serialize import ORG_UNIT_DETAIL_ONLY_FIELDS, ORG_UNIT_MOST_DETAILS_FIELDS, ORG_UNIT_SLIM_FIELDS
 from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_ORG_UNITS_PERMISSION
 from iaso.test import TestCase
 
@@ -164,6 +164,8 @@ class OrgUnitOptionsToolTest(ListToolTestCase):
             simplified_geom=shape,
         )
         cls.create_form_instance(form=cls.province_form, project=cls.project, org_unit=cls.mechelen)
+        cls.cities = m.Group.objects.create(name="Cities", source_ref="CITIES", source_version=cls.version)
+        cls.mechelen.groups.set([cls.cities])
 
     def assertAncestors(self, org_unit):
         self.assertEqual(
@@ -201,6 +203,27 @@ class OrgUnitOptionsToolTest(ListToolTestCase):
         self.assertNoHeavyFields(mechelen, ["instances_count", "parent", "ancestors"])
         instance_queries = [query["sql"] for query in queries if "iaso_instance" in query["sql"]]
         self.assertEqual(instance_queries, [], "list_org_units should not count instances")
+
+    def test_most_details_same_fields_from_list_and_detail(self):
+        listed = self.call("list_org_units", search="Mechelen", with_most_details=True)["org_units"][0]
+        detail = call_tool("get_org_unit", {"org_unit_id": self.mechelen.id, "with_most_details": True}, self.user)
+
+        self.assertEqual(set(listed), set(ORG_UNIT_MOST_DETAILS_FIELDS), "list_org_units with_most_details")
+        self.assertEqual(
+            set(detail),
+            set(ORG_UNIT_MOST_DETAILS_FIELDS) | set(ORG_UNIT_DETAIL_ONLY_FIELDS),
+            "get_org_unit with_most_details: the list fields plus the detail-only ones",
+        )
+        cities = [{"id": self.cities.id, "name": "Cities", "source_ref": "CITIES"}]
+        self.assertEqual(listed["groups"], cities, "list_org_units groups")
+        self.assertEqual(detail["groups"], cities, "get_org_unit groups")
+
+    def test_list_org_units_with_most_details_without_org_unit_type(self):
+        self._org_unit("Brussels", None, self.version, parent=self.belgium, validation_status=m.OrgUnit.VALIDATION_NEW)
+
+        result = self.call("list_org_units", validation_status="NEW", with_most_details=True)
+
+        self.assertListed(result, "org_units", "name", ["Ghent", "Brussels"])
 
     def test_list_org_units_with_ancestors(self):
         mechelen = self.call("list_org_units", search="Mechelen", with_ancestors=True)["org_units"][0]

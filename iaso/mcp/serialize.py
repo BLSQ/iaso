@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from iaso.api.serializers import OrgUnitSearchSerializer
-
 
 _PAGE_LIMIT_MAX = 50
 
@@ -37,41 +35,28 @@ ORG_UNIT_SLIM_FIELDS = [
 ]
 
 
-# with_most_details=True: the API's fields without instances_count (and, for the detail, reference_instances
-# and catchment). `parent` (nested up to the root) only with with_ancestors, returned flattened as `ancestors`.
-ORG_UNIT_LIST_MOST_DETAILS_FIELDS = [
-    field for field in OrgUnitSearchSerializer.Meta.fields if field not in ("instances_count", "parent")
-]
-ORG_UNIT_DETAIL_MOST_DETAILS_FIELDS = [
-    "id",
-    "name",
+# with_most_details=True: the same fields from the list and the detail (never instances_count, reference_instances,
+# catchment, nor the type's projects: a type-less org unit crashes the list). `parent` (nested up to the root)
+# only with with_ancestors, returned flattened as `ancestors`.
+ORG_UNIT_MOST_DETAILS_FIELDS = ORG_UNIT_SLIM_FIELDS + [
     "code",
     "aliases",
-    "validation_status",
-    "source",
     "source_id",
     "source_ref",
-    "source_url",
     "sub_source",
-    "version",
-    "version_id",
-    "parent_id",
-    "parent_name",
-    "org_unit_type_id",
-    "org_unit_type_name",
-    "org_unit_type",
     "groups",
     "latitude",
     "longitude",
     "altitude",
     "has_geo_json",
-    "opening_date",
-    "closed_date",
     "created_at",
     "updated_at",
     "creator",
-    "default_image_id",
 ]
+# Only the detail returns these
+ORG_UNIT_DETAIL_ONLY_FIELDS = ["version", "version_id", "source_url", "opening_date", "closed_date", "default_image_id"]
+# The list (GroupSerializer) and the detail (Group.as_dict) return different group dicts
+ORG_UNIT_GROUP_FIELDS = ["id", "name", "source_ref"]
 # Common to the nested `parent` of the list and of the detail
 ORG_UNIT_ANCESTOR_FIELDS = ["id", "name", "org_unit_type_id", "org_unit_type_name"]
 
@@ -95,6 +80,9 @@ def org_unit_result(
     """The org unit as returned by the tools, from the API item fetched with org_unit_fields."""
     if with_most_details:
         org_unit = {key: value for key, value in item.items() if key not in ("parent", "geo_json")}
+        org_unit["groups"] = [
+            {field: group.get(field) for field in ORG_UNIT_GROUP_FIELDS} for group in item.get("groups") or []
+        ]
     else:
         org_unit = slim_org_unit(item)
     if with_ancestors:

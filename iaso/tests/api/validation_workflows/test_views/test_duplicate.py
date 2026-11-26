@@ -106,6 +106,29 @@ class ValidationWorkflowAPIDuplicateTestCase(BaseValidationWorkflowAPITestCase):
         self.assertEqual(self.validation_workflow.dump_nodes(), ["first-node", "second-node", "third-node"])
         self.assertEqual(self.validation_workflow.node_templates.count(), 3)
 
+    def test_duplicate_copies_fields_and_foreign_keys(self):
+        self.client.force_authenticate(self.john_wick)
+        res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
+        copy = ValidationWorkflow.objects.get(slug=res_data["slug"], account=self.account)
+
+        # Many-to-one relation copied from the original
+        self.assertEqual(copy.account_id, self.validation_workflow.account_id)
+        self.assertEqual(copy.account, self.account)
+
+        # Every column not explicitly excluded is copied, so a field added later is covered too
+        for field in ValidationWorkflow._meta.concrete_fields:
+            if field.name not in ValidationWorkflow.DUPLICATE_EXCLUDED_FIELDS:
+                with self.subTest(field=field.name):
+                    self.assertEqual(getattr(copy, field.attname), getattr(self.validation_workflow, field.attname))
+
+        # Excluded fields are regenerated or reset
+        self.assertEqual(copy.name, "Random name (copy)")
+        self.assertEqual(copy.slug, "random-name-copy")
+        self.assertEqual(copy.created_by, self.john_wick)
+        self.assertIsNone(copy.updated_by)
+        self.assertIsNone(copy.deleted_at)
+        self.assertGreater(copy.created_at, self.validation_workflow.created_at)
+
     def test_duplicate_names(self):
         self.client.force_authenticate(self.john_wick)
 

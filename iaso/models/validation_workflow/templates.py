@@ -236,6 +236,17 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     DUPLICATE_MAX_ATTEMPTS = 5
     # Length of the longest copy suffix we support, " (copy 99999999999)"
     DUPLICATE_MAX_SUFFIX_LENGTH = 20
+    # Fields not copied from the original: regenerated (id, name, slug, timestamps) or reset for the copy
+    DUPLICATE_EXCLUDED_FIELDS = {
+        "id",
+        "name",
+        "slug",
+        "created_by",
+        "updated_by",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+    }
 
     def get_duplicate_name(self):
         """
@@ -268,14 +279,19 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         Two users duplicating the same workflow at the same time may compute the same name (or slug):
         the second insert then violates a unique constraint, so we retry with a freshly computed name.
         """
+        # Every column is copied (foreign keys included, through their "<name>_id"), except the excluded ones,
+        # so a field added later is copied by default. Many-to-many and reverse relations are not columns,
+        # they are handled by duplicate().
+        copied_fields = {
+            field.attname: getattr(self, field.attname)
+            for field in self._meta.concrete_fields
+            if field.name not in self.DUPLICATE_EXCLUDED_FIELDS
+        }
         for attempt in range(self.DUPLICATE_MAX_ATTEMPTS):
             try:
                 with transaction.atomic():  # savepoint, so the outer transaction survives a failed insert
                     return ValidationWorkflow.objects.create(
-                        name=self.get_duplicate_name(),
-                        description=self.description,
-                        account_id=self.account_id,
-                        created_by=user,
+                        **copied_fields, name=self.get_duplicate_name(), created_by=user
                     )
             except IntegrityError:
                 if attempt == self.DUPLICATE_MAX_ATTEMPTS - 1:

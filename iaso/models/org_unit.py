@@ -6,8 +6,6 @@ import uuid
 from copy import deepcopy
 from functools import reduce
 
-import django_cte
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
@@ -177,7 +175,7 @@ class OrgUnitType(models.Model):
 
 
 # noinspection PyTypeChecker
-class OrgUnitQuerySet(django_cte.CTEQuerySet):
+class OrgUnitQuerySet(QuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream

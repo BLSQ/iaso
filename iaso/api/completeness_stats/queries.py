@@ -2,7 +2,7 @@
 
 from django.db import models
 from django.db.models import QuerySet
-from django_cte import With
+from django_cte import CTE, with_cte
 from django_cte.raw import raw_cte_sql
 
 from iaso.models import Form, Instance, OrgUnit
@@ -114,14 +114,14 @@ def get_annotated_queryset(
     """
 
     # Name are referenced by the other cte query so don't modify them
-    root_ou_cte = With(root_qs, name="filtered_roots")
-    form_cte = With(form_qs.only("id", "name", "legend_threshold"), name="filtered_forms")
-    instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
-    filter_ou_cte = With(orgunit_qs.only("id", "org_unit_type_id", "path"), name="filtered_orgunit")
+    root_ou_cte = CTE(root_qs, name="filtered_roots")
+    form_cte = CTE(form_qs.only("id", "name", "legend_threshold"), name="filtered_forms")
+    instances_cte = CTE(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
+    filter_ou_cte = CTE(orgunit_qs.only("id", "org_unit_type_id", "path"), name="filtered_orgunit")
     # Same underlying queryset as `filter_ou_cte`, given its own cte name so the org-unit-group
     # branch of OU_COUNT_QUERY doesn't share a reference with the org-unit-type branch -- see the
     # comment there for why that matters for the query plan.
-    filter_ou_groups_cte = With(orgunit_qs.only("id", "path"), name="filtered_orgunit_groups")
+    filter_ou_groups_cte = CTE(orgunit_qs.only("id", "path"), name="filtered_orgunit_groups")
 
     pivot_cte = raw_cte_sql(
         sql=PIVOT_QUERY,
@@ -131,7 +131,7 @@ def get_annotated_queryset(
             "org_unit_id": models.ForeignKey("iaso.orgunit", on_delete=models.PROTECT),
         },
     )
-    pivot_with = With(pivot_cte, name="pivot")
+    pivot_with = CTE(pivot_cte, name="pivot")
     ou_count_cte = raw_cte_sql(
         OU_COUNT_QUERY,
         [],
@@ -141,21 +141,20 @@ def get_annotated_queryset(
             "instances_count": models.IntegerField(),
         },
     )
-    ou_count_with = With(ou_count_cte, name="ou_count")
+    ou_count_with = CTE(ou_count_cte, name="ou_count")
 
     count_per_root_cte = raw_cte_sql(COUNT_PER_ROOT_QUERY, [], {})
-    count_per_root_with = With(count_per_root_cte, "count_per_root")
+    count_per_root_with = CTE(count_per_root_cte, "count_per_root")
 
-    annotated_query: QuerySet[OrgUnitWithFormStat] = (
-        pivot_with.join(root_qs, id=pivot_with.col.org_unit_id)
-        .with_cte(pivot_with)
-        .with_cte(count_per_root_with)
-        .with_cte(ou_count_with)
-        .with_cte(root_ou_cte)
-        .with_cte(form_cte)
-        .with_cte(instances_cte)
-        .with_cte(filter_ou_cte)
-        .with_cte(filter_ou_groups_cte)
-        .annotate(form_stats=pivot_with.col.form_stats)
-    )
+    annotated_query: QuerySet[OrgUnitWithFormStat] = with_cte(
+        pivot_with,
+        count_per_root_with,
+        ou_count_with,
+        root_ou_cte,
+        form_cte,
+        instances_cte,
+        filter_ou_cte,
+        filter_ou_groups_cte,
+        select=pivot_with.join(root_qs, id=pivot_with.col.org_unit_id),
+    ).annotate(form_stats=pivot_with.col.form_stats)
     return annotated_query

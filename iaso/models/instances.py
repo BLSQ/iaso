@@ -10,8 +10,6 @@ from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-import django_cte
-
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
@@ -86,7 +84,7 @@ def resolve_status_form_ids(form_id=None, form_ids=None):
     return resolved or None
 
 
-class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySet):
+class InstanceQuerySet(ValidationWorkflowArtefactQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.

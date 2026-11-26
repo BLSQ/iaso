@@ -12,15 +12,15 @@ import type { RequestHandlerOptions } from 'msw';
 
 import { NestedTeamTypeValueEnum } from '../../models';
 import type {
-    AssignOrgUnits,
+    Assign,
     PaginatedAssignmentOrgUnitList,
     PaginatedAssignmentTeamList,
-    UnassignOrgUnits,
+    UnassignResponse,
 } from '../../models';
 
-export const getApiMicroplanningPlanningsAssignmentsAssignCreateResponseMock = (
-    overrideResponse: Partial<Extract<AssignOrgUnits, object>> = {},
-): AssignOrgUnits => ({
+export const getApiMicroplanningPlanningsAssignmentsAssignUpdateResponseMock = (
+    overrideResponse: Partial<Extract<Assign, object>> = {},
+): Assign => ({
     created: Array.from(
         { length: faker.number.int({ min: 1, max: 10 }) },
         (_, i) => i + 1,
@@ -109,36 +109,31 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListResponseMock = (
     ...overrideResponse,
 });
 
-export const getApiMicroplanningPlanningsAssignmentsUnassignCreateResponseMock =
+export const getApiMicroplanningPlanningsAssignmentsUnassignUpdateResponseMock =
     (
-        overrideResponse: Partial<Extract<UnassignOrgUnits, object>> = {},
-    ): UnassignOrgUnits => ({
-        created: Array.from(
-            { length: faker.number.int({ min: 1, max: 10 }) },
-            (_, i) => i + 1,
-        ).map(() => faker.number.int()),
-        updated: Array.from(
-            { length: faker.number.int({ min: 1, max: 10 }) },
-            (_, i) => i + 1,
-        ).map(() => faker.number.int()),
-        deleted: Array.from(
-            { length: faker.number.int({ min: 1, max: 10 }) },
-            (_, i) => i + 1,
-        ).map(() => faker.number.int()),
+        overrideResponse: Partial<Extract<UnassignResponse, object>> = {},
+    ): UnassignResponse => ({
+        deleted: faker.helpers.arrayElement([
+            Array.from(
+                { length: faker.number.int({ min: 1, max: 10 }) },
+                (_, i) => i + 1,
+            ).map(() => faker.number.int()),
+            undefined,
+        ]),
         ...overrideResponse,
     });
 
-export const getApiMicroplanningPlanningsAssignmentsAssignCreateMockHandler = (
+export const getApiMicroplanningPlanningsAssignmentsAssignUpdateMockHandler = (
     overrideResponse?:
-        | AssignOrgUnits
+        | Assign
         | ((
-              info: Parameters<Parameters<typeof http.post>[1]>[0],
-          ) => Promise<AssignOrgUnits> | AssignOrgUnits),
+              info: Parameters<Parameters<typeof http.put>[1]>[0],
+          ) => Promise<Assign> | Assign),
     options?: RequestHandlerOptions,
 ) => {
-    return http.post(
+    return http.put(
         '*/api/microplanning/plannings/:parentLookupPk/assignments/assign/',
-        async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+        async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
             await delay(
                 (() =>
                     process.env?.MSW_DELAY
@@ -151,7 +146,7 @@ export const getApiMicroplanningPlanningsAssignmentsAssignCreateMockHandler = (
                     ? typeof overrideResponse === 'function'
                         ? await overrideResponse(info)
                         : overrideResponse
-                    : getApiMicroplanningPlanningsAssignmentsAssignCreateResponseMock(),
+                    : getApiMicroplanningPlanningsAssignmentsAssignUpdateResponseMock(),
                 { status: 200 },
             );
         },
@@ -225,18 +220,18 @@ export const getApiMicroplanningPlanningsAssignmentsTeamsListMockHandler = (
     );
 };
 
-export const getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler =
+export const getApiMicroplanningPlanningsAssignmentsUnassignUpdateMockHandler =
     (
         overrideResponse?:
-            | UnassignOrgUnits
+            | UnassignResponse
             | ((
-                  info: Parameters<Parameters<typeof http.post>[1]>[0],
-              ) => Promise<UnassignOrgUnits> | UnassignOrgUnits),
+                  info: Parameters<Parameters<typeof http.put>[1]>[0],
+              ) => Promise<UnassignResponse> | UnassignResponse),
         options?: RequestHandlerOptions,
     ) => {
-        return http.post(
+        return http.put(
             '*/api/microplanning/plannings/:parentLookupPk/assignments/unassign/',
-            async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+            async (info: Parameters<Parameters<typeof http.put>[1]>[0]) => {
                 await delay(
                     (() =>
                         process.env?.MSW_DELAY
@@ -249,7 +244,7 @@ export const getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler =
                         ? typeof overrideResponse === 'function'
                             ? await overrideResponse(info)
                             : overrideResponse
-                        : getApiMicroplanningPlanningsAssignmentsUnassignCreateResponseMock(),
+                        : getApiMicroplanningPlanningsAssignmentsUnassignUpdateResponseMock(),
                     { status: 200 },
                 );
             },
@@ -257,8 +252,8 @@ export const getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler =
         );
     };
 export const getAssignmentsMock = () => [
-    getApiMicroplanningPlanningsAssignmentsAssignCreateMockHandler(),
+    getApiMicroplanningPlanningsAssignmentsAssignUpdateMockHandler(),
     getApiMicroplanningPlanningsAssignmentsOrgUnitsListMockHandler(),
     getApiMicroplanningPlanningsAssignmentsTeamsListMockHandler(),
-    getApiMicroplanningPlanningsAssignmentsUnassignCreateMockHandler(),
+    getApiMicroplanningPlanningsAssignmentsUnassignUpdateMockHandler(),
 ];

@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import {
-    apiMicroplanningPlanningsAssignmentsAssignCreate,
-    apiMicroplanningPlanningsAssignmentsUnassignCreate,
+    apiMicroplanningPlanningsAssignmentsAssignUpdate,
+    apiMicroplanningPlanningsAssignmentsUnassignUpdate,
 } from 'Iaso/api/assignments/endpoints/assignments/assignments';
 import { PaginatedAssignmentOrgUnitListOutput } from 'Iaso/api/assignments/models/paginatedAssignmentOrgUnitList.zod';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
@@ -56,11 +56,11 @@ export const useUpdateAssignments = (planningId: number): UpdateAssignments => {
         mutationFn: async ({ changes }: MutationVariables) => {
             for (const { orgUnitIds, assignee } of changes) {
                 await (assignee
-                    ? apiMicroplanningPlanningsAssignmentsAssignCreate(
+                    ? apiMicroplanningPlanningsAssignmentsAssignUpdate(
                           `${planningId}`,
                           { org_unit_ids: orgUnitIds, ...assignee },
                       )
-                    : apiMicroplanningPlanningsAssignmentsUnassignCreate(
+                    : apiMicroplanningPlanningsAssignmentsUnassignUpdate(
                           `${planningId}`,
                           { org_unit_ids: orgUnitIds },
                       ));

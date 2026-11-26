@@ -1,7 +1,56 @@
+from collections import deque
+from typing import Optional
+
+from django.contrib.auth.models import User
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer
-from iaso.models import Form, Instance, OrgUnit, Project, ValidationNodeTemplate
+from iaso.models import Form, Instance, OrgUnit, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models.common import ValidationWorkflowArtefactStatus
+from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
+from iaso.utils.pii import get_allowed_fields
+
+
+SUBMISSION_STATUSES = [ValidationNodeStatus.SUBMISSION, ValidationNodeStatus.NEW_VERSION]
+COMPLETED_STATUSES = [ValidationNodeStatus.ACCEPTED, ValidationNodeStatus.REJECTED]
+
+
+def compute_step_positions(node_templates) -> dict[int, int]:
+    """
+    Position (1-based) of each step of a workflow: the length of the longest path from a starting step.
+    Parallel steps share the same position. Steps that are part of a cycle get no position.
+    """
+    next_ids = {}
+    for node_template in node_templates:
+        # aggregated by the list view, so the graph is read without a query per step
+        aggregated_ids = getattr(node_template, "next_node_template_ids", None)
+        if aggregated_ids is not None:
+            next_ids[node_template.pk] = list(aggregated_ids)
+        else:
+            next_ids[node_template.pk] = [next_node.pk for next_node in node_template.next_node_templates.all()]
+
+    in_degree = dict.fromkeys(next_ids, 0)
+    for next_pks in next_ids.values():
+        for next_pk in next_pks:
+            if next_pk in in_degree:
+                in_degree[next_pk] += 1
+
+    positions = {pk: 1 for pk, degree in in_degree.items() if degree == 0}
+    to_visit = deque(positions)
+    resolved = set()
+    while to_visit:
+        pk = to_visit.popleft()
+        resolved.add(pk)
+        for next_pk in next_ids[pk]:
+            if next_pk not in in_degree:
+                continue
+            positions[next_pk] = max(positions.get(next_pk, 0), positions[pk] + 1)
+            in_degree[next_pk] -= 1
+            if in_degree[next_pk] == 0:
+                to_visit.append(next_pk)
+    # a step entering a cycle got a temporary position from its previous steps, but is never resolved
+    return {pk: position for pk, position in positions.items() if pk in resolved}
 
 
 class ProjectNestedSerializer(ModelSerializer):
@@ -22,11 +71,49 @@ class FormNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
-class OrgUnitNestedSerializer(serializers.ModelSerializer):
+class WorkflowNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ValidationWorkflow
+        fields = ["id", "name"]
+
+
+class OrgUnitParentNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name"]
         read_only_fields = ["id", "name"]
+
+
+class OrgUnitNestedSerializer(serializers.ModelSerializer):
+    parent = OrgUnitParentNestedSerializer(read_only=True, allow_null=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "parent"]
+        read_only_fields = ["id", "name", "parent"]
+
+
+class UserNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+        read_only_fields = fields
+
+
+class CurrentStepSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True, help_text="Id of the pending validation node")
+    node_template_id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    position = serializers.IntegerField(read_only=True, allow_null=True)
+    pending_since = serializers.DateTimeField(read_only=True)
+    user_can_act = serializers.BooleanField(read_only=True)
+
+
+class LastUserActionSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=COMPLETED_STATUSES, read_only=True)
+    name = serializers.CharField(read_only=True)
+    position = serializers.IntegerField(read_only=True, allow_null=True)
+    date = serializers.DateTimeField(read_only=True)
 
 
 class ValidationWorkflowInstanceListSerializer(ModelSerializer):
@@ -34,21 +121,154 @@ class ValidationWorkflowInstanceListSerializer(ModelSerializer):
     org_unit = OrgUnitNestedSerializer(read_only=True, allow_null=True)
     user_has_been_involved = serializers.BooleanField(read_only=True, source="annotate_user_has_been_involved")
     requires_user_action = serializers.BooleanField(read_only=True, source="annotate_requires_user_action")
-    last_updated = serializers.DateTimeField(read_only=True, source="annotate_last_updated")
+    handled_by_me = serializers.BooleanField(read_only=True, source="annotate_handled_by_me")
+    last_updated = serializers.DateTimeField(read_only=True)
+    pending_since = serializers.DateTimeField(read_only=True, allow_null=True)
     form = FormNestedSerializer(read_only=True)
+    workflow = WorkflowNestedSerializer(read_only=True, source="form.validation_workflow")
     general_validation_status = serializers.CharField(
         read_only=True, allow_blank=True, source="get_general_validation_status_display"
     )
+    validation_status = serializers.ChoiceField(
+        read_only=True, source="general_validation_status", choices=ValidationWorkflowArtefactStatus.choices
+    )
+    display_name = serializers.SerializerMethodField()
+    submitted_by = serializers.SerializerMethodField()
+    submitted_at = serializers.SerializerMethodField()
+    is_resubmission = serializers.SerializerMethodField()
+    current_steps = serializers.SerializerMethodField()
+    step_count = serializers.SerializerMethodField()
+    last_user_action = serializers.SerializerMethodField()
 
     class Meta:
         model = Instance
         fields = [
             "id",
+            "display_name",
             "form",
+            "workflow",
             "org_unit",
             "project",
             "general_validation_status",
+            "validation_status",
             "user_has_been_involved",
             "requires_user_action",
+            "handled_by_me",
             "last_updated",
+            "pending_since",
+            "submitted_by",
+            "submitted_at",
+            "is_resubmission",
+            "current_steps",
+            "step_count",
+            "last_user_action",
         ]
+
+    # helpers
+
+    def _get_validation_nodes(self, obj: Instance) -> list:
+        """Validation nodes of the current workflow of the instance, newest first."""
+        # prefetched and annotated by the list view (like the annotate_* fields, this serializer needs its queryset)
+        nodes = obj.prefetched_validation_nodes
+        workflow_id = obj.form.validation_workflow_id if obj.form else None
+        return [node for node in nodes if node.node.workflow_id == workflow_id]
+
+    def _get_step_positions(self, obj: Instance) -> dict[int, int]:
+        workflow = obj.form.validation_workflow if obj.form else None
+        if workflow is None:
+            return {}
+        cache = self.context.setdefault("step_positions_by_workflow", {})
+        if workflow.pk not in cache:
+            node_templates = getattr(workflow, "prefetched_node_templates", None)
+            if node_templates is None:
+                node_templates = workflow.node_templates.prefetch_related("next_node_templates")
+            cache[workflow.pk] = compute_step_positions(node_templates)
+        return cache[workflow.pk]
+
+    def _get_latest_submission_node(self, obj: Instance):
+        return next((node for node in self._get_validation_nodes(obj) if node.status in SUBMISSION_STATUSES), None)
+
+    @staticmethod
+    def _user_can_act(validation_node) -> bool:
+        # annotated by the list view, with the same rule as the queues (the user must have all the roles of the step)
+        return validation_node.annotate_user_can_act
+
+    # fields
+
+    @extend_schema_field({"type": "string", "nullable": True})
+    def get_display_name(self, obj: Instance) -> Optional[str]:
+        """Values of the label keys of the form, without the personal data the user is not allowed to see."""
+        form = obj.form
+        if form is None or not form.label_keys or not isinstance(obj.json, dict):
+            return None
+        allowed_fields = get_allowed_fields(form, self.context["request"].user)
+        values = [
+            str(obj.json[key])
+            for key in form.label_keys
+            if obj.json.get(key) not in (None, "") and (allowed_fields is None or key.lower() in allowed_fields)
+        ]
+        return " ".join(values) or None
+
+    @extend_schema_field(UserNestedSerializer(allow_null=True))
+    def get_submitted_by(self, obj: Instance):
+        submission_node = self._get_latest_submission_node(obj)
+        user = submission_node.created_by if submission_node and submission_node.created_by else obj.created_by
+        return UserNestedSerializer(user).data if user else None
+
+    @extend_schema_field(serializers.DateTimeField(allow_null=True))
+    def get_submitted_at(self, obj: Instance):
+        submission_node = self._get_latest_submission_node(obj)
+        submitted_at = submission_node.created_at if submission_node else (obj.source_created_at or obj.created_at)
+        return serializers.DateTimeField().to_representation(submitted_at) if submitted_at else None
+
+    @extend_schema_field(serializers.BooleanField)
+    def get_is_resubmission(self, obj: Instance) -> bool:
+        submission_node = self._get_latest_submission_node(obj)
+        return bool(submission_node and submission_node.status == ValidationNodeStatus.NEW_VERSION)
+
+    @extend_schema_field(CurrentStepSerializer(many=True))
+    def get_current_steps(self, obj: Instance):
+        if obj.general_validation_status != ValidationWorkflowArtefactStatus.PENDING:
+            return []
+        positions = self._get_step_positions(obj)
+        pending_nodes = sorted(
+            (node for node in self._get_validation_nodes(obj) if node.status == ValidationNodeStatus.UNKNOWN),
+            key=lambda node: node.created_at,
+        )
+        steps = [
+            {
+                "id": node.pk,
+                "node_template_id": node.node_id,
+                "name": node.node.name,
+                "position": positions.get(node.node_id),
+                "pending_since": node.created_at,
+                "user_can_act": self._user_can_act(node),
+            }
+            for node in pending_nodes
+        ]
+        return CurrentStepSerializer(steps, many=True).data
+
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
+    def get_step_count(self, obj: Instance) -> Optional[int]:
+        positions = self._get_step_positions(obj)
+        return max(positions.values()) if positions else None
+
+    @extend_schema_field(LastUserActionSerializer(allow_null=True))
+    def get_last_user_action(self, obj: Instance):
+        user = self.context["request"].user
+        completed_nodes = [
+            node
+            for node in self._get_validation_nodes(obj)
+            if node.updated_by_id == user.pk and node.status in COMPLETED_STATUSES
+        ]
+        if not completed_nodes:
+            return None
+        last_node = max(completed_nodes, key=lambda node: node.updated_at)
+        return LastUserActionSerializer(
+            {
+                "status": last_node.status,
+                "name": last_node.node.name,
+                "position": self._get_step_positions(obj).get(last_node.node_id),
+                "date": last_node.updated_at,
+            }
+        ).data

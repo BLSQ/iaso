@@ -726,7 +726,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         )
 
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(7):
             res = self.client.get(reverse("validation_workflow_instances-list"))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 
@@ -743,7 +743,7 @@ class ValidationWorkflowInstanceAPIListTestCase(SwaggerTestCaseMixin, APITestCas
         )
 
         self.client.force_authenticate(self.john_wick)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(7):
             res = self.client.get(reverse("validation_workflow_instances-list"))
         self.assertJSONResponse(res, status.HTTP_200_OK)
 

@@ -67,7 +67,12 @@ def _write_target() -> dict[str, Any]:
 
 
 def _filters(**kwargs: Any) -> dict[str, Any]:
-    return {key: value for key, value in kwargs.items() if value is not None}
+    """Drop unset filters; booleans as "true"/"false", the form the API compares against."""
+    return {
+        key: str(value).lower() if isinstance(value, bool) else value
+        for key, value in kwargs.items()
+        if value is not None
+    }
 
 
 @tool()
@@ -107,7 +112,7 @@ def list_org_units(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of org units. validation_status: NEW, VALID, REJECTED."""
+    """List one page of org units. validation_status: NEW, VALID, REJECTED. source_id: data source id."""
     limit = clamp_limit(limit)
     response = get_client().org_units_list_page(
         page=page,
@@ -116,8 +121,8 @@ def list_org_units(
             search=search,
             validation_status=validation_status,
             parent_id=parent_id,
-            org_unit_type_id=org_unit_type_id,
-            source_id=source_id,
+            orgUnitTypeId=org_unit_type_id,
+            source=source_id,
         ),
     )
     return {
@@ -175,12 +180,12 @@ def list_forms(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of forms."""
+    """List one page of forms. org_unit_id: forms with submissions on that org unit."""
     limit = clamp_limit(limit)
     response = get_client().forms_list_page(
         page=page,
         limit=limit,
-        **_filters(search=search, org_unit_id=org_unit_id, org_unit_type_id=org_unit_type_id),
+        **_filters(search=search, orgUnitId=org_unit_id, orgUnitTypeId=org_unit_type_id),
     )
     return {**page_meta(response), "forms": [slim_form(item) for item in response.get("forms") or []]}
 
@@ -237,12 +242,12 @@ def list_instances(
         page=page,
         limit=limit,
         **_filters(
-            org_unit_id=org_unit_id,
+            orgUnitId=org_unit_id,
             form_id=form_id,
             org_unit_status=org_unit_status,
             status=status,
             search=search,
-            show_deleted=show_deleted,
+            showDeleted=show_deleted,
         ),
     )
     return {
@@ -269,24 +274,23 @@ def list_instance_files(
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of instances (attachments live on instance detail)."""
+    """List one page of submission attachments (files)."""
     limit = clamp_limit(limit)
     response = get_client().instance_files_list_page(
         page=page,
         limit=limit,
         **_filters(
             form_id=form_id,
-            org_unit_id=org_unit_id,
+            orgUnitId=org_unit_id,
             search=search,
             image_only=image_only,
             video_only=video_only,
             document_only=document_only,
         ),
     )
-    items = response.get("results") or response.get("instances") or []
     return {
         **page_meta(response),
-        "instance_files": [slim_instance_file(item) if "file" in item else slim_instance(item) for item in items],
+        "instance_files": [slim_instance_file(item) for item in response.get("results") or []],
     }
 
 
@@ -297,7 +301,7 @@ def count_instance_files(
     search: str | None = None,
 ) -> dict[str, Any]:
     """Return instance counts for the given filters."""
-    return dict(get_client().instance_files_count(**_filters(form_id=form_id, org_unit_id=org_unit_id, search=search)))
+    return dict(get_client().instance_files_count(**_filters(form_id=form_id, orgUnitId=org_unit_id, search=search)))
 
 
 @tool()

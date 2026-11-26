@@ -1,5 +1,8 @@
+from typing import Optional
+
 from django.utils import timezone
 from django.utils.text import slugify
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField, UserSerializer
@@ -32,16 +35,17 @@ class TaskSerializer(serializers.ModelSerializer):
 
         read_only_fields = ["launcher_name", "external"]
 
-    created_by = UserSerializer(read_only=True)
-    launcher = UserSerializer(read_only=True)
-    ended_at = TimestampField(read_only=True)
+    created_by = UserSerializer(read_only=True, allow_null=True)
+    launcher = UserSerializer(read_only=True, allow_null=True)
+    ended_at = TimestampField(read_only=True, allow_null=True)
     created_at = TimestampField(read_only=True)
-    started_at = TimestampField(read_only=True)
+    started_at = TimestampField(read_only=True, allow_null=True)
     heartbeat_at = serializers.SerializerMethodField(
         help_text="Last time the worker running the task reported it was alive. Null if no worker holds the task."
     )
 
-    def get_heartbeat_at(self, task):
+    @extend_schema_field(serializers.FloatField(allow_null=True))
+    def get_heartbeat_at(self, task) -> Optional[float]:
         lease = getattr(task, "lease", None)
         return lease.heartbeat_at.timestamp() if lease else None
 

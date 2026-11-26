@@ -245,6 +245,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Value to',
         id: 'iaso.label.valueTo',
     },
+    applyRules: {
+        defaultMessage: 'Apply rules',
+        id: 'iaso.stock.apply_rules',
+    },
+    applyRulesTitle: {
+        defaultMessage: 'Apply stock rules',
+        id: 'iaso.stock.apply_rules.title',
+    },
+    applyRulesOnlyPublished: {
+        defaultMessage: 'Rules can only be applied when published',
+        id: 'iaso.stock.apply_rules.only_published',
+    },
+    skuRequired: {
+        defaultMessage: 'Stock Keeping Unit is required',
+        id: 'iaso.stock.sku.required',
+    },
+    startDate: {
+        defaultMessage: 'Start date',
+        id: 'iaso.label.dateFrom',
+    },
+    endDate: {
+        defaultMessage: 'End date',
+        id: 'iaso.label.dateTo',
+    },
+    endDateBeforeStartDate: {
+        defaultMessage: 'End date must be on or after start date',
+        id: 'iaso.stock.apply_rules.end_date_before_start_date',
+    },
+    taskLaunched: {
+        defaultMessage: 'The task has been created',
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+    },
 });
 
 export default MESSAGES;

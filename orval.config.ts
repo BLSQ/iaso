@@ -167,6 +167,7 @@ module.exports = {
         'Account feature flags',
     ]),
     apiImports: createConfig('apiImports', ['API import']),
+    applyStockRules: createConfig('applyStockRules', ['Apply stock rules']),
     assignments: createConfig(
         'assignments',
         ['Assignments'],

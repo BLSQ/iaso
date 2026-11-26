@@ -14,6 +14,7 @@ import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import MESSAGES from 'Iaso/domains/stock/messages';
 import { AddVersionModal } from 'Iaso/domains/stock/versions/components/AddVersionModal';
+import { ApplyStockRulesModal } from 'Iaso/domains/stock/versions/components/ApplyStockRulesModal';
 import {
     RulesFilters,
     VersionFilters,
@@ -147,17 +148,26 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
                 </Box>
                 <Grid
                     container
-                    spacing={0}
+                    spacing={1}
                     justifyContent="flex-end"
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    {version?.status === 'DRAFT' && (
-                        <AddRuleDialog
-                            iconProps={{}}
-                            titleMessage={formatMessage(MESSAGES.add)}
-                            saveRule={saveRule}
+                    <Grid item>
+                        <ApplyStockRulesModal
+                            iconProps={{
+                                disabled: version?.status !== 'PUBLISHED',
+                            }}
                         />
+                    </Grid>
+                    {version?.status === 'DRAFT' && (
+                        <Grid item>
+                            <AddRuleDialog
+                                iconProps={{}}
+                                titleMessage={formatMessage(MESSAGES.add)}
+                                saveRule={saveRule}
+                            />
+                        </Grid>
                     )}
                 </Grid>
                 {/* `version` is used inside the `useRulesColumns`, if you remove

@@ -26,7 +26,7 @@ dependencies = [
     "django-countries==9.1.0", # https://github.com/SmileyChris/django-countries/tags
     "django-cte==5.0.1", # https://github.com/dimagi/django-cte/tags
     "django-extensions==4.1", # https://github.com/django-extensions/django-extensions/tags
-    "django-filter==24.2", # https://github.com/carltongibson/django-filter/tags
+    "django-filter==26.2", # https://github.com/carltongibson/django-filter/tags
     "django-json-widget==1.1.1", # https://github.com/jmrivas86/django-json-widget/tags
     "django-lazy-services==0.0.3", # https://pypi.org/project/django-lazy-services/
     "django-ltree==0.5.3", # https://github.com/mariocesar/django-ltree/tags

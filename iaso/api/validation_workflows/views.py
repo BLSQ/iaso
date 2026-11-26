@@ -76,6 +76,13 @@ class ValidationWorkflowViewSet(ModelViewSet):
                     linked_forms_count=Count("form_set", filter=Q(form_set__deleted_at__isnull=True), distinct=True),
                 )
             )
+        if self.action == "duplicate":
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "node_templates",
+                    ValidationNodeTemplate.objects.prefetch_related("roles_required", "next_node_templates"),
+                )
+            )
         if self.action == "retrieve":
             qs = (
                 qs.prefetch_related(

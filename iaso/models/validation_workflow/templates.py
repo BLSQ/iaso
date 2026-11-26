@@ -285,10 +285,11 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         """
         Copy of the workflow with its steps, their required roles and their order.
         Linked forms are not copied (a form belongs to a single workflow), so the copy has no processes.
+        Callers should prefetch "node_templates" with their "roles_required" and "next_node_templates".
         """
         copy = self._create_duplicate_workflow(user)
 
-        nodes = list(self.node_templates.prefetch_related("roles_required", "next_node_templates"))
+        nodes = list(self.node_templates.all())
         new_nodes_by_old_id = {}
         for node in nodes:
             new_node = ValidationNodeTemplate.objects.create(

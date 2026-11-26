@@ -8,8 +8,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
+import { useQueryClient } from 'react-query';
 import { toFormikValidationSchema } from 'zod-formik-adapter';
 import {
+    apiMicroplanningMissionsRetrieve,
+    getApiMicroplanningMissionsRetrieveQueryKey,
     useApiMicroplanningMissionsRetrieve,
     useApiMicroplanningMissionsUpdate,
 } from 'Iaso/api/missions/endpoints/missions/missions';
@@ -24,6 +27,7 @@ import MISSION_MESSAGES from 'Iaso/domains/missions/messages';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
+import { toMissionListItem } from '../../utils';
 import { planningPanelStyles } from '../shared/styles';
 import { MissionFormModal } from './MissionFormModal';
 
@@ -46,6 +50,7 @@ const EditMissionFormDialog: FC<EditMissionFormDialogProps> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { updatePendingMission } = usePlanningContext();
+    const queryClient = useQueryClient();
     const { mutateAsync: save } = useApiMicroplanningMissionsUpdate({
         mutation: { meta: { ignoreErrorCodes: [400] } },
     });
@@ -57,10 +62,11 @@ const EditMissionFormDialog: FC<EditMissionFormDialogProps> = ({
         validateOnMount: true,
         onSubmit: withFormikSubmitAsync(async values => {
             await save({ id: mission.id, data: values });
-            updatePendingMission(mission.id, {
-                name: values.name,
-                forms_count: values.forms?.length ?? 0,
-            });
+            const updatedMission = await queryClient.fetchQuery(
+                getApiMicroplanningMissionsRetrieveQueryKey(mission.id),
+                () => apiMicroplanningMissionsRetrieve(mission.id),
+            );
+            updatePendingMission(toMissionListItem(updatedMission));
             closeDialog();
         }),
     });

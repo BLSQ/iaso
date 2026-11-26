@@ -22,11 +22,6 @@ import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
 import { shouldWarnBeforeSave } from '../utils';
 
-type PendingMissionChanges = Pick<
-    MissionPolymorphicList,
-    'name' | 'forms_count'
->;
-
 type PlanningContextValue = {
     planning?: Planning;
     isLoadingPlanning: boolean;
@@ -38,10 +33,7 @@ type PlanningContextValue = {
     addMissions: (missions: MissionPolymorphicList[]) => void;
     unlinkMission: (missionId: number) => void;
     relinkMission: (missionId: number) => void;
-    updatePendingMission: (
-        missionId: number,
-        changes: PendingMissionChanges,
-    ) => void;
+    updatePendingMission: (mission: MissionPolymorphicList) => void;
     formik: PlanningFormik;
     isReadOnly: boolean;
     canSave: boolean;
@@ -144,12 +136,10 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     );
 
     const updatePendingMission = useCallback(
-        (missionId: number, changes: PendingMissionChanges) =>
+        (updatedMission: MissionPolymorphicList) =>
             setAddedMissions(previous =>
                 previous.map(mission =>
-                    mission.id === missionId
-                        ? { ...mission, ...changes }
-                        : mission,
+                    mission.id === updatedMission.id ? updatedMission : mission,
                 ),
             ),
         [],

@@ -11,6 +11,7 @@ import Color from 'color';
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { ActionCell } from '../components/ActionCell';
+import { OrgUnitParentsCell } from '../components/OrgUnitParentsCell';
 import OrgUnitTooltip from '../components/OrgUnitTooltip';
 import MESSAGES from '../messages';
 import { Search } from '../types/search';
@@ -63,6 +64,14 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                     <OrgUnitTooltip orgUnit={settings.row.original}>
                         <span>{settings.row.original.name}</span>
                     </OrgUnitTooltip>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.parents),
+                accessor: 'parent',
+                sortable: false,
+                Cell: settings => (
+                    <OrgUnitParentsCell orgUnit={settings.row.original} />
                 ),
             },
             {

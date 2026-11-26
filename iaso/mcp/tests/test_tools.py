@@ -170,19 +170,19 @@ class OrgUnitOptionsToolTest(ListToolTestCase):
             org_unit["ancestors"],
             [
                 {
-                    "id": self.antwerp.id,
-                    "name": "Antwerp",
-                    "org_unit_type_id": self.province.id,
-                    "org_unit_type_name": "Province",
-                },
-                {
                     "id": self.belgium.id,
                     "name": "Belgium",
                     "org_unit_type_id": self.country.id,
                     "org_unit_type_name": "Country",
                 },
+                {
+                    "id": self.antwerp.id,
+                    "name": "Antwerp",
+                    "org_unit_type_id": self.province.id,
+                    "org_unit_type_name": "Province",
+                },
             ],
-            "ancestors from the direct parent to the root",
+            "ancestors from the root to the direct parent",
         )
 
     def assertNoHeavyFields(self, org_unit, fields):

@@ -105,12 +105,12 @@ def org_unit_result(
 
 
 def _ancestors(parent: dict[str, Any] | None) -> list[dict[str, Any]]:
-    """The nested parents flattened, from the direct parent to the root."""
+    """The nested parents flattened, from the root to the direct parent (like DHIS2 and the org unit path)."""
     ancestors = []
     while parent:
         ancestors.append({field: parent.get(field) for field in ORG_UNIT_ANCESTOR_FIELDS})
         parent = parent.get("parent")
-    return ancestors
+    return ancestors[::-1]
 
 
 def slim_form(item: dict[str, Any]) -> dict[str, Any]:

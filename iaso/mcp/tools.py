@@ -123,7 +123,7 @@ def list_org_units(
     validation_status: NEW, VALID, REJECTED, a comma-separated list or all (default VALID). source_id: data source id.
     with_most_details: also code, aliases, source_ref, groups, latitude/longitude/altitude, dates, creator, projects...
     (never instances_count: too slow on big accounts).
-    with_ancestors: add ancestors, [{id, name, org_unit_type_id, org_unit_type_name}] from the parent to the root.
+    with_ancestors: add ancestors, [{id, name, org_unit_type_id, org_unit_type_name}] from the root to the direct parent.
     No shape: get_org_unit with with_geo_json.
     """
     limit = clamp_limit(limit)
@@ -154,7 +154,7 @@ def get_org_unit(
     """Retrieve one org unit by id: the list_org_units fields.
 
     with_most_details: the list_org_units with_most_details fields, plus opening_date, closed_date, version.
-    with_ancestors: add ancestors, [{id, name, org_unit_type_id, org_unit_type_name}] from the parent to the root.
+    with_ancestors: add ancestors, [{id, name, org_unit_type_id, org_unit_type_name}] from the root to the direct parent.
     with_geo_json: add geo_json, the shape (can be large).
     """
     fields = org_unit_fields(ORG_UNIT_DETAIL_MOST_DETAILS_FIELDS, with_most_details, with_ancestors, with_geo_json)

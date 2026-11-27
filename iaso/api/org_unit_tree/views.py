@@ -46,7 +46,7 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
         querystring.is_valid(raise_exception=True)
         force_full_tree = querystring.validated_data.get("force_full_tree")
         parent_id = querystring.validated_data.get("parent_id")
-        validation_status = querystring.validated_data.get("validation_status", set())
+        validation_status = set(querystring.validated_data.get("validation_status", set()))
 
         if user.is_anonymous:
             qs = OrgUnit.objects.all()

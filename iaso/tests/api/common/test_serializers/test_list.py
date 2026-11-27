@@ -130,7 +130,7 @@ class TestIasoPkRelatedField(APITestCase):
                         data=payload,
                     )
                     res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-                    self.assertEqual(res_data, [{"nested": [f'Invalid pk "{pk}" - object does not exist.']}])
+                    self.assertEqual(res_data, {"0": {"nested": [f'Invalid pk "{pk}" - object does not exist.']}})
 
                 with self.subTest("many nested"):
                     pk = OtherTestNestedModel.objects.order_by("-pk").first().pk + 1
@@ -141,7 +141,7 @@ class TestIasoPkRelatedField(APITestCase):
                         data=payload,
                     )
                     res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-                    self.assertEqual(res_data, [{"many_nested": [f'Invalid pk "{pk}" - object does not exist.']}])
+                    self.assertEqual(res_data, {"0": {"many_nested": [f'Invalid pk "{pk}" - object does not exist.']}})
 
     def test_num_queries(self):
         expected_queries = {
@@ -296,7 +296,7 @@ class TestIasoSlugRelatedField(APITestCase):
                         data=payload,
                     )
                     res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-                    self.assertEqual(res_data, [{"nested": ["Object with name=wrong does not exist."]}])
+                    self.assertEqual(res_data, {"0": {"nested": ["Object with name=wrong does not exist."]}})
 
                 with self.subTest("many nested"):
                     payload = [{"nested": None, "many_nested": ["wrong"]}]
@@ -306,7 +306,7 @@ class TestIasoSlugRelatedField(APITestCase):
                         data=payload,
                     )
                     res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-                    self.assertEqual(res_data, [{"many_nested": ["Object with name=wrong does not exist."]}])
+                    self.assertEqual(res_data, {"0": {"many_nested": ["Object with name=wrong does not exist."]}})
 
     def test_num_queries(self):
         expected_queries = {

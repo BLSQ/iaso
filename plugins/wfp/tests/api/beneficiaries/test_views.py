@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from rest_framework import status
 
@@ -55,7 +55,7 @@ class BeneficiaryViewSetTestCase(BeneficiariesTestData, APITestCase):
         # the browsable API (opened in a browser) builds the queryset of the view to render its filter form
         self.client.force_authenticate(self.user)
         response = self.client.get(
-            BENEFICIARIES_URL, {"order": "-journeys_count", "page": 1, "limit": 50}, HTTP_ACCEPT="text/html"
+            BENEFICIARIES_URL, {"order": "-journeys_count", "page": 1, "limit": 50}, headers={"accept": "text/html"}
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -198,7 +198,7 @@ class BeneficiaryNestedDataTestCase(APITestCase):
         )
         cls.visit = Visit.objects.create(
             journey=cls.journey,
-            date=datetime(2026, 5, 1, 12, tzinfo=timezone.utc),
+            date=datetime(2026, 5, 1, 12, tzinfo=UTC),
             muac_size="13.1",
             instance_id=cls.visit_instance.id,
         )

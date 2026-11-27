@@ -39,3 +39,12 @@ jobs:
     uses: BLSQ/iaso-ci/.github/workflows/dco.yml@main
     permissions:
       contents: read
+
+  deploy_on_upgrade:
+    needs: build_and_push_image
+    uses: BLSQ/iaso-ci/.github/workflows/docker_deploy.yml@main
+    secrets: inherit
+    with:
+      iaso_branch: IA-5337_upgrade-python-312-django52
+      environment: upgrade
+      image_tag: IA-5337

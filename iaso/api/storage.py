@@ -4,7 +4,7 @@ import binascii
 import datetime
 import logging
 
-from typing import Any, Optional, Union
+from typing import Any
 
 from django.core.paginator import Paginator
 from django.db.models import Case, Q, QuerySet, When
@@ -149,7 +149,7 @@ class StorageSerializer(serializers.ModelSerializer):
             return base64_id
 
 
-def parse_customer_chosen_id(storage_id: Optional[str]) -> Optional[str]:
+def parse_customer_chosen_id(storage_id: str | None) -> str | None:
     """Extract the stored customer_chosen_id from a display-formatted storage_id.
 
     GET /api/storages/ returns base64 NFC/USB ids as
@@ -199,7 +199,7 @@ class StorageSerializerWithPaginatedLogs(StorageSerializerWithLogs):
 
 def device_generate_export(
     queryset: "QuerySet[StorageDevice]", file_format: FileFormatEnum
-) -> Union[HttpResponse, StreamingHttpResponse]:
+) -> HttpResponse | StreamingHttpResponse:
     columns = [
         {"title": "Storage ID"},
         {"title": "Storage Type"},
@@ -235,7 +235,7 @@ def device_generate_export(
             device.entity_id,
         ]
 
-    response: Union[HttpResponse, StreamingHttpResponse]
+    response: HttpResponse | StreamingHttpResponse
     filename = "storage_devices"
     if file_format == FileFormatEnum.XLSX:
         filename = filename + ".xlsx"
@@ -472,7 +472,7 @@ def import_storage_logs(data, user):
 
 def logs_for_device_generate_export(
     queryset: "QuerySet[StorageLogEntry]", file_format: FileFormatEnum
-) -> Union[HttpResponse, StreamingHttpResponse]:
+) -> HttpResponse | StreamingHttpResponse:
     columns = [
         {"title": "id"},
         {"title": "storage_id"},
@@ -510,7 +510,7 @@ def logs_for_device_generate_export(
             log_entry.status_comment,
         ]
 
-    response: Union[HttpResponse, StreamingHttpResponse]
+    response: HttpResponse | StreamingHttpResponse
     filename = "storage_logs"
     if file_format == FileFormatEnum.XLSX:
         filename = filename + ".xlsx"
@@ -586,7 +586,7 @@ def logs_per_device(request, storage_id: str, storage_type: str):
     if performed_at_str is not None:
         log_entries_queryset = log_entries_queryset.filter(
             performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d")
-            .replace(tzinfo=datetime.timezone.utc)
+            .replace(tzinfo=datetime.UTC)
             .date()
         )
 

@@ -92,7 +92,7 @@ class TokenAPITestCase(APITestCase):
 
         access_token = response_data.get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
-        self.assertEqual(payload["user_id"], self.yoda.id)
+        self.assertEqual(payload["user_id"], str(self.yoda.id))
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
         return response_data
@@ -202,6 +202,27 @@ class TokenAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
+    def test_refresh_inactive_user(self):
+        """Refreshing a token of a user that was deactivated in the meantime is refused."""
+        refresh_token = self.authenticate_using_token().get("refresh")
+
+        self.yoda.is_active = False
+        self.yoda.save()
+
+        response = self.client.post("/api/token/refresh/", data={"refresh": refresh_token}, format="json")
+        response_data = self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response_data["detail"], "No active account found for the given token.")
+
+    def test_refresh_deleted_user(self):
+        """Refreshing a token of a user that was deleted in the meantime fails."""
+        refresh_token = self.authenticate_using_token().get("refresh")
+
+        self.yoda.delete()
+
+        with self.assertRaises(User.DoesNotExist):
+            # bug in DRF-JWT, will be fixed in future version
+            response = self.client.post("/api/token/refresh/", data={"refresh": refresh_token}, format="json")
+
     def test_no_token(self):
         """Test invalid authentication tokens"""
         # Unauthenticated case is already tested in test_api
@@ -310,19 +331,19 @@ class TokenAPITestCase(APITestCase):
 
         # Login with main user and app_id for Account A
         response = self.client.post("/api/token/?app_id=account.a", data=login, format="json")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        access_token = response.json().get("access")
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        access_token = response_data.get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         # returns token for account_user_a
-        self.assertEqual(payload["user_id"], account_user_a.id)
+        self.assertEqual(payload["user_id"], str(account_user_a.id))
 
         # Login with main user and app_id for Account B
         response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        access_token = response.json().get("access")
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        access_token = response_data.get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         # returns token for account_user_a
-        self.assertEqual(payload["user_id"], account_user_b.id)
+        self.assertEqual(payload["user_id"], str(account_user_b.id))
 
     def test_multi_account_user_incorrect_app_id(self):
         main_user = User.objects.create(username="main_user")

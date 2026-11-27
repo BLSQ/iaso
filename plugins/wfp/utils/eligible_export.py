@@ -60,7 +60,7 @@ class Row:
     beneficiary: Beneficiary
     journey: Journey
     visit: Visit
-    synced_at: typing.Optional[datetime.datetime]
+    synced_at: datetime.datetime | None
     nutritional_status: str
     reference_answers: dict  # filtered answers of the reference (registration) form
     visit_answers: dict  # filtered answers of the submission of the visit
@@ -86,10 +86,10 @@ class Row:
         return None
 
     @property
-    def visit_date(self) -> typing.Optional[datetime.date]:
+    def visit_date(self) -> datetime.date | None:
         return _to_date(self.visit.date)
 
-    def age_in_months(self) -> typing.Optional[int]:
+    def age_in_months(self) -> int | None:
         birth_date = self.beneficiary.birth_date
         visit_date = self.visit_date
 
@@ -103,7 +103,7 @@ class Row:
             months -= 1
         return months
 
-    def age_in_years(self) -> typing.Optional[int]:
+    def age_in_years(self) -> int | None:
         months = self.age_in_months()
 
         if months is None:
@@ -117,7 +117,7 @@ class Row:
     def inf(self):
         return self.visit.org_unit.name if self.visit.org_unit else None
 
-    def physiology_status(self) -> typing.Optional[str]:
+    def physiology_status(self) -> str | None:
         """ "pregnant" or "breastfeeding" at the exported visit (it can change during a journey), else of the journey."""
         return (
             extract_pbwg_physiology(self.visit_answers)
@@ -196,7 +196,7 @@ def sheet_columns(kind: str, physiology_status: str) -> list[tuple[str, typing.C
     return [column for column in COLUMNS[kind] if column[0] != hidden]
 
 
-def kind_of(programme_type: typing.Optional[str]) -> str:
+def kind_of(programme_type: str | None) -> str:
     """The kind of beneficiaries (and so of columns) of a programme type: PBWG for "PLW", else U5."""
     return PBWG if programme_type == "PLW" else U5
 
@@ -230,9 +230,7 @@ def _physiology_statuses(kind: str) -> list[str]:
     return list(PHYSIOLOGY_STATUS_LABELS) if kind == PBWG else [""]
 
 
-def expected_sheets(
-    account, programme: typing.Optional[str] = None, entity_type_id: typing.Optional[int] = None
-) -> list[Sheet]:
+def expected_sheets(account, programme: str | None = None, entity_type_id: int | None = None) -> list[Sheet]:
     """The sheets shown even without data: for each entity type of the ETL of the account, one per programme of its
     country (see `programmes_by_country`) and per physiology status for the women.
 
@@ -252,7 +250,7 @@ def expected_sheets(
     return sheets
 
 
-def nutritional_status(visit: Visit, kind: str, answers: typing.Optional[dict] = None) -> typing.Optional[str]:
+def nutritional_status(visit: Visit, kind: str, answers: dict | None = None) -> str | None:
     """ "Green" or "Normal" when the beneficiary was found normal at the visit, None otherwise.
 
     From the colour stored by the ETL, else the one of the submission of the visit (`answers`, for visits processed
@@ -276,7 +274,7 @@ def eligible_beneficiaries(beneficiaries):
 
 def _last_synced_visit(
     visits: list[Visit], instances: dict[int, Instance], cut_off: datetime.datetime
-) -> tuple[typing.Optional[Visit], typing.Optional[Instance]]:
+) -> tuple[Visit | None, Instance | None]:
     """The most recent visit synchronised before the cut-off, with its submission: (None, None) if there is none.
 
     `visits` are ordered from the most recent, `instances` are the submissions of the visits by id.
@@ -292,9 +290,9 @@ def iter_rows(
     beneficiaries,
     user,
     org_units=None,
-    start_date: typing.Optional[datetime.date] = None,
-    end_date: typing.Optional[datetime.date] = None,
-    today: typing.Optional[datetime.date] = None,
+    start_date: datetime.date | None = None,
+    end_date: datetime.date | None = None,
+    today: datetime.date | None = None,
 ) -> typing.Iterator[tuple[str, str, Row]]:
     """(programme, kind, row) of each eligible journey of the queryset of `Beneficiary`, by batches.
 
@@ -373,7 +371,7 @@ def _cell(value):
             return datetime.date.fromisoformat(match.group(1)) if match else value
         except ValueError:
             return value
-    if isinstance(value, (dict, list)):
+    if isinstance(value, dict | list):
         return str(value)
     return value
 
@@ -398,11 +396,11 @@ def build_eligible_xlsx(
     user,
     path: str,
     org_units=None,
-    start_date: typing.Optional[datetime.date] = None,
-    end_date: typing.Optional[datetime.date] = None,
-    today: typing.Optional[datetime.date] = None,
-    programme: typing.Optional[str] = None,
-    entity_type_id: typing.Optional[int] = None,
+    start_date: datetime.date | None = None,
+    end_date: datetime.date | None = None,
+    today: datetime.date | None = None,
+    programme: str | None = None,
+    entity_type_id: int | None = None,
 ) -> None:
     """Write the export as an Excel file at `path`: one sheet per programme and entity type (and physiology status for
     women).

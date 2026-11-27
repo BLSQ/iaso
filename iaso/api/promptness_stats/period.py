@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
-from typing import Optional
 
 from django.utils import timezone
 
@@ -26,7 +25,7 @@ class PromptnessPeriod:
     is_provisional: bool
 
     @classmethod
-    def build(cls, period_value: str, grace_period_days: int, today: Optional[date] = None) -> "PromptnessPeriod":
+    def build(cls, period_value: str, grace_period_days: int, today: date | None = None) -> "PromptnessPeriod":
         """Build the period window from an iaso period string. `today` defaults to the current date."""
         if today is None:
             today = timezone.localdate()

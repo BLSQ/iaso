@@ -147,7 +147,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertValidBody(data)
             res = self.client.post(reverse("planning_configs-bulk-create"), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(res_data[0], "planning")
+            self.assertHasError(res_data["0"], "planning")
 
         with self.subTest("org_unit_types other account"):
             data = [
@@ -161,7 +161,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertValidBody(data)
             res = self.client.post(reverse("planning_configs-bulk-create"), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(res_data[0], "org_unit_types")
+            self.assertHasError(res_data["0"], "org_unit_types")
 
         with self.subTest("org_unit_groups other account"):
             data = [
@@ -175,7 +175,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
             self.assertValidBody(data)
             res = self.client.post(reverse("planning_configs-bulk-create"), data=data)
             res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-            self.assertHasError(res_data[0], "org_unit_groups")
+            self.assertHasError(res_data["0"], "org_unit_groups")
 
         with self.subTest("level"):
             for level in [-1, 0]:
@@ -190,7 +190,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
                 # self.assertValidBody(data) # will crash , logic
                 res = self.client.post(reverse("planning_configs-bulk-create"), data=data)
                 res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
-                self.assertHasError(res_data[0], "level")
+                self.assertHasError(res_data["0"], "level")
 
     def test_level_planning_uniqueness_within_data(self):
         self.client.force_authenticate(self.superuser)
@@ -235,7 +235,7 @@ class PlanningConfigBulkCreateAPITestCase(SwaggerTestCaseMixin, APITestCase):
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
         self.assertHasError(
-            res_data[0], api_settings.NON_FIELD_ERRORS_KEY, "The fields planning, level must make a unique set."
+            res_data["0"], api_settings.NON_FIELD_ERRORS_KEY, "The fields planning, level must make a unique set."
         )
 
     def test_num_queries(self):

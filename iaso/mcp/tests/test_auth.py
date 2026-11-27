@@ -81,7 +81,7 @@ class McpOAuthScopeTest(APITestCase):
 
     def test_jwt_bearer_outside_mcp_is_not_a_failed_login(self):
         with capture_failed_logins() as failed, QueryProfiler() as profiler:
-            response = self.client.get("/api/profiles/me/", HTTP_AUTHORIZATION=f"Bearer {self.jwt()}")
+            response = self.client.get("/api/profiles/me/", headers={"authorization": f"Bearer {self.jwt()}"})
 
         result = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(result["user_name"], "belgium-user")

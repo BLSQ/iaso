@@ -1,7 +1,10 @@
 """This module provides various utils and helpers for IASO"""
 
+import json
+import re
+
 from collections.abc import Iterable
-from typing import Any, Optional
+from typing import Any
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify
@@ -57,7 +60,7 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup: Soup, repeat_groups: list[Any], allowed_paths: Optional[Iterable[str]]) -> dict[str, Any]:
+def flat_parse_xml_soup(soup: Soup, repeat_groups: list[Any], allowed_paths: Iterable[str] | None) -> dict[str, Any]:
     """
     Parse XML data in a BeautifulSoup and return a flattened JSON-serializable representation of the data.
 
@@ -75,10 +78,6 @@ def flat_parse_xml_soup(soup: Soup, repeat_groups: list[Any], allowed_paths: Opt
 
 def slugify_underscore(filename):
     return slugify(filename).replace("-", "_")
-
-
-import json
-import re
 
 
 sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
@@ -142,6 +141,6 @@ def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):
 # Check if the request comes from mobile. Useful when logging modifications (audit)
 def is_mobile_request(request):
     # Get the User-Agent string from the request headers
-    user_agent = request.META.get("HTTP_USER_AGENT", "")
+    user_agent = request.headers.get("user-agent", "")
     # Check if the User-Agent string contains keywords typical of mobile devices
     return any(mobile in user_agent.lower() for mobile in ["mobile", "android", "iphone", "ipad", "windows phone"])

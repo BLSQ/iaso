@@ -39,9 +39,8 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
 
         response = self.client.patch(f"{BASE_API}1000/", data={"status": "PUBLISHED"})
 
-        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
-        assert "detail" in response.data
-        assert response.data["detail"] == "Not found."
+        response_data = self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response_data["detail"], "No WorkflowVersion matches the given query.")
 
     def test_patch_transition_ok(self):
         self.client.force_authenticate(self.blue_adult_1)

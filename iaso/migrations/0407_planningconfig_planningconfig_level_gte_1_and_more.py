@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="planningconfig",
-            constraint=models.CheckConstraint(check=models.Q(("level__gte", 1)), name="level_gte_1"),
+            constraint=models.CheckConstraint(condition=models.Q(("level__gte", 1)), name="level_gte_1"),
         ),
         migrations.AddConstraint(
             model_name="planningconfig",

@@ -38,7 +38,7 @@ class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
 
         # optional params
         self.assertCountEqual(serializer.validated_data["org_unit_types"], [self.type_region, self.type_district])
-        self.assertEqual(serializer.validated_data["status"], {"LATE", "MISSING"})
+        self.assertCountEqual(serializer.validated_data["status"], ["LATE", "MISSING"])
 
     def test_all_statuses_by_default(self):
         params = self.get_serializer_params()
@@ -172,7 +172,7 @@ class PromptnessStatsQueryParamsSerializerTestCase(PromptnessStatsTestCase):
     def test_duplicated_status(self):
         serializer = self.get_serializer(self.get_serializer_params(status="MISSING,ON_TIME,MISSING"))
         self.assertTrue(serializer.is_valid(), serializer.errors)
-        self.assertEqual(serializer.validated_data["status"], {"ON_TIME", "MISSING"})
+        self.assertCountEqual(serializer.validated_data["status"], ["ON_TIME", "MISSING"])
 
     def test_several_errors_are_reported_together(self):
         serializer = self.get_serializer(self.get_serializer_params(period="not a period", status="RECEIVED"))

@@ -5,7 +5,6 @@ import json
 
 from collections import Counter
 from collections.abc import Sequence
-from typing import Optional
 
 from django import forms
 from django.db.models import Count
@@ -35,7 +34,7 @@ def code_limit_label(concurrency: Concurrency) -> str:
     return "unlimited" if concurrency.limit is None else str(concurrency.limit)
 
 
-def parse_key_overrides(text: str) -> dict[str, Optional[int]]:
+def parse_key_overrides(text: str) -> dict[str, int | None]:
     overrides = {}
     for number, line in enumerate(text.splitlines(), start=1):
         line = line.strip()
@@ -56,7 +55,7 @@ def parse_key_overrides(text: str) -> dict[str, Optional[int]]:
     return overrides
 
 
-def format_key_overrides(overrides: dict[str, Optional[int]]) -> str:
+def format_key_overrides(overrides: dict[str, int | None]) -> str:
     return "\n".join(f"{key} = {MODE_UNLIMITED if limit is None else limit}" for key, limit in overrides.items())
 
 
@@ -123,7 +122,7 @@ class TaskThrottlesForm(forms.Form):
                 label="Per key",
             )
 
-    def sections(self, running: Counter, queued: dict[str, int], code_throttles: dict[str, Optional[Throttle]]):
+    def sections(self, running: Counter, queued: dict[str, int], code_throttles: dict[str, Throttle | None]):
         """What the template displays for each task: its bound fields and the current usage of its slots."""
         for t, (task_name, throttle) in enumerate(self.throttled_tasks):
             limits = []

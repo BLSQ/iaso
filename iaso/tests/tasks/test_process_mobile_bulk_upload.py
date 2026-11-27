@@ -5,9 +5,8 @@ import os
 import uuid
 import zipfile
 
+from datetime import UTC
 from unittest import mock
-
-import pytz
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -58,9 +57,9 @@ CORRECT_FILES_FOR_DISASI_ONLY_ZIP = [
     "orgUnits.json",
 ]
 
-DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
+DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=UTC)
 # When the scale zips' registrations were last updated on the device (their `updated_at`, 1712326150.005)
-SCALE_REGISTRATION_UPDATED_AT = datetime.datetime(2024, 4, 5, 14, 9, 10, 5000, tzinfo=pytz.UTC)
+SCALE_REGISTRATION_UPDATED_AT = datetime.datetime(2024, 4, 5, 14, 9, 10, 5000, tzinfo=UTC)
 DEFAULT_CREATED_AT_STR = "2024-04-01"
 # A submission XML, for the zips built by the tests
 SUBMISSION_XML = "iaso/fixtures/instance_form_1_1.xml"
@@ -1762,7 +1761,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         zip_path = "/tmp/instance_without_entity.zip"
 
         # Create instances.json without entity references
-        instance_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=pytz.UTC)
+        instance_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=UTC)
         instances_data = [
             {
                 "id": "standalone-instance-uuid-1234",
@@ -1829,8 +1828,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertIsNone(instance.entity)
 
         # Now create a bulk upload that tries to update this instance
-        # initial_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=pytz.UTC)
-        updated_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 20, tzinfo=pytz.UTC)
+        # initial_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 10, tzinfo=UTC)
+        updated_timestamp = datetime.datetime(2024, 4, 5, 14, 9, 20, tzinfo=UTC)
         updated_instances_data = [
             {
                 "id": "no-entity-instance-uuid",

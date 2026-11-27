@@ -191,18 +191,18 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.burkina_district.save()
 
         response = self.client.get(url)
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(1, len(response.data))
-        self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(1, len(response_data))
+        self.assertEqual(response_data[0]["has_children"], False)  # It should be excluded from `has_children`.
 
         # Mark the child of "Boucle du Mouhon" as "new".
         self.burkina_district.validation_status = m.OrgUnit.VALIDATION_NEW
         self.burkina_district.save()
 
         response = self.client.get(url)
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(1, len(response.data))
-        self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.
+        response_data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(1, len(response_data))
+        self.assertEqual(response_data[0]["has_children"], False)  # It should be excluded from `has_children`.
 
     def test_search(self):
         self.client.force_authenticate(self.user)

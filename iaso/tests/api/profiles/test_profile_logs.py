@@ -1,9 +1,9 @@
 import datetime
 
+from datetime import UTC
 from unittest.mock import patch
 
 import jsonschema
-import pytz
 
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
@@ -252,9 +252,9 @@ class ProfileLogsTestCase(APITestCase):
             app_label="iaso",
             model="profile",
         )
-        date1 = datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=pytz.UTC)
-        date2 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=pytz.UTC)
-        # date3 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=pytz.UTC)
+        date1 = datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=UTC)
+        date2 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=UTC)
+        # date3 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=UTC)
         # Logs
         # by user 1 for editable user 1 with org unit 1 before date
         with patch("django.utils.timezone.now", lambda: date1):

@@ -1,5 +1,3 @@
-import typing
-
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
@@ -17,7 +15,7 @@ from iaso.utils.models.soft_deletable import (
 
 
 class OrgUnitChangeRequestConfigurationQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 

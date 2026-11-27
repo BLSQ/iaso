@@ -185,11 +185,9 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             {
-                "forms": [
-                    {},
-                    {},
-                    {"form": [f'Invalid pk "{self.form_3.pk}" - object does not exist.']},
-                ]
+                "forms": {
+                    "2": {"form": [f'Invalid pk "{self.form_3.pk}" - object does not exist.']},
+                }
             },
         )
 
@@ -213,10 +211,10 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
         self.assertEqual(
             res_data,
             {
-                "forms": [
-                    {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
-                    {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
-                ]
+                "forms": {
+                    "0": {"form": [f'Invalid pk "{self.form_4.pk}" - object does not exist.']},
+                    "1": {"form": [f'Invalid pk "{self.form_5.pk}" - object does not exist.']},
+                }
             },
         )
 
@@ -257,7 +255,11 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         self.assertEqual(
             res_data,
-            {"forms": [{"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}]},
+            {
+                "forms": {
+                    "0": {"min_cardinality": ["Minimum cardinality must be inferior than the maximum cardinality"]}
+                }
+            },
         )
 
         res = self.client.post(
@@ -292,7 +294,7 @@ class MissionEntityTypeAPICreateTestCase(SwaggerTestCaseMixin, APITestCase):
 
         res_data = self.assertJSONResponse(res, status.HTTP_400_BAD_REQUEST)
 
-        self.assertEqual(res_data, {"forms": [{"min_cardinality": ["This field is required."]}]})
+        self.assertEqual(res_data, {"forms": {"0": {"min_cardinality": ["This field is required."]}}})
 
     def test_num_queries(self):
         self.client.force_authenticate(user=self.user_account_write_perm)

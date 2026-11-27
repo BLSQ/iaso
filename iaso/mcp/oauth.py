@@ -87,7 +87,7 @@ def openid_configuration(request: HttpRequest) -> JsonResponse:
 
 
 def _client_ip(request: HttpRequest) -> str:
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+    forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[0].strip() or "unknown"
     return request.META.get("REMOTE_ADDR") or "unknown"

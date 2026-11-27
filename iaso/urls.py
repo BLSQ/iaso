@@ -131,6 +131,7 @@ from .api.stocks.views_mobile import (
 )
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.superset import SupersetTokenViewSet
+from .api.tasks.create.apply_stock_rules import ApplyStockRulesViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
@@ -215,6 +216,7 @@ router.register(r"mobile/checkversion", CheckVersionViewSet, basename="checkvers
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
+router.register(r"tasks/create/applystockrules", ApplyStockRulesViewSet, basename="applystockrules")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
 router.register(r"tasks/create/paymentsbulkupdate", PaymentsBulkUpdate, basename="paymentsbulkupdate")
 router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")

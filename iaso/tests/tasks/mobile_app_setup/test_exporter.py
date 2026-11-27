@@ -14,7 +14,7 @@ from iaso.tests.tasks.mobile_app_setup.mocks import FakeClient, FakeStorage
 
 
 class ExportAppSetupTest(SimpleTestCase):
-    def export(self, client, api_calls, access_token="token", storage=None):
+    def export(self, client, api_calls, access_token="token", storage=None, **kwargs):
         buffer = io.BytesIO()
         archive = ZipArchive(buffer)
         export_app_setup(
@@ -25,6 +25,7 @@ class ExportAppSetupTest(SimpleTestCase):
             api_calls=api_calls,
             progress=mock.Mock(),
             access_token=access_token,
+            **kwargs,
         )
         archive.close()
         return zipfile.ZipFile(buffer)
@@ -93,3 +94,29 @@ class ExportAppSetupTest(SimpleTestCase):
         self.assertEqual(archive.read("files/f.xml"), b"f")
         self.assertEqual(archive.read("files/g.xml"), b"G")
         self.assertEqual(archive.read("files/h.xml"), b"h")
+
+    def test_transformers_change_the_responses_after_their_files(self):
+        client = FakeClient(
+            {
+                "/api/apps/current/": self.app_info(needs_authentication=False),
+                "/api/a/": {"file": "https://x/f.xml", "value": 1},
+            }
+        )
+
+        def asset_files(payload, app_id):
+            url, payload["file"] = payload["file"], "files/f.xml"
+            return [AssetFile(path="files/f.xml", url=url)]
+
+        def transform(filename, payload):
+            # Called after the file URLs have been rewritten.
+            self.assertEqual((filename, payload["file"]), ("a", "files/f.xml"))
+            payload["value"] = 2
+
+        archive = self.export(
+            client,
+            [ApiCall(path="/api/a/", filename="a", asset_files=asset_files)],
+            storage=FakeStorage({"https://x/f.xml": b"f"}),
+            payload_transformers=[transform],
+        )
+
+        self.assertEqual(json.loads(archive.read("a.json")), {"file": "files/f.xml", "value": 2})

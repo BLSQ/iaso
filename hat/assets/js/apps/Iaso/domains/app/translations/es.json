@@ -1312,6 +1312,7 @@
     "iaso.permissions.workflows": "Flujos de trabajo",
     "iaso.planning.title": "Planificación",
     "iaso.plannings.label.duplicatePlanning": "Duplicar planificación",
+    "iaso.plannings.label.duplicatedPlanningName": "{name} (copia)",
     "iaso.plannings.label.selectOrgUnit": "Zona geográfica cible",
     "iaso.projects.appId": "ID de la aplicación",
     "iaso.projects.create": "Crear proyecto",

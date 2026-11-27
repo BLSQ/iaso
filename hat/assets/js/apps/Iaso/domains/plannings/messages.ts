@@ -105,6 +105,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.plannings.label.duplicatePlanning',
         defaultMessage: 'Duplicate planning',
     },
+    duplicatedPlanningName: {
+        id: 'iaso.plannings.label.duplicatedPlanningName',
+        defaultMessage: '{name} (copy)',
+    },
     requiredField: {
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',

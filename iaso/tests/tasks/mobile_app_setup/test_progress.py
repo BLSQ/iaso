@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test import SimpleTestCase
 
-from iaso.tasks.mobile_app_setup.api_calls import ApiCall, Page
+from iaso.tasks.mobile_app_setup.api_calls import ApiCall, Page, Pagination
 from iaso.tasks.mobile_app_setup.progress import ExportProgress
 
 
@@ -11,7 +11,7 @@ class ExportProgressTest(SimpleTestCase):
         self.task = mock.Mock()
         self.calls = [
             ApiCall(path="/api/a/", filename="a"),
-            ApiCall(path="/api/b/", filename="b", paginated=True, sub_steps=10),
+            ApiCall(path="/api/b/", filename="b", pagination=Pagination.PAGE, sub_steps=10),
         ]
         self.progress = ExportProgress(self.task, self.calls)
 

@@ -24,11 +24,10 @@ from iaso.permissions.core_permissions import (
     CORE_ORG_UNITS_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
 )
+from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
 
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
-
-from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
 
 
 # This test doesn't use the classic base test

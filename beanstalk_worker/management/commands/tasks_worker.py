@@ -1,3 +1,5 @@
+import select
+
 from logging import getLogger
 
 from django.core.management.base import BaseCommand
@@ -9,8 +11,6 @@ from beanstalk_worker import task_service
 LISTEN_TIMEOUT = 30
 
 logger = getLogger(__name__)
-
-import select
 
 
 class Command(BaseCommand):

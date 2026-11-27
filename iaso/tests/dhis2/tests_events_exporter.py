@@ -1,14 +1,11 @@
 import json
 import logging
-
-import responses
-
-
-logger = logging.getLogger(__name__)
 import os
 
 from datetime import datetime, timezone
 from unittest import mock
+
+import responses
 
 from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
@@ -38,6 +35,9 @@ from iaso.models import (
     Task,
     User,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def mock_system_info_old_dhis2_version():

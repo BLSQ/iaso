@@ -1,4 +1,26 @@
+import argparse
 import os
+import random
+import re
+import string
+import subprocess
+import sys
+
+from .additional_projects import create_projects, link_new_projects_to_main_data_source
+from .create_submission_with_picture import create_submission_with_picture
+from .data_collection import setup_instances
+from .default_healthFacility_form import setup_health_facility_level_default_form
+from .entities import (
+    create_entity_types,
+    create_forms_and_entities,
+)
+from .iaso_api_client import IasoClient
+from .micro_planning import setup_users_teams_micro_planning
+from .org_unit_pictures import associate_favorite_picture
+from .pyramid import setup_orgunits
+from .registry import setup_registry
+from .review_change_proposal import setup_review_change_proposal
+from .user_roles_permissions import create_user_role
 
 
 # Get the setuper directory path
@@ -7,29 +29,6 @@ SETUPER_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT_DIR = os.path.dirname(SETUPER_DIR)
 # Change the working directory to the setuper directory
 os.chdir(SETUPER_DIR)
-
-import argparse
-import random
-import re
-import string
-import subprocess
-import sys
-
-from additional_projects import create_projects, link_new_projects_to_main_data_source
-from create_submission_with_picture import create_submission_with_picture
-from data_collection import setup_instances
-from default_healthFacility_form import setup_health_facility_level_default_form
-from entities import (
-    create_entity_types,
-    create_forms_and_entities,
-)
-from iaso_api_client import IasoClient
-from micro_planning import setup_users_teams_micro_planning
-from org_unit_pictures import associate_favorite_picture
-from pyramid import setup_orgunits
-from registry import setup_registry
-from review_change_proposal import setup_review_change_proposal
-from user_roles_permissions import create_user_role
 
 
 seed_default_health_facility_form = True

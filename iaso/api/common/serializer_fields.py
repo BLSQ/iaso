@@ -150,9 +150,9 @@ class PrimaryKeyRelatedFieldFromJSON(serializers.PrimaryKeyRelatedField):
     @classmethod
     def many_init(cls, *args, **kwargs):
         list_kwargs = {"child_relation": cls(*args, **kwargs)}
-        for key in kwargs:
+        for key, value in kwargs.items():
             if key in MANY_RELATION_KWARGS:
-                list_kwargs[key] = kwargs[key]
+                list_kwargs[key] = value
 
         return ManyRelatedFieldForMultiPart(**list_kwargs)
 
@@ -230,9 +230,9 @@ class BaseQueryOptimizedRelatedFieldMixin(ABC):
     @classmethod
     def many_init(cls, *args: Any, **kwargs: Any) -> ManyRelatedField:
         list_kwargs = {"child_relation": cls(*args, **kwargs)}
-        for key in kwargs:
+        for key, value in kwargs.items():
             if key in MANY_RELATION_KWARGS:
-                list_kwargs[key] = kwargs[key]
+                list_kwargs[key] = value
         return IasoManyRelatedField(**list_kwargs)
 
 

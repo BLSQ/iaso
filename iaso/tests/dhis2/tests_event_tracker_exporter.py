@@ -1,18 +1,14 @@
 import json
 import logging
-
-import responses
-
-from django.core.files.uploadedfile import UploadedFile
-
-
-logger = logging.getLogger(__name__)
 import os
 
 from datetime import datetime, timezone
 
+import responses
+
 from django.contrib.gis.geos import Point
 from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
 from django.test import TestCase
 
 from iaso.dhis2.datavalue_exporter import DataValueExporter, EventTrackerHandler
@@ -40,6 +36,9 @@ from iaso.models import (
     User,
 )
 from iaso.odk import parsing
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_dhis2_fixture(mapping_file):

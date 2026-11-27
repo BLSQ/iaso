@@ -26,7 +26,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils import extract_form_version_id, flat_parse_xml_soup, search_by_ids_refs
+from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 from iaso.utils.emoji import fix_emoji
 from iaso.utils.file_utils import get_file_type
 from iaso.utils.jsonlogic import annotate_suffixed_json_fields, instance_jsonlogic_to_q
@@ -42,8 +43,6 @@ from .org_unit import OrgUnit, OrgUnitReferenceInstance
 
 
 logger = getLogger(__name__)
-from iaso.utils import search_by_ids_refs
-from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 
 
 def instance_upload_to(instance: "Instance", filename: str):

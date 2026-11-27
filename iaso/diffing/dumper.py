@@ -34,7 +34,7 @@ class DiffJSONEncoder(DjangoJSONEncoder):
             return model_to_dict(obj)
         if obj.__class__.__name__ == "PathValue":
             # See django_ltree.fields
-            # https://github.com/mariocesar/django-ltree/blob/154c7e/django_ltree/fields.py#L27-L28
+            # https://github.com/mariocesar/django-ltree/blob/a59906d/django_ltree/fields.py#L35-L36
             return str(obj)
         if obj.__class__.__name__ == "MultiPolygon":
             return obj.wkt

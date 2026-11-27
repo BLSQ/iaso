@@ -24,10 +24,10 @@ def get_reference_instance_ids(instances):
 def get_parent_ref_ext(parent, level, ancestor_source_ref_by_id):
     """Source ref of the ancestor `level` levels up from the root (1 = the top-level ancestor).
 
-    `path` is the list of ancestor pks from root to self inclusive that django_ltree maintains
-    on every `OrgUnit` — used here instead of `parent.ancestors()` because that's a plain method
-    (not a real Django relation, see `django_ltree.models.TreeModel`) and so can't be
-    `Prefetch()`-ed like the FKs/M2Ms below. Callers must batch-fetch `ancestor_source_ref_by_id`
+    `path` is the list of ancestor pks from root to self inclusive, maintained on every `OrgUnit`
+    by `OrgUnit.calculate_paths()` — used here instead of `parent.ancestors()` because that's a
+    plain method (not a real Django relation) and so can't be `Prefetch()`-ed like the FKs/M2Ms
+    below. Callers must batch-fetch `ancestor_source_ref_by_id`
     (id -> source_ref) once for the whole export instead of querying per row.
     """
     if not parent or not parent.path or level > len(parent.path):

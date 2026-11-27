@@ -964,15 +964,14 @@ wheels = [
 
 [[package]]
 name = "django-ltree"
-version = "0.5.3"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
-    { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/5d/e7caa4b71165c7a024246352472d708970a3f9dd2a349bed3e6821fbe143/django_ltree-0.5.3.tar.gz", hash = "sha256:8e47e33f812c14bbb9405b21fb5b7695a15945edca161fbd0b06075adbdf7732", size = 6911, upload-time = "2021-08-16T06:05:15.722Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/2b/2e63cd587ef1d1fd7d90cb3e3d6c67e1dcd9cc3c9a0218556005377e42e3/django_ltree-0.8.0.tar.gz", hash = "sha256:0c66b6f50adf05046c26eaa4f00183825b2f940136f61c6787f006f69d6e68d9", size = 22401, upload-time = "2026-08-26T17:33:09.638Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/42/8b/e0814d6c795f869dd23f7c545a04c1cbb468248b85bd67238a1fdd94f070/django_ltree-0.5.3-py2.py3-none-any.whl", hash = "sha256:9bc8b801d7c26cb38f1f10d80330e29cc5bf83969ff62dd50d2e842e22dcd8c7", size = 8446, upload-time = "2021-08-16T06:05:14.195Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/95/388e1d6b73e4904869e5bf4278157c9504575527c19034eda8258c3407e5/django_ltree-0.8.0-py3-none-any.whl", hash = "sha256:e89519fbae6f379cc3d6c2e51cd215693410a970030a684db16cc6dca22d0140", size = 16017, upload-time = "2026-08-26T17:33:08.095Z" },
 ]
 
 [[package]]
@@ -2033,7 +2032,7 @@ requires-dist = [
     { name = "django-filter", specifier = "==26.2" },
     { name = "django-json-widget", specifier = "==2.2.0" },
     { name = "django-lazy-services", specifier = "==0.0.3" },
-    { name = "django-ltree", specifier = "==0.5.3" },
+    { name = "django-ltree", specifier = "==0.8.0" },
     { name = "django-oauth-toolkit", specifier = "==2.4.0" },
     { name = "django-pg-utils", specifier = "==0.1.5" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==7.3.0" },

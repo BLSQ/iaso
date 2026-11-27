@@ -16,8 +16,7 @@ from django.db import models, transaction
 from django.db.models import Count, Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext_lazy as _
-from django_ltree.fields import PathField  # type: ignore
-from django_ltree.models import TreeModel  # type: ignore
+from django_ltree.fields import PathField
 
 from iaso.models.data_source import SourceVersion
 
@@ -178,32 +177,29 @@ class OrgUnitType(models.Model):
 class OrgUnitQuerySet(QuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
-        # We need to cast PathValue instances to strings - this could be fixed upstream
-        # (https://github.com/mariocesar/django-ltree/issues/8)
-        return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
+        return self.filter(path__descendants=org_unit.path, path__depth=len(org_unit.path) + 1)
 
     def hierarchy(self, org_unit: typing.Union[list["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
-        # We need to cast PathValue instances to strings - this could be fixed upstream
-        # (https://github.com/mariocesar/django-ltree/issues/8)
         query = self
 
         if isinstance(org_unit, OrgUnit):
-            query = models.Q(path__descendants=str(org_unit.path))
+            query = models.Q(path__descendants=org_unit.path)
         elif isinstance(org_unit, models.QuerySet):
             org_unit_qs = org_unit
             query = models.Q(path__descendants=ArraySubquery(org_unit_qs.values("path")))
         elif isinstance(org_unit, list):
-            org_unit = org_unit.only("path") if isinstance(org_unit, models.QuerySet) else org_unit
-            query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
+            query = reduce(operator.or_, [models.Q(path__descendants=ou.path) for ou in list(org_unit)])
 
         return self.filter(query)
 
     def descendants(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """All the descendent, org unit or not"""
-        # We need to cast PathValue instances to strings - this could be fixed upstream
-        # (https://github.com/mariocesar/django-ltree/issues/8)
-        return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
+        return self.filter(path__descendants=org_unit.path, path__depth__gt=len(org_unit.path))
+
+    def ancestors(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
+        """The OrgUnit + all its ancestors"""
+        return self.filter(path__ancestors=org_unit.path)
 
     def query_for_related_org_units(self, org_units):
         ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
@@ -276,7 +272,7 @@ class OrgUnitManager(models.Manager):
         return q
 
 
-class OrgUnit(MissionArtefact, TreeModel):
+class OrgUnit(MissionArtefact):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
     VALIDATION_REJECTED = "REJECTED"
@@ -363,9 +359,23 @@ class OrgUnit(MissionArtefact, TreeModel):
     def source_created_at_with_fallback(self):
         return self.source_created_at if self.source_created_at else self.created_at
 
+    def ancestors(self) -> OrgUnitQuerySet:
+        """This org unit and all its ancestors"""
+        return OrgUnit.objects.ancestors(self)
+
+    def descendants(self) -> OrgUnitQuerySet:
+        """This org unit and all its descendants"""
+        return OrgUnit.objects.hierarchy(self)
+
+    def children(self) -> OrgUnitQuerySet:
+        """The direct children of this org unit"""
+        return OrgUnit.objects.children(self)
+
     def root(self):
         if self.path is not None and len(self.path) > 1:
-            return self.ancestors().exclude(id=self.id).first()
+            # if root was createed after the pyramid and then placed on top, the previous ordering would fail
+            # so we order by depth to get the real root
+            return self.ancestors().exclude(id=self.id).order_by("path__depth").first()
 
     def country_ancestors(self):
         if self.path is not None:

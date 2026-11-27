@@ -29,7 +29,7 @@ dependencies = [
     "django-filter==26.2", # https://github.com/carltongibson/django-filter/tags
     "django-json-widget==2.2.0", # https://github.com/jmrivas86/django-json-widget/tags
     "django-lazy-services==0.0.3", # https://pypi.org/project/django-lazy-services/
-    "django-ltree==0.5.3", # https://github.com/mariocesar/django-ltree/tags
+    "django-ltree==0.8.0", # https://github.com/mariocesar/django-ltree/releases
     "django-oauth-toolkit==2.4.0", # MCP OAuth (OpenHEXA-compatible DCR / PKCE)
     "django-pg-utils==0.1.5", # trypelim - https://pypi.org/project/django-pg-utils/
     "django-phonenumber-field[phonenumberslite]==7.3.0", # https://django-phonenumber-field.readthedocs.io/en/latest/

@@ -1057,15 +1057,16 @@ sdist = { url = "https://files.pythonhosted.org/packages/70/e3/9372fcdca8e9c3205
 
 [[package]]
 name = "django-redis"
-version = "4.12.1"
+version = "7.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "redis" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f9/3d/b2518821dee8ca518c27cfa1b67e29e21f0b23f9783ecdc2e1cc0f3516a8/django-redis-4.12.1.tar.gz", hash = "sha256:306589c7021e6468b2656edc89f62b8ba67e8d5a1c8877e2688042263daa7a63", size = 23350, upload-time = "2020-05-27T11:38:55.638Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/78/203a0cdc0f1c083a5407d01f77b58099a120bb8a5a04562f56a9bb341314/django_redis-7.0.0.tar.gz", hash = "sha256:e48491c862f4350b0747ceb1016700686fb93c4f4e0fb9c490fe6c6658ffd933", size = 64601, upload-time = "2026-06-02T14:17:48.819Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c0/4c/9044b873ef1cc136b8057453ea1d75ba1c9f24f6e88c7bbf2c3d083e0caf/django_redis-4.12.1-py3-none-any.whl", hash = "sha256:1133b26b75baa3664164c3f44b9d5d133d1b8de45d94d79f38d1adc5b1d502e5", size = 19676, upload-time = "2020-05-27T11:38:54.109Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/9f/09cdb9a1eebe8533b02a7694ca787acfc1e4d93b5b6175ff99366d4e6d64/django_redis-7.0.0-py3-none-any.whl", hash = "sha256:4b23aa6e0cd0937bb1242e9a463809e6004de3ca2150f34e986306bb6220d688", size = 38932, upload-time = "2026-06-02T14:17:47.281Z" },
 ]
 
 [[package]]
@@ -2038,7 +2039,7 @@ requires-dist = [
     { name = "django-pg-utils", specifier = "==0.1.5" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==9.0.0" },
     { name = "django-qr-code", specifier = "==5.0.0" },
-    { name = "django-redis", specifier = "==4.12.1" },
+    { name = "django-redis", specifier = "==7.0.0" },
     { name = "django-rest-polymorphic", specifier = ">=0.1.10" },
     { name = "django-ses", specifier = "==2.6.1" },
     { name = "django-simple-captcha", specifier = "==0.6.3" },

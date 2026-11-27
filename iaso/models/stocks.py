@@ -1,10 +1,13 @@
+import operator
 import typing
 import uuid
+
+from functools import reduce
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from numpy import emath
 
 from iaso.models import Project
@@ -136,8 +139,20 @@ class StockLedgerItemQuerySet(QuerySet):
         return self.filter(sku__account=profile.account)
 
     def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+        """
+        The ledger items of the project, limited to the user's org units and their descendants (a user without org
+        units isn't restricted, as for the entities). One `path <@ ...` condition per org unit, each one
+        GiST-indexable (see `EntityQuerySet._org_units_qs_for_user`).
+        """
         project = Project.objects.get_for_user_and_app_id(user, app_id)
-        return self.filter_for_project(project)
+        queryset = self.filter_for_project(project)
+        profile = getattr(user, "iaso_profile", None)
+        org_units = list(profile.org_units.only("path")) if profile else []
+        if org_units:
+            queryset = queryset.filter(
+                reduce(operator.or_, [Q(org_unit__path__descendants=str(ou.path)) for ou in org_units])
+            )
+        return queryset
 
     def filter_for_project(self, project: Project):
         return self.filter(

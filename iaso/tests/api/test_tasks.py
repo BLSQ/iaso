@@ -1,9 +1,10 @@
 import datetime
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import time_machine
 
+from django.conf import settings
 from django.utils import timezone
 from rest_framework import status
 
@@ -559,8 +560,16 @@ class IasoTasksTestCase(APITestCase):
         task.report_success_with_file(message="Exported", file_name="export-files/export.zip", expires_at=expires_at)
         return task
 
-    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3", return_value="https://s3/export.zip?signed")
-    def test_presigned_url_without_expiry(self, mock_presign):
+    def mock_storage(self, **url_kwargs):
+        storage = MagicMock()
+        storage.url.configure_mock(**url_kwargs)
+        patcher = patch("iaso.api.tasks.views.default_storage", storage)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return storage
+
+    def test_presigned_url_without_expiry(self):
+        storage = self.mock_storage(return_value="https://s3/export.zip?signed")
         task = self.create_task_with_file()
 
         self.client.force_authenticate(self.johnny)
@@ -568,10 +577,10 @@ class IasoTasksTestCase(APITestCase):
 
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data, {"presigned_url": "https://s3/export.zip?signed", "expires_at": None})
-        mock_presign.assert_called_once_with("export-files/export.zip")
+        storage.url.assert_called_once_with("export-files/export.zip")
 
-    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3", return_value="https://s3/export.zip?signed")
-    def test_presigned_url_before_expiry(self, mock_presign):
+    def test_presigned_url_before_expiry(self):
+        storage = self.mock_storage(return_value="https://s3/export.zip?signed")
         expires_at = CREATED_AT + datetime.timedelta(days=7)
         task = self.create_task_with_file(expires_at=expires_at)
 
@@ -581,10 +590,20 @@ class IasoTasksTestCase(APITestCase):
 
         data = self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(data, {"presigned_url": "https://s3/export.zip?signed", "expires_at": "2023-12-27T15:00:00Z"})
-        mock_presign.assert_called_once_with("export-files/export.zip")
+        storage.url.assert_called_once_with("export-files/export.zip")
 
-    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3")
-    def test_presigned_url_after_expiry(self, mock_presign):
+    def test_presigned_url_on_storage_that_cannot_sign(self):
+        # Tests use an in-memory storage which, like the local file system storage, can't sign URLs.
+        task = self.create_task_with_file()
+
+        self.client.force_authenticate(self.johnny)
+        response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
+
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(data, {"presigned_url": f"{settings.MEDIA_URL}export-files/export.zip", "expires_at": None})
+
+    def test_presigned_url_after_expiry(self):
+        storage = self.mock_storage()
         expires_at = CREATED_AT + datetime.timedelta(days=7)
         task = self.create_task_with_file(expires_at=expires_at)
 
@@ -594,10 +613,10 @@ class IasoTasksTestCase(APITestCase):
 
         data = self.assertJSONResponse(response, status.HTTP_410_GONE)
         self.assertEqual(data, {"presigned_url": None, "expires_at": "2023-12-27T15:00:00Z"})
-        mock_presign.assert_not_called()
+        storage.url.assert_not_called()
 
-    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3")
-    def test_presigned_url_of_another_account(self, mock_presign):
+    def test_presigned_url_of_another_account(self):
+        storage = self.mock_storage()
         other_account = m.Account.objects.create(name="Other-Account")
         task = self.create_task_with_file(account=other_account)
 
@@ -605,22 +624,22 @@ class IasoTasksTestCase(APITestCase):
         response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
 
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
-        mock_presign.assert_not_called()
+        storage.url.assert_not_called()
 
-    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3", side_effect=Exception("S3 is down"))
-    def test_presigned_url_s3_error(self, mock_presign):
+    def test_presigned_url_storage_error(self):
+        storage = self.mock_storage(side_effect=Exception("S3 is down"))
         task = self.create_task_with_file()
 
         self.client.force_authenticate(self.johnny)
         response = self.client.get(f"/api/tasks/{task.id}/presigned-url/")
 
-        data = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        data = self.assertJSONResponse(response, status.HTTP_503_SERVICE_UNAVAILABLE)
 
         self.assertEqual(data, {"error": "Could not generate a presigned URL at this time."})
-        mock_presign.assert_called_once_with("export-files/export.zip")
+        storage.url.assert_called_once_with("export-files/export.zip")
 
-    @patch("iaso.api.tasks.views.generate_presigned_url_from_s3")
-    def test_presigned_url_without_file(self, mock_presign):
+    def test_presigned_url_without_file(self):
+        storage = self.mock_storage()
         task = m.Task.objects.create(account=self.account, created_by=self.johnny, name="Export", status=RUNNING)
         task.report_success_with_result(message="Done", result_data={"rows": 12})
 
@@ -631,4 +650,4 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(
             data, {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
         )
-        mock_presign.assert_not_called()
+        storage.url.assert_not_called()

@@ -1027,16 +1027,17 @@ wheels = [
 
 [[package]]
 name = "django-qr-code"
-version = "4.0.1"
+version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
+    { name = "pillow" },
     { name = "pydantic" },
     { name = "segno" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/62/774f6b41acd0a4cea1b39088ab306905d4ca4ad27f35b9d93f4485f67ad0/django-qr-code-4.0.1.tar.gz", hash = "sha256:1cf165d2a506687c6373ce65788952c6c192a53310567dd8a25c5273c1dcb4ba", size = 41537, upload-time = "2024-01-07T12:46:00.59Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/04/39/d21be05d72ee3cf8bfefeb55d1735f0ceae7753268b687f58f2062c799e2/django_qr_code-5.0.0.tar.gz", hash = "sha256:3f4bc581eb4a668f706e257592df020fdd109217b6392cce70ac6d48585f7184", size = 36059, upload-time = "2026-10-03T21:14:30.996Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7a/42/bc8ec25bffd9bbea976dedd891b9421e6cf14e240395f6f4167d2500da3e/django_qr_code-4.0.1-py3-none-any.whl", hash = "sha256:27d410cf53190201c69da1e9a1bd5b7f54adf859c9d309359de0442804d876fb", size = 31761, upload-time = "2024-01-07T12:45:58.128Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/d2/19cba319957d0d3694569b4e31592623f1cdd795ceb136acdc9410a81b57/django_qr_code-5.0.0-py3-none-any.whl", hash = "sha256:dcc5abc5aaab10496c56c86f70333190d252c32380d2d20a8ead3f9c87a347e0", size = 33703, upload-time = "2026-10-03T21:14:28.111Z" },
 ]
 
 [[package]]
@@ -2036,7 +2037,7 @@ requires-dist = [
     { name = "django-oauth-toolkit", specifier = "==2.4.0" },
     { name = "django-pg-utils", specifier = "==0.1.5" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==9.0.0" },
-    { name = "django-qr-code", specifier = "==4.0.1" },
+    { name = "django-qr-code", specifier = "==5.0.0" },
     { name = "django-redis", specifier = "==4.12.1" },
     { name = "django-rest-polymorphic", specifier = ">=0.1.10" },
     { name = "django-ses", specifier = "==2.6.1" },

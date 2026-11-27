@@ -1,9 +1,10 @@
 import csv
+import os.path
 
 from random import randint
 
 
-reader = csv.DictReader(open("./data/persons.csv"))
+reader = csv.DictReader(open(os.path.join(os.path.dirname(__file__), "data", "persons.csv")))
 persons = [line for line in reader]
 persons_max = len(persons) - 1
 

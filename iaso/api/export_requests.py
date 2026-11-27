@@ -5,9 +5,6 @@ from datetime import timedelta
 
 from django.utils.timezone import now
 from drf_spectacular.utils import extend_schema
-
-
-logger = logging.getLogger(__name__)
 from rest_framework import permissions, serializers, status
 from rest_framework.response import Response
 
@@ -18,6 +15,9 @@ from iaso.models import KILLED, QUEUED, ExportRequest, Task
 from iaso.tasks.dhis2_submission_exporter import process_export_request
 
 from .common import ModelViewSet
+
+
+logger = logging.getLogger(__name__)
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):

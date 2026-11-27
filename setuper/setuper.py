@@ -1,14 +1,5 @@
-import os
-
-
-# Get the setuper directory path
-SETUPER_DIR = os.path.dirname(os.path.abspath(__file__))
-# The repo root is where docker-compose.yml lives, one level up from setuper/
-REPO_ROOT_DIR = os.path.dirname(SETUPER_DIR)
-# Change the working directory to the setuper directory
-os.chdir(SETUPER_DIR)
-
 import argparse
+import os
 import random
 import re
 import string
@@ -31,6 +22,13 @@ from registry import setup_registry
 from review_change_proposal import setup_review_change_proposal
 from user_roles_permissions import create_user_role
 
+
+# Get the setuper directory path
+SETUPER_DIR = os.path.dirname(os.path.abspath(__file__))
+# The repo root is where docker-compose.yml lives, one level up from setuper/
+REPO_ROOT_DIR = os.path.dirname(SETUPER_DIR)
+# Change the working directory to the setuper directory
+os.chdir(SETUPER_DIR)
 
 seed_default_health_facility_form = True
 

@@ -128,11 +128,11 @@ for row in rows:
 
 
 # TODO: Generalize this based on the retrieved OU types
-for state in pyramid_dict.keys():
+for state, pyramid in pyramid_dict.items():
     print(state, end=" ")
     state_id = find_or_create_org_unit(name=state, org_unit_type_id=ou_types["State"], parent_id=COUNTRY_ID)
 
-    for lga in pyramid_dict[state].keys():
+    for lga in pyramid.keys():
         print("\t" + lga, end=" ")
         county_id = find_or_create_org_unit(
             name=lga,
@@ -140,7 +140,7 @@ for state in pyramid_dict.keys():
             parent_id=state_id,
         )
 
-        for ward in pyramid_dict[state][lga].keys():
+        for ward in pyramid[lga].keys():
             print("\t\t" + ward, end=" ")
             payam_id = find_or_create_org_unit(
                 name=ward,
@@ -148,9 +148,9 @@ for state in pyramid_dict.keys():
                 parent_id=county_id,
             )
 
-            for phc_site in pyramid_dict[state][lga][ward].keys():
+            for phc_site in pyramid[lga][ward].keys():
                 print("\t\t\t" + phc_site, end=": ")
-                group_name = pyramid_dict[state][lga][ward][phc_site]
+                group_name = pyramid[lga][ward][phc_site]
                 print(group_name)
                 find_or_create_org_unit(
                     name=phc_site,

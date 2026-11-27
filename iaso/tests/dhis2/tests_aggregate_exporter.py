@@ -1,13 +1,17 @@
 import json
 import logging
+import os
 
 from collections import namedtuple
+from datetime import datetime, timezone
 
 import responses
 
 from django.core.files.uploadedfile import UploadedFile
 from django.test import TestCase
 
+from iaso.dhis2.datavalue_exporter import AggregateHandler, DataValueExporter
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     AGGREGATE,
     ERRORED,
@@ -33,12 +37,6 @@ from iaso.models import (
 
 
 logger = logging.getLogger(__name__)
-import os
-
-from datetime import datetime, timezone
-
-from iaso.dhis2.datavalue_exporter import AggregateHandler, DataValueExporter
-from iaso.dhis2.export_request_builder import ExportRequestBuilder
 
 
 def load_dhis2_fixture(mapping_file):

@@ -6,15 +6,18 @@ import clamav_client
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.conf import settings
 from django.contrib.auth.views import redirect_to_login
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.views import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET, require_POST
 
+from iaso import models as iaso_models
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION
 from iaso.utils.page_pipeline import (
@@ -313,17 +316,6 @@ def robots_txt(request):
     content = """User-agent: *
 Disallow: /"""
     return HttpResponse(content, content_type="text/plain")
-
-
-import json
-
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.db import models
-from django.http import HttpResponseForbidden
-from django.shortcuts import render
-from django.views import View
-
-from iaso import models as iaso_models
 
 
 class ModelDataView(View):

@@ -44,11 +44,11 @@ class Algorithm:
                         self.add_item(names_1, item, normalized_alias)
 
         names_2 = {remove_words(item.name.strip().lower(), self.words_to_strip): item for item in level_2}
-        for name_1 in names_1.keys():
-            item_2 = names_2.get(name_1)
+        for name_1_k, name_1_v in names_1.items():
+            item_2 = names_2.get(name_1_k)
 
             if item_2:
-                items = names_1[name_1]
+                items = name_1_v
                 # if (item_1.aliases and name_2 in map(lambda x: x.strip().lower(), item_1.aliases)):
                 for item in items:
                     proceed = not item.parent

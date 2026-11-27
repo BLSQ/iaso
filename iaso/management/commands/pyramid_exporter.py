@@ -1,8 +1,6 @@
 import logging
 import time
 
-
-logger = logging.getLogger(__name__)
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -10,6 +8,9 @@ from iaso.diffing import Differ, Dumper, Exporter
 from iaso.models import DataSource, SourceVersion
 
 from .command_logger import CommandLogger
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_option(options, key):

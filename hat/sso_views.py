@@ -16,16 +16,6 @@ from allauth.socialaccount.providers.oauth2.views import (
     OAuth2LoginView,
     OAuth2View,
 )
-from django.utils.translation import gettext_lazy as _
-
-
-class SSOLoginView(OAuth2LoginView):
-    """Override to skip the intermediate template and always redirect to the OAuth provider."""
-
-    def dispatch(self, request, *args, **kwargs):
-        return self.login(request, *args, **kwargs)
-
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
@@ -33,6 +23,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
 from django.template import loader
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
 from requests import HTTPError, RequestException
@@ -45,6 +36,13 @@ from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsErro
 
 
 logger = getLogger(__name__)
+
+
+class SSOLoginView(OAuth2LoginView):
+    """Override to skip the intermediate template and always redirect to the OAuth provider."""
+
+    def dispatch(self, request, *args, **kwargs):
+        return self.login(request, *args, **kwargs)
 
 
 class ExtraData(typing.TypedDict):

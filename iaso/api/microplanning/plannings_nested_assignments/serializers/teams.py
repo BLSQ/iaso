@@ -15,7 +15,7 @@ class NestedTeamTypeSerializer(serializers.Serializer):
 
 
 class AssignmentTeamSerializer(ModelSerializer):
-    team_id = serializers.IntegerField(read_only=True)
+    team_id = serializers.IntegerField(source="id", read_only=True)
     assigned_for_level = serializers.IntegerField(read_only=True)
     total_for_level = serializers.IntegerField(read_only=True)
     assigned = serializers.IntegerField(read_only=True)

@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from iaso.api.common import ModelSerializer, UserSerializer
 from iaso.api.instances.serializers.misc import OrgUnitNestedSerializer as InstanceOrgUnitNestedSerializer
-from iaso.models import Form, Instance, OrgUnit, Project, ValidationNodeTemplate, ValidationWorkflow
+from iaso.models import Form, Instance, OrgUnit, Project, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.utils.pii import get_allowed_fields
@@ -42,33 +42,30 @@ class ProjectNestedSerializer(ModelSerializer):
     class Meta:
         model = Project
         fields = ["id", "name", "color"]
+        read_only_fields = fields
 
 
-class NodeTemplateNestedSerializer(ModelSerializer):
-    class Meta:
-        model = ValidationNodeTemplate
-        fields = ["name"]
-
-
-class FormNestedSerializer(serializers.ModelSerializer):
+class FormNestedSerializer(ModelSerializer):
     class Meta:
         model = Form
         fields = ["id", "name"]
+        read_only_fields = fields
 
 
-class WorkflowNestedSerializer(serializers.ModelSerializer):
+class WorkflowNestedSerializer(ModelSerializer):
     class Meta:
         model = ValidationWorkflow
         fields = ["id", "name"]
+        read_only_fields = fields
 
 
-class OrgUnitNestedSerializer(serializers.ModelSerializer):
+class OrgUnitNestedSerializer(ModelSerializer):
     parent = InstanceOrgUnitNestedSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "parent"]
-        read_only_fields = ["id", "name", "parent"]
+        read_only_fields = fields
 
 
 class CurrentStepSerializer(serializers.Serializer):

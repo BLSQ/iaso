@@ -32,7 +32,7 @@ dependencies = [
     "django-ltree==0.8.0", # https://github.com/mariocesar/django-ltree/releases
     "django-oauth-toolkit==2.4.0", # MCP OAuth (OpenHEXA-compatible DCR / PKCE)
     "django-pg-utils==0.1.5", # trypelim - https://pypi.org/project/django-pg-utils/
-    "django-phonenumber-field[phonenumberslite]==7.3.0", # https://django-phonenumber-field.readthedocs.io/en/latest/
+    "django-phonenumber-field[phonenumberslite]==9.0.0", # https://github.com/django-phonenumber-field/django-phonenumber-field/releases/
     "django-qr-code==4.0.1", # https://django-qr-code.readthedocs.io/en/latest/
     "django-redis==4.12.1", # https://github.com/jazzband/django-redis/tags
     "django-rest-polymorphic>=0.1.10",

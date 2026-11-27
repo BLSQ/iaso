@@ -998,14 +998,14 @@ sdist = { url = "https://files.pythonhosted.org/packages/bd/ac/02fea75d69a439d22
 
 [[package]]
 name = "django-phonenumber-field"
-version = "7.3.0"
+version = "9.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5e/fd/a00c79db4eab7bdcfcb419a14c4879a8f92e92951140c2d84a256c2cd835/django-phonenumber-field-7.3.0.tar.gz", hash = "sha256:f9cdb3de085f99c249328293a3b93d4e5fa440c0c8e3b99eb0d0f54748629797", size = 43005, upload-time = "2023-12-29T14:33:40.937Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/22/e4de820d243224a16fd6156583d2ee401f9ac98d4caa68db1a5b58f29c01/django_phonenumber_field-9.0.0.tar.gz", hash = "sha256:b4a641fc8ae3fdec7aeaf28e3af92bb8d36aefad085b955420807de7e8d37abe", size = 46891, upload-time = "2026-10-21T22:07:59.992Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/35/4f36dac859a1b9dbf9e737718d9b62e3502aca0eb74a10d659283b240992/django_phonenumber_field-7.3.0-py3-none-any.whl", hash = "sha256:bc6eaa49d1f9d870944f5280258db511e3a1ba5e2fbbed255488dceacae45d06", size = 66505, upload-time = "2023-12-29T14:33:36.859Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/fd/f1b1c1ba78af197f12d430795e84b92732ab1aa220cd0f3e5fd2d1999102/django_phonenumber_field-9.0.0-py3-none-any.whl", hash = "sha256:53731bf139ba82004aff6087ccdd55f8ba5c4e11c623557cc1873eeed46eba2a", size = 69494, upload-time = "2026-10-21T22:07:58.694Z" },
 ]
 
 [package.optional-dependencies]
@@ -2035,7 +2035,7 @@ requires-dist = [
     { name = "django-ltree", specifier = "==0.8.0" },
     { name = "django-oauth-toolkit", specifier = "==2.4.0" },
     { name = "django-pg-utils", specifier = "==0.1.5" },
-    { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==7.3.0" },
+    { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==9.0.0" },
     { name = "django-qr-code", specifier = "==4.0.1" },
     { name = "django-redis", specifier = "==4.12.1" },
     { name = "django-rest-polymorphic", specifier = ">=0.1.10" },

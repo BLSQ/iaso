@@ -486,24 +486,27 @@ class ComputeStepPositionsTestCase(SimpleTestCase):
     def test_linear(self):
         self.assertEqual(compute_step_positions(self.steps({1: [2], 2: [3], 3: []})), {1: 1, 2: 2, 3: 3})
 
-    def test_parallel_steps_share_the_same_position(self):
-        # 1 => 2 and 3 in parallel => 4
-        positions = compute_step_positions(self.steps({1: [2, 3], 2: [4], 3: [4], 4: []}))
-        self.assertEqual(positions, {1: 1, 2: 2, 3: 2, 4: 3})
+    def test_order_of_the_steps_does_not_matter(self):
+        # steps loaded in another order than the chain (e.g. created in reverse order): 3 => 1 => 2
+        self.assertEqual(compute_step_positions(self.steps({1: [2], 2: [], 3: [1]})), {3: 1, 1: 2, 2: 3})
 
-    def test_position_is_the_longest_path(self):
-        # 1 => 2 => 4 and 1 => 3 => 5 => 4: step 4 comes after the longest branch
-        positions = compute_step_positions(self.steps({1: [2, 3], 2: [4], 3: [5], 5: [4], 4: []}))
-        self.assertEqual(positions, {1: 1, 2: 2, 3: 2, 5: 3, 4: 4})
+    def test_single_step(self):
+        self.assertEqual(compute_step_positions(self.steps({1: []})), {1: 1})
 
-    def test_steps_in_a_cycle_have_no_position(self):
+    def test_numbering_stops_at_a_branch(self):
+        # 1 => 2 => (3 and 4): workflows are linear, the steps after a branch get no position
+        positions = compute_step_positions(self.steps({1: [2], 2: [3, 4], 3: [], 4: []}))
+        self.assertEqual(positions, {1: 1, 2: 2})
+
+    def test_numbering_stops_at_a_cycle(self):
         # 1 => 2 => 3 => 2
         positions = compute_step_positions(self.steps({1: [2], 2: [3], 3: [2]}))
-        self.assertEqual(positions, {1: 1})
+        self.assertEqual(positions, {1: 1, 2: 2, 3: 3})
 
-    def test_several_starting_steps(self):
-        positions = compute_step_positions(self.steps({1: [3], 2: [3], 3: []}))
-        self.assertEqual(positions, {1: 1, 2: 1, 3: 2})
-
-    def test_no_steps(self):
-        self.assertEqual(compute_step_positions([]), {})
+    def test_no_position_without_a_single_starting_step(self):
+        with self.subTest("several starting steps"):
+            self.assertEqual(compute_step_positions(self.steps({1: [3], 2: [3], 3: []})), {})
+        with self.subTest("no starting step (all the steps in a cycle)"):
+            self.assertEqual(compute_step_positions(self.steps({1: [2], 2: [1]})), {})
+        with self.subTest("no steps"):
+            self.assertEqual(compute_step_positions([]), {})

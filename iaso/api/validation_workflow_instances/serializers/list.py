@@ -1,4 +1,3 @@
-from collections import deque
 from typing import Optional
 
 from django.contrib.auth.models import User
@@ -18,39 +17,30 @@ COMPLETED_STATUSES = [ValidationNodeStatus.ACCEPTED, ValidationNodeStatus.REJECT
 
 def compute_step_positions(node_templates) -> dict[int, int]:
     """
-    Position (1-based) of each step of a workflow: the length of the longest path from a starting step.
-    Parallel steps share the same position. Steps that are part of a cycle get no position.
+    Position (1-based) of each step of a linear workflow, following the chain from its starting step.
+    Workflows are linear (one starting step, one next step each): the numbering stops at anything else
+    (several starting steps, a branch or a cycle) rather than showing misleading positions.
     """
     next_ids = {}
     for node_template in node_templates:
         # aggregated by the list view, so the graph is read without a query per step
         aggregated_ids = getattr(node_template, "next_node_template_ids", None)
-        if aggregated_ids is not None:
-            next_ids[node_template.pk] = list(aggregated_ids)
-        else:
-            next_ids[node_template.pk] = [next_node.pk for next_node in node_template.next_node_templates.all()]
+        if aggregated_ids is None:
+            aggregated_ids = [next_node.pk for next_node in node_template.next_node_templates.all()]
+        next_ids[node_template.pk] = list(aggregated_ids)
 
-    in_degree = dict.fromkeys(next_ids, 0)
-    for next_pks in next_ids.values():
-        for next_pk in next_pks:
-            if next_pk in in_degree:
-                in_degree[next_pk] += 1
+    steps_with_previous = {pk for next_pks in next_ids.values() for pk in next_pks}
+    starting_steps = [pk for pk in next_ids if pk not in steps_with_previous]
+    if len(starting_steps) != 1:
+        return {}
 
-    positions = {pk: 1 for pk, degree in in_degree.items() if degree == 0}
-    to_visit = deque(positions)
-    resolved = set()
-    while to_visit:
-        pk = to_visit.popleft()
-        resolved.add(pk)
-        for next_pk in next_ids[pk]:
-            if next_pk not in in_degree:
-                continue
-            positions[next_pk] = max(positions.get(next_pk, 0), positions[pk] + 1)
-            in_degree[next_pk] -= 1
-            if in_degree[next_pk] == 0:
-                to_visit.append(next_pk)
-    # a step entering a cycle got a temporary position from its previous steps, but is never resolved
-    return {pk: position for pk, position in positions.items() if pk in resolved}
+    positions = {}
+    current = starting_steps[0]
+    while current is not None and current not in positions:  # `not in positions` stops a cycle
+        positions[current] = len(positions) + 1
+        next_pks = next_ids.get(current, [])
+        current = next_pks[0] if len(next_pks) == 1 else None  # stops at the last step or a branch
+    return positions
 
 
 class ProjectNestedSerializer(ModelSerializer):

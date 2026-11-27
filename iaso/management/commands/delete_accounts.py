@@ -97,6 +97,7 @@ from iaso.models.json_config import Config
 from iaso.models.microplanning import Planning, PlanningSamplingResult
 from iaso.models.org_unit import OrgUnit
 from iaso.models.project import Project
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableQuerySet, IncludeDeletedSoftDeletableQuerySet
 
 
 try:
@@ -422,7 +423,11 @@ class Command(BaseCommand):
             self._delete_modification_logs_for_pks(
                 ContentType.objects.get_for_model(model), list(queryset.values_list("pk", flat=True))
             )
-        deleted_count, _ = queryset.delete()
+        deleted_count, _ = (
+            queryset.delete_hard()
+            if isinstance(queryset, (DefaultSoftDeletableQuerySet, IncludeDeletedSoftDeletableQuerySet))
+            else queryset.delete()
+        )
         self._log(f"  {label}: {deleted_count} deleted")
 
     def _delete_modification_logs_for_pks(self, content_type, pks):
@@ -460,7 +465,11 @@ class Command(BaseCommand):
                 deleted = chunk_qs._raw_delete(using=queryset.db)
             except Exception as exc:
                 self._log(f"  {label}: _raw_delete failed ({exc!r}), falling back to .delete()")
-                _, counts = chunk_qs.delete()
+                _, counts = (
+                    chunk_qs.delete_hard()
+                    if isinstance(chunk_qs, (DefaultSoftDeletableQuerySet, IncludeDeletedSoftDeletableQuerySet))
+                    else chunk_qs.delete()
+                )
                 deleted = counts.get(model._meta.label, 0)
                 counts_str = ", ".join(
                     f"{model_label}: {count}" for model_label, count in sorted(counts.items()) if count

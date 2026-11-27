@@ -481,7 +481,9 @@ class DataSourceVersionsSynchronizer:
             if not change_requests_batch:
                 break
 
-            change_requests = OrgUnitChangeRequest.objects.bulk_create(change_requests_batch, self.insert_batch_size)
+            change_requests = OrgUnitChangeRequest.objects_include_deleted.bulk_create(
+                change_requests_batch, self.insert_batch_size
+            )
 
             for change_request in change_requests:
                 groups_to_bulk_create = self.change_requests_groups_to_bulk_create.get(change_request.org_unit_id)

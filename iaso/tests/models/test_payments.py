@@ -18,7 +18,7 @@ class PaymentModelTestCase(TestCase):
         user = User.objects.create(username="test_user")
         created_by_user = User.objects.create(username="creator_user")
         cls.org_unit = m.OrgUnit.objects.create(name="Test OrgUnit")
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=cls.org_unit, new_name="Foo")
         payment_lot = m.PaymentLot.objects.create(name="Test Payment Lot", created_by=created_by_user)
         cls.payment = m.Payment.objects.create(user=user, status=PaymentStatuses.PENDING, payment_lot=payment_lot)
         cls.payment.change_requests.add(change_request)
@@ -76,7 +76,9 @@ class PotentialPaymentModelTestCase(TestCase):
     def setUpTestData(cls):
         cls.user = User.objects.create(username="test_user")
         cls.org_unit = m.OrgUnit.objects.create(name="Test OrgUnit")
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=cls.org_unit, new_name="Foo"
+        )
 
     def test_create(self):
         self.potential_payment = m.PotentialPayment.objects.create(user=self.user)

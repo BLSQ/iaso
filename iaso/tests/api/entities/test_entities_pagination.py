@@ -288,7 +288,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
     def test_cursor_empty_queryset(self):
         self.client.force_authenticate(self.yoda)
 
-        m.Entity.objects.all().delete()
+        m.Entity.objects.all().delete_hard()
 
         response = self.client.get("/api/entities/", data={"limit": 2, "cursor": "null"}, format="json")
 
@@ -359,7 +359,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         # Delete the last item on page 1 (which the 'next' cursor is referencing)
         last_item_id = data_p1["result"][1]["id"]
-        m.Entity.objects.filter(id=last_item_id).delete()
+        m.Entity.objects.filter(id=last_item_id).delete_hard()
 
         res_p2 = self.client.get("/api/entities/", data=params | {"cursor": next_cursor}, format="json")
         data_p2 = self.assertJSONResponse(res_p2, status.HTTP_200_OK)
@@ -388,7 +388,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        m.Entity.objects.all().delete()
+        m.Entity.objects.all().delete_hard()
 
         base_time = now()
         account = self.yoda.iaso_profile.account
@@ -439,7 +439,7 @@ class WebEntityCursorPaginationAPITestCase(EntityAPITestCase):
     def test_cursor_multiple_columns_nullable(self):
         self.client.force_authenticate(self.yoda)
 
-        m.Entity.objects.all().delete()
+        m.Entity.objects.all().delete_hard()
 
         account = self.yoda.iaso_profile.account
 

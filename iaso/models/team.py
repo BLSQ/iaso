@@ -18,14 +18,17 @@ from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.color import ColorField
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
     IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
     OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
     SoftDeletableModel,
 )
 
 
 class TeamQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User):
+    def filter_for_user(self, user: User) -> Self:
         account: Account | None = getattr(getattr(user, "iaso_profile", None), "account", None)
         if not account:
             return self.none()
@@ -69,6 +72,18 @@ class TeamQuerySet(models.QuerySet):
         return queryset.order_by("path")
 
 
+class DefaultTeamQuerySet(TeamQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedTeamQuerySet(TeamQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedTeamQuerySet(TeamQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
+
+
 class TeamType(models.TextChoices):
     TEAM_OF_TEAMS = "TEAM_OF_TEAMS", _("Team of teams")
     TEAM_OF_USERS = "TEAM_OF_USERS", _("Team of users")
@@ -79,9 +94,9 @@ class TeamType(models.TextChoices):
 
 
 class Team(CreatedAndUpdatedModel, SoftDeletableModel):
-    objects = DefaultSoftDeletableManager.from_queryset(TeamQuerySet)()
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(TeamQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultTeamQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedTeamQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(IncludeDeletedTeamQuerySet)()
 
     class Meta:
         ordering = ("name",)

@@ -6,10 +6,19 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import QuerySet
 from numpy import emath
+from typing_extensions import Self
 
 from iaso.models import Project
 from iaso.models.entity import UserNotAuthError
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    DefaultSoftDeletableQuerySet,
+    IncludeDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableQuerySet,
+    OnlyDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableQuerySet,
+    SoftDeletableModel,
+)
 
 
 class StockImpacts(models.TextChoices):
@@ -21,22 +30,39 @@ class StockImpacts(models.TextChoices):
 
 
 class StockKeepingUnitQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]) -> Self:
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
-        profile = user.iaso_profile
-        return self.filter(account=profile.account).filter(deleted_at=None)
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+        return self.filter(account=account)
 
-    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str) -> Self:
         project = Project.objects.get_for_user_and_app_id(user, app_id)
         return self.filter_for_project(project)
 
-    def filter_for_project(self, project: Project):
+    def filter_for_project(self, project: Project) -> Self:
+        if not project.account:
+            return self.none()
+
         return self.filter(
             account=project.account,
             projects__in=[project],
-        ).filter(deleted_at=None)
+        )
+
+
+class DefaultStockKeepingUnitQuerySet(StockKeepingUnitQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedStockKeepingUnitQuerySet(StockKeepingUnitQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedStockKeepingUnitQuerySet(StockKeepingUnitQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
 
 
 def validate_precision(value):
@@ -73,7 +99,9 @@ class StockKeepingUnit(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = models.Manager.from_queryset(StockKeepingUnitQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultStockKeepingUnitQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedStockKeepingUnitQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(IncludeDeletedStockKeepingUnitQuerySet)()
 
     def __str__(self):
         return f"{self.name} ({self.short_name})"
@@ -226,22 +254,38 @@ class StockItemRule(models.Model):
 
 
 class StockRulesVersionQuerySet(QuerySet):
-    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]) -> Self:
         if not user or not user.is_authenticated:
             raise UserNotAuthError("User not Authenticated")
 
-        profile = user.iaso_profile
-        return self.filter(account=profile.account).filter(deleted_at=None)
+        account = getattr(getattr(user, "iaso_profile", None), "account", None)
+        if not account:
+            return self.none()
+        return self.filter(account=account)
 
-    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
+    def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str) -> Self:
         project = Project.objects.get_for_user_and_app_id(user, app_id)
         return self.filter_for_project(project)
 
-    def filter_for_project(self, project: Project):
+    def filter_for_project(self, project: Project) -> Self:
+        if not project.account:
+            return self.none()
         return self.filter(account=project.account)
 
     def filter_published(self):
         return self.filter(status=StockRulesVersionsStatus.PUBLISHED)
+
+
+class DefaultStockRulesVersionQuerySet(StockRulesVersionQuerySet, DefaultSoftDeletableQuerySet):
+    pass
+
+
+class IncludeDeletedStockRulesVersionQuerySet(StockRulesVersionQuerySet, IncludeDeletedSoftDeletableQuerySet):
+    pass
+
+
+class OnlyDeletedStockRulesVersionQuerySet(StockRulesVersionQuerySet, OnlyDeletedSoftDeletableQuerySet):
+    pass
 
 
 class StockRulesVersionsStatus(models.TextChoices):
@@ -289,7 +333,11 @@ class StockRulesVersion(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = models.Manager.from_queryset(StockRulesVersionQuerySet)()
+    objects = DefaultSoftDeletableManager.from_queryset(DefaultStockRulesVersionQuerySet)()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OnlyDeletedStockRulesVersionQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
+        IncludeDeletedStockRulesVersionQuerySet
+    )()
 
     def transition_to_status(self, new_status_str: str, do_save=True):
         old_status_str = self.status

@@ -75,7 +75,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_delete_soft_and_hard(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             uuid=uuid.uuid4(),
             org_unit=self.org_unit,
             new_name="New name",
@@ -88,11 +88,11 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_request.delete()
         change_request.refresh_from_db()
         self.assertEqual(change_request.deleted_at, self.DT)
-        self.assertEqual(1, m.OrgUnitChangeRequest.objects.filter(id=change_request.pk).count())
+        self.assertEqual(1, m.OrgUnitChangeRequest.objects_include_deleted.filter(id=change_request.pk).count())
 
         # Hard delete.
         change_request.delete_hard()
-        self.assertEqual(0, m.OrgUnitChangeRequest.objects.filter(id=change_request.pk).count())
+        self.assertEqual(0, m.OrgUnitChangeRequest.objects_include_deleted.filter(id=change_request.pk).count())
 
     @time_machine.travel(DT, tick=False)
     def test_create(self):
@@ -174,12 +174,12 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
     def test_kind(self):
         self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
         self.org_unit.save()
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit)
         self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CHANGE)
 
         self.org_unit.validation_status = self.org_unit.VALIDATION_NEW
         self.org_unit.save()
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit)
         self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CREATION)
 
     def test_clean_approved_fields(self):
@@ -200,7 +200,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertIn("Closing date must be later than opening date.", error.exception.messages)
 
     def test_get_new_fields(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit)
         expected_fields = [
             "new_parent",
             "new_name",
@@ -218,7 +218,9 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_reject(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
+            org_unit=self.org_unit, new_name="New name"
+        )
         change_request.reject(user=self.user, rejection_comment="Foo Bar Baz.")
         self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
         self.assertEqual(change_request.created_at, self.DT)
@@ -229,7 +231,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_approve(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             new_name="New name given in a change request",
             new_parent=self.new_parent,
@@ -294,7 +296,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(self.org_unit.opening_date, datetime.date(2020, 1, 1))
         self.assertEqual(self.org_unit.closed_date, datetime.date(2055, 1, 1))
 
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             # Explicitly ask for `new_location`, `new_opening_date` and `new_closed_date` to be erased.
             new_location=None,
@@ -371,7 +373,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         )
         self.assertEqual(form_1.instances.count(), 2)
 
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             requested_fields=["new_reference_instances"],
         )
@@ -389,7 +391,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         )
         self.assertEqual(form_2.instances.count(), 2)
 
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             requested_fields=["new_reference_instances"],
         )
@@ -401,12 +403,12 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertCountEqual(org_unit.reference_instances.all(), expected_new_reference_instances)
 
     def test_exclude_soft_deleted_new_reference_instances(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, requested_fields=["new_reference_instances"]
         )
         change_request.new_reference_instances.set([self.new_instance1, self.new_instance2])
 
-        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 1)
 
         # `deleted=True` should be excluded.
@@ -415,7 +417,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.new_instance2.deleted = True
         self.new_instance2.save()
 
-        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 0)
 
         # `json=null` should be excluded.
@@ -426,7 +428,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.new_instance2.json = None
         self.new_instance2.save()
 
-        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 0)
 
         # `form_version_id=null` should be excluded.
@@ -437,7 +439,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.new_instance2.form_version = None
         self.new_instance2.save()
 
-        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 0)
 
         # `uuid=null` should be excluded.
@@ -448,7 +450,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.new_instance2.uuid = None
         self.new_instance2.save()
 
-        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 0)
 
         # `form_id=null` should be excluded.
@@ -459,7 +461,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.new_instance2.form = None
         self.new_instance2.save()
 
-        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        change_requests = m.OrgUnitChangeRequest.objects_include_deleted.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 0)
 
     def test_filter_on_user_projects(self):
@@ -471,23 +473,23 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(self.org_unit.version.data_source, self.data_source)
 
         # Create a change request for this org unit.
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        m.OrgUnitChangeRequest.objects_include_deleted.create(org_unit=self.org_unit, new_name="Foo")
 
         # No project restriction: the user should be able to see all change requests.
         self.assertEqual(self.user.iaso_profile.projects_ids, [])
-        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        filtered_change_requests = m.OrgUnitChangeRequest.objects_include_deleted.filter_on_user_projects(self.user)
         self.assertEqual(filtered_change_requests.count(), 1)
 
         # Restriction on `project_2`: the user shouldn't be able to see change requests for `project_1`.
         self.user.iaso_profile.projects.set([self.project_2])
         del self.user.iaso_profile.projects_ids
-        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        filtered_change_requests = m.OrgUnitChangeRequest.objects_include_deleted.filter_on_user_projects(self.user)
         self.assertEqual(filtered_change_requests.count(), 0)
 
         # Restriction on `project_1` and `project_2`: the user should be able to see change requests for `project_1`.
         self.user.iaso_profile.projects.set([self.project_1, self.project_2])
         del self.user.iaso_profile.projects_ids
-        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        filtered_change_requests = m.OrgUnitChangeRequest.objects_include_deleted.filter_on_user_projects(self.user)
         self.assertEqual(filtered_change_requests.count(), 1)
 
     @time_machine.travel(DT, tick=False)
@@ -499,7 +501,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             org_unit_type=self.org_unit_type,
             name="Test facility",
         )
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             new_geom=new_geom,
             requested_fields=["new_geom"],
@@ -524,7 +526,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             geom=existing_geom,
             simplified_geom=existing_geom,
         )
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             old_geom=existing_geom,
             new_geom=None,
@@ -546,7 +548,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             name="Test facility",
             code="old-code",
         )
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             old_code="old-code",
             new_code="new-code-123",
@@ -567,7 +569,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             name="Test facility",
             code="old-code",
         )
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             old_code="old-code",
             new_code="",

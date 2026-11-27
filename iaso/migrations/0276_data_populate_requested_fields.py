@@ -22,7 +22,7 @@ def migrate_data_forward(apps, schema_editor):
     """
     OrgUnitChangeRequest = apps.get_model("iaso", "OrgUnitChangeRequest")
 
-    for change_request in OrgUnitChangeRequest.objects.all():
+    for change_request in OrgUnitChangeRequest.objects_include_deleted.all():
         requested = []
         for name in new_fields:
             field = getattr(change_request, name)

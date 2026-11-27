@@ -539,7 +539,7 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         self._create_zip_file()
 
-        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
+        self.assertEqual(m.OrgUnitChangeRequest.objects_include_deleted.count(), 0)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -552,9 +552,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(self.task.status, m.SUCCESS)
 
         # One change request per registration-form instance (Disasi Makulo + Patrice Akambu).
-        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 2)
+        self.assertEqual(m.OrgUnitChangeRequest.objects_include_deleted.count(), 2)
         reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
-        change_request = m.OrgUnitChangeRequest.objects.get(new_reference_instances=reg_instance)
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.get(new_reference_instances=reg_instance)
         self.assertEqual(change_request.org_unit, reg_instance.org_unit)
         self.assertEqual(change_request.requested_fields, ["new_reference_instances"])
         self.assertEqual(list(change_request.new_reference_instances.all()), [reg_instance])
@@ -1735,7 +1735,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             add_to_zip(zipf, zip_fixture_dir(), ["changeRequests.json"])
         save_file_to_api_import(self.api_import, zip_path)
 
-        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
+        self.assertEqual(m.OrgUnitChangeRequest.objects_include_deleted.count(), 0)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -1751,8 +1751,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(self.api_import.import_type, "bulk")
         self.assertFalse(self.api_import.has_problem)
 
-        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
-        ou_change_req = m.OrgUnitChangeRequest.objects.first()
+        self.assertEqual(m.OrgUnitChangeRequest.objects_include_deleted.count(), 1)
+        ou_change_req = m.OrgUnitChangeRequest.objects_include_deleted.first()
         self.assertEqual(ou_change_req.old_name, "LaLaland")
         self.assertEqual(ou_change_req.new_name, "LaLaland Edited")
         self.assertEqual(ou_change_req.org_unit_id, 1)

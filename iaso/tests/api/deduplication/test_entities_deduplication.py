@@ -869,7 +869,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
         # Clean up the database.
-        m.Entity.objects.all().delete()
+        m.Entity.objects.all().delete_hard()
         m.Instance.objects.all().delete()
 
         form_version_id = self.default_form.form_versions.first().version_id

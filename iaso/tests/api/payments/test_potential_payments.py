@@ -59,23 +59,23 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
     def test_list_ok(self):
         # Create approved change requests for the users
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             created_by=self.user_with_perm,
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             created_by=self.user_from_another_account,
         )
 
         self.assertEqual(0, m.PotentialPayment.objects.count())
-        self.assertEqual(3, m.OrgUnitChangeRequest.objects.count())
-        for change_request in m.OrgUnitChangeRequest.objects.all():
+        self.assertEqual(3, m.OrgUnitChangeRequest.objects_include_deleted.count())
+        for change_request in m.OrgUnitChangeRequest.objects_include_deleted.all():
             self.assertIsNone(change_request.payment)
             self.assertIsNone(change_request.potential_payment)
 
@@ -133,10 +133,10 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_creates_new_potential_payments(self):
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             created_by=self.user_with_perm,
@@ -149,7 +149,7 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.assertEqual(2, len(response.data["results"]))
 
     def test_list_does_not_create_potential_payments_for_existing_payments(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(
+        change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
         )
         payment = m.Payment.objects.create(user=self.user)  # specify a user here
@@ -162,10 +162,10 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.assertEqual(0, len(response.data["results"]))
 
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
         )
-        m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=self.org_unit,
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             created_by=self.user_with_perm,

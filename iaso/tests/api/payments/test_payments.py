@@ -40,7 +40,7 @@ class PaymentViewSetAPITestCase(APITestCase):
             status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
-        cls.change_request = m.OrgUnitChangeRequest.objects.create(
+        cls.change_request = m.OrgUnitChangeRequest.objects_include_deleted.create(
             org_unit=org_unit,
             new_name="Dueling Peaks",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,

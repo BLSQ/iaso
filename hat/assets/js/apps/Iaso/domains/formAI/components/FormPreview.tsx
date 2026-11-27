@@ -13,6 +13,7 @@ import Paper from '@mui/material/Paper/Paper';
 import Typography from '@mui/material/Typography/Typography';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from 'Iaso/types/general';
+import { djangoStaticUrl } from 'Iaso/utils/djangoStaticUrl';
 import MESSAGES from '../messages';
 import { ACTIONS_HEIGHT, ACTIONS_HEIGHT_MOBILE } from './Actions';
 
@@ -184,7 +185,7 @@ export const FormPreview: FunctionComponent<Props> = ({ xformXml }) => {
                 <iframe
                     key={iframeKey}
                     ref={iframeRef}
-                    src={`${window.STATIC_URL ?? '/static/'}odk-preview/index.html`}
+                    src={djangoStaticUrl('odk-preview/index.html')}
                     title="ODK Form Preview"
                     onLoad={handleIframeLoad}
                     style={{

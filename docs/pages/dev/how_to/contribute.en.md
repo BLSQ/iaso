@@ -97,18 +97,10 @@ python manage.py shell_plus --notebook
 ### Testing prod js assets in development
 
 During local development, by default, the Javascript and CSS will be loaded from
-a webpack server with live reloading of the code. To locally test the compiled
-version as it is in production ( minified and with the same compilation option).
-You can launch docker compose with the `TEST_PROD=true` environment variable
-set.
+a Vite dev server with live reloading. To locally test the compiled production
+assets, launch docker compose with `TEST_PROD=true` (e.g. `TEST_PROD=true docker compose up`).
 
-e.g `TEST_PROD=true docker compose up`
+Test with this mode when you change `hat/vite.config.ts`. Outside Docker:
 
-This can be useful to reproduce production only bugs. Please also test with this
-configuration whenever you modify webpack.prod.js to validate your changes.
-
-Alternatively this can be done outside of docker by running:
-
-1. `npm run webpack-prod` to do the build
-2. Launching the django server with `TEST_PROD`
-   e.g. `TEST_PROD=true python manage.py runserver`.
+1. `npm run build:prod`
+2. `TEST_PROD=true python manage.py runserver`

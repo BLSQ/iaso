@@ -25,7 +25,7 @@ class XFrameOptionsTestCase(TestCase):
         )
 
     def test_regular_dashboard_home_sets_deny(self):
-        # Avoid rendering iaso/index.html (needs webpack-stats.json in CI).
+        # Avoid rendering iaso/index.html (needs bundle-stats.json in CI).
         with mock.patch(
             "hat.dashboard.views._base_iaso",
             return_value=HttpResponse("ok"),

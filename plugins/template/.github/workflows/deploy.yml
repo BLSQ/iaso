@@ -105,11 +105,11 @@ jobs:
             - name: npm ci
               run: |
                   npm ci
-            - name: npm build
+            - name: Vite production build
               run: |
-                  rm -f hat/assets/webpack/*
-                  npm run webpack-prod
-                  git add -f hat/assets/webpack/
+                  rm -f hat/assets/frontend/*
+                  npm run build:prod
+                  git add -f hat/assets/frontend/
 
               env:
                   VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}

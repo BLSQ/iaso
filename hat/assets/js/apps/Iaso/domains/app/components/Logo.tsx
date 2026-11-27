@@ -1,4 +1,5 @@
 import React, { FC } from 'react';
+import { djangoStaticUrl } from 'Iaso/utils/djangoStaticUrl';
 import { LogoSvg } from './LogoSvg';
 
 type Props = {
@@ -12,7 +13,7 @@ export const Logo: FC<Props> = ({ isIaso = true, logoPath = '' }) => {
     ) : (
         <img
             alt="logo"
-            src={`${window.STATIC_URL}${logoPath}`}
+            src={djangoStaticUrl(logoPath)}
             style={{ maxHeight: '50px', maxWidth: '200px' }}
         />
     );

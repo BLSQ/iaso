@@ -37,7 +37,7 @@ class DashboardLoginRedirectTestCase(TestCase):
 
     def test_authenticated_user_gets_the_page(self):
         self.client.force_login(self.user)
-        # Avoid rendering iaso/index.html (needs webpack-stats.json in CI).
+        # Avoid rendering iaso/index.html (needs bundle-stats.json in CI).
         with mock.patch("hat.dashboard.views._base_iaso", return_value=HttpResponse("ok")) as base_iaso:
             response = self.client.get(ENTITIES_URL, RAW_URI=ENTITIES_URL)
 

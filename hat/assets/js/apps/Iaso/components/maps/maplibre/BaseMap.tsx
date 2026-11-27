@@ -14,7 +14,7 @@ import { Tile, TilesSwitchControl } from '../tools/TilesSwitchControl';
 import { FIT_BOUNDS_PADDING, FitBoundsControl } from './FitBoundsControl';
 import { getRasterStyle } from './rasterStyle';
 
-// MapLibre loads its worker from a file next to its script, which webpack doesn't serve:
+// MapLibre loads its worker from a file next to its script; point it at a static copy:
 // run it from the bundled source instead, so it doesn't depend on the public path.
 setWorkerUrl(
     URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' })),

@@ -4,6 +4,7 @@ import Container from '@mui/material/Container/Container';
 import Grid from '@mui/material/Grid/Grid';
 import makeStyles from '@mui/styles/makeStyles/makeStyles';
 import { Link } from 'react-router-dom';
+import { djangoStaticUrl } from 'Iaso/utils/djangoStaticUrl';
 import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -101,7 +102,7 @@ export const HomeOnline: FunctionComponent = () => {
             <TopBar displayBackButton={false} />
             <Box
                 className={classes.root}
-                sx={{ backgroundImage: `url("${window.STATIC_URL}${iasoBg}")` }}
+                sx={{ backgroundImage: `url("${iasoBg}")` }}
             >
                 <Grid className={classes.topMenu} container spacing={2}>
                     <Grid container item xs={6} justifyContent="flex-end">
@@ -140,7 +141,7 @@ export const HomeOnline: FunctionComponent = () => {
                                 {APP_TITLE !== 'Iaso' && LOGO_PATH && (
                                     <img
                                         alt="logo"
-                                        src={`${window.STATIC_URL}${LOGO_PATH}`}
+                                        src={djangoStaticUrl(LOGO_PATH)}
                                         style={{ width: 150, height: 'auto' }}
                                     />
                                 )}

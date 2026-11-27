@@ -6,25 +6,18 @@ import { IntlProvider } from 'react-intl';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetCurrentUser } from 'Iaso/domains/users/hooks/useGetCurrentUser';
 import { usePluginsRouteConfigs } from 'Iaso/plugins/hooks/routes';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import translationsConfig from 'IasoModules/translations/configs';
 import { useLocale } from '../contexts/LocaleContext';
 import { useGetCustomTranslations } from '../hooks/useGetCustomTranslations';
 import { useCurrentRoute, useGetRoutesConfigs } from '../hooks/useRoutes';
+import { preloadMomentLocales } from '../utils/momentLocales';
 
 type Props = {
     children: ReactNode;
     userHomePage?: string;
 };
-// Load locale data for available languages
-Object.keys(LANGUAGE_CONFIGS).forEach(lang => {
-    if (lang !== 'en') {
-        // English is included by default
-        import(`moment/locale/${lang}`).catch(() => {
-            console.warn(`Failed to load locale data for ${lang}`);
-        });
-    }
-});
+preloadMomentLocales();
+
 const LocalizedAppComponent: FunctionComponent<Props> = ({
     children,
     userHomePage,

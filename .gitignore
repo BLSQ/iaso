@@ -107,7 +107,7 @@ hat/assets/messages/**/*.json
 
 /pgdata/
 
-hat/assets/webpack/webpack-stats\.json
+hat/assets/frontend/bundle-stats\.json
 
 bin/
 
@@ -139,7 +139,10 @@ lintErrors.html
 **/translations/extracted/
 extracted_translation.json
 
-hat/assets/webpack/
+hat/assets/frontend/
+# Module Federation tooling cache (if @module-federation/* is used again)
+.mf/
+
 docker/DHIS2_home/
 
 # Auto-generated files

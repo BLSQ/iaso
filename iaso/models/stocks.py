@@ -99,6 +99,9 @@ class StockKeepingUnitChildren(models.Model):
     class Meta:
         ordering = ["id"]
 
+    def __str__(self) -> str:
+        return f"{self.parent} - {self.child}"
+
 
 class StockItemQuerySet(QuerySet):
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
@@ -125,6 +128,9 @@ class StockItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = models.Manager.from_queryset(StockItemQuerySet)()
+
+    def __str__(self) -> str:
+        return f"{self.sku} - {self.org_unit}"
 
 
 class StockLedgerItemQuerySet(QuerySet):
@@ -172,6 +178,9 @@ class StockLedgerItem(models.Model):
     received_at = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager.from_queryset(StockLedgerItemQuerySet)()
+
+    def __str__(self) -> str:
+        return f"{self.sku} - {self.org_unit} ({self.created_at:%Y-%m-%d %H:%M:%S})"
 
     def save(self, *args, **kwargs):
         if StockLedgerItem.objects.filter(id=self.id).exists():
@@ -223,6 +232,9 @@ class StockItemRule(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = models.Manager.from_queryset(StockItemRuleQuerySet)()
+
+    def __str__(self) -> str:
+        return f"{self.sku} - {self.form} - {self.question}"
 
 
 class StockRulesVersionQuerySet(QuerySet):

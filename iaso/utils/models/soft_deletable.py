@@ -18,10 +18,10 @@ class OnlyDeletedSoftDeletableManager(models.Manager):
 
 
 class SoftDeletableModel(models.Model):
+    deleted_at = models.DateTimeField(default=None, blank=True, null=True)
+
     class Meta:
         abstract = True
-
-    deleted_at = models.DateTimeField(default=None, blank=True, null=True)
 
     def delete_hard(self, using=None, keep_parents=False):
         return super().delete(using, keep_parents)

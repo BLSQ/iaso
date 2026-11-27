@@ -82,6 +82,12 @@ class StorageDevice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ("customer_chosen_id", "account", "type")
+
+    def __str__(self) -> str:
+        return f"{self.customer_chosen_id} ({self.type})"
+
     def change_status(self, new_status: str, reason: str, comment: str, performed_by: User) -> None:
         # TODO: this method is tested indirectly via the API but would deserve a proper, more detailed unit test
         """
@@ -102,12 +108,6 @@ class StorageDevice(models.Model):
             status_reason=reason,
             status_comment=comment,
         )
-
-    def __str__(self):
-        return f"{self.customer_chosen_id} ({self.type})"
-
-    class Meta:
-        unique_together = ("customer_chosen_id", "account", "type")
 
 
 class StorageLogEntryManager(models.Manager):
@@ -226,6 +226,9 @@ class StorageLogEntry(models.Model):
         ordering = ["-performed_at"]
         verbose_name_plural = "storage log entries"
 
+    def __str__(self) -> str:
+        return f"{self.device} - {self.operation_type} ({self.performed_at:%Y-%m-%d %H:%M:%S})"
+
 
 class StoragePassword(models.Model):
     """
@@ -241,3 +244,6 @@ class StoragePassword(models.Model):
     project = models.ForeignKey("iaso.Project", on_delete=models.CASCADE, related_name="storage_passwords")
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.project} - {self.created_at:%Y-%m-%d %H:%M:%S}"

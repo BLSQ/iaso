@@ -74,6 +74,9 @@ class RecordType(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class Record(models.Model):
     value = models.DecimalField(max_digits=19, decimal_places=10)
@@ -81,6 +84,9 @@ class Record(models.Model):
     org_unit = models.ForeignKey("OrgUnit", null=True, blank=True, on_delete=models.CASCADE)
     record_type = models.ForeignKey(RecordType, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"{self.record_type} - {self.org_unit}"
 
 
 class MatchingAlgorithm(models.Model):
@@ -419,12 +425,12 @@ class ExternalCredentials(models.Model):
     password = models.TextField()
     url = models.TextField()
 
+    def __str__(self) -> str:
+        return f"{self.name} - {self.login} - {self.url} ({self.account})"
+
     @property
     def is_valid(self) -> bool:
         return bool(self.url and self.password and self.login)
-
-    def __str__(self):
-        return f"{self.name} - {self.login} - {self.url} ({self.account})"
 
     def as_dict(self):
         return {

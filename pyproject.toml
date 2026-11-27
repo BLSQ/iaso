@@ -207,9 +207,6 @@ ignore = [
     "C419",    # unnecessary-comprehension-in-call
     # flake8-django (DJ).
     "DJ001",   # django-nullable-model-string-field
-    "DJ007",   # django-all-with-model-form
-    "DJ008",   # django-model-without-dunder-str
-    "DJ012",   # django-unordered-body-content-in-model
     # Error (E).
     "E501",    # line-too-long
     "E711",    # none-comparison

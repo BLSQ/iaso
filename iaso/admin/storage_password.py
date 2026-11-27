@@ -18,7 +18,7 @@ class PasswordRevealInput(PasswordInput):
 class StoragePasswordForm(ModelForm):
     class Meta:
         model = StoragePassword
-        fields = "__all__"
+        fields = ("password", "is_compromised", "project", "created_at", "updated_at")
         widgets = {"password": PasswordRevealInput()}
 
 

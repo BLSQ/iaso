@@ -102,3 +102,6 @@ class ProjectFeatureFlags(models.Model):
 
     class Meta:
         db_table = "iaso_project_feature_flags"
+
+    def __str__(self) -> str:
+        return f"{self.project} - {self.featureflag}"

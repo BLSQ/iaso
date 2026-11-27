@@ -10,10 +10,6 @@ from iaso.utils.models.soft_deletable import (
 
 
 class OpenHEXAInstance(models.Model):
-    class Meta:
-        verbose_name = "OpenHEXA Instance"
-        verbose_name_plural = "OpenHEXA Instances"
-
     name = models.CharField(max_length=255, unique=True)
     url = models.URLField()
     token = EncryptedTextField()
@@ -21,7 +17,11 @@ class OpenHEXAInstance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    class Meta:
+        verbose_name = "OpenHEXA Instance"
+        verbose_name_plural = "OpenHEXA Instances"
+
+    def __str__(self) -> str:
         return f"{self.name} {self.url}"
 
 

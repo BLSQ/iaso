@@ -11,6 +11,9 @@ from iaso.utils.models.color import ColorField
 class ColorFieldTestModel(models.Model):
     color = ColorField()
 
+    def __str__(self):
+        return self.color
+
 
 VALIDATION_ERROR_MESSAGE = "is not a valid hex color code. It should be in the format #RRGGBB."
 

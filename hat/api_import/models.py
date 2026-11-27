@@ -37,9 +37,6 @@ class APIImport(models.Model):
     so in case of import problem we can fix it server side and not ask them to upload again.
     """
 
-    class Meta:
-        db_table = "vector_control_apiimport"
-
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
         User, on_delete=CASCADE, null=True, related_name="apiimports"
@@ -53,7 +50,10 @@ class APIImport(models.Model):
     app_id = models.TextField(blank=True, null=False)
     app_version = models.CharField(max_length=25, blank=True, null=False)
 
-    def __str__(self):
+    class Meta:
+        db_table = "vector_control_apiimport"
+
+    def __str__(self) -> str:
         return f"{self.id} - {self.user} - {self.import_type} - {self.created_at}"
 
     def as_dict(self):

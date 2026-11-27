@@ -34,12 +34,6 @@ class MetricType(models.Model):
         "required": ["domain", "range"],
     }
 
-    class Meta:
-        ordering = ["id"]  # force ordering in order of creation (for demo)
-        unique_together = [
-            ["account", "code"],
-        ]
-
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
@@ -77,7 +71,13 @@ class MetricType(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    class Meta:
+        ordering = ["id"]  # force ordering in order of creation (for demo)
+        unique_together = [
+            ["account", "code"],
+        ]
+
+    def __str__(self) -> str:
         return f"{self.name} {self.id}"
 
     def mark_complete(self):
@@ -99,14 +99,14 @@ class MetricType(models.Model):
 
 
 class MetricValue(models.Model):
-    class Meta:
-        unique_together = [["metric_type", "org_unit", "year"]]
-
     metric_type = models.ForeignKey(MetricType, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.PROTECT)
     year = models.IntegerField(null=True, blank=True)
     value = models.FloatField(null=True, blank=True)
     string_value = models.TextField(blank=True, default="")
+
+    class Meta:
+        unique_together = [["metric_type", "org_unit", "year"]]
 
     def __str__(self):
         return f"{self.metric_type} {self.org_unit} {self.year} {self.value}"

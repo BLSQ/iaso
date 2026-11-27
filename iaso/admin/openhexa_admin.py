@@ -8,7 +8,7 @@ from iaso.models import OpenHEXAInstance, OpenHEXAWorkspace
 class OpenHEXAInstanceAdminForm(forms.ModelForm):
     class Meta:
         model = OpenHEXAInstance
-        fields = "__all__"
+        fields = ("name", "url", "token", "description", "created_at", "updated_at")
         widgets = {
             "token": forms.PasswordInput(render_value=True),
         }
@@ -17,7 +17,13 @@ class OpenHEXAInstanceAdminForm(forms.ModelForm):
 class OpenHEXAWorkspaceAdminForm(forms.ModelForm):
     class Meta:
         model = OpenHEXAWorkspace
-        fields = "__all__"
+        fields = (
+            "openhexa_instance",
+            "account",
+            "slug",
+            "description",
+            "config",
+        )
         widgets = {
             "config": IasoJSONEditorWidget,
         }

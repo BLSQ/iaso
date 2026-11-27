@@ -406,5 +406,8 @@ class CorePermissionSupport(models.Model):
         default_permissions = []
         permissions = [perm.model_permission() for perm in permissions.values()]
 
+    def __str__(self) -> str:
+        return f"CorePermissionSupport {self.pk}"
+
 
 permission_models = [CorePermissionSupport]

@@ -31,7 +31,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast, Round
 from django.db.models.sql.constants import LOUTER
-from django_cte import With
+from django_cte import CTE, with_cte
 
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType
 
@@ -114,8 +114,8 @@ def percentage_of_expected(field_name: str) -> Case:
 class TargetsCTEs(NamedTuple):
     """CTEs of the targets in the hierarchy of a parent org unit, see `get_targets_ctes()`"""
 
-    targets: With
-    target_paths: With
+    targets: CTE
+    target_paths: CTE
 
 
 def get_targets_ctes(target_org_units: QuerySet[OrgUnit], parent_org_unit: OrgUnit) -> TargetsCTEs:
@@ -136,7 +136,7 @@ def get_targets_ctes(target_org_units: QuerySet[OrgUnit], parent_org_unit: OrgUn
     `COUNT()` ignores the `NULL` values: counting `id`, `submitted_id` and `on_time_id` gives the number of targets, of
     targets with a submission and of targets with a submission on time.
     """
-    targets = With(
+    targets = CTE(
         target_org_units.hierarchy(parent_org_unit)
         .values("id", "path")
         .annotate(
@@ -146,7 +146,7 @@ def get_targets_ctes(target_org_units: QuerySet[OrgUnit], parent_org_unit: OrgUn
         name="promptness_targets",
         materialized=True,
     )
-    target_paths = With(
+    target_paths = CTE(
         targets.queryset()
         .annotate(path_org_unit_id=PathOrgUnitIds("path"))
         .values("id", "path_org_unit_id", "submitted_id", "on_time_id"),
@@ -175,8 +175,7 @@ def annotate_counts(org_units: QuerySet[OrgUnit], targets_ctes: TargetsCTEs) -> 
     org_units_with_targets = target_paths.join(org_units, id=target_paths.col.path_org_unit_id, _join_type=LOUTER)
 
     return (
-        org_units_with_targets.with_cte(targets_ctes.targets)
-        .with_cte(target_paths)
+        with_cte(targets_ctes.targets, target_paths, select=org_units_with_targets)
         .annotate(
             expected=Count(target_paths.col.id),
             received=Count(target_paths.col.submitted_id),

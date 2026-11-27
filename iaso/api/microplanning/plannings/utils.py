@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TypedDict
 
 from django.db.models import Exists, ExpressionWrapper, F, IntegerField, OuterRef, Q, Value
-from django_cte import With
+from django_cte import CTE, with_cte
 
 from iaso.models.microplanning.planning_configs import PlanningConfig, PlanningConfigQuerySet
 from iaso.models.org_unit import OrgUnit, OrgUnitQuerySet
@@ -120,11 +120,11 @@ class PlanningOrgUnitTreeQuerySetBuilder:
 
             return roots.union(children, all=True)
 
-        tree = With.recursive(make_tree)
+        tree = CTE.recursive(make_tree)
 
         # Join the eligible tree back to the original queryset so that its
         # existing filters and annotations are retained.
-        queryset = tree.join(queryset, pk=tree.col.id).with_cte(tree)
+        queryset = with_cte(tree, select=tree.join(queryset, pk=tree.col.id))
 
         if level is not None:
             queryset = queryset.filter(path__depth__gte=root_level + level)

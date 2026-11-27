@@ -326,10 +326,10 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         ).qs
 
         # The "Ref Ext parent N" columns report the `source_ref` of ancestors of the before/after
-        # parent. `OrgUnit.ancestors()` is a plain method (django_ltree's `TreeModel`), not a real
-        # Django relation, so it can't be `Prefetch()`-ed. Instead, batch-fetch the source_ref of
-        # every ancestor pk referenced by `path` (the ancestor pks from root to self, maintained by
-        # django_ltree) in one query, up front, rather than querying per row.
+        # parent. `OrgUnit.ancestors()` is a plain method, not a real Django relation, so it can't
+        # be `Prefetch()`-ed. Instead, batch-fetch the source_ref of every ancestor pk referenced by
+        # `path` (the ancestor pks from root to self, maintained by `OrgUnit.calculate_paths()`) in
+        # one query, up front, rather than querying per row.
         ancestor_pks = set()
         for old_parent_path, new_parent_path, org_unit_parent_path in filtered_org_unit_changes_requests.values_list(
             "old_parent__path", "new_parent__path", "org_unit__parent__path"

@@ -949,18 +949,18 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
     def test_export_to_csv_ref_ext_parent_should_report_ancestor_source_ref(self):
         """
-        Regression test: the "Ref Ext parent N" columns are supposed to report the
-        `source_ref` of the org unit's ancestors (e.g. its country/region code), but
-        currently always come back empty.
+        Regression test: the "Ref Ext parent N" columns report the `source_ref` of the
+        org unit's ancestors (e.g. its country/region code). They used to always come
+        back empty.
 
         `self.org_unit` (source_ref="112244") has no parent, so it is its own sole
-        "ancestor" at level 1. A change request on a *child* of `self.org_unit` should
-        therefore report "112244" in "Ref Ext parent 1 after change" — but the query
-        that's supposed to populate this (a `Prefetch("ancestors", ..., to_attr=
-        "cached_ancestors")` in `OrgUnitChangeRequestViewSet.export_to_csv`) silently
-        never runs, because `ancestors()` is a plain method (from django_ltree's
-        `TreeModel`), not a real Django relation that `prefetch_related()` can use.
-        See `get_parent_ref_ext` in `iaso.api.org_unit_change_requests.csv_export`.
+        "ancestor" at level 1. A change request on a *child* of `self.org_unit` must
+        therefore report "112244" in "Ref Ext parent 1 after change". The columns were
+        empty because they were populated by a `Prefetch("ancestors", ..., to_attr=
+        "cached_ancestors")` in `OrgUnitChangeRequestViewSet.export_to_csv` that silently
+        never ran: `OrgUnit.ancestors()` is a plain method, not a real Django relation
+        that `prefetch_related()` can use. The ancestors are now read from `path`, see
+        `get_parent_ref_ext` in `iaso.api.org_unit_change_requests.csv_export`.
         """
         child_org_unit = m.OrgUnit.objects.create(
             org_unit_type=self.org_unit_type,

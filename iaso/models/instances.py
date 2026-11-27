@@ -10,8 +10,6 @@ from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-import django_cte
-
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
@@ -86,7 +84,7 @@ def resolve_status_form_ids(form_id=None, form_ids=None):
     return resolved or None
 
 
-class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySet):
+class InstanceQuerySet(ValidationWorkflowArtefactQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.
@@ -417,15 +415,13 @@ class InstanceQuerySet(django_cte.CTEQuerySet, ValidationWorkflowArtefactQuerySe
     def for_org_unit_hierarchy(self, org_unit):
         # TODO: we could write our own descendants lookup instead of using the one provided in django-ltree
         # TODO: as it does not handle arrays of path (ltree does)
-        # We need to cast PathValue instances to strings - this could be fixed upstream
-        # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, list):
             query = reduce(
                 operator.or_,
-                [Q(org_unit__path__descendants=str(ou.path)) for ou in org_unit],
+                [Q(org_unit__path__descendants=ou.path) for ou in org_unit],
             )
         else:
-            query = Q(org_unit__path__descendants=str(org_unit.path))
+            query = Q(org_unit__path__descendants=org_unit.path)
 
         return self.filter(query)
 

@@ -1,10 +1,10 @@
 from typing import Optional
 
-from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from iaso.api.common import ModelSerializer
+from iaso.api.common import ModelSerializer, UserSerializer
+from iaso.api.instances.serializers.misc import OrgUnitNestedSerializer as InstanceOrgUnitNestedSerializer
 from iaso.models import Form, Instance, OrgUnit, Project, ValidationNodeTemplate, ValidationWorkflow
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
@@ -62,27 +62,13 @@ class WorkflowNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
-class OrgUnitParentNestedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrgUnit
-        fields = ["id", "name"]
-        read_only_fields = ["id", "name"]
-
-
 class OrgUnitNestedSerializer(serializers.ModelSerializer):
-    parent = OrgUnitParentNestedSerializer(read_only=True, allow_null=True)
+    parent = InstanceOrgUnitNestedSerializer(read_only=True, allow_null=True)
 
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "parent"]
         read_only_fields = ["id", "name", "parent"]
-
-
-class UserNestedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "first_name", "last_name"]
-        read_only_fields = fields
 
 
 class CurrentStepSerializer(serializers.Serializer):
@@ -197,11 +183,11 @@ class ValidationWorkflowInstanceListSerializer(ModelSerializer):
         ]
         return " ".join(values) or None
 
-    @extend_schema_field(UserNestedSerializer(allow_null=True))
+    @extend_schema_field(UserSerializer(allow_null=True))
     def get_submitted_by(self, obj: Instance):
         submission_node = self._get_latest_submission_node(obj)
         user = submission_node.created_by if submission_node and submission_node.created_by else obj.created_by
-        return UserNestedSerializer(user).data if user else None
+        return UserSerializer(user).data if user else None
 
     @extend_schema_field(serializers.DateTimeField(allow_null=True))
     def get_submitted_at(self, obj: Instance):

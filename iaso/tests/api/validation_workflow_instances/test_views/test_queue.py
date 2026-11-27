@@ -140,7 +140,13 @@ class ValidationWorkflowInstanceQueueTestCase(SwaggerTestCaseMixin, APITestCase)
         )
         self.assertEqual(
             item["submitted_by"],
-            {"id": self.submitter.id, "username": "submitter", "first_name": "Jean", "last_name": "Mbala"},
+            {
+                "id": self.submitter.id,
+                "username": "submitter",
+                "first_name": "Jean",
+                "last_name": "Mbala",
+                "full_name": "Jean Mbala",
+            },
         )
         submission_node = instance.validationnode_set.get(status=ValidationNodeStatus.SUBMISSION)
         self.assertEqual(item["submitted_at"], submission_node.created_at.isoformat().replace("+00:00", "Z"))
@@ -439,7 +445,13 @@ class ValidationWorkflowInstanceQueueTestCase(SwaggerTestCaseMixin, APITestCase)
         item = self.get_list(self.validator)["results"][0]
         self.assertEqual(
             item["submitted_by"],
-            {"id": self.submitter.id, "username": "submitter", "first_name": "Jean", "last_name": "Mbala"},
+            {
+                "id": self.submitter.id,
+                "username": "submitter",
+                "first_name": "Jean",
+                "last_name": "Mbala",
+                "full_name": "Jean Mbala",
+            },
         )
         self.assertEqual(item["submitted_at"], submitted_at.isoformat().replace("+00:00", "Z"))
         self.assertFalse(item["is_resubmission"])

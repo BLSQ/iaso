@@ -450,6 +450,8 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
             ("", ["muac", "instanceID"]),
             ("only_question_names=MUAC", ["muac"]),
             ("exclude_question_names=instanceID", ["muac"]),
+            # spaces around the names and empty names are ignored
+            ("only_question_names=muac,%20instanceID,", ["muac", "instanceID"]),
             # first_name is hidden by the PII configuration: asking for it doesn't export it
             ("only_question_names=first_name,instanceID", ["instanceID"]),
         ]

@@ -37,6 +37,7 @@ from iaso.api.common import (
     parse_comma_separated_numeric_values,
     safe_api_import,
 )
+from iaso.api.common.utils import comma_separated_names
 from iaso.api.instances.filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
@@ -401,6 +402,26 @@ class InstancesViewSet(viewsets.ViewSet):
                 ),
                 type=OpenApiTypes.BOOL,
             ),
+            OpenApiParameter(
+                name="only_question_names",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "parquet export only: comma-separated question names (case insensitive), only these questions "
+                    "are exported. The `iaso_subm_*` columns are always exported. Without the "
+                    "`iaso_submissions_pii` permission, questions not in the form's `non_pii_fields` stay hidden "
+                    "even when listed. Unknown name or used with `exclude_question_names`: 400."
+                ),
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="exclude_question_names",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "parquet export only: comma-separated question names (case insensitive), every question but "
+                    "these is exported. Unknown name or used with `only_question_names`: 400."
+                ),
+                type=OpenApiTypes.STR,
+            ),
         ]
     )
     def list(self, request):
@@ -582,6 +603,8 @@ class InstancesViewSet(viewsets.ViewSet):
             "org_unit_status",  # NEW, VALID, REJECTED
             "workflow_ids",
             "validation_status",
+            "only_question_names",  # comma separated question names, only these questions are exported
+            "exclude_question_names",  # comma separated question names, all the questions but these are exported
         }
         received_params = set(request.GET.keys())
 
@@ -594,12 +617,26 @@ class InstancesViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        only_question_names = comma_separated_names(request.GET.get("only_question_names"))
+        exclude_question_names = comma_separated_names(request.GET.get("exclude_question_names"))
+        if only_question_names and exclude_question_names:
+            raise serializers.ValidationError(
+                {"error": "only_question_names and exclude_question_names can't be used together"}
+            )
+
         # actually return parquet file
         form_ids = filters["form_ids"]
         form = Form.objects.get(pk=form_ids)
-        export_queryset, mapping = parquet.build_submissions_queryset(
-            queryset, form.id, allowed_fields=get_allowed_fields(form, request.user)
-        )
+        try:
+            export_queryset, mapping = parquet.build_submissions_queryset(
+                queryset,
+                form.id,
+                allowed_fields=get_allowed_fields(form, request.user),
+                only_question_names=only_question_names,
+                exclude_question_names=exclude_question_names,
+            )
+        except parquet.UnknownQuestionNamesError as error:
+            raise serializers.ValidationError({"error": str(error)})
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 

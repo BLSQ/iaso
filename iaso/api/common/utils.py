@@ -2,6 +2,7 @@ import logging
 
 from functools import wraps
 from traceback import format_exc
+from typing import Optional
 
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
@@ -64,6 +65,11 @@ def parse_comma_separated_numeric_values(value: str, field_name: str) -> list:
     if not ids:
         raise ValidationError({field_name: ["Invalid value."]})
     return [int(val) for val in ids]
+
+
+def comma_separated_names(value: Optional[str]) -> list[str]:
+    """Splits a comma-separated string of names, without the spaces around them and the empty names."""
+    return [name.strip() for name in (value or "").split(",") if name.strip()]
 
 
 def is_field_referenced(field_name, requested_fields, order):

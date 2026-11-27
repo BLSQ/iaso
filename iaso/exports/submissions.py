@@ -16,10 +16,40 @@ from .utils import normalize_field_name
 logger = getLogger(__name__)
 
 
+class UnknownQuestionNamesError(ValueError):
+    pass
+
+
+def select_questions(
+    possible_fields: list[dict],
+    only_question_names: Optional[list[str]] = None,
+    exclude_question_names: Optional[list[str]] = None,
+) -> list[dict]:
+    """Keep the questions listed in `only_question_names`, or drop the ones in `exclude_question_names`.
+
+    Names are compared case insensitively.
+    Raises UnknownQuestionNamesError for a name that is not a question of the form.
+    """
+    requested = {name.lower() for name in (only_question_names or exclude_question_names or [])}
+    unknown = requested - {field["name"].lower() for field in possible_fields}
+    if unknown:
+        raise UnknownQuestionNamesError(f"Unknown question names: {', '.join(sorted(unknown))}")
+    if only_question_names:
+        return [field for field in possible_fields if field["name"].lower() in requested]
+    return [field for field in possible_fields if field["name"].lower() not in requested]
+
+
 def build_submissions_queryset(
-    qs: QuerySet[m.Instance], form_id: str, allowed_fields: Optional[frozenset[str]] = None
+    qs: QuerySet[m.Instance],
+    form_id: str,
+    allowed_fields: Optional[frozenset[str]] = None,
+    only_question_names: Optional[list[str]] = None,
+    exclude_question_names: Optional[list[str]] = None,
 ) -> QuerySet[m.Instance]:
-    """`allowed_fields`: when set, only these questions are exported (see `iaso.utils.pii.get_allowed_fields`)."""
+    """`allowed_fields`: when set, only these questions are exported (see `iaso.utils.pii.get_allowed_fields`).
+
+    `only_question_names` / `exclude_question_names`: see `select_questions`, applied after the PII filter.
+    """
     form = m.Form.objects.get(pk=form_id)
     if form.possible_fields == None or len(form.possible_fields) == 0:
         form.update_possible_fields()
@@ -28,7 +58,8 @@ def build_submissions_queryset(
 
     prefixed_fields = build_submission_annotations()
 
-    possible_fields = [f for f in form.possible_fields if is_field_allowed(f["name"], allowed_fields)]
+    selected_fields = select_questions(form.possible_fields, only_question_names, exclude_question_names)
+    possible_fields = [f for f in selected_fields if is_field_allowed(f["name"], allowed_fields)]
 
     answer_mappings = generate_safe_mapping(list(prefixed_fields.keys()) + [f["name"] for f in possible_fields])
 

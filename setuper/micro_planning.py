@@ -147,7 +147,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     print(f"\t{len(team_ids) + 2} teams created: TEAM {country.name} > TEAM {region.name} > {len(team_ids)} teams")
 
     forms = iaso_client.get("/api/forms")["forms"]
-    planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
+    planning_form = next(form for form in forms if form["form_id"] == "SAMPLE_FORM_new5")
 
     # A team of users plans a single level: users can't hand their org units down to anyone.
     alpha_id = team_ids[0]

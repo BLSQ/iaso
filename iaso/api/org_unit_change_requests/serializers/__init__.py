@@ -10,11 +10,11 @@ from .misc import (
 
 
 __all__ = [
-    "OrgUnitChangeRequestWriteSerializer",
+    "OrgUnitChangeRequestAuditLogger",
     "OrgUnitChangeRequestBulkDeleteSerializer",
     "OrgUnitChangeRequestBulkReviewSerializer",
     "OrgUnitChangeRequestListSerializer",
     "OrgUnitChangeRequestRetrieveSerializer",
     "OrgUnitChangeRequestReviewSerializer",
-    "OrgUnitChangeRequestAuditLogger",
+    "OrgUnitChangeRequestWriteSerializer",
 ]

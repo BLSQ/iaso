@@ -317,10 +317,10 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             # 1. SELECT org unit by id
             # 2. SELECT EXISTS change request by uuid
             # 3. SELECT project (+ account + default_version via select_related)
-            # 4–5. Org unit in user scope (profile + path / project filters)
+            # 4-5. Org unit in user scope (profile + path / project filters)
             # 6. INSERT change request
-            # 7–8. Old groups: SELECT + M2M insert
-            # 9–11. Old + new reference instances: SELECTs + M2M insert
+            # 7-8. Old groups: SELECT + M2M insert
+            # 9-11. Old + new reference instances: SELECTs + M2M insert
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])

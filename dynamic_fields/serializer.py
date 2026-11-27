@@ -29,7 +29,8 @@ class DynamicFieldsModelSerializerMixin(serializers.Serializer):
         return [
             settings.DYNAMIC_FIELDS_ALL_FIELDS_PARAM_VALUE,
             settings.DYNAMIC_FIELDS_DEFAULT_FIELDS_PARAM_VALUE,
-        ] + cls.get_dynamic_fields_options().get("meta_all_fields", [])
+            *cls.get_dynamic_fields_options().get("meta_all_fields", []),
+        ]
 
     def apply_dynamic_fields(self, fields):
         params_fields = self.get_fields_value_from_query() or self.dynamic_fields

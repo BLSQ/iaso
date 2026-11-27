@@ -15,14 +15,14 @@ from .mobile import MobileInstancesSerializer
 
 __all__ = [
     "ETLInstanceListSerializer",
-    "InstanceImportAccuracySerializer",
     "FileTypeSerializer",
-    "InstanceFileSerializer",
-    "InstanceLocationSerializer",
-    "InstanceSerializer",
-    "OrgUnitNestedSerializer",
     "InstanceFileAttachmentSerializer",
+    "InstanceFileSerializer",
+    "InstanceImportAccuracySerializer",
+    "InstanceLocationSerializer",
     "InstanceLockSerializer",
-    "UnlockSerializer",
+    "InstanceSerializer",
     "MobileInstancesSerializer",
+    "OrgUnitNestedSerializer",
+    "UnlockSerializer",
 ]

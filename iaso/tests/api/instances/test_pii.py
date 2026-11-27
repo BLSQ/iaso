@@ -60,7 +60,7 @@ class PiiAPITestCase(APITestCase):
         permissions = [CORE_SUBMISSIONS_PERMISSION, CORE_ENTITIES_PERMISSION, CORE_FORMS_PERMISSION]
         cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=permissions)
         cls.pii_user = cls.create_user_with_profile(
-            username="pii_user", account=cls.account, permissions=permissions + [CORE_SUBMISSIONS_PII_PERMISSION]
+            username="pii_user", account=cls.account, permissions=[*permissions, CORE_SUBMISSIONS_PII_PERMISSION]
         )
 
     def test_instance_detail_hides_pii(self):

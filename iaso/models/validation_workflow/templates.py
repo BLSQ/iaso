@@ -275,7 +275,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         flatten_graph = {x.pk: getattr(x, "prefetched_next_nodes", x.next_node_templates.all()) for x in node_templates}
 
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):
-            start = [x for x in self._prefetched_objects_cache["node_templates"] if not x.has_previous][0]
+            start = next(x for x in self._prefetched_objects_cache["node_templates"] if not x.has_previous)
         else:
             start = self.get_starting_node()
 

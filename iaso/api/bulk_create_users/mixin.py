@@ -73,11 +73,11 @@ class BulkCreateUserSerializerFileMixin(serializers.Serializer):
             raise serializers.ValidationError("Invalid Excel file")
 
         except ImportError as e:
-            log.error(f"Excel support is not installed {str(e)}")
+            log.error(f"Excel support is not installed {e!s}")
             raise serializers.ValidationError("Invalid Excel file")
 
         except Exception as e:
-            log.error(f"Exception while {str(e)} parsing xlsx file")
+            log.error(f"Exception while {e!s} parsing xlsx file")
             raise serializers.ValidationError("Invalid Excel file")
 
     def _validate_file_xls(self, value):

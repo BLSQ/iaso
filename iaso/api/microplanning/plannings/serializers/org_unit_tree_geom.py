@@ -34,7 +34,7 @@ class OrgUnitTreeWithGeomSerializer(OrgUnitBuildTreeWithGeomSerializer):
 
     class Meta(OrgUnitBuildTreeWithGeomSerializer.Meta):
         model = OrgUnit
-        fields = OrgUnitBuildTreeWithGeomSerializer.Meta.fields + ["children"]
+        fields = [*OrgUnitBuildTreeWithGeomSerializer.Meta.fields, "children"]
         read_only_fields = fields
 
     @extend_schema_field(

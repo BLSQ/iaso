@@ -100,7 +100,7 @@ class MetricTypeCreateSerializer(MetricTypeWriteSerializer):
     code = serializers.CharField(required=True, allow_blank=False)
 
     class Meta(MetricTypeWriteSerializer.Meta):
-        fields = MetricTypeWriteSerializer.Meta.fields + ["code"]
+        fields = [*MetricTypeWriteSerializer.Meta.fields, "code"]
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account

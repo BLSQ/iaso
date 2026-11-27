@@ -330,8 +330,8 @@ def _monitor_pipeline(
             time.sleep(delay)
 
         except Exception as e:
-            logger.error(f"Error polling OpenHEXA for task {task.pk}: {str(e)}")
-            task.report_progress_and_stop_if_killed(progress_message=f"Error polling OpenHEXA: {str(e)}")
+            logger.error(f"Error polling OpenHEXA for task {task.pk}: {e!s}")
+            task.report_progress_and_stop_if_killed(progress_message=f"Error polling OpenHEXA: {e!s}")
             return
 
 

@@ -152,7 +152,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         serializer.save()
                         stats["new_change_requests"] += 1
     except Project.DoesNotExist as e:
-        logger.exception(f"No Project found with id {project_id}! Rolling back import that failed:{str(e)}")
+        logger.exception(f"No Project found with id {project_id}! Rolling back import that failed:{e!s}")
         api_import.has_problem = True
         api_import.exception = format_exc()
         api_import.save()

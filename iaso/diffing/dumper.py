@@ -108,7 +108,7 @@ class Dumper:
                 diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
             ]
             for field in sorted_fields:
-                comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
+                comparison = next(filter(lambda x: x.field == field, diff.comparisons))
                 results.append(comparison.status)
                 if field != "geometry":
                     results.append(str(comparison.before))
@@ -169,7 +169,7 @@ class Dumper:
                 results = [diff.org_unit.source_ref, diff.org_unit.name, diff.status]
 
                 for field in fields:
-                    comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
+                    comparison = next(filter(lambda x: x.field == field, diff.comparisons))
                     if comparison.status == Differ.STATUS_SAME:
                         results.append(Differ.STATUS_SAME)
                     else:

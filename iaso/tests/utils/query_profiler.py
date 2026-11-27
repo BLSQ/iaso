@@ -402,20 +402,20 @@ class QueryProfiler:
             if sites:
                 lines += ["**Call sites:**", ""]
                 for (filename, lineno, name), count in sites.most_common():
-                    lines += self._markdown_call_site(f"- **{count}×** ", filename, lineno, name)
+                    lines += self._markdown_call_site(f"- **{count}x** ", filename, lineno, name)
                 lines.append("")
 
             if table_queries:
                 sql_counts = Counter(q["sql"] for q in table_queries)
                 lines += ["**Queries** (identical SQL collapsed, most frequent first):", ""]
                 for sql, count in sql_counts.most_common():
-                    lines.append(f"{count}×")
+                    lines.append(f"{count}x")
                     lines += ["```sql", self._format_sql(sql), "```", ""]
 
         for method_name, count in self._storage_counts.most_common():
             lines += ["", f"## Storage `{method_name}()`: {count} calls", "", "**Call sites** (innermost first):", ""]
             for frames, sites_count in self.storage_call_sites(method_name).most_common():
-                lines.append(f"- **{sites_count}×**")
+                lines.append(f"- **{sites_count}x**")
                 for frame in frames:
                     lines += [f"  {line}" for line in self._markdown_call_site("- ", *frame)]
                 lines.append("")

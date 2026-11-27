@@ -180,7 +180,7 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFormListData(response.json(), 2)
 
     def find_forms_data_for(self, response, form):
-        return [f for f in response.json()["forms"] if f["name"] == form.name][0]
+        return next(f for f in response.json()["forms"] if f["name"] == form.name)
 
     def test_forms_list_ok_has_mappings_true(self):
         """GET /forms/ web app happy path: we expect two results one with has_mappings"""

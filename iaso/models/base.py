@@ -1,4 +1,4 @@
-import typing
+from __future__ import annotations
 
 from logging import getLogger
 
@@ -266,9 +266,7 @@ class Group(models.Model):
 
 
 class GroupSetQuerySet(models.QuerySet):
-    def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
-    ):
+    def filter_for_user_and_app_id(self, user: User | AnonymousUser | None, app_id: str | None = None):
         queryset = self
         if user and user.is_anonymous and app_id is None:
             return self.none()
@@ -619,7 +617,7 @@ class Profile(models.Model):
         return ids_in_user_profile.union(ids_in_user_roles)
 
     def has_org_unit_write_permission(
-        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: set[int] = None
+        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: set[int] | None = None
     ) -> bool:
         editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or self.get_editable_org_unit_type_ids()
         if not editable_org_unit_type_ids:

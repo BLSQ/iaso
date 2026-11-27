@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import typing
 
@@ -85,7 +87,7 @@ class DataSource(models.Model):
 
 
 class SourceVersionQuerySet(models.QuerySet):
-    def filter_for_user(self, user: typing.Union[User, AnonymousUser, None]):
+    def filter_for_user(self, user: User | AnonymousUser | None):
         queryset = self
         if user and user.is_anonymous:
             return self.none()
@@ -280,18 +282,17 @@ class DataSourceVersionsSynchronization(models.Model):
 
     def create_json_diff(
         self,
-        logger_to_use: logging.Logger = None,
-        source_version_to_update_validation_status: str = None,
-        source_version_to_update_top_org_unit: "OrgUnit" = None,
-        source_version_to_update_org_unit_types: list["OrgUnitType"] = None,
-        source_version_to_update_org_unit_group: "Group" = None,
-        source_version_to_compare_with_validation_status: str = None,
-        source_version_to_compare_with_top_org_unit: "OrgUnit" = None,
-        source_version_to_compare_with_org_unit_types: list["OrgUnitType"] = None,
-        source_version_to_compare_with_org_unit_group: "Group" = None,
+        source_version_to_update_validation_status: str | None = None,
+        source_version_to_update_top_org_unit: OrgUnit | None = None,
+        source_version_to_update_org_unit_types: list[OrgUnitType] | None = None,
+        source_version_to_update_org_unit_group: Group | None = None,
+        source_version_to_compare_with_validation_status: str | None = None,
+        source_version_to_compare_with_top_org_unit: OrgUnit | None = None,
+        source_version_to_compare_with_org_unit_types: list[OrgUnitType] | None = None,
+        source_version_to_compare_with_org_unit_group: Group | None = None,
         ignore_groups: bool = False,
         show_deleted_org_units: bool = False,
-        field_names: list[str] = None,
+        field_names: list[str] | None = None,
     ) -> None:
         # Prevent a circular import.
         from iaso.diffing import Differ, diffs_to_json

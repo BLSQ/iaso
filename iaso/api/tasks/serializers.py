@@ -155,7 +155,7 @@ class ExternalTaskPostSerializer(serializers.Serializer):
         request = self.context["request"]
         user = request.user
         name = (
-            f"{validated_data['slug']}-{list(validated_data['id_field'].values())[0]}"
+            f"{validated_data['slug']}-{next(iter(validated_data['id_field'].values()))}"
             if validated_data.get("id_field", None)
             else f"{validated_data['slug']}"
         )

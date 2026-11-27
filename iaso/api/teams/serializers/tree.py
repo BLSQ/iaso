@@ -39,7 +39,7 @@ class TeamTreeSerializer(TeamBuildTreeSerializer):
 
     class Meta(TeamBuildTreeSerializer.Meta):
         model = Team
-        fields = TeamBuildTreeSerializer.Meta.fields + ["children"]
+        fields = [*TeamBuildTreeSerializer.Meta.fields, "children"]
         read_only_fields = fields
 
     @extend_schema_field(lazy_serializer("iaso.api.teams.serializers.tree.TeamTreeSerializer")(many=True))

@@ -94,7 +94,7 @@ class GeometryFieldType(FieldType):
             return None
         # Centroid distance: how far the geometric centres have moved.
         # Works for Point (centroid == self) and Polygon/MultiPolygon alike.
-        # × 111 converts degrees → km (equatorial approximation, consistent with the point case).
+        # * 111 converts degrees → km (equatorial approximation, consistent with the point case).
         return dhis2_value.centroid.distance(ref_value.centroid) * 111
 
 

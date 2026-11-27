@@ -95,7 +95,7 @@ CATALOG_DOCS: dict[str, tuple[str, str]] = {
     ),
     "gaps": (
         "catalog/gaps-and-decisions.md",
-        "G01–G46 product backlog and decisions.",
+        "G01–G46 product backlog and decisions.",  # noqa: RUF001
     ),
     "roadmap": (
         "catalog/ux-coherence-roadmap.md",
@@ -144,7 +144,7 @@ def fetch_design_system_doc(path: str) -> str:
     base = IASO_DOCS_RAW if path.startswith("docs/") else DESIGN_SYSTEM_RAW
     url = base + path
     try:
-        with urlopen(url, timeout=10) as response:  # noqa: S310
+        with urlopen(url, timeout=10) as response:
             return response.read().decode("utf-8")
     except (URLError, TimeoutError, OSError) as exc:
         return f"Could not fetch {url} ({exc}). Open the file in BLSQ/iaso-design-system or BLSQ/iaso locally."

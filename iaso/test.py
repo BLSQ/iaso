@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import csv
 import importlib
@@ -41,11 +43,11 @@ class IasoTestCaseMixin:
         *,
         username: str,
         account: m.Account,
-        permissions: list["IasoPermission"] = [],
-        org_units: typing.Sequence[m.OrgUnit] = None,
-        language: str = None,
-        projects: typing.Sequence[m.Project] = None,
-        user_roles: typing.Sequence[m.UserRole] = None,
+        permissions: list[IasoPermission] = [],
+        org_units: typing.Sequence[m.OrgUnit] | None = None,
+        language: str | None = None,
+        projects: typing.Sequence[m.Project] | None = None,
+        user_roles: typing.Sequence[m.UserRole] | None = None,
         **kwargs,
     ):
         User = get_user_model()
@@ -77,7 +79,12 @@ class IasoTestCaseMixin:
 
     @staticmethod
     def create_form_instance(
-        *, project: m.Project, form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs
+        *,
+        project: m.Project,
+        form: m.Form | None = None,
+        period: str | None = None,
+        org_unit: m.OrgUnit | None = None,
+        **kwargs,
     ):
         instance_file_mock = mock.MagicMock(spec=File)
         instance_file_mock.name = "test.xml"
@@ -215,7 +222,7 @@ class SwaggerTestCaseMixin(BaseAPITestCase):
                 if isinstance(t, str):
                     schema["type"] = [t, "null"]
                 elif isinstance(t, list) and "null" not in t:
-                    schema["type"] = t + ["null"]
+                    schema["type"] = [*t, "null"]
                 elif "allOf" in schema:
                     schema["anyOf"] = [
                         {"type": "null"},
@@ -352,7 +359,7 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
         expected_status_code: int,
         expected_content_type: str,
         *,
-        expected_attachment_filename: str = None,
+        expected_attachment_filename: str | None = None,
         streaming: bool = False,
     ):
         self.assertEqual(expected_status_code, response.status_code)
@@ -376,7 +383,7 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
     def assertCsvFileResponse(
         self,
         response: typing.Any,
-        expected_name: str = None,
+        expected_name: str | None = None,
         streaming: bool = False,
         return_as_lists: bool = False,
         return_as_str: bool = False,
@@ -402,7 +409,7 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
     def assertXlsxFileResponse(
         self,
         response: typing.Any,
-        expected_name: str = None,
+        expected_name: str | None = None,
         streaming: bool = False,
     ) -> tuple[list, dict]:
         content = self.assertFileResponse(
@@ -423,7 +430,7 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
         self,
         *,
         list_data: typing.Mapping,
-        results_key: typing.Optional[str],
+        results_key: str | None,
         expected_length: int,
         paginated: bool = False,
     ):
@@ -449,7 +456,7 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
         if field_name in data and (not optional or data[field_name] is not None):
             self.assertIsInstance(data[field_name], cls)
 
-    def assertHasError(self, data: typing.Mapping, field_name: str, error_message: str = None):
+    def assertHasError(self, data: typing.Mapping, field_name: str, error_message: str | None = None):
         self.assertIn(field_name, data)
         if error_message is not None:
             self.assertIn(error_message, data[field_name])
@@ -460,8 +467,8 @@ class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, Bas
         *,
         request_body: typing.Any,
         has_problems: bool,
-        exception_contains_string: str = None,
-        exception_contains_code: str = None,
+        exception_contains_string: str | None = None,
+        exception_contains_code: str | None = None,
     ):
         """Make sure that a APIImport has been correctly generated"""
 

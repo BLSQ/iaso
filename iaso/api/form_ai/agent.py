@@ -322,7 +322,8 @@ def generate_form(
     stop_reason = claude_response.get("stop_reason")
 
     def _history_with_assistant(assistant_content: str) -> list[dict]:
-        return list(conversation_history) + [
+        return [
+            *list(conversation_history),
             {"role": "user", "content": message},
             {"role": "assistant", "content": assistant_content},
         ]

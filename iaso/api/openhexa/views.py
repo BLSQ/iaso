@@ -179,7 +179,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
             return Response(result.get("pipeline", {}))
 
         except Exception as e:
-            logger.exception(f"Could not retrieve pipeline details for {pk}: {str(e)}")
+            logger.exception(f"Could not retrieve pipeline details for {pk}: {e!s}")
             return Response(
                 {"error": _("Failed to retrieve pipeline details")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -218,7 +218,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
             host = request.get_host()
             config["connection_host"] = f"{scheme}://{host}"
         except Exception as e:
-            logger.exception(f"Failed to generate connection token for user {request.user.id}: {str(e)}")
+            logger.exception(f"Failed to generate connection token for user {request.user.id}: {e!s}")
             return Response(
                 {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

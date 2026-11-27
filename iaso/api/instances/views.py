@@ -1142,8 +1142,11 @@ def import_data(instances, user, app_id, api_import=None, cache: Optional[Instan
         if existing_instances:
             if all(
                 existing_instance.general_validation_status
-                in [ValidationWorkflowArtefactStatus.REJECTED, ValidationWorkflowArtefactStatus.PENDING]
-                + Instance._meta.get_field("general_validation_status").empty_values
+                in [
+                    ValidationWorkflowArtefactStatus.REJECTED,
+                    ValidationWorkflowArtefactStatus.PENDING,
+                    *Instance._meta.get_field("general_validation_status").empty_values,
+                ]
                 for existing_instance in existing_instances
             ):
                 rtn_instances.append(existing_instances[0])

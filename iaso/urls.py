@@ -355,11 +355,13 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 
 
 if not settings.DISABLE_PASSWORD_LOGINS:
-    urlpatterns = urlpatterns + [
+    urlpatterns = [
+        *urlpatterns,
         path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     ]
 
-urlpatterns = urlpatterns + [
+urlpatterns = [
+    *urlpatterns,
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
@@ -372,7 +374,8 @@ urlpatterns = urlpatterns + [
     path("", include(router.urls)),
 ]
 # External Auth
-urlpatterns = urlpatterns + [
+urlpatterns = [
+    *urlpatterns,
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]

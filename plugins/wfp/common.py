@@ -1026,10 +1026,8 @@ class ETL:
             should_split = False
 
             # Admission-only form always starts a new journey.
-            if (
-                form_id in JOURNEY_STARTING_FORMS
-                and current
-                or (form_id in self.all_anthropometric_forms and current_has_exit and current)
+            if (form_id in JOURNEY_STARTING_FORMS and current) or (
+                form_id in self.all_anthropometric_forms and current_has_exit and current
             ):
                 should_split = True
 

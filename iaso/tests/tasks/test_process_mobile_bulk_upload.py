@@ -356,7 +356,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         expected_attachment_name = instance_file_upload_to(disasi_image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
         # `exists()`: the in-memory storage checks each name is available before saving it
         profiler.assertStorageCalls(
-            {"_open": [self.api_import.file.name], "_save": expected_xml_names + [expected_attachment_name]},
+            {"_open": [self.api_import.file.name], "_save": [*expected_xml_names, expected_attachment_name]},
             exclude=["exists"],
         )
         self.assertCountEqual([i.file.name for i in m.Instance.objects.all()], expected_xml_names)
@@ -1037,7 +1037,7 @@ class ProcessMobileBulkUploadTest(TestCase):
                 "deleted": False,
                 "merged to": None,
                 "reference instance": new_registration_uuid,
-                "instances": sorted(ent_c_instances + [new_registration_uuid]),
+                "instances": sorted([*ent_c_instances, new_registration_uuid]),
             },
         )
         self.assertFalse(instance_state(new_registration_uuid)["deleted"])

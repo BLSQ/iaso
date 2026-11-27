@@ -96,7 +96,7 @@ class NestedAccountSerializer(ModelSerializer):
 
 class NestedAccountExtendedSerializer(NestedAccountSerializer):
     class Meta(NestedAccountSerializer.Meta):
-        fields = NestedAccountSerializer.Meta.fields + ["modules"]
+        fields = [*NestedAccountSerializer.Meta.fields, "modules"]
 
 
 class NestedUserRoleSerializer(ModelSerializer):

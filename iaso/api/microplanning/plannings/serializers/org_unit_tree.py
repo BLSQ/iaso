@@ -36,7 +36,7 @@ class OrgUnitTreeSerializer(OrgUnitBuildTreeSerializer):
 
     class Meta(OrgUnitBuildTreeSerializer.Meta):
         model = OrgUnit
-        fields = OrgUnitBuildTreeSerializer.Meta.fields + ["children"]
+        fields = [*OrgUnitBuildTreeSerializer.Meta.fields, "children"]
         read_only_fields = fields
 
     @extend_schema_field(

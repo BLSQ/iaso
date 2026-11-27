@@ -94,7 +94,7 @@ def get_openhexa_config(account):
         # Re-raise ValidationErrors from inner try block
         raise
     except Exception as e:
-        logger.warning(f"Could not fetch OpenHEXA config for account {account.id}: {str(e)}")
+        logger.warning(f"Could not fetch OpenHEXA config for account {account.id}: {e!s}")
         raise ValidationError(_("OpenHexa configuration not found"))
 
 

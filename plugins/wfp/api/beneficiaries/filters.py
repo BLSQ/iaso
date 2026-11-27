@@ -116,4 +116,4 @@ def ordering_from_param(order: str):
 
         expression = F(field_name)
         ordering.append(expression.desc(nulls_last=True) if key.startswith("-") else expression.asc(nulls_last=True))
-    return ordering + ["-id"]
+    return [*ordering, "-id"]

@@ -284,6 +284,7 @@ Columns:
 To get a smaller file, choose the questions (comma separated names, case insensitive, not both at once):
 `only_question_names=age,sex` exports only these questions, `exclude_question_names=instanceID,deprecatedID` all the
 questions but these. The `iaso_subm_*` columns are always exported. An unknown question name is refused (error `400`).
+Two questions whose names only differ by case (`Age` and `age`) are both selected by `age`.
 
 For a form with personal data (PII) settings, users without the "view personal data" permission only get the
 questions marked as not personal, even when asked in `only_question_names`.

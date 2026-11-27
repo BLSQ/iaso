@@ -290,7 +290,8 @@ Colonnes :
 Pour un fichier plus petit, choisir les questions (noms séparés par des virgules, sans tenir compte des majuscules, pas
 les deux à la fois) : `only_question_names=age,sex` n'exporte que ces questions,
 `exclude_question_names=instanceID,deprecatedID` toutes les questions sauf celles-ci. Les colonnes `iaso_subm_*` sont
-toujours exportées. Un nom de question inconnu est refusé (erreur `400`).
+toujours exportées. Un nom de question inconnu est refusé (erreur `400`). Deux questions dont les noms ne diffèrent que
+par les majuscules (`Age` et `age`) sont toutes les deux sélectionnées par `age`.
 
 Pour un formulaire avec des réglages de données personnelles (PII), les utilisateurs sans la permission « voir les
 données personnelles » ne reçoivent que les questions marquées comme non personnelles, même demandées dans

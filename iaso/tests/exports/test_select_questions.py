@@ -1,6 +1,6 @@
 from django.test import SimpleTestCase
 
-from iaso.exports.submissions import select_questions
+from iaso.exports.submissions import UnknownQuestionNamesError, select_questions
 
 
 POSSIBLE_FIELDS = [
@@ -35,5 +35,5 @@ class SelectQuestionsTestCase(SimpleTestCase):
     def test_unknown_question_name_is_refused(self):
         for selection in ({"only_question_names": ["muac", "age"]}, {"exclude_question_names": ["age"]}):
             with self.subTest(**selection):
-                with self.assertRaisesMessage(ValueError, "Unknown question names: age"):
+                with self.assertRaisesMessage(UnknownQuestionNamesError, "Unknown question names: age"):
                     select_questions(POSSIBLE_FIELDS, **selection)

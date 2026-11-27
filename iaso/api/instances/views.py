@@ -614,7 +614,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 only_question_names=only_question_names,
                 exclude_question_names=exclude_question_names,
             )
-        except ValueError as error:
+        except parquet.UnknownQuestionNamesError as error:
             raise serializers.ValidationError({"error": str(error)})
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)

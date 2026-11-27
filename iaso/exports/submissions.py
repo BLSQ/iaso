@@ -16,6 +16,10 @@ from .utils import normalize_field_name
 logger = getLogger(__name__)
 
 
+class UnknownQuestionNamesError(ValueError):
+    pass
+
+
 def select_questions(
     possible_fields: list[dict],
     only_question_names: Optional[list[str]] = None,
@@ -23,12 +27,13 @@ def select_questions(
 ) -> list[dict]:
     """Keep the questions listed in `only_question_names`, or drop the ones in `exclude_question_names`.
 
-    Names are compared case insensitively. Raises ValueError for a name that is not a question of the form.
+    Names are compared case insensitively.
+    Raises UnknownQuestionNamesError for a name that is not a question of the form.
     """
     requested = {name.lower() for name in (only_question_names or exclude_question_names or [])}
     unknown = requested - {field["name"].lower() for field in possible_fields}
     if unknown:
-        raise ValueError(f"Unknown question names: {', '.join(sorted(unknown))}")
+        raise UnknownQuestionNamesError(f"Unknown question names: {', '.join(sorted(unknown))}")
     if only_question_names:
         return [field for field in possible_fields if field["name"].lower() in requested]
     return [field for field in possible_fields if field["name"].lower() not in requested]

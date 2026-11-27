@@ -113,8 +113,7 @@ class ValidationWorkflowViewSet(ModelViewSet):
     @extend_schema(request=None, responses={status.HTTP_201_CREATED: ValidationWorkflowDuplicateSerializer})
     @action(detail=True, methods=["post"])
     def duplicate(self, request, *args, **kwargs):
-        workflow = self.get_object()
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(self.get_object(), data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(source=workflow)
+        serializer.save()  # the instance is then the copy
         return Response(serializer.data, status=status.HTTP_201_CREATED)

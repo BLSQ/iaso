@@ -135,16 +135,27 @@ class ValidationWorkflowAPIDuplicateTestCase(BaseValidationWorkflowAPITestCase):
         names = [self.duplicate(self.validation_workflow.slug).json()["name"] for _ in range(3)]
         self.assertEqual(names, ["Random name (copy)", "Random name (copy 2)", "Random name (copy 3)"])
 
-    def test_duplicate_names_does_not_include_soft_deleted_ones(self):
-        ValidationWorkflow.objects.create(name="Random name (copy)", account=self.account).delete()
-        ValidationWorkflow.objects.create(name="Random name (copy 2)", account=self.account)
+    def test_duplicate_names_include_soft_deleted_ones(self):
         self.client.force_authenticate(self.john_wick)
+        for _ in range(3):
+            self.duplicate(self.validation_workflow.slug)
+        ValidationWorkflow.objects.get(account=self.account, name="Random name (copy 2)").delete()
 
-        # The soft deleted copy frees its name
+        # The soft deleted copy keeps its name...
         res_data = self.assertJSONResponse(self.duplicate(self.validation_workflow.slug), status.HTTP_201_CREATED)
-        self.assertEqual(res_data["name"], "Random name (copy)")
+        self.assertEqual(res_data["name"], "Random name (copy 4)")
+
+        # ... so that it can be restored without clashing with a newer copy
+        ValidationWorkflow.objects_only_deleted.get(account=self.account, name="Random name (copy 2)").restore()
         self.assertEqual(
-            ValidationWorkflow.objects_only_deleted.filter(account=self.account, name="Random name (copy)").count(), 1
+            sorted(ValidationWorkflow.objects.filter(account=self.account).values_list("name", flat=True)),
+            [
+                "Random name",
+                "Random name (copy 2)",
+                "Random name (copy 3)",
+                "Random name (copy 4)",
+                "Random name (copy)",
+            ],
         )
 
     def test_duplicate_name_single_query(self):

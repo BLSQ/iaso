@@ -14,6 +14,7 @@ from iaso.models.base import UserRole
 from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
@@ -45,6 +46,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     )
 
     objects = DefaultSoftDeletableManager()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager()
     objects_only_deleted = OnlyDeletedSoftDeletableManager()
 
     def __str__(self):
@@ -252,6 +254,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         """
         First free name among "<name> (copy)", "<name> (copy 2)", ... in the account.
         The existing copies are fetched in a single query, the free name is then picked in Python.
+        Soft deleted copies keep their name: a restored workflow must not clash with a newer copy.
         """
         max_length = self._meta.get_field("name").max_length
 
@@ -263,7 +266,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
         # so match on a prefix that every copy keeps whatever its suffix. The regex then keeps only names
         # ending in "(copy)" or "(copy N)". This is a superset: the exact match is done in Python below.
         taken = set(
-            ValidationWorkflow.objects.filter(
+            ValidationWorkflow.objects_include_deleted.filter(
                 account_id=self.account_id,
                 name__startswith=self.name[: max_length - self.DUPLICATE_MAX_SUFFIX_LENGTH],
                 name__regex=r" \(copy( [0-9]+)?\)$",

@@ -402,6 +402,26 @@ class InstancesViewSet(viewsets.ViewSet):
                 ),
                 type=OpenApiTypes.BOOL,
             ),
+            OpenApiParameter(
+                name="only_question_names",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "parquet export only: comma-separated question names (case insensitive), only these questions "
+                    "are exported. The `iaso_subm_*` columns are always exported. Without the "
+                    "`iaso_submissions_pii` permission, questions not in the form's `non_pii_fields` stay hidden "
+                    "even when listed. Unknown name or used with `exclude_question_names`: 400."
+                ),
+                type=OpenApiTypes.STR,
+            ),
+            OpenApiParameter(
+                name="exclude_question_names",
+                location=OpenApiParameter.QUERY,
+                description=(
+                    "parquet export only: comma-separated question names (case insensitive), every question but "
+                    "these is exported. Unknown name or used with `only_question_names`: 400."
+                ),
+                type=OpenApiTypes.STR,
+            ),
         ]
     )
     def list(self, request):

@@ -1,5 +1,7 @@
 import { isEqual, pick } from 'lodash';
 import moment from 'moment';
+import { MissionPolymorphicList } from 'Iaso/api/missions/models/missionPolymorphicList.zod';
+import { MissionPolymorphicRetrieve } from 'Iaso/api/missions/models/missionPolymorphicRetrieve.zod';
 import { baseUrls } from 'Iaso/constants/urls';
 import { PlanningFormik } from './hooks/usePlanningForm';
 import { PageMode, Planning } from './types';
@@ -56,3 +58,12 @@ export const shouldWarnBeforeSave = (
 
 export const getAssignmentsUrl = (planningId: number): string =>
     `/${baseUrls.assignments}/planningId/${planningId}`;
+
+export const toMissionListItem = ({
+    description: _description,
+    forms,
+    ...mission
+}: MissionPolymorphicRetrieve): MissionPolymorphicList => ({
+    ...mission,
+    forms_count: forms.length,
+});

@@ -1,8 +1,6 @@
 import React, { ChangeEvent, FC, useCallback } from 'react';
-import AddIcon from '@mui/icons-material/Add';
 import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import Card from '@mui/material/Card/Card';
-import IconButton from '@mui/material/IconButton/IconButton';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack/Stack';
 import Typography from '@mui/material/Typography/Typography';
@@ -13,6 +11,7 @@ import { usePlanningContext } from '../../contexts/PlanningContext';
 import MESSAGES from '../../messages';
 import { planningPanelStyles } from '../shared/styles';
 import { AddMissionsDialog } from './AddMissionsDialog';
+import { CreateMissionDialog } from './CreateMissionDialog';
 import { MissionItem } from './MissionItem';
 import { NoMissionPlaceholder } from './NoMissionPlaceholder';
 
@@ -44,9 +43,7 @@ export const MissionPanel: FC = () => {
         pendingMissions,
         isFetchingMissions,
         setMissionsPage,
-        createMission,
         formik,
-        planning,
         isReadOnly,
     } = usePlanningContext();
     const linkedMissionIds = formik.values.missions ?? [];
@@ -87,13 +84,7 @@ export const MissionPanel: FC = () => {
                 {!isReadOnly && (
                     <Stack direction="row" gap={1} my={1}>
                         <AddMissionsDialog />
-                        <IconButton
-                            color="primary"
-                            onClick={createMission}
-                            disabled={!planning}
-                        >
-                            <AddIcon />
-                        </IconButton>
+                        <CreateMissionDialog />
                     </Stack>
                 )}
             </Stack>

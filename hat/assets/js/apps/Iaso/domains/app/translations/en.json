@@ -1664,6 +1664,7 @@
     "iaso.plannings.label.mapExploreHintTeams": "Explore: each org unit is colored by the sub-team it is assigned to. Click it to open the sub-team and see how its area is split. Switch to Assign to change assignments.",
     "iaso.plannings.label.mapExploreHintUsers": "Explore: each org unit is colored by the user it is assigned to. Switch to Assign to change assignments.",
     "iaso.plannings.label.mapHintNoMember": "This team has no member. Add members in the team hierarchy of the planning.",
+    "iaso.plannings.label.missionSavedIndependently": "Changes are saved directly on the mission, independently of this planning, and apply to every planning using it.",
     "iaso.plannings.label.mixedOrgUnitTypeDepths": "Org unit types of a level must be at the same depth",
     "iaso.plannings.label.newPlanning": "New planning",
     "iaso.plannings.label.noMissionLinked": "No mission linked yet",

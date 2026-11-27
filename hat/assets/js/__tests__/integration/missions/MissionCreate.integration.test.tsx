@@ -1124,14 +1124,4 @@ describe('Mission create integration test', () => {
         expect(mockGoBack).toHaveBeenCalled();
         expect(mockUseGoBack).toHaveBeenCalledWith(baseUrls.missions);
     });
-
-    it('falls back to the planning details url including accountId when created from a planning', () => {
-        act(() => {
-            renderCreate('planningId/262/planningMode/edit');
-        });
-
-        expect(mockUseGoBack).toHaveBeenCalledWith(
-            `${baseUrls.planningDetails}/accountId/1/planningId/262/mode/edit`,
-        );
-    });
 });

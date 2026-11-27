@@ -408,6 +408,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Link mission',
         id: 'iaso.plannings.label.linkMission',
     },
+    missionSavedIndependently: {
+        defaultMessage:
+            'Changes are saved directly on the mission, independently of this planning, and apply to every planning using it.',
+        id: 'iaso.plannings.label.missionSavedIndependently',
+    },
     notSavedYet: {
         defaultMessage: 'Not saved yet',
         id: 'iaso.plannings.label.notSavedYet',

@@ -4,27 +4,16 @@ import React, {
     createContext,
     useCallback,
     useContext,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
-import {
-    LoadingSpinner,
-    useRedirectTo,
-    useRedirectToReplace,
-} from 'bluesquare-components';
+import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
 import { isEmpty, isEqual, union, unionBy, without } from 'lodash';
-import {
-    useApiMicroplanningMissionsList,
-    useApiMicroplanningMissionsRetrieve,
-} from 'Iaso/api/missions/endpoints/missions/missions';
-
+import { useApiMicroplanningMissionsList } from 'Iaso/api/missions/endpoints/missions/missions';
 import { MissionPolymorphicList } from 'Iaso/api/missions/models/missionPolymorphicList.zod';
-import { MissionPolymorphicRetrieve } from 'Iaso/api/missions/models/missionPolymorphicRetrieve.zod';
 import { PaginatedMissionPolymorphicListList } from 'Iaso/api/missions/models/paginatedMissionPolymorphicListList.zod';
 import { useApiMicroplanningPlanningsConfigsList } from 'Iaso/api/plannings/endpoints/micro-plannings/micro-plannings';
 import { baseUrls } from 'Iaso/constants/urls';
-import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { SavedPlanningConfig } from '../components/orgUnitLevels/types';
 import { useGetPlanningDetails } from '../hooks/requests/useGetPlanningDetails';
 import { useClearRootOrgUnitOutsideProject } from '../hooks/useClearRootOrgUnitOutsideProject';
@@ -32,15 +21,6 @@ import { useMissingFieldsSnackBar } from '../hooks/useMissingFieldsSnackBar';
 import { PlanningFormik, usePlanningForm } from '../hooks/usePlanningForm';
 import { PageMode, Planning } from '../types';
 import { shouldWarnBeforeSave } from '../utils';
-
-const toMissionListItem = ({
-    description: _description,
-    forms,
-    ...mission
-}: MissionPolymorphicRetrieve): MissionPolymorphicList => ({
-    ...mission,
-    forms_count: forms.length,
-});
 
 type PlanningContextValue = {
     planning?: Planning;
@@ -53,7 +33,7 @@ type PlanningContextValue = {
     addMissions: (missions: MissionPolymorphicList[]) => void;
     unlinkMission: (missionId: number) => void;
     relinkMission: (missionId: number) => void;
-    createMission: () => void;
+    updatePendingMission: (mission: MissionPolymorphicList) => void;
     formik: PlanningFormik;
     isReadOnly: boolean;
     canSave: boolean;
@@ -83,7 +63,6 @@ type LoadedPlanningProviderProps = {
     savedConfigs: SavedPlanningConfig[];
     isFetchingPlanning: boolean;
     mode: PageMode;
-    newMissionId?: string;
     children: ReactNode;
 };
 
@@ -92,7 +71,6 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
     savedConfigs,
     isFetchingPlanning,
     mode,
-    newMissionId,
     children,
 }) => {
     const formik = usePlanningForm(planning, savedConfigs, mode);
@@ -157,39 +135,15 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         [setFieldValue, values.missions],
     );
 
-    const { data: newMission } = useApiMicroplanningMissionsRetrieve(
-        Number(newMissionId),
-        {
-            query: {
-                enabled: Boolean(newMissionId),
-                // Otherwise the mission outlives the dropped param and the effect below redirects forever.
-                keepPreviousData: false,
-                select: toMissionListItem,
-            },
-        },
+    const updatePendingMission = useCallback(
+        (updatedMission: MissionPolymorphicList) =>
+            setAddedMissions(previous =>
+                previous.map(mission =>
+                    mission.id === updatedMission.id ? updatedMission : mission,
+                ),
+            ),
+        [],
     );
-
-    // Drop the param once applied so a reload doesn't add the mission again.
-    const { accountId, tab } = useParamsObject(baseUrls.planningDetails);
-    const redirectToReplace = useRedirectToReplace();
-    useEffect(() => {
-        if (!newMission) return;
-        addMissions([newMission]);
-        redirectToReplace(baseUrls.planningDetails, {
-            accountId,
-            planningId: planning && `${planning.id}`,
-            mode,
-            tab,
-        });
-    }, [
-        newMission,
-        addMissions,
-        redirectToReplace,
-        accountId,
-        planning,
-        mode,
-        tab,
-    ]);
 
     const isReadOnly = Boolean(planning?.deprecated);
     const canSave =
@@ -237,13 +191,6 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
         });
     }, [redirectTo, planning]);
 
-    const createMission = useCallback(() => {
-        redirectTo(baseUrls.missionsCreate, {
-            planningId: planning && `${planning.id}`,
-            planningMode: mode,
-        });
-    }, [redirectTo, planning, mode]);
-
     const value = useMemo(
         () => ({
             planning,
@@ -256,7 +203,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             addMissions,
             unlinkMission,
             relinkMission,
-            createMission,
+            updatePendingMission,
             formik,
             isReadOnly,
             canSave,
@@ -277,7 +224,7 @@ const LoadedPlanningProvider: FC<LoadedPlanningProviderProps> = ({
             addMissions,
             unlinkMission,
             relinkMission,
-            createMission,
+            updatePendingMission,
             formik,
             isReadOnly,
             canSave,
@@ -301,16 +248,10 @@ const EMPTY_CONFIGS: SavedPlanningConfig[] = [];
 type Props = {
     planningId: string;
     mode: PageMode;
-    newMissionId?: string;
     children: ReactNode;
 };
 
-export const PlanningProvider: FC<Props> = ({
-    planningId,
-    mode,
-    newMissionId,
-    children,
-}) => {
+export const PlanningProvider: FC<Props> = ({ planningId, mode, children }) => {
     const {
         data: planning,
         isLoading,
@@ -333,7 +274,6 @@ export const PlanningProvider: FC<Props> = ({
             savedConfigs={savedConfigs?.results ?? EMPTY_CONFIGS}
             isFetchingPlanning={isFetching}
             mode={mode}
-            newMissionId={newMissionId}
         >
             {children}
         </LoadedPlanningProvider>

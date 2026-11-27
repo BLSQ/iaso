@@ -17,7 +17,6 @@ import { MissionTypeDa2Enum } from 'Iaso/api/missions/models/missionTypeDa2Enum.
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { MissionCreateBody } from 'Iaso/domains/missions/schemas/create';
-import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { withFormikSubmitAsync } from 'Iaso/utils/forms';
 import { CreateMissionForm } from './components/CreateMissionForm';
 import { DetailsWrapper } from './components/DetailsWrapper';
@@ -28,22 +27,13 @@ export const MissionCreate: FunctionComponent = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const redirectToReplace = useRedirectToReplace();
-    const { accountId, planningId, planningMode } = useParamsObject(
-        baseUrls.missionsCreate,
-    );
-
-    const planningUrl = planningId
-        ? `${baseUrls.planningDetails}/accountId/${accountId}/planningId/${planningId}/mode/${planningMode}`
-        : undefined;
-    const goBack = useGoBack(planningUrl ?? baseUrls.missions);
+    const goBack = useGoBack(baseUrls.missions);
 
     const { mutateAsync: create } = useApiMicroplanningMissionsCreate({
         mutation: {
             onSuccess: (variables, _data) => {
                 redirectToReplace(
-                    planningUrl
-                        ? `${planningUrl}/newMissionId/${variables?.id}`
-                        : `${baseUrls.missionsDetails}/id/${variables?.id}`,
+                    `${baseUrls.missionsDetails}/id/${variables?.id}`,
                 );
             },
             meta: {

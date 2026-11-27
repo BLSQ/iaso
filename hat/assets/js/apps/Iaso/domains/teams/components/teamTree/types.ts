@@ -20,7 +20,12 @@ export type DraggedItem =
     | { kind: 'team'; team: TeamTreeNode }
     | { kind: 'user'; user: User; team: TeamTreeNode };
 
-type TeamActionKind = 'rename' | 'addSubTeam' | 'changeType' | 'delete';
+type TeamActionKind =
+    | 'rename'
+    | 'addSubTeam'
+    | 'addUsers'
+    | 'changeType'
+    | 'delete';
 
 // Mapped so each kind is its own union member and narrows in a switch.
 export type HierarchyAction =
@@ -32,4 +37,7 @@ export type HierarchyAction =
 
 export type HierarchyDialog =
     | { kind: 'create'; parent: TeamTreeNode }
-    | Extract<HierarchyAction, { kind: 'rename' | 'delete' | 'move' }>;
+    | Extract<
+          HierarchyAction,
+          { kind: 'rename' | 'addUsers' | 'delete' | 'move' }
+      >;

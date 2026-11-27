@@ -9,6 +9,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Add team',
         id: 'iaso.teams.label.addTeam',
     },
+    addTeamUsers: {
+        defaultMessage: 'Add users to {name}',
+        id: 'iaso.teams.label.addTeamUsers',
+    },
+    addTeamUsersSuccess: {
+        defaultMessage: 'Users added to the team',
+        id: 'iaso.teams.label.addTeamUsersSuccess',
+    },
+    addUsers: {
+        defaultMessage: 'Add users',
+        id: 'iaso.teams.label.addUsers',
+    },
     changeToTeamOfTeams: {
         defaultMessage: 'Change to team of teams',
         id: 'iaso.teams.label.changeToTeamOfTeams',

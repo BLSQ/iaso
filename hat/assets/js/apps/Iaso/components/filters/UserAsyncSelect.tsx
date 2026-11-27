@@ -12,6 +12,7 @@ type Props = {
     keyValue?: string;
     label?: IntlMessage;
     additionalFilters?: object;
+    excludedUserIds?: number[];
     multi?: boolean;
 } & Omit<
     ComponentProps<typeof AsyncSelect>,
@@ -29,6 +30,7 @@ export const UserAsyncSelect = ({
     handleChange,
     filterUsers,
     additionalFilters,
+    excludedUserIds,
     keyValue = 'users',
     label = MESSAGES.user,
     multi = true,
@@ -49,14 +51,18 @@ export const UserAsyncSelect = ({
     });
 
     const fetchOptions = useCallback(
-        (input: string) => {
-            return getUsersDropDown({
+        async (input: string) => {
+            const options = await getUsersDropDown({
                 query: input,
                 queryClient: queryClient,
                 additionalFilters: additionalFilters,
             });
+            if (!excludedUserIds?.length) return options;
+            return options.filter(
+                option => !excludedUserIds.includes(option.value),
+            );
         },
-        [queryClient, additionalFilters],
+        [queryClient, additionalFilters, excludedUserIds],
     );
 
     const handleChangeUsers = useCallback(

@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status
 
 from beanstalk_worker.services import TestTaskService
+from hat.audit.models import ENTITY_DUPLICATE_DISCARD, Modification
 from iaso import models as m
 from iaso.models.deduplication import ValidationStatus
 from iaso.permissions.core_permissions import (
@@ -17,7 +18,9 @@ from iaso.permissions.core_permissions import (
 from iaso.test import APITestCase
 
 
-class EntityDuplicatesMergingAPITestCase(APITestCase):
+class EntityDuplicatesTestBase(APITestCase):
+    """3 entities, each with a registration and a follow-up submission, in 2 pending pairs: (0, 1) and (0, 2)."""
+
     @classmethod
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="Test Account")
@@ -127,6 +130,8 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
             analyze=cls.analyze,
         )
 
+
+class EntityDuplicatesMergingAPITestCase(EntityDuplicatesTestBase):
     def test_merge_updates_related_duplicates(self):
         self.client.force_authenticate(self.user)
 
@@ -316,3 +321,188 @@ class EntityDuplicatesMergingAPITestCase(APITestCase):
         merged = entity1.merged_to
         self.assertEqual(merged.instances.count(), 4)  # 1 attributes + 1 emoji + 2 extra instances from setup
         self.assertTrue(merged.instances.filter(json__prevous_muac_color="🟡Yellow").exists())
+
+
+class EntityDuplicatesDiscardEntityAPITestCase(EntityDuplicatesTestBase):
+    """
+    Test resolving duplicates by soft deleting one of the two entities, instead of merging them.
+
+    (ENTITY_DUPLICATES_SOFT_DELETE feature flag)
+    """
+
+    URL = "/api/entityduplicates/"
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.soft_delete_flag, _ = m.AccountFeatureFlag.objects.get_or_create(
+            code="ENTITY_DUPLICATES_SOFT_DELETE", defaults={"name": "Entity duplicates soft deletion"}
+        )
+        cls.read_only_user = cls.create_user_with_profile(
+            username="read_only_user",
+            account=cls.account,
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION],
+            org_units=[cls.default_orgunit],
+        )
+
+    def setUp(self):
+        self.account.feature_flags.add(self.soft_delete_flag)
+
+    def discard_entity(self, entity_to_discard, entity1=None, entity2=None, user=None):
+        self.client.force_authenticate(user or self.user)
+        return self.client.post(
+            self.URL,
+            data={
+                "action": "discard_entity",
+                "entity1_id": (entity1 or self.entities[0]).pk,
+                "entity2_id": (entity2 or self.entities[1]).pk,
+                "entity_to_discard_id": entity_to_discard.pk,
+            },
+            format="json",
+        )
+
+    def test_discard_entity_entity_of_pair(self):
+        to_delete, kept = self.entities[1], self.entities[0]
+        instance_ids = list(to_delete.instances.values_list("id", flat=True))
+
+        response = self.discard_entity(to_delete)
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertEqual(
+            data,
+            {"deleted_entity_id": to_delete.pk, "entity1_id": kept.pk, "entity2_id": to_delete.pk, "ignored": False},
+        )
+
+        to_delete.refresh_from_db()
+        self.assertIsNotNone(to_delete.deleted_at)
+        self.assertIsNone(to_delete.merged_to_id)  # nothing is merged
+        self.assertEqual(len(instance_ids), 2)
+        self.assertFalse(m.Instance.objects.filter(id__in=instance_ids, deleted=False).exists())
+        kept.refresh_from_db()
+        self.assertIsNone(kept.deleted_at)
+        self.assertEqual(kept.instances.filter(deleted=False).count(), 2)
+
+        # The pair of the deleted entity is removed, the other pair of the kept entity stays
+        self.assertFalse(m.EntityDuplicate.objects.filter(pk=self.dup1.pk).exists())
+        self.assertTrue(m.EntityDuplicate.objects.filter(pk=self.dup2.pk).exists())
+        # Logged with its own source: the entity and its 2 submissions
+        self.assertEqual(Modification.objects.filter(source=ENTITY_DUPLICATE_DISCARD, user=self.user).count(), 3)
+
+    def test_discard_entity_needs_feature_flag(self):
+        self.account.feature_flags.remove(self.soft_delete_flag)
+        response = self.discard_entity(self.entities[1])
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+        self.entities[1].refresh_from_db()
+        self.assertIsNone(self.entities[1].deleted_at)
+
+    def test_discard_entity_needs_write_permission(self):
+        response = self.discard_entity(self.entities[1], user=self.read_only_user)
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+        self.entities[1].refresh_from_db()
+        self.assertIsNone(self.entities[1].deleted_at)
+
+    def test_discard_entity_errors(self):
+        # The entity to delete must be one of the pair
+        response = self.discard_entity(self.entities[2])
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        # No pair between these entities
+        response = self.discard_entity(self.entities[2], entity1=self.entities[1], entity2=self.entities[2])
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        # Pair already ignored
+        self.dup1.validation_status = ValidationStatus.IGNORED
+        self.dup1.save()
+        response = self.discard_entity(self.entities[1])
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        for entity in self.entities:
+            entity.refresh_from_db()
+            self.assertIsNone(entity.deleted_at)
+
+    def test_discard_entity_already_deleted_entity(self):
+        self.entities[1].delete()
+        response = self.discard_entity(self.entities[1])
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+    def test_merge_refused_with_soft_delete_flag(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/api/entityduplicates/",
+            data={
+                "entity1_id": self.entities[0].pk,
+                "entity2_id": self.entities[1].pk,
+                "merge": {"name": self.entities[0].pk},
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+        self.entities[0].refresh_from_db()
+        self.assertIsNone(self.entities[0].deleted_at)
+
+    def test_ignore_allowed_with_soft_delete_flag(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/api/entityduplicates/",
+            data={"entity1_id": self.entities[0].pk, "entity2_id": self.entities[1].pk, "ignore": True},
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.dup1.refresh_from_db()
+        self.assertEqual(self.dup1.validation_status, ValidationStatus.IGNORED)
+
+    def test_merge_and_ignore_need_write_permission(self):
+        self.account.feature_flags.remove(self.soft_delete_flag)
+        self.client.force_authenticate(self.read_only_user)
+        for payload in [
+            {"merge": {"name": self.entities[0].pk}},
+            {"ignore": True},
+        ]:
+            response = self.client.post(
+                "/api/entityduplicates/",
+                data={"entity1_id": self.entities[0].pk, "entity2_id": self.entities[1].pk, **payload},
+                format="json",
+            )
+            self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+        self.dup1.refresh_from_db()
+        self.assertEqual(self.dup1.validation_status, ValidationStatus.PENDING)
+
+    def test_explicit_ignore_action(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            self.URL,
+            data={"action": "ignore", "entity1_id": self.entities[0].pk, "entity2_id": self.entities[1].pk},
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.dup1.refresh_from_db()
+        self.assertEqual(self.dup1.validation_status, ValidationStatus.IGNORED)
+
+    def test_fields_that_dont_match_the_action_are_refused(self):
+        self.client.force_authenticate(self.user)
+        pair = {"entity1_id": self.entities[0].pk, "entity2_id": self.entities[1].pk}
+        for payload in [
+            {"action": "discard_entity", "entity_to_discard_id": self.entities[1].pk, "ignore": True},
+            {"action": "discard_entity", "entity_to_discard_id": self.entities[1].pk, "merge": {}},
+            {"action": "ignore", "entity_to_discard_id": self.entities[1].pk},
+            {"action": "discard_entity"},  # missing entity_to_discard_id
+            {"action": "unknown"},
+        ]:
+            with self.subTest(payload=payload):
+                response = self.client.post(self.URL, data={**pair, **payload}, format="json")
+                self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.dup1.refresh_from_db()
+        self.assertEqual(self.dup1.validation_status, ValidationStatus.PENDING)
+        self.entities[1].refresh_from_db()
+        self.assertIsNone(self.entities[1].deleted_at)
+
+    def test_merge_without_merge_definition_is_refused(self):
+        self.account.feature_flags.remove(self.soft_delete_flag)
+        self.client.force_authenticate(self.user)
+        for payload in [{}, {"action": "merge"}]:
+            with self.subTest(payload=payload):
+                response = self.client.post(
+                    self.URL,
+                    data={"entity1_id": self.entities[0].pk, "entity2_id": self.entities[1].pk, **payload},
+                    format="json",
+                )
+                self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
-from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet, UUIDFilter
+from django_filters.rest_framework import CharFilter, FilterSet, UUIDFilter
 from rest_framework import filters
 from rest_framework.exceptions import ValidationError
 
@@ -55,7 +55,6 @@ class EntityFilterSet(FilterSet):
     entity_type_ids = CharInFilter(field_name="entity_type_id", lookup_expr="in")
     groups = CharInFilter(method="filter_groups")
 
-    show_deleted = BooleanFilter(field_name="deleted_at", lookup_expr="isnull", exclude=True)
     orgUnitId = CharFilter(method="filter_org_unit")
     fields_search = CharFilter(method="filter_fields_search")
     search = CharFilter(method="filter_search")

@@ -1242,6 +1242,10 @@ msgid "Tâches"
 msgstr "Tâches"
 
 #: iaso/permissions/core_permissions.py
+msgid "Write entities"
+msgstr "Écrire les entités"
+
+#: iaso/permissions/core_permissions.py
 msgid "Write entity type"
 msgstr "Écrire type d'entité"
 

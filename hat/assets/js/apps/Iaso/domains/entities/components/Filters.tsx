@@ -78,6 +78,7 @@ const Filters: FunctionComponent<Props> = ({
         locationLimit: params.locationLimit,
         groups: params.groups,
         fieldsSearch: params.fieldsSearch,
+        showDeleted: params.showDeleted,
     });
 
     useEffect(() => {
@@ -92,6 +93,7 @@ const Filters: FunctionComponent<Props> = ({
             locationLimit: params.locationLimit,
             groups: params.groups,
             fieldsSearch: params.fieldsSearch,
+            showDeleted: params.showDeleted,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -294,6 +296,19 @@ const Filters: FunctionComponent<Props> = ({
                             alignItems="end"
                             flexDirection="column"
                         >
+                            <InputComponent
+                                keyValue="showDeleted"
+                                type="checkbox"
+                                withMarginTop={false}
+                                value={filters.showDeleted === 'true'}
+                                onChange={(key, value) =>
+                                    handleChange(
+                                        key,
+                                        value ? 'true' : undefined,
+                                    )
+                                }
+                                label={MESSAGES.showDeleted}
+                            />
                             <Box mb={2}>
                                 <Button
                                     data-test="search-button"

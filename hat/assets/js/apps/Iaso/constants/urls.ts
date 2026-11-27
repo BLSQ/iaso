@@ -450,6 +450,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'locationLimit',
             'groups',
             'fieldsSearch',
+            'showDeleted',
             'isSearchActive',
             // pagination params
             'order',

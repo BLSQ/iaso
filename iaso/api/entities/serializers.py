@@ -139,6 +139,7 @@ class EntityListSerializer(serializers.ModelSerializer):
             "longitude",
             "last_saved_instance",
             "has_duplicates",
+            "deleted_at",
         ]
 
     org_unit = EntityListNestedOrgUnitSerializer(source="attributes.org_unit", default=None, read_only=True)
@@ -201,6 +202,7 @@ class EntitySerializer(serializers.ModelSerializer):
             "org_unit",
             "duplicates",
             "nfc_cards",
+            "deleted_at",
         ]
 
     entity_type_name = serializers.SerializerMethodField()

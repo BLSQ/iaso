@@ -8,7 +8,7 @@ from django.utils.functional import cached_property
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, renderers, serializers
+from rest_framework import permissions, renderers, serializers, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -27,7 +27,11 @@ from iaso.api.entities.serializers import (
 )
 from iaso.models import Entity, EntityDuplicate, EntityType, Instance
 from iaso.models.deduplication import ValidationStatus
-from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_PERMISSION,
+    CORE_ENTITIES_WRITE_PERMISSION,
+    CORE_STORAGE_PERMISSION,
+)
 from iaso.utils.pii import get_allowed_fields, is_field_allowed
 
 
@@ -52,6 +56,12 @@ class EntityViewSet(ModelViewSet):
 
     export entity submissions list: /api/entities/export_entity_submissions_list/?id=id
 
+    soft-delete an entity and its submissions: DELETE /api/entities/<id>/
+
+    restore a soft-deleted entity and its submissions: POST /api/entities/<id>/restore/
+
+    list soft-deleted entities: /api/entities/?deletion_status=deleted (or `all`)
+
     **replace xlsx by csv to export as csv
     """
 
@@ -71,6 +81,12 @@ class EntityViewSet(ModelViewSet):
         XlsxStreamingRenderer,
     )
     ordering = ["-id"]
+
+    def get_permissions(self):
+        perms = super().get_permissions()
+        if self.action in ("destroy", "restore"):
+            perms.append(HasPermission(CORE_ENTITIES_WRITE_PERMISSION)())
+        return perms
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -126,7 +142,8 @@ class EntityViewSet(ModelViewSet):
         return {field.strip().lstrip("-") for field in order_param.split(",") if field.strip()}
 
     def get_queryset(self):
-        queryset = Entity.objects.filter_for_user(self.request.user)
+        manager = Entity.objects if self.action in ("update", "partial_update") else Entity.objects_include_deleted
+        queryset = manager.filter_for_user(self.request.user)
         if self.action == "count":
             return queryset
 
@@ -334,10 +351,30 @@ class EntityViewSet(ModelViewSet):
     def destroy(self, request, pk=None):
         queryset = Entity.objects_include_deleted.filter_for_user(request.user).distinct()
         entity = get_object_or_404(queryset, pk=pk)
+        if entity.deleted_at:
+            return Response({"detail": "Entity is already deleted."}, status=status.HTTP_400_BAD_REQUEST)
 
         entity = entity.soft_delete_with_instances_and_pending_duplicates(
             audit_source=ENTITY_API,
             user=request.user,
         )
+        serializer = self.get_serializer(entity, many=False)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["POST"])
+    def restore(self, request, pk=None):
+        """Restore a soft-deleted entity and the submissions deleted with it."""
+        queryset = Entity.objects_include_deleted.filter_for_user(request.user).distinct()
+        entity = get_object_or_404(queryset, pk=pk)
+        if not entity.deleted_at:
+            return Response({"detail": "Entity is not deleted."}, status=status.HTTP_400_BAD_REQUEST)
+        if entity.merged_to_id:
+            # Its submissions now belong to the entity it was merged into.
+            return Response(
+                {"detail": "Entity was merged into another entity and can't be restored."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        entity = entity.restore_with_instances(audit_source=ENTITY_API, user=request.user)
         serializer = self.get_serializer(entity, many=False)
         return Response(serializer.data)

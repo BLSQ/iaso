@@ -13,6 +13,7 @@ import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 import { Entity } from '../types/entity';
 import { Field } from '../types/fields';
+import { EntityActionsMenu } from './EntityActions';
 import { EntityBaseInfoContents } from './EntityBaseInfoContents';
 
 const useStyles = makeStyles(theme => ({
@@ -27,6 +28,8 @@ type Props = {
     withLinkToEntity?: boolean;
     hasDuplicates?: boolean;
     duplicateUrl?: string;
+    withActionsMenu?: boolean;
+    onDeleted?: () => void;
 };
 
 const EntityTitle: FunctionComponent<{
@@ -56,6 +59,8 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
     withLinkToEntity = false,
     hasDuplicates = false,
     duplicateUrl,
+    withActionsMenu = false,
+    onDeleted,
 }) => {
     const classes: Record<string, string> = useStyles();
     const widgetContents = <EntityBaseInfoContents fields={fields} />;
@@ -67,24 +72,29 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
         />
     );
 
+    let titleButton = {};
     if (withLinkToEntity) {
-        return (
-            <WidgetPaper
-                className={classes.infoPaper}
-                title={title}
-                IconButton={IconButton}
-                iconButtonProps={{
-                    url: `/${baseUrls.entityDetails}/entityId/${entity.id}`,
-                    icon: 'remove-red-eye',
-                    tooltipMessage: MESSAGES.see,
-                }}
-            >
-                {widgetContents}
-            </WidgetPaper>
-        );
+        titleButton = {
+            IconButton,
+            iconButtonProps: {
+                url: `/${baseUrls.entityDetails}/entityId/${entity.id}`,
+                icon: 'remove-red-eye',
+                tooltipMessage: MESSAGES.see,
+            },
+        };
+    } else if (withActionsMenu) {
+        titleButton = {
+            IconButton: EntityActionsMenu,
+            iconButtonProps: { entity, onDeleted },
+        };
     }
+
     return (
-        <WidgetPaper className={classes.infoPaper} title={title}>
+        <WidgetPaper
+            className={classes.infoPaper}
+            title={title}
+            {...titleButton}
+        >
             {widgetContents}
         </WidgetPaper>
     );

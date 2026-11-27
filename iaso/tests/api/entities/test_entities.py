@@ -4,6 +4,7 @@ import io
 import json
 import uuid
 
+from copy import copy
 from datetime import timedelta
 
 import pytz
@@ -14,12 +15,18 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
+from hat.audit.models import ENTITY_API, INSTANCE_API, Modification, log_modification
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.deduplication import ValidationStatus
 from iaso.modules import MODULE_EXTERNAL_STORAGE
-from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+    CORE_ENTITIES_PERMISSION,
+    CORE_ENTITIES_WRITE_PERMISSION,
+    CORE_STORAGE_PERMISSION,
+)
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
@@ -1233,6 +1240,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
 
         self.client.post("/api/entities/bulk_create/", data=payload, format="json")
+        self.client.force_authenticate(self.entity_writer)
         self.client.delete(f"/api/entities/{Entity.objects.last().pk}/", format="json")
 
         response = self.client.get("/api/entities/", format="json")
@@ -1709,7 +1717,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         This should do a soft-delete of the entity, along with instances and
         potential EntityDuplicate pairs
         """
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.entity_writer)
         self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
 
         # Create Entity with ref instance
@@ -1748,13 +1756,20 @@ class WebEntityAPITestCase(EntityAPITestCase):
             inst.refresh_from_db()
             self.assertTrue(inst.deleted)
         self.assertEqual(m.EntityDuplicate.objects.count(), 1)  # only pending removed
+        # The entity and its 3 submissions are logged
+        self.assertEqual(Modification.objects.filter(source=ENTITY_API, user=self.entity_writer).count(), 4)
 
     def test_delete_entity_of_other_account_returns_404(self):
         """
         DELETE /api/entities/pk/ on an entity of another account must not
         touch the entity nor its instances.
         """
-        self.client.force_authenticate(self.yop_solo)
+        other_account_writer = self.create_user_with_profile(
+            username="other_account_writer",
+            account=self.yop_solo.iaso_profile.account,
+            permissions=[CORE_ENTITIES_PERMISSION, CORE_ENTITIES_WRITE_PERMISSION],
+        )
+        self.client.force_authenticate(other_account_writer)
 
         ent_ref_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
         ent = Entity.objects.create(
@@ -1776,7 +1791,243 @@ class WebEntityAPITestCase(EntityAPITestCase):
             self.assertFalse(instance.deleted)
 
     def test_delete_unknown_entity_returns_404(self):
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.entity_writer)
 
         response = self.client.delete("/api/entities/999999999/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def _create_entity_with_instances(self, nb_extra_instances=1):
+        ref_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity = Entity.objects.create(entity_type=self.entity_type, attributes=ref_instance, account=self.account)
+        ref_instance.entity = entity
+        ref_instance.save()
+        extra_instances = [
+            Instance.objects.create(org_unit=self.ou_country, form=self.form_1, entity=entity)
+            for _ in range(nb_extra_instances)
+        ]
+        return entity, [ref_instance, *extra_instances]
+
+    def test_delete_entity_without_write_permission_is_forbidden(self):
+        entity, instances = self._create_entity_with_instances()
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.delete(f"/api/entities/{entity.id}/")
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
+        entity.refresh_from_db()
+        self.assertIsNone(entity.deleted_at)
+        for instance in instances:
+            instance.refresh_from_db()
+            self.assertFalse(instance.deleted)
+
+    def test_delete_already_deleted_entity_returns_400(self):
+        entity, _ = self._create_entity_with_instances()
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+        entity.refresh_from_db()
+        deleted_at = entity.deleted_at
+
+        response = self.client.delete(f"/api/entities/{entity.id}/")
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        entity.refresh_from_db()
+        self.assertEqual(entity.deleted_at, deleted_at)
+
+    def test_list_and_count_deleted_entities(self):
+        active, _ = self._create_entity_with_instances()
+        deleted, _ = self._create_entity_with_instances()
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{deleted.id}/"), status.HTTP_200_OK)
+
+        # Hidden by default, in the list and in the cursor-pagination count
+        data = self.assertJSONResponse(self.client.get("/api/entities/"), status.HTTP_200_OK)
+        self.assertEqual([e["id"] for e in data["result"]], [active.id])
+        self.assertIsNone(data["result"][0]["deleted_at"])
+        self.assertEqual(
+            self.assertJSONResponse(self.client.get("/api/entities/count/"), status.HTTP_200_OK)["count"], 1
+        )
+
+        data = self.assertJSONResponse(
+            self.client.get("/api/entities/", {"deletion_status": "deleted"}), status.HTTP_200_OK
+        )
+        self.assertEqual([e["id"] for e in data["result"]], [deleted.id])
+        self.assertIsNotNone(data["result"][0]["deleted_at"])
+        self.assertEqual(
+            self.assertJSONResponse(
+                self.client.get("/api/entities/count/", {"deletion_status": "deleted"}), status.HTTP_200_OK
+            )["count"],
+            1,
+        )
+
+        data = self.assertJSONResponse(
+            self.client.get("/api/entities/", {"deletion_status": "all"}), status.HTTP_200_OK
+        )
+        self.assertEqual({e["id"] for e in data["result"]}, {active.id, deleted.id})
+
+    def test_retrieve_deleted_entity_but_not_update_it(self):
+        entity, _ = self._create_entity_with_instances()
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+
+        response = self.client.get(f"/api/entities/{entity.id}/")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertIsNotNone(data["deleted_at"])
+
+        response = self.client.patch(f"/api/entities/{entity.id}/", data={"name": "new"}, format="json")
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+    def _delete_submission_on_its_own(self, instance):
+        """Delete a submission as the submissions API does: soft delete, with an audit log entry."""
+        original = copy(instance)
+        instance.soft_delete()
+        log_modification(original, instance, INSTANCE_API, user=self.entity_writer)
+        return instance
+
+    def test_restore_entity(self):
+        """
+        POST /api/entities/pk/restore/
+
+        Restores the entity and the submissions deleted with it, not the ones deleted before.
+        """
+        entity, instances = self._create_entity_with_instances(nb_extra_instances=2)
+        deleted_before = self._delete_submission_on_its_own(
+            Instance.objects.create(org_unit=self.ou_country, form=self.form_1, entity=entity)
+        )
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+
+        response = self.client.post(f"/api/entities/{entity.id}/restore/")
+        data = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertIsNone(data["deleted_at"])
+
+        entity.refresh_from_db()
+        self.assertIsNone(entity.deleted_at)
+        for instance in instances:
+            instance.refresh_from_db()
+            self.assertFalse(instance.deleted)
+        deleted_before.refresh_from_db()
+        self.assertTrue(deleted_before.deleted)
+
+        # 4 changes logged on deletion (entity + 3 instances), 4 on restore
+        self.assertEqual(Modification.objects.filter(source=ENTITY_API, user=self.entity_writer).count(), 8)
+        data = self.assertJSONResponse(self.client.get("/api/entities/"), status.HTTP_200_OK)
+        self.assertEqual([e["id"] for e in data["result"]], [entity.id])
+
+    def test_restore_entity_only_looks_at_audit_entries_of_submissions(self):
+        """Restoring an entity ignores audit entries of other objects with the same id as a submission"""
+        deleted_before = self._delete_submission_on_its_own(
+            Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        )
+        self.assertFalse(Entity.objects_include_deleted.filter(pk=deleted_before.pk).exists())
+        reference = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity = Entity.objects.create(
+            pk=deleted_before.pk, entity_type=self.entity_type, attributes=reference, account=self.account
+        )
+        Instance.objects.filter(pk__in=[reference.pk, deleted_before.pk]).update(entity=entity)
+
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+        # The entity's deletion entry has the same object id as the submission deleted before
+        self.assertTrue(Modification.objects.filter(object_id=str(entity.pk), source=ENTITY_API).exists())
+
+        self.assertJSONResponse(self.client.post(f"/api/entities/{entity.id}/restore/"), status.HTTP_200_OK)
+
+        reference.refresh_from_db()
+        self.assertFalse(reference.deleted)
+        deleted_before.refresh_from_db()
+        self.assertTrue(deleted_before.deleted)
+
+    def test_restore_entity_with_submission_uploaded_after_deletion(self):
+        """
+        When a device that syncs after the deletion uploads a new submission for the entity: it's saved as
+        deleted, without an audit log entry, and should come back when the entity is restored.
+        """
+        visit_form = m.Form.objects.create(name="Visit", form_id="visit_form", period_type=m.MONTH)
+        visit_form.projects.add(self.project)
+        entity, instances = self._create_entity_with_instances()
+        self.client.force_authenticate(self.entity_writer)
+        self.assertJSONResponse(self.client.delete(f"/api/entities/{entity.id}/"), status.HTTP_200_OK)
+
+        uploaded_uuid = str(uuid.uuid4())
+        self.client.force_authenticate(None)
+        response = self.client.post(
+            f"/api/instances/?app_id={self.project.app_id}",
+            data=[
+                {
+                    "id": uploaded_uuid,
+                    "created_at": 1765258153704,
+                    "updated_at": 1765258153704,
+                    "orgUnitId": self.ou_country.id,
+                    "formId": visit_form.id,
+                    "file": "visit.xml",
+                    "entityUuid": str(entity.uuid),
+                    "entityTypeId": self.entity_type.id,
+                    "name": "Visit after deletion",
+                }
+            ],
+            format="json",
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        uploaded = Instance.objects.get(uuid=uploaded_uuid)
+        self.assertEqual(uploaded.entity_id, entity.id)
+        self.assertTrue(uploaded.deleted)
+        self.assertFalse(Modification.objects.filter(object_id=str(uploaded.pk)).exists())
+
+        self.client.force_authenticate(self.entity_writer)
+        response = self.client.post(f"/api/entities/{entity.id}/restore/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        for instance in [*instances, uploaded]:
+            instance.refresh_from_db()
+            self.assertFalse(instance.deleted)
+        self.assertTrue(Modification.objects.filter(object_id=str(uploaded.pk), source=ENTITY_API).exists())
+
+    def test_restore_entity_requires_entities_write_permission(self):
+        entity, _ = self._create_entity_with_instances()
+        entity.soft_delete_with_instances_and_pending_duplicates(audit_source=ENTITY_API, user=None)
+        # Even on an account where the duplicates screen discards entities
+        flag, _ = m.AccountFeatureFlag.objects.get_or_create(
+            code="ENTITY_DUPLICATES_SOFT_DELETE", defaults={"name": "Entity duplicates soft deletion"}
+        )
+        self.account.feature_flags.add(flag)
+        duplicates_writer = self.create_user_with_profile(
+            username="duplicates_writer",
+            account=self.account,
+            permissions=[CORE_ENTITIES_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
+        )
+        for user in [self.yoda, duplicates_writer]:
+            self.client.force_authenticate(user)
+            response = self.client.post(f"/api/entities/{entity.id}/restore/")
+            self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+        entity.refresh_from_db()
+        self.assertIsNotNone(entity.deleted_at)
+
+    def test_restore_entity_errors(self):
+        self.client.force_authenticate(self.entity_writer)
+        active, _ = self._create_entity_with_instances()
+        response = self.client.post(f"/api/entities/{active.id}/restore/")
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        merged, _ = self._create_entity_with_instances()
+        merged.merged_to = active
+        merged.save()
+        merged.delete()
+        response = self.client.post(f"/api/entities/{merged.id}/restore/")
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        merged.refresh_from_db()
+        self.assertIsNotNone(merged.deleted_at)
+
+        response = self.client.post("/api/entities/999999999/restore/")
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+        # Other account
+        self.client.force_authenticate(
+            self.create_user_with_profile(
+                username="other_account_writer",
+                account=self.yop_solo.iaso_profile.account,
+                permissions=[CORE_ENTITIES_PERMISSION, CORE_ENTITIES_WRITE_PERMISSION],
+            )
+        )
+        deleted, _ = self._create_entity_with_instances()
+        deleted.delete()
+        response = self.client.post(f"/api/entities/{deleted.id}/restore/")
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)

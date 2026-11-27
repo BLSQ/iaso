@@ -3,7 +3,11 @@ import uuid
 from django.contrib.auth.models import AnonymousUser
 
 from iaso import models as m
-from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION, CORE_STORAGE_PERMISSION
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_PERMISSION,
+    CORE_ENTITIES_WRITE_PERMISSION,
+    CORE_STORAGE_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -39,6 +43,12 @@ class EntityAPITestCase(APITestCase):
 
         cls.user_without_ou = cls.create_user_with_profile(
             username="user_without_ou", account=cls.account, permissions=[CORE_ENTITIES_PERMISSION]
+        )
+
+        cls.entity_writer = cls.create_user_with_profile(
+            username="entity_writer",
+            account=cls.account,
+            permissions=[CORE_ENTITIES_PERMISSION, CORE_ENTITIES_WRITE_PERMISSION],
         )
 
         cls.form_1 = m.Form.objects.create(

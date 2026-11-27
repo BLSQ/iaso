@@ -4,6 +4,7 @@ const COMPLETENESS_STATS = 'iaso_completeness_stats';
 const DATA_DEVICES = 'iaso_data_devices';
 const DATA_TASKS = 'iaso_data_tasks';
 const ENTITIES = 'iaso_entities';
+const ENTITIES_WRITE = 'iaso_entities_write';
 const ENTITY_TYPE_WRITE = 'iaso_entity_type_write';
 const ENTITIES_DUPLICATE_READ = 'iaso_entity_duplicates_read';
 const ENTITIES_DUPLICATE_WRITE = 'iaso_entity_duplicates_write';
@@ -57,6 +58,7 @@ export {
     DATA_DEVICES,
     DATA_TASKS,
     ENTITIES,
+    ENTITIES_WRITE,
     ENTITIES_DUPLICATE_READ,
     ENTITIES_DUPLICATE_WRITE,
     ENTITY_TYPE_WRITE,

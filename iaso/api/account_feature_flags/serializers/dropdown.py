@@ -23,4 +23,4 @@ class AccountFeatureFlagDropdownSerializer(ModelSerializer):
             # which passes into the init and trigger a db query
             # On a db that has not been migrated yet, it crashes, and forbids any manage.py command to work properly then.
             # This is a dirty fix, proper fix would be to refactor account feature flag that should be a static list (like modules)
-            pass  # noqa
+            pass

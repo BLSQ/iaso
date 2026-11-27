@@ -407,9 +407,7 @@ class ProfilesViewSet(ModelViewSet):
     def list_export(
         queryset: "QuerySet[Profile]", file_format: FileFormatEnum
     ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [
-            {"title": column} for column in ["user_profile_id"] + BULK_CREATE_USER_COLUMNS_LIST + ["last_login_at"]
-        ]
+        columns = [{"title": column} for column in ["user_profile_id", *BULK_CREATE_USER_COLUMNS_LIST, "last_login_at"]]
 
         def get_row(profile: Profile, **_) -> list[Any]:
             org_units = profile.org_units.all()

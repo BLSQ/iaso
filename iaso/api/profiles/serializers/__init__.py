@@ -8,6 +8,6 @@ __all__ = [
     "ProfileCreateSerializer",
     "ProfileListSerializer",
     "ProfileRetrieveSerializer",
-    "ProfileUserFallbackRetrieveSerializer",
     "ProfileUpdateSerializer",
+    "ProfileUserFallbackRetrieveSerializer",
 ]

@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 import logging
 import uuid
 
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -195,11 +197,11 @@ class Modification(models.Model):
 
 def log_modification(
     # `v1` should be either a deepcopy or a serialized instance.
-    v1: Optional[Union[AnyModelInstance, list[dict[str, Any]]]],
-    v2: Optional[AnyModelInstance],
-    source: Optional[str],
-    user: User = None,
-    org_unit_change_request_id: int = None,
+    v1: AnyModelInstance | list[dict[str, Any]] | None = None,
+    v2: AnyModelInstance | None = None,
+    source: str | None = None,
+    user: User | None = None,
+    org_unit_change_request_id: int | None = None,
     save: bool = True,
 ) -> Modification:
     """

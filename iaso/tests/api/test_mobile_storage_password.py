@@ -24,10 +24,11 @@ class StorageAPITestCase(APITestCase):
         )
 
         cls.empire_password1 = StoragePassword.objects.create(
-            password="You don’t know the power of the dark side!", project=cls.empire
+            password="You don’t know the power of the dark side!",  # noqa: RUF001
+            project=cls.empire,
         )
         cls.empire_password2 = StoragePassword.objects.create(
-            password="I am altering the deal. Pray I don’t alter it any further.",
+            password="I am altering the deal. Pray I don’t alter it any further.",  # noqa: RUF001
             is_compromised=True,
             project=cls.empire,
         )

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import pathlib
 import typing
@@ -158,7 +160,7 @@ def to_questions_by_path(form_descriptor):
     return questions_by_path
 
 
-def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -> Survey:
+def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str | None = None) -> Survey:
     """Parse an ODK xls form file.
 
     :param xls_file: a named file-like object (a persistent file or a django uploaded file will do)
@@ -182,7 +184,7 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
     return Survey(survey, xls_file_name=xls_file.name)
 
 
-def _generate_form_version(previous_version: typing.Optional[str]) -> str:
+def _generate_form_version(previous_version: str | None) -> str:
     """Generate a form version in the yyyymmddrr format.
     If a previous version is provided, and is also in the yyyymmddrr, it will be used to check if we should increment
     the revision part(rr) or create a new revision for the day

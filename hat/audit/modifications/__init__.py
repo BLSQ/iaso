@@ -2,6 +2,6 @@ from hat.audit.modifications.values_serializer import ValuesSerializer, get_valu
 
 
 __all__ = [
-    "get_values_serializer",
     "ValuesSerializer",
+    "get_values_serializer",
 ]

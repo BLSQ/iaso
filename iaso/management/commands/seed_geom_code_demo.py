@@ -11,14 +11,14 @@ synchronisable field combination:
   A: polygon shift + code               shift polygon                 code updated
   B: polygon shift + name               shift polygon                 name suffix
   C: polygon shift + code + opening_date shift polygon                 code updated, opening_date +1y
-  C2: polygon shift only                shift polygon                 –
+  C2: polygon shift only                shift polygon                 -
   D: new polygon + code                 point → polygon                code updated
   E: new polygon + closing_date         point → polygon                closing_date +1y
-  F: code + name + opening_date         –                              code, name, opening_date
-  G: name only                          –                              name suffix
-  H: code only                          –                              code updated
-  I: null -> new polygon                null → new polygon             –
-  J: swapped codes (conflict)           –                              codes swapped between 2 org units
+  F: code + name + opening_date         -                              code, name, opening_date
+  G: name only                          -                              name suffix
+  H: code only                          -                              code updated
+  I: null -> new polygon                null → new polygon             -
+  J: swapped codes (conflict)           -                              codes swapped between 2 org units
 
 This simulates merging from multiple authoritative sources (DHIS2, EF, INS)
 across datasource boundaries. Configure the sync with:

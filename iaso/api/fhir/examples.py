@@ -221,9 +221,9 @@ def extract_location_hierarchy(bundle: dict) -> list[dict]:
         }
 
         # Extract type
-        if "type" in location and location["type"]:
+        if location.get("type"):
             type_info = location["type"][0]
-            if "coding" in type_info and type_info["coding"]:
+            if type_info.get("coding"):
                 loc_info["type"] = type_info["coding"][0]["display"]
 
         # Extract parent reference

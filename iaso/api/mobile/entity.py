@@ -182,7 +182,8 @@ class MobileEntitiesSetPagination(Paginator):
     cursor_model = "entities"
 
     def get_schema_operation_parameters(self, view):
-        return super().get_schema_operation_parameters(view) + [
+        return [
+            *super().get_schema_operation_parameters(view),
             {
                 "name": CURSOR,
                 "required": False,

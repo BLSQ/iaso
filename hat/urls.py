@@ -202,7 +202,8 @@ else:
         urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin
 
         if urls_module:
-            urlpatterns = urlpatterns + [
+            urlpatterns = [
+                *urlpatterns,
                 path(plugin_name + "/", include(urls_module_name)),
             ]
         else:
@@ -230,6 +231,6 @@ else:
     urlpatterns += static(settings.MEDIA_URL_PREFIX, document_root=settings.MEDIA_ROOT)
 
     if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:
-        urlpatterns = [path("__debug__/", include("debug_toolbar.urls"))] + urlpatterns
+        urlpatterns = [path("__debug__/", include("debug_toolbar.urls")), *urlpatterns]
 
     urlpatterns += get_sso_urlpatterns()

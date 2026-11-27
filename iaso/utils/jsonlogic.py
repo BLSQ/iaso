@@ -1,10 +1,12 @@
 """JsonLogic(https://jsonlogic.com/)-related utilities."""
 
+from __future__ import annotations
+
 import operator
 import re
 
 from collections.abc import Iterator
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 from django.db.models import Exists, OuterRef, Q, QuerySet, Transform
 from django.db.models.expressions import NegatedExpression
@@ -30,7 +32,7 @@ EXTENDED_OPERATOR_LOOKUPS = {
 JSON_ANNOTATED_FIELD_ALIAS = "json_annotated_field"
 
 
-def _extract_unary_var(operand: Any) -> Optional[str]:
+def _extract_unary_var(operand: Any) -> str | None:
     """Return the field name when operand is a bare JsonLogic var (query-builder is_empty / is_not_empty)."""
     if isinstance(operand, dict) and set(operand.keys()) == {"var"}:
         return operand["var"]
@@ -139,7 +141,7 @@ def annotate_suffixed_json_fields(
         return queryset, index
 
     if "some" in jsonlogic or "all" in jsonlogic or "none" in jsonlogic:
-        operator = list(jsonlogic.keys())[0]  # there's only 1 key
+        operator = next(iter(jsonlogic.keys()))  # there's only 1 key
         form_var, jsonlogic = jsonlogic[operator]
         field_name = form_var["var"]
         if "__" in field_name:
@@ -149,7 +151,7 @@ def annotate_suffixed_json_fields(
             index = index + 1
         return annotate_suffixed_json_fields(queryset, jsonlogic, json_field, index)
 
-    op = list(jsonlogic.keys())[0]
+    op = next(iter(jsonlogic.keys()))
     params = jsonlogic[op]
     field_name = extract_field_name(op, jsonlogic, params)
     if "__" in field_name:
@@ -162,7 +164,7 @@ def jsonlogic_to_q(
     jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
-    recursion_func: Callable = None,
+    recursion_func: Callable | None = None,
 ) -> tuple[Q, int]:
     """Converts a JsonLogic query to a Django Q object.
 
@@ -206,7 +208,7 @@ def jsonlogic_to_q(
         return Q(), index
 
     # Binary operators
-    op = list(jsonlogic.keys())[0]
+    op = next(iter(jsonlogic.keys()))
     params = jsonlogic[op]
     field_name = extract_field_name(op, jsonlogic, params)
     if "__" in field_name:
@@ -239,7 +241,7 @@ def instance_jsonlogic_to_q(
     jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
-    recursion_func: Callable = None,
+    recursion_func: Callable | None = None,
 ) -> tuple[Q, int]:
     """Converts a JsonLogic query to a Django Q object for filtering Instance objects.
 
@@ -466,7 +468,7 @@ def _handle_binary_operators(jsonlogic: dict[str, Any], field_prefix: str, index
     if not jsonlogic.keys():
         return Q(), index
 
-    op = list(jsonlogic.keys())[0]
+    op = next(iter(jsonlogic.keys()))
     params = jsonlogic[op]
 
     if len(params) != 2:
@@ -516,7 +518,7 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str, index
     if op not in COMPARISON_OPERATOR_LOOKUPS:
         raise ValueError(
             f"Unsupported JsonLogic (unknown operator {op}): {params}. "
-            f"Supported operators: {list(COMPARISON_OPERATOR_LOOKUPS.keys()) + ['in', 'some', 'all']}"
+            f"Supported operators: {[*list(COMPARISON_OPERATOR_LOOKUPS.keys()), 'in', 'some', 'all']}"
         )
 
     field = params[0]
@@ -593,7 +595,7 @@ def jsonlogic_to_exists_q_clauses(
     if not jsonlogic.keys():
         return Q()
 
-    op = list(jsonlogic.keys())[0]
+    op = next(iter(jsonlogic.keys()))
     params = jsonlogic[op]
 
     field_position = 1 if op == "in" else 0
@@ -622,7 +624,7 @@ def entities_jsonlogic_to_q(
     jsonlogic: dict[str, Any],
     field_prefix: str = "",
     index: int = 1,
-) -> tuple[Union[None, Exists, Q, NegatedExpression], int]:
+) -> tuple[None | Exists | Q | NegatedExpression, int]:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on
     the submitted values of their instances.
     It also converts a JsonLogic query to a Django Q object.
@@ -655,7 +657,7 @@ def entities_jsonlogic_to_q(
     from iaso.models import Instance
 
     if "some" in jsonlogic or "all" in jsonlogic or "none" in jsonlogic:
-        operator = list(jsonlogic.keys())[0]  # there's only 1 key
+        operator = next(iter(jsonlogic.keys()))  # there's only 1 key
         form_var, conditions = jsonlogic[operator]
         form_id = form_var["var"]
 

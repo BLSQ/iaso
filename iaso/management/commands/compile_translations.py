@@ -15,5 +15,5 @@ class Command(BaseCommand):
             call_command("compilemessages", *IGNORE_ARGS)
             self.stdout.write(self.style.SUCCESS("Successfully compiled all translation files!"))
         except CommandError as e:
-            self.stdout.write(self.style.ERROR(f"Error compiling translations: {str(e)}"))
+            self.stdout.write(self.style.ERROR(f"Error compiling translations: {e!s}"))
             raise

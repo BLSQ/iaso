@@ -144,7 +144,7 @@ def _build_query(params, start_id, end_id):
                 query_params.extend([f_name, f_name, f_name, f_name])
 
     fields_comparison = ", ".join(fc_arr)
-    query_params = [params.get("entity_type_id"), start_id, end_id] + query_params + [above_score_display]
+    query_params = [params.get("entity_type_id"), start_id, end_id, *query_params, above_score_display]
 
     return (
         query_params,

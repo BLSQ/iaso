@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from http import HTTPStatus
 from unittest import mock
 from uuid import uuid4
@@ -20,7 +22,9 @@ from iaso.permissions.core_permissions import (
 from iaso.test import APITestCase
 
 
-def create_form_instance(form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs):
+def create_form_instance(
+    form: m.Form | None = None, period: str | None = None, org_unit: m.OrgUnit | None = None, **kwargs
+):
     with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
         return m.Instance.objects.create(
             form=form, period=period, org_unit=org_unit, file=UploadedFile(xml_file), **kwargs

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import sys
@@ -23,7 +25,7 @@ class EnketoError(Exception):
     pass
 
 
-def enketo_settings(specific_env: str = None):
+def enketo_settings(specific_env: str | None = None):
     if specific_env:
         return django_settings.ENKETO.get(specific_env, None)
     return django_settings.ENKETO

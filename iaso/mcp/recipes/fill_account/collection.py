@@ -434,7 +434,7 @@ def ensure_entities_and_instances(
     created = sum(1 for action in actions if action["op"] == "create")
     return {
         "created": 0 if dry_run else created,
-        "planned": created if dry_run else created,
+        "planned": created,
         "skipped": 0,
         "failed": failed,
         "actions": actions,

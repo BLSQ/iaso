@@ -1825,7 +1825,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response = self.client.get("/api/instances/?limit=100")
         j = self.assertJSONResponse(response, status.HTTP_200_OK)
 
-        json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
+        json_instance = next(filter(lambda x: x["id"] == instance.id, j["instances"]))
         self.assertEqual(json_instance["is_locked"], True)
 
     def test_lock_scenario(self):
@@ -1938,7 +1938,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         # check from list view
         response = self.client.get("/api/instances/?limit=100")
         j = self.assertJSONResponse(response, status.HTTP_200_OK)
-        json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
+        json_instance = next(filter(lambda x: x["id"] == instance.id, j["instances"]))
         self.assertEqual(json_instance["is_locked"], is_locked)
         self.assertEqual(json_instance["can_user_modify"], can_user_modify)
         self.assertEqual(json_instance["project_id"], self.project.id)

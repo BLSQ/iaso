@@ -29,10 +29,10 @@ class GroupNameNormalizationTest(TestCase):
         self.assertEqual(_safe_group_name('say "hello"'), "say__hello")
 
     def test_safe_group_name_en_dash(self):
-        self.assertEqual(_safe_group_name("Nord–Sud"), "nord_sud")
+        self.assertEqual(_safe_group_name("Nord–Sud"), "nord_sud")  # noqa: RUF001
 
     def test_safe_group_name_non_breaking_space(self):
-        self.assertEqual(_safe_group_name("Nord Sud"), "nord_sud")
+        self.assertEqual(_safe_group_name("Nord Sud"), "nord_sud")  # noqa: RUF001
 
     def test_safe_group_name_ellipsis(self):
         self.assertEqual(_safe_group_name("etc…end"), "etc_end")

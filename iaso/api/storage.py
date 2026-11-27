@@ -176,7 +176,10 @@ class StorageSerializerWithLogs(StorageSerializer):
     logs: Field = StorageLogSerializer(many=True, source="filtered_log_entries")
 
     class Meta(StorageSerializer.Meta):
-        fields = StorageSerializer.Meta.fields + ("logs",)
+        fields = (
+            *StorageSerializer.Meta.fields,
+            "logs",
+        )
 
 
 class StorageSerializerWithPaginatedLogs(StorageSerializerWithLogs):

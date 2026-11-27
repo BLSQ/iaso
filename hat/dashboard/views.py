@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import wraps
 
 from django.conf import settings
@@ -19,7 +21,7 @@ def _get_domain_from_request(request: HttpRequest) -> str:
     return request.get_host().split(":")[0]
 
 
-def _base_iaso(request: HttpRequest, analytics_data: dict = None) -> HttpResponse:
+def _base_iaso(request: HttpRequest, analytics_data: dict | None = None) -> HttpResponse:
     try:
         USER_HOME_PAGE = request.user.iaso_profile.home_page if request.user.is_authenticated else ""
     except ObjectDoesNotExist:

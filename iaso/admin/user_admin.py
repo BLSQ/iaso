@@ -61,8 +61,8 @@ class IsMultiAccountMainUserFilter(admin.SimpleListFilter):
 
 
 class UserAdmin(AuthUserAdmin):
-    list_display = ("id",) + AuthUserAdmin.list_display + ("is_account_user", "is_account_main_user", "accounts")
-    list_filter = (IsMultiAccountUserFilter, IsMultiAccountMainUserFilter) + AuthUserAdmin.list_filter
+    list_display = ("id", *AuthUserAdmin.list_display, "is_account_user", "is_account_main_user", "accounts")
+    list_filter = (IsMultiAccountUserFilter, IsMultiAccountMainUserFilter, *AuthUserAdmin.list_filter)
     list_display_links = ("id", "username")
     ordering = ("-id",)
 
@@ -167,7 +167,7 @@ class UserAdmin(AuthUserAdmin):
 
     def _create_new_account_user_for(self, user, account):
         return User.objects.create(
-            username=f"{user.username}_account_{str(account.id)}",
+            username=f"{user.username}_account_{account.id!s}",
             first_name=user.first_name,
             last_name=user.last_name,
             email=user.email,

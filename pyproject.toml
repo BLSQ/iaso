@@ -175,7 +175,7 @@ select = [
     # "G",   # flake8-logging-format
     # "PT",  # flake8-pytest-style
     # "PTH", # flake8-use-pathlib
-    # "RUF", # ruff-specific rules
+     "RUF", # ruff-specific rules
     # "TCH", # flake8-type-checking
     # "TRY", # tryceratops
 ]
@@ -241,6 +241,7 @@ ignore = [
     # flake8-return (RET).
     "RET503",  # implicit-return
     "RET504",  # unnecessary-assign
+    "RUF012", # mutable-class-default does not play nicely with django atm
     # flake8-simplify (SIM).
     "SIM102",  # collapsible-if
     "SIM103",  # needless-bool

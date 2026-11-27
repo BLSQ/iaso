@@ -488,7 +488,7 @@ class Command(BaseCommand):
                 for obj in exc.protected_objects:
                     blocking_pks_by_model[type(obj)].append(obj.pk)
                 for blocker_model, pks in blocking_pks_by_model.items():
-                    self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label}")
+                    self._log(f"  [auto-unblock] {blocker_model.__name__} x{len(pks)} blocking {label}")
                     self._delete_with_protect_retries(
                         blocker_model.objects.filter(pk__in=pks),
                         label=f"{blocker_model.__name__}[unblock]",
@@ -565,7 +565,7 @@ class Command(BaseCommand):
                 for obj in exc.protected_objects:
                     blocking_pks_by_model[type(obj)].append(obj.pk)
                 for blocker_model, pks in blocking_pks_by_model.items():
-                    self._log(f"  [auto-unblock] {blocker_model.__name__} ×{len(pks)} blocking {label} (collect phase)")
+                    self._log(f"  [auto-unblock] {blocker_model.__name__} x{len(pks)} blocking {label} (collect phase)")
                     self._delete_with_protect_retries(
                         blocker_model.objects.filter(pk__in=pks), label=f"{blocker_model.__name__}[unblock]"
                     )

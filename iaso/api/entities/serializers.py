@@ -62,7 +62,7 @@ class EntityExportSerializer(serializers.ModelSerializer):
             data[header] = value
 
         if "entity_type_columns" in self.context:
-            json_data = instance.attributes and instance.attributes.json or {}
+            json_data = (instance.attributes and instance.attributes.json) or {}
 
             for column in self.context["entity_type_columns"]:
                 data[column["label"]] = json_data.get(column["name"], "")

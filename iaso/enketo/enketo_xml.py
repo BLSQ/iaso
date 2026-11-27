@@ -107,9 +107,9 @@ def inject_instance_id_in_form(xml_str, instance_id):
     root.set("iasoInstance", str(instance_id))
 
     head = root[0]
-    model = [c for c in head if c.tag == "{http://www.w3.org/2002/xforms}model"][0]
-    instance = [c for c in model if c.tag == "{http://www.w3.org/2002/xforms}instance"][0]
-    data = [c for c in instance if c.tag == "{http://www.w3.org/2002/xforms}data"][0]
+    model = next(c for c in head if c.tag == "{http://www.w3.org/2002/xforms}model")
+    instance = next(c for c in model if c.tag == "{http://www.w3.org/2002/xforms}instance")
+    data = next(c for c in instance if c.tag == "{http://www.w3.org/2002/xforms}data")
 
     instance_id_tags = [c for c in data if c.tag == "iasoInstanceId"]
     if len(instance_id_tags) > 0:

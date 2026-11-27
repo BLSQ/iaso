@@ -18,7 +18,7 @@ class TestValidationWorkflow(TransactionTestCase):
         sentences = [
             ["éééééééééééééöööööööööööööööööööööµ", "eeeeeeeeeeeeeooooooooooooooooooooou"],
             ["Ангажимент към околната среда", "angazhiment-km-okolnata-sreda"],
-            ["Το ρολόι είναι δώρο", "to-roloi-einai-doro"],
+            ["Το ρολόι είναι δώρο", "to-roloi-einai-doro"],  # noqa: RUF001
         ]
         account = Account.objects.create(name="test")
         for sentence in sentences:

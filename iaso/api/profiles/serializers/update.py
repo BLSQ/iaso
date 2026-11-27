@@ -67,7 +67,8 @@ class ProfileUpdateSerializer(BaseProfileUpdateSerializer):
 
     class Meta(BaseProfileUpdateSerializer.Meta):
         model = Profile
-        fields = BaseProfileUpdateSerializer.Meta.fields + [
+        fields = [
+            *BaseProfileUpdateSerializer.Meta.fields,
             "organization",
             "user_name",
             "color",

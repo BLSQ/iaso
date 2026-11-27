@@ -22,7 +22,8 @@ class Command(BaseCommand):
             "--extension=html",
             "--verbosity=0",  # Ensure detailed output
             "--add-location=file",
-        ] + IGNORE_ARGS
+            *IGNORE_ARGS,
+        ]
 
         try:
             self.stdout.write(self.style.SUCCESS("Starting translation process..."))  # Log start
@@ -30,7 +31,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Translation process completed successfully."))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"Error during translation process: {str(e)}"))  # Log error
+            self.stdout.write(self.style.ERROR(f"Error during translation process: {e!s}"))  # Log error
             self.stdout.write("Continuing despite error...")
 
         # Check which .po files were modified

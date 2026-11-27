@@ -17,7 +17,7 @@ def create_forms_and_entities(iaso_client):
 
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
-    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
+    hf_out = next(out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF")
 
     # create registration form form
     reg_form_data = {
@@ -211,7 +211,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
 def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
     print("-- Setting up entity")
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/?fields=id,name")["orgUnitTypes"]
-    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
+    hf_out = next(out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF")
 
     # fetch orgunit ids
     limit = 20

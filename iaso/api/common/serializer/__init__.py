@@ -11,11 +11,11 @@ from .misc import (
 
 __all__ = [
     "BulkUpdateListSerializer",
-    "ListQueryOptimizedSerializer",
     "DropdownOptionsSerializer",
     "DropdownOptionsWithRepresentationSerializer",
-    "ModelSerializer",
     "JsonPatchOperationSerializer",
-    "UserSerializer",
+    "ListQueryOptimizedSerializer",
+    "ModelSerializer",
     "UserRoleNameSerializer",
+    "UserSerializer",
 ]

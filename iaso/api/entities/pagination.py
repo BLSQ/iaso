@@ -112,14 +112,14 @@ class EntityCursorPagination(CursorPagination):
             )
         )
 
-    def get_ordering(self, request, queryset, view):
+    def get_ordering(self, request, queryset, view) -> tuple[str]:
         """Always ensure a unique tie-breaker pk is present in the ordering."""
         ordering = super().get_ordering(request, queryset, view)
         if isinstance(ordering, str):
             ordering = (ordering,)
 
         if not any(f.lstrip("-") in ("id", "pk") for f in ordering):
-            ordering = ordering + ("id",)
+            ordering = (*ordering, "id")
 
         return tuple(ordering)
 

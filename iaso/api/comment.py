@@ -41,7 +41,7 @@ class ContentTypeField(RelatedField):
 
 class UserSerializerForComment(UserSerializer):
     class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + ["id"]
+        fields = [*UserSerializer.Meta.fields, "id"]
         ref_name = "comment_user_serializer"
 
 

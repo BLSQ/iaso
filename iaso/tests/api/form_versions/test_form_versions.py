@@ -563,7 +563,7 @@ class FormVersionsMultiProjectTest(APITestCase):
     """IA-5214 — form assigned to multiple projects within the same account.
 
     The get_queryset authenticated path filters via form__projects__account, which is a
-    JOIN that produces one row per (form_version × project).  For a form in N projects
+    JOIN that produces one row per (form_version x project).  For a form in N projects
     this inflates the result set N-fold.  The Count("mapping_versions") annotation
     happens to collapse the duplicates via its implicit GROUP BY, but that is an
     accidental side-effect, not an intentional fix.
@@ -616,7 +616,7 @@ class FormVersionsMultiProjectTest(APITestCase):
         """The account filter in get_queryset must not produce duplicate form version rows.
 
         The previous implementation used filter(form__projects__account=…), a JOIN that
-        yields one row per (form_version × project) pair.  For a form in N projects the
+        yields one row per (form_version x project) pair.  For a form in N projects the
         result set is N-fold inflated before the Count annotation's implicit GROUP BY
         collapses it.  The Exists-based fix avoids the row inflation at source.
 

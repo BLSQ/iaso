@@ -30,7 +30,7 @@ class NestedHistorySerializer(ModelSerializer):
             "created_by",
         ]
 
-    @extend_schema_field(serializers.ChoiceField(choices=list(MOBILE_STATUS_TO_COLOR.values()) + [DEFAULT_COLOR]))
+    @extend_schema_field(serializers.ChoiceField(choices=[*list(MOBILE_STATUS_TO_COLOR.values()), DEFAULT_COLOR]))
     def get_color(self, obj):
         return MOBILE_STATUS_TO_COLOR.get(obj.status, DEFAULT_COLOR)
 

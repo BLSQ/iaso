@@ -275,8 +275,8 @@ class ExternalTaskModelViewSet(ModelViewSet):
 
         if id_field:
             try:
-                id_field_key = list(id_field.keys())[0]
-                id_field_value = list(id_field.values())[0]
+                id_field_key = next(id_field.keys())
+                id_field_value = next(id_field.values())
             except:
                 logger.exception(f"Bad id_field configuration.Expected non-empty dict, got {id_field}")
                 return ERRORED

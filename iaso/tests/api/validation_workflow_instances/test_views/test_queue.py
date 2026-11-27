@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.db import connection
 from django.test import SimpleTestCase
 from django.test.utils import CaptureQueriesContext
-from django.urls import reverse
+from django.urls import reverse_lazy
 from django.utils import timezone
 from rest_framework import status
 
@@ -35,8 +35,8 @@ from iaso.permissions.core_permissions import (
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
 
-LIST_URL = reverse("validation_workflow_instances-list")
-COUNTS_URL = reverse("validation_workflow_instances-counts")
+LIST_URL = reverse_lazy("validation_workflow_instances-list")
+COUNTS_URL = reverse_lazy("validation_workflow_instances-counts")
 
 
 class ValidationWorkflowInstanceQueueTestCase(SwaggerTestCaseMixin, APITestCase):

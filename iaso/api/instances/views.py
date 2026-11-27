@@ -37,6 +37,7 @@ from iaso.api.common import (
     parse_comma_separated_numeric_values,
     safe_api_import,
 )
+from iaso.api.common.utils import comma_separated_names
 from iaso.api.instances.filters import get_form_from_instance_filters, parse_instance_filters
 from iaso.api.instances.import_cache import InstanceImportCache
 from iaso.api.instances.json import JsonbPathQueryFirst, JsonPathField, RegexpReplace
@@ -1044,10 +1045,6 @@ class InstancesViewSet(viewsets.ViewSet):
                 "Access-Control-Expose-Headers": "Content-Disposition",
             },
         )
-
-
-def comma_separated_names(value: Optional[str]) -> list[str]:
-    return [name.strip() for name in (value or "").split(",") if name.strip()]
 
 
 def parse_instance_filters_for_user(data, user) -> dict[str, Any]:

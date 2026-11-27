@@ -313,6 +313,9 @@ class ValidationWorkflowInstanceQueueTestCase(SwaggerTestCaseMixin, APITestCase)
         rejected_data = self.get_counts(self.validator, queue="rejected")
         self.assertIsNone(rejected_data["oldest_pending_since"])
 
+        res = self.client.get(COUNTS_URL, data={"queue": "unknown"})
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
         # the other filters apply to the counts
         other_form = Form.objects.create(name="other")
         data = self.get_counts(self.validator, forms=str(other_form.id))
@@ -451,7 +454,7 @@ class ValidationWorkflowInstanceQueueTestCase(SwaggerTestCaseMixin, APITestCase)
     # Queries, whatever the number of submissions (user permissions already loaded by a first request):
     #  list (5): 1 user org units, 1 count, 1 page (with the queue annotations),
     #            1 validation nodes (with user_can_act), 1 steps of the workflows (with their next steps)
-    #  counts (3): 1 user org units, 1 queue counts, 1 oldest pending date
+    #  counts (2): 1 user org units, 1 queue counts with the oldest pending date
     def create_started_instances(self, count):
         for index in range(count):
             instance = self.create_instance(reference=f"FAC-{index}")
@@ -474,7 +477,7 @@ class ValidationWorkflowInstanceQueueTestCase(SwaggerTestCaseMixin, APITestCase)
         self.assertEqual(self.assert_num_queries_do_not_grow(LIST_URL), 5)
 
     def test_counts_num_queries(self):
-        self.assertEqual(self.assert_num_queries_do_not_grow(COUNTS_URL), 3)
+        self.assertEqual(self.assert_num_queries_do_not_grow(COUNTS_URL), 2)
 
 
 class ComputeStepPositionsTestCase(SimpleTestCase):

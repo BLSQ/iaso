@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import (
     BooleanField,
@@ -39,7 +40,15 @@ from iaso.api.validation_workflow_instances.permissions import (
 from iaso.api.validation_workflow_instances.serializers.counts import ValidationWorkflowInstanceCountsSerializer
 from iaso.api.validation_workflow_instances.serializers.list import ValidationWorkflowInstanceListSerializer
 from iaso.api.validation_workflow_instances.serializers.retrieve import ValidationWorkflowInstanceRetrieveSerializer
-from iaso.models import Instance, OrgUnit, UserRole, ValidationNode, ValidationNodeTemplate
+from iaso.models import (
+    Form,
+    Instance,
+    OrgUnit,
+    UserRole,
+    ValidationNode,
+    ValidationNodeTemplate,
+    ValidationWorkflow,
+)
 from iaso.models.common import ValidationWorkflowArtefactStatus
 from iaso.models.validation_workflow.validation_node import ValidationNodeStatus
 from iaso.modules import MODULE_VALIDATION_WORKFLOW
@@ -254,15 +263,20 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
         # A single annotation: an F() alias of it would make the database run the subquery a second time per row
         return qs.annotate(last_updated=last_updated_query)
 
+    @staticmethod
+    def _defer_all_but(path, model, kept_fields):
+        """Fields of a related model to defer: only `kept_fields` are loaded."""
+        return [f"{path}__{field.name}" for field in model._meta.concrete_fields if field.name not in kept_fields]
+
     def _prefetch_for_list(self, qs):
+        # only the columns used by the list serializer: the same form (with all its questions in `possible_fields`)
+        # would otherwise be loaded again with every submission of the page
         deferred_fields = [
-            f"org_unit__{field.name}"
-            for field in OrgUnit._meta.concrete_fields
-            if field.name not in ["id", "name", "parent"]
-        ] + [
-            f"org_unit__parent__{field.name}"
-            for field in OrgUnit._meta.concrete_fields
-            if field.name not in ["id", "name"]
+            *self._defer_all_but("org_unit", OrgUnit, ["id", "name", "parent"]),
+            *self._defer_all_but("org_unit__parent", OrgUnit, ["id", "name"]),
+            *self._defer_all_but("form", Form, ["id", "name", "label_keys", "non_pii_fields", "validation_workflow"]),
+            *self._defer_all_but("form__validation_workflow", ValidationWorkflow, ["id", "name"]),
+            *self._defer_all_but("created_by", User, ["id", "username", "first_name", "last_name"]),
         ]
 
         # whether the user can complete each step, computed in SQL with the same rule as the queues
@@ -308,17 +322,22 @@ class ValidationWorkflowInstanceViewSet(RetrieveModelMixin, CustomPaginationList
         """
         queryset = self.get_queryset()
 
+        # validates all the params (queue included), the queue is then applied in the aggregate only
+        filterset = self.filterset_class(request.query_params, queryset=queryset, request=request)
+        if not filterset.is_valid():
+            raise ValidationError(filterset.errors)
+        queue = filterset.form.cleaned_data.get("queue")
+
         params_without_queue = request.query_params.copy()
         params_without_queue.pop("queue", None)
         counts_qs = self._filter_queryset_with_params(queryset, params_without_queue)
 
-        # each submission comes once in the queryset, so no COUNT(DISTINCT) needed
+        # a single query: each queue is a condition on the annotations, so the oldest pending date of the selected
+        # queue is computed with the counts (each submission comes once in the queryset: no COUNT(DISTINCT) needed)
         aggregates = {"all": Count("pk")}
-        for queue, queue_filter in QUEUE_FILTERS.items():
-            aggregates[queue] = Count("pk", filter=queue_filter)
+        for queue_name, queue_filter in QUEUE_FILTERS.items():
+            aggregates[queue_name] = Count("pk", filter=queue_filter)
+        aggregates["oldest_pending_since"] = Min("pending_since", filter=QUEUE_FILTERS[queue] if queue else None)
         counts = counts_qs.aggregate(**aggregates)
-
-        queue_qs = self._filter_queryset_with_params(queryset, request.query_params)
-        counts["oldest_pending_since"] = queue_qs.aggregate(oldest=Min("pending_since"))["oldest"]
 
         return Response(self.get_serializer(counts).data)

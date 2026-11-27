@@ -696,6 +696,22 @@ msgstr "Impossible de créer une boucle dans l’arborescence des équipes"
 msgid "Org unit IDs (comma-separated)"
 msgstr "IDs des unités organisationnelles (séparés par des virgules)"
 
+#: iaso/api/validation_workflow_instances/filters.py
+msgid "Awaiting my action"
+msgstr "En attente de mon action"
+
+#: iaso/api/validation_workflow_instances/filters.py
+msgid "Awaiting others"
+msgstr "En attente des autres"
+
+#: iaso/api/validation_workflow_instances/filters.py
+msgid "Handled by me"
+msgstr "Traités par moi"
+
+#: iaso/api/validation_workflow_instances/filters.py
+msgid "Validation queue"
+msgstr "File de validation"
+
 #: iaso/api/validation_workflows_node_templates/serializers/update.py
 msgid "The first step can't skip previous steps."
 msgstr "La première étape ne peut pas ignorer les étapes précédentes."

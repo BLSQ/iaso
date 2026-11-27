@@ -21,13 +21,8 @@ def compute_step_positions(node_templates) -> dict[int, int]:
     Workflows are linear (one starting step, one next step each): the numbering stops at anything else
     (several starting steps, a branch or a cycle) rather than showing misleading positions.
     """
-    next_ids = {}
-    for node_template in node_templates:
-        # aggregated by the list view, so the graph is read without a query per step
-        aggregated_ids = getattr(node_template, "next_node_template_ids", None)
-        if aggregated_ids is None:
-            aggregated_ids = [next_node.pk for next_node in node_template.next_node_templates.all()]
-        next_ids[node_template.pk] = list(aggregated_ids)
+    # `next_node_template_ids` is aggregated by the list view, so the chain is read without a query per step
+    next_ids = {node_template.pk: list(node_template.next_node_template_ids) for node_template in node_templates}
 
     steps_with_previous = {pk for next_pks in next_ids.values() for pk in next_pks}
     starting_steps = [pk for pk in next_ids if pk not in steps_with_previous]
@@ -107,6 +102,11 @@ class LastUserActionSerializer(serializers.Serializer):
 
 
 class ValidationWorkflowInstanceListSerializer(ModelSerializer):
+    """
+    Needs the queryset of ValidationWorkflowInstanceViewSet (list action): its annotations (annotate_*, pending_since,
+    last_updated) and prefetches (validation nodes with annotate_user_can_act, steps with next_node_template_ids).
+    """
+
     project = ProjectNestedSerializer(read_only=True)
     org_unit = OrgUnitNestedSerializer(read_only=True, allow_null=True)
     user_has_been_involved = serializers.BooleanField(read_only=True, source="annotate_user_has_been_involved")
@@ -169,10 +169,8 @@ class ValidationWorkflowInstanceListSerializer(ModelSerializer):
             return {}
         cache = self.context.setdefault("step_positions_by_workflow", {})
         if workflow.pk not in cache:
-            node_templates = getattr(workflow, "prefetched_node_templates", None)
-            if node_templates is None:
-                node_templates = workflow.node_templates.prefetch_related("next_node_templates")
-            cache[workflow.pk] = compute_step_positions(node_templates)
+            # prefetched by the list view, with the ids of their next steps
+            cache[workflow.pk] = compute_step_positions(workflow.prefetched_node_templates)
         return cache[workflow.pk]
 
     def _get_latest_submission_node(self, obj: Instance):

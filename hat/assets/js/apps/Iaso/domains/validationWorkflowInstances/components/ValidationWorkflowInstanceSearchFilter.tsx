@@ -1,129 +1,148 @@
-import React from 'react';
-import Box from '@mui/material/Box/Box';
-import Grid from '@mui/material/Grid/Grid';
-import InputComponent from 'Iaso/components/forms/InputComponent';
-import { SearchButton } from 'Iaso/components/SearchButton';
-import { ValidationWorkflowDropdown } from 'Iaso/components/validationWorkflows/ValidationWorkflowDropdown';
+import React, { useCallback, useMemo } from 'react';
+import { FiltersPanel, useRedirectTo } from 'bluesquare-components';
+import type {
+    FilterFieldDescriptor,
+    FilterFieldRenderContext,
+    FilterValues,
+} from 'bluesquare-components';
+import { useApiValidationWorkflowsDropdownList } from 'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows';
 import { baseUrls } from 'Iaso/constants/urls';
 import { useGetFormsDropdownOptions } from 'Iaso/domains/forms/hooks/useGetFormsDropdownOptions';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetMultipleOrgUnits } from 'Iaso/domains/orgUnits/components/TreeView/requests';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { useGetProjectsDropdownOptions } from 'Iaso/domains/projects/hooks/requests';
-import { useGetRequiresUserActionOptions } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetRequiresUserActionOptions';
 import { UseGetValidationWorkflowInstanceSearchProps } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceSearch';
 import { useGetValidationWorkflowInstanceStatuses } from 'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceStatuses';
 import MESSAGES from 'Iaso/domains/validationWorkflowInstances/messages';
-import {
-    useFilterState,
-    useMultiTreeviewFilterState,
-} from 'Iaso/hooks/useFilterState';
 
 const baseUrl = baseUrls.validationWorkflowInstances;
+
+const toUrlParam = (
+    value?: string | (string | number)[],
+): string | undefined => {
+    if (Array.isArray(value)) {
+        return value.length ? value.join(',') : undefined;
+    }
+    return value || undefined;
+};
 
 export const ValidationWorkflowInstanceSearchFilter = ({
     params,
 }: {
     params: UseGetValidationWorkflowInstanceSearchProps['params'];
 }) => {
-    const { filters, filtersUpdated, handleChange, handleSearch } =
-        useFilterState({ baseUrl, params, withPagination: true });
+    const redirectTo = useRedirectTo();
     const { data: formsList, isFetching: isFetchingForms } =
         useGetFormsDropdownOptions();
-    const statusOptions = useGetValidationWorkflowInstanceStatuses();
-    const requiresUserActionOptions = useGetRequiresUserActionOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+    const { data: workflows, isFetching: isFetchingWorkflows } =
+        useApiValidationWorkflowsDropdownList();
+    const statusOptions = useGetValidationWorkflowInstanceStatuses();
+    // the org units are stored as ids in the url, the chips need their names
+    const { data: selectedOrgUnits } = useGetMultipleOrgUnits(params.org_unit);
 
-    const { initialOrgUnits, handleOrgUnitChange } =
-        useMultiTreeviewFilterState({
-            paramIds: params.org_unit,
-            handleChange,
-        });
+    const values: FilterValues = useMemo(
+        () => ({
+            validation_workflows: params.validation_workflows,
+            status: params.status,
+            forms: params.forms,
+            projects: params.projects,
+            org_unit: params.org_unit ? selectedOrgUnits : undefined,
+        }),
+        [params, selectedOrgUnits],
+    );
+
+    const handleApply = useCallback(
+        (next: FilterValues) => {
+            redirectTo(baseUrl, {
+                ...params,
+                page: '1',
+                validation_workflows: toUrlParam(next.validation_workflows),
+                status: next.status || undefined,
+                forms: toUrlParam(next.forms),
+                projects: toUrlParam(next.projects),
+                org_unit: toUrlParam(
+                    (next.org_unit as OrgUnit[] | undefined)?.map(
+                        orgUnit => orgUnit.id,
+                    ),
+                ),
+            });
+        },
+        [params, redirectTo],
+    );
+
+    const fields: FilterFieldDescriptor[] = useMemo(
+        () => [
+            {
+                key: 'validation_workflows',
+                label: MESSAGES.validationWorkflows,
+                type: 'select',
+                multi: true,
+                clearable: true,
+                options: workflows ?? [],
+                loading: isFetchingWorkflows,
+            },
+            {
+                key: 'forms',
+                label: MESSAGES.forms,
+                type: 'select',
+                multi: true,
+                clearable: true,
+                options: formsList ?? [],
+                loading: isFetchingForms,
+            },
+            {
+                key: 'org_unit',
+                label: MESSAGES.orgUnits,
+                type: 'custom',
+                isActive: (value?: OrgUnit[]) => Boolean(value?.length),
+                formatValue: (value?: OrgUnit[]) =>
+                    value?.map(orgUnit => orgUnit.name),
+                renderCustom: ({
+                    value,
+                    onChange,
+                }: FilterFieldRenderContext) => (
+                    <OrgUnitTreeviewModal
+                        titleMessage={MESSAGES.orgUnits}
+                        onConfirm={(orgUnits?: OrgUnit[]) =>
+                            onChange(orgUnits?.length ? orgUnits : undefined)
+                        }
+                        initialSelection={value}
+                        multiselect
+                    />
+                ),
+            },
+            {
+                key: 'status',
+                label: MESSAGES.status,
+                type: 'select',
+                clearable: true,
+                options: statusOptions,
+            },
+            {
+                key: 'projects',
+                label: MESSAGES.projects,
+                type: 'select',
+                multi: true,
+                clearable: true,
+                options: allProjects ?? [],
+                loading: isFetchingProjects,
+            },
+        ],
+        [
+            workflows,
+            isFetchingWorkflows,
+            formsList,
+            isFetchingForms,
+            statusOptions,
+            allProjects,
+            isFetchingProjects,
+        ],
+    );
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                    <ValidationWorkflowDropdown
-                        keyValue={'validation_workflows'}
-                        label={MESSAGES.validationWorkflows}
-                        onChange={handleChange}
-                        value={filters.validation_workflows}
-                        clearable
-                        multi
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        type={'select'}
-                        keyValue={'status'}
-                        label={MESSAGES.status}
-                        options={statusOptions}
-                        onChange={handleChange}
-                        value={filters.status}
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        keyValue="forms"
-                        onChange={handleChange}
-                        value={filters.forms}
-                        type="select"
-                        options={formsList}
-                        label={MESSAGES.forms}
-                        loading={isFetchingForms}
-                        onEnterPressed={handleSearch}
-                        clearable
-                        multi
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        type={'select'}
-                        options={requiresUserActionOptions}
-                        keyValue={'requires_user_action'}
-                        value={filters.requires_user_action}
-                        label={MESSAGES.requiresUserAction}
-                        onChange={handleChange}
-                        clearable
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        keyValue="projects"
-                        onChange={handleChange}
-                        value={filters.projects}
-                        type="select"
-                        options={allProjects}
-                        label={MESSAGES.projects}
-                        loading={isFetchingProjects}
-                        onEnterPressed={handleSearch}
-                        clearable
-                        multi
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <Box mb={1}>
-                        <OrgUnitTreeviewModal
-                            titleMessage={MESSAGES.orgUnits}
-                            onConfirm={handleOrgUnitChange}
-                            initialSelection={initialOrgUnits}
-                            multiselect
-                        />
-                    </Box>
-                </Grid>
-                <Grid
-                    item
-                    xs={12}
-                    justifyContent={'flex-end'}
-                    display={'flex'}
-                    spacing={2}
-                >
-                    <SearchButton
-                        disabled={!filtersUpdated}
-                        onSearch={handleSearch}
-                    />
-                </Grid>
-            </Grid>
-        </>
+        <FiltersPanel fields={fields} values={values} onApply={handleApply} />
     );
 };

@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     title: {
         id: 'iaso.workflows.instance.title',
-        defaultMessage: 'Validation workflows related submissions',
+        defaultMessage: 'Validation',
     },
     status: {
         id: 'iaso.workflows.instance.status.label',
@@ -82,6 +82,81 @@ const MESSAGES = defineMessages({
     orgUnit: {
         defaultMessage: 'Org unit',
         id: 'iaso.label.orgUnitSingle',
+    },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.workflows.instance.submission',
+    },
+    submittedBy: {
+        defaultMessage: 'Submitted by',
+        id: 'iaso.workflows.instance.submittedBy',
+    },
+    queueAll: {
+        defaultMessage: 'All',
+        id: 'iaso.workflows.instance.queue.all',
+    },
+    queueAwaitingMyAction: {
+        defaultMessage: 'Awaiting my action',
+        id: 'iaso.workflows.instance.queue.awaitingMyAction',
+    },
+    queueAwaitingOthers: {
+        defaultMessage: 'Awaiting others',
+        id: 'iaso.workflows.instance.queue.awaitingOthers',
+    },
+    queueHandledByMe: {
+        defaultMessage: 'Handled by me',
+        id: 'iaso.workflows.instance.queue.handledByMe',
+    },
+    queueRejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.workflows.instance.queue.rejected',
+    },
+    oldestWaiting: {
+        defaultMessage:
+            'oldest waiting {days, plural, =0 {less than a day} one {# day} other {# days}}',
+        id: 'iaso.workflows.instance.oldestWaiting',
+    },
+    step: {
+        defaultMessage: 'Step {position} / {count}',
+        id: 'iaso.workflows.instance.step',
+    },
+    waitingOnYou: {
+        defaultMessage:
+            'Waiting on you · {days, plural, =0 {today} one {# day} other {# days}}',
+        id: 'iaso.workflows.instance.waitingOnYou',
+    },
+    waitingOnOthers: {
+        defaultMessage:
+            'Waiting on others · {days, plural, =0 {today} one {# day} other {# days}}',
+        id: 'iaso.workflows.instance.waitingOnOthers',
+    },
+    youApprovedStep: {
+        defaultMessage: 'You approved step {position} on {date}',
+        id: 'iaso.workflows.instance.youApprovedStep',
+    },
+    youRejectedStep: {
+        defaultMessage: 'You rejected step {position} on {date}',
+        id: 'iaso.workflows.instance.youRejectedStep',
+    },
+    youApprovedNamedStep: {
+        defaultMessage: 'You approved "{name}" on {date}',
+        id: 'iaso.workflows.instance.youApprovedNamedStep',
+    },
+    youRejectedNamedStep: {
+        defaultMessage: 'You rejected "{name}" on {date}',
+        id: 'iaso.workflows.instance.youRejectedNamedStep',
+    },
+    resubmittedAfterRejection: {
+        defaultMessage: 'Resubmitted after rejection',
+        id: 'iaso.workflows.instance.resubmittedAfterRejection',
+    },
+    review: {
+        defaultMessage: 'Review',
+        id: 'iaso.workflows.instance.review',
+    },
+    viewOrgUnit: {
+        defaultMessage: 'View org unit',
+        id: 'iaso.workflows.instance.viewOrgUnit',
     },
 });
 

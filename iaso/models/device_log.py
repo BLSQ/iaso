@@ -13,3 +13,6 @@ class DeviceLog(models.Model):
     app_version = models.CharField(max_length=25)
     created_at = models.DateTimeField(auto_now_add=True)
     projects = models.ManyToManyField("Project", related_name="device_logs", blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.device} - {self.created_at:%Y-%m-%d %H:%M:%S}"

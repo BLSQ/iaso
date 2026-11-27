@@ -42,3 +42,6 @@ class BulkCreateUserFile(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.file.name} ({self.created_at:%Y-%m-%d %H:%M:%S})"

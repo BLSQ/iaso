@@ -687,6 +687,9 @@ class OrgUnitReferenceInstance(models.Model):
         # Only one `instance` by pair of org_unit/form.
         unique_together = ("org_unit", "form")
 
+    def __str__(self) -> str:
+        return f"{self.org_unit} - {self.form}"
+
 
 class OrgUnitChangeRequestQuerySet(models.QuerySet):
     def exclude_soft_deleted_new_reference_instances(self):

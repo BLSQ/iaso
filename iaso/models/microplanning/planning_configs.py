@@ -39,14 +39,14 @@ class PlanningConfig(models.Model):
             ),
         ]
 
+    def __str__(self) -> str:
+        return _("Planning Config for planning {planning} at level {level}").format(
+            level=self.level, planning=self.planning
+        )
+
     def get_related_teams(self) -> TeamQuerySet:
         return (
             Team.objects.filter_for_account(account=self.planning.project.account)
             .annotate_with_depth()
             .filter(depth__lte=self.level)
-        )
-
-    def __str__(self):
-        return _("Planning Config for planning {planning} at level {level}").format(
-            level=self.level, planning=self.planning
         )

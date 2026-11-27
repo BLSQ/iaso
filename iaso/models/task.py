@@ -197,6 +197,9 @@ class TaskLog(models.Model):
     message = models.TextField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self) -> str:
+        return f"{self.task} - {self.created_at}"
+
     def save(self, *args, **kwargs):
         if self.id:
             raise ValueError("Cannot update a TaskLog")

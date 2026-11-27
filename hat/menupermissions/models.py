@@ -45,3 +45,6 @@ class CustomPermissionSupport(models.Model):
         # will be performed for this model.
 
         permissions = ()
+
+    def __str__(self) -> str:
+        return f"CustomPermissionSupport ({self.pk})"

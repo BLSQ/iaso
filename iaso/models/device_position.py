@@ -22,6 +22,9 @@ class DevicePosition(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self) -> str:
+        return str(self.uuid) + " - " + str(self.device)
+
     @property
     def latitude(self) -> Optional[float]:
         return self.location.y if self.location is not None else None
@@ -33,6 +36,3 @@ class DevicePosition(models.Model):
     @property
     def altitude(self) -> Optional[float]:
         return self.location.z if self.location is not None else None
-
-    def __str__(self) -> str:
-        return str(self.uuid) + " - " + str(self.device)

@@ -163,6 +163,9 @@ class WorkflowFollowup(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self) -> str:
+        return f"{self.workflow_version} - Follow-up {self.order}"
+
 
 class WorkflowChange(models.Model):
     form = models.ForeignKey("iaso.Form", on_delete=models.CASCADE)
@@ -175,3 +178,6 @@ class WorkflowChange(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.form} - {self.workflow_version}"

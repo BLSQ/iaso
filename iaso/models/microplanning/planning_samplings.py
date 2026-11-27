@@ -25,3 +25,6 @@ class PlanningSamplingResult(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Sampling Result"
         verbose_name_plural = "Sampling Results"
+
+    def __str__(self) -> str:
+        return f"{self.planning} - Sampling ({self.created_at:%Y-%m-%d %H:%M:%S})"

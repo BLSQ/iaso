@@ -78,7 +78,10 @@ class PaymentLot(models.Model):
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
     task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="payment_lots")
 
-    def compute_status(self):
+    def __str__(self) -> str:
+        return "{} - {}".format(self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+
+    def compute_status(self) -> Statuses:
         payments = self.payments.all()
         if not payments.exists():
             return self.Statuses.NEW
@@ -93,6 +96,3 @@ class PaymentLot(models.Model):
         if sent_payments == total_payments:
             return self.Statuses.SENT
         return self.Statuses.NEW
-
-    def __str__(self):
-        return "{} - {}".format(self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))

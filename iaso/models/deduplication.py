@@ -66,8 +66,11 @@ class EntityDuplicate(models.Model):
 
     objects = models.Manager.from_queryset(EntityDuplicateQuerySet)()
 
-    def get_entity_type(self):
-        return self.entity1.entity_type
-
     class Meta:
         unique_together = ("entity1", "entity2")
+
+    def __str__(self) -> str:
+        return f"{self.entity1} - {self.entity2} ({self.type_of_relation})"
+
+    def get_entity_type(self):
+        return self.entity1.entity_type

@@ -39,5 +39,8 @@ class WfpPermissionSupport(models.Model):
         default_permissions = []
         permissions = [perm.model_permission() for perm in permissions.values()]
 
+    def __str__(self):
+        return f"WFP Permission Support ({self.pk})"
+
 
 permission_models = [WfpPermissionSupport]

@@ -382,6 +382,9 @@ class FormVersion(models.Model):
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
+    def __str__(self) -> str:
+        return f"{self.form.name} - {self.version_id} - {self.created_at}"
+
     def get_or_save_form_descriptor(self):  # TODO: remove me - should be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
@@ -411,9 +414,6 @@ class FormVersion(models.Model):
     def questions_by_path(self):
         return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
 
-    def __str__(self):
-        return f"{self.form.name} - {self.version_id} - {self.created_at}"
-
 
 def update_possible_fields(sender, instance, **kwargs):
     if not instance.form_descriptor and instance.xls_file:
@@ -440,15 +440,15 @@ class FormPredefinedFilter(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self) -> str:
+        return f"{self.form} - {self.name}"
+
 
 class FormAttachment(models.Model):
     """ODK supports attaching files to form in order to display/play media or attach external data sources.
 
     This is the representation of those attachments within Iaso.
     """
-
-    class Meta:
-        unique_together = [["form", "name"]]
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
@@ -458,3 +458,9 @@ class FormAttachment(models.Model):
     md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [["form", "name"]]
+
+    def __str__(self) -> str:
+        return f"{self.form} - {self.name}"

@@ -1137,12 +1137,12 @@ class InstanceLock(models.Model):
     unlocked_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True, related_name="+")
     top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, related_name="instance_lock")
 
+    class Meta:
+        ordering = ["-locked_at"]
+
     # We CASCADE if we delete the instance because the lock don't make sense then
     # but if the user or orgunit is deleted we should probably worry hence protect
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"{self.instance} - {self.locked_by} " + f"UNLOCKED by {self.unlocked_by}" if self.unlocked_by else "LOCKED"
         )
-
-    class Meta:
-        ordering = ["-locked_at"]

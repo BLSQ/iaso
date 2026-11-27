@@ -14,12 +14,18 @@ class SizedFileModel(models.Model):
     class Meta:
         app_label = "iaso"
 
+    def __str__(self) -> str:
+        return self.file.name if self.file else str(self.pk)
+
 
 class CustomSizedFileModel(models.Model):
     file = SizedFileField(upload_to="test_uploads/", size_field_name="custom_size")
 
     class Meta:
         app_label = "iaso"
+
+    def __str__(self) -> str:
+        return self.file.name if self.file else str(self.pk)
 
 
 class SizedFileFieldTest(TestCase):

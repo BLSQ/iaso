@@ -10,6 +10,9 @@ class DummyModel(models.Model):
     name = models.CharField(max_length=100)
     color = models.CharField(max_length=7)
 
+    def __str__(self) -> str:
+        return f"DummyModel {self.name}"
+
 
 class DummySerializer(serializers.Serializer):
     pass

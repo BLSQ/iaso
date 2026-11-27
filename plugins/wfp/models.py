@@ -92,6 +92,9 @@ class Beneficiary(models.Model):
             models.Index(fields=["account", "id"]),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.entity} - {self.birth_date}"
+
 
 class Journey(models.Model):
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, null=True, blank=True)
@@ -130,6 +133,9 @@ class Journey(models.Model):
             models.Index(fields=["physiology_status"]),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.beneficiary} - {self.programme_type} ({self.start_date})"
+
 
 class Visit(models.Model):
     date = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -148,6 +154,9 @@ class Visit(models.Model):
             models.Index(fields=["muac_size", "whz_color", "oedema"]),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.org_unit} - Visit {self.number} ({self.date})"
+
 
 class Step(models.Model):
     assistance_type = models.CharField(max_length=255, db_index=True)
@@ -155,6 +164,9 @@ class Step(models.Model):
     ration_size = models.CharField(max_length=50, choices=RATION_SIZE, null=True, blank=True)
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
+
+    def __str__(self) -> str:
+        return f"{self.assistance_type} - {self.quantity_given}"
 
 
 class MonthlyStatistics(models.Model):
@@ -197,6 +209,9 @@ class MonthlyStatistics(models.Model):
     total_beneficiaries = models.IntegerField(null=True)
     number_visits = models.IntegerField(null=True)
 
+    def __str__(self) -> str:
+        return f"{self.org_unit} - {self.period or self.month or self.year}"
+
 
 class Dhis2SyncResults(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
@@ -212,6 +227,9 @@ class Dhis2SyncResults(models.Model):
     json = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.programme_type} - {self.period or self.month or self.year} - {self.status}"
 
 
 class ScreeningData(models.Model):
@@ -233,3 +251,6 @@ class ScreeningData(models.Model):
     pregnant_w_muac_lte_23 = models.FloatField(null=True)
     lactating_w_muac_gt_23 = models.FloatField(null=True)
     lactating_w_muac_lte_23 = models.FloatField(null=True)
+
+    def __str__(self):
+        return f"Screening data ({self.pk})"

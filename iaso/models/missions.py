@@ -122,6 +122,9 @@ class MissionFormThroughForm(models.Model):
     class Meta:
         unique_together = (("mission_form", "form"),)
 
+    def __str__(self) -> str:
+        return f"{self.mission_form} - {self.form}"
+
 
 class MissionForm(MissionWithForms):
     """Contains the information for the FORM_FILLING mission type"""

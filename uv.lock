@@ -1100,16 +1100,16 @@ wheels = [
 
 [[package]]
 name = "django-simple-captcha"
-version = "0.6.3"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "django-ranged-response" },
     { name = "pillow" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d3/12/dfcfd76d890c23bde772127647f4d61a6138e5e53453d7aa188e5aee0598/django_simple_captcha-0.6.3.tar.gz", hash = "sha256:6d295dac7213946631b88783b420e58d5d67bf2ff1c9704ac57986323e23bbef", size = 125646, upload-time = "2025-12-07T17:45:11.31Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/15/305ce752901a77fb744b02d8ed064eb56ab996ff3ca40cd872eee33a85fd/django_simple_captcha-0.8.0.tar.gz", hash = "sha256:0e6007a34da509c625895e2d2e3b64953d1bffca6baa38f44e5436ce78d721ba", size = 127965, upload-time = "2026-11-14T09:03:13.81Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/8c/d0d007820174922fbbaae98074d3a6ffc1b1f53f0c0f68302c5f1b4bb67f/django_simple_captcha-0.6.3-py2.py3-none-any.whl", hash = "sha256:822750ee91ac5bb74c86e785b9539ca22cba2c5d83c0bdf7b4eaaf20c0abff84", size = 94099, upload-time = "2025-12-07T17:45:09.734Z" },
+    { url = "https://files.pythonhosted.org/packages/98/f1/a9dfd950981c4cb50c27aa4dd539bafcc0a1743bca6194a93f1f61ddf989/django_simple_captcha-0.8.0-py3-none-any.whl", hash = "sha256:d5d5f39a9844dcfab3697891bda5e3ccbad815a0a1f3af27b91188caf27b7643", size = 95570, upload-time = "2026-11-14T09:03:11.862Z" },
 ]
 
 [[package]]
@@ -2042,7 +2042,7 @@ requires-dist = [
     { name = "django-redis", specifier = "==7.0.0" },
     { name = "django-rest-polymorphic", specifier = ">=0.1.10" },
     { name = "django-ses", specifier = "==2.6.1" },
-    { name = "django-simple-captcha", specifier = "==0.6.3" },
+    { name = "django-simple-captcha", specifier = "==0.8.0" },
     { name = "django-sql-dashboard", specifier = "==1.2" },
     { name = "django-storages", specifier = "==1.14.2" },
     { name = "django-stubs-ext", specifier = "==4.2.7" },

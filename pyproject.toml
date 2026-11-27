@@ -37,7 +37,7 @@ dependencies = [
     "django-redis==7.0.0", # https://github.com/jazzband/django-redis/tags
     "django-rest-polymorphic>=0.1.10",
     "django-ses==2.6.1", # trypelim - https://github.com/django-ses/django-ses/releases/
-    "django-simple-captcha==0.6.3", # https://github.com/mbi/django-simple-captcha/tags
+    "django-simple-captcha==0.8.0", # https://github.com/mbi/django-simple-captcha/tags
     "django-sql-dashboard==1.2", # https://github.com/simonw/django-sql-dashboard/tags
     "django-storages==1.14.2", # https://github.com/jschneier/django-storages/tags
     "django-stubs-ext==4.2.7", # https://github.com/typeddjango/django-stubs/tags

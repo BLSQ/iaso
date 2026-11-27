@@ -6,7 +6,7 @@ Each workflow is made of multiple nodes or tasks.
 
 from autoslug import AutoSlugField
 from django.contrib.auth import get_user_model
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 
 from iaso.models import Instance
@@ -14,6 +14,7 @@ from iaso.models.base import UserRole
 from iaso.models.common import BulkAutoSlugField, CreatedAndUpdatedModel
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
@@ -45,6 +46,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
     )
 
     objects = DefaultSoftDeletableManager()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager()
     objects_only_deleted = OnlyDeletedSoftDeletableManager()
 
     def __str__(self):
@@ -90,6 +92,7 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
                 for (prev, nxt) in zip(previous_nodes, next_nodes)
             ],
             ignore_conflicts=True,
+            batch_size=100,
         )
 
         q_delete = Q()
@@ -231,6 +234,118 @@ class ValidationWorkflow(CreatedAndUpdatedModel, SoftDeletableModel):
             ],
             ignore_conflicts=True,
         )
+
+    DUPLICATE_MAX_ATTEMPTS = 5
+    # Length of the longest copy suffix we support, " (copy 99999999999)"
+    DUPLICATE_MAX_SUFFIX_LENGTH = 20
+    # Fields not copied from the original: regenerated (id, name, slug, timestamps) or reset for the copy
+    DUPLICATE_EXCLUDED_FIELDS = {
+        "id",
+        "name",
+        "slug",
+        "created_by",
+        "updated_by",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+    }
+
+    def get_duplicate_name(self):
+        """
+        First free name among "<name> (copy)", "<name> (copy 2)", ... in the account.
+        The existing copies are fetched in a single query, the free name is then picked in Python.
+        Soft deleted copies keep their name: a restored workflow must not clash with a newer copy.
+        """
+        max_length = self._meta.get_field("name").max_length
+
+        def candidate(index):
+            suffix = " (copy)" if index == 1 else f" (copy {index})"
+            return f"{self.name[: max_length - len(suffix)]}{suffix}"
+
+        # The name is truncated to fit the suffix, more as the suffix grows ("(copy)", "(copy 2)", "(copy 100)"),
+        # so match on a prefix that every copy keeps whatever its suffix. The regex then keeps only names
+        # ending in "(copy)" or "(copy N)". This is a superset: the exact match is done in Python below.
+        taken = set(
+            ValidationWorkflow.objects_include_deleted.filter(
+                account_id=self.account_id,
+                name__startswith=self.name[: max_length - self.DUPLICATE_MAX_SUFFIX_LENGTH],
+                name__regex=r" \(copy( [0-9]+)?\)$",
+            ).values_list("name", flat=True)
+        )
+        index = 1
+        while candidate(index) in taken:
+            index += 1
+        return candidate(index)
+
+    def _create_duplicate_workflow(self, user):
+        """
+        Two users duplicating the same workflow at the same time may compute the same name (or slug):
+        the second insert then violates a unique constraint, so we retry with a freshly computed name.
+        """
+        # Every column is copied (foreign keys included, through their "<name>_id"), except the excluded ones,
+        # so a field added later is copied by default. Many-to-many and reverse relations are not columns,
+        # they are handled by duplicate().
+        copied_fields = {
+            field.attname: getattr(self, field.attname)
+            for field in self._meta.concrete_fields
+            if field.name not in self.DUPLICATE_EXCLUDED_FIELDS
+        }
+        for attempt in range(self.DUPLICATE_MAX_ATTEMPTS):
+            try:
+                with transaction.atomic():  # savepoint, so the outer transaction survives a failed insert
+                    return ValidationWorkflow.objects.create(
+                        **copied_fields, name=self.get_duplicate_name(), created_by=user
+                    )
+            except IntegrityError:
+                if attempt == self.DUPLICATE_MAX_ATTEMPTS - 1:
+                    raise
+
+    @transaction.atomic
+    def duplicate(self, user):
+        """
+        Copy of the workflow with its steps, their required roles and their order.
+        Linked forms are not copied (a form belongs to a single workflow), so the copy has no processes.
+        Callers should prefetch "node_templates" with their "roles_required" and "next_node_templates".
+        """
+        copy = self._create_duplicate_workflow(user)
+
+        nodes = list(self.node_templates.all())
+        new_nodes = ValidationNodeTemplate.objects.bulk_create(
+            [
+                ValidationNodeTemplate(
+                    workflow=copy,
+                    name=node.name,
+                    # Already unique within the original workflow, so also within the (empty) copy
+                    slug=node.slug,
+                    description=node.description,
+                    can_skip_previous_nodes=node.can_skip_previous_nodes,
+                )
+                for node in nodes
+            ]
+        )
+        new_node_id_by_old_id = {node.id: new_node.id for node, new_node in zip(nodes, new_nodes)}
+
+        roles_through = ValidationNodeTemplate.roles_required.through
+        roles_through.objects.bulk_create(
+            [
+                roles_through(validationnodetemplate_id=new_node_id_by_old_id[node.id], userrole_id=role.id)
+                for node in nodes
+                for role in node.roles_required.all()
+            ]
+        )
+
+        next_through = ValidationNodeTemplate.next_node_templates.through
+        next_through.objects.bulk_create(
+            [
+                next_through(
+                    from_validationnodetemplate_id=new_node_id_by_old_id[node.id],
+                    to_validationnodetemplate_id=new_node_id_by_old_id[next_node.id],
+                )
+                for node in nodes
+                for next_node in node.next_node_templates.all()
+            ]
+        )
+        return copy
 
     def dump_nodes(self):
         if "node_templates" in getattr(self, "_prefetched_objects_cache", {}):

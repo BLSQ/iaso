@@ -23,6 +23,7 @@ from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
     CORE_SUBMISSIONS_PERMISSION,
+    CORE_SUBMISSIONS_PII_PERMISSION,
 )
 
 
@@ -389,6 +390,39 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         for filters, expected_ids in cases:
             with self.subTest(filters=filters):
                 self.assertEqual(parquet_ids(filters), expected_ids)
+
+    def test_parquet_export_hides_pii_questions(self):
+        """only the questions whitelisted in `non_pii_fields`, unless the user has the PII permission"""
+        self.form_1.non_pii_fields = ["muac"]
+        self.form_1.possible_fields = [
+            {"name": "first_name", "label": "First name", "type": "text"},
+            {"name": "muac", "label": "MUAC", "type": "decimal"},
+        ]
+        self.form_1.save()
+        self.instance_1.json = {"first_name": "Amina", "muac": "12.5", "_version": "1"}
+        self.instance_1.save()
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        pii_user = self.create_user_with_profile(
+            username="pii_user",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_PII_PERMISSION],
+        )
+
+        def exported_answers(user):
+            self.client.force_authenticate(user)
+            response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&order=id")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+                write_response_to_file(response, f)
+                with duckdb.connect() as con:
+                    cursor = con.execute(f"SELECT * FROM '{f.name}' WHERE iaso_subm_id = {self.instance_1.id}")
+                    columns = [c[0] for c in cursor.description]
+                    row = cursor.fetchone()
+            # the answers, without the submission metadata (iaso_subm_ prefixed columns)
+            return {column: value for column, value in zip(columns, row) if not column.startswith("iaso_subm_")}
+
+        self.assertEqual(exported_answers(self.yoda), {"muac": "12.5"}, "first_name is not in non_pii_fields")
+        self.assertEqual(exported_answers(pii_user), {"first_name": "Amina", "muac": "12.5"})
 
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)

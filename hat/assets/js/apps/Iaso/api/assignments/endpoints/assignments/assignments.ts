@@ -24,12 +24,12 @@ import { getCustomQueryOptions } from '../../../../../../orval/mutator/custom-qu
 import type {
     ApiMicroplanningPlanningsAssignmentsOrgUnitsListParams,
     ApiMicroplanningPlanningsAssignmentsTeamsListParams,
-    AssignOrgUnits,
-    AssignOrgUnitsRequest,
+    Assign,
+    AssignRequest,
     PaginatedAssignmentOrgUnitList,
     PaginatedAssignmentTeamList,
-    UnassignOrgUnits,
-    UnassignOrgUnitsRequest,
+    UnassignInputRequest,
+    UnassignResponse,
 } from '../../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -52,7 +52,7 @@ const withQueryKey = <T extends object, K>(
     return result;
 };
 
-export const getApiMicroplanningPlanningsAssignmentsAssignCreateUrl = (
+export const getApiMicroplanningPlanningsAssignmentsAssignUpdateUrl = (
     parentLookupPk: string,
 ) => {
     return `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${parentLookupPk}/assignments/assign/`;
@@ -61,11 +61,11 @@ export const getApiMicroplanningPlanningsAssignmentsAssignCreateUrl = (
 /**
  * Assigns org units to a direct member of the team owning their parent. Reassigned org units lose the assignments made below them.
  */
-export const apiMicroplanningPlanningsAssignmentsAssignCreate = async (
+export const apiMicroplanningPlanningsAssignmentsAssignUpdate = async (
     parentLookupPk: string,
-    assignOrgUnitsRequest: AssignOrgUnitsRequest,
+    assignRequest: AssignRequest,
     options?: Parameters<typeof customFetchInstance>[1],
-): Promise<AssignOrgUnits> => {
+): Promise<Assign> => {
     const getHeaders = (
         h?: NonNullable<RequestInit['headers']>,
     ): Record<string, string | readonly string[]> => {
@@ -87,47 +87,47 @@ export const apiMicroplanningPlanningsAssignmentsAssignCreate = async (
         }
         return headers;
     };
-    return customFetchInstance<AssignOrgUnits>(
-        getApiMicroplanningPlanningsAssignmentsAssignCreateUrl(parentLookupPk),
+    return customFetchInstance<Assign>(
+        getApiMicroplanningPlanningsAssignmentsAssignUpdateUrl(parentLookupPk),
         {
             credentials: 'same-origin',
             ...options,
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 ...getHeaders(options?.headers),
             },
-            body: JSON.stringify(assignOrgUnitsRequest),
+            body: JSON.stringify(assignRequest),
         },
     );
 };
 
-export const getApiMicroplanningPlanningsAssignmentsAssignCreateMutationKey =
-    () => ['apiMicroplanningPlanningsAssignmentsAssignCreate'] as const;
+export const getApiMicroplanningPlanningsAssignmentsAssignUpdateMutationKey =
+    () => ['apiMicroplanningPlanningsAssignmentsAssignUpdate'] as const;
 
-export const useApiMicroplanningPlanningsAssignmentsAssignCreateMutationOptions =
+export const useApiMicroplanningPlanningsAssignmentsAssignUpdateMutationOptions =
     <TError = unknown, TContext = unknown>(options?: {
         mutation?: UseMutationOptions<
             Awaited<
                 ReturnType<
-                    typeof apiMicroplanningPlanningsAssignmentsAssignCreate
+                    typeof apiMicroplanningPlanningsAssignmentsAssignUpdate
                 >
             >,
             TError,
-            ApiMicroplanningPlanningsAssignmentsAssignCreateMutationVariables,
+            ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationVariables,
             TContext
         >;
         request?: SecondParameter<typeof customFetchInstance>;
     }): UseMutationOptions<
         Awaited<
-            ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignCreate>
+            ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignUpdate>
         >,
         TError,
-        ApiMicroplanningPlanningsAssignmentsAssignCreateMutationVariables,
+        ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationVariables,
         TContext
     > => {
         const mutationKey =
-            getApiMicroplanningPlanningsAssignmentsAssignCreateMutationKey();
+            getApiMicroplanningPlanningsAssignmentsAssignUpdateMutationKey();
         const { mutation: mutationOptions, request: requestOptions } = options
             ? options.mutation &&
               'mutationKey' in options.mutation &&
@@ -139,14 +139,14 @@ export const useApiMicroplanningPlanningsAssignmentsAssignCreateMutationOptions 
         const mutationFn: MutationFunction<
             Awaited<
                 ReturnType<
-                    typeof apiMicroplanningPlanningsAssignmentsAssignCreate
+                    typeof apiMicroplanningPlanningsAssignmentsAssignUpdate
                 >
             >,
-            ApiMicroplanningPlanningsAssignmentsAssignCreateMutationVariables
+            ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationVariables
         > = props => {
             const { parentLookupPk, data } = props ?? {};
 
-            return apiMicroplanningPlanningsAssignmentsAssignCreate(
+            return apiMicroplanningPlanningsAssignmentsAssignUpdate(
                 parentLookupPk,
                 data,
                 requestOptions,
@@ -161,42 +161,42 @@ export const useApiMicroplanningPlanningsAssignmentsAssignCreateMutationOptions 
         return customOptions;
     };
 
-export type ApiMicroplanningPlanningsAssignmentsAssignCreateMutationResult =
+export type ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationResult =
     NonNullable<
         Awaited<
-            ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignCreate>
+            ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignUpdate>
         >
     >;
-export type ApiMicroplanningPlanningsAssignmentsAssignCreateMutationBody =
-    AssignOrgUnitsRequest;
-export type ApiMicroplanningPlanningsAssignmentsAssignCreateMutationError =
+export type ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationBody =
+    AssignRequest;
+export type ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationError =
     unknown;
-export type ApiMicroplanningPlanningsAssignmentsAssignCreateMutationVariables =
-    { parentLookupPk: string; data: AssignOrgUnitsRequest };
+export type ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationVariables =
+    { parentLookupPk: string; data: AssignRequest };
 
-export const useApiMicroplanningPlanningsAssignmentsAssignCreate = <
+export const useApiMicroplanningPlanningsAssignmentsAssignUpdate = <
     TError = unknown,
     TContext = unknown,
 >(options?: {
     mutation?: UseMutationOptions<
         Awaited<
-            ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignCreate>
+            ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignUpdate>
         >,
         TError,
-        ApiMicroplanningPlanningsAssignmentsAssignCreateMutationVariables,
+        ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationVariables,
         TContext
     >;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<
-        ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignCreate>
+        ReturnType<typeof apiMicroplanningPlanningsAssignmentsAssignUpdate>
     >,
     TError,
-    ApiMicroplanningPlanningsAssignmentsAssignCreateMutationVariables,
+    ApiMicroplanningPlanningsAssignmentsAssignUpdateMutationVariables,
     TContext
 > => {
     return useMutation(
-        useApiMicroplanningPlanningsAssignmentsAssignCreateMutationOptions(
+        useApiMicroplanningPlanningsAssignmentsAssignUpdateMutationOptions(
             options,
         ),
     );
@@ -556,7 +556,7 @@ export const invalidateApiMicroplanningPlanningsAssignmentsTeamsList = async (
     return queryClient;
 };
 
-export const getApiMicroplanningPlanningsAssignmentsUnassignCreateUrl = (
+export const getApiMicroplanningPlanningsAssignmentsUnassignUpdateUrl = (
     parentLookupPk: string,
 ) => {
     return `${process.env.ORVAL_API_BASE_URL}/api/microplanning/plannings/${parentLookupPk}/assignments/unassign/`;
@@ -565,11 +565,11 @@ export const getApiMicroplanningPlanningsAssignmentsUnassignCreateUrl = (
 /**
  * Removes the assignments of org units and the assignments made below them.
  */
-export const apiMicroplanningPlanningsAssignmentsUnassignCreate = async (
+export const apiMicroplanningPlanningsAssignmentsUnassignUpdate = async (
     parentLookupPk: string,
-    unassignOrgUnitsRequest: UnassignOrgUnitsRequest,
+    unassignInputRequest: UnassignInputRequest,
     options?: Parameters<typeof customFetchInstance>[1],
-): Promise<UnassignOrgUnits> => {
+): Promise<UnassignResponse> => {
     const getHeaders = (
         h?: NonNullable<RequestInit['headers']>,
     ): Record<string, string | readonly string[]> => {
@@ -591,51 +591,51 @@ export const apiMicroplanningPlanningsAssignmentsUnassignCreate = async (
         }
         return headers;
     };
-    return customFetchInstance<UnassignOrgUnits>(
-        getApiMicroplanningPlanningsAssignmentsUnassignCreateUrl(
+    return customFetchInstance<UnassignResponse>(
+        getApiMicroplanningPlanningsAssignmentsUnassignUpdateUrl(
             parentLookupPk,
         ),
         {
             credentials: 'same-origin',
             ...options,
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 ...getHeaders(options?.headers),
             },
-            body: JSON.stringify(unassignOrgUnitsRequest),
+            body: JSON.stringify(unassignInputRequest),
         },
     );
 };
 
-export const getApiMicroplanningPlanningsAssignmentsUnassignCreateMutationKey =
-    () => ['apiMicroplanningPlanningsAssignmentsUnassignCreate'] as const;
+export const getApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationKey =
+    () => ['apiMicroplanningPlanningsAssignmentsUnassignUpdate'] as const;
 
-export const useApiMicroplanningPlanningsAssignmentsUnassignCreateMutationOptions =
+export const useApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationOptions =
     <TError = unknown, TContext = unknown>(options?: {
         mutation?: UseMutationOptions<
             Awaited<
                 ReturnType<
-                    typeof apiMicroplanningPlanningsAssignmentsUnassignCreate
+                    typeof apiMicroplanningPlanningsAssignmentsUnassignUpdate
                 >
             >,
             TError,
-            ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationVariables,
+            ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationVariables,
             TContext
         >;
         request?: SecondParameter<typeof customFetchInstance>;
     }): UseMutationOptions<
         Awaited<
             ReturnType<
-                typeof apiMicroplanningPlanningsAssignmentsUnassignCreate
+                typeof apiMicroplanningPlanningsAssignmentsUnassignUpdate
             >
         >,
         TError,
-        ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationVariables,
+        ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationVariables,
         TContext
     > => {
         const mutationKey =
-            getApiMicroplanningPlanningsAssignmentsUnassignCreateMutationKey();
+            getApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationKey();
         const { mutation: mutationOptions, request: requestOptions } = options
             ? options.mutation &&
               'mutationKey' in options.mutation &&
@@ -647,14 +647,14 @@ export const useApiMicroplanningPlanningsAssignmentsUnassignCreateMutationOption
         const mutationFn: MutationFunction<
             Awaited<
                 ReturnType<
-                    typeof apiMicroplanningPlanningsAssignmentsUnassignCreate
+                    typeof apiMicroplanningPlanningsAssignmentsUnassignUpdate
                 >
             >,
-            ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationVariables
+            ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationVariables
         > = props => {
             const { parentLookupPk, data } = props ?? {};
 
-            return apiMicroplanningPlanningsAssignmentsUnassignCreate(
+            return apiMicroplanningPlanningsAssignmentsUnassignUpdate(
                 parentLookupPk,
                 data,
                 requestOptions,
@@ -669,46 +669,46 @@ export const useApiMicroplanningPlanningsAssignmentsUnassignCreateMutationOption
         return customOptions;
     };
 
-export type ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationResult =
+export type ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationResult =
     NonNullable<
         Awaited<
             ReturnType<
-                typeof apiMicroplanningPlanningsAssignmentsUnassignCreate
+                typeof apiMicroplanningPlanningsAssignmentsUnassignUpdate
             >
         >
     >;
-export type ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationBody =
-    UnassignOrgUnitsRequest;
-export type ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationError =
+export type ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationBody =
+    UnassignInputRequest;
+export type ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationError =
     unknown;
-export type ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationVariables =
-    { parentLookupPk: string; data: UnassignOrgUnitsRequest };
+export type ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationVariables =
+    { parentLookupPk: string; data: UnassignInputRequest };
 
-export const useApiMicroplanningPlanningsAssignmentsUnassignCreate = <
+export const useApiMicroplanningPlanningsAssignmentsUnassignUpdate = <
     TError = unknown,
     TContext = unknown,
 >(options?: {
     mutation?: UseMutationOptions<
         Awaited<
             ReturnType<
-                typeof apiMicroplanningPlanningsAssignmentsUnassignCreate
+                typeof apiMicroplanningPlanningsAssignmentsUnassignUpdate
             >
         >,
         TError,
-        ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationVariables,
+        ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationVariables,
         TContext
     >;
     request?: SecondParameter<typeof customFetchInstance>;
 }): UseMutationResult<
     Awaited<
-        ReturnType<typeof apiMicroplanningPlanningsAssignmentsUnassignCreate>
+        ReturnType<typeof apiMicroplanningPlanningsAssignmentsUnassignUpdate>
     >,
     TError,
-    ApiMicroplanningPlanningsAssignmentsUnassignCreateMutationVariables,
+    ApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationVariables,
     TContext
 > => {
     return useMutation(
-        useApiMicroplanningPlanningsAssignmentsUnassignCreateMutationOptions(
+        useApiMicroplanningPlanningsAssignmentsUnassignUpdateMutationOptions(
             options,
         ),
     );

@@ -511,12 +511,42 @@ class QueryProfilerTest(TestCase):
         self.assertIn("_open(): expected 1, got 0", message)
         self.assertIn("exists(): not in `expected` or `exclude`, got 2", message)
 
+    def test_files_opened_include_the_reopenings_the_storage_doesnt_see(self):
+        form = m.Form.objects.create(name="Belgium census")
+        version = m.FormVersion(form=form, version_id="1")
+        version.file.save("census.xml", ContentFile(b"<h:html/>"))
+        name = version.file.name
+        version = m.FormVersion.objects.get(id=version.id)  # its file not read yet
+
+        with QueryProfiler() as profiler:
+            for _ in range(2):
+                version.file.open("rb")
+                version.file.read()
+                version.file.close()
+        version.file.delete(save=False)
+
+        self.assertEqual(profiler.storage_names("_open"), [name], "Django reuses the file object: one storage call")
+        self.assertEqual(profiler.files_opened(), [name, name])
+        self.assertEqual(profiler.files_opened(suffix=".csv"), [])
+        profiler.assertFilesOpened([name, name])
+        with self.assertRaises(AssertionError) as ctx:
+            profiler.assertFilesOpened([name])
+        message = str(ctx.exception)
+        self.assertIn(f"Files opened: expected {[name]}, got {[name, name]}", message)
+        self.assertIn(f"{name}: 2x, from", message)
+
     def test_storage_methods_are_restored_after_the_block(self):
         with QueryProfiler() as profiler:
             pass
         default_storage.exists("query_profiler_test/missing.txt")
+        version = m.FormVersion(form=m.Form.objects.create(name="Belgium census"), version_id="1")
+        version.file.save("census.xml", ContentFile(b"<h:html/>"))
+        version.file.open("rb")
+        version.file.close()
+        version.file.delete(save=False)
 
         self.assertEqual(profiler.storage_counts(), {})
+        self.assertEqual(profiler.files_opened(), [])
 
     def test_time_breakdown_adds_up_to_the_elapsed_time(self):
         with QueryProfiler() as profiler:

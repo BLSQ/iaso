@@ -2,9 +2,12 @@ import copy
 import csv
 import importlib
 import io
+import time
 import typing
 
 from cgi import parse_header
+from collections.abc import Iterator
+from contextlib import contextmanager
 from unittest import mock
 
 import jsonschema
@@ -17,7 +20,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.management.sql import emit_post_migrate_signal
-from django.db import connections, transaction
+from django.db import connection, connections, transaction
 from django.http import FileResponse, HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase, TransactionTestCase as BaseTransactionTestCase
 from django.urls import clear_url_caches, reverse
@@ -338,7 +341,45 @@ class IasoModelTestMixin(BaseTestCase):
         self.assertIsNotNone(obj.deleted_at)
 
 
-class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, BaseAPITestCase):
+class PerfTestCaseMixin(BaseTestCase):
+    @staticmethod
+    def analyze_touched_tables() -> list[str]:
+        """
+        ANALYZE every table modified in the current transaction (e.g. by test fixtures).
+        Cause when you insert a lot of data in the test case, postgres won't have time to do it itself.
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT schemaname, relname
+                FROM pg_stat_xact_user_tables
+                WHERE n_tup_ins + n_tup_upd + n_tup_del > 0
+                """
+            )
+            tables = cursor.fetchall()
+            for schema, table in tables:
+                cursor.execute(f'ANALYZE "{schema}"."{table}"')
+        return [table for _, table in tables]
+
+    @contextmanager
+    def assertDurationTakesLessEqual(self, max_duration: float, verbose: bool = False) -> Iterator[None]:
+        start = time.perf_counter()
+
+        yield
+
+        duration = time.perf_counter() - start
+
+        if verbose:
+            print(f"Execution took {duration:.3f}s")
+
+        self.assertLessEqual(
+            duration,
+            max_duration,
+            f"Execution took {duration:.3f}s (max: {max_duration:.3f}s)",
+        )
+
+
+class APITestCase(IasoModelTestMixin, IasoTestCaseMixin, APIAssertionsMixin, PerfTestCaseMixin, BaseAPITestCase):
     client: APIClient
 
     def setUp(self):

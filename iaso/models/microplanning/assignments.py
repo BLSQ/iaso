@@ -32,6 +32,13 @@ class Assignment(CreatedAndUpdatedModel, SoftDeletableModel):
                 name="unique_planning_org_unit_when_not_deleted",
             ),
         ]
+        indexes = [
+            models.Index(
+                fields=["team", "planning"],
+                name="assign_team_plan_active_idx",
+                condition=Q(deleted_at__isnull=True),
+            )
+        ]
         ordering = ("planning", "created_at")
 
     planning = models.ForeignKey("Planning", on_delete=models.CASCADE, null=True, blank=True)

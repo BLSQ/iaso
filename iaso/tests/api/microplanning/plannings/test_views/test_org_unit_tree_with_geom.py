@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import random
+
 from typing import Any
 from unittest.mock import patch
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.db.models import Max
+from django.test import tag
 from django.urls import reverse
 from rest_framework import status
 
@@ -19,6 +23,7 @@ from iaso.models import (
     Team,
 )
 from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.models.team import TeamType
 from iaso.permissions.core_permissions import CORE_PLANNING_READ_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase, SwaggerTestCaseMixin
 
@@ -858,3 +863,178 @@ class PlanningOrgUnitTreeWithGeomViewAPITestCase(SwaggerTestCaseMixin, APITestCa
         children = root["children"][0]
         self.assertEqual(children["id"], self.children_2.pk)
         self.assertEqual(len(children["children"]), 0)
+
+
+@tag("benchmark")
+class PlanningOrgUnitTreeWithGeomViewAPITestPerfCase(APITestCase):
+    DATASET_SIZE = 100_000
+
+    @classmethod
+    def create_ou_pyramid(cls, total: int, max_children: int = 20):
+        rng = random.Random(42)
+
+        root = cls.ou_root
+        mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+
+        ous_by_depth = {0: [root]}
+        remaining = total - 1
+        parents = [root]
+        depth = 1
+        count_path = 2
+        while remaining > 0:
+            children = []
+
+            for parent in parents:
+                if not remaining:
+                    break
+
+                count = rng.randint(1, min(max_children, remaining))
+
+                for _ in range(count):
+                    ou = OrgUnit(
+                        name=f"OU {total - remaining + len(children) + 1}",
+                        version=cls.source_version,
+                        parent=parent,
+                        validation_status=OrgUnit.VALIDATION_VALID,
+                        path=f"{parent.path}.{count_path}",
+                        geom=mock_multipolygon,
+                        simplified_geom=mock_multipolygon,
+                        location=Point(x=4, y=50, z=100),
+                    )
+
+                    if depth == 1:
+                        ou.org_unit_type = cls.org_unit_type
+
+                    elif depth == 2:
+                        ou.org_unit_type = cls.org_unit_type_2
+
+                    children.append(ou)
+                    count_path += 1
+
+                remaining -= count
+
+            ous = OrgUnit.objects.bulk_create(children)
+
+            if depth == 1:
+                through = OrgUnit.groups.through
+
+                through.objects.bulk_create(
+                    [through(orgunit_id=ou.pk, group_id=cls.org_unit_group.pk) for ou in children]
+                )
+
+            if depth == 2:
+                through = OrgUnit.groups.through
+
+                through.objects.bulk_create(
+                    [through(orgunit_id=ou.pk, group_id=cls.org_unit_group_2.pk) for ou in children]
+                )
+
+            ous_by_depth[depth] = children
+            parents = children
+            depth += 1
+
+            for ou in ous:
+                ou.calculate_paths()
+
+        return ous_by_depth
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        [cls.account, cls.data_source, cls.source_version, cls.project] = cls.create_account_datasource_version_project(
+            "Test Data Source", "Account", "Test Project"
+        )
+        cls.user_no_perm = cls.create_user_with_profile(username="user_no_perm", account=cls.account, permissions=[])
+        cls.user_read_perm = cls.create_user_with_profile(
+            username="user_read_perm", account=cls.account, permissions=[CORE_PLANNING_READ_PERMISSION]
+        )
+        cls.user_other_perm = cls.create_user_with_profile(
+            username="user_other_perm", account=cls.account, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
+        cls.superuser = cls.create_user_with_profile(
+            username="superuser", account=cls.account, is_superuser=True, is_staff=True
+        )
+
+        cls.users = [cls.user_no_perm, cls.user_read_perm, cls.user_other_perm, cls.superuser]
+
+        # create OUT
+        cls.org_unit_type = OrgUnitType.objects.create(name="Test Country Type", short_name="TCT", category="COUNTRY")
+        cls.org_unit_type.projects.set([cls.project])
+
+        cls.org_unit_type_2 = OrgUnitType.objects.create(
+            name="Test Country Type 2", short_name="TCT2", category="COUNTRY"
+        )
+        cls.org_unit_type_2.projects.set([cls.project])
+
+        cls.org_unit_type_3 = OrgUnitType.objects.create(
+            name="Test Country Type 3", short_name="TCT3", category="COUNTRY"
+        )
+        cls.org_unit_type_3.projects.set([cls.project])
+
+        cls.org_unit_types = [cls.org_unit_type, cls.org_unit_type_2, cls.org_unit_type_3]
+
+        # create OUG
+        cls.org_unit_group = Group.objects.create(name="Test Org Group", source_version=cls.source_version)
+        cls.org_unit_group_2 = Group.objects.create(name="Test Org Group 2", source_version=cls.source_version)
+        cls.org_unit_group_3 = Group.objects.create(name="Test Org Group 3", source_version=cls.source_version)
+
+        cls.org_unit_groups = [cls.org_unit_group, cls.org_unit_group_2, cls.org_unit_group_3]
+        cls.root_team = Team.objects.create(
+            name="Root Team",
+            project=cls.project,
+            manager=cls.superuser,
+            type=TeamType.TEAM_OF_TEAMS,
+        )
+
+        cls.ou_root = OrgUnit.objects.create(
+            name="Root",
+            version=cls.source_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+
+        cls.planning = Planning.objects.create(
+            name="Planning",
+            project=cls.project,
+            team=cls.root_team,
+            org_unit=cls.ou_root,
+        )
+
+        cls.planning_config_level_1 = PlanningConfig.objects.create(
+            level=1,
+            planning=cls.planning,
+        )
+        cls.planning_config_level_1.org_unit_types.set([cls.org_unit_type])
+        cls.planning_config_level_1.org_unit_groups.set([cls.org_unit_group])
+
+        cls.planning_config_level_2 = PlanningConfig.objects.create(
+            level=2,
+            planning=cls.planning,
+        )
+        cls.planning_config_level_2.org_unit_types.set([cls.org_unit_type_2])
+        cls.planning_config_level_2.org_unit_groups.set([cls.org_unit_group_2])
+
+        cls.ous_by_depth = cls.create_ou_pyramid(total=cls.DATASET_SIZE)
+
+        cls.analyze_touched_tables()
+
+    def get_url(self, pk: int | None = None) -> str:
+        if not pk:
+            pk = self.planning.pk
+        return reverse("planning-org-unit-tree-with-geom", kwargs={"pk": pk})
+
+    def test_perf(self):
+        time_limit = 0.2  # 0.2s
+        self.client.force_authenticate(self.superuser)
+        self.assertEqual(OrgUnit.objects.count(), self.DATASET_SIZE)
+        max_depth = OrgUnit.objects.aggregate(max_depth=Max("path__depth"))["max_depth"]
+        for depth, expected in [(i + 1, (time_limit * ((i + 1) ** 2.5))) for i in range(max_depth)]:
+            with self.subTest(f"{depth}, {expected}s"):
+                with self.assertDurationTakesLessEqual(expected, True):
+                    res = self.client.get(
+                        self.get_url(), data={"max_depth": depth, "level": depth - 1 if depth - 1 > 1 else 1}
+                    )
+                res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                print("org_unit_count : ", self.count_org_units(res_data))
+
+    def count_org_units(self, nodes: list[dict]) -> int:
+        return sum(1 + self.count_org_units(node.get("children", [])) for node in nodes)

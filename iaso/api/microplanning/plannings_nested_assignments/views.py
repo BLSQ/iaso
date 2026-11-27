@@ -5,9 +5,19 @@ from typing import TYPE_CHECKING, Any
 
 from django.contrib.postgres.expressions import ArraySubquery
 from django.db import transaction
-from django.db.models import Count, F, IntegerField, OuterRef, Prefetch, Q, Subquery, Value
-from django.db.models.aggregates import Max
-from django.db.models.functions import Coalesce
+from django.db.models import (
+    Case,
+    Count,
+    F,
+    Func,
+    IntegerField,
+    OuterRef,
+    Prefetch,
+    QuerySet,
+    Subquery,
+    Value,
+    When,
+)
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters
@@ -21,7 +31,6 @@ from rest_framework.viewsets import GenericViewSet
 from hat.audit.models import Modification
 from iaso.api.common.views import NestedParentLookupMixin
 from iaso.api.microplanning.assignments.serializers.audit import AuditAssignmentSerializer
-from iaso.api.microplanning.plannings.utils import PlanningOrgUnitTreeQuerySetBuilder
 from iaso.api.microplanning.plannings_nested_assignments.filters import OrgUnitFilterSet, TeamFilterSet
 from iaso.api.microplanning.plannings_nested_assignments.pagination import PlanningNestedAssignmentPagination
 from iaso.api.microplanning.plannings_nested_assignments.permissions import HasPlanningPermission
@@ -33,7 +42,8 @@ from iaso.api.microplanning.plannings_nested_assignments.serializers.bulk import
 )
 from iaso.api.microplanning.plannings_nested_assignments.serializers.org_units import AssignmentOrgUnitSerializer
 from iaso.api.microplanning.plannings_nested_assignments.serializers.teams import AssignmentTeamSerializer
-from iaso.models import Assignment, OrgUnit, Planning, PlanningConfig, Team
+from iaso.api.microplanning.plannings_nested_assignments.utils import compute_ou_totals_by_team_depth
+from iaso.models import Assignment, Planning, PlanningConfig, Team
 from iaso.models.microplanning.assignments import AssignmentQuerySet
 from iaso.models.microplanning.plannings import PlanningQuerySet
 from iaso.models.team import TeamQuerySet
@@ -123,7 +133,16 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             return qs.select_related("org_unit")
         return qs
 
-    def get_queryset(self) -> AssignmentQuerySet | TeamQuerySet:
+    @staticmethod
+    def by_depth(mapping: dict):
+        # few distinct depths → a small CASE is clearer than jsonb
+        return Case(
+            *[When(team_depth=d, then=Value(v)) for d, v in mapping.items()],
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+
+    def get_queryset(self) -> AssignmentQuerySet | TeamQuerySet | QuerySet[Assignment]:
         parent = self.get_parent_instance()
 
         user = self.request.user
@@ -139,89 +158,45 @@ class PlanningNestedAssignmentViews(NestedParentLookupMixin, GenericViewSet):
             return parent.assignment_set.filter(deleted_at__isnull=True)
 
         if self.action == "teams":
-            configs = parent.configs.all()
-            root = parent.org_unit
-            root_level = len(str(root.path).split("."))
+            parent = self._planning
+            team_qs = (
+                Team.objects.hierarchy(self._planning.team)
+                .filter_for_user(self.request.user)
+                .exclude(pk=self._planning.team.pk)
+            )
 
-            org_units_queryset = OrgUnit.objects.filter_for_user(user)
-            processed_levels = {root_level + config.level - 1 for config in configs}
+            total_by_depth, total_for_level_by_depth = compute_ou_totals_by_team_depth(
+                parent, self.request.user, team_qs
+            )
 
-            base_team_qs = Team.objects.hierarchy(parent.team).filter_for_user(user).exclude(pk=parent.team.pk)
-
-            total_per_level_query = (
-                PlanningOrgUnitTreeQuerySetBuilder()
-                .build_queryset(
-                    queryset=org_units_queryset,
-                    root=root,
-                    processed_levels=processed_levels,
-                    configs=configs,
-                )
-                .filter(depth=OuterRef("team_depth") + root_level)
+            # assignments per team depth: one aggregate query
+            count_by_depth = dict(
+                Assignment.objects.filter(planning=parent, team__in=team_qs)
                 .order_by()
-                .values("depth")
-                .annotate(count=Count("pk", distinct=True))
-                .values("count")[:1]
+                .values(d=F("team__path__depth"))
+                .annotate(c=Count("pk"))
+                .values_list("d", "c")
             )
-            total_query = (
-                PlanningOrgUnitTreeQuerySetBuilder()
-                .build_queryset(
-                    queryset=org_units_queryset,
-                    root=root,
-                    processed_levels=processed_levels,
-                    configs=configs,
-                )
-                # we estimate that the user has correctly configured its teams to match ou levels
-                .filter(
-                    depth__gte=OuterRef("team_depth") + root_level,
-                    depth__lte=base_team_qs.values("path__depth").aggregate(
-                        max_depth=Max("path__depth", default=Value(0))
-                    )["max_depth"]
-                    + root_level,
-                )
+            max_depth = max(count_by_depth, default=0)
+            deeper_than = {d: sum(c for dd, c in count_by_depth.items() if dd > d) for d in range(1, max_depth + 1)}
+
+            own_count = (
+                Assignment.objects.filter(team=OuterRef("pk"), planning=parent)
                 .order_by()
-                .values(total_group=Value(1))
-                .annotate(total=Count("pk", distinct=True))
-                .values("total")[:1]
+                .annotate(c=Func(F("pk"), function="COUNT"))
+                .values("c")
             )
 
-            return (
-                base_team_qs.annotate(
-                    team_id=F("pk"),  # just to use it in subquery and avoid mistakes with outerref("pk")
-                    assigned_for_level=Count(
-                        "assignment",
-                        filter=Q(assignment__planning=parent, assignment__deleted_at__isnull=True),
-                    ),
-                    area_org_unit_ids=ArraySubquery(
-                        Assignment.objects.filter(
-                            team=OuterRef("pk"),
-                            planning=parent,
-                        ).values("org_unit")
-                    ),
-                    team_depth=F("path__depth"),
-                )
-                .annotate(
-                    assigned=Coalesce(
-                        Subquery(
-                            Assignment.objects.filter(planning=parent, team__in=base_team_qs)
-                            .filter(Q(team__path__depth__gt=OuterRef("team_depth")) | Q(team__id=OuterRef("team_id")))
-                            .values("planning")
-                            .annotate(count=Count("pk", distinct=True))
-                            .values("count")[:1]
-                        ),
-                        Value(0),
-                        output_field=IntegerField(),
-                    ),
-                    total_for_level=Coalesce(
-                        Subquery(total_per_level_query, output_field=IntegerField()),
-                        Value(0),
-                        output_field=IntegerField(),
-                    ),
-                    total=Coalesce(
-                        Subquery(total_query, output_field=IntegerField()), Value(0), output_field=IntegerField()
-                    ),
-                )
-                .only("id", "type", "path")
-            )
+            return team_qs.annotate(
+                team_depth=F("path__depth"),
+                assigned_for_level=Subquery(own_count.filter(deleted_at__isnull=True), output_field=IntegerField()),
+                assigned=Subquery(own_count, output_field=IntegerField()) + self.by_depth(deeper_than),
+                total_for_level=self.by_depth(total_for_level_by_depth),
+                total=self.by_depth(total_by_depth),
+                area_org_unit_ids=ArraySubquery(
+                    Assignment.objects.filter(team=OuterRef("pk"), planning=parent).order_by().values("org_unit")
+                ),
+            ).only("id", "type", "path")
 
         return Assignment.objects.none()
 

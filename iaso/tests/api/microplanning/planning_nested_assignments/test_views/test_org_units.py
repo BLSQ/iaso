@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import random
+
 from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.test import tag
 from django.urls import reverse
 from rest_framework import status
 
@@ -548,3 +551,117 @@ class NestedPlanningAssignmentOrgUnitAPITestCase(SwaggerTestCaseMixin, APITestCa
                 },
             ],
         )
+
+
+@tag("benchmark")
+class NestedPlanningAssignmentOrgUnitAPIPerfTestCase(APITestCase):
+    DATASET_SIZE = 100_000
+
+    @classmethod
+    def create_ou_pyramid(cls, total: int, max_children: int = 20) -> list[OrgUnit]:
+        if total < 1:
+            raise ValueError("total must be at least 1")
+
+        mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+
+        root = OrgUnit.objects.create(
+            name="Root", version=cls.source_version, validation_status=OrgUnit.VALIDATION_VALID, geom=mock_multipolygon
+        )
+
+        created = [root]
+        parents = [root]
+        remaining = total - 1
+        count_path = 2
+        while remaining > 0:
+            children = []
+
+            for parent in parents:
+                if remaining == 0:
+                    break
+
+                count = random.randint(1, min(max_children, remaining))
+
+                for i in range(count):
+                    children.append(
+                        OrgUnit(
+                            parent=parent,
+                            version=cls.source_version,
+                            name=f"OU {len(created) + len(children) + i + 1}",
+                            validation_status=OrgUnit.VALIDATION_VALID,
+                            geom=mock_multipolygon,
+                            path=f"{parent.path}.{count_path}",
+                        )
+                    )
+                    count_path += 1
+
+                remaining -= count
+
+            OrgUnit.objects.bulk_create(children)
+
+            created.extend(children)
+            parents = children
+
+        return created
+
+    @classmethod
+    def create_assignments(cls, ous: list[OrgUnit]) -> list[Assignment]:
+        assignments = [
+            Assignment(
+                planning=cls.planning,
+                org_unit=ou,
+                team=random.choice(cls.teams),
+                user=random.choice([cls.superuser]),
+            )
+            for ou in ous
+            if ou != ous[0]  # Skip root
+        ]
+
+        return Assignment.objects.bulk_create(assignments)
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        [cls.account, cls.data_source, cls.source_version, cls.project] = cls.create_account_datasource_version_project(
+            "Test Data Source", "Account", "Test Project"
+        )
+        cls.superuser = cls.create_user_with_profile(
+            username="superuser", account=cls.account, is_superuser=True, is_staff=True
+        )
+        cls.team = Team.objects.create(name="Test Team", project=cls.project, manager=cls.superuser)
+        cls.team_2 = Team.objects.create(name="Test Team 2", project=cls.project, manager=cls.superuser)
+        cls.team_3 = Team.objects.create(name="Test Team 3", project=cls.project, manager=cls.superuser)
+
+        cls.teams = [cls.team, cls.team_2, cls.team_3]
+
+        cls.ous = cls.create_ou_pyramid(total=cls.DATASET_SIZE)
+
+        cls.planning = Planning.objects.create(name="planning", project=cls.project, team=cls.team, org_unit=cls.ous[0])
+
+        cls.assignments = cls.create_assignments(cls.ous)
+
+        cls.analyze_touched_tables()
+
+    def get_url(self, planning_pk: int | None = None) -> str:
+        if planning_pk is None:
+            planning_pk = self.planning.pk
+        return reverse("planning-nested-assignments-org-units", kwargs={"parent_lookup_pk": planning_pk})
+
+    def test_perf(self):
+        time_limit = 0.25  # 250ms
+        self.client.force_authenticate(self.superuser)
+        self.assertEqual(OrgUnit.objects.count(), self.DATASET_SIZE)
+        self.assertEqual(Assignment.objects.count(), self.DATASET_SIZE - 1)
+        for limit, expected in [
+            (20, time_limit),
+            (5000, time_limit),
+            (10_000, time_limit),
+            (50_000, time_limit * 3),
+            (99_999, time_limit * 7),
+        ]:
+            with self.subTest(f"{limit}, {expected}s"):
+                with self.assertDurationTakesLessEqual(expected):
+                    res = self.client.get(self.get_url(), data={"limit": limit})
+                res_data = self.assertJSONResponse(res, status.HTTP_200_OK)
+                self.assertValidListData(
+                    list_data=res_data, results_key="results", expected_length=limit, paginated=True
+                )

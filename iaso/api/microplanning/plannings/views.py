@@ -316,15 +316,16 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
-    @staticmethod
-    def _build_org_unit_tree(org_units: OrgUnitQuerySet, serializer: type[serializers.BaseSerializer]) -> list[dict]:
+    def _build_org_unit_tree(
+        self, org_units: OrgUnitQuerySet, serializer: type[serializers.BaseSerializer]
+    ) -> list[dict]:
         # Serialized at once: a serializer per org unit rebuilds its fields every time, which is many times slower.
         serialized = serializer(org_units, many=True).data
         if not serialized:
             return []
 
         min_depth = min(item["depth"] for item in serialized)
-        nodes = {item["id"]: {**item, "children": []} for item in serialized}
+        nodes: dict[int, dict] = {item["id"]: {**item, "children": []} for item in serialized}
 
         roots = []
 

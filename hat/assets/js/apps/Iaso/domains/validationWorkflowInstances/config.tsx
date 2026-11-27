@@ -1,114 +1,90 @@
 import React, { useMemo } from 'react';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import PersonIcon from '@mui/icons-material/Person';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
-import Box from '@mui/system/Box/Box';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
-import { textPlaceholder } from 'Iaso/constants/uiConstants';
-import { baseUrls } from 'Iaso/constants/urls';
-import { LinkToOrgUnit } from 'Iaso/domains/orgUnits/components/LinkToOrgUnit';
-import { ProjectChip } from 'Iaso/domains/projects/components/ProjectChip';
-import { StatusChip } from 'Iaso/domains/validationWorkflowInstances/components/StatusChip';
-import { getLocaleDateFormat } from 'Iaso/utils/dates';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import { ActionsCell, Column, useSafeIntl } from 'bluesquare-components';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import {
+    OrgUnitCell,
+    SubmissionCell,
+    SubmittedByCell,
+    ValidationCell,
+} from './components/Cells';
 import MESSAGES from './messages';
+import { ValidationWorkflowInstanceListResponseItem } from './types';
+import { getSubmissionUrl } from './utils';
+
+type CellSettings = {
+    row: { original: ValidationWorkflowInstanceListResponseItem };
+};
 
 export const useValidationWorkflowInstanceSearchColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const accountId = currentUser.account?.id;
     return useMemo(
         () => [
             {
-                Header: '',
-                id: 'infos',
-                resizable: false,
+                Header: formatMessage(MESSAGES.submission),
+                id: 'id',
+                accessor: 'id',
                 sortable: false,
-                Cell: settings => {
-                    return (
-                        <Box display={'flex'} justifyContent={'space-around'}>
-                            {settings?.row?.original
-                                ?.user_has_been_involved && (
-                                <Tooltip
-                                    title={formatMessage(
-                                        MESSAGES.userHasBeenInvolvedTooltip,
-                                    )}
-                                >
-                                    <PersonIcon color={'action'} />
-                                </Tooltip>
-                            )}
-                            {settings?.row?.original?.requires_user_action && (
-                                <Tooltip
-                                    title={formatMessage(
-                                        MESSAGES.requiresUserActionTooltip,
-                                    )}
-                                >
-                                    <PendingActionsIcon color={'action'} />
-                                </Tooltip>
-                            )}
-                        </Box>
-                    );
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.status),
-                id: 'general_validation_status',
-                accessor: 'general_validation_status',
-                sortable: true,
-                Cell: settings => <StatusChip status={settings.value} />,
-            },
-            {
-                Header: formatMessage(MESSAGES.project),
-                id: 'project__name',
-                accessor: 'project',
-                sortable: false,
-                Cell: settings => <ProjectChip project={settings.value} />,
+                align: 'left',
+                Cell: ({ row: { original } }: CellSettings) => (
+                    <SubmissionCell item={original} accountId={accountId} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnit),
                 id: 'org_unit__name',
-                sortable: false,
                 accessor: 'org_unit',
-                Cell: settings => <LinkToOrgUnit orgUnit={settings.value} />,
-            },
-            {
-                Header: formatMessage(MESSAGES.form),
-                id: 'form__name',
                 sortable: false,
-                accessor: 'form.name',
+                align: 'left',
+                Cell: ({ row: { original } }: CellSettings) => (
+                    <OrgUnitCell item={original} />
+                ),
             },
             {
-                Header: formatMessage(MESSAGES.last_updated_at),
-                id: 'last_updated',
+                Header: formatMessage(MESSAGES.submittedBy),
+                id: 'submitted_by',
+                accessor: 'submitted_by',
+                sortable: false,
+                align: 'left',
+                Cell: ({ row: { original } }: CellSettings) => (
+                    <SubmittedByCell item={original} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.title),
+                // sorting on this column sorts on the waiting time
+                id: 'pending_since',
+                accessor: 'pending_since',
                 sortable: true,
-                accessor: 'last_updated',
-                Cell: settings =>
-                    settings?.value
-                        ? moment(settings?.value).format(
-                              getLocaleDateFormat('LTS'),
-                          )
-                        : textPlaceholder,
+                align: 'left',
+                Cell: ({ row: { original } }: CellSettings) => (
+                    <ValidationCell item={original} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: settings => (
-                    <section>
-                        <IconButton
-                            url={
-                                `/${baseUrls.instanceDetail}/referenceFormId/${settings.row.original.form.id}` +
-                                `/instanceId/${settings.row.original.id}/accountId/${currentUser.account?.id}` +
-                                `/isValidating/true/`
-                            }
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.viewSubmissionDetails}
-                        />
-                    </section>
+                Cell: ({ row: { original } }: CellSettings) => (
+                    <ActionsCell
+                        actions={[
+                            {
+                                key: 'review',
+                                label: MESSAGES.review,
+                                icon: <FactCheckIcon />,
+                                href: getSubmissionUrl({
+                                    item: original,
+                                    accountId,
+                                }),
+                            },
+                        ]}
+                    />
                 ),
             },
         ],
-        [currentUser.account?.id, formatMessage],
+        [accountId, formatMessage],
     );
 };

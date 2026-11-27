@@ -1,10 +1,15 @@
 import React from 'react';
 import { UseQueryResult } from 'react-query';
-import { ValidationWorkflowInstanceListResponse } from 'Iaso/domains/validationWorkflowInstances/types';
 import {
-    API_URL,
-    WF_BASE_QUERYKEY,
-} from 'Iaso/domains/validationWorkflowsConfiguration/constants';
+    DEFAULT_ORDER,
+    DEFAULT_PAGE_SIZE,
+    INSTANCES_API_URL,
+    INSTANCES_QUERYKEY,
+} from 'Iaso/domains/validationWorkflowInstances/constants';
+import {
+    ValidationWorkflowInstanceCounts,
+    ValidationWorkflowInstanceListResponse,
+} from 'Iaso/domains/validationWorkflowInstances/types';
 import { FormattedApiParams, useApiParams } from 'Iaso/hooks/useApiParams';
 import { useUrlParams } from 'Iaso/hooks/useUrlParams';
 import { getRequest } from 'Iaso/libs/Api';
@@ -15,58 +20,94 @@ export type UseGetValidationWorkflowInstanceSearchProps = {
     params: Record<string, any>;
 };
 const defaults = {
-    order: 'last_updated',
-    pageSize: 20,
+    order: DEFAULT_ORDER,
+    pageSize: DEFAULT_PAGE_SIZE,
     page: 1,
+};
+
+// A validation queue changes each time somebody validates: always refetch when the page is opened
+const queryOptions = {
+    keepPreviousData: true,
+    retry: false,
 };
 
 const useGetValidationWorkflowInstanceSearchParams = (
     params: FormattedApiParams,
 ): FormattedApiParams => {
     return React.useMemo(() => {
-        if (params?.forms) {
-            params.forms = Array.isArray(params?.forms)
-                ? params?.forms
-                : (params?.forms?.split(',') ?? []);
+        const formattedParams = { ...params };
+        if (formattedParams.forms) {
+            formattedParams.forms = Array.isArray(formattedParams.forms)
+                ? formattedParams.forms
+                : (formattedParams.forms.split(',') ?? []);
         }
-        if (params?.validation_workflows) {
-            params.validation_workflows = Array.isArray(
-                params?.validation_workflows,
+        if (formattedParams.validation_workflows) {
+            formattedParams.validation_workflows = Array.isArray(
+                formattedParams.validation_workflows,
             )
-                ? params?.validation_workflows
-                : (params?.validation_workflows?.split(',') ?? []);
+                ? formattedParams.validation_workflows
+                : (formattedParams.validation_workflows.split(',') ?? []);
         }
-        if (params?.org_unit) {
-            params.org_units = Array.isArray(params.org_unit)
-                ? params.org_unit.join(',')
-                : params.org_unit;
+        if (formattedParams.org_unit) {
+            formattedParams.org_units = Array.isArray(formattedParams.org_unit)
+                ? formattedParams.org_unit.join(',')
+                : formattedParams.org_unit;
+            delete formattedParams.org_unit;
         }
-        return params;
+        return formattedParams;
     }, [params]);
 };
+
+const useCleanedParams = (params: Record<string, any>): FormattedApiParams => {
+    const safeParams = useUrlParams(params, defaults);
+    const apiParams = useApiParams(safeParams);
+    return useGetValidationWorkflowInstanceSearchParams(apiParams);
+};
+
 const getValidationWorkflowInstances = async (
     params: FormattedApiParams,
 ): Promise<ValidationWorkflowInstanceListResponse> => {
     const queryString = createSearchParamsWithArray(params).toString();
-    return getRequest(`${API_URL}instance/?${queryString}`);
+    return getRequest(`${INSTANCES_API_URL}?${queryString}`);
 };
 
 export const useGetValidationWorkflowInstanceSearch = ({
     params,
 }: UseGetValidationWorkflowInstanceSearchProps): UseQueryResult<ValidationWorkflowInstanceListResponse> => {
-    const safeParams = useUrlParams(params, defaults);
-    const apiParams = useApiParams(safeParams);
-    const cleanedParams =
-        useGetValidationWorkflowInstanceSearchParams(apiParams);
+    const cleanedParams = useCleanedParams(params);
 
     return useSnackQuery({
-        queryKey: [WF_BASE_QUERYKEY, params],
+        queryKey: [INSTANCES_QUERYKEY, 'list', cleanedParams],
         queryFn: () => getValidationWorkflowInstances(cleanedParams),
-        options: {
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            keepPreviousData: true,
-            retry: false,
-        },
+        options: queryOptions,
+    });
+};
+
+const getValidationWorkflowInstanceCounts = async (
+    params: FormattedApiParams,
+): Promise<ValidationWorkflowInstanceCounts> => {
+    const queryString = createSearchParamsWithArray(params).toString();
+    return getRequest(`${INSTANCES_API_URL}counts/?${queryString}`);
+};
+
+export const useGetValidationWorkflowInstanceCounts = ({
+    params,
+}: UseGetValidationWorkflowInstanceSearchProps): UseQueryResult<ValidationWorkflowInstanceCounts> => {
+    const cleanedParams = useCleanedParams(params);
+    const countsParams = React.useMemo(() => {
+        // the counts don't depend on the pagination nor the order
+        const {
+            page: _page,
+            limit: _limit,
+            order: _order,
+            ...filters
+        } = cleanedParams;
+        return filters as FormattedApiParams;
+    }, [cleanedParams]);
+
+    return useSnackQuery({
+        queryKey: [INSTANCES_QUERYKEY, 'counts', countsParams],
+        queryFn: () => getValidationWorkflowInstanceCounts(countsParams),
+        options: queryOptions,
     });
 };

@@ -4,40 +4,62 @@ import moment from 'moment/moment';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect } from 'vitest';
 import { ValidationWorkflowInstances } from 'Iaso/domains/validationWorkflowInstances';
-import { apiDateTimeFormat } from 'Iaso/utils/dates';
+import { ValidationWorkflowInstanceListResponseItem } from 'Iaso/domains/validationWorkflowInstances/types';
 import { VALIDATION_WORKFLOW_MODULE } from 'Iaso/utils/modules';
 import { VALIDATION_WORKFLOWS } from 'Iaso/utils/permissions';
 import { renderWithThemeAndIntlProvider } from '../../../tests/helpers';
 import { currentUserFactory } from '../../factories/users';
 
-const { mockUseGetValidationWorkflowInstanceSearch } = vi.hoisted(() => {
-    return { mockUseGetValidationWorkflowInstanceSearch: vi.fn() };
-});
-
-const { mockCurrentUser } = vi.hoisted(() => {
-    return { mockCurrentUser: vi.fn() };
-});
-const { mockUseGetFormsDropdownOptions } = vi.hoisted(() => {
-    return { mockUseGetFormsDropdownOptions: vi.fn() };
-});
-const { mockUseGetWorkflowOptions } = vi.hoisted(() => {
-    return { mockUseGetWorkflowOptions: vi.fn() };
-});
+const {
+    mockUseGetValidationWorkflowInstanceSearch,
+    mockUseGetValidationWorkflowInstanceCounts,
+    mockCurrentUser,
+    mockUseGetFormsDropdownOptions,
+    mockUseGetProjectsDropdownOptions,
+    mockUseApiValidationWorkflowsDropdownList,
+} = vi.hoisted(() => ({
+    mockUseGetValidationWorkflowInstanceSearch: vi.fn(),
+    mockUseGetValidationWorkflowInstanceCounts: vi.fn(),
+    mockCurrentUser: vi.fn(),
+    mockUseGetFormsDropdownOptions: vi.fn(),
+    mockUseGetProjectsDropdownOptions: vi.fn(),
+    mockUseApiValidationWorkflowsDropdownList: vi.fn(),
+}));
 
 vi.mock('Iaso/domains/forms/hooks/useGetFormsDropdownOptions', () => ({
     useGetFormsDropdownOptions: mockUseGetFormsDropdownOptions,
 }));
-vi.mock('Iaso/domains/validationWorkflowsConfiguration/api/Get', () => ({
-    useGetWorkflowOptions: mockUseGetWorkflowOptions,
-}));
+vi.mock('Iaso/domains/projects/hooks/requests', async () => {
+    const actual = await vi.importActual(
+        'Iaso/domains/projects/hooks/requests',
+    );
+    return {
+        ...actual,
+        useGetProjectsDropdownOptions: mockUseGetProjectsDropdownOptions,
+    };
+});
+vi.mock(
+    'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows',
+    async () => {
+        const actual = await vi.importActual(
+            'Iaso/api/validationWorkflows/endpoints/validation-workflows/validation-workflows',
+        );
+        return {
+            ...actual,
+            useApiValidationWorkflowsDropdownList:
+                mockUseApiValidationWorkflowsDropdownList,
+        };
+    },
+);
 vi.mock(
     'Iaso/domains/validationWorkflowInstances/hooks/useGetValidationWorkflowInstanceSearch',
     () => ({
         useGetValidationWorkflowInstanceSearch:
             mockUseGetValidationWorkflowInstanceSearch,
+        useGetValidationWorkflowInstanceCounts:
+            mockUseGetValidationWorkflowInstanceCounts,
     }),
 );
-
 vi.mock('Iaso/utils/usersUtils', async () => {
     const actual = await vi.importActual('Iaso/utils/usersUtils');
     return {
@@ -46,147 +68,175 @@ vi.mock('Iaso/utils/usersUtils', async () => {
     };
 });
 
-describe('Validation workflow list UI integration test', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        const currentUser = currentUserFactory.build({
-            is_superuser: false,
-            permissions: [VALIDATION_WORKFLOWS],
-            account: {
-                id: 22,
-                modules: [VALIDATION_WORKFLOW_MODULE],
-            },
-        });
-        mockCurrentUser.mockReturnValue(currentUser);
-        mockUseGetFormsDropdownOptions.mockReturnValue({
-            data: [],
-            isFetching: false,
-        });
-        mockUseGetWorkflowOptions.mockReturnValue({
-            data: null,
-            isFetching: false,
-        });
-    });
+const counts = {
+    all: 181,
+    awaiting_my_action: 12,
+    awaiting_others: 34,
+    handled_by_me: 128,
+    rejected: 7,
+    oldest_pending_since: null,
+};
 
-    it('displays a spinner while loading', async () => {
-        mockUseGetValidationWorkflowInstanceSearch.mockReturnValue({
-            data: null,
-            isLoading: true,
-        });
+const item: ValidationWorkflowInstanceListResponseItem = {
+    id: 1,
+    display_name: 'FAC-2026-0412',
+    form: { id: 1, name: 'Some form' },
+    workflow: { id: 2, name: 'Some workflow' },
+    org_unit: {
+        id: 1,
+        name: 'some org unit',
+        parent: { id: 2, name: 'some parent' },
+    },
+    project: { id: 1, name: 'some project', color: '#bbbbbb' },
+    general_validation_status: 'Pending',
+    validation_status: 'PENDING',
+    user_has_been_involved: false,
+    requires_user_action: true,
+    handled_by_me: false,
+    last_updated: null,
+    pending_since: moment().subtract(3, 'days').toISOString(),
+    submitted_by: {
+        id: 3,
+        username: 'jmbala',
+        first_name: 'Jean',
+        last_name: 'Mbala',
+    },
+    submitted_at: moment().subtract(3, 'days').toISOString(),
+    is_resubmission: false,
+    current_steps: [
+        {
+            id: 100,
+            node_template_id: 10,
+            name: 'District validation',
+            position: 1,
+            pending_since: moment().subtract(3, 'days').toISOString(),
+            user_can_act: true,
+        },
+    ],
+    step_count: 2,
+    last_user_action: null,
+};
 
+const searchResponse = {
+    data: {
+        count: 1,
+        has_next: false,
+        has_previous: false,
+        limit: 20,
+        page: 1,
+        pages: 1,
+        results: [item],
+    },
+    isFetching: false,
+};
+
+const renderPage = async () => {
+    await act(async () => {
         renderWithThemeAndIntlProvider(
             <MemoryRouter>
                 <ValidationWorkflowInstances />
             </MemoryRouter>,
         );
+    });
+};
+
+describe('Validation queue UI integration test', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockCurrentUser.mockReturnValue(
+            currentUserFactory.build({
+                is_superuser: false,
+                permissions: [VALIDATION_WORKFLOWS],
+                account: {
+                    id: 22,
+                    modules: [VALIDATION_WORKFLOW_MODULE],
+                },
+            }),
+        );
+        mockUseGetFormsDropdownOptions.mockReturnValue({
+            data: [],
+            isFetching: false,
+        });
+        mockUseGetProjectsDropdownOptions.mockReturnValue({
+            data: [],
+            isFetching: false,
+        });
+        mockUseApiValidationWorkflowsDropdownList.mockReturnValue({
+            data: [],
+            isFetching: false,
+        });
+        mockUseGetValidationWorkflowInstanceCounts.mockReturnValue({
+            data: counts,
+            isLoading: false,
+        });
+    });
+
+    it('displays a spinner while loading', async () => {
+        mockUseGetValidationWorkflowInstanceSearch.mockReturnValue({
+            data: undefined,
+            isFetching: true,
+        });
+
+        await renderPage();
+
         await waitFor(() => {
             expect(screen.getByRole('progressbar')).toBeInTheDocument();
         });
     });
-    it('displays the data correctly', async () => {
-        const date = moment(Date.now()).format(apiDateTimeFormat);
-        mockUseGetValidationWorkflowInstanceSearch.mockReturnValue({
-            data: {
-                count: 1,
-                has_next: false,
-                has_previous: false,
-                limit: 1,
-                page: 1,
-                pages: 1,
-                results: [
-                    {
-                        id: 1,
-                        form: { id: 1, name: 'Some form' },
-                        org_unit: {
-                            id: 1,
-                            name: 'some org unit',
-                        },
-                        project: {
-                            id: 1,
-                            name: 'some project',
-                            color: '#bbbbbb',
-                        },
-                        general_validation_status: 'APPROVED',
-                        user_has_been_involved: true,
-                        requires_user_action: true,
-                        last_updated: date,
-                    },
-                ],
-            },
-            isFetching: false,
-        });
 
-        await act(async () => {
-            renderWithThemeAndIntlProvider(
-                <MemoryRouter>
-                    <ValidationWorkflowInstances />
-                </MemoryRouter>,
-            );
-        });
+    it('displays the queue counts', async () => {
+        mockUseGetValidationWorkflowInstanceSearch.mockReturnValue(
+            searchResponse,
+        );
 
-        await waitFor(() => {
-            expect(screen.queryByRole('progressbar')).toBeNull();
-        });
+        await renderPage();
 
-        expect(screen.getByText('Approved')).toBeVisible();
-        expect(screen.getByText('some org unit')).toBeVisible();
-        expect(screen.getByText('some project')).toBeVisible();
-        expect(screen.getByText('Some form')).toBeVisible();
-
+        expect(screen.getByTestId('queue-tile-all')).toHaveTextContent(
+            'All181',
+        );
         expect(
-            screen.getByText(
-                moment(date, apiDateTimeFormat).format('DD/MM/YYYY HH:mm'),
-            ),
-        ).toBeVisible();
+            screen.getByTestId('queue-tile-awaiting_my_action'),
+        ).toHaveTextContent('Awaiting my action12');
+        expect(screen.getByTestId('queue-tile-rejected')).toHaveTextContent(
+            'Rejected7',
+        );
     });
-    it('displays the right icons', async () => {
-        const date = moment(Date.now()).format(apiDateTimeFormat);
-        mockUseGetValidationWorkflowInstanceSearch.mockReturnValueOnce({
-            data: {
-                count: 1,
-                has_next: false,
-                has_previous: false,
-                limit: 1,
-                page: 1,
-                pages: 1,
-                results: [
-                    {
-                        id: 1,
-                        form: { id: 1, name: 'Some form' },
-                        project: {
-                            id: 1,
-                            name: 'some project',
-                            color: '#bbbbbb',
-                        },
-                        general_validation_status: 'APPROVED',
-                        user_has_been_involved: true,
-                        requires_user_action: true,
-                        last_updated: date,
-                    },
-                ],
-            },
-            isFetching: false,
-        });
 
-        await act(async () => {
-            renderWithThemeAndIntlProvider(
-                <MemoryRouter>
-                    <ValidationWorkflowInstances />
-                </MemoryRouter>,
-            );
-        });
+    it('displays the submissions', async () => {
+        mockUseGetValidationWorkflowInstanceSearch.mockReturnValue(
+            searchResponse,
+        );
+
+        await renderPage();
 
         await waitFor(() => {
             expect(screen.queryByRole('progressbar')).toBeNull();
         });
-        expect(screen.getByTestId('PersonIcon')).toBeInTheDocument();
-        expect(screen.getByTestId('PendingActionsIcon')).toBeInTheDocument();
-        expect(screen.getByTestId('RemoveRedEyeIcon')).toBeInTheDocument();
         expect(
-            screen.getByTestId('RemoveRedEyeIcon').parentElement,
+            screen.getByRole('link', { name: 'Some form — FAC-2026-0412' }),
+        ).toBeVisible();
+        expect(screen.getByText('some org unit')).toBeVisible();
+        expect(screen.getByText('some parent')).toBeVisible();
+        expect(screen.getByText('Jean Mbala')).toBeVisible();
+        expect(screen.getByText('District validation')).toBeVisible();
+        expect(screen.getByText('Waiting on you · 3 days')).toBeVisible();
+    });
+
+    it('links the review action to the submission validation page', async () => {
+        mockUseGetValidationWorkflowInstanceSearch.mockReturnValue(
+            searchResponse,
+        );
+
+        await renderPage();
+
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).toBeNull();
+        });
+        expect(
+            screen.getByTestId('FactCheckIcon').closest('a'),
         ).toHaveAttribute(
             'href',
-            `/forms/submission/referenceFormId/1/instanceId/1/accountId/22/isValidating/true/`,
+            '/forms/submission/referenceFormId/1/instanceId/1/accountId/22/isValidating/true/',
         );
     });
 });

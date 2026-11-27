@@ -3,6 +3,7 @@ from django.db import IntegrityError, InternalError, connections
 from django.db.models import Q
 
 from iaso import models as m
+from iaso.models.org_unit import OrgUnitQuerySet
 from iaso.test import TestCase
 
 
@@ -188,6 +189,147 @@ class OrgUnitModelTestCase(TestCase):
         self.assertNotIn(first_council, m.OrgUnit.objects.hierarchy(task_force))
         self.assertNotIn(first_council, m.OrgUnit.objects.children(task_force))
         self.assertNotIn(first_council, m.OrgUnit.objects.descendants(task_force))
+
+    def test_org_unit_ancestors(self):
+        """Test model method: ancestors(). The org unit itself is included."""
+
+        (corrusca, corruscant, first_council, second_council, task_force) = self.create_simple_hierarchy()
+
+        self.assertIsInstance(corrusca.ancestors(), OrgUnitQuerySet)
+
+        self.assertCountEqual([corrusca], corrusca.ancestors())
+        self.assertCountEqual([corrusca, corruscant], corruscant.ancestors())
+        self.assertCountEqual([corrusca, corruscant, first_council], first_council.ancestors())
+        self.assertCountEqual([corrusca, corruscant, second_council], second_council.ancestors())
+        self.assertCountEqual([corrusca, corruscant, first_council, task_force], task_force.ancestors())
+
+    def test_org_unit_descendants(self):
+        """Test model method: descendants(). The org unit itself is included."""
+
+        (corrusca, corruscant, first_council, second_council, task_force) = self.create_simple_hierarchy()
+
+        self.assertIsInstance(corrusca.descendants(), OrgUnitQuerySet)
+
+        self.assertCountEqual([corrusca, corruscant, first_council, second_council, task_force], corrusca.descendants())
+        self.assertCountEqual([corruscant, first_council, second_council, task_force], corruscant.descendants())
+        self.assertCountEqual([first_council, task_force], first_council.descendants())
+        self.assertCountEqual([second_council], second_council.descendants())
+        self.assertCountEqual([task_force], task_force.descendants())
+
+    def test_org_unit_children(self):
+        """Test model method: children(). Only the direct children, the org unit itself is excluded."""
+
+        (corrusca, corruscant, first_council, second_council, task_force) = self.create_simple_hierarchy()
+
+        self.assertIsInstance(corrusca.children(), OrgUnitQuerySet)
+
+        self.assertCountEqual([corruscant], corrusca.children())
+        self.assertCountEqual([first_council, second_council], corruscant.children())
+        self.assertCountEqual([task_force], first_council.children())
+        self.assertCountEqual([], second_council.children())
+        self.assertCountEqual([], task_force.children())
+
+    def test_org_unit_tree_methods_dont_leak_into_other_trees(self):
+        """ancestors(), descendants() and children() stay within the org unit's own tree."""
+
+        (corrusca, corruscant, first_council, second_council, task_force) = self.create_simple_hierarchy()
+        alderaan = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Alderaan Sector")
+        alderaan_system = m.OrgUnit.objects.create(org_unit_type=self.system, parent=alderaan, name="Alderaan System")
+        alderaan.refresh_from_db()
+        alderaan_system.refresh_from_db()
+
+        self.assertCountEqual([alderaan, alderaan_system], alderaan.descendants())
+        self.assertCountEqual([alderaan, alderaan_system], alderaan_system.ancestors())
+        self.assertCountEqual([alderaan_system], alderaan.children())
+        self.assertCountEqual([corrusca, corruscant, first_council, second_council, task_force], corrusca.descendants())
+
+    def test_org_unit_tree_methods_with_more_than_10_siblings(self):
+        """Paths labels are compared as text by ltree ("10" < "2"): the results must not depend on it."""
+
+        corrusca = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Corrusca Sector")
+        systems = [
+            m.OrgUnit.objects.create(org_unit_type=self.system, parent=corrusca, name=f"System {i}") for i in range(12)
+        ]
+        councils = [
+            m.OrgUnit.objects.create(org_unit_type=self.jedi_council, parent=system, name=f"Council {i}")
+            for i, system in enumerate(systems)
+        ]
+        corrusca.refresh_from_db()
+        for org_unit in [*systems, *councils]:
+            org_unit.refresh_from_db()
+
+        self.assertCountEqual(systems, corrusca.children())
+        self.assertCountEqual([corrusca, *systems, *councils], corrusca.descendants())
+        for system, council in zip(systems, councils, strict=True):
+            self.assertCountEqual([council], system.children())
+            self.assertCountEqual([system, council], system.descendants())
+            self.assertCountEqual([corrusca, system, council], council.ancestors())
+            self.assertEqual(corrusca, council.root())
+
+    def test_org_unit_root(self):
+        """Test model method: root(). The top of the pyramid, None for a root or an org unit without path."""
+
+        (corrusca, corruscant, first_council, second_council, task_force) = self.create_simple_hierarchy()
+
+        self.assertIsNone(corrusca.root())
+        self.assertEqual(corrusca, corruscant.root())
+        self.assertEqual(corrusca, first_council.root())
+        self.assertEqual(corrusca, second_council.root())
+        self.assertEqual(corrusca, task_force.root())
+
+        pathless = m.OrgUnit(org_unit_type=self.sector, name="Pathless Sector")
+        pathless.save(skip_calculate_path=True)
+        self.assertIsNone(pathless.root())
+
+    def test_org_unit_root_after_reparenting(self):
+        """root() is the shallowest ancestor, even when it was created after its descendants (smaller pks)."""
+
+        system = m.OrgUnit.objects.create(org_unit_type=self.system, name="Coruscant System")
+        council = m.OrgUnit.objects.create(org_unit_type=self.jedi_council, parent=system, name="Jedi Council")
+        sector = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Corrusca Sector")
+        self.assertLess(system.pk, sector.pk)
+
+        system.parent = sector
+        system.save()
+        system.refresh_from_db()
+        council.refresh_from_db()
+
+        self.assertEqual(f"{sector.pk}.{system.pk}.{council.pk}", str(council.path))
+        self.assertEqual(sector, system.root())
+        self.assertEqual(sector, council.root())
+
+    def test_org_unit_country_ancestors(self):
+        """Test model method: country_ancestors(). The ancestors (itself included) of the COUNTRY category."""
+
+        country_type = m.OrgUnitType.objects.create(name="Country", short_name="Cnt", category="COUNTRY")
+        region_type = m.OrgUnitType.objects.create(name="Region", short_name="Reg", category="REGION")
+        country = m.OrgUnit.objects.create(org_unit_type=country_type, name="Angola")
+        region = m.OrgUnit.objects.create(org_unit_type=region_type, parent=country, name="Huila")
+        other_country = m.OrgUnit.objects.create(org_unit_type=country_type, name="Benin")
+        country.refresh_from_db()
+        region.refresh_from_db()
+        other_country.refresh_from_db()
+
+        self.assertIsInstance(region.country_ancestors(), OrgUnitQuerySet)
+        self.assertCountEqual([country], region.country_ancestors())
+        self.assertCountEqual([country], country.country_ancestors())
+        self.assertCountEqual([other_country], other_country.country_ancestors())
+
+        pathless = m.OrgUnit(org_unit_type=region_type, name="Pathless Region")
+        pathless.save(skip_calculate_path=True)
+        self.assertIsNone(pathless.country_ancestors())
+
+    def test_org_unit_delete_leaf(self):
+        """Deleting an org unit without children deletes only this org unit, other paths are untouched."""
+
+        (corrusca, corruscant, first_council, second_council, task_force) = self.create_simple_hierarchy()
+        paths_before = {ou.pk: str(ou.path) for ou in m.OrgUnit.objects.exclude(pk=second_council.pk)}
+
+        second_council.delete()
+
+        self.assertFalse(m.OrgUnit.objects.filter(pk=second_council.pk).exists())
+        paths_after = {ou.pk: str(ou.path) for ou in m.OrgUnit.objects.all()}
+        self.assertEqual(paths_before, paths_after)
 
     def create_simple_hierarchy(self):
         corrusca = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Corrusca Sector")

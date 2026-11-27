@@ -1643,6 +1643,7 @@
     "iaso.plannings.label.deprecated": "Obsolète",
     "iaso.plannings.label.deprecatedPlanningInfos": "Il a été créé avant l'introduction des missions et ne peut plus être modifié.",
     "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
+    "iaso.plannings.label.duplicatedPlanningName": "{name} (copie)",
     "iaso.plannings.label.editingPublishedPlanning": "Vous modifiez un planning publié.",
     "iaso.plannings.label.editingPublishedPlanningDetails": "Chaque changement d'assignation est envoyé aux agents concernés lors de leur prochaine synchronisation et peut modifier le travail qu'ils effectuent sur le terrain.",
     "iaso.plannings.label.emptyLevelAbove": "Le niveau supérieur n'a aucune unité d'organisation, ces unités d'organisation n'ont donc pas de parent à partir duquel être assignées.",

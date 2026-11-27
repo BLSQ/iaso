@@ -1644,6 +1644,7 @@
     "iaso.plannings.label.deprecated": "Deprecated",
     "iaso.plannings.label.deprecatedPlanningInfos": "It was created before missions were introduced and can no longer be edited.",
     "iaso.plannings.label.duplicatePlanning": "Duplicate planning",
+    "iaso.plannings.label.duplicatedPlanningName": "{name} (copy)",
     "iaso.plannings.label.editingPublishedPlanning": "You are editing a published planning.",
     "iaso.plannings.label.editingPublishedPlanningDetails": "Every assignment change is sent to the agents concerned at their next synchronisation and can change the work they are doing on the field.",
     "iaso.plannings.label.emptyLevelAbove": "The level above has no org unit, so these org units have no parent to be assigned from.",

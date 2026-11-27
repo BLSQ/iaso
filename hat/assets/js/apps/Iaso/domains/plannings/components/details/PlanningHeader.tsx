@@ -23,12 +23,13 @@ const styles = {
 } satisfies SxStyles;
 
 export const PlanningHeaderTitle: FC = () => {
-    const { planning, isReadOnly, formik } = usePlanningContext();
+    const { planning, mode, isReadOnly, formik } = usePlanningContext();
     const { formatMessage } = useSafeIntl();
+    const status = mode === 'edit' ? planning?.status : undefined;
     return (
         <>
             {formik.values.name?.trim() || formatMessage(MESSAGES.newPlanning)}
-            <PlanningStatusChip status={planning?.status ?? 'draft'} />
+            <PlanningStatusChip status={status ?? 'draft'} />
             {isReadOnly && <DeprecatedPlanningChip />}
         </>
     );
@@ -47,14 +48,15 @@ export const PlanningHeaderActions: FC = () => {
     if (isReadOnly) {
         return null;
     }
+    const savedPlanning = mode === 'edit' ? planning : undefined;
     return (
         <Stack direction="row" gap={1}>
             <Button
                 variant="outlined"
                 size="small"
                 component={LinkWithLocationForwardRef}
-                to={planning ? getAssignmentsUrl(planning.id) : ''}
-                disabled={!planning}
+                to={savedPlanning ? getAssignmentsUrl(savedPlanning.id) : ''}
+                disabled={!savedPlanning}
             >
                 <OpenInNewIcon sx={styles.buttonIcon} />
                 {formatMessage(MESSAGES.openAssignments)}

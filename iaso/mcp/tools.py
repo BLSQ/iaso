@@ -31,13 +31,16 @@ from iaso.mcp.raw import (
 from iaso.mcp.reattach import apply_plan, plan_reattach, summarize_plan
 from iaso.mcp.recipes.fill_account.apply import connection_prompt, current_account
 from iaso.mcp.serialize import (
+    ORG_UNIT_DETAIL_ONLY_FIELDS,
+    ORG_UNIT_MOST_DETAILS_FIELDS,
     clamp_limit,
+    org_unit_fields,
+    org_unit_result,
     page_meta,
     slim_form,
     slim_form_version,
     slim_instance,
     slim_instance_file,
-    slim_org_unit,
     slim_org_unit_type,
     slim_org_unit_type_hierarchy,
 )
@@ -109,14 +112,26 @@ def list_org_units(
     parent_id: int | None = None,
     org_unit_type_id: int | None = None,
     source_id: int | None = None,
+    with_most_details: bool = False,
+    with_ancestors: bool = False,
     page: int = 1,
     limit: int = 10,
 ) -> dict[str, Any]:
-    """List one page of org units. validation_status: NEW, VALID, REJECTED. source_id: data source id."""
+    """List one page of org units: id, name, validation_status, parent_id, parent_name, org_unit_type_id,
+    org_unit_type_name, source.
+
+    validation_status: NEW, VALID, REJECTED, a comma-separated list or all (default VALID). source_id: data source id.
+    with_most_details: also code, aliases, source_id, source_ref, sub_source, groups [{id, name, source_ref}],
+    latitude, longitude, altitude, has_geo_json, created_at, updated_at, creator
+    (never instances_count: too slow on big accounts).
+    with_ancestors: add ancestors, [{id, name, org_unit_type_id, org_unit_type_name}] from the root to the direct parent.
+    No shape: get_org_unit with with_geo_json.
+    """
     limit = clamp_limit(limit)
     response = get_client().org_units_list_page(
         page=page,
         limit=limit,
+        fields=org_unit_fields(ORG_UNIT_MOST_DETAILS_FIELDS, with_most_details, with_ancestors),
         **_filters(
             search=search,
             validation_status=validation_status,
@@ -127,15 +142,27 @@ def list_org_units(
     )
     return {
         **page_meta(response),
-        "org_units": [slim_org_unit(item) for item in response.get("orgunits") or []],
+        "org_units": [
+            org_unit_result(item, with_most_details, with_ancestors) for item in response.get("orgunits") or []
+        ],
     }
 
 
 @tool()
-def get_org_unit(org_unit_id: int) -> dict[str, Any]:
-    """Retrieve one org unit by id (slim fields, no geometry)."""
-    detail = get_client().org_units_retrieve(org_unit_id=org_unit_id)
-    return slim_org_unit(dict(detail))
+def get_org_unit(
+    org_unit_id: int, with_most_details: bool = False, with_ancestors: bool = False, with_geo_json: bool = False
+) -> dict[str, Any]:
+    """Retrieve one org unit by id: the list_org_units fields.
+
+    with_most_details: the list_org_units with_most_details fields, plus version, version_id, source_url,
+    opening_date, closed_date, default_image_id.
+    with_ancestors: add ancestors, [{id, name, org_unit_type_id, org_unit_type_name}] from the root to the direct parent.
+    with_geo_json: add geo_json, the shape (can be large).
+    """
+    most_details_fields = ORG_UNIT_MOST_DETAILS_FIELDS + ORG_UNIT_DETAIL_ONLY_FIELDS
+    fields = org_unit_fields(most_details_fields, with_most_details, with_ancestors, with_geo_json)
+    detail = dict(get_client().org_units_retrieve(org_unit_id=org_unit_id, fields=fields))
+    return org_unit_result(detail, with_most_details, with_ancestors, with_geo_json)
 
 
 @tool()

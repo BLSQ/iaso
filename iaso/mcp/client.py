@@ -197,8 +197,8 @@ class IasoClient:
     def org_units_list_page(self, page: int = 1, limit: int = 10, **filters: Any) -> dict[str, Any]:
         return self._list_page("orgunits/", page, limit, **filters)
 
-    def org_units_retrieve(self, org_unit_id: int) -> dict[str, Any]:
-        return self.transport.request("GET", f"orgunits/{org_unit_id}/")
+    def org_units_retrieve(self, org_unit_id: int, **params: Any) -> dict[str, Any]:
+        return self.transport.request("GET", f"orgunits/{org_unit_id}/", params=params)
 
     def org_unit_types_list_page(self, page: int = 1, limit: int = 10, **filters: Any) -> dict[str, Any]:
         return self._list_page("orgunittypes/", page, limit, **filters)

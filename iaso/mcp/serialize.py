@@ -21,19 +21,84 @@ def page_meta(response: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# The fields the org unit tools return, sent as `fields`: the API then skips instances_count
+# (list: a join of every org unit to its instances, detail: all the descendants) and the fields dropped here.
+ORG_UNIT_SLIM_FIELDS = [
+    "id",
+    "name",
+    "validation_status",
+    "parent_id",
+    "parent_name",
+    "org_unit_type_id",
+    "org_unit_type_name",
+    "source",
+]
+
+
+# with_most_details=True: the same fields from the list and the detail (never instances_count, reference_instances,
+# catchment, nor the type's projects: a type-less org unit crashes the list). `parent` (nested up to the root)
+# only with with_ancestors, returned flattened as `ancestors`.
+ORG_UNIT_MOST_DETAILS_FIELDS = ORG_UNIT_SLIM_FIELDS + [
+    "code",
+    "aliases",
+    "source_id",
+    "source_ref",
+    "sub_source",
+    "groups",
+    "latitude",
+    "longitude",
+    "altitude",
+    "has_geo_json",
+    "created_at",
+    "updated_at",
+    "creator",
+]
+# Only the detail returns these
+ORG_UNIT_DETAIL_ONLY_FIELDS = ["version", "version_id", "source_url", "opening_date", "closed_date", "default_image_id"]
+# The list (GroupSerializer) and the detail (Group.as_dict) return different group dicts
+ORG_UNIT_GROUP_FIELDS = ["id", "name", "source_ref"]
+# Common to the nested `parent` of the list and of the detail
+ORG_UNIT_ANCESTOR_FIELDS = ["id", "name", "org_unit_type_id", "org_unit_type_name"]
+
+
 def slim_org_unit(item: dict[str, Any]) -> dict[str, Any]:
-    org_unit_type = item.get("org_unit_type") or {}
-    return {
-        "id": item.get("id"),
-        "name": item.get("name"),
-        "validation_status": item.get("validation_status"),
-        "parent_id": item.get("parent_id"),
-        "parent_name": item.get("parent_name"),
-        "org_unit_type_id": item.get("org_unit_type_id") or org_unit_type.get("id"),
-        "org_unit_type_name": item.get("org_unit_type_name") or org_unit_type.get("name"),
-        "source": item.get("source"),
-        "instances_count": item.get("instances_count"),
-    }
+    return {field: item.get(field) for field in ORG_UNIT_SLIM_FIELDS}
+
+
+def org_unit_fields(
+    most_details_fields: list[str], with_most_details: bool, with_ancestors: bool, with_geo_json: bool = False
+) -> str:
+    """The `fields` param of the org units API for these options."""
+    fields = most_details_fields if with_most_details else ORG_UNIT_SLIM_FIELDS
+    fields = fields + (["parent"] if with_ancestors else []) + (["geo_json"] if with_geo_json else [])
+    return ",".join(fields)
+
+
+def org_unit_result(
+    item: dict[str, Any], with_most_details: bool, with_ancestors: bool, with_geo_json: bool = False
+) -> dict[str, Any]:
+    """The org unit as returned by the tools, from the API item fetched with org_unit_fields."""
+    if with_most_details:
+        org_unit = {key: value for key, value in item.items() if key not in ("parent", "geo_json")}
+        org_unit["groups"] = [
+            {field: group.get(field) for field in ORG_UNIT_GROUP_FIELDS} for group in item.get("groups") or []
+        ]
+    else:
+        org_unit = slim_org_unit(item)
+    if with_ancestors:
+        org_unit["ancestors"] = _ancestors(item.get("parent"))
+    if with_geo_json:
+        org_unit["geo_json"] = item.get("geo_json")
+    return org_unit
+
+
+def _ancestors(parent: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """The nested parents flattened, from the root to the direct parent (like DHIS2 and the org unit path)."""
+    ancestors = []
+    while parent:
+        ancestors.append({field: parent.get(field) for field in ORG_UNIT_ANCESTOR_FIELDS})
+        parent = parent.get("parent")
+    return ancestors[::-1]
 
 
 def slim_form(item: dict[str, Any]) -> dict[str, Any]:

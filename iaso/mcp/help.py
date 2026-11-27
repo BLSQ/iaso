@@ -35,7 +35,7 @@ Read tools are paginated (default 10, max 50).
 - `iaso_openhexa_auth_params` — url + login from that same session for OpenHEXA pipeline params. Topic `openhexa`.
 
 **Org units**
-- `list_org_units` / `get_org_unit`
+- `list_org_units` / `get_org_unit` — slim by default (no `instances_count`: too slow on big accounts, `iaso_raw` with `fields=...,instances_count` if needed). Options: `with_most_details`, `with_ancestors` (root to direct parent), `with_geo_json` (`get_org_unit` only).
 - `list_org_unit_types` / `get_org_unit_type` / `get_org_unit_type_hierarchy`
 
 **Forms and submissions**

@@ -281,6 +281,13 @@ Columns:
 - one column per question of the form, named after the question. Characters other than letters, digits and `_`
   become `_`, a question named `id` becomes `answer_id`.
 
+To get a smaller file, choose the questions (comma separated names, case insensitive, not both at once):
+`only_question_names=age,sex` exports only these questions, `exclude_question_names=instanceID,deprecatedID` all the
+questions but these. The `iaso_subm_*` columns are always exported. An unknown question name is refused (error `400`).
+
+For a form with personal data (PII) settings, users without the "view personal data" permission only get the
+questions marked as not personal, even when asked in `only_question_names`.
+
 ### Org units: `/api/orgunits/?parquet=true&searches=[{...}]`
 
 The filters go in `searches`, a JSON list with **one** search using the keys of the **Org units** page: `version`,

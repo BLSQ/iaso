@@ -582,6 +582,8 @@ class InstancesViewSet(viewsets.ViewSet):
             "org_unit_status",  # NEW, VALID, REJECTED
             "workflow_ids",
             "validation_status",
+            "only_question_names",  # comma separated question names, only these questions are exported
+            "exclude_question_names",  # comma separated question names, all the questions but these are exported
         }
         received_params = set(request.GET.keys())
 
@@ -594,12 +596,26 @@ class InstancesViewSet(viewsets.ViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        only_question_names = comma_separated_names(request.GET.get("only_question_names"))
+        exclude_question_names = comma_separated_names(request.GET.get("exclude_question_names"))
+        if only_question_names and exclude_question_names:
+            raise serializers.ValidationError(
+                {"error": "only_question_names and exclude_question_names can't be used together"}
+            )
+
         # actually return parquet file
         form_ids = filters["form_ids"]
         form = Form.objects.get(pk=form_ids)
-        export_queryset, mapping = parquet.build_submissions_queryset(
-            queryset, form.id, allowed_fields=get_allowed_fields(form, request.user)
-        )
+        try:
+            export_queryset, mapping = parquet.build_submissions_queryset(
+                queryset,
+                form.id,
+                allowed_fields=get_allowed_fields(form, request.user),
+                only_question_names=only_question_names,
+                exclude_question_names=exclude_question_names,
+            )
+        except ValueError as error:
+            raise serializers.ValidationError({"error": str(error)})
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 
@@ -1028,6 +1044,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 "Access-Control-Expose-Headers": "Content-Disposition",
             },
         )
+
+
+def comma_separated_names(value: Optional[str]) -> list[str]:
+    return [name.strip() for name in (value or "").split(",") if name.strip()]
 
 
 def parse_instance_filters_for_user(data, user) -> dict[str, Any]:

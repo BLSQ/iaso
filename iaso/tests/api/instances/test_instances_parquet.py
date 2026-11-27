@@ -424,6 +424,48 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(exported_answers(self.yoda), {"muac": "12.5"}, "first_name is not in non_pii_fields")
         self.assertEqual(exported_answers(pii_user), {"first_name": "Amina", "muac": "12.5"})
 
+    def test_parquet_export_only_and_exclude_question_names(self):
+        """One test with subtests: as a TransactionTestCase, each test method pays a flush of every table"""
+        self.form_1.non_pii_fields = ["muac", "instanceID"]
+        self.form_1.possible_fields = [
+            {"name": "first_name", "label": "First name", "type": "text"},
+            {"name": "muac", "label": "MUAC", "type": "decimal"},
+            {"name": "instanceID", "label": "instanceID", "type": "calculate"},
+        ]
+        self.form_1.save()
+        self.yoda.iaso_profile.projects.add(self.instance_1.project)
+        self.client.force_authenticate(self.yoda)
+
+        def exported_questions(params):
+            response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&{params}")
+            self.assertEqual(response.status_code, status.HTTP_200_OK, response)
+            with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
+                write_response_to_file(response, f)
+                with duckdb.connect() as con:
+                    columns = [c[0] for c in con.execute(f"DESCRIBE SELECT * FROM '{f.name}'").fetchall()]
+            self.assertIn("iaso_subm_id", columns, "the submission metadata is always exported")
+            return [column for column in columns if not column.startswith("iaso_subm_")]
+
+        cases = [
+            ("", ["muac", "instanceID"]),
+            ("only_question_names=MUAC", ["muac"]),
+            ("exclude_question_names=instanceID", ["muac"]),
+            # first_name is hidden by the PII configuration: asking for it doesn't export it
+            ("only_question_names=first_name,instanceID", ["instanceID"]),
+        ]
+        for params, expected_questions in cases:
+            with self.subTest(params=params):
+                self.assertEqual(exported_questions(params), expected_questions)
+
+        errors = [
+            ("only_question_names=muac&exclude_question_names=instanceID", "can't be used together"),
+            ("only_question_names=age", "Unknown question names: age"),
+        ]
+        for params, error in errors:
+            with self.subTest(params=params):
+                response = self.client.get(f"/api/instances/?form_ids={self.form_1.id}&parquet=true&{params}")
+                self.assertIn(error, self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)["error"])
+
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -433,6 +475,6 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(
             response.json(),
             {
-                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, deviceId, deviceOwnershipId, endPeriod, form_ids, jsonContent, missionIds, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, org_unit_status, parquet, planningIds, project_ids, referenceInstances, search, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, validation_status, withLocation, workflow_ids"
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, deviceId, deviceOwnershipId, endPeriod, exclude_question_names, form_ids, jsonContent, missionIds, modificationDateFrom, modificationDateTo, only_question_names, order, orgUnitParentId, orgUnitTypeId, org_unit_status, parquet, planningIds, project_ids, referenceInstances, search, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, validation_status, withLocation, workflow_ids"
             },
         )

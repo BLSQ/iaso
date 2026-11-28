@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    addFilters: {
+        defaultMessage: 'Add filters',
+        id: 'iaso.promptness.addFilters',
+    },
     allTypes: {
         defaultMessage: 'All types',
         id: 'iaso.promptness.allTypes',
@@ -50,6 +54,11 @@ const MESSAGES = defineMessages({
     form: {
         defaultMessage: 'Form',
         id: 'iaso.label.form',
+    },
+    formNotSelected: {
+        defaultMessage:
+            'Not selected · only forms with a period type are listed',
+        id: 'iaso.promptness.formNotSelected',
     },
     formNoGracePeriod: {
         defaultMessage:
@@ -116,6 +125,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent Org unit',
         id: 'iaso.label.parentOu',
     },
+    parentNotSelected: {
+        defaultMessage: 'Not selected · the table lists its children',
+        id: 'iaso.promptness.parentNotSelected',
+    },
     period: {
         defaultMessage: 'Period',
         id: 'iaso.label.period',
@@ -136,18 +149,19 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Received',
         id: 'iaso.promptness.received',
     },
+    requiredFiltersInfo: {
+        defaultMessage:
+            'Promptness is computed for one form, over one period, below one parent org unit. These filters are required.',
+        id: 'iaso.promptness.requiredFiltersInfo',
+    },
+    requiredFiltersTitle: {
+        defaultMessage:
+            '{count, plural, one {Set # filter to see promptness} other {Set # filters to see promptness}}',
+        id: 'iaso.promptness.requiredFiltersTitle',
+    },
     seeChildren: {
         defaultMessage: 'See children',
         id: 'iaso.label.seeChildren',
-    },
-    selectFilters: {
-        defaultMessage: 'Select a period and a parent org unit',
-        id: 'iaso.promptness.selectFilters',
-    },
-    selectFiltersInfo: {
-        defaultMessage:
-            'The promptness is computed for one period, in the hierarchy of the parent org unit. Pick them above and search.',
-        id: 'iaso.promptness.selectFiltersInfo',
     },
     selectForm: {
         defaultMessage: 'Select a form',
@@ -157,18 +171,25 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Select a form first',
         id: 'iaso.promptness.selectFormFirst',
     },
-    selectFormInfo: {
-        defaultMessage:
-            'Promptness is computed against the deadline of one form. Pick a form above.',
-        id: 'iaso.promptness.selectFormInfo',
-    },
     share: {
         defaultMessage: 'Share',
         id: 'iaso.promptness.share',
     },
+    stepRequired: {
+        defaultMessage: 'Required',
+        id: 'iaso.promptness.stepRequired',
+    },
+    stepWaiting: {
+        defaultMessage: 'Waiting',
+        id: 'iaso.promptness.stepWaiting',
+    },
     status: {
         defaultMessage: 'Promptness',
         id: 'iaso.promptness.status',
+    },
+    startFromForm: {
+        defaultMessage: 'Prefer to start from a form?',
+        id: 'iaso.promptness.startFromForm',
     },
     statusInfo: {
         defaultMessage:

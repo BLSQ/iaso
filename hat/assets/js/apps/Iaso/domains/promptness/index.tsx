@@ -1,6 +1,5 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import AccountTree from '@mui/icons-material/AccountTree';
-import ListAlt from '@mui/icons-material/ListAlt';
 import OpenInNew from '@mui/icons-material/OpenInNew';
 import Box from '@mui/material/Box/Box';
 import Button from '@mui/material/Button/Button';
@@ -31,7 +30,7 @@ import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useFormatPeriod } from '../periods/utils';
 import { DeadlineBanner } from './components/DeadlineBanner';
-import { EmptyState } from './components/EmptyState';
+import { EmptyState, RequiredFilterStep } from './components/EmptyState';
 import { OrgUnitPath } from './components/OrgUnitPath';
 import { PromptnessFilters } from './components/PromptnessFilters';
 import { TotalsCards } from './components/TotalsCards';
@@ -160,6 +159,54 @@ export const Promptness: FunctionComponent = () => {
           })
         : undefined;
     const downloadOption = useDownloadOption();
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // Progress of the required filters, displayed until the promptness can be computed
+    const requiredSteps: RequiredFilterStep[] = useMemo(() => {
+        const formHasGracePeriod =
+            typeof selectedForm?.promptness_grace_period_days === 'number';
+        const getFormStatus = (): RequiredFilterStep['status'] => {
+            if (!selectedForm) return 'required';
+            return formHasGracePeriod ? 'done' : 'error';
+        };
+        return [
+            {
+                key: 'formId',
+                label: formatMessage(MESSAGES.form),
+                status: getFormStatus(),
+                description: selectedForm
+                    ? (selectedForm.name ?? '')
+                    : formatMessage(MESSAGES.formNotSelected),
+                error:
+                    selectedForm && !formHasGracePeriod
+                        ? formatMessage(MESSAGES.formNoGracePeriod)
+                        : undefined,
+            },
+            {
+                key: 'period',
+                label: formatMessage(MESSAGES.period),
+                // The period defaults to the current one of the form period type
+                status: selectedForm ? 'done' : 'waiting',
+                description: selectedForm
+                    ? periodLabel
+                    : formatMessage(MESSAGES.selectFormFirst),
+            },
+            {
+                key: 'parentId',
+                label: formatMessage(MESSAGES.parent),
+                status: params.parentId ? 'done' : 'required',
+                description: params.parentId
+                    ? (currentOrgUnit?.name ?? '')
+                    : formatMessage(MESSAGES.parentNotSelected),
+            },
+        ];
+    }, [
+        selectedForm,
+        params.parentId,
+        periodLabel,
+        currentOrgUnit?.name,
+        formatMessage,
+    ]);
 
     const resetPageToOne = JSON.stringify([
         params.formId,
@@ -184,34 +231,19 @@ export const Promptness: FunctionComponent = () => {
                     params={params}
                     forms={formsWithPeriod}
                     isFetchingForms={isFetchingForms}
+                    isDrawerOpen={isDrawerOpen}
+                    setIsDrawerOpen={setIsDrawerOpen}
                 />
-                {!params.formId && (
-                    <EmptyState
-                        title={formatMessage(MESSAGES.selectForm)}
-                        description={formatMessage(MESSAGES.selectFormInfo)}
-                        action={
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                                startIcon={<ListAlt />}
-                                component={RouterLink}
-                                to={`/${baseUrls.forms}`}
-                            >
-                                {formatMessage(MESSAGES.browseForms)}
-                            </Button>
-                        }
-                    />
-                )}
-
                 {params.formId && !canCompute && isFetchingForms && (
                     <LoadingSpinner />
                 )}
-                {params.formId && !canCompute && !isFetchingForms && (
+                {!canCompute && !(params.formId && isFetchingForms) && (
                     <EmptyState
-                        title={formatMessage(MESSAGES.selectFilters)}
-                        description={formatMessage(MESSAGES.selectFiltersInfo)}
+                        steps={requiredSteps}
+                        onAddFilters={() => setIsDrawerOpen(true)}
                     />
                 )}
+
                 {canCompute && (
                     <Box mt={2} position="relative">
                         {isFetchingSummary && <LoadingSpinner absolute />}

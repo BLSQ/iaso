@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box/Box';
 import Typography from '@mui/material/Typography/Typography';
 import {
@@ -44,6 +39,8 @@ type Props = {
     forms?: FormsDropdownOptions;
     isFetchingForms: boolean;
     orgUnitId?: string;
+    isDrawerOpen: boolean;
+    setIsDrawerOpen: (open: boolean) => void;
 };
 
 const baseUrl = baseUrls.promptness;
@@ -92,6 +89,8 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
     forms,
     isFetchingForms,
     orgUnitId,
+    isDrawerOpen,
+    setIsDrawerOpen,
 }) => {
     const { formatMessage } = useSafeIntl();
     const getStatusColor = useGetStatusColor();
@@ -331,7 +330,6 @@ export const PromptnessFilters: FunctionComponent<Props> = ({
         ],
     );
     const redirectTo = useRedirectTo();
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const handleApply = useCallback(
         (next: FilterValues) => {
             const nextForm = findForm(forms, next.formId);
